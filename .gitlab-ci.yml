@@ -3,7 +3,7 @@ image: microsoft/dotnet:latest
 variables:
   OBJECTS_DIRECTORY: 'obj'
   NUGET_PACKAGES_DIRECTORY: '.nuget'
-  SOURCE_CODE_PATH: 'src/'
+  SOURCE_CODE_PATH: 'src/GrillBot'
 
 stages:
   - build

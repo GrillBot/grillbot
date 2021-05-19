@@ -383,3 +383,4 @@ FodyWeavers.xsd
 *.tlog
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode
+/src/GrillBot/GrillBot.App/appsettings.Development.json

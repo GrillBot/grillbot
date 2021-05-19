@@ -11,7 +11,7 @@ namespace GrillBot.Database.Services
         {
             modelBuilder.Entity<GuildUser>(builder =>
             {
-                builder.HasKey(o => new { o.Guild, o.UserId });
+                builder.HasKey(o => new { o.GuildId, o.UserId });
                 builder.HasOne(o => o.User).WithMany(o => o.Guilds);
                 builder.HasOne(o => o.Guild).WithMany(o => o.Users);
                 builder.HasOne(o => o.UsedInvite).WithMany(o => o.UsedUsers);
@@ -35,6 +35,7 @@ namespace GrillBot.Database.Services
 
             modelBuilder.Entity<GuildChannel>(builder =>
             {
+                builder.HasKey(o => new { o.GuildId, o.Id });
                 builder.HasOne(o => o.Guild).WithMany(o => o.Channels);
                 builder.HasOne(o => o.User).WithMany(o => o.Channels);
             });
@@ -42,7 +43,7 @@ namespace GrillBot.Database.Services
             modelBuilder.Entity<SearchItem>(builder =>
             {
                 builder.HasOne(o => o.User).WithMany(o => o.SearchItems);
-                builder.HasOne(o => o.Channel).WithMany(o => o.SearchItems);
+                builder.HasOne(o => o.Channel).WithMany(o => o.SearchItems).HasForeignKey(o => new { o.GuildId, o.ChannelId });
             });
 
             modelBuilder.Entity<Unverify>(builder =>

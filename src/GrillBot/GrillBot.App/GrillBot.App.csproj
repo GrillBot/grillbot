@@ -8,4 +8,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GrillBot.Database\GrillBot.Database.csproj" />
+  </ItemGroup>
+
 </Project>

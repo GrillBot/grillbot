@@ -1,3 +1,4 @@
+using GrillBot.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,11 @@ namespace GrillBot.App
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            var connectionString = Configuration.GetConnectionString("Default");
+
+            services
+                .AddDatabase(connectionString)
+                .AddControllers();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1,26 +1,32 @@
 image: mcr.microsoft.com/dotnet/sdk:5.0
 
 variables:
-  OBJECTS_DIRECTORY: 'obj'
-  NUGET_PACKAGES_DIRECTORY: '.nuget'
-  SOURCE_CODE_PATH: 'src/GrillBot'
+  OBJECTS_DIRECTORY: "obj"
+  NUGET_PACKAGES_DIRECTORY: ".nuget"
+  SOURCE_CODE_PATH: "src/GrillBot"
 
 stages:
   - build
+  - test
 
 cache:
   key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
   paths:
-    - '$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/project.assets.json'
-    - '$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/*.csproj.nuget.*'
-    - '$NUGET_PACKAGES_DIRECTORY'
+    - "$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/project.assets.json"
+    - "$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/*.csproj.nuget.*"
+    - "$NUGET_PACKAGES_DIRECTORY"
 
   policy: pull-push
 
 before_script:
-  - 'dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY'
+  - "dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY"
 
 build:
   stage: build
   script:
-    - 'dotnet build $SOURCE_CODE_PATH --no-restore'
+    - "dotnet build $SOURCE_CODE_PATH --no-restore"
+
+tests:
+  stage: test
+  script:
+    - "dotnet text $SOURCE_CODE_PATH"

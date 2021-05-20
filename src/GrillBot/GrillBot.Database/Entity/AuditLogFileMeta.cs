@@ -19,7 +19,10 @@ namespace GrillBot.Database.Entity
         public string Filename { get; set; }
 
         [NotMapped]
-        public string Extension => Path.GetFileNameWithoutExtension(Filename);
+        public string Extension => Path.GetExtension(Filename);
+
+        [NotMapped]
+        public string FilenameWithoutExtension => Path.GetFileNameWithoutExtension(Filename);
 
         [Required]
         public long Size { get; set; } = 0;

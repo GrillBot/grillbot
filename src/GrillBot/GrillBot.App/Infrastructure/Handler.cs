@@ -2,11 +2,11 @@
 
 namespace GrillBot.App.Infrastructure
 {
-    public abstract class EventHandler
+    public abstract class Handler
     {
         protected DiscordSocketClient DiscordClient { get; }
 
-        protected EventHandler(DiscordSocketClient client)
+        protected Handler(DiscordSocketClient client)
         {
             DiscordClient = client;
         }

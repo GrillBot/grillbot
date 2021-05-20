@@ -2,6 +2,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
 using GrillBot.Database;
 using GrillBot.Database.Services;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
+using System.Reflection;
 
 namespace GrillBot.App
 {
@@ -50,6 +52,9 @@ namespace GrillBot.App
                 .AddSingleton<LoggingService>()
                 .AddDatabase(connectionString)
                 .AddControllers();
+
+            ReflectionHelper.GetAllEventHandlers().ToList()
+                .ForEach(o => services.AddSingleton(typeof(Handler), o));
 
             services.AddHostedService<DiscordService>();
         }

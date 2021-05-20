@@ -17,5 +17,7 @@ namespace GrillBot.App.Extensions.Discord
         {
             return user.GetAvatarUrl(format, size) ?? user.GetDefaultAvatarUrl();
         }
+
+        static public bool IsUser(this IUser user) => !(user.IsBot || user.IsWebhook);
     }
 }

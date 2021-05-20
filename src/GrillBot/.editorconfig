@@ -1,2 +1,4 @@
 ﻿[*.cs]
 dotnet_diagnostic.S2344.severity = none
+dotnet_diagnostic.RCS1090.severity = none
+

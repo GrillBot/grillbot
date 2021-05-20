@@ -1,15 +1,17 @@
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+using GrillBot.App.Helpers;
+using GrillBot.App.Services;
 using GrillBot.Database;
+using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace GrillBot.App
 {
@@ -26,15 +28,41 @@ namespace GrillBot.App
         {
             var connectionString = Configuration.GetConnectionString("Default");
 
+            var discordConfig = new DiscordSocketConfig()
+            {
+                GatewayIntents = DiscordHelper.GetAllIntents(),
+                LogLevel = LogSeverity.Verbose,
+                MessageCacheSize = 50000,
+                RateLimitPrecision = RateLimitPrecision.Millisecond
+            };
+
+            var commandsConfig = new CommandServiceConfig()
+            {
+                CaseSensitiveCommands = true,
+                DefaultRunMode = RunMode.Async,
+                IgnoreExtraArgs = true,
+                LogLevel = LogSeverity.Verbose
+            };
+
             services
+                .AddSingleton(new DiscordSocketClient(discordConfig))
+                .AddSingleton(new CommandService(commandsConfig))
+                .AddSingleton<LoggingService>()
                 .AddDatabase(connectionString)
                 .AddControllers();
+
+            services.AddHostedService<DiscordService>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)
         {
+            if (db.Database.GetPendingMigrations().Any())
+                db.Database.Migrate();
+
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
+
+            app.ApplicationServices.GetRequiredService<LoggingService>();
 
             app.UseRouting();
             app.UseAuthorization();

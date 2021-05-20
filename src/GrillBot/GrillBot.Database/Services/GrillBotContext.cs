@@ -63,6 +63,7 @@ namespace GrillBot.Database.Services
             {
                 builder.HasOne(o => o.ProcessedGuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.ProcessedUserId });
                 builder.HasOne(o => o.GuildChannel).WithMany().HasForeignKey(o => new { o.GuildId, o.ChannelId });
+                builder.HasMany(o => o.Files).WithOne(o => o.AuditLogItem);
             });
 
             base.OnModelCreating(modelBuilder);
@@ -77,5 +78,6 @@ namespace GrillBot.Database.Services
         public DbSet<UnverifyLog> UnverifyLogs { get; set; }
         public DbSet<Command> Commands { get; set; }
         public DbSet<AuditLogItem> AuditLogs { get; set; }
+        public DbSet<AuditLogFileMeta> AuditLogFiles { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using GrillBot.Database.Enums;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -34,5 +35,12 @@ namespace GrillBot.Database.Entity
         public string ChannelId { get; set; }
 
         public GuildChannel GuildChannel { get; set; }
+
+        public ISet<AuditLogFileMeta> Files { get; set; }
+
+        public AuditLogItem()
+        {
+            Files = new HashSet<AuditLogFileMeta>();
+        }
     }
 }

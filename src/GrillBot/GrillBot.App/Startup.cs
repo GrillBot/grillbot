@@ -70,8 +70,6 @@ namespace GrillBot.App
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
 
-            app.ApplicationServices.GetRequiredService<LoggingService>();
-
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());

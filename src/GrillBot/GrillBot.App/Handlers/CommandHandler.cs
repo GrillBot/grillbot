@@ -57,9 +57,9 @@ namespace GrillBot.App.Handlers
                         break;
                 }
 
-                // Reply to command message without mentioning any user
+                // Reply to command message with mentioning user
                 if (!string.IsNullOrEmpty(reply))
-                    await context.Message.ReplyAsync(reply, allowedMentions: new AllowedMentions { MentionRepliedUser = false });
+                    await context.Message.ReplyAsync(reply, allowedMentions: new AllowedMentions { MentionRepliedUser = true });
             }
         }
     }

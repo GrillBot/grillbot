@@ -20,7 +20,8 @@ namespace GrillBot.App.Services
         private IServiceProvider Provider { get; }
         private CommandService CommandService { get; }
 
-        public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService)
+        public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
+            LoggingService _)
         {
             DiscordSocketClient = client;
             Configuration = configuration;
@@ -35,8 +36,8 @@ namespace GrillBot.App.Services
             await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
             await DiscordSocketClient.StartAsync();
 
-            await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
             await CommandService.InitializeCommandStatusCacheAsync(Provider);
+            await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
 
             Provider.GetServices<Handler>(); // Init all handlers (message received, ...)
         }

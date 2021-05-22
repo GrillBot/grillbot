@@ -26,8 +26,7 @@ namespace GrillBot.App.Extensions.Discord
         static public bool IsCommandEnabled(this CommandInfo command)
         {
             var format = command.GetCommandFormat();
-
-            return CommandsStatus.TryGetValue(format, out bool val) && val;
+            return !CommandsStatus.ContainsKey(format) || CommandsStatus[format];
         }
 
         // Credits to Janch

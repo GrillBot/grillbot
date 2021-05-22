@@ -4,6 +4,7 @@ using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.Data;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -59,6 +60,58 @@ namespace GrillBot.App.Modules
             await ReplyAsync($"Bylo úspěšně smazáno zpráv: **{messages.Count()}**\nStarších, než 2 týdny: **{older.Count()}**\nNovějších, než 2 týdny: **{newer.Count()}**");
             await Context.Message.RemoveAllReactionsAsync();
             await Context.Message.AddReactionAsync(Emojis.Ok);
+        }
+
+        [Group("pin")]
+        public class PinManagementSubmodule : Infrastructure.ModuleBase
+        {
+            private IConfiguration Configuration { get; }
+
+            public PinManagementSubmodule(IConfiguration configuration)
+            {
+                Configuration = configuration;
+            }
+
+            [Command("purge")]
+            [Summary("Odepne zprávy z kanálu.")]
+            [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provádet odepnutí zpráv, protože nemám oprávnění pracovat se zprávami.")]
+            [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidat reakce indikující stav.")]
+            [RequireBotPermission(GuildPermission.ReadMessageHistory, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na čtení historie.")]
+            [RequireUserPermission(GuildPermission.ManageMessages, ErrorMessage = "Tento příkaz může použít pouze uživatel, který má oprávnění mazat zprávy.")]
+            public async Task PurgePinsAsync(ITextChannel channel = null, params ulong[] messageIds)
+            {
+                await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
+
+                if (channel == null)
+                    channel = Context.Channel as ITextChannel;
+
+                uint unpinned = 0;
+                uint unknown = 0;
+                uint notPinned = 0;
+
+                foreach (var id in messageIds)
+                {
+                    if (await channel.GetMessageAsync(id) is not IUserMessage message)
+                    {
+                        unknown++;
+                        continue;
+                    }
+
+                    if (!message.IsPinned)
+                    {
+                        notPinned++;
+                        continue;
+                    }
+
+                    await message.UnpinAsync();
+                    unpinned++;
+                }
+
+                await ReplyAsync($"Zprávy byly úspěšně odepnuty.\nCelkem zpráv: **{messageIds.Length}**\nOdepnutých: **{unpinned}**\nNepřipnutých: **{notPinned}**\nNeexistujících: **{unknown}**");
+
+                await Context.Message.RemoveAllReactionsAsync();
+                await Context.Message.AddReactionAsync(Emojis.Ok);
+            }
         }
     }
 }

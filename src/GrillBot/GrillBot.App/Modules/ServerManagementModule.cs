@@ -112,6 +112,33 @@ namespace GrillBot.App.Modules
                 await Context.Message.RemoveAllReactionsAsync();
                 await Context.Message.AddReactionAsync(Emojis.Ok);
             }
+
+            [Command("purge")]
+            [Summary("Odepne z kanálu určitý počet zpráv.")]
+            [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provádet odepnutí zpráv, protože nemám oprávnění pracovat se zprávami.")]
+            [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidat reakce indikující stav.")]
+            [RequireBotPermission(GuildPermission.ReadMessageHistory, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na čtení historie.")]
+            [RequireUserPermission(GuildPermission.ManageMessages, ErrorMessage = "Tento příkaz může použít pouze uživatel, který má oprávnění mazat zprávy.")]
+            public async Task PurgePinsAsync(int count, ITextChannel channel = null)
+            {
+                await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
+
+                if (channel == null)
+                    channel = Context.Channel as ITextChannel;
+
+                var pins = await channel.GetPinnedMessagesAsync();
+                count = Math.Min(pins.Count, count);
+
+                var pinCandidates = pins.Take(count).OfType<IUserMessage>().ToList();
+                foreach (var pin in pinCandidates)
+                {
+                    await pin.UnpinAsync();
+                }
+
+                await ReplyAsync($"Zprávy byly úspěšně odepnuty.\nCelkem připnutých zpráv: **{pins.Count}**\nOdepnutých: **{pinCandidates.Count}**");
+                await Context.Message.RemoveAllReactionsAsync();
+                await Context.Message.AddReactionAsync(Emojis.Ok);
+            }
         }
     }
 }

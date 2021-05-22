@@ -42,7 +42,6 @@ namespace GrillBot.App
             {
                 CaseSensitiveCommands = true,
                 DefaultRunMode = RunMode.Async,
-                IgnoreExtraArgs = true,
                 LogLevel = LogSeverity.Verbose
             };
 

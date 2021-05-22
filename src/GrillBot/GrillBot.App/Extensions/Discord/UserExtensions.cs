@@ -19,5 +19,13 @@ namespace GrillBot.App.Extensions.Discord
         }
 
         static public bool IsUser(this IUser user) => !(user.IsBot || user.IsWebhook);
+
+        static public string GetFullName(this IUser user)
+        {
+            if (user is SocketGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
+                return $"{sgu.Nickname} ({sgu.Username}#{sgu.Discriminator})";
+
+            return $"{user.Username}#{user.Discriminator}";
+        }
     }
 }

@@ -12,5 +12,11 @@ namespace GrillBot.App.Helpers
             return Assembly.GetExecutingAssembly().GetTypes()
                 .Where(o => !o.IsAbstract && typeof(Infrastructure.Handler).IsAssignableFrom(o));
         }
+
+        static public IEnumerable<Type> GetAllReactionEventHandlers()
+        {
+            return Assembly.GetExecutingAssembly().GetTypes()
+                .Where(o => !o.IsAbstract && typeof(Infrastructure.ReactionEventHandler).IsAssignableFrom(o));
+        }
     }
 }

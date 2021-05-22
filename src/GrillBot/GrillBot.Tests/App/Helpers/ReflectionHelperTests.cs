@@ -13,5 +13,12 @@ namespace GrillBot.Tests.App.Helpers
             var handlers = ReflectionHelper.GetAllEventHandlers();
             Assert.IsTrue(handlers.Any());
         }
+
+        [TestMethod]
+        public void GetAllReactionEventHandlers()
+        {
+            var handlers = ReflectionHelper.GetAllReactionEventHandlers();
+            Assert.IsTrue(handlers.Any());
+        }
     }
 }

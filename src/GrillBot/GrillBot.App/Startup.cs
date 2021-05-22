@@ -56,6 +56,9 @@ namespace GrillBot.App
             ReflectionHelper.GetAllEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(Handler), o));
 
+            ReflectionHelper.GetAllReactionEventHandlers().ToList()
+                .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));
+
             services.AddHostedService<DiscordService>();
         }
 

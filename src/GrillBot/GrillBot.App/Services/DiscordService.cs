@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,8 @@ namespace GrillBot.App.Services
             await DiscordSocketClient.StartAsync();
 
             await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
+            await CommandService.InitializeCommandStatusCacheAsync(Provider);
+
             Provider.GetServices<Handler>(); // Init all handlers (message received, ...)
         }
 

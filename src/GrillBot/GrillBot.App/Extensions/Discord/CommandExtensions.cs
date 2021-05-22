@@ -30,6 +30,7 @@ namespace GrillBot.App.Extensions.Discord
             return CommandsStatus.TryGetValue(format, out bool val) && val;
         }
 
+        // Credits to Janch
         static public string GetCommandFormat(this CommandInfo command, string prefix = null)
         {
             var builder = new StringBuilder();

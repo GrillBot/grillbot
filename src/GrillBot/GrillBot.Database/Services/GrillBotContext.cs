@@ -22,6 +22,8 @@ namespace GrillBot.Database.Services
                 builder.HasOne(o => o.Creator)
                     .WithMany(o => o.CreatedInvites)
                     .HasForeignKey(o => new { o.GuildId, o.CreatorId });
+
+                builder.HasOne(o => o.Guild).WithMany(o => o.Invites);
             });
 
             modelBuilder.Entity<User>(builder => builder.HasIndex(o => o.ApiToken).IsUnique());
@@ -44,6 +46,7 @@ namespace GrillBot.Database.Services
             {
                 builder.HasOne(o => o.User).WithMany(o => o.SearchItems);
                 builder.HasOne(o => o.Channel).WithMany(o => o.SearchItems).HasForeignKey(o => new { o.GuildId, o.ChannelId });
+                builder.HasOne(o => o.Guild).WithMany(o => o.Searches);
             });
 
             modelBuilder.Entity<Unverify>(builder =>
@@ -51,12 +54,14 @@ namespace GrillBot.Database.Services
                 builder.HasKey(o => new { o.GuildId, o.UserId });
                 builder.HasOne(o => o.GuildUser).WithOne(o => o.Unverify).HasForeignKey<Unverify>(o => new { o.GuildId, o.UserId });
                 builder.HasOne(o => o.UnverifyLog).WithOne(o => o.Unverify);
+                builder.HasOne(o => o.Guild).WithMany(o => o.Unverifies);
             });
 
             modelBuilder.Entity<UnverifyLog>(builder =>
             {
                 builder.HasOne(o => o.FromUser).WithMany().HasForeignKey(o => new { o.GuildId, o.FromUserId });
                 builder.HasOne(o => o.ToUser).WithMany().HasForeignKey(o => new { o.GuildId, o.ToUserId });
+                builder.HasOne(o => o.Guild).WithMany(o => o.UnverifyLogs);
             });
 
             modelBuilder.Entity<AuditLogItem>(builder =>

@@ -4,6 +4,7 @@ using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.Data;
+using GrillBot.Database.Services;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -148,6 +149,13 @@ namespace GrillBot.App.Modules
             [RequireUserPermission(GuildPermission.ViewGuildInsights, ErrorMessage = "Tento příkaz může provést pouze uživatel, který vidí statistiky serveru ve vývojářském portálu.")]
             public class GuildInfoSubModule : Infrastructure.ModuleBase
             {
+                private GrillBotContextFactory DbContextFactory { get; }
+
+                public GuildInfoSubModule(GrillBotContextFactory contextFactory)
+                {
+                    DbContextFactory = contextFactory;
+                }
+
                 [Command]
                 [Summary("Informace o serveru, kde byl příkaz zavolán.")]
                 public async Task InfoAsync()
@@ -206,7 +214,36 @@ namespace GrillBot.App.Modules
                         .Append("Online: **").Append(groups.GetValueOrDefault(UserStatus.Online)).AppendLine("**")
                         .Append("Neaktivní: **").Append(groups.GetValueOrDefault(UserStatus.AFK) + groups.GetValueOrDefault(UserStatus.Idle)).AppendLine("**")
                         .Append("Nerušit: **").Append(groups.GetValueOrDefault(UserStatus.DoNotDisturb)).AppendLine("**")
-                        .Append("Offline: **").Append(groups.GetValueOrDefault(UserStatus.Invisible) + groups.GetValueOrDefault(UserStatus.Offline)).AppendLine("**");
+                        .Append("Offline: **").Append(groups.GetValueOrDefault(UserStatus.Invisible) + groups.GetValueOrDefault(UserStatus.Offline)).AppendLine("**").AppendLine();
+
+                    using var dbContext = DbContextFactory.Create();
+
+                    var counts = dbContext.Guilds.AsQueryable().Where(o => o.Id == guild.Id.ToString()).Select(g => new
+                    {
+                        Users = g.Users.Count,
+                        Invites = g.Invites.Count,
+                        Channels = g.Channels.Count,
+                        Searches = g.Searches.Count,
+                        Unverifies = g.Unverifies.Count,
+                        UnverifyLogs = g.UnverifyLogs.Count
+                    });
+
+                    var guildEntity = counts.FirstOrDefault();
+
+                    if (guildEntity == null)
+                    {
+                        builder.AppendLine("**Pro tento server ještě v databázi neexistují žádné záznamy.**");
+                    }
+                    else
+                    {
+                        builder.AppendLine("Stav databáze:")
+                            .Append("Uživatelů: **").Append(guildEntity.Users).AppendLine("**")
+                            .Append("Pozvánek: **").Append(guildEntity.Invites).AppendLine("**")
+                            .Append("Kanálů: **").Append(guildEntity.Channels).AppendLine("**")
+                            .Append("Hledání: **").Append(guildEntity.Searches).AppendLine("**")
+                            .Append("Unverify: **").Append(guildEntity.Unverifies).AppendLine("**")
+                            .Append("Unverify (logy): **").Append(guildEntity.UnverifyLogs).AppendLine("**");
+                    }
 
                     await ReplyAsync(builder.ToString());
                 }

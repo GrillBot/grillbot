@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 
 namespace GrillBot.App.Modules
 {
-    [CommandEnabledCheck("Nelze provést příkaz ze skupiny správy serveru, protože je deaktivován.")]
     [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze provést jen na serveru.")]
     public class ServerManagementModule : Infrastructure.ModuleBase
     {

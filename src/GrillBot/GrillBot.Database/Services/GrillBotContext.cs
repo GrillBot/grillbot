@@ -81,7 +81,6 @@ namespace GrillBot.Database.Services
         public DbSet<SearchItem> SearchItems { get; set; }
         public DbSet<Unverify> Unverifies { get; set; }
         public DbSet<UnverifyLog> UnverifyLogs { get; set; }
-        public DbSet<Command> Commands { get; set; }
         public DbSet<AuditLogItem> AuditLogs { get; set; }
         public DbSet<AuditLogFileMeta> AuditLogFiles { get; set; }
     }

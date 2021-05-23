@@ -36,7 +36,6 @@ namespace GrillBot.App.Services
             await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
             await DiscordSocketClient.StartAsync();
 
-            await CommandService.InitializeCommandStatusCacheAsync(Provider);
             await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
 
             Provider.GetServices<Handler>(); // Init all handlers (message received, ...)

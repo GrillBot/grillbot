@@ -38,14 +38,15 @@ namespace GrillBot.App.Handlers
                         await CommandService.ExecuteAsync(context, crr.NewCommand, Provider);
                         break;
 
+                    case CommandError.ObjectNotFound when result is ParseResult parseResult && typeof(IUser).IsAssignableFrom(parseResult.ErrorParameter.Type):
+                        reply = "Bohužel jsem nenalezl uživatele, kterého jsi zadal/a.";
+                        break;
+
                     case CommandError.UnmetPrecondition:
                     case CommandError.Unsuccessful:
                     case CommandError.ParseFailed:
+                    case CommandError.ObjectNotFound:
                         reply = result.ErrorReason;
-                        break;
-
-                    case CommandError.ObjectNotFound when result is ParseResult parseResult && typeof(IUser).IsAssignableFrom(parseResult.ErrorParameter.Type):
-                        reply = "Bohužel jsem nenalezl uživatele, kterého jsi zadal/a.";
                         break;
 
                     case CommandError.BadArgCount:

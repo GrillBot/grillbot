@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Infrastructure.TypeReaders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -35,6 +36,9 @@ namespace GrillBot.App.Services
 
             await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
             await DiscordSocketClient.StartAsync();
+
+            CommandService.AddTypeReader<IMessage>(new MessageTypeReader(), true);
+            CommandService.AddTypeReader<IEmote>(new EmotesTypeReader());
 
             await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
 

@@ -1,13 +1,16 @@
-﻿using Discord;
+﻿using ConsoleTableExt;
+using Discord;
 using Discord.Commands;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.Data;
 using GrillBot.Database.Services;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -81,7 +84,7 @@ namespace GrillBot.App.Modules
 
             [Command("purge")]
             [Summary("Odepne zprávy z kanálu.")]
-            public async Task PurgePinsAsync(ITextChannel channel = null, params ulong[] messageIds)
+            public async Task PurgePinsAsync([Name("kanal")] ITextChannel channel = null, [Name("id_zprav")] params ulong[] messageIds)
             {
                 await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
 
@@ -118,7 +121,7 @@ namespace GrillBot.App.Modules
 
             [Command("purge")]
             [Summary("Odepne z kanálu určitý počet zpráv.")]
-            public async Task PurgePinsAsync(int count, ITextChannel channel = null)
+            public async Task PurgePinsAsync([Name("pocet")] int count, [Name("kanal")] ITextChannel channel = null)
             {
                 await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
 
@@ -262,6 +265,114 @@ namespace GrillBot.App.Modules
                         .Append("Maximální upload: **").Append(guild.CalculateFileUploadLimit()).AppendLine(" MB**");
 
                     await ReplyAsync(builder.ToString());
+                }
+            }
+
+            [Group("perms")]
+            [RequireBotPermission(GuildPermission.ManageChannels, ErrorMessage = "Nemohu spočítat oprávnění, protože nemám oprávnění na správu kanálů.")]
+            [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu spočítat oprávnění, protože nemám oprávnění na správu rolí.")]
+            [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat role.")]
+            public class GuildPermissionsSubModule : Infrastructure.ModuleBase
+            {
+                private IConfiguration Configuration { get; }
+
+                public GuildPermissionsSubModule(IConfiguration configuration)
+                {
+                    Configuration = configuration;
+                }
+
+                [Command("calc")]
+                [Summary("Spočítá oprávnění na serveru")]
+                public async Task CalcPermissionsAsync([Name("vse")] bool verbose = false)
+                {
+                    var guild = Context.Guild;
+
+                    var channels = guild.Channels
+                        .Where(o => o.PermissionOverwrites is ImmutableArray<Overwrite> overwriteArray && !overwriteArray.IsDefault)
+                        .OrderBy(o => o.Position).Select(o => new
+                        {
+                            o.Position,
+                            o.Name,
+                            Type = o.GetType().Name.Replace("Rest", "").Replace("Socket", "").Replace("Channel", ""),
+                            RolePermissions = o.PermissionOverwrites.AsEnumerable().Count(o => o.TargetId != guild.EveryoneRole.Id && o.TargetType == PermissionTarget.Role),
+                            UserPermissions = o.PermissionOverwrites.AsEnumerable().Count(o => o.TargetId != guild.EveryoneRole.Id && o.TargetType == PermissionTarget.User)
+                        }).Where(o => o.RolePermissions + o.UserPermissions > 0);
+
+                    if (verbose)
+                    {
+                        var table = new DataTable();
+                        table.Columns.AddRange(new[]
+                        {
+                            new DataColumn("Pozice", typeof(int)),
+                            new DataColumn("Název", typeof(string)),
+                            new DataColumn("Typ", typeof(string)),
+                            new DataColumn("Počet práv rolí", typeof(int)),
+                            new DataColumn("Počet uživatelských práv", typeof(int))
+                        });
+
+                        foreach (var channel in channels)
+                        {
+                            table.Rows.Add(channel.Position, channel.Name, channel.Type, channel.RolePermissions, channel.UserPermissions);
+                        }
+
+                        var formatedTable = ConsoleTableBuilder.From(table).Export().ToString();
+                        var bytes = Encoding.UTF8.GetBytes(formatedTable);
+
+                        using var ms = new MemoryStream(bytes);
+                        await ReplyStreamAsync(ms, $"{guild.Name}_Report.txt", false);
+                    }
+                    else
+                    {
+                        var channelsData = channels.ToList();
+
+                        var builder = new StringBuilder()
+                            .Append("Počet kategorií: **").Append(channelsData.Count(o => o.Type == "Category")).AppendLine("**")
+                            .Append("Počet textových kanálů: **").Append(channelsData.Count(o => o.Type == "Text")).AppendLine("**")
+                            .Append("Počet hlasových kanálů: **").Append(channelsData.Count(o => o.Type == "Voice")).AppendLine("**").AppendLine()
+                            .Append("Počet oprávnění (rolí): **").Append(channelsData.Sum(o => o.RolePermissions)).AppendLine("**")
+                            .Append("Počet oprávnění (uživatelská): **").Append(channelsData.Sum(o => o.UserPermissions)).AppendLine("**");
+
+                        await ReplyAsync(builder.ToString());
+                    }
+                }
+
+                [Command("clear")]
+                [Summary("Smaže všechna uživatelská oprávnění z kanálu.")]
+                public async Task ClearPermissionsInChannelAsync([Name("kanal")] IGuildChannel channel, [Name("vynechani_uzivatele")] params IUser[] excludedUsers)
+                {
+                    await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
+                    await Context.Guild.DownloadUsersAsync();
+
+                    var overwrites = channel.PermissionOverwrites.Where(o => o.TargetType == PermissionTarget.User && !excludedUsers.Any(x => x.Id == o.TargetId)).ToList();
+                    var msg = await ReplyAsync($"Probíhá úklid oprávnění **0** / **{overwrites.Count}** (**0 %**)");
+
+                    double removed = 0;
+                    foreach (var overwrite in overwrites)
+                    {
+                        var user = Context.Guild.GetUser(overwrite.TargetId);
+                        await channel.RemovePermissionOverwriteAsync(user);
+
+                        removed++;
+                        await msg.ModifyAsync(o => o.Content = $"Probíhá úklid oprávnění **{removed}** / **{overwrites.Count}** (**{Math.Round(removed / overwrites.Count * 100)} %**)");
+                    }
+
+                    await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
+                    await Context.Message.RemoveAllReactionsAsync();
+                    await Context.Message.AddReactionAsync(Emojis.Ok);
+                }
+            }
+
+            [Group("react")]
+            [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu spravovat reakce, protože nemám oprávnění pro správu zpráv.")]
+            public class GuildReactSubModule : Infrastructure.ModuleBase
+            {
+                [Command("clear")]
+                [Summary("Smaže reakci pro daný emote ze zprávy.")]
+                [RequireUserPermission(GuildPermission.ManageMessages, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat zprávy.")]
+                public async Task RemoveReactionAsync([Name("zprava")] IMessage message, [Name("emote")] IEmote emote)
+                {
+                    await message.RemoveAllReactionsForEmoteAsync(emote);
+                    await ReplyAsync($"Reakce pro emote {emote} byly smazány.");
                 }
             }
         }

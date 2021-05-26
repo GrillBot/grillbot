@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Linq;
-using System.Reflection;
 
 namespace GrillBot.App
 {
@@ -57,6 +57,12 @@ namespace GrillBot.App
 
             ReflectionHelper.GetAllReactionEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));
+
+            services.AddHttpClient("MathJS", c =>
+            {
+                c.BaseAddress = new Uri(Configuration["Math:Api"]);
+                c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Math:Timeout"]));
+            });
 
             services.AddHostedService<DiscordService>();
         }

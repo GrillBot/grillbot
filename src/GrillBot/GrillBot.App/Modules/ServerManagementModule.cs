@@ -1,8 +1,11 @@
 ﻿using ConsoleTableExt;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.Data;
 using GrillBot.Database.Services;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +15,7 @@ using System.Collections.Immutable;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -171,7 +175,7 @@ namespace GrillBot.App.Modules
 
                     var color = guild.GetHighestRole(true)?.Color ?? Color.Default;
                     var embed = new EmbedBuilder()
-                        .WithFooter(Context.User.GetDisplayName(), Context.User.GetAvatarUri())
+                        .WithFooter(Context.User)
                         .WithColor(color)
                         .WithTitle(guild.Name)
                         .WithThumbnailUrl(guild.IconUrl)
@@ -373,6 +377,121 @@ namespace GrillBot.App.Modules
                 {
                     await message.RemoveAllReactionsForEmoteAsync(emote);
                     await ReplyAsync($"Reakce pro emote {emote} byly smazány.");
+                }
+            }
+
+            [Group("role")]
+            [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu pracovat s rolemi, protože nemám dostatečná oprávnění.")]
+            public class GuildRolesSubModule : Infrastructure.ModuleBase
+            {
+                [Group("info")]
+                [Summary("Informace o roli.")]
+                [RequireUserPremiumOrPermissions(GuildPermission.ViewGuildInsights, GuildPermission.ManageRoles, ErrorMessage =
+                    "Tento příkaz může provést pouze uživatel, který vidí statistiky serveru ve vývojářském portálu, nebo může spravovat role, nebo má na serveru boost.")]
+                public class GuildRoleInfoSubModule : Infrastructure.ModuleBase
+                {
+                    [Command("")]
+                    [Alias("position")]
+                    public async Task GetRoleInfoListByPositionAsync()
+                    {
+                        await Context.Guild.DownloadUsersAsync();
+
+                        var roles = GetFormatedRoleInfoQuery(o => o.Position).Take(EmbedBuilder.MaxFieldCount).ToList();
+                        var color = Context.Guild.GetHighestRole(true)?.Color ?? Color.Default;
+                        var summary = CreateRoleInfoSummary();
+
+                        var embed = CreateRoleInfoEmbed(roles, color, summary);
+                        await ReplyAsync(embed: embed.Build());
+                    }
+
+                    [Command("members")]
+                    public async Task GetRoleInfoListByMemberCountAsync()
+                    {
+                        await Context.Guild.DownloadUsersAsync();
+
+                        var roles = GetFormatedRoleInfoQuery(o => o.Members.Count()).Take(EmbedBuilder.MaxFieldCount).ToList();
+                        var color = Context.Guild.Roles.OrderByDescending(o => o.Members.Count()).FirstOrDefault(o => o.Color != Color.Default)?.Color ?? Color.Default;
+                        var summary = CreateRoleInfoSummary();
+
+                        var embed = CreateRoleInfoEmbed(roles, color, summary);
+                        await ReplyAsync(embed: embed.Build());
+                    }
+
+                    [Command("")]
+                    public async Task GetRoleInfoAsync(SocketRole role)
+                    {
+                        await Context.Guild.DownloadUsersAsync();
+
+                        var fields = new List<EmbedFieldBuilder>()
+                        {
+                            new EmbedFieldBuilder().WithIsInline(true).WithName("Vytvořeno").WithValue(role.CreatedAt.LocalDateTime.ToCzechFormat()),
+                            new EmbedFieldBuilder().WithIsInline(true).WithName("Everyone").WithValue(FormatHelper.FormatBooleanToCzech(role.IsEveryone)),
+                            new EmbedFieldBuilder().WithIsInline(true).WithName("Separovaná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsHoisted)),
+                            new EmbedFieldBuilder().WithIsInline(true).WithName("Nespravovatelná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsManaged)),
+                            new EmbedFieldBuilder().WithIsInline(true).WithName("Tagovatelná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsMentionable)),
+                        };
+
+                        if (role.Tags?.BotId == null)
+                            fields.Add(new EmbedFieldBuilder().WithIsInline(true).WithName("Počet členů").WithValue(FormatHelper.FormatMembersToCzech(role.Members.Count())));
+
+                        if (role.Tags != null)
+                        {
+                            if (role.Tags.IsPremiumSubscriberRole)
+                                fields.Add(new EmbedFieldBuilder().WithName("Booster role").WithValue("Ano").WithIsInline(true));
+
+                            if (role.Tags.BotId != null)
+                            {
+                                var botUser = Context.Guild.GetUser(role.Tags.BotId.Value);
+
+                                if (botUser != null)
+                                    fields.Add(new EmbedFieldBuilder().WithName("Náleží botovi").WithValue($"`{botUser.GetFullName()}`").WithIsInline(false));
+                            }
+                        }
+
+                        var formatedPerms = role.Permissions.Administrator ? new List<string>() { "Administrator" } : role.Permissions.ToList().ConvertAll(o => o.ToString());
+                        fields.Add(new EmbedFieldBuilder().WithName("Oprávnění").WithValue(string.Join(", ", formatedPerms)).WithIsInline(false));
+
+                        var embed = CreateRoleInfoEmbed(fields, role.Color, null)
+                            .WithTitle(role.Name);
+
+                        await ReplyAsync(embed: embed.Build());
+                    }
+
+                    private string CreateRoleInfoSummary()
+                    {
+                        var totalMembersWithRole = Context.Guild.Users.Count(o => o.Roles.Any(o => !o.IsEveryone)); // Count of users with some role.
+                        var membersWithoutRole = Context.Guild.Users.Count(o => o.Roles.All(o => o.IsEveryone)); // Count of users without some role.
+
+                        return $"Počet rolí: {Context.Guild.Roles.Count}\nPočet uživatelů s rolí: {totalMembersWithRole}\nPočet uživatelů bez role: {membersWithoutRole}";
+                    }
+
+                    private IEnumerable<EmbedFieldBuilder> GetFormatedRoleInfoQuery<TKey>(Func<SocketRole, TKey> orderBySelector)
+                    {
+                        return Context.Guild.Roles.Where(o => !o.IsEveryone).OrderByDescending(orderBySelector).Select(o =>
+                        {
+                            var info = string.Join(", ", new[]
+                            {
+                                FormatHelper.FormatMembersToCzech(o.Members.Count()),
+                                $"vytvořeno {o.CreatedAt.LocalDateTime.ToCzechFormat()}",
+                                o.IsMentionable ? "tagovatelná" : "",
+                                o.IsManaged ? "spravuje Discord" : "",
+                                o.Tags?.IsPremiumSubscriberRole == true ? "booster" : ""
+                            }.Where(o => !string.IsNullOrEmpty(o)));
+
+                            return new EmbedFieldBuilder().WithName(o.Name).WithValue(info);
+                        });
+                    }
+
+                    private EmbedBuilder CreateRoleInfoEmbed(List<EmbedFieldBuilder> fields, Color color, string summary)
+                    {
+                        return new EmbedBuilder()
+                            .WithFooter(Context.User)
+                            .WithColor(color)
+                            .WithCurrentTimestamp()
+                            .WithDescription(summary)
+                            .WithFields(fields)
+                            .WithTitle("Seznam rolí");
+                    }
                 }
             }
         }

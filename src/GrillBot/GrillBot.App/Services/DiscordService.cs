@@ -37,6 +37,7 @@ namespace GrillBot.App.Services
             await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
             await DiscordSocketClient.StartAsync();
 
+            CommandService.AddTypeReader<Guid>(new GuidTypeReader());
             CommandService.AddTypeReader<IMessage>(new MessageTypeReader(), true);
             CommandService.AddTypeReader<IEmote>(new EmotesTypeReader());
 

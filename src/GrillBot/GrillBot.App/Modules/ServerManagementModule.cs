@@ -7,7 +7,10 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.Data;
+using GrillBot.Data.Enums;
+using GrillBot.Data.Models.Guilds;
 using GrillBot.Database.Services;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -15,7 +18,6 @@ using System.Collections.Immutable;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -273,8 +275,8 @@ namespace GrillBot.App.Modules
             }
 
             [Group("perms")]
-            [RequireBotPermission(GuildPermission.ManageChannels, ErrorMessage = "Nemohu spočítat oprávnění, protože nemám oprávnění na správu kanálů.")]
-            [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu spočítat oprávnění, protože nemám oprávnění na správu rolí.")]
+            [RequireBotPermission(GuildPermission.ManageChannels, ErrorMessage = "Nemohu spravovat oprávnění, protože nemám oprávnění na správu kanálů.")]
+            [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu spravovat oprávnění, protože nemám oprávnění na správu rolí.")]
             [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat role.")]
             public class GuildPermissionsSubModule : Infrastructure.ModuleBase
             {
@@ -363,6 +365,144 @@ namespace GrillBot.App.Modules
                     await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
                     await Context.Message.RemoveAllReactionsAsync();
                     await Context.Message.AddReactionAsync(Emojis.Ok);
+                }
+
+                [Group("useless")]
+                [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nelze provést kontrolu zbytečných oprávnění, protože nemám oprávnění přidávat reakce.")]
+                public class GuildUselessPermissionsSubModule : Infrastructure.ModuleBase
+                {
+                    private IMemoryCache Cache { get; }
+                    private IConfiguration Configuration { get; }
+
+                    public GuildUselessPermissionsSubModule(IMemoryCache cache, IConfiguration configuration)
+                    {
+                        Cache = cache;
+                        Configuration = configuration;
+                    }
+
+                    [Command("check")]
+                    public async Task CheckUselessPermissionsAsync()
+                    {
+                        await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
+
+                        var uselessPermissions = await GetUselessPermissionsAsync();
+                        var sessionId = Guid.NewGuid();
+
+                        Cache.Set(sessionId, uselessPermissions);
+                        var channelsCount = uselessPermissions.Select(o => o.Channel.Id).Distinct().Count();
+                        var message = $"Kontrola zbytečných oprávnění dokončena.\nNalezeno zbytečných oprávnění: **{uselessPermissions.Count}**.\nPočet kanálů: **{channelsCount}**.\nTento výpočet je dostupný v cache pod klíčem `{sessionId}`";
+                        await ReplyAsync(message);
+
+                        await Context.Message.RemoveAllReactionsAsync();
+                        await Context.Message.AddReactionAsync(Emojis.Ok);
+                    }
+
+                    [Command("report")]
+                    public async Task GetUselessPermissionsReportAsync(Guid sessionId)
+                    {
+                        await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
+
+                        if (!Cache.TryGetValue<List<UselessPermission>>(sessionId, out var permissions))
+                        {
+                            await ReplyAsync("Nelze vygenerovat report, protože daná session neexistuje v cache.");
+                            return;
+                        }
+
+                        var table = new DataTable();
+                        table.Columns.AddRange(new[]
+                        {
+                            new DataColumn("Důvod"),
+                            new DataColumn("Uživatelé")
+                        });
+
+                        foreach (var group in permissions.GroupBy(o => o.Type).Where(o => o.Any()))
+                        {
+                            var items = group.ToList();
+                            for (int i = 0; i < items.Count; i++)
+                            {
+                                var item = items[i];
+                                var value = $"{item.User.GetDisplayName()} (#{item.Channel.Name})";
+
+                                table.Rows.Add(i == 0 ? group.Key.GetDescription() : " ", value);
+                            }
+                        }
+
+                        var formatedTable = ConsoleTableBuilder.From(table)
+                            .WithTitle($"Seznam zbytečných oprávnění ke dni {DateTime.Now:yyyy-MM-dd}")
+                            .WithFormat(ConsoleTableBuilderFormat.MarkDown)
+                            .Export()
+                            .ToString();
+                        var bytes = Encoding.UTF8.GetBytes(formatedTable);
+
+                        using var ms = new MemoryStream(bytes);
+                        await ReplyStreamAsync(ms, $"{Context.Guild.Name}_Report.md", false);
+                        await Context.Message.RemoveAllReactionsAsync();
+                        await Context.Message.AddReactionAsync(Emojis.Ok);
+                    }
+
+                    [Command("clear")]
+                    public async Task RemoveUselessPermissionsAsync(Guid? sessionId = null)
+                    {
+                        await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
+
+                        if (sessionId == null || !Cache.TryGetValue<List<UselessPermission>>(sessionId, out var permissions))
+                            permissions = await GetUselessPermissionsAsync();
+
+                        var msg = await ReplyAsync($"Probíhá úklid oprávnění **0** / **{permissions.Count}** (**0 %**)");
+
+                        double removed = 0;
+                        foreach (var permission in permissions)
+                        {
+                            await permission.Channel.RemovePermissionOverwriteAsync(permission.User);
+
+                            removed++;
+                            await msg.ModifyAsync(o => o.Content = $"Probíhá úklid oprávnění **{removed}** / **{permissions.Count}** (**{Math.Round(removed / permissions.Count * 100)} %**)");
+                        }
+
+                        await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
+                        await Context.Message.RemoveAllReactionsAsync();
+                        await Context.Message.AddReactionAsync(Emojis.Ok);
+                    }
+
+                    private async Task<List<UselessPermission>> GetUselessPermissionsAsync()
+                    {
+                        await Context.Guild.DownloadUsersAsync();
+                        var permissions = new List<UselessPermission>();
+
+                        foreach (var user in Context.Guild.Users)
+                        {
+                            foreach (var channel in Context.Guild.Channels.Where(o => o.PermissionOverwrites is ImmutableArray<Overwrite> overwriteArray && !overwriteArray.IsDefault && o.Id == 703553474264301573)) // TODO: Remove ID
+                            {
+                                var overwrite = channel.GetPermissionOverwrite(user);
+                                if (overwrite == null) continue; // Overwrite not exists. Skip.
+
+                                if (user.GuildPermissions.Administrator)
+                                {
+                                    // User have Administrator permission. This user don't need some overwrites.
+                                    permissions.Add(new UselessPermission(channel, user, UselessPermissionType.Administrator));
+                                    continue;
+                                }
+
+                                if (overwrite.Value.AllowValue == 0 && overwrite.Value.DenyValue == 0)
+                                {
+                                    // Or user have neutral overwrite (overwrite without permissions).
+                                    permissions.Add(new UselessPermission(channel, user, UselessPermissionType.Neutral));
+                                    continue;
+                                }
+
+                                foreach (var role in user.Roles.OrderByDescending(o => o.Position))
+                                {
+                                    var roleOverwrite = channel.GetPermissionOverwrite(role);
+                                    if (roleOverwrite == null) continue;
+
+                                    if (roleOverwrite.Value.AllowValue == overwrite.Value.AllowValue && roleOverwrite.Value.DenyValue == overwrite.Value.DenyValue)
+                                        permissions.Add(new UselessPermission(channel, user, UselessPermissionType.AvailableFromRole));
+                                }
+                            }
+                        }
+
+                        return permissions;
+                    }
                 }
             }
 

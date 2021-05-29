@@ -14,7 +14,7 @@ namespace GrillBot.App.Infrastructure.Embeds
     {
         /// <summary>
         /// <para>Adjusts the embed under construction so that it includes recoverable representation of <paramref name="embedMetadata"/>.</para>
-        /// <para>For optimal results, call this method after <see cref="EmbedBuilder.WithAuthor"/> or <see cref="EmbedBuilder.WithImageUrl"/>.</para>
+        /// <para>For optimal results, call this method after EmbedBuilder.WithAuthor" or <see cref="EmbedBuilder.WithImageUrl"/>.</para>
         /// </summary>
         /// <param name="embedBuilder"></param>
         /// <param name="embedMetadata">The metadata to store inside the embed.</param>

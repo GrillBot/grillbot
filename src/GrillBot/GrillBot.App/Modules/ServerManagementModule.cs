@@ -475,7 +475,7 @@ namespace GrillBot.App.Modules
 
                         foreach (var user in Context.Guild.Users)
                         {
-                            foreach (var channel in Context.Guild.Channels.Where(o => o.PermissionOverwrites is ImmutableArray<Overwrite> overwriteArray && !overwriteArray.IsDefault && o.Id == 703553474264301573)) // TODO: Remove ID
+                            foreach (var channel in Context.Guild.Channels.Where(o => o.PermissionOverwrites is ImmutableArray<Overwrite> overwriteArray && !overwriteArray.IsDefault))
                             {
                                 var overwrite = channel.GetPermissionOverwrite(user);
                                 if (overwrite == null) continue; // Overwrite not exists. Skip.

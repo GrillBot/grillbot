@@ -15,7 +15,6 @@ namespace GrillBot.Database.Entity
         [Required]
         public DateTime CreatedAt { get; set; }
 
-        [Required]
         [StringLength(30)]
         public string GuildId { get; set; }
 

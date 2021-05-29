@@ -2,8 +2,10 @@
 using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
-using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
+using GrillBot.Database.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,19 +20,22 @@ namespace GrillBot.App.Services
 {
     public class LoggingService
     {
-        private DiscordSocketClient DiscordSocketClient { get; }
+        private DiscordSocketClient DiscordClient { get; }
         private CommandService CommandService { get; }
         private ILoggerFactory LoggerFactory { get; }
         private IConfiguration Configuration { get; }
+        private GrillBotContextFactory DbFactory { get; }
 
-        public LoggingService(DiscordSocketClient discordSocketClient, CommandService commandService, ILoggerFactory loggerFactory, IConfiguration configuration)
+        public LoggingService(DiscordSocketClient discordSocketClient, CommandService commandService, ILoggerFactory loggerFactory, IConfiguration configuration,
+            GrillBotContextFactory dbFactory)
         {
-            DiscordSocketClient = discordSocketClient;
+            DiscordClient = discordSocketClient;
             CommandService = commandService;
             LoggerFactory = loggerFactory;
             Configuration = configuration.GetSection("Discord:Logging");
+            DbFactory = dbFactory;
 
-            DiscordSocketClient.Log += OnLogAsync;
+            DiscordClient.Log += OnLogAsync;
             CommandService.Log += OnLogAsync;
         }
 
@@ -78,15 +83,14 @@ namespace GrillBot.App.Services
 
         private async Task TryPostException(LogMessage message)
         {
-            var guild = DiscordSocketClient.GetGuild(Configuration.GetValue<ulong>("GuildId"));
+            var guild = DiscordClient.GetGuild(Configuration.GetValue<ulong>("GuildId"));
             var channel = guild?.GetTextChannel(Configuration.GetValue<ulong>("ChannelId"));
 
             if (!CanSendException(message, guild, channel)) return;
 
+            await StoreExceptionAsync(message);
             var embed = CreateErrorEmbed(message);
-            using var ms = message.Exception.ToMemoryStream();
-
-            await channel?.SendFileAsync(ms, $"Exception_{DateTime.UtcNow:O}.txt", "", embed: embed);
+            await channel?.SendMessageAsync(embed: embed);
         }
 
         private bool CanSendException(LogMessage message, SocketGuild guild, ITextChannel channel)
@@ -123,7 +127,7 @@ namespace GrillBot.App.Services
             var embed = new EmbedBuilder()
                 .WithColor(Color.Red)
                 .WithCurrentTimestamp()
-                .WithFooter(DiscordSocketClient.CurrentUser.GetDisplayName(), DiscordSocketClient.CurrentUser.GetAvatarUri());
+                .WithFooter(DiscordClient.CurrentUser);
 
             if (message.Exception is CommandException ce)
             {
@@ -140,6 +144,21 @@ namespace GrillBot.App.Services
             }
 
             return embed.Build();
+        }
+
+        private async Task StoreExceptionAsync(LogMessage message)
+        {
+            var logItem = new AuditLogItem()
+            {
+                CreatedAt = DateTime.Now,
+                Data = message.ToString(),
+                Type = AuditLogItemType.Error
+            };
+
+            using var dbContext = DbFactory.Create();
+
+            await dbContext.AddAsync(logItem);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

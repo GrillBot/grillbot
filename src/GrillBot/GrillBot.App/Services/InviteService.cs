@@ -6,7 +6,6 @@ using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,15 +18,13 @@ namespace GrillBot.App.Services
     {
         private ConcurrentBag<InviteMetadata> MetadataCache { get; }
         private DiscordSocketClient DiscordClient { get; }
-        private ILogger<InviteService> Logger { get; }
         private GrillBotContextFactory DbFactory { get; }
 
-        public InviteService(DiscordSocketClient discordClient, ILogger<InviteService> logger, GrillBotContextFactory dbFactory)
+        public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory)
         {
             MetadataCache = new ConcurrentBag<InviteMetadata>();
 
             DiscordClient = discordClient;
-            Logger = logger;
             DbFactory = dbFactory;
 
             DiscordClient.Ready += () => InitAsync();
@@ -43,15 +40,16 @@ namespace GrillBot.App.Services
                 await dbContext.AddAsync(new User() { Id = botId });
 
             var invites = new List<InviteMetadata>();
-            foreach (var guild in DiscordClient.Guilds.Where(o => o.CurrentUser.GuildPermissions.CreateInstantInvite && o.CurrentUser.GuildPermissions.ManageGuild))
+            foreach (var guild in DiscordClient.Guilds)
             {
+                var guildInvites = await GetLatestMetadataOfGuildAsync(guild);
+                if (guildInvites == null) continue;
+
                 if (!await dbContext.Guilds.AsQueryable().AnyAsync(o => o.Id == guild.Id.ToString()))
                     await dbContext.AddAsync(new Guild() { Id = guild.Id.ToString() });
 
                 if (!await dbContext.GuildUsers.AsQueryable().AnyAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == botId))
                     await dbContext.AddAsync(new GuildUser() { GuildId = guild.Id.ToString(), UserId = botId });
-
-                var guildInvites = await GetLatestMetadataOfGuildAsync(guild);
 
                 var logItem = new AuditLogItem()
                 {
@@ -81,7 +79,9 @@ namespace GrillBot.App.Services
 
         static private async Task<List<InviteMetadata>> GetLatestMetadataOfGuildAsync(SocketGuild guild)
         {
-            // TODO: Ignore loading if bot not have permissions.
+            if (!guild.CurrentUser.GuildPermissions.CreateInstantInvite && guild.CurrentUser.GuildPermissions.ManageGuild)
+                return null;
+
             var invites = new List<InviteMetadata>();
 
             if (!string.IsNullOrEmpty(guild.VanityURLCode))
@@ -108,40 +108,10 @@ namespace GrillBot.App.Services
 
         private async Task SetInviteToUserAsync(SocketUser user, SocketGuild guild, InviteMetadata usedInvite, List<InviteMetadata> latestInvites)
         {
-            if (usedInvite == null)
-            {
-                // TODO: Log as warning to audit log.
-                Logger.LogWarning($"User {user.GetFullName()} ({user.Id}) used unknown invite.");
-                return;
-            }
-
             using var dbContext = DbFactory.Create();
 
             if (!await dbContext.Guilds.AsQueryable().AnyAsync(o => o.Id == guild.Id.ToString()))
                 await dbContext.AddAsync(new Guild() { Id = guild.Id.ToString() });
-
-            if (usedInvite.CreatorId != null)
-            {
-                var creatorBaseEntityExists = await dbContext.Users.AsQueryable().AnyAsync(o => o.Id == usedInvite.CreatorId.Value.ToString());
-
-                var creatorGuildEntityExists = await dbContext.GuildUsers.AsQueryable()
-                    .AnyAsync(o => o.UserId == usedInvite.CreatorId.Value.ToString() && o.GuildId == guild.Id.ToString());
-
-                if (!creatorBaseEntityExists)
-                    await dbContext.AddAsync(new User() { Id = usedInvite.CreatorId.Value.ToString() });
-
-                if (!creatorGuildEntityExists)
-                    await dbContext.AddAsync(new GuildUser() { GuildId = guild.Id.ToString(), UserId = usedInvite.CreatorId.Value.ToString() });
-            }
-
-            var invite = await dbContext.Invites.AsQueryable()
-                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.Code == usedInvite.Code);
-
-            if (invite == null)
-            {
-                invite = usedInvite.ToEntity();
-                await dbContext.AddAsync(invite);
-            }
 
             if (!await dbContext.Users.AsQueryable().AnyAsync(o => o.Id == user.Id.ToString()))
                 await dbContext.AddAsync(new User() { Id = user.Id.ToString() });
@@ -161,7 +131,47 @@ namespace GrillBot.App.Services
                 await dbContext.AddAsync(joinedUserEntity);
             }
 
-            joinedUserEntity.UsedInviteCode = usedInvite.Code;
+            if (usedInvite == null)
+            {
+                var logItem = new AuditLogItem()
+                {
+                    CreatedAt = DateTime.Now,
+                    Data = $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
+                    GuildId = guild.Id.ToString(),
+                    ProcessedUserId = user.Id.ToString(),
+                    Type = AuditLogItemType.Warning
+                };
+
+                await dbContext.AddAsync(logItem);
+            }
+            else
+            {
+                if (usedInvite.CreatorId != null)
+                {
+                    var creatorBaseEntityExists = await dbContext.Users.AsQueryable().AnyAsync(o => o.Id == usedInvite.CreatorId.Value.ToString());
+
+                    var creatorGuildEntityExists = await dbContext.GuildUsers.AsQueryable()
+                        .AnyAsync(o => o.UserId == usedInvite.CreatorId.Value.ToString() && o.GuildId == guild.Id.ToString());
+
+                    if (!creatorBaseEntityExists)
+                        await dbContext.AddAsync(new User() { Id = usedInvite.CreatorId.Value.ToString() });
+
+                    if (!creatorGuildEntityExists)
+                        await dbContext.AddAsync(new GuildUser() { GuildId = guild.Id.ToString(), UserId = usedInvite.CreatorId.Value.ToString() });
+                }
+
+                var invite = await dbContext.Invites.AsQueryable()
+                    .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.Code == usedInvite.Code);
+
+                if (invite == null)
+                {
+                    invite = usedInvite.ToEntity();
+                    await dbContext.AddAsync(invite);
+                }
+
+                joinedUserEntity.UsedInviteCode = usedInvite.Code;
+            }
+
             await dbContext.SaveChangesAsync();
             UpdateInvitesCache(latestInvites, guild);
         }

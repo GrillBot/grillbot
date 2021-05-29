@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace GrillBot.Database.Migrations
 {
     [DbContext(typeof(GrillBotContext))]
-    partial class GrillBotContextModelSnapshot : ModelSnapshot
+    [Migration("20210529224522_OptionalGuildIdInLogs")]
+    partial class OptionalGuildIdInLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

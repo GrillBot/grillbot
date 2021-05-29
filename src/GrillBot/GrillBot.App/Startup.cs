@@ -53,6 +53,7 @@ namespace GrillBot.App
                 .AddSingleton(new CommandService(commandsConfig))
                 .AddSingleton<LoggingService>()
                 .AddSingleton<InviteService>()
+                .AddSingleton<AutoReplyService>()
                 .AddDatabase(connectionString)
                 .AddMemoryCache()
                 .AddControllers();

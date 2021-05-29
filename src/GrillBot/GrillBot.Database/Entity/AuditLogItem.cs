@@ -19,6 +19,9 @@ namespace GrillBot.Database.Entity
         [StringLength(30)]
         public string GuildId { get; set; }
 
+        [ForeignKey(nameof(GuildId))]
+        public Guild Guild { get; set; }
+
         [StringLength(30)]
         public string ProcessedUserId { get; set; }
 

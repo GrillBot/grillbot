@@ -17,6 +17,7 @@ namespace GrillBot.Database.Entity
         public ISet<SearchItem> Searches { get; set; }
         public ISet<Unverify> Unverifies { get; set; }
         public ISet<UnverifyLog> UnverifyLogs { get; set; }
+        public ISet<AuditLogItem> AuditLogs { get; set; }
 
         public Guild()
         {
@@ -26,6 +27,7 @@ namespace GrillBot.Database.Entity
             Unverifies = new HashSet<Unverify>();
             UnverifyLogs = new HashSet<UnverifyLog>();
             Searches = new HashSet<SearchItem>();
+            AuditLogs = new HashSet<AuditLogItem>();
         }
     }
 }

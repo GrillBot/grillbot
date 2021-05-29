@@ -6,12 +6,15 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
 using GrillBot.Database;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using System;
 using System.Linq;
 
@@ -49,6 +52,7 @@ namespace GrillBot.App
                 .AddSingleton(new DiscordSocketClient(discordConfig))
                 .AddSingleton(new CommandService(commandsConfig))
                 .AddSingleton<LoggingService>()
+                .AddSingleton<InviteService>()
                 .AddDatabase(connectionString)
                 .AddMemoryCache()
                 .AddControllers();
@@ -66,6 +70,37 @@ namespace GrillBot.App
             });
 
             services.AddHostedService<DiscordService>();
+
+            services.AddOpenApiDocument(doc =>
+            {
+                doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
+                {
+                    BearerFormat = "JWT",
+                    Description = "JWT Authentication token",
+                    Name = "JWT",
+                    Scheme = JwtBearerDefaults.AuthenticationScheme,
+                    Type = OpenApiSecuritySchemeType.Http,
+                    In = OpenApiSecurityApiKeyLocation.Header
+                });
+
+                doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
+
+                doc.PostProcess = document =>
+                {
+                    document.Info = new OpenApiInfo
+                    {
+                        Title = "GrillBot",
+                        Description = "Discord bot primarly for VUT FIT Discord server",
+                        Version = "v1",
+
+                        License = new OpenApiLicense
+                        {
+                            Name = "MIT",
+                            Url = "https://opensource.org/licenses/MIT"
+                        }
+                    };
+                };
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)
@@ -78,6 +113,17 @@ namespace GrillBot.App
 
             app.UseRouting();
             app.UseAuthorization();
+
+            app.UseOpenApi();
+            app.UseSwaggerUi3(settings =>
+            {
+                settings.TransformToExternalPath = (route, request) =>
+                {
+                    string pathBase = request.Headers["X-Forwarded-PathBase"].FirstOrDefault();
+                    return !string.IsNullOrEmpty(pathBase) ? pathBase + route : route;
+                };
+            });
+
             app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
     }

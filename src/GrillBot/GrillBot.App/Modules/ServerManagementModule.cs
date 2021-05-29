@@ -6,8 +6,10 @@ using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions;
+using GrillBot.App.Services;
 using GrillBot.Data;
 using GrillBot.Data.Enums;
+using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.Guilds;
 using GrillBot.Database.Services;
 using Microsoft.Extensions.Caching.Memory;
@@ -233,7 +235,8 @@ namespace GrillBot.App.Modules
                         Channels = g.Channels.Count,
                         Searches = g.Searches.Count,
                         Unverifies = g.Unverifies.Count,
-                        UnverifyLogs = g.UnverifyLogs.Count
+                        UnverifyLogs = g.UnverifyLogs.Count,
+                        AuditLogs = g.AuditLogs.Count
                     });
 
                     var guildEntity = counts.FirstOrDefault();
@@ -250,7 +253,8 @@ namespace GrillBot.App.Modules
                             .Append("Kanálů: **").Append(guildEntity.Channels).AppendLine("**")
                             .Append("Hledání: **").Append(guildEntity.Searches).AppendLine("**")
                             .Append("Unverify: **").Append(guildEntity.Unverifies).AppendLine("**")
-                            .Append("Unverify (logy): **").Append(guildEntity.UnverifyLogs).AppendLine("**");
+                            .Append("Unverify (logy): **").Append(guildEntity.UnverifyLogs).AppendLine("**")
+                            .Append("Logy: **").Append(guildEntity.AuditLogs).AppendLine("**");
                     }
 
                     await ReplyAsync(builder.ToString());
@@ -632,6 +636,48 @@ namespace GrillBot.App.Modules
                             .WithFields(fields)
                             .WithTitle("Seznam rolí");
                     }
+                }
+            }
+
+            [Group("invite")]
+            [Summary("Správa pozvánek")]
+            [RequireBotPermission(GuildPermission.CreateInstantInvite, ErrorMessage = "Nemohu pracovat s pozvánkami, protože nemám oprávnění pro vytvoření pozvánek.")]
+            [RequireBotPermission(GuildPermission.ManageGuild, ErrorMessage = "Nemohu pracovat s pozvánkami, protože nemám oprávnění pracovat se serverem.")]
+            [RequireUserPermission(GuildPermission.ManageGuild, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat server.")]
+            public class GuildInvitesSubModule : Infrastructure.ModuleBase
+            {
+                private InviteService InviteService { get; }
+
+                public GuildInvitesSubModule(InviteService inviteService)
+                {
+                    InviteService = inviteService;
+                }
+
+                [Command("assign")]
+                [Summary("Přiřazení pozvánky k uživateli.")]
+                public async Task AssignCodeToUserAsync(SocketUser user, string code)
+                {
+                    if (string.Equals(code, "vanity", StringComparison.InvariantCultureIgnoreCase))
+                        code = Context.Guild.VanityURLCode;
+
+                    try
+                    {
+                        await InviteService.AssignInviteToUserAsync(user, Context.Guild, code);
+                        await ReplyAsync("Pozvánka byla úspěšně přiřazena.");
+                    }
+                    catch (NotFoundException ex)
+                    {
+                        await ReplyAsync(ex.Message);
+                    }
+                }
+
+                [Command("refresh")]
+                [Alias("update")]
+                [Summary("Obnovení pozvánek v paměti.")]
+                public async Task RefreshCacheAsync()
+                {
+                    var updatedCount = await InviteService.RefreshMetadataOfGuildAsync(Context.Guild);
+                    await ReplyAsync($"Pozvánky pro server **{Context.Guild.Name}** byly staženy. Celkový počet pozvánek je **{updatedCount}**.");
                 }
             }
         }

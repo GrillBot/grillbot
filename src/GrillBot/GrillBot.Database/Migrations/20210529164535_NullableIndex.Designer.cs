@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace GrillBot.Database.Migrations
 {
     [DbContext(typeof(GrillBotContext))]
-    partial class GrillBotContextModelSnapshot : ModelSnapshot
+    [Migration("20210529164535_NullableIndex")]
+    partial class NullableIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -403,12 +405,6 @@ namespace GrillBot.Database.Migrations
 
             modelBuilder.Entity("GrillBot.Database.Entity.AuditLogItem", b =>
                 {
-                    b.HasOne("GrillBot.Database.Entity.Guild", "Guild")
-                        .WithMany("AuditLogs")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("GrillBot.Database.Entity.GuildChannel", "GuildChannel")
                         .WithMany()
                         .HasForeignKey("GuildId", "ChannelId");
@@ -416,8 +412,6 @@ namespace GrillBot.Database.Migrations
                     b.HasOne("GrillBot.Database.Entity.GuildUser", "ProcessedGuildUser")
                         .WithMany()
                         .HasForeignKey("GuildId", "ProcessedUserId");
-
-                    b.Navigation("Guild");
 
                     b.Navigation("GuildChannel");
 
@@ -597,8 +591,6 @@ namespace GrillBot.Database.Migrations
 
             modelBuilder.Entity("GrillBot.Database.Entity.Guild", b =>
                 {
-                    b.Navigation("AuditLogs");
-
                     b.Navigation("Channels");
 
                     b.Navigation("Invites");

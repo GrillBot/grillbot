@@ -1,4 +1,4 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
 
 namespace GrillBot.Data.Models.API
 {
@@ -19,13 +19,20 @@ namespace GrillBot.Data.Models.API
         /// </summary>
         public string Discriminator { get; set; }
 
+        public bool IsBot { get; set; }
+
         public User() { }
 
-        public User(SocketUser user)
+        public User(ulong id, string username, string discriminator, bool isBot)
         {
-            Id = user.Id.ToString();
-            Username = user.Username;
-            Discriminator = user.Discriminator;
+            Id = id.ToString();
+            Username = username;
+            Discriminator = discriminator;
+            IsBot = isBot;
+        }
+
+        public User(IUser user) : this(user.Id, user.Username, user.Discriminator, user.IsBot)
+        {
         }
     }
 }

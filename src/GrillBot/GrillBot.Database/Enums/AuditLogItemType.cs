@@ -20,6 +20,12 @@ namespace GrillBot.Database.Enums
         /// Errors
         /// </summary>
         [Display(Name = "Chyba")]
-        Error = 3
+        Error = 3,
+
+        /// <summary>
+        /// Executed command
+        /// </summary>
+        [Display(Name = "Příkaz")]
+        Command = 4
     }
 }

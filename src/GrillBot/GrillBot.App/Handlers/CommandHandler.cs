@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Services;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
@@ -15,12 +16,15 @@ namespace GrillBot.App.Handlers
         private CommandService CommandService { get; }
         private IServiceProvider Provider { get; }
         private IConfiguration Configuration { get; }
+        private AuditLogService AuditLogService { get; }
 
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IConfiguration configuration) : base(client)
+        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IConfiguration configuration,
+            AuditLogService auditLogService) : base(client)
         {
             CommandService = commandService;
             Provider = provider;
             Configuration = configuration;
+            AuditLogService = auditLogService;
 
             CommandService.CommandExecuted += OnCommandExecutedAsync;
             DiscordClient.MessageReceived += OnCommandTriggerTryAsync;
@@ -76,6 +80,9 @@ namespace GrillBot.App.Handlers
                 if (!string.IsNullOrEmpty(reply))
                     await context.Message.ReplyAsync(reply, allowedMentions: new AllowedMentions { MentionRepliedUser = true });
             }
+
+            if (result.Error != CommandError.UnknownCommand && context.Guild != null) // Log only available commands in guild.
+                await AuditLogService.LogExecutedCommandAsync(command.Value, context, result);
         }
     }
 }

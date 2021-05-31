@@ -53,5 +53,37 @@ namespace GrillBot.Tests.App.Helpers
 
             Assert.AreEqual("Ne", result);
         }
+
+        [TestMethod]
+        public void FormatMessagesToCzech_One()
+        {
+            var result = FormatHelper.FormatMessagesToCzech(1);
+
+            Assert.AreEqual("1 zpráva", result);
+        }
+
+        [TestMethod]
+        public void FormatMessagesToCzech_TwoToFour()
+        {
+            var result = FormatHelper.FormatMessagesToCzech(3);
+
+            Assert.AreEqual("3 zprávy", result);
+        }
+
+        [TestMethod]
+        public void FormatMessagesToCzech_MoreThanFour()
+        {
+            var result = FormatHelper.FormatMessagesToCzech(10);
+
+            Assert.AreEqual("10 zpráv", result);
+        }
+
+        [TestMethod]
+        public void FormatMessagesToCzech_Zero()
+        {
+            var result = FormatHelper.FormatMessagesToCzech(0);
+
+            Assert.AreEqual("0 zpráv", result);
+        }
     }
 }

@@ -33,12 +33,8 @@ namespace GrillBot.App.Infrastructure.Embeds
             }
             else
             {
-                var metadataText = SerializeMetadata(embedMetadata);
-                var oldFooterText = embedBuilder.Footer.Text;
-                if (!string.IsNullOrEmpty(oldFooterText))
-                    oldFooterText = " " + oldFooterText;
-
-                return embedBuilder.WithFooter(metadataText + oldFooterText);
+                var footerIcon = StealthInto(embedBuilder.Footer.IconUrl, embedMetadata);
+                return embedBuilder.WithFooter(embedBuilder.Footer.Text, footerIcon);
             }
         }
 
@@ -96,8 +92,8 @@ namespace GrillBot.App.Infrastructure.Embeds
             var sourceUrl = embed?.Author?.IconUrl ?? embed?.Image?.Url;
             if (sourceUrl != null)
                 metadata = HttpUtility.ParseQueryString(new UriBuilder(sourceUrl).Fragment.TrimStart('#'));
-            else if (embed?.Footer?.Text is string footerText && Regex.Match(footerText, @"^\S+") is Match match && match.Success)
-                metadata = HttpUtility.ParseQueryString(match.Groups[0].Value);
+            else if (embed?.Footer?.IconUrl is string footerUrl)
+                metadata = HttpUtility.ParseQueryString(new UriBuilder(footerUrl).Fragment.TrimStart('#'));
             else
                 return false;
 

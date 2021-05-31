@@ -78,5 +78,10 @@ namespace GrillBot.App.Extensions.Discord
                 _ => 8
             };
         }
+
+        static public IEnumerable<SocketTextChannel> GetAvailableChannelsFor(this SocketGuild guild, SocketGuildUser user)
+        {
+            return guild.TextChannels.Where(o => o.HaveAccess(user));
+        }
     }
 }

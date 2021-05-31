@@ -8,13 +8,13 @@ namespace GrillBot.Tests.App.Helpers
     public class ReflectionHelperTests
     {
         [TestMethod]
-        public void GetAllEventHandlers()
+        public void GetAllInternalServices()
         {
-            var handlers = ReflectionHelper.GetAllEventHandlers();
+            var handlers = ReflectionHelper.GetAllInternalServices();
             Assert.IsTrue(handlers.Any());
         }
 
-        //[TestMethod] // TODO: Add test when some reaction helper will exists.
+        [TestMethod]
         public void GetAllReactionEventHandlers()
         {
             var handlers = ReflectionHelper.GetAllReactionEventHandlers();

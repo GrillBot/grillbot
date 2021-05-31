@@ -1,8 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure;
+using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure.TypeReaders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +33,7 @@ namespace GrillBot.App.Services
         {
             var token = Configuration.GetValue<string>("Discord:Token");
 
+            InitServices();
             await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
             await DiscordSocketClient.StartAsync();
 
@@ -42,10 +42,16 @@ namespace GrillBot.App.Services
             CommandService.AddTypeReader<IEmote>(new EmotesTypeReader());
 
             await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
+        }
 
-            Provider.GetServices<Handler>(); // Init all handlers (message received, ...)
-            Provider.GetRequiredService<InviteService>();
+        private void InitServices()
+        {
+            Provider.GetRequiredService<MessageCache>();
             Provider.GetRequiredService<AutoReplyService>();
+            Provider.GetRequiredService<ChannelService>();
+            Provider.GetRequiredService<InviteService>();
+            Provider.GetRequiredService<CommandHandler>();
+            Provider.GetRequiredService<ReactionHandler>();
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

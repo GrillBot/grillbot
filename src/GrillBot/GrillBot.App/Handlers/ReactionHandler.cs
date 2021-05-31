@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace GrillBot.App.Handlers
 {
     // Credits to Janch and Khub.
-    public class ReactionHandler : Handler
+    public class ReactionHandler : ServiceBase
     {
         private IEnumerable<ReactionEventHandler> EventHandlers { get; }
         private ILogger<ReactionHandler> Logger { get; }
@@ -40,8 +40,8 @@ namespace GrillBot.App.Handlers
                 try
                 {
                     if (
-                        (@event == ReactionEvents.Added && await handler.OnReactionAdded(msg, reaction.Emote, user)) ||
-                        (@event == ReactionEvents.Removed && await handler.OnReactionRemoved(msg, reaction.Emote, user))
+                        (@event == ReactionEvents.Added && await handler.OnReactionAddedAsync(msg, reaction.Emote, user)) ||
+                        (@event == ReactionEvents.Removed && await handler.OnReactionRemovedAsync(msg, reaction.Emote, user))
                     )
                     {
                         break;

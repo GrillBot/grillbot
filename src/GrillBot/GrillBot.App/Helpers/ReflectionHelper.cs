@@ -7,16 +7,22 @@ namespace GrillBot.App.Helpers
 {
     static public class ReflectionHelper
     {
-        static public IEnumerable<Type> GetAllEventHandlers()
+        private static Type[] AssemblyTypes { get; }
+
+        static ReflectionHelper()
         {
-            return Assembly.GetExecutingAssembly().GetTypes()
-                .Where(o => !o.IsAbstract && typeof(Infrastructure.Handler).IsAssignableFrom(o));
+            AssemblyTypes = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(o => o.IsClass && !o.IsAbstract).ToArray();
+        }
+
+        static public IEnumerable<Type> GetAllInternalServices()
+        {
+            return AssemblyTypes.Where(o => !o.IsAbstract && typeof(Infrastructure.ServiceBase).IsAssignableFrom(o));
         }
 
         static public IEnumerable<Type> GetAllReactionEventHandlers()
         {
-            return Assembly.GetExecutingAssembly().GetTypes()
-                .Where(o => !o.IsAbstract && typeof(Infrastructure.ReactionEventHandler).IsAssignableFrom(o));
+            return AssemblyTypes.Where(o => !o.IsAbstract && typeof(Infrastructure.ReactionEventHandler).IsAssignableFrom(o));
         }
     }
 }

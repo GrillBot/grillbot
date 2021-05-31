@@ -1,6 +1,7 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using GrillBot.App.Handlers;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
@@ -52,14 +53,17 @@ namespace GrillBot.App
                 .AddSingleton(new DiscordSocketClient(discordConfig))
                 .AddSingleton(new CommandService(commandsConfig))
                 .AddSingleton<LoggingService>()
-                .AddSingleton<InviteService>()
-                .AddSingleton<AutoReplyService>()
+                .AddSingleton<MessageCache>()
                 .AddDatabase(connectionString)
                 .AddMemoryCache()
                 .AddControllers();
 
-            ReflectionHelper.GetAllEventHandlers().ToList()
-                .ForEach(o => services.AddSingleton(typeof(Handler), o));
+            services
+                .AddSingleton<InviteService>()
+                .AddSingleton<AutoReplyService>()
+                .AddSingleton<ChannelService>()
+                .AddSingleton<CommandHandler>()
+                .AddSingleton<ReactionHandler>();
 
             ReflectionHelper.GetAllReactionEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

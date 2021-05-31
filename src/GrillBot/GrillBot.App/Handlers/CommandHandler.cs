@@ -1,26 +1,40 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
+using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Handlers
 {
-    public class CommandHandler : Handler
+    public class CommandHandler : ServiceBase
     {
         private CommandService CommandService { get; }
         private IServiceProvider Provider { get; }
+        private IConfiguration Configuration { get; }
 
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider) : base(client)
+        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IConfiguration configuration) : base(client)
         {
             CommandService = commandService;
             Provider = provider;
+            Configuration = configuration;
 
             CommandService.CommandExecuted += OnCommandExecutedAsync;
+            DiscordClient.MessageReceived += OnCommandTriggerTryAsync;
+        }
+
+        private async Task OnCommandTriggerTryAsync(SocketMessage message)
+        {
+            if (!message.TryLoadMessage(out SocketUserMessage userMessage)) return;
+            var context = new SocketCommandContext(DiscordClient, userMessage);
+
+            int argumentPosition = 0;
+            var prefix = Configuration.GetValue<string>("Discord:Commands:Prefix");
+            if (userMessage.IsCommand(ref argumentPosition, DiscordClient.CurrentUser, prefix))
+                await CommandService.ExecuteAsync(context, argumentPosition, Provider);
         }
 
         private async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)

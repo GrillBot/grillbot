@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.Invite;
 using GrillBot.Database.Entity;
@@ -14,17 +15,14 @@ using System.Threading.Tasks;
 
 namespace GrillBot.App.Services
 {
-    public class InviteService
+    public class InviteService : ServiceBase
     {
         private ConcurrentBag<InviteMetadata> MetadataCache { get; }
-        private DiscordSocketClient DiscordClient { get; }
         private GrillBotContextFactory DbFactory { get; }
 
-        public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory)
+        public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory) : base(discordClient)
         {
             MetadataCache = new ConcurrentBag<InviteMetadata>();
-
-            DiscordClient = discordClient;
             DbFactory = dbFactory;
 
             DiscordClient.Ready += () => InitAsync();

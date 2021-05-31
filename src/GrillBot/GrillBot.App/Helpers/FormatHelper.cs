@@ -2,16 +2,16 @@
 {
     static public class FormatHelper
     {
-        static public string FormatMembersToCzech(long count)
-        {
-            if (count == 1) return "1 člen";
-            else if (count > 1 && count < 5) return $"{count} členové";
-            else return $"{count} členů";
-        }
+        static public string FormatMembersToCzech(long count) => Format(count, "člen", "členové", "členů");
+        static public string FormatBooleanToCzech(bool val) => val ? "Ano" : "Ne";
+        static public string FormatMessagesToCzech(long count) => Format(count, "zpráva", "zprávy", "zpráv");
+        static public string FormatPermissionstoCzech(long count) => Format(count, "oprávnění", "oprávnění", "oprávnění");
 
-        static public string FormatBooleanToCzech(bool val)
+        static private string Format(long count, string oneSuffix, string twoToFour, string fiveAndMore)
         {
-            return val ? "Ano" : "Ne";
+            if (count == 1) return $"1 {oneSuffix}";
+            else if (count > 1 && count < 5) return $"{count} {twoToFour}";
+            else return $"{count} {fiveAndMore}";
         }
     }
 }

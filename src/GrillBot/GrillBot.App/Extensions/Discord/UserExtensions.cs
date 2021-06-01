@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace GrillBot.App.Extensions.Discord
 {
@@ -27,5 +29,15 @@ namespace GrillBot.App.Extensions.Discord
 
             return $"{user.Username}#{user.Discriminator}";
         }
+
+        static public async Task<byte[]> DownloadAvatarAsync(this IUser user, ImageFormat format = ImageFormat.Auto, ushort size = 128)
+        {
+            var url = user.GetAvatarUri(format, size);
+
+            using var client = new HttpClient();
+            return await client.GetByteArrayAsync(url);
+        }
+
+        static public bool HaveAnimatedAvatar(this IUser user) => user.AvatarId.StartsWith("a_");
     }
 }

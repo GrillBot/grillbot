@@ -39,5 +39,14 @@ namespace GrillBot.Tests.App.Extensions
 
             Assert.AreEqual(str, result);
         }
+
+        [TestMethod]
+        public void Cut_WithoutDots()
+        {
+            const string str = "Hello world";
+            var result = str.Cut(5, true);
+
+            Assert.AreEqual("Hello", result);
+        }
     }
 }

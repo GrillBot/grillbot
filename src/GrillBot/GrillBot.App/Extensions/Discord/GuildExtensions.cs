@@ -14,7 +14,7 @@ namespace GrillBot.App.Extensions.Discord
             return roles.OrderByDescending(o => o.Position).FirstOrDefault();
         }
 
-        static public IEnumerable<string> GetTranslatedFeatures(this SocketGuild guild)
+        static public IEnumerable<string> GetTranslatedFeatures(this IGuild guild)
         {
             if (guild.Features.Count == 0)
                 yield break;
@@ -69,7 +69,7 @@ namespace GrillBot.App.Extensions.Discord
             }
         }
 
-        static public int CalculateFileUploadLimit(this SocketGuild guild)
+        static public int CalculateFileUploadLimit(this IGuild guild)
         {
             return guild.PremiumTier switch
             {

@@ -1,4 +1,8 @@
-﻿using System.ComponentModel;
+﻿using Discord;
+using System;
+using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace GrillBot.Tests
 {

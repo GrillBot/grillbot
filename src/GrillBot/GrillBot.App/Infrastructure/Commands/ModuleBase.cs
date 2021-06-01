@@ -16,5 +16,8 @@ namespace GrillBot.App.Infrastructure
 
         protected Task<RestUserMessage> ReplyStreamAsync(Stream stream, string filename, bool spoiler, string text = null, Embed embed = null) =>
             Context.Channel.SendFileAsync(stream, filename, text, false, embed, null, spoiler, AllowedMentions, ReplyReference);
+
+        protected Task<RestUserMessage> ReplyFileAsync(string filepath, bool spoiler, string text = null, Embed embed = null) =>
+            Context.Channel.SendFileAsync(filepath, text, false, embed, null, spoiler, AllowedMentions, ReplyReference);
     }
 }

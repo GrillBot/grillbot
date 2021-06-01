@@ -2,12 +2,13 @@
 {
     static public class StringExtensions
     {
-        static public string Cut(this string str, int maxLength)
+        static public string Cut(this string str, int maxLength, bool withoutDots = false)
         {
             if (str == null) return null;
 
-            if (str.Length >= maxLength - 3)
-                str = str.Substring(0, maxLength - 3) + "...";
+            var withoutDotsLen = withoutDots ? 0 : 3;
+            if (str.Length >= maxLength - withoutDotsLen)
+                str = str.Substring(0, maxLength - withoutDotsLen) + (withoutDots ? "" : "...");
 
             return str;
         }

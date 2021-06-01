@@ -5,6 +5,7 @@ using GrillBot.App.Handlers;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
+using GrillBot.App.Services.FileStorage;
 using GrillBot.Database;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -54,6 +55,7 @@ namespace GrillBot.App
                 .AddSingleton(new CommandService(commandsConfig))
                 .AddSingleton<LoggingService>()
                 .AddSingleton<MessageCache>()
+                .AddSingleton<FileStorageFactory>()
                 .AddDatabase(connectionString)
                 .AddMemoryCache()
                 .AddControllers();

@@ -7,7 +7,7 @@ namespace GrillBot.App.Extensions.Discord
     {
         static public bool IsEqual(this global::Discord.IEmote emote, global::Discord.IEmote another)
         {
-            if (emote.GetType() != another.GetType())
+            if (emote.GetType().IsInstanceOfType(another))
                 return false;
 
             if (emote is global::Discord.Emoji emoji)

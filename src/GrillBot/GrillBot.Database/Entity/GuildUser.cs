@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -28,6 +29,9 @@ namespace GrillBot.Database.Entity
 
         [Required]
         public long Points { get; set; } = 0;
+
+        public DateTime? LastPointsReactionIncrement { get; set; }
+        public DateTime? LastPointsMessageIncrement { get; set; }
 
         [Required]
         public long GivenReactions { get; set; } = 0;

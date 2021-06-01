@@ -6,7 +6,7 @@ namespace GrillBot.App.Extensions.Discord
 {
     static public class MessageExtensions
     {
-        static public bool IsCommand(this SocketUserMessage message, ref int argumentPosition, IUser botUser, string prefix)
+        static public bool IsCommand(this IUserMessage message, ref int argumentPosition, IUser botUser, string prefix)
         {
             if (message.HasMentionPrefix(botUser, ref argumentPosition))
                 return true;

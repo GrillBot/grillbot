@@ -53,6 +53,7 @@ namespace GrillBot.App.Services
             Provider.GetRequiredService<CommandHandler>();
             Provider.GetRequiredService<ReactionHandler>();
             Provider.GetRequiredService<AuditLogService>();
+            Provider.GetRequiredService<PointsService>();
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

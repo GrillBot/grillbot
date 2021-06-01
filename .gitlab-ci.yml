@@ -29,4 +29,11 @@ build:
 tests:
   stage: test
   script:
-    - "dotnet test $SOURCE_CODE_PATH --no-restore"
+    - 'dotnet test $SOURCE_CODE_PATH --no-restore --test-adapter-path:. --logger:"junit;LogFilePath=..\artifacts\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"'
+  artifacts:
+    when: always
+    paths:
+      - ./**/*test-result.xml
+    reports:
+      junit:
+        - ./**/*test-result.xml

@@ -94,7 +94,7 @@ namespace GrillBot.App.Services
 
             int argPos = 0;
             var msg = await message.GetOrDownloadAsync();
-            if (msg == null || !CanIncrement(msg)) return;
+            if (!CanIncrement(msg)) return;
             if (msg.ReferencedMessage?.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix) == true) return;
 
             var guildId = textChannel.Guild.Id.ToString();

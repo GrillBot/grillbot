@@ -45,14 +45,9 @@ namespace GrillBot.App.Services
             var userId = message.Author.Id.ToString();
 
             // Check DB for consistency.
-            if (!await dbContext.Guilds.AsQueryable().AnyAsync(o => o.Id == guildId))
-                await dbContext.AddAsync(new Guild() { Id = guildId });
-
-            if (!await dbContext.Users.AsQueryable().AnyAsync(o => o.Id == userId))
-                await dbContext.Users.AddAsync(new User() { Id = userId });
-
-            if (!await dbContext.GuildUsers.AsQueryable().AnyAsync(o => o.GuildId == guildId && o.UserId == userId))
-                await dbContext.AddAsync(new GuildUser() { GuildId = guildId, UserId = userId });
+            await dbContext.InitGuildAsync(guildId);
+            await dbContext.InitUserAsync(userId);
+            await dbContext.InitGuildUserAsync(guildId, userId);
 
             // Search specific channel for specific guild and user.
             var channel = await dbContext.Channels.AsQueryable()

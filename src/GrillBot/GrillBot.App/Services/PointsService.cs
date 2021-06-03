@@ -64,11 +64,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            if (!await context.Guilds.AsQueryable().AnyAsync(o => o.Id == guildId))
-                await context.AddAsync(new Guild() { Id = guildId });
-
-            if (!await context.Users.AsQueryable().AnyAsync(o => o.Id == userId))
-                await context.Users.AddAsync(new User() { Id = userId });
+            await context.InitGuildAsync(guildId);
+            await context.InitUserAsync(userId);
 
             var guildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -126,11 +123,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            if (!await context.Guilds.AsQueryable().AnyAsync(o => o.Id == guildId))
-                await context.AddAsync(new Guild() { Id = guildId });
-
-            if (!await context.Users.AsQueryable().AnyAsync(o => o.Id == userId))
-                await context.Users.AddAsync(new User() { Id = userId });
+            await context.InitGuildAsync(guildId);
+            await context.InitUserAsync(userId);
 
             var guildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -173,6 +167,7 @@ namespace GrillBot.App.Services
             using var dbContext = DbFactory.Create();
 
             var guildUser = await dbContext.GuildUsers.AsQueryable()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
 
             if (guildUser == null)
@@ -214,6 +209,7 @@ namespace GrillBot.App.Services
             var guildId = guild.Id.ToString();
 
             var query = context.GuildUsers.AsQueryable()
+                .AsNoTracking()
                 .Where(o => o.GuildId == guildId && o.UserId == user.Id.ToString())
                 .Select(o => o.Points)
                 .SelectMany(pts => context.GuildUsers.AsQueryable().Where(o => o.GuildId == guildId && o.Points > pts));
@@ -234,6 +230,82 @@ namespace GrillBot.App.Services
             }
 
             return SysDraw.Image.FromFile(fileinfo.FullName);
+        }
+
+        public async Task IncrementPointsAsync(SocketGuild guild, SocketUser toUser, int amount)
+        {
+            var guildId = guild.Id.ToString();
+            var userId = toUser.Id.ToString();
+
+            using var context = DbFactory.Create();
+
+            await context.InitGuildAsync(guildId);
+            await context.InitUserAsync(userId);
+
+            var guildUser = await context.GuildUsers.AsQueryable()
+                .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
+
+            if (guildUser == null)
+            {
+                guildUser = new GuildUser()
+                {
+                    UserId = userId,
+                    GuildId = guildId
+                };
+
+                await context.AddAsync(guildUser);
+            }
+
+            guildUser.Points += amount;
+            await context.SaveChangesAsync();
+        }
+
+        public async Task TransferPointsAsync(SocketGuild guild, SocketUser fromUser, SocketUser toUser, long amount)
+        {
+            if (fromUser == toUser)
+                throw new InvalidOperationException("Nelze převést body mezi stejnými účty.");
+
+            if (!fromUser.IsUser())
+                throw new InvalidOperationException($"Nelze převést body od `{fromUser.GetDisplayName()}`, protože se nejedná o běžného uživatele.");
+
+            if (!toUser.IsUser())
+                throw new InvalidOperationException($"Nelze převést body uživateli `{toUser.GetDisplayName()}`, protože se nejedná o běžného uživatele.");
+
+            var guildId = guild.Id.ToString();
+            var fromUserId = fromUser.Id.ToString();
+            var toUserId = toUser.Id.ToString();
+
+            using var context = DbFactory.Create();
+
+            var fromGuildUser = await context.GuildUsers.AsQueryable()
+                .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == fromUserId);
+
+            if (fromGuildUser == null)
+                throw new InvalidOperationException($"Nelze převést body od uživatele `{fromUser.GetDisplayName()}`, protože žádné body ještě nemá.");
+
+            if (fromGuildUser.Points < amount)
+                throw new InvalidOperationException($"Nelze převést body od uživatele `{fromUser.GetDisplayName()}`, protože jich nemá dostatek.");
+
+            await context.InitGuildAsync(guildId);
+            await context.InitUserAsync(toUserId);
+
+            var toGuildUser = await context.GuildUsers.AsQueryable()
+                .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == toUserId);
+
+            if (toGuildUser == null)
+            {
+                toGuildUser = new GuildUser()
+                {
+                    UserId = toUserId,
+                    GuildId = guildId
+                };
+
+                await context.AddAsync(toGuildUser);
+            }
+
+            toGuildUser.Points += amount;
+            fromGuildUser.Points -= amount;
+            await context.SaveChangesAsync();
         }
     }
 }

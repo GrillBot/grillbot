@@ -43,17 +43,9 @@ namespace GrillBot.App.Services
 
             using var dbContext = DbFactory.Create();
 
-            if (!await dbContext.Guilds.AsQueryable().AnyAsync(o => o.Id == guildId))
-                await dbContext.Guilds.AddAsync(new Guild() { Id = guildId });
-
-            if (!await dbContext.Channels.AsQueryable().AnyAsync(o => o.GuildId == guildId && o.Id == channelId))
-                await dbContext.AddAsync(new GuildChannel() { Id = channelId, GuildId = guildId });
-
-            if (!await dbContext.Users.AsQueryable().AnyAsync(o => o.Id == userId))
-                await dbContext.AddAsync(new User() { Id = userId });
-
-            if (!await dbContext.GuildUsers.AsQueryable().AnyAsync(o => o.UserId == userId && o.GuildId == guildId))
-                await dbContext.AddAsync(new GuildUser() { GuildId = guildId, UserId = userId });
+            await dbContext.InitGuildAsync(guildId);
+            await dbContext.InitGuildUserAsync(guildId, userId);
+            await dbContext.InitGuildChannelAsync(guildId, channelId, userId);
 
             var logItem = new AuditLogItem()
             {

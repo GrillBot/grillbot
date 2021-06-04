@@ -89,5 +89,19 @@ namespace GrillBot.Tests.App.Extensions.Discord
             var result = mock.Object.GetAvatarUri();
             Assert.AreEqual("https://discord.com/user.jpg", result);
         }
+
+        [TestMethod]
+        public void DownloadAvatar_Async()
+        {
+            var mock = new Mock<IUser>();
+            mock.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns("https://www.google.cz/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
+
+            mock.Object.DownloadAvatarAsync().ContinueWith(data =>
+            {
+                Assert.IsNotNull(data);
+                Assert.IsNotNull(data.Result);
+                Assert.IsTrue(data.Result.Length > 0);
+            });
+        }
     }
 }

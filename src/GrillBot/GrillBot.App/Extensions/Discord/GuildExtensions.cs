@@ -7,7 +7,7 @@ namespace GrillBot.App.Extensions.Discord
 {
     static public class GuildExtensions
     {
-        static public SocketRole GetHighestRole(this SocketGuild guild, bool requireColor = false)
+        static public IRole GetHighestRole(this IGuild guild, bool requireColor = false)
         {
             var roles = requireColor ? guild.Roles.Where(o => o.Color != Color.Default) : guild.Roles.AsEnumerable();
 

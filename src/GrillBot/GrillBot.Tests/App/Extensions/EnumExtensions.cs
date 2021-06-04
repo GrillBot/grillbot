@@ -52,5 +52,11 @@ namespace GrillBot.Tests.App.Extensions
 
             Assert.IsFalse(string.IsNullOrEmpty(attribute));
         }
+
+        [TestMethod]
+        public void GetDisplayName()
+        {
+            Assert.AreEqual("ABCD", SomeEnum.T.GetDisplayName());
+        }
     }
 }

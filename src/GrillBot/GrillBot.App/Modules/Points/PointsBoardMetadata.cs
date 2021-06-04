@@ -1,11 +1,11 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
 using System.Collections.Generic;
 
-namespace GrillBot.App.Modules.Channels
+namespace GrillBot.App.Modules.Points
 {
-    public class ChannelboardMetadata : IEmbedMetadata
+    public class PointsBoardMetadata : IEmbedMetadata
     {
-        public string EmbedKind => "Channelboard";
+        public string EmbedKind => "Points";
 
         public int PageNumber { get; set; }
         public ulong GuildId { get; set; }

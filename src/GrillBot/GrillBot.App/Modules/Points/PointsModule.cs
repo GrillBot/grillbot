@@ -1,8 +1,14 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.App.Services;
+using GrillBot.Data;
 using GrillBot.Data.Exceptions;
+using GrillBot.Database.Services;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Modules.Points
@@ -13,10 +19,12 @@ namespace GrillBot.App.Modules.Points
     public class PointsModule : Infrastructure.ModuleBase
     {
         private PointsService PointsService { get; }
+        private GrillBotContextFactory DbFactory { get; }
 
-        public PointsModule(PointsService pointsService)
+        public PointsModule(PointsService pointsService, GrillBotContextFactory dbFactory)
         {
             PointsService = pointsService;
+            DbFactory = dbFactory;
         }
 
         [Command("where")]
@@ -60,6 +68,34 @@ namespace GrillBot.App.Modules.Points
             {
                 await ReplyAsync(ex.Message);
             }
+        }
+
+        [Command("board")]
+        [Summary("Získání TOP 10 statistik v počtu bodů.")]
+        public async Task GetPointsLeaderboardAsync()
+        {
+            using var dbContext = DbFactory.Create();
+
+            var query = dbContext.GuildUsers.AsQueryable()
+                .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.Points > 0)
+                .OrderByDescending(o => o.Points)
+                .Select(o => new KeyValuePair<string, long>(o.UserId, o.Points))
+                .Take(10);
+
+            if (!await query.AnyAsync())
+            {
+                await ReplyAsync("Ještě nebyly zachyceny žádné události ukazující aktivitu nějakého uživatele na serveru.");
+                return;
+            }
+
+            var data = await query.ToListAsync();
+
+            await Context.Guild.DownloadUsersAsync();
+            var embed = new PointsBoardBuilder()
+                .WithBoard(Context.User, Context.Guild, data, id => Context.Guild.GetUser(id), 0);
+
+            var message = await ReplyAsync(embed: embed.Build());
+            await message.AddReactionsAsync(Emojis.PaginationEmojis);
         }
     }
 }

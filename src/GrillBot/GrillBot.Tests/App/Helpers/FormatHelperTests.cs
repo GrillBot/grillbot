@@ -85,5 +85,17 @@ namespace GrillBot.Tests.App.Helpers
 
             Assert.AreEqual("0 zpráv", result);
         }
+
+        [TestMethod]
+        public void FormatPermissionsToCzech()
+        {
+            Assert.AreEqual("1 oprávnění", FormatHelper.FormatPermissionstoCzech(1));
+        }
+
+        [TestMethod]
+        public void FormatPointsToCzech()
+        {
+            Assert.AreEqual("1 bod", FormatHelper.FormatPointsToCzech(1));
+        }
     }
 }

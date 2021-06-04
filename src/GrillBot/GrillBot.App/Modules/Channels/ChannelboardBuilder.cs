@@ -11,11 +11,11 @@ namespace GrillBot.App.Modules.Channels
 {
     public class ChannelboardBuilder : EmbedBuilder
     {
-        public ChannelboardBuilder WithChannelboard(SocketUser user, int channelsCount, SocketGuild guild, List<KeyValuePair<string, long>> data,
+        public ChannelboardBuilder WithChannelboard(SocketUser user, SocketGuild guild, List<KeyValuePair<string, long>> data,
             Func<ulong, SocketTextChannel> channelFinder, int skip, int page = 0)
         {
             this.WithFooter(user);
-            this.WithMetadata(new ChannelboardMetadata() { PageNumber = page, TotalCount = channelsCount, GuildId = guild.Id });
+            this.WithMetadata(new ChannelboardMetadata() { PageNumber = page, GuildId = guild.Id });
 
             WithAuthor("Statistika aktivity v kanálech");
             WithColor(Discord.Color.Blue);

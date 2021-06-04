@@ -6,18 +6,19 @@ using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.Channels
+namespace GrillBot.App.Modules.Points
 {
-    public class ChannelboardReactionHandler : ReactionEventHandler
+    public class PointsBoardReactionHandler : ReactionEventHandler
     {
         private GrillBotContextFactory DbFactory { get; }
         private DiscordSocketClient DiscordClient { get; }
 
-        public ChannelboardReactionHandler(GrillBotContextFactory dbFactory, DiscordSocketClient discordClient)
+        public PointsBoardReactionHandler(GrillBotContextFactory dbFactory, DiscordSocketClient discordClient)
         {
             DbFactory = dbFactory;
             DiscordClient = discordClient;
@@ -30,45 +31,39 @@ namespace GrillBot.App.Modules.Channels
             if (embed == null || embed.Footer == null || embed.Author == null) return false;
             if (!Emojis.PaginationEmojis.Any(o => o.IsEqual(emote))) return false;
             if (message.ReferencedMessage == null) return false;
-            if (!embed.TryParseMetadata<ChannelboardMetadata>(out var metadata)) return false;
+            if (!embed.TryParseMetadata<PointsBoardMetadata>(out var metadata)) return false;
 
             var guild = DiscordClient.GetGuild(metadata.GuildId);
             if (guild == null) return false;
 
-            await guild.DownloadUsersAsync();
-            var guildUser = user is SocketGuildUser sgu ? sgu : guild.GetUser(user.Id);
-            var availableChannels = guild.GetAvailableChannelsFor(guildUser).Select(o => o.Id.ToString()).ToList();
+            var dbContext = DbFactory.Create();
 
-            using var dbContext = DbFactory.Create();
+            var query = dbContext.GuildUsers.AsQueryable()
+                .Where(o => o.GuildId == guild.Id.ToString() && o.Points > 0)
+                .OrderByDescending(o => o.Points)
+                .Select(o => new KeyValuePair<string, long>(o.UserId, o.Points));
 
-            var query = dbContext.Channels.AsQueryable()
-                .Where(o => o.GuildId == guild.Id.ToString() && availableChannels.Contains(o.Id) && o.Count > 0);
-
-            var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.Id }).Select(o => new
-            {
-                ChannelId = o.Key.Id,
-                Count = o.Sum(x => x.Count)
-            }).OrderByDescending(o => o.Count).Select(o => new KeyValuePair<string, long>(o.ChannelId, o.Count));
-
-            var channelsCount = await groupedDataQuery.CountAsync();
-            if (channelsCount == 0) return false;
+            var pointsCount = await query.CountAsync();
+            if (pointsCount == 0) return false;
+            var pagesCount = (int)Math.Floor(pointsCount / 10.0);
 
             int newPage = metadata.PageNumber;
             if (emote.IsEqual(Emojis.MoveToFirst)) newPage = 0;
-            else if (emote.IsEqual(Emojis.MoveToLast)) newPage = channelsCount - 1;
+            else if (emote.IsEqual(Emojis.MoveToLast)) newPage = pagesCount - 1;
             else if (emote.IsEqual(Emojis.MoveToNext)) newPage++;
             else if (emote.IsEqual(Emojis.MoveToPrev)) newPage--;
 
-            if (newPage >= channelsCount) newPage = channelsCount - 1;
+            if (newPage >= pagesCount) newPage = pagesCount - 1;
             else if (newPage < 0) newPage = 0;
-
             if (newPage == metadata.PageNumber) return false;
 
             var skip = (newPage == 0 ? 0 : newPage) * 10;
-            var groupedData = await groupedDataQuery.Skip(skip).Take(10).ToListAsync();
+            var filteredQuery = query.Skip(skip).Take(10);
+            var data = await filteredQuery.ToListAsync();
 
-            var resultEmbed = new ChannelboardBuilder()
-                .WithChannelboard(guildUser, guild, groupedData, id => guild.GetTextChannel(id), skip, newPage);
+            await guild.DownloadUsersAsync();
+            var resultEmbed = new PointsBoardBuilder()
+                .WithBoard(user, guild, data, id => guild.GetUser(id), skip, newPage);
 
             await message.ModifyAsync(o => o.Embed = resultEmbed.Build());
             await message.RemoveReactionAsync(emote, user);

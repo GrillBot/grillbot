@@ -56,8 +56,7 @@ namespace GrillBot.App.Modules
                 Count = o.Sum(x => x.Count)
             }).OrderByDescending(o => o.Count).Select(o => new KeyValuePair<string, long>(o.ChannelId, o.Count));
 
-            var channelsCount = await groupedDataQuery.CountAsync();
-            if (channelsCount == 0)
+            if (!await groupedDataQuery.AnyAsync())
             {
                 await ReplyAsync("Ještě nebyly zachyceny žádné události ukazující aktivitu serveru.");
                 return;
@@ -66,7 +65,7 @@ namespace GrillBot.App.Modules
             var groupedData = await groupedDataQuery.Take(10).ToListAsync();
 
             var embed = new ChannelboardBuilder()
-                .WithChannelboard(Context.User, channelsCount, Context.Guild, groupedData, id => Context.Guild.GetTextChannel(id), 0);
+                .WithChannelboard(Context.User, Context.Guild, groupedData, id => Context.Guild.GetTextChannel(id), 0);
 
             var message = await ReplyAsync(embed: embed.Build());
             await message.AddReactionsAsync(Emojis.PaginationEmojis);

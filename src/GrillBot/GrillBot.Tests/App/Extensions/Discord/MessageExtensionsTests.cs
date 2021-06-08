@@ -61,5 +61,58 @@ namespace GrillBot.Tests.App.Extensions.Discord
             Assert.AreNotEqual(0, argPos);
             Assert.IsTrue(result);
         }
+
+        [TestMethod]
+        public void IsCommand_WithoutArgPos()
+        {
+            var user = new Mock<IUser>();
+            user.Setup(o => o.Mention).Returns("<@1234>");
+
+            var msg = new Mock<IUserMessage>();
+            msg.Setup(o => o.Content).Returns("$hello");
+
+            Assert.IsTrue(msg.Object.IsCommand(user.Object, "$"));
+        }
+
+        [TestMethod]
+        public void GetEmotesFromMessages_WithoutSupportedEmotes()
+        {
+            const string rtzW = "<:rtzW:567039874452946961>";
+
+            var emojiTag = new Mock<ITag>();
+            emojiTag.Setup(o => o.Type).Returns(TagType.Emoji);
+            emojiTag.Setup(o => o.Value).Returns(Emote.Parse(rtzW));
+
+            var channelTag = new Mock<ITag>();
+            channelTag.Setup(o => o.Type).Returns(TagType.ChannelMention);
+            channelTag.Setup(o => o.Value).Returns(new Mock<IChannel>().Object);
+
+            var message = new Mock<IMessage>();
+            message.Setup(o => o.Tags).Returns(new List<ITag>() { emojiTag.Object, channelTag.Object });
+
+            var emotes = message.Object.GetEmotesFromMessage(null).ToList();
+
+            Assert.AreEqual(1, emotes.Count);
+            Assert.AreEqual(rtzW, emotes[0].ToString());
+        }
+
+        [TestMethod]
+        public void GetEmotesFromMessages_WithEmotes()
+        {
+            var emojiTag = new Mock<ITag>();
+            emojiTag.Setup(o => o.Type).Returns(TagType.Emoji);
+            emojiTag.Setup(o => o.Value).Returns(Emote.Parse("<:rtzW:567039874452946961>"));
+
+            var channelTag = new Mock<ITag>();
+            channelTag.Setup(o => o.Type).Returns(TagType.ChannelMention);
+            channelTag.Setup(o => o.Value).Returns(new Mock<IChannel>().Object);
+
+            var message = new Mock<IMessage>();
+            message.Setup(o => o.Tags).Returns(new List<ITag>() { emojiTag.Object, channelTag.Object });
+
+            var emotes = message.Object.GetEmotesFromMessage(new List<GuildEmote>()).ToList();
+
+            Assert.AreEqual(0, emotes.Count);
+        }
     }
 }

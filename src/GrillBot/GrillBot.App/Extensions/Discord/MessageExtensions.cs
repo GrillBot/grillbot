@@ -1,14 +1,22 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GrillBot.App.Extensions.Discord
 {
     static public class MessageExtensions
     {
-        static public bool IsCommand(this IUserMessage message, ref int argumentPosition, IUser botUser, string prefix)
+        static public bool IsCommand(this IUserMessage message, IUser user, string prefix)
         {
-            if (message.HasMentionPrefix(botUser, ref argumentPosition))
+            int argPos = 0;
+            return IsCommand(message, ref argPos, user, prefix);
+        }
+
+        static public bool IsCommand(this IUserMessage message, ref int argumentPosition, IUser user, string prefix)
+        {
+            if (message.HasMentionPrefix(user, ref argumentPosition))
                 return true;
 
             return message.Content.Length > prefix.Length && message.HasStringPrefix(prefix, ref argumentPosition);
@@ -23,6 +31,20 @@ namespace GrillBot.App.Extensions.Discord
 
             userMessage = userMsg;
             return true;
+        }
+
+        static public IEnumerable<Emote> GetEmotesFromMessage(this IMessage message, List<GuildEmote> supportedEmotes = null)
+        {
+            var query = message.Tags
+                .Where(o => o.Type == TagType.Emoji) // Is emote
+                .Select(o => o.Value) // Only emote property
+                .OfType<Emote>() // Only emote type
+                .Distinct(); // Without duplicates.
+
+            if (supportedEmotes != null)
+                query = query.Where(e => supportedEmotes.Any(x => x.IsEqual(e))); // Only supported emotes.
+
+            return query;
         }
     }
 }

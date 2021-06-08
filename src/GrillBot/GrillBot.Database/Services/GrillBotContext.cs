@@ -85,5 +85,6 @@ namespace GrillBot.Database.Services
         public DbSet<UnverifyLog> UnverifyLogs { get; set; }
         public DbSet<AuditLogItem> AuditLogs { get; set; }
         public DbSet<AuditLogFileMeta> AuditLogFiles { get; set; }
+        public DbSet<EmoteStatisticItem> Emotes { get; set; }
     }
 }

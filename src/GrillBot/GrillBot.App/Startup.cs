@@ -67,7 +67,8 @@ namespace GrillBot.App
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<ReactionHandler>()
                 .AddSingleton<AuditLogService>()
-                .AddSingleton<PointsService>();
+                .AddSingleton<PointsService>()
+                .AddSingleton<EmoteService>();
 
             ReflectionHelper.GetAllReactionEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

@@ -46,14 +46,14 @@ namespace GrillBot.App.Services
 
         private void InitServices()
         {
-            Provider.GetRequiredService<MessageCache>();
-            Provider.GetRequiredService<AutoReplyService>();
-            Provider.GetRequiredService<ChannelService>();
-            Provider.GetRequiredService<InviteService>();
-            Provider.GetRequiredService<CommandHandler>();
-            Provider.GetRequiredService<ReactionHandler>();
-            Provider.GetRequiredService<AuditLogService>();
-            Provider.GetRequiredService<PointsService>();
+            var services = new[]
+            {
+                typeof(MessageCache), typeof(AutoReplyService), typeof(ChannelService), typeof(InviteService),
+                typeof(CommandHandler), typeof(ReactionHandler), typeof(AuditLogService), typeof(PointsService),
+                typeof(EmoteService)
+            };
+
+            foreach (var service in services) Provider.GetRequiredService(service);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

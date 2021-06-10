@@ -16,14 +16,14 @@ namespace GrillBot.App.Handlers
 
         public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers, ILogger<ReactionHandler> logger) : base(client)
         {
-            DiscordClient.ReactionAdded += (message, channel, reaction) => OnReactionChangedAsync(message, channel, reaction, ReactionEvents.Added);
-            DiscordClient.ReactionRemoved += (message, channel, reaction) => OnReactionChangedAsync(message, channel, reaction, ReactionEvents.Removed);
+            DiscordClient.ReactionAdded += (message, _, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added);
+            DiscordClient.ReactionRemoved += (message, _, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed);
 
             EventHandlers = eventHandlers;
             Logger = logger;
         }
 
-        private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel _, SocketReaction reaction, ReactionEvents @event)
+        private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, SocketReaction reaction, ReactionEvents @event)
         {
             var msg = await message.GetOrDownloadAsync();
             if (msg == null) return;

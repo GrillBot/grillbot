@@ -1,11 +1,16 @@
 ﻿using Discord;
 using Discord.Commands;
+using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Data;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,6 +20,13 @@ namespace GrillBot.App.Modules.Emotes
     [Summary("Správa emotů")]
     public class EmotesModule : Infrastructure.ModuleBase
     {
+        private GrillBotContextFactory DbFactory { get; }
+
+        public EmotesModule(GrillBotContextFactory dbFactory)
+        {
+            DbFactory = dbFactory;
+        }
+
         [Group("list")]
         [Summary("Získání seznamu statistiky emotů")]
         public class EmoteListSubModule : Infrastructure.ModuleBase
@@ -132,6 +144,55 @@ namespace GrillBot.App.Modules.Emotes
 
                 return resultQuery;
             }
+        }
+
+        [Command("get")]
+        [Summary("Získá informace o požadovaném emote.")]
+        public async Task GetEmoteInfoAsync(IEmote emote)
+        {
+            if (emote is not Emote _emote)
+            {
+                await ReplyAsync("Unicode emoji nejsou v tomto příkazu podporovány.");
+                return;
+            }
+
+            using var dbContext = DbFactory.Create();
+            var baseQuery = dbContext.Emotes.AsQueryable().Where(o => o.EmoteId == _emote.ToString() && o.UseCount > 0);
+
+            var queryData = baseQuery.GroupBy(o => o.EmoteId).Select(o => new
+            {
+                UsersCount = o.Count(),
+                FirstOccurence = o.Min(x => x.FirstOccurence),
+                LastOccurence = o.Max(x => x.LastOccurence),
+                UseCount = o.Sum(x => x.UseCount)
+            });
+
+            var data = await queryData.FirstOrDefaultAsync();
+            var topTenQuery = baseQuery.OrderByDescending(x => x.UseCount).ThenByDescending(x => x.LastOccurence).Take(10);
+
+            var topTen = (await topTenQuery.ToListAsync()).Select((o, i) =>
+            {
+                var user = Context.Client.FindUserAsync(Convert.ToUInt64(o.UserId)).Result;
+                return $"**{i + 1,2}.** {user.GetDisplayName()} ({o.UseCount})";
+            });
+
+            var embed = new EmbedBuilder()
+                .WithFooter(Context.User)
+                .WithAuthor("Statistika použití emote")
+                .WithColor(Color.Blue)
+                .WithCurrentTimestamp()
+                .WithTitle(_emote.ToString())
+                .AddField("Název", _emote.Name, true)
+                .AddField("Animován", FormatHelper.FormatBooleanToCzech(_emote.Animated), true)
+                .AddField("První výskyt", data.FirstOccurence.ToCzechFormat(), true)
+                .AddField("Poslední výskyt", data.LastOccurence.ToCzechFormat(), true)
+                .AddField("Od posl. použití", (DateTime.Now - data.LastOccurence).Humanize(culture: new CultureInfo("cs-CZ")), true)
+                .AddField("Počet použití", data.UseCount, true)
+                .AddField("Počet uživatelů", data.UsersCount, true)
+                .AddField("TOP 10 použití", string.Join("\n", topTen), false)
+                .AddField("Odkaz", _emote.Url, false);
+
+            await ReplyAsync(embed: embed.Build());
         }
     }
 }

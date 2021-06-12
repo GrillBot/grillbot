@@ -28,6 +28,8 @@ namespace GrillBot.Database.Entity
 
         public DateTime? WebAdminBannedTo { get; set; }
 
+        public string Note { get; set; }
+
         public ISet<GuildUser> Guilds { get; set; }
         public ISet<EmoteStatisticItem> UsedEmotes { get; set; }
         public ISet<RemindMessage> IncomingReminders { get; set; }

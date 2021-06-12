@@ -21,7 +21,7 @@ namespace GrillBot.App.Modules
 
         [Command("solve")]
         [Summary("Spočítá matematický výraz pomocí MathJS API.")]
-        public async Task SolveExpressionAsync([Remainder] string expression)
+        public async Task SolveExpressionAsync([Remainder][Name("vyraz")] string expression)
         {
             var client = HttpClientFactory.CreateClient("MathJS");
             var request = new MathJSRequest() { Expression = expression };

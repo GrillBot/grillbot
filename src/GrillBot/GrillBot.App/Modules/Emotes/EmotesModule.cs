@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 namespace GrillBot.App.Modules.Emotes
 {
     [Group("emote")]
+    [Name("Emotes")]
     [Summary("Správa emotů")]
     public class EmotesModule : Infrastructure.ModuleBase
     {
@@ -28,14 +29,16 @@ namespace GrillBot.App.Modules.Emotes
         }
 
         [Group("list")]
+        [Name("Seznam emotů")]
         [Summary("Získání seznamu statistiky emotů")]
         public class EmoteListSubModule : Infrastructure.ModuleBase
         {
             [Command]
             [Summary("Získání seznamu statistiky emotů podle počtu použití.")]
-            public Task<RuntimeResult> GetListByCount(IUser user = null) => Task.FromResult(new CommandRedirectResult($"emote list count desc {user?.Mention}".Trim()) as RuntimeResult);
+            public Task<RuntimeResult> GetListByCount([Name("id/tag/jmeno_uzivatele")] IUser user = null) => Task.FromResult(new CommandRedirectResult($"emote list count desc {user?.Mention}".Trim()) as RuntimeResult);
 
             [Group("count")]
+            [Name("Seznam emotů")]
             [Summary("Získání seznamu statistiky emotů podle počtu použití.")]
             public class EmoteListByCountSubModule : Infrastructure.ModuleBase
             {
@@ -48,7 +51,7 @@ namespace GrillBot.App.Modules.Emotes
 
                 [Command("desc")]
                 [Summary("Získání seznamu statistiky emotů podle počtu použití sestupně.")]
-                public Task GetDescendingListByCount(IUser user = null)
+                public Task GetDescendingListByCount([Name("id/tag/jmeno_uzivatele")] IUser user = null)
                 {
                     return CreateAndSendEmoteList(DbFactory, Context, user, "count", true, 0,
                         o => o.OrderByDescending(x => x.Sum(t => t.UseCount)).ThenByDescending(o => o.Max(x => x.LastOccurence)),
@@ -58,7 +61,7 @@ namespace GrillBot.App.Modules.Emotes
 
                 [Command("asc")]
                 [Summary("Získání seznamu statistiky emotů podle počtu použití vzestupně.")]
-                public Task GetAscendingListByCount(IUser user = null)
+                public Task GetAscendingListByCount([Name("id/tag/jmeno_uzivatele")] IUser user = null)
                 {
                     return CreateAndSendEmoteList(DbFactory, Context, user, "count", false, 0,
                         o => o.OrderBy(x => x.Sum(t => t.UseCount)).ThenBy(o => o.Max(x => x.LastOccurence)),
@@ -68,6 +71,7 @@ namespace GrillBot.App.Modules.Emotes
             }
 
             [Group("lastuse")]
+            [Name("Seznam emotů")]
             [Summary("Získání seznamu statistiky emotů podle data posledního použití.")]
             public class EmoteListByLastUseSubModule : Infrastructure.ModuleBase
             {
@@ -80,7 +84,7 @@ namespace GrillBot.App.Modules.Emotes
 
                 [Command("desc")]
                 [Summary("Získání seznamu statistiky emotů podle data posledního použití sestupně.")]
-                public Task GetDescendingListByCount(IUser user = null)
+                public Task GetDescendingListByCount([Name("id/tag/jmeno_uzivatele")] IUser user = null)
                 {
                     return CreateAndSendEmoteList(DbFactory, Context, user, "lastuse", true, 0,
                         o => o.OrderByDescending(x => x.Max(t => t.LastOccurence)).ThenByDescending(x => x.Sum(t => t.UseCount)),
@@ -90,7 +94,7 @@ namespace GrillBot.App.Modules.Emotes
 
                 [Command("asc")]
                 [Summary("Získání seznamu statistiky emotů podle data posledního použití vzestupně.")]
-                public Task GetAscendingListByCount(IUser user = null)
+                public Task GetAscendingListByCount([Name("id/tag/jmeno_uzivatele")] IUser user = null)
                 {
                     return CreateAndSendEmoteList(DbFactory, Context, user, "lastuse", false, 0,
                         o => o.OrderBy(x => x.Max(t => t.LastOccurence)).ThenBy(x => x.Sum(t => t.UseCount)),
@@ -148,7 +152,7 @@ namespace GrillBot.App.Modules.Emotes
 
         [Command("get")]
         [Summary("Získá informace o požadovaném emote.")]
-        public async Task GetEmoteInfoAsync(IEmote emote)
+        public async Task GetEmoteInfoAsync([Name("samotny/id/nazev emote")] IEmote emote)
         {
             if (emote is not Emote _emote)
             {

@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 
 namespace GrillBot.App.Modules
 {
+    [Name("Správa serveru")]
     [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze provést jen na serveru.")]
     public class ServerManagementModule : Infrastructure.ModuleBase
     {
@@ -77,6 +78,7 @@ namespace GrillBot.App.Modules
         }
 
         [Group("pin")]
+        [Name("Správa pinů")]
         [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provádet odepnutí zpráv, protože nemám oprávnění pracovat se zprávami.")]
         [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidat reakce indikující stav.")]
         [RequireBotPermission(GuildPermission.ReadMessageHistory, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na čtení historie.")]
@@ -155,6 +157,7 @@ namespace GrillBot.App.Modules
         public class GuildManagementSubmodule : Infrastructure.ModuleBase
         {
             [Group("info")]
+            [Name("Informace o serveru")]
             [RequireBotPermission(GuildPermission.Administrator, ErrorMessage = "Nemohu provést tento příkaz, protože nemám nejvyšší oprávnění.")]
             [RequireUserPermission(GuildPermission.ViewGuildInsights, ErrorMessage = "Tento příkaz může provést pouze uživatel, který vidí statistiky serveru ve vývojářském portálu.")]
             public class GuildInfoSubModule : Infrastructure.ModuleBase
@@ -279,6 +282,7 @@ namespace GrillBot.App.Modules
             }
 
             [Group("perms")]
+            [Name("Správa oprávnění serveru")]
             [RequireBotPermission(GuildPermission.ManageChannels, ErrorMessage = "Nemohu spravovat oprávnění, protože nemám oprávnění na správu kanálů.")]
             [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu spravovat oprávnění, protože nemám oprávnění na správu rolí.")]
             [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat role.")]
@@ -372,6 +376,8 @@ namespace GrillBot.App.Modules
                 }
 
                 [Group("useless")]
+                [Name("Zbytečná oprávnění")]
+                [Summary("Detekce a smazání zbytečných oprávnění.")]
                 [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nelze provést kontrolu zbytečných oprávnění, protože nemám oprávnění přidávat reakce.")]
                 public class GuildUselessPermissionsSubModule : Infrastructure.ModuleBase
                 {
@@ -385,6 +391,7 @@ namespace GrillBot.App.Modules
                     }
 
                     [Command("check")]
+                    [Summary("Zjistí zbytečná oprávnění a vygeneruje k nim report.")]
                     public async Task CheckUselessPermissionsAsync()
                     {
                         await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
@@ -402,7 +409,8 @@ namespace GrillBot.App.Modules
                     }
 
                     [Command("report")]
-                    public async Task GetUselessPermissionsReportAsync(Guid sessionId)
+                    [Summary("Vypíše data, která se nacházejí v reportu pod zadaným klíčem.")]
+                    public async Task GetUselessPermissionsReportAsync([Name("klic_vypoctu")] Guid sessionId)
                     {
                         await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
 
@@ -445,7 +453,8 @@ namespace GrillBot.App.Modules
                     }
 
                     [Command("clear")]
-                    public async Task RemoveUselessPermissionsAsync(Guid? sessionId = null)
+                    [Summary("Smaže zbytečná oprávnění na základě předchozího výpočtu, případně nově provedeného výpočtu.")]
+                    public async Task RemoveUselessPermissionsAsync([Name("klic_vypoctu")] Guid? sessionId = null)
                     {
                         await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
 
@@ -511,6 +520,7 @@ namespace GrillBot.App.Modules
             }
 
             [Group("react")]
+            [Name("Správa reakcí na serveru")]
             [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu spravovat reakce, protože nemám oprávnění pro správu zpráv.")]
             public class GuildReactSubModule : Infrastructure.ModuleBase
             {
@@ -525,17 +535,19 @@ namespace GrillBot.App.Modules
             }
 
             [Group("role")]
+            [Name("Správa rolí")]
             [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu pracovat s rolemi, protože nemám dostatečná oprávnění.")]
             public class GuildRolesSubModule : Infrastructure.ModuleBase
             {
                 [Group("info")]
-                [Summary("Informace o roli.")]
+                [Name("Informace o roli")]
                 [RequireUserPremiumOrPermissions(GuildPermission.ViewGuildInsights, GuildPermission.ManageRoles, ErrorMessage =
                     "Tento příkaz může provést pouze uživatel, který vidí statistiky serveru ve vývojářském portálu, nebo může spravovat role, nebo má na serveru boost.")]
                 public class GuildRoleInfoSubModule : Infrastructure.ModuleBase
                 {
                     [Command("")]
                     [Alias("position")]
+                    [Summary("Seznam rolí seřazených podle hierarchie.")]
                     public async Task GetRoleInfoListByPositionAsync()
                     {
                         await Context.Guild.DownloadUsersAsync();
@@ -549,6 +561,7 @@ namespace GrillBot.App.Modules
                     }
 
                     [Command("members")]
+                    [Summary("Seznam rolí seřazeno podle počtu uživatelů s přiřazenou rolí.")]
                     public async Task GetRoleInfoListByMemberCountAsync()
                     {
                         await Context.Guild.DownloadUsersAsync();
@@ -562,6 +575,7 @@ namespace GrillBot.App.Modules
                     }
 
                     [Command("")]
+                    [Summary("Detailní informace o roli.")]
                     public async Task GetRoleInfoAsync(SocketRole role)
                     {
                         await Context.Guild.DownloadUsersAsync();
@@ -641,6 +655,7 @@ namespace GrillBot.App.Modules
 
             [Group("invite")]
             [Summary("Správa pozvánek")]
+            [Name("Pozvánky")]
             [RequireBotPermission(GuildPermission.CreateInstantInvite, ErrorMessage = "Nemohu pracovat s pozvánkami, protože nemám oprávnění pro vytvoření pozvánek.")]
             [RequireBotPermission(GuildPermission.ManageGuild, ErrorMessage = "Nemohu pracovat s pozvánkami, protože nemám oprávnění pracovat se serverem.")]
             [RequireUserPermission(GuildPermission.ManageGuild, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat server.")]
@@ -655,7 +670,7 @@ namespace GrillBot.App.Modules
 
                 [Command("assign")]
                 [Summary("Přiřazení pozvánky k uživateli.")]
-                public async Task AssignCodeToUserAsync(SocketUser user, string code)
+                public async Task AssignCodeToUserAsync([Name("id/tag/jmeno_uzivatele")] SocketUser user, [Name("kod_pozvanky")] string code)
                 {
                     if (string.Equals(code, "vanity", StringComparison.InvariantCultureIgnoreCase))
                         code = Context.Guild.VanityURLCode;

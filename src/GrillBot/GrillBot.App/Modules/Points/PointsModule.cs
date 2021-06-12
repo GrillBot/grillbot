@@ -15,6 +15,7 @@ namespace GrillBot.App.Modules.Points
 {
     [Group("points")]
     [Alias("body")]
+    [Name("Body")]
     [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]
     public class PointsModule : Infrastructure.ModuleBase
     {
@@ -30,7 +31,7 @@ namespace GrillBot.App.Modules.Points
         [Command("where")]
         [Alias("kde", "gde")]
         [Summary("Získání aktuálního stavu bodů uživatele.")]
-        public async Task GetPointsStateAsync(SocketUser user = null)
+        public async Task GetPointsStateAsync([Name("id/tag/jmeno_uzivatele")] SocketUser user = null)
         {
             if (user == null) user = Context.User;
 
@@ -48,7 +49,7 @@ namespace GrillBot.App.Modules.Points
         [Command("give")]
         [Alias("dej")]
         [Summary("Přidá uživateli zadané množství bodů.")]
-        public async Task GivePointsAsync(int amount, SocketUser user)
+        public async Task GivePointsAsync([Name("mnozstvi")] int amount, [Name("uzivatel")] SocketUser user)
         {
             await PointsService.IncrementPointsAsync(Context.Guild, user, amount);
             await ReplyAsync($"Body byly úspěšně {(amount > 0 ? "přidány" : "odebrány")}.");
@@ -57,7 +58,7 @@ namespace GrillBot.App.Modules.Points
         [Command("transfer")]
         [Alias("preved")]
         [Summary("Převede určité množství bodů od jednoho uživatele druhému.")]
-        public async Task TransferPointsAsync(SocketUser from, SocketUser to, int amount)
+        public async Task TransferPointsAsync([Name("id/tag/jmeno_uzivatele (Od koho)")] SocketUser from, [Name("id/tag/jmeno_uzivatele (Komu)")] SocketUser to, [Name("mnozstvi")] int amount)
         {
             try
             {

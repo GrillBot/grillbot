@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 namespace GrillBot.App.Modules
 {
     [Group("channel")]
+    [Name("Správa kanálů")]
     [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze provést pouze na serveru.")]
     public class ChannelModule : Infrastructure.ModuleBase
     {

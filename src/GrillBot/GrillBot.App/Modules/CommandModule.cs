@@ -2,9 +2,6 @@
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Modules

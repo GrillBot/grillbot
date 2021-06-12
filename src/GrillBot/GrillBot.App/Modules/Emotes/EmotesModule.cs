@@ -4,14 +4,9 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Data;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Modules.Emotes
@@ -41,36 +36,22 @@ namespace GrillBot.App.Modules.Emotes
 
                 [Command("desc")]
                 [Summary("Získání seznamu statistiky emotů podle počtu použití sestupně.")]
-                public async Task GetDescendingListByCount(IUser user = null)
+                public Task GetDescendingListByCount(IUser user = null)
                 {
-                    using var dbContext = DbFactory.Create();
-
-                    var query = GetListQuery(dbContext, user?.Id, o => o.OrderByDescending(x => x.Sum(t => t.UseCount)).ThenByDescending(o => o.Max(x => x.LastOccurence)),
-                        0, EmbedBuilder.MaxFieldCount);
-                    var data = await query.ToListAsync();
-
-                    var list = new EmbedBuilder().WithEmoteList(data, Context.User, user, Context.IsPrivate, true, "count", 0);
-                    var message = await ReplyAsync(embed: list.Build());
-
-                    if (data.Count > 0)
-                        await message.AddReactionsAsync(Emojis.PaginationEmojis);
+                    return CreateAndSendEmoteList(DbFactory, Context, user, "count", true, 0,
+                        o => o.OrderByDescending(x => x.Sum(t => t.UseCount)).ThenByDescending(o => o.Max(x => x.LastOccurence)),
+                        embed => ReplyAsync(embed: embed)
+                    );
                 }
 
                 [Command("asc")]
                 [Summary("Získání seznamu statistiky emotů podle počtu použití vzestupně.")]
-                public async Task GetAscendingListByCount(IUser user = null)
+                public Task GetAscendingListByCount(IUser user = null)
                 {
-                    using var dbContext = DbFactory.Create();
-
-                    var query = GetListQuery(dbContext, user?.Id, o => o.OrderBy(x => x.Sum(t => t.UseCount)).ThenBy(o => o.Max(x => x.LastOccurence)),
-                        0, EmbedBuilder.MaxFieldCount);
-                    var data = await query.ToListAsync();
-
-                    var list = new EmbedBuilder().WithEmoteList(data, Context.User, user, Context.IsPrivate, false, "count", 0);
-                    var message = await ReplyAsync(embed: list.Build());
-
-                    if (data.Count > 0)
-                        await message.AddReactionsAsync(Emojis.PaginationEmojis);
+                    return CreateAndSendEmoteList(DbFactory, Context, user, "count", false, 0,
+                        o => o.OrderBy(x => x.Sum(t => t.UseCount)).ThenBy(o => o.Max(x => x.LastOccurence)),
+                        embed => ReplyAsync(embed: embed)
+                    );
                 }
             }
 
@@ -78,13 +59,49 @@ namespace GrillBot.App.Modules.Emotes
             [Summary("Získání seznamu statistiky emotů podle data posledního použití.")]
             public class EmoteListByLastUseSubModule : Infrastructure.ModuleBase
             {
+                private GrillBotContextFactory DbFactory { get; }
+
+                public EmoteListByLastUseSubModule(GrillBotContextFactory dbFactory)
+                {
+                    DbFactory = dbFactory;
+                }
+
                 [Command("desc")]
                 [Summary("Získání seznamu statistiky emotů podle data posledního použití sestupně.")]
-                public async Task GetDescendingListByCount(IUser user = null) { }
+                public Task GetDescendingListByCount(IUser user = null)
+                {
+                    return CreateAndSendEmoteList(DbFactory, Context, user, "lastuse", true, 0,
+                        o => o.OrderByDescending(x => x.Max(t => t.LastOccurence)).ThenByDescending(x => x.Sum(t => t.UseCount)),
+                        embed => ReplyAsync(embed: embed)
+                    );
+                }
 
                 [Command("asc")]
                 [Summary("Získání seznamu statistiky emotů podle data posledního použití vzestupně.")]
-                public async Task GetAscendingListByCount(IUser user = null) { }
+                public Task GetAscendingListByCount(IUser user = null)
+                {
+                    return CreateAndSendEmoteList(DbFactory, Context, user, "lastuse", false, 0,
+                        o => o.OrderBy(x => x.Max(t => t.LastOccurence)).ThenBy(x => x.Sum(t => t.UseCount)),
+                        embed => ReplyAsync(embed: embed)
+                    );
+                }
+            }
+
+            public static async Task CreateAndSendEmoteList(GrillBotContextFactory factory, SocketCommandContext context, IUser user,
+                string type, bool sortDesc, int page,
+                Func<IQueryable<IGrouping<string, EmoteStatisticItem>>, IQueryable<IGrouping<string, EmoteStatisticItem>>> orderFunc,
+                Func<Embed, Task<IUserMessage>> replyFunc)
+            {
+                using var dbContext = factory.Create();
+
+                var query = GetListQuery(dbContext, user?.Id, orderFunc, null, EmbedBuilder.MaxFieldCount);
+                var data = await query.ToListAsync();
+
+                var list = new EmbedBuilder().WithEmoteList(data, context.User, user, context.IsPrivate, sortDesc, type, page);
+                var message = await replyFunc(list.Build());
+
+                if (data.Count > 0)
+                    await message.AddReactionsAsync(Emojis.PaginationEmojis);
             }
 
             public static IQueryable<Tuple<string, int, long, DateTime, DateTime>> GetListQuery(GrillBotContext context, ulong? userId,

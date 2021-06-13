@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Extensions
@@ -16,6 +17,12 @@ namespace GrillBot.App.Extensions
             }
 
             return result;
+        }
+
+        public static IEnumerable<IEnumerable<T>> SplitInParts<T>(this IEnumerable<T> source, int partSize)
+        {
+            for (int i = 0; i < Math.Ceiling((double)source.Count() / partSize); i++)
+                yield return source.Skip(i * partSize).Take(partSize);
         }
     }
 }

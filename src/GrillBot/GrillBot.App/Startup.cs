@@ -5,7 +5,9 @@ using GrillBot.App.Handlers;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
+using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.App.Services.MessageCache;
 using GrillBot.Database;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -112,6 +114,8 @@ namespace GrillBot.App
                     };
                 };
             });
+
+            services.AddCronJob<MessageCacheCheckCron>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)

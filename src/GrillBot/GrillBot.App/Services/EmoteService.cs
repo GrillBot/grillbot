@@ -19,10 +19,10 @@ namespace GrillBot.App.Services
         private GrillBotContextFactory DbFactory { get; }
         private string CommandPrefix { get; }
         private ConcurrentBag<GuildEmote> SupportedEmotes { get; }
-        private MessageCache MessageCache { get; }
+        private MessageCache.MessageCache MessageCache { get; }
 
         public EmoteService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
-            MessageCache messageCache) : base(client)
+            MessageCache.MessageCache messageCache) : base(client)
         {
             DbFactory = dbFactory;
             CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");

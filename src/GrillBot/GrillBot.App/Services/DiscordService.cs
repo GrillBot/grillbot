@@ -48,7 +48,7 @@ namespace GrillBot.App.Services
         {
             var services = new[]
             {
-                typeof(MessageCache), typeof(AutoReplyService), typeof(ChannelService), typeof(InviteService),
+                typeof(MessageCache.MessageCache), typeof(AutoReplyService), typeof(ChannelService), typeof(InviteService),
                 typeof(CommandHandler), typeof(ReactionHandler), typeof(AuditLogService), typeof(PointsService),
                 typeof(EmoteService)
             };

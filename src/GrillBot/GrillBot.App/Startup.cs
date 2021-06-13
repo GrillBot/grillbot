@@ -56,6 +56,7 @@ namespace GrillBot.App
                 .AddSingleton<LoggingService>()
                 .AddSingleton<MessageCache>()
                 .AddSingleton<FileStorageFactory>()
+                .AddSingleton<RandomizationService>()
                 .AddDatabase(connectionString)
                 .AddMemoryCache()
                 .AddControllers();

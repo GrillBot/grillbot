@@ -219,15 +219,20 @@ namespace GrillBot.App.Modules
                     var guild = Context.Guild;
                     await guild.DownloadUsersAsync();
 
-                    var groups = guild.Users.GroupBy(o => o.Status)
-                        .ToDictionary(o => o.Key, o => o.Count());
+                    var groupsQuery = guild.Users.GroupBy(o => o.Status);
+                    var groups = groupsQuery.ToDictionary(o => o.Key, o => o.Count());
 
-                    var builder = new StringBuilder()
-                        .Append("Server: **").Append(guild.Name).AppendLine("**")
-                        .Append("Online: **").Append(groups.GetValueOrDefault(UserStatus.Online)).AppendLine("**")
-                        .Append("Neaktivní: **").Append(groups.GetValueOrDefault(UserStatus.AFK) + groups.GetValueOrDefault(UserStatus.Idle)).AppendLine("**")
-                        .Append("Nerušit: **").Append(groups.GetValueOrDefault(UserStatus.DoNotDisturb)).AppendLine("**")
-                        .Append("Offline: **").Append(groups.GetValueOrDefault(UserStatus.Invisible) + groups.GetValueOrDefault(UserStatus.Offline)).AppendLine("**").AppendLine();
+                    var embed = new EmbedBuilder()
+                        .WithAuthor("Stav serveru")
+                        .WithColor(guild.GetHighestRole(true)?.Color ?? Color.Blue)
+                        .WithCurrentTimestamp()
+                        .WithFooter(Context.User)
+                        .WithTitle(guild.Name)
+                        .WithThumbnailUrl(guild.IconUrl)
+                        .AddField("Online", groups.GetValueOrDefault(UserStatus.Online), true)
+                        .AddField("Neaktivní", groups.GetValueOrDefault(UserStatus.AFK) + groups.GetValueOrDefault(UserStatus.Idle), true)
+                        .AddField("Nerušit", groups.GetValueOrDefault(UserStatus.DoNotDisturb), true)
+                        .AddField("Offline", groups.GetValueOrDefault(UserStatus.Invisible) + groups.GetValueOrDefault(UserStatus.Offline), true);
 
                     using var dbContext = DbContextFactory.Create();
 
@@ -246,21 +251,31 @@ namespace GrillBot.App.Modules
 
                     if (guildEntity == null)
                     {
-                        builder.AppendLine("**Pro tento server ještě v databázi neexistují žádné záznamy.**");
+                        embed.AddField("Stav databáze", "Pro tento server ještě v databázi neexistují žádné záznamy.", false);
                     }
                     else
                     {
-                        builder.AppendLine("Stav databáze:")
-                            .Append("Uživatelů: **").Append(guildEntity.Users).AppendLine("**")
-                            .Append("Pozvánek: **").Append(guildEntity.Invites).AppendLine("**")
-                            .Append("Kanálů: **").Append(guildEntity.Channels).AppendLine("**")
-                            .Append("Hledání: **").Append(guildEntity.Searches).AppendLine("**")
-                            .Append("Unverify: **").Append(guildEntity.Unverifies).AppendLine("**")
-                            .Append("Unverify (logy): **").Append(guildEntity.UnverifyLogs).AppendLine("**")
-                            .Append("Logy: **").Append(guildEntity.AuditLogs).AppendLine("**");
+                        embed.AddField("Stav databáze", "__ __", false)
+                            .AddField("Uživatelů", guildEntity.Users, true)
+                            .AddField("Pozvánek", guildEntity.Invites, true)
+                            .AddField("Kanálů", guildEntity.Channels, true)
+                            .AddField("Hledání", guildEntity.Searches, true)
+                            .AddField("Unverify", guildEntity.Unverifies, true)
+                            .AddField("Unverify (logy)", guildEntity.UnverifyLogs, true)
+                            .AddField("Logy", guildEntity.AuditLogs, true);
                     }
 
-                    await ReplyAsync(builder.ToString());
+                    var devices = groupsQuery.Where(o => o.Key != UserStatus.Offline && o.Key != UserStatus.Invisible)
+                        .SelectMany(o => o)
+                        .GroupBy(o => o.ActiveClients.FirstOrDefault())
+                        .ToDictionary(o => o.Key, o => o.Count());
+
+                    embed.AddField("Aktivní zařízení", "__ __", false)
+                        .AddField("Desktop", devices.GetValueOrDefault(ClientType.Desktop), true)
+                        .AddField("Mobilní", devices.GetValueOrDefault(ClientType.Mobile), true)
+                        .AddField("Web", devices.GetValueOrDefault(ClientType.Web), true);
+
+                    await ReplyAsync(embed: embed.Build());
                 }
 
                 [Command("limits")]

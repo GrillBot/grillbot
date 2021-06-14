@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -9,7 +8,7 @@ namespace GrillBot.App.Extensions.Discord
     {
         static public string GetDisplayName(this IUser user, bool withDiscriminator = true)
         {
-            if (user is SocketGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
+            if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
                 return sgu.Nickname;
 
             return withDiscriminator ? $"{user.Username}#{user.Discriminator}" : user.Username;
@@ -24,7 +23,7 @@ namespace GrillBot.App.Extensions.Discord
 
         static public string GetFullName(this IUser user)
         {
-            if (user is SocketGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
+            if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
                 return $"{sgu.Nickname} ({sgu.Username}#{sgu.Discriminator})";
 
             return $"{user.Username}#{user.Discriminator}";

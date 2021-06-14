@@ -103,5 +103,84 @@ namespace GrillBot.Tests.App.Extensions.Discord
                 Assert.IsTrue(data.Result.Length > 0);
             });
         }
+
+        [TestMethod]
+        public void GetDisplayName_GuildUser_WithoutNick()
+        {
+            var mock = new Mock<IGuildUser>();
+            mock.Setup(o => o.Username).Returns("Test");
+            mock.Setup(o => o.Discriminator).Returns("1234");
+
+            var result = mock.Object.GetDisplayName();
+            Assert.AreEqual("Test#1234", result);
+        }
+
+        [TestMethod]
+        public void GetDisplayName_GuildUser_WithNick()
+        {
+            var mock = new Mock<IGuildUser>();
+            mock.Setup(o => o.Nickname).Returns("Testik");
+            mock.Setup(o => o.Username).Returns("Test");
+            mock.Setup(o => o.Discriminator).Returns("1234");
+
+            var result = mock.Object.GetDisplayName();
+            Assert.AreEqual("Testik", result);
+        }
+
+        [TestMethod]
+        public void GetDisplayName_BasicUser()
+        {
+            var mock = new Mock<IUser>();
+            mock.Setup(o => o.Username).Returns("Test");
+            mock.Setup(o => o.Discriminator).Returns("1234");
+
+            var result = mock.Object.GetDisplayName();
+            Assert.AreEqual("Test#1234", result);
+        }
+
+        [TestMethod]
+        public void GetDisplayName_BasicUser_WithoutDiscriminator()
+        {
+            var mock = new Mock<IUser>();
+            mock.Setup(o => o.Username).Returns("Test");
+            mock.Setup(o => o.Discriminator).Returns("1234");
+
+            var result = mock.Object.GetDisplayName(false);
+            Assert.AreEqual("Test", result);
+        }
+
+        [TestMethod]
+        public void GetFullName_GuildUser_WithoutNick()
+        {
+            var mock = new Mock<IGuildUser>();
+            mock.Setup(o => o.Username).Returns("Test");
+            mock.Setup(o => o.Discriminator).Returns("1234");
+
+            var result = mock.Object.GetFullName();
+            Assert.AreEqual("Test#1234", result);
+        }
+
+        [TestMethod]
+        public void GetFullName_GuildUser_WithNick()
+        {
+            var mock = new Mock<IGuildUser>();
+            mock.Setup(o => o.Nickname).Returns("Testik");
+            mock.Setup(o => o.Username).Returns("Test");
+            mock.Setup(o => o.Discriminator).Returns("1234");
+
+            var result = mock.Object.GetFullName();
+            Assert.AreEqual("Testik (Test#1234)", result);
+        }
+
+        [TestMethod]
+        public void GetFullName_BasicUser()
+        {
+            var mock = new Mock<IUser>();
+            mock.Setup(o => o.Username).Returns("Test");
+            mock.Setup(o => o.Discriminator).Returns("1234");
+
+            var result = mock.Object.GetFullName();
+            Assert.AreEqual("Test#1234", result);
+        }
     }
 }

@@ -91,7 +91,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         }
 
         [TestMethod]
-        public void DownloadAvatar_Async()
+        public void DownloadAvatar()
         {
             var mock = new Mock<IUser>();
             mock.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns("https://www.google.cz/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
@@ -181,6 +181,48 @@ namespace GrillBot.Tests.App.Extensions.Discord
 
             var result = mock.Object.GetFullName();
             Assert.AreEqual("Test#1234", result);
+        }
+
+        [TestMethod]
+        public void CreateProfilePicFilename_DefaultAvatar()
+        {
+            var user = new Mock<IUser>();
+            user.Setup(o => o.Id).Returns(12345);
+            user.Setup(o => o.AvatarId).Returns((string)null);
+            user.Setup(o => o.Discriminator).Returns("1234");
+
+            const string expected = "12345_1234_128.png";
+
+            var result = user.Object.CreateProfilePicFilename(128);
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void CreateProfilePicFilename_PngAvatar()
+        {
+            var user = new Mock<IUser>();
+            user.Setup(o => o.Id).Returns(12345);
+            user.Setup(o => o.AvatarId).Returns("abcd");
+            user.Setup(o => o.Discriminator).Returns("1234");
+
+            const string expected = "12345_abcd_128.png";
+
+            var result = user.Object.CreateProfilePicFilename(128);
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void CreateProfilePicFilename_GifAvatar()
+        {
+            var user = new Mock<IUser>();
+            user.Setup(o => o.Id).Returns(12345);
+            user.Setup(o => o.AvatarId).Returns("a_abcd");
+            user.Setup(o => o.Discriminator).Returns("1234");
+
+            const string expected = "12345_a_abcd_128.gif";
+
+            var result = user.Object.CreateProfilePicFilename(128);
+            Assert.AreEqual(expected, result);
         }
     }
 }

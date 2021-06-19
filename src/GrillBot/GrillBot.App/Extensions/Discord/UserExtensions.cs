@@ -37,6 +37,7 @@ namespace GrillBot.App.Extensions.Discord
             return await client.GetByteArrayAsync(url);
         }
 
-        static public bool HaveAnimatedAvatar(this IUser user) => user.AvatarId.StartsWith("a_");
+        static public bool HaveAnimatedAvatar(this IUser user) => user.AvatarId?.StartsWith("a_") ?? false;
+        static public string CreateProfilePicFilename(this IUser user, int size) => $"{user.Id}_{user.AvatarId ?? user.Discriminator}_{size}.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
     }
 }

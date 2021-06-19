@@ -18,6 +18,7 @@
     <PackageReference Include="ConsoleTableExt" Version="3.1.7" />
     <PackageReference Include="Cronos" Version="0.7.1" />
     <PackageReference Include="Discord.Net" Version="2.4.0" />
+    <PackageReference Include="GrapeCity.Documents.Imaging" Version="4.1.0.662" />
     <PackageReference Include="Humanizer.Core.cs" Version="2.11.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.6">

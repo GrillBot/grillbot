@@ -7,11 +7,27 @@
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.3.1" />
     <PackageReference Include="NSwag.Annotations" Version="13.11.1" />
+    <PackageReference Include="System.Resources.ResourceManager" Version="4.3.0" />
     <PackageReference Include="Unicode.net" Version="0.1.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GrillBot.Database\GrillBot.Database.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\Peepolove\PeepoloveResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PeepoloveResources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Peepolove\PeepoloveResources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PeepoloveResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

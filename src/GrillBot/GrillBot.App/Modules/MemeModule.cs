@@ -4,6 +4,7 @@ using GrapeCity.Documents.Imaging;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.Data;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.Duck;
 using GrillBot.Data.Resources.Peepoangry;
@@ -15,6 +16,7 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -352,6 +354,76 @@ namespace GrillBot.App.Modules
         {
             if (!string.IsNullOrEmpty(note))
                 embed.AddField(title, note, false);
+        }
+
+        #endregion
+
+        #region Hi
+
+        [Command("hi")]
+        [Summary("Pozdraví uživatele")]
+        public async Task HiAsync(int? @base = null)
+        {
+            var supportedBase = new[] { 2, 8, 16, (int?)null };
+            if (!supportedBase.Contains(@base)) return;
+
+            var emote = Configuration.GetValue<string>("Discord:Emotes:FeelsWowMan");
+            var msg = $"Ahoj {Context.User.GetDisplayName()} {emote}";
+
+            if (@base == null)
+                await ReplyAsync(msg);
+            else
+                await ReplyAsync(string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));
+        }
+
+        #endregion
+
+        #region Emojization
+
+        [Command("emojize")]
+        [Summary("Znovu pošle zprávu jako emoji.")]
+        [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění mazat zprávy.")]
+        public async Task EmojizeAsync([Remainder][Name("zprava")] string message = null)
+        {
+            if (string.IsNullOrEmpty(message))
+                message = Context.Message.ReferencedMessage?.Content;
+
+            if (string.IsNullOrEmpty(message))
+            {
+                await ReplyAsync("Nemám zprávu, kterou můžu převést.");
+                return;
+            }
+
+            var emojized = Emojis.ConvertStringToEmoji(message, true);
+
+            await Context.Message.DeleteAsync();
+            await ReplyAsync(string.Join(" ", emojized.Select(o => o.ToString())), false, null, null, null, null);
+        }
+
+        [Command("reactjize")]
+        [Summary("Převede zprávu na emoji a zapíše jako reakce na zprávu v reply.")]
+        [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění na přidávání reakcí.")]
+        [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění na mazání zpráv.")]
+        public async Task ReactjizeAsync([Remainder][Name("zprava")] string msg = null)
+        {
+            if (Context.Message.ReferencedMessage == null)
+            {
+                await ReplyAsync("Tento příkaz vyžaduje reply.");
+                return;
+            }
+
+            try
+            {
+                var emojis = Emojis.ConvertStringToEmoji(msg, false);
+                if (emojis.Count == 0) return;
+
+                await Context.Message.ReferencedMessage.AddReactionsAsync(emojis.ToArray());
+                await Context.Message.DeleteAsync();
+            }
+            catch (ArgumentException ex)
+            {
+                await ReplyAsync(ex.Message);
+            }
         }
 
         #endregion

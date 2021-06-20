@@ -71,7 +71,7 @@ namespace GrillBot.App.Extensions.Discord
 
         static public int CalculateFileUploadLimit(this IGuild guild)
         {
-            return guild.PremiumTier switch
+            return guild?.PremiumTier switch
             {
                 PremiumTier.Tier2 => 50,
                 PremiumTier.Tier3 => 100,

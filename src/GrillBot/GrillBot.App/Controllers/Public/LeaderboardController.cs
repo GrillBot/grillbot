@@ -61,7 +61,7 @@ namespace GrillBot.App.Controllers.Public
 
             using var dbContext = DbFactory.Create();
 
-            var query = dbContext.Channels.AsQueryable()
+            var query = dbContext.UserChannels.AsQueryable()
                 .Where(o => o.GuildId == metadata.GuildId.ToString() && availableChannels.Contains(o.Id) && o.Count > 0)
                 .GroupBy(o => new { o.GuildId, o.Id }).Select(o => new
                 {

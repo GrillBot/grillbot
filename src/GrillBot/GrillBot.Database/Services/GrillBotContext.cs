@@ -35,17 +35,24 @@ namespace GrillBot.Database.Services
                 buider.HasOne(o => o.ToUser).WithMany(o => o.IncomingReminders);
             });
 
-            modelBuilder.Entity<GuildChannel>(builder =>
+            modelBuilder.Entity<GuildUserChannel>(builder =>
             {
                 builder.HasKey(o => new { o.GuildId, o.Id, o.UserId });
-                builder.HasOne(o => o.Guild).WithMany(o => o.Channels);
+                builder.HasOne(o => o.Guild).WithMany();
                 builder.HasOne(o => o.User).WithMany(o => o.Channels);
+                builder.HasOne(o => o.Channel).WithMany(o => o.Channels).HasForeignKey(o => new { o.GuildId, o.Id });
+            });
+
+            modelBuilder.Entity<GuildChannel>(builder =>
+            {
+                builder.HasKey(o => new { o.GuildId, o.ChannelId });
+                builder.HasOne(o => o.Guild).WithMany(o => o.Channels);
             });
 
             modelBuilder.Entity<SearchItem>(builder =>
             {
                 builder.HasOne(o => o.User).WithMany(o => o.SearchItems);
-                builder.HasOne(o => o.Channel).WithMany(o => o.SearchItems).HasForeignKey(o => new { o.GuildId, o.ChannelId, o.UserId });
+                builder.HasOne(o => o.Channel).WithMany(o => o.SearchItems).HasForeignKey(o => new { o.GuildId, o.ChannelId });
                 builder.HasOne(o => o.Guild).WithMany(o => o.Searches);
             });
 
@@ -68,7 +75,7 @@ namespace GrillBot.Database.Services
             {
                 builder.HasOne(o => o.Guild).WithMany(o => o.AuditLogs);
                 builder.HasOne(o => o.ProcessedGuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.ProcessedUserId });
-                builder.HasOne(o => o.GuildChannel).WithMany().HasForeignKey(o => new { o.GuildId, o.ChannelId, o.ProcessedUserId });
+                builder.HasOne(o => o.GuildChannel).WithMany().HasForeignKey(o => new { o.GuildId, o.ChannelId });
                 builder.HasMany(o => o.Files).WithOne(o => o.AuditLogItem);
             });
 
@@ -79,6 +86,7 @@ namespace GrillBot.Database.Services
         public DbSet<Guild> Guilds { get; set; }
         public DbSet<GuildUser> GuildUsers { get; set; }
         public DbSet<GuildChannel> Channels { get; set; }
+        public DbSet<GuildUserChannel> UserChannels { get; set; }
         public DbSet<Invite> Invites { get; set; }
         public DbSet<SearchItem> SearchItems { get; set; }
         public DbSet<Unverify> Unverifies { get; set; }

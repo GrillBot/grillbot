@@ -8,6 +8,7 @@ using GrillBot.App.Services;
 using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.App.Services.Sync;
 using GrillBot.Database;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -55,6 +56,7 @@ namespace GrillBot.App
             services
                 .AddSingleton(new DiscordSocketClient(discordConfig))
                 .AddSingleton(new CommandService(commandsConfig))
+                .AddSingleton<DiscordSyncService>()
                 .AddSingleton<LoggingService>()
                 .AddSingleton<MessageCache>()
                 .AddSingleton<FileStorageFactory>()

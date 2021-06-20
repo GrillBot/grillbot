@@ -48,7 +48,7 @@ namespace GrillBot.App.Modules
 
             using var dbContext = DbFactory.Create();
 
-            var query = dbContext.Channels.AsQueryable()
+            var query = dbContext.UserChannels.AsQueryable()
                 .Where(o => o.GuildId == Context.Guild.Id.ToString() && availableChannels.Contains(o.Id) && o.Count > 0);
 
             var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.Id }).Select(o => new
@@ -85,7 +85,7 @@ namespace GrillBot.App.Modules
 
             using var dbContext = DbFactory.Create();
 
-            var channelDataQuery = dbContext.Channels.AsQueryable()
+            var channelDataQuery = dbContext.UserChannels.AsQueryable()
                 .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.Id == channel.Id.ToString() && o.Count > 0);
 
             var groupedDataQuery = channelDataQuery.GroupBy(o => new { o.GuildId, o.Id }).Select(o => new

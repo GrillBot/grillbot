@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace GrillBot.Database.Migrations
 {
     [DbContext(typeof(GrillBotContext))]
-    partial class GrillBotContextModelSnapshot : ModelSnapshot
+    [Migration("20210620150633_NamesInDb")]
+    partial class NamesInDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -78,9 +80,9 @@ namespace GrillBot.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GuildId", "ChannelId");
-
                     b.HasIndex("GuildId", "ProcessedUserId");
+
+                    b.HasIndex("GuildId", "ChannelId", "ProcessedUserId");
 
                     b.ToTable("AuditLogs");
                 });
@@ -133,16 +135,26 @@ namespace GrillBot.Database.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
-                    b.Property<string>("ChannelId")
+                    b.Property<string>("Id")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<string>("UserId")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
-                    b.HasKey("GuildId", "ChannelId");
+                    b.Property<long>("Count")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("FirstMessageAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("LastMessageAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("GuildId", "Id", "UserId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Channels");
                 });
@@ -187,36 +199,6 @@ namespace GrillBot.Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("GuildUsers");
-                });
-
-            modelBuilder.Entity("GrillBot.Database.Entity.GuildUserChannel", b =>
-                {
-                    b.Property<string>("GuildId")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<string>("Id")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<string>("UserId")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<long>("Count")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("FirstMessageAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime>("LastMessageAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("GuildId", "Id", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserChannels");
                 });
 
             modelBuilder.Entity("GrillBot.Database.Entity.Invite", b =>
@@ -314,7 +296,7 @@ namespace GrillBot.Database.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("GuildId", "ChannelId");
+                    b.HasIndex("GuildId", "ChannelId", "UserId");
 
                     b.ToTable("SearchItems");
                 });
@@ -449,13 +431,13 @@ namespace GrillBot.Database.Migrations
                         .WithMany("AuditLogs")
                         .HasForeignKey("GuildId");
 
-                    b.HasOne("GrillBot.Database.Entity.GuildChannel", "GuildChannel")
-                        .WithMany()
-                        .HasForeignKey("GuildId", "ChannelId");
-
                     b.HasOne("GrillBot.Database.Entity.GuildUser", "ProcessedGuildUser")
                         .WithMany()
                         .HasForeignKey("GuildId", "ProcessedUserId");
+
+                    b.HasOne("GrillBot.Database.Entity.GuildChannel", "GuildChannel")
+                        .WithMany()
+                        .HasForeignKey("GuildId", "ChannelId", "ProcessedUserId");
 
                     b.Navigation("Guild");
 
@@ -481,7 +463,15 @@ namespace GrillBot.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GrillBot.Database.Entity.User", "User")
+                        .WithMany("Channels")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Guild");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GrillBot.Database.Entity.GuildUser", b =>
@@ -505,33 +495,6 @@ namespace GrillBot.Database.Migrations
                     b.Navigation("Guild");
 
                     b.Navigation("UsedInvite");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("GrillBot.Database.Entity.GuildUserChannel", b =>
-                {
-                    b.HasOne("GrillBot.Database.Entity.Guild", "Guild")
-                        .WithMany()
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GrillBot.Database.Entity.User", "User")
-                        .WithMany("Channels")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GrillBot.Database.Entity.GuildChannel", "Channel")
-                        .WithMany("Channels")
-                        .HasForeignKey("GuildId", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guild");
-
-                    b.Navigation("Channel");
 
                     b.Navigation("User");
                 });
@@ -586,7 +549,7 @@ namespace GrillBot.Database.Migrations
 
                     b.HasOne("GrillBot.Database.Entity.GuildChannel", "Channel")
                         .WithMany("SearchItems")
-                        .HasForeignKey("GuildId", "ChannelId")
+                        .HasForeignKey("GuildId", "ChannelId", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -675,8 +638,6 @@ namespace GrillBot.Database.Migrations
 
             modelBuilder.Entity("GrillBot.Database.Entity.GuildChannel", b =>
                 {
-                    b.Navigation("Channels");
-
                     b.Navigation("SearchItems");
                 });
 

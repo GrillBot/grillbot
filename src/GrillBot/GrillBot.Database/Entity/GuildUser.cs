@@ -42,6 +42,10 @@ namespace GrillBot.Database.Entity
         public ISet<Invite> CreatedInvites { get; set; }
         public Unverify Unverify { get; set; }
 
+        [StringLength(32)]
+        [MinLength(2)]
+        public string Nickname { get; set; }
+
         public GuildUser()
         {
             CreatedInvites = new HashSet<Invite>();

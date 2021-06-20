@@ -9,7 +9,11 @@ namespace GrillBot.Database
         static public IServiceCollection AddDatabase(this IServiceCollection services, string connectionString)
         {
             services
-                .AddDbContext<GrillBotContext>(b => b.UseNpgsql(connectionString), optionsLifetime: ServiceLifetime.Singleton)
+                .AddDbContext<GrillBotContext>(b =>
+                {
+                    b.UseNpgsql(connectionString);
+                    b.EnableDetailedErrors();
+                }, optionsLifetime: ServiceLifetime.Singleton)
                 .AddSingleton<GrillBotContextFactory>();
 
             return services;

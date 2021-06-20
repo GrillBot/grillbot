@@ -30,11 +30,16 @@ namespace GrillBot.Database.Entity
 
         public string Note { get; set; }
 
+        [StringLength(32)]
+        [MinLength(2)]
+        [Required]
+        public string Username { get; set; }
+
         public ISet<GuildUser> Guilds { get; set; }
         public ISet<EmoteStatisticItem> UsedEmotes { get; set; }
         public ISet<RemindMessage> IncomingReminders { get; set; }
         public ISet<RemindMessage> OutgoingReminders { get; set; }
-        public ISet<GuildChannel> Channels { get; set; }
+        public ISet<GuildUserChannel> Channels { get; set; }
         public ISet<SearchItem> SearchItems { get; set; }
 
         public User()
@@ -43,7 +48,7 @@ namespace GrillBot.Database.Entity
             UsedEmotes = new HashSet<EmoteStatisticItem>();
             IncomingReminders = new HashSet<RemindMessage>();
             OutgoingReminders = new HashSet<RemindMessage>();
-            Channels = new HashSet<GuildChannel>();
+            Channels = new HashSet<GuildUserChannel>();
             SearchItems = new HashSet<SearchItem>();
         }
 

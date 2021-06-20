@@ -77,7 +77,7 @@ namespace GrillBot.App.Services
             var userId = message.Author.Id.ToString();
 
             using var context = DbFactory.Create();
-            await context.InitUserAsync(userId);
+            await context.InitUserAsync(message.Author);
 
             foreach (var emote in emotes)
             {
@@ -148,8 +148,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            await context.InitUserAsync(user.Id.ToString());
-            await context.InitUserAsync(msg.Author.Id.ToString());
+            await context.InitUserAsync(user);
+            await context.InitUserAsync(msg.Author);
 
             if (@event == ReactionEvents.Added)
             {
@@ -218,8 +218,8 @@ namespace GrillBot.App.Services
             var userId = user.Id.ToString();
             var authorUserId = messageAuthor.Id.ToString();
 
-            await context.InitGuildAsync(guildId);
-            var reactingUser = await context.GuildUsers.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
+            await context.InitGuildAsync(guild);
+            var reactingUser = await context.GuildUsers.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
             if (reactingUser == null)
             {
                 reactingUser = new GuildUser()

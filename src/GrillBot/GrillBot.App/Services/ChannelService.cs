@@ -45,17 +45,18 @@ namespace GrillBot.App.Services
             var userId = message.Author.Id.ToString();
 
             // Check DB for consistency.
-            await dbContext.InitGuildAsync(guildId);
-            await dbContext.InitUserAsync(userId);
-            await dbContext.InitGuildUserAsync(guildId, userId);
+            await dbContext.InitGuildAsync(textChannel.Guild);
+            await dbContext.InitUserAsync(message.Author);
+            await dbContext.InitGuildUserAsync(textChannel.Guild, message.Author as IGuildUser);
+            await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel);
 
             // Search specific channel for specific guild and user.
-            var channel = await dbContext.Channels.AsQueryable()
+            var channel = await dbContext.UserChannels.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.Id == channelId && o.UserId == userId);
 
             if (channel == null)
             {
-                channel = new GuildChannel()
+                channel = new GuildUserChannel()
                 {
                     UserId = userId,
                     GuildId = guildId,
@@ -83,7 +84,7 @@ namespace GrillBot.App.Services
 
             using var dbContext = DbFactory.Create();
 
-            var dbChannel = await dbContext.Channels.AsQueryable()
+            var dbChannel = await dbContext.UserChannels.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId && o.Id == channelId);
 
             if (dbChannel == null) return;
@@ -99,7 +100,7 @@ namespace GrillBot.App.Services
 
             using var dbContext = DbFactory.Create();
 
-            var channelsQuery = dbContext.Channels.AsQueryable().Where(o => o.Id == channelId && o.GuildId == guildId);
+            var channelsQuery = dbContext.UserChannels.AsQueryable().Where(o => o.Id == channelId && o.GuildId == guildId);
             var channels = await channelsQuery.ToListAsync();
 
             dbContext.RemoveRange(channels);

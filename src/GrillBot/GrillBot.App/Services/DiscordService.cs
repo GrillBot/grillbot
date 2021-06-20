@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure.TypeReaders;
+using GrillBot.App.Services.Sync;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -50,7 +51,7 @@ namespace GrillBot.App.Services
             {
                 typeof(MessageCache.MessageCache), typeof(AutoReplyService), typeof(ChannelService), typeof(InviteService),
                 typeof(CommandHandler), typeof(ReactionHandler), typeof(AuditLogService), typeof(PointsService),
-                typeof(EmoteService)
+                typeof(EmoteService), typeof(DiscordSyncService)
             };
 
             foreach (var service in services) Provider.GetRequiredService(service);

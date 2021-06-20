@@ -11,6 +11,11 @@ namespace GrillBot.Database.Entity
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string Id { get; set; }
 
+        [Required]
+        [StringLength(100)]
+        [MinLength(2)]
+        public string Name { get; set; }
+
         public ISet<GuildUser> Users { get; set; }
         public ISet<Invite> Invites { get; set; }
         public ISet<GuildChannel> Channels { get; set; }

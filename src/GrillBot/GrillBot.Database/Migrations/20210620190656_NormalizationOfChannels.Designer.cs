@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace GrillBot.Database.Migrations
 {
     [DbContext(typeof(GrillBotContext))]
-    partial class GrillBotContextModelSnapshot : ModelSnapshot
+    [Migration("20210620190656_NormalizationOfChannels")]
+    partial class NormalizationOfChannels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -473,17 +475,6 @@ namespace GrillBot.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("GrillBot.Database.Entity.GuildChannel", b =>
-                {
-                    b.HasOne("GrillBot.Database.Entity.Guild", "Guild")
-                        .WithMany("Channels")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guild");
-                });
-
             modelBuilder.Entity("GrillBot.Database.Entity.GuildUser", b =>
                 {
                     b.HasOne("GrillBot.Database.Entity.Guild", "Guild")
@@ -512,7 +503,7 @@ namespace GrillBot.Database.Migrations
             modelBuilder.Entity("GrillBot.Database.Entity.GuildUserChannel", b =>
                 {
                     b.HasOne("GrillBot.Database.Entity.Guild", "Guild")
-                        .WithMany()
+                        .WithMany("Channels")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

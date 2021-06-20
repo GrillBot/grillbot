@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.App.Infrastructure;
 using GrillBot.Data.Models.API.Statistics;
@@ -35,25 +36,21 @@ namespace GrillBot.App.Services
 
         public async Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, IResult result)
         {
-            var guildId = context.Guild.Id.ToString();
-            var channelId = context.Channel.Id.ToString();
-            var userId = context.User.Id.ToString();
-
             var data = new CommandExecution(command, context.Message, result);
 
             using var dbContext = DbFactory.Create();
 
-            await dbContext.InitGuildAsync(guildId);
-            await dbContext.InitGuildUserAsync(guildId, userId);
-            await dbContext.InitGuildChannelAsync(guildId, channelId, userId);
+            await dbContext.InitGuildAsync(context.Guild);
+            await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser);
+            await dbContext.InitGuildChannelAsync(context.Guild, context.Channel);
 
             var logItem = new AuditLogItem()
             {
-                ChannelId = channelId,
+                ChannelId = context.Channel.Id.ToString(),
                 CreatedAt = DateTime.Now,
                 Data = JsonConvert.SerializeObject(data, JsonSerializerSettings),
-                GuildId = guildId,
-                ProcessedUserId = userId,
+                GuildId = context.Guild.Id.ToString(),
+                ProcessedUserId = context.User.Id.ToString(),
                 Type = AuditLogItemType.Command
             };
 

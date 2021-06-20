@@ -63,8 +63,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(guildId);
-            await context.InitUserAsync(userId);
+            await context.InitGuildAsync(textChannel.Guild);
+            await context.InitUserAsync(message.Author);
 
             var guildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -122,8 +122,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(guildId);
-            await context.InitUserAsync(userId);
+            await context.InitGuildAsync(textChannel.Guild);
+            await context.InitUserAsync(reaction.User.Value);
 
             var guildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -238,8 +238,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(guildId);
-            await context.InitUserAsync(userId);
+            await context.InitGuildAsync(guild);
+            await context.InitUserAsync(toUser);
 
             var guildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -285,8 +285,8 @@ namespace GrillBot.App.Services
             if (fromGuildUser.Points < amount)
                 throw new InvalidOperationException($"Nelze převést body od uživatele `{fromUser.GetDisplayName()}`, protože jich nemá dostatek.");
 
-            await context.InitGuildAsync(guildId);
-            await context.InitUserAsync(toUserId);
+            await context.InitGuildAsync(guild);
+            await context.InitUserAsync(toUser);
 
             var toGuildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == toUserId);

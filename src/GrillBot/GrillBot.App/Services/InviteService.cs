@@ -34,7 +34,7 @@ namespace GrillBot.App.Services
             using var dbContext = DbFactory.Create();
 
             var botId = DiscordClient.CurrentUser.Id.ToString();
-            await dbContext.InitUserAsync(botId);
+            await dbContext.InitUserAsync(DiscordClient.CurrentUser);
 
             var invites = new List<InviteMetadata>();
             foreach (var guild in DiscordClient.Guilds)
@@ -42,9 +42,8 @@ namespace GrillBot.App.Services
                 var guildInvites = await GetLatestMetadataOfGuildAsync(guild);
                 if (guildInvites == null) continue;
 
-                var guildId = guild.Id.ToString();
-                await dbContext.InitGuildAsync(guildId);
-                await dbContext.InitGuildUserAsync(guildId, botId);
+                await dbContext.InitGuildAsync(guild);
+                await dbContext.InitGuildUserAsync(guild, guild.CurrentUser);
 
                 var logItem = new AuditLogItem()
                 {
@@ -108,8 +107,8 @@ namespace GrillBot.App.Services
 
             using var dbContext = DbFactory.Create();
 
-            await dbContext.InitGuildAsync(guildId);
-            await dbContext.InitUserAsync(userId);
+            await dbContext.InitGuildAsync(guild);
+            await dbContext.InitUserAsync(user);
 
             var joinedUserEntity = await dbContext.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -142,10 +141,10 @@ namespace GrillBot.App.Services
             {
                 if (usedInvite.CreatorId != null)
                 {
-                    var creatorId = usedInvite.CreatorId.Value.ToString();
+                    var creatorUser = guild.GetUser(usedInvite.CreatorId.Value);
 
-                    await dbContext.InitUserAsync(creatorId);
-                    await dbContext.InitGuildUserAsync(guildId, creatorId);
+                    await dbContext.InitUserAsync(creatorUser);
+                    await dbContext.InitGuildUserAsync(guild, creatorUser);
                 }
 
                 var invite = await dbContext.Invites.AsQueryable()

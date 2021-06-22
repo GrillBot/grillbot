@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Services;
+using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Mvc;

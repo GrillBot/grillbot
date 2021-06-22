@@ -15,7 +15,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services
+namespace GrillBot.App.Services.AuditLog
 {
     public class AuditLogService : ServiceBase
     {

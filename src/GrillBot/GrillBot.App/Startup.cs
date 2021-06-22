@@ -5,6 +5,7 @@ using GrillBot.App.Handlers;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
+using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.MessageCache;
@@ -124,6 +125,7 @@ namespace GrillBot.App
             });
 
             services.AddCronJob<MessageCacheCheckCron>();
+            services.AddCronJob<AuditLogClearingJob>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)

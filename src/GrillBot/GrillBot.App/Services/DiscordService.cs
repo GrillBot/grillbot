@@ -52,7 +52,7 @@ namespace GrillBot.App.Services
             {
                 typeof(MessageCache.MessageCache), typeof(AutoReplyService), typeof(ChannelService), typeof(InviteService),
                 typeof(CommandHandler), typeof(ReactionHandler), typeof(AuditLogService), typeof(PointsService),
-                typeof(EmoteService), typeof(DiscordSyncService)
+                typeof(EmoteService), typeof(DiscordSyncService), typeof(EmoteChainService)
             };
 
             foreach (var service in services) Provider.GetRequiredService(service);

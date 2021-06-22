@@ -27,7 +27,11 @@ namespace GrillBot.Database.Services
             });
 
             modelBuilder.Entity<User>(builder => builder.HasIndex(o => o.ApiToken).IsUnique());
-            modelBuilder.Entity<EmoteStatisticItem>(builder => builder.HasOne(o => o.User).WithMany(o => o.UsedEmotes));
+            modelBuilder.Entity<EmoteStatisticItem>(builder =>
+            {
+                builder.HasKey(o => new { o.EmoteId, o.UserId });
+                builder.HasOne(o => o.User).WithMany(o => o.UsedEmotes);
+            });
 
             modelBuilder.Entity<RemindMessage>(buider =>
             {

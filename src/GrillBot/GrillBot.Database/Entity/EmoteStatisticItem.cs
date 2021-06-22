@@ -6,7 +6,6 @@ namespace GrillBot.Database.Entity
 {
     public class EmoteStatisticItem
     {
-        [Key]
         [StringLength(255)]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string EmoteId { get; set; }

@@ -1,4 +1,6 @@
 ﻿using Discord;
+using Discord.WebSocket;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -39,5 +41,12 @@ namespace GrillBot.App.Extensions.Discord
 
         static public bool HaveAnimatedAvatar(this IUser user) => user.AvatarId?.StartsWith("a_") ?? false;
         static public string CreateProfilePicFilename(this IUser user, int size) => $"{user.Id}_{user.AvatarId ?? user.Discriminator}_{size}.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
+
+        static public IRole GetHighestRole(this SocketGuildUser user, bool requireColor = false)
+        {
+            var roles = requireColor ? user.Roles.Where(o => o.Color != Color.Default) : user.Roles.AsEnumerable();
+
+            return roles.OrderByDescending(o => o.Position).FirstOrDefault();
+        }
     }
 }

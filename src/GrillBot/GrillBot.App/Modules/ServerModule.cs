@@ -20,6 +20,8 @@ using System.Collections.Immutable;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,11 +29,11 @@ namespace GrillBot.App.Modules
 {
     [Name("Správa serveru")]
     [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze provést jen na serveru.")]
-    public class ServerManagementModule : Infrastructure.ModuleBase
+    public class ServerModule : Infrastructure.ModuleBase
     {
         private IConfiguration Configuration { get; }
 
-        public ServerManagementModule(IConfiguration configuration)
+        public ServerModule(IConfiguration configuration)
         {
             Configuration = configuration;
         }
@@ -156,6 +158,59 @@ namespace GrillBot.App.Modules
         [Group("guild")]
         public class GuildManagementSubmodule : Infrastructure.ModuleBase
         {
+            [Command("send")]
+            [Summary("Pošle zprávu (vč. příloh) do kanálu.")]
+            [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu tenhle příkaz provést, protože nemám oprávnění mazat zprávy.")]
+            [RequireUserPremiumOrPermissions(GuildPermission.ManageMessages, ErrorMessage = "Nemůžeš provést tento příkaz, protože nemáš oprávnění spravovat zprávy, ani nemáš boost.")]
+            public async Task SendAnonymousToChannelAsync([Name("kanal")] IMessageChannel channel, [Remainder][Name("volitelna_zprava")] string content = null)
+            {
+                if (string.IsNullOrEmpty(content) && Context.Message.ReferencedMessage != null)
+                    content = Context.Message.ReferencedMessage.Content;
+
+                var attachments = Context.Message.Attachments.Select(o => o as IAttachment).ToList();
+                if (attachments.Count > 0 && Context.Message.ReferencedMessage != null) attachments = Context.Message.ReferencedMessage.Attachments.ToList();
+
+                if (string.IsNullOrEmpty(content) && attachments.Count == 0)
+                {
+                    await ReplyAsync("Nemůžu nic poslat, protože jsi mi nic nedal.");
+                    return;
+                }
+
+                if (attachments.Count > 0)
+                {
+                    using var httpClient = new HttpClient();
+
+                    bool firstDone = string.IsNullOrEmpty(content);
+                    foreach (var attachment in attachments)
+                    {
+                        var response = await httpClient.GetAsync(attachment.Url);
+
+                        if (!response.IsSuccessStatusCode)
+                            continue;
+
+                        var stream = await response.Content.ReadAsStreamAsync();
+                        var spoiler = attachment.IsSpoiler();
+
+                        if (firstDone)
+                        {
+                            await channel.SendFileAsync(stream, attachment.Filename, null, false, null, null, spoiler, AllowedMentions, null);
+                        }
+                        else
+                        {
+                            await channel.SendFileAsync(stream, attachment.Filename, content, isSpoiler: spoiler, allowedMentions: AllowedMentions);
+
+                            firstDone = true;
+                        }
+                    }
+                }
+                else
+                {
+                    await channel.SendMessageAsync(content);
+                }
+
+                await Context.Message.DeleteAsync();
+            }
+
             [Group("info")]
             [Name("Informace o serveru")]
             [RequireBotPermission(GuildPermission.Administrator, ErrorMessage = "Nemohu provést tento příkaz, protože nemám nejvyšší oprávnění.")]

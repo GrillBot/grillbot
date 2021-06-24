@@ -2,15 +2,11 @@ variables:
   OBJECTS_DIRECTORY: "obj"
   NUGET_PACKAGES_DIRECTORY: ".nuget"
   SOURCE_CODE_PATH: "src/GrillBot"
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_HOST: tcp://localhost:2378
-  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
 stages:
+  - docs_check
   - build
   - test
-  - container_deploy
 
 cache:
   key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
@@ -42,11 +38,8 @@ tests:
       junit:
         - ./**/*test-result.xml
 
-docker:build:
-  image: docker:stable
-  stage: container_deploy
+documentation:
+  stage: docs_check
+  image: registry.gitlab.com/pipeline-components/markdownlint:latest
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - cd $SOURCE_CODE_PATH
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-    - docker push $CONTAINER_TEST_IMAGE
+    - mdl --style all --warnings .

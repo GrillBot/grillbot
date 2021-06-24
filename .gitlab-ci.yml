@@ -1,4 +1,6 @@
 image: mcr.microsoft.com/dotnet/sdk:5.0
+services:
+  - docker:19.03.12-dind
 
 variables:
   OBJECTS_DIRECTORY: "obj"

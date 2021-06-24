@@ -21,19 +21,18 @@ cache:
 
   policy: pull-push
 
-before_script:
-  - "dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY"
-
 build:
   image: mcr.microsoft.com/dotnet/sdk:5.0
   stage: build
   script:
+    - "dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY"
     - "dotnet build $SOURCE_CODE_PATH --no-restore"
 
 tests:
   image: mcr.microsoft.com/dotnet/sdk:5.0
   stage: test
   script:
+    - "dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY"
     - 'dotnet test $SOURCE_CODE_PATH --no-restore --test-adapter-path:. --logger:"junit;LogFilePath=..\artifacts\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"'
   artifacts:
     when: always

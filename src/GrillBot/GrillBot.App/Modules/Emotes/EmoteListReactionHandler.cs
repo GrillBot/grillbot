@@ -68,7 +68,7 @@ namespace GrillBot.App.Modules.Emotes
             if (!metadata.IsPrivate)
                 await message.RemoveReactionAsync(emote, user);
 
-            return false;
+            return true;
         }
 
         private Func<IQueryable<IGrouping<string, EmoteStatisticItem>>, IQueryable<IGrouping<string, EmoteStatisticItem>>> GetOrderFunction(string sortBy, bool desc)

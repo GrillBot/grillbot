@@ -11,6 +11,7 @@ namespace GrillBot.Data
         public static IEmote MoveToNext => new Emoji("▶️");
         public static IEmote MoveToLast => new Emoji("⏭️");
         public static IEmote Ok => new Emoji("✅");
+        public static Emoji Nok => new Emoji("❌");
         public static Emoji LetterA => new Emoji("🇦");
         public static Emoji LetterB => new Emoji("🇧");
         public static Emoji LetterC => new Emoji("🇨");
@@ -97,7 +98,8 @@ namespace GrillBot.Data
         {
             { 'A', SignA },
             { 'B', SignB },
-            { 'O', SignO }
+            { 'O', SignO },
+            { 'X', Nok }
         };
 
         public static List<Emoji> ConvertStringToEmoji(string str, bool allowDuplicity = false)

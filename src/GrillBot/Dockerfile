@@ -18,7 +18,7 @@ RUN dotnet restore GrillBot.App/ -r linux-x64
 RUN dotnet restore GrillBot.Data/ -r linux-x64
 RUN dotnet restore GrillBot.Database/ -r linux-x64
 COPY . .
-RUN dotnet publish GrillBot.App/ -c release -o /app -r linux-x64 --self-contained false --no-restore
+RUN dotnet publish GrillBot.App/ -c release -o /app -r linux-x64 --self-contained false
 
 FROM base AS final
 WORKDIR /app

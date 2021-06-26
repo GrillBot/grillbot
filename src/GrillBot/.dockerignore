@@ -40,3 +40,5 @@ README.md
 **/[Tt]est[Rr]esult*/
 **/[Bb]uild[Ll]og.*
 appsettings.*.json
+docker.ps1
+docker.sh

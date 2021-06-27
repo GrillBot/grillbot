@@ -9,6 +9,7 @@ using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Sync;
 using GrillBot.Database;
 using GrillBot.Database.Services;
@@ -76,7 +77,8 @@ namespace GrillBot.App
                 .AddSingleton<PointsService>()
                 .AddSingleton<EmoteService>()
                 .AddSingleton<EmoteChainService>()
-                .AddSingleton<SearchingService>();
+                .AddSingleton<SearchingService>()
+                .AddSingleton<RemindService>();
 
             ReflectionHelper.GetAllReactionEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));
@@ -128,6 +130,7 @@ namespace GrillBot.App
 
             services.AddCronJob<MessageCacheCheckCron>();
             services.AddCronJob<AuditLogClearingJob>();
+            services.AddCronJob<RemindCronJob>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)

@@ -70,7 +70,6 @@ namespace GrillBot.App.Services.AuditLog
                         new XAttribute("UserFlags", o.User.Flags)
                     );
 
-
                     if (!string.IsNullOrEmpty(o.UsedInviteCode))
                         user.Add(new XAttribute("UsedInviteCode", o.UsedInviteCode));
 

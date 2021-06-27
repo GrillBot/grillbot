@@ -1,9 +1,12 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
+using GrillBot.Data;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Handlers
@@ -32,8 +35,14 @@ namespace GrillBot.App.Handlers
             user ??= await DiscordClient.Rest.GetUserAsync(reaction.UserId);
             if (user == null) return;
 
-            if (user.Id == DiscordClient.CurrentUser.Id || msg.Author.Id != DiscordClient.CurrentUser.Id)
+            if (user.Id == DiscordClient.CurrentUser.Id)
                 return;
+
+            if (msg.Author.Id != reaction.UserId && !reaction.Emote.IsEqual(Emojis.PersonRisingHand) && !Emojis.NumberToEmojiMap.Any(o => o.Value.IsEqual(reaction.Emote)))
+            {
+                // Reaction added another user than message author and emote is remind emote.
+                return;
+            }
 
             foreach (var handler in EventHandlers)
             {

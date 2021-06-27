@@ -382,7 +382,7 @@ namespace GrillBot.App.Modules
 
         [Command("emojize")]
         [Summary("Znovu pošle zprávu jako emoji.")]
-        [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění mazat zprávy.")]
+        [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění mazat zprávy.")]
         public async Task EmojizeAsync([Remainder][Name("zprava")] string message = null)
         {
             if (string.IsNullOrEmpty(message))
@@ -396,14 +396,15 @@ namespace GrillBot.App.Modules
 
             var emojized = Emojis.ConvertStringToEmoji(message, true);
 
-            await Context.Message.DeleteAsync();
+            if (!Context.IsPrivate)
+                await Context.Message.DeleteAsync();
             await ReplyAsync(string.Join(" ", emojized.Select(o => o.ToString())), false, null, null, null, null);
         }
 
         [Command("reactjize")]
         [Summary("Převede zprávu na emoji a zapíše jako reakce na zprávu v reply.")]
-        [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění na přidávání reakcí.")]
-        [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění na mazání zpráv.")]
+        [RequireBotPermission(ChannelPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění na přidávání reakcí.")]
+        [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění na mazání zpráv.")]
         public async Task ReactjizeAsync([Remainder][Name("zprava")] string msg = null)
         {
             if (Context.Message.ReferencedMessage == null)

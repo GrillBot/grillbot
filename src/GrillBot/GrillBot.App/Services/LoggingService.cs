@@ -140,7 +140,9 @@ namespace GrillBot.App.Services
             else
             {
                 embed.WithTitle("Došlo k neočekávané chybě.")
-                    .AddField("Zdroj", message.Source, true);
+                    .AddField("Zdroj", message.Source, true)
+                    .AddField("Typ", message.Exception?.GetType()?.Name, true)
+                    .AddField("Zpráva chyby", message.Message ?? "", false);
             }
 
             return embed.Build();
@@ -151,7 +153,7 @@ namespace GrillBot.App.Services
             var logItem = new AuditLogItem()
             {
                 CreatedAt = DateTime.Now,
-                Data = message.ToString(),
+                Data = message.ToString(padSource: 50, prependTimestamp: false),
                 Type = AuditLogItemType.Error
             };
 

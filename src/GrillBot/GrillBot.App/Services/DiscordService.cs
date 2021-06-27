@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Sync;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,9 @@ namespace GrillBot.App.Services
             CommandService.AddTypeReader<Guid>(new GuidTypeReader());
             CommandService.AddTypeReader<IMessage>(new MessageTypeReader(), true);
             CommandService.AddTypeReader<IEmote>(new EmotesTypeReader());
+            CommandService.AddTypeReader<IUser>(new UserTypeReader(), true);
+            CommandService.AddTypeReader<DateTime>(new DateTimeTypeReader(), true);
+            CommandService.AddTypeReader<bool>(new BooleanTypeReader(), true);
 
             await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
         }
@@ -52,7 +56,8 @@ namespace GrillBot.App.Services
             {
                 typeof(MessageCache.MessageCache), typeof(AutoReplyService), typeof(ChannelService), typeof(InviteService),
                 typeof(CommandHandler), typeof(ReactionHandler), typeof(AuditLogService), typeof(PointsService),
-                typeof(EmoteService), typeof(DiscordSyncService), typeof(EmoteChainService), typeof(SearchingService)
+                typeof(EmoteService), typeof(DiscordSyncService), typeof(EmoteChainService), typeof(SearchingService),
+                typeof(RemindService)
             };
 
             foreach (var service in services) Provider.GetRequiredService(service);

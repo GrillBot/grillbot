@@ -1,12 +1,33 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Extensions.Discord
 {
     static public class DiscordClientExtensions
     {
-        // TODO: Tests
+        static public async Task<IUser> FindUserAsync(this BaseSocketClient client, string username, string discriminator = null)
+        {
+            var user = client.GetUser(username, discriminator);
+
+            if (user != null)
+                return user;
+
+            foreach (var guild in client.Guilds)
+            {
+                await guild.DownloadUsersAsync();
+                user = guild.Users
+                    .Where(o => o.IsUser())
+                    .FirstOrDefault(o => o.Username == username && (string.IsNullOrEmpty(discriminator) || o.Discriminator == discriminator));
+
+                if (user != null)
+                    break;
+            }
+
+            return user;
+        }
+
         static public async Task<IUser> FindUserAsync(this BaseSocketClient client, ulong id)
         {
             var user = client.GetUser(id);
@@ -14,7 +35,7 @@ namespace GrillBot.App.Extensions.Discord
             if (user != null)
                 return user;
 
-            foreach(var guild in client.Guilds)
+            foreach (var guild in client.Guilds)
             {
                 await guild.DownloadUsersAsync();
 

@@ -17,7 +17,7 @@ namespace GrillBot.App.Services
         private Dictionary<string, List<Tuple<ulong, string>>> LastMessages { get; }
         private int RequiredCount { get; }
 
-        private readonly object Locker = new object();
+        private readonly object Locker = new();
 
         public EmoteChainService(IConfiguration configuration, DiscordSocketClient client) : base(client)
         {

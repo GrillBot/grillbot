@@ -35,6 +35,9 @@ namespace GrillBot.Database.Entity
         public int Postpone { get; set; } = 0;
 
         [StringLength(30)]
+        public string RemindMessageId { get; set; }
+
+        [StringLength(30)]
         public string OriginalMessageId { get; set; }
     }
 }

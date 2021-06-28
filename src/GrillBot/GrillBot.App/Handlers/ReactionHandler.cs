@@ -38,7 +38,7 @@ namespace GrillBot.App.Handlers
             if (user.Id == DiscordClient.CurrentUser.Id)
                 return;
 
-            if (msg.Author.Id != reaction.UserId && !reaction.Emote.IsEqual(Emojis.PersonRisingHand) && !Emojis.NumberToEmojiMap.Any(o => o.Value.IsEqual(reaction.Emote)))
+            if (msg.Author.Id != reaction.UserId && msg.Author.Id != DiscordClient.CurrentUser.Id && !reaction.Emote.IsEqual(Emojis.PersonRisingHand) && !Emojis.NumberToEmojiMap.Any(o => o.Value.IsEqual(reaction.Emote)))
             {
                 // Reaction added another user than message author and emote is remind emote.
                 return;

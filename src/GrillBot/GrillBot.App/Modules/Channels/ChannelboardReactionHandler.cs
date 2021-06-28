@@ -37,7 +37,7 @@ namespace GrillBot.App.Modules.Channels
 
             await guild.DownloadUsersAsync();
             var guildUser = user is SocketGuildUser sgu ? sgu : guild.GetUser(user.Id);
-            var availableChannels = guild.GetAvailableChannelsFor(guildUser).Select(o => o.Id.ToString()).ToList();
+            var availableChannels = guild.GetAvailableTextChannelsFor(guildUser).Select(o => o.Id.ToString()).ToList();
 
             using var dbContext = DbFactory.Create();
 

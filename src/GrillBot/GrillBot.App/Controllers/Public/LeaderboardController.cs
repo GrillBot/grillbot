@@ -57,7 +57,7 @@ namespace GrillBot.App.Controllers.Public
             if (user == null)
                 return NotFound(new MessageResponse("Uživatel přiřazený k sezení nebyl nalezen."));
 
-            var availableChannels = guild.GetAvailableChannelsFor(user).Select(o => o.Id.ToString()).ToList();
+            var availableChannels = guild.GetAvailableTextChannelsFor(user).Select(o => o.Id.ToString()).ToList();
 
             using var dbContext = DbFactory.Create();
 

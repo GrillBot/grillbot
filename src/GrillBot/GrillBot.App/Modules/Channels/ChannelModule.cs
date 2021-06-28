@@ -44,7 +44,7 @@ namespace GrillBot.App.Modules
             if (Context.User is not SocketGuildUser user)
                 user = Context.Guild.GetUser(Context.User.Id);
 
-            var availableChannels = Context.Guild.GetAvailableChannelsFor(user).Select(o => o.Id.ToString()).ToList();
+            var availableChannels = Context.Guild.GetAvailableTextChannelsFor(user).Select(o => o.Id.ToString()).ToList();
 
             using var dbContext = DbFactory.Create();
 

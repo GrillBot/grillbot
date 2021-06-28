@@ -4,11 +4,13 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure.Preconditions;
+using GrillBot.Data;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,6 +40,25 @@ namespace GrillBot.App.Modules.User
 
             var embed = await GetUserInfoEmbedAsync(Context, DbFactory, Configuration, guildUser);
             await ReplyAsync(embed: embed);
+        }
+
+        [Command("access")]
+        [Summary("Získání seznamu přístupů uživatele.")]
+        [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění v kanálech.")]
+        [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který může spravovat oprávnění v kanálech.")]
+        public async Task GetUserAccessListAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
+        {
+            if (user == null) user = Context.User;
+            if (user is not SocketGuildUser guildUser) return;
+
+            await Context.Guild.DownloadUsersAsync();
+
+            var visibleChannels = GetUserVisibleChannels(Context.Guild, guildUser).Take(EmbedBuilder.MaxFieldCount).ToList();
+            var embed = new EmbedBuilder().WithUserAccessList(visibleChannels, guildUser, Context.User, Context.Guild, 0);
+
+            var message = await ReplyAsync(embed: embed.Build());
+            if (visibleChannels.Count >= EmbedBuilder.MaxFieldCount)
+                await message.AddReactionsAsync(new[] { Emojis.MoveToPrev, Emojis.MoveToNext });
         }
 
         public static async Task<Embed> GetUserInfoEmbedAsync(SocketCommandContext context, GrillBotContextFactory dbFactory, IConfiguration configuration,
@@ -164,6 +185,30 @@ namespace GrillBot.App.Modules.User
         private static int CalculateJoinPosition(SocketGuildUser user, SocketGuild guild)
         {
             return guild.Users.Count(o => o.JoinedAt <= user.JoinedAt);
+        }
+
+        public static IEnumerable<Tuple<string, List<string>>> GetUserVisibleChannels(SocketGuild guild, SocketGuildUser user)
+        {
+            var channels = guild.GetAvailableChannelsFor(user).GroupBy(o =>
+            {
+                if (o is SocketTextChannel text && !string.IsNullOrEmpty(text.Category?.Name)) return text.Category.Name;
+                else if (o is SocketVoiceChannel voice && !string.IsNullOrEmpty(voice.Category?.Name)) return voice.Category.Name;
+                return "Bez kategorie";
+            }).Select(o => new { Category = o.Key, ChannelGroups = o.SplitInParts(20).Select(x => x.OrderBy(o => o.Position).Select(t => t.GetMention())) })
+            .Select(o => new Tuple<string, IEnumerable<IEnumerable<string>>>(o.Category, o.ChannelGroups));
+
+            return RegroupChannels(channels);
+        }
+
+        private static IEnumerable<Tuple<string, List<string>>> RegroupChannels(IEnumerable<Tuple<string, IEnumerable<IEnumerable<string>>>> categories)
+        {
+            foreach (var category in categories)
+            {
+                foreach (var group in category.Item2)
+                {
+                    yield return new Tuple<string, List<string>>(category.Item1, group.ToList());
+                }
+            }
         }
     }
 }

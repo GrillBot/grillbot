@@ -37,8 +37,11 @@ namespace GrillBot.App.Services
             var token = Configuration.GetValue<string>("Discord:Token");
 
             InitServices();
+            DiscordSocketClient.Ready += () => DiscordSocketClient.SetStatusAsync(UserStatus.Online);
+
             await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
             await DiscordSocketClient.StartAsync();
+            await DiscordSocketClient.SetStatusAsync(UserStatus.Idle);
 
             CommandService.AddTypeReader<Guid>(new GuidTypeReader());
             CommandService.AddTypeReader<IMessage>(new MessageTypeReader(), true);

@@ -10,7 +10,7 @@ namespace GrillBot.App.Infrastructure.TypeReaders
     {
         private Dictionary<Func<Regex>, bool> MatchingFunctions { get; } = new Dictionary<Func<Regex>, bool>()
         {
-            { () => new Regex("^(ano|ne|true?)$"), true }, // ano, ne, true, tru
+            { () => new Regex("^(ano|yes|true?)$"), true }, // ano, ne, true, tru
             { () => new Regex("^(ne|no|false?)$"), false } // ne, no, false, fals
         };
 

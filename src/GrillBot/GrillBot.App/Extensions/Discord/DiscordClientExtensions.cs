@@ -7,7 +7,7 @@ namespace GrillBot.App.Extensions.Discord
 {
     static public class DiscordClientExtensions
     {
-        static public async Task<IUser> FindUserAsync(this BaseSocketClient client, string username, string discriminator = null)
+        static public async Task<IUser> FindUserAsync(this BaseSocketClient client, string username, string discriminator)
         {
             var user = client.GetUser(username, discriminator);
 
@@ -18,7 +18,6 @@ namespace GrillBot.App.Extensions.Discord
             {
                 await guild.DownloadUsersAsync();
                 user = guild.Users
-                    .Where(o => o.IsUser())
                     .FirstOrDefault(o => o.Username == username && (string.IsNullOrEmpty(discriminator) || o.Discriminator == discriminator));
 
                 if (user != null)

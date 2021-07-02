@@ -284,6 +284,32 @@ namespace GrillBot.App.Services.Unverify
             }
         }
 
-        // TODO: GetList, OnUserLeft, Selfunverify
+        public async Task<int> GetUnverifyCountsOfGuildAsync(IGuild guild)
+        {
+            using var context = DbFactory.Create();
+
+            return await context.Unverifies.AsQueryable()
+                .CountAsync(o => o.GuildId == guild.Id.ToString());
+        }
+
+        public async Task<UnverifyUserProfile> GetCurrentUnverifyAsync(SocketGuild guild, int page)
+        {
+            await guild.DownloadUsersAsync();
+            using var context = DbFactory.Create();
+
+            var unverify = await context.Unverifies
+                .Include(o => o.UnverifyLog)
+                .Where(o => o.GuildId == guild.Id.ToString())
+                .Skip(page)
+                .FirstOrDefaultAsync();
+
+            if (unverify == null)
+                return null;
+
+            var user = guild.GetUser(Convert.ToUInt64(unverify.UserId));
+            return ProfileGenerator.Reconstruct(unverify.UnverifyLog, user, guild);
+        }
+
+        // TODO: Selfunverify
     }
 }

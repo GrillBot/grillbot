@@ -12,8 +12,8 @@ namespace GrillBot.Data.Models.Unverify
         public IGuildUser Destination { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
-        public List<SocketRole> RolesToRemove { get; set; }
-        public List<SocketRole> RolesToKeep { get; set; }
+        public List<IRole> RolesToRemove { get; set; }
+        public List<IRole> RolesToKeep { get; set; }
         public List<ChannelOverride> ChannelsToKeep { get; set; }
         public List<ChannelOverride> ChannelsToRemove { get; set; }
         public string Reason { get; set; }
@@ -26,8 +26,8 @@ namespace GrillBot.Data.Models.Unverify
             End = end;
             IsSelfUnverify = isSelfUnverify;
 
-            RolesToKeep = new List<SocketRole>();
-            RolesToRemove = new List<SocketRole>();
+            RolesToKeep = new List<IRole>();
+            RolesToRemove = new List<IRole>();
             ChannelsToKeep = new List<ChannelOverride>();
             ChannelsToRemove = new List<ChannelOverride>();
         }

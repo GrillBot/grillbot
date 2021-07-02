@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace GrillBot.Tests.App.Extensions
 {
@@ -47,6 +48,37 @@ namespace GrillBot.Tests.App.Extensions
             var result = str.Cut(5, true);
 
             Assert.AreEqual("Hello", result);
+        }
+
+        [TestMethod]
+        public void ParseTime_Success_Seconds()
+        {
+            var timeSpan = "13:35:26".ParseTime();
+            Assert.IsNotNull(timeSpan);
+            Assert.AreEqual(new TimeSpan(13, 35, 26), timeSpan);
+        }
+
+        [TestMethod]
+        public void ParseTime_Success_WithoutSeconds()
+        {
+            var timeSpan = "13:35".ParseTime();
+            Assert.IsNotNull(timeSpan);
+            Assert.AreEqual(new TimeSpan(13, 35, 0), timeSpan);
+        }
+
+        [TestMethod]
+        public void ParseTime_Success_FromAny()
+        {
+            var timeSpan = "Cas 13:35".ParseTime(true);
+            Assert.IsNotNull(timeSpan);
+            Assert.AreEqual(new TimeSpan(13, 35, 0), timeSpan);
+        }
+
+        [TestMethod]
+        public void ParseTime_Error()
+        {
+            var timeSpan = "Cas".ParseTime();
+            Assert.IsNull(timeSpan);
         }
     }
 }

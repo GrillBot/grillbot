@@ -224,5 +224,57 @@ namespace GrillBot.Tests.App.Extensions.Discord
             var result = user.Object.CreateProfilePicFilename(128);
             Assert.AreEqual(expected, result);
         }
+
+        [TestMethod]
+        public void TryAddRole_HaveRole()
+        {
+            var role = new Mock<IRole>();
+            role.Setup(o => o.Id).Returns(12345);
+
+            var user = new Mock<IGuildUser>();
+            user.Setup(o => o.RoleIds).Returns(new List<ulong>() { 12345 });
+            user.Setup(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask).Verifiable();
+
+            user.Object.TryAddRoleAsync(role.Object).ContinueWith(_ => user.Verify(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>()), Times.Never()));
+        }
+
+        [TestMethod]
+        public void TryAddRole_HaventRole()
+        {
+            var role = new Mock<IRole>();
+            role.Setup(o => o.Id).Returns(12345);
+
+            var user = new Mock<IGuildUser>();
+            user.Setup(o => o.RoleIds).Returns(new List<ulong>());
+            user.Setup(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask).Verifiable();
+
+            user.Object.TryAddRoleAsync(role.Object).ContinueWith(_ => user.Verify(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>()), Times.Once()));
+        }
+
+        [TestMethod]
+        public void TryRemoveRole_HaveRole()
+        {
+            var role = new Mock<IRole>();
+            role.Setup(o => o.Id).Returns(12345);
+
+            var user = new Mock<IGuildUser>();
+            user.Setup(o => o.RoleIds).Returns(new List<ulong>() { 12345 });
+            user.Setup(o => o.RemoveRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask).Verifiable();
+
+            user.Object.TryRemoveRoleAsync(role.Object).ContinueWith(_ => user.Verify(o => o.RemoveRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>()), Times.Once()));
+        }
+
+        [TestMethod]
+        public void TryRemoveRole_HaventRole()
+        {
+            var role = new Mock<IRole>();
+            role.Setup(o => o.Id).Returns(12345);
+
+            var user = new Mock<IGuildUser>();
+            user.Setup(o => o.RoleIds).Returns(new List<ulong>());
+            user.Setup(o => o.RemoveRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask).Verifiable();
+
+            user.Object.TryRemoveRoleAsync(role.Object).ContinueWith(_ => user.Verify(o => o.RemoveRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>()), Times.Never()));
+        }
     }
 }

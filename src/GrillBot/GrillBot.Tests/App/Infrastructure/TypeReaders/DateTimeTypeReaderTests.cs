@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Infrastructure.TypeReaders
 {
@@ -48,6 +46,33 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders
             var result = reader.ReadAsync(null, "test", null).Result;
 
             Assert.IsFalse(result.IsSuccess);
+        }
+
+        [TestMethod]
+        public void Read_EN()
+        {
+            var reader = new DateTimeTypeReader();
+            var result = reader.ReadAsync(null, "07/02/2021", null).Result;
+
+            Assert.IsTrue(result.IsSuccess);
+            Assert.AreEqual(1, result.Values.Count);
+            Assert.AreEqual(new DateTime(2021, 07, 02), result.Values.First().Value);
+        }
+
+        [TestMethod]
+        public void Read_TimeShift()
+        {
+            var cases = new[] { "1m", "1h", "1d", "1M", "1r", "1y", "1h1m", "3d4h5m" };
+
+            var reader = new DateTimeTypeReader();
+            foreach (var @case in cases)
+            {
+                var result = reader.ReadAsync(null, @case, null).Result;
+
+                Assert.IsTrue(result.IsSuccess);
+                Assert.AreEqual(1, result.Values.Count);
+                Assert.IsTrue(result.Values.First().Value is DateTime);
+            }
         }
     }
 }

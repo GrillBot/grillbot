@@ -3,6 +3,7 @@ using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -32,8 +33,6 @@ namespace GrillBot.Tests
 
     public class TestingGrillBotContext : GrillBotContext
     {
-        private readonly ValueConverter JsonConverter = new ValueConverter<List<string>, string>(o => string.Join(";", o), o => o.Split(";", StringSplitOptions.None).ToList());
-
         public TestingGrillBotContext(DbContextOptions options) : base(options)
         {
         }
@@ -44,8 +43,8 @@ namespace GrillBot.Tests
 
             modelBuilder.Entity<Unverify>(builder =>
             {
-                builder.Property(o => o.Roles).HasConversion(JsonConverter);
-                builder.Property(o => o.Channels).HasConversion(JsonConverter);
+                builder.Property(o => o.Roles).HasConversion(o => string.Join(";", o), o => o.Split(";", StringSplitOptions.None).ToList());
+                builder.Property(o => o.Channels).HasConversion(o => JsonConvert.SerializeObject(o), o => JsonConvert.DeserializeObject<List<GuildChannelOverride>>(o));
             });
         }
     }

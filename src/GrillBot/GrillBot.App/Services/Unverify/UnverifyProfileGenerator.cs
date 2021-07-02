@@ -42,8 +42,8 @@ namespace GrillBot.App.Services.Unverify
                 ChannelsToKeep = logData.ChannelsToKeep,
                 ChannelsToRemove = logData.ChannelsToRemove,
                 Reason = logData.Reason,
-                RolesToKeep = logData.RolesToKeep.Select(o => guild.GetRole(o)).Where(o => o != null).ToList(),
-                RolesToRemove = logData.RolesToRemove.Select(o => guild.GetRole(o)).Where(o => o != null).ToList()
+                RolesToKeep = logData.RolesToKeep.Select(o => guild.GetRole(o) as IRole).Where(o => o != null).ToList(),
+                RolesToRemove = logData.RolesToRemove.Select(o => guild.GetRole(o) as IRole).Where(o => o != null).ToList()
             };
         }
 

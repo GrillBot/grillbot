@@ -13,6 +13,7 @@ namespace GrillBot.Data.Models.Unverify
         public List<ChannelOverride> ChannelsToKeep { get; set; }
         public List<ChannelOverride> ChannelsToRemove { get; set; }
         public string Reason { get; set; }
+        public bool IsSelfUnverify { get; set; }
 
         public static UnverifyLogSet FromProfile(UnverifyUserProfile profile)
         {
@@ -24,7 +25,8 @@ namespace GrillBot.Data.Models.Unverify
                 Reason = profile.Reason,
                 RolesToKeep = profile.RolesToKeep.ConvertAll(o => o.Id),
                 RolesToRemove = profile.RolesToRemove.ConvertAll(o => o.Id),
-                Start = profile.Start
+                Start = profile.Start,
+                IsSelfUnverify = profile.IsSelfUnverify
             };
         }
     }

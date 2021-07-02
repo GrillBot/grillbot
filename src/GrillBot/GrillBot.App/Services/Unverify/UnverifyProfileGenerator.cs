@@ -2,7 +2,9 @@
 using Discord.WebSocket;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
+using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,6 +31,20 @@ namespace GrillBot.App.Services.Unverify
             ProcessChannels(profile, guild, user, keep);
 
             return profile;
+        }
+
+        public UnverifyUserProfile Reconstruct(UnverifyLog log, IGuildUser toUser, SocketGuild guild)
+        {
+            var logData = JsonConvert.DeserializeObject<UnverifyLogSet>(log.Data);
+
+            return new UnverifyUserProfile(toUser, logData.Start, logData.End, logData.IsSelfUnverify)
+            {
+                ChannelsToKeep = logData.ChannelsToKeep,
+                ChannelsToRemove = logData.ChannelsToRemove,
+                Reason = logData.Reason,
+                RolesToKeep = logData.RolesToKeep.Select(o => guild.GetRole(o)).Where(o => o != null).ToList(),
+                RolesToRemove = logData.RolesToRemove.Select(o => guild.GetRole(o)).Where(o => o != null).ToList()
+            };
         }
 
         private static string ParseReason(string data)

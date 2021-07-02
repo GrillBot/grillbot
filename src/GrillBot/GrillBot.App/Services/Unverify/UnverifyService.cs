@@ -5,6 +5,7 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Logging;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,12 +29,13 @@ namespace GrillBot.App.Services.Unverify
         private LoggingService Logging { get; }
 
         public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator,
-            UnverifyLogger logger, GrillBotContextFactory dbFactory) : base(client)
+            UnverifyLogger logger, GrillBotContextFactory dbFactory, LoggingService logging) : base(client)
         {
             Checker = checker;
             ProfileGenerator = profileGenerator;
             Logger = logger;
             DbFactory = dbFactory;
+            Logging = logging;
         }
 
         public async Task<List<string>> SetUnverifyAsync(List<SocketUser> users, DateTime end, string data, SocketGuild guild, IUser from, bool dry)
@@ -170,6 +173,64 @@ namespace GrillBot.App.Services.Unverify
             return UnverifyMessageGenerator.CreateUpdateChannelMessage(user, newEnd);
         }
 
-        // TODO: GetList, AutoUnverify, RemoveUnverify, OnUserLeft, Recover, Selfunverify
+        public async Task<string> RemoveUnverifyAsync(SocketGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false)
+        {
+            try
+            {
+                using var context = DbFactory.Create();
+
+                var dbUser = await context.GuildUsers
+                    .Include(o => o.Unverify)
+                    .ThenInclude(o => o.UnverifyLog)
+                    .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == toUser.Id.ToString());
+
+                if (dbUser?.Unverify == null)
+                    return UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser);
+
+                var profile = ProfileGenerator.Reconstruct(dbUser.Unverify.UnverifyLog, toUser, guild);
+                await LogRemoveAsync(profile.RolesToRemove.ConvertAll(o => o as IRole), profile.ChannelsToRemove, toUser, guild, fromUser, isAuto);
+
+                var muteRole = await GetMutedRoleAsync(guild);
+                if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id))
+                    await profile.Destination.RemoveRoleAsync(muteRole);
+
+                await profile.ReturnChannelsAsync(guild);
+                await profile.ReturnRolesAsync();
+
+                dbUser.Unverify = null;
+                await context.SaveChangesAsync();
+
+                if (!isAuto)
+                {
+                    try
+                    {
+                        var dmMessage = UnverifyMessageGenerator.CreateRemoveAccessManuallyPMMessage(guild);
+                        await toUser.SendMessageAsync(dmMessage);
+                    }
+                    catch (HttpException ex) when (ex.DiscordCode == 50007)
+                    {
+                        // User have disabled DMs.
+                    }
+                }
+
+                return UnverifyMessageGenerator.CreateRemoveAccessManuallyToChannel(toUser);
+            }
+            catch (Exception ex) when (!isAuto)
+            {
+                await Logging.ErrorAsync("Unverify/Remove", "An error occured when unverify returning access.", ex);
+                return UnverifyMessageGenerator.CreateRemoveAccessManuallyFailed(toUser, ex);
+            }
+        }
+
+        private Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> channels, IGuildUser user, IGuild guild,
+            IGuildUser fromUser, bool isAuto)
+        {
+            if (isAuto)
+                return Logger.LogAutoremoveAsync(returnedRoles, channels, user, guild);
+
+            return Logger.LogRemoveAsync(returnedRoles, channels, guild, fromUser, user);
+        }
+
+        // TODO: GetList, AutoUnverify, OnUserLeft, Recover, Selfunverify
     }
 }

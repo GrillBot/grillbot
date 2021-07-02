@@ -14,11 +14,15 @@ namespace GrillBot.Data.Models
 
         public ChannelOverride() { }
 
-        public ChannelOverride(IChannel channel, OverwritePermissions perms)
+        public ChannelOverride(ulong channelId, ulong allowValue, ulong denyValue)
         {
-            AllowValue = perms.AllowValue;
-            DenyValue = perms.DenyValue;
-            ChannelId = channel.Id;
+            AllowValue = allowValue;
+            DenyValue = denyValue;
+            ChannelId = channelId;
+        }
+
+        public ChannelOverride(IChannel channel, OverwritePermissions perms) : this(channel.Id, perms.AllowValue, perms.DenyValue)
+        {
         }
     }
 }

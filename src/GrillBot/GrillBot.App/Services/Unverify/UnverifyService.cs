@@ -36,6 +36,8 @@ namespace GrillBot.App.Services.Unverify
             Logger = logger;
             DbFactory = dbFactory;
             Logging = logging;
+
+            DiscordClient.UserLeft += OnUserLeftAsync;
         }
 
         public async Task<List<string>> SetUnverifyAsync(List<SocketUser> users, DateTime end, string data, SocketGuild guild, IUser from, bool dry)
@@ -269,6 +271,19 @@ namespace GrillBot.App.Services.Unverify
             }
         }
 
-        // TODO: GetList, OnUserLeft, Recover, Selfunverify
+        public async Task OnUserLeftAsync(SocketGuildUser user)
+        {
+            using var context = DbFactory.Create();
+
+            var unverify = await context.Unverifies.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == user.Guild.Id.ToString() && o.UserId == user.Id.ToString());
+
+            if (unverify != null)
+            {
+                context.Remove(unverify);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // TODO: GetList, OnUserLeft, Selfunverify
     }
 }

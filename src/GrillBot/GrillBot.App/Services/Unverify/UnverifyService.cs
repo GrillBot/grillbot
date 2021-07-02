@@ -1,0 +1,175 @@
+﻿using Discord;
+using Discord.Net;
+using Discord.WebSocket;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Logging;
+using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.Unverify;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace GrillBot.App.Services.Unverify
+{
+    public class UnverifyService : ServiceBase
+    {
+        private UnverifyChecker Checker { get; }
+        private UnverifyProfileGenerator ProfileGenerator { get; }
+        private UnverifyLogger Logger { get; }
+        private GrillBotContextFactory DbFactory { get; }
+        private LoggingService Logging { get; }
+
+        public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator,
+            UnverifyLogger logger, GrillBotContextFactory dbFactory) : base(client)
+        {
+            Checker = checker;
+            ProfileGenerator = profileGenerator;
+            Logger = logger;
+            DbFactory = dbFactory;
+        }
+
+        public async Task<List<string>> SetUnverifyAsync(List<SocketUser> users, DateTime end, string data, SocketGuild guild, IUser from, bool dry)
+        {
+            await guild.DownloadUsersAsync();
+            var messages = new List<string>();
+
+            var muteRole = await GetMutedRoleAsync(guild);
+            var fromUser = from as IGuildUser ?? guild.GetUser(from.Id);
+
+            foreach (var user in users)
+            {
+                var message = await SetUnverifyAsync(user, end, data, guild, fromUser, false, new List<string>(), muteRole, dry);
+                messages.Add(message);
+            }
+
+            return messages;
+        }
+
+        public async Task<string> SetUnverifyAsync(SocketUser user, DateTime end, string data, SocketGuild guild, IGuildUser from, bool selfunverify, List<string> keep,
+            IRole muteRole, bool dry)
+        {
+            muteRole ??= await GetMutedRoleAsync(guild);
+            var guildUser = user as SocketGuildUser ?? guild.GetUser(user.Id);
+
+            await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end);
+            var profile = await ProfileGenerator.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole);
+
+            if (dry)
+                return UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
+
+            var unverifyLog = await LogUnverifyAsync(profile, guild, from, selfunverify);
+            try
+            {
+                await profile.Destination.TryAddRoleAsync(muteRole);
+                await profile.RemoveRolesAsync();
+                await profile.ReturnChannelsAsync(guild);
+
+                using var context = DbFactory.Create();
+
+                await context.InitGuildAsync(guild);
+                await context.InitUserAsync(from);
+                await context.InitGuildUserAsync(guild, from);
+
+                if (from != profile.Destination)
+                {
+                    await context.InitUserAsync(profile.Destination);
+                    await context.InitGuildUserAsync(guild, profile.Destination);
+                }
+
+                var dbGuildUser = await context.GuildUsers.Include(o => o.Unverify)
+                    .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == profile.Destination.Id.ToString());
+
+                dbGuildUser.Unverify = new Database.Entity.Unverify()
+                {
+                    Channels = profile.ChannelsToRemove.ConvertAll(o => new GuildChannelOverride() { AllowValue = o.AllowValue, ChannelId = o.ChannelId, DenyValue = o.DenyValue }),
+                    EndAt = profile.End,
+                    GuildId = guild.Id.ToString(),
+                    Reason = profile.Reason,
+                    Roles = profile.RolesToRemove.ConvertAll(o => o.Id.ToString()),
+                    SetOperationId = unverifyLog.Id,
+                    StartAt = profile.Start,
+                    UserId = profile.Destination.Id.ToString()
+                };
+
+                await context.SaveChangesAsync();
+
+                try
+                {
+                    var dmMessage = UnverifyMessageGenerator.CreateUnverifyPMMessage(profile, guild);
+                    await profile.Destination.SendMessageAsync(dmMessage);
+                }
+                catch (HttpException ex) when (ex.DiscordCode == 50007)
+                {
+                    // User have disabled DMs.
+                }
+
+                return UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
+            }
+            catch (Exception ex)
+            {
+                await profile.Destination.TryRemoveRoleAsync(muteRole);
+                await profile.ReturnRolesAsync();
+                await profile.ReturnChannelsAsync(guild);
+                await Logging.ErrorAsync("Unverify", $"An error occured when unverify removing access to {user.GetFullName()}", ex);
+                return UnverifyMessageGenerator.CreateUnverifyFailedToChannel(profile.Destination);
+            }
+        }
+
+        private async Task<IRole> GetMutedRoleAsync(IGuild guild)
+        {
+            using var context = DbFactory.Create();
+
+            var dbGuild = await context.Guilds.AsNoTracking().FirstOrDefaultAsync(o => o.Id == guild.Id.ToString());
+            return dbGuild == null ? null : guild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId));
+        }
+
+        private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, SocketGuild guild, IGuildUser from, bool selfunverify)
+        {
+            if (selfunverify)
+                return Logger.LogSelfunverifyAsync(profile, guild);
+
+            return Logger.LogUnverifyAsync(profile, guild, from);
+        }
+
+        public async Task<string> UpdateUnverifyAsync(IGuildUser user, SocketGuild guild, DateTime newEnd, IGuildUser fromUser)
+        {
+            using var context = DbFactory.Create();
+
+            var dbUser = await context.GuildUsers.Include(o => o.Unverify)
+                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
+
+            if (dbUser?.Unverify == null)
+                throw new NotFoundException("Aktualizace času nelze pro hledaného uživatele provést. Unverify nenalezeno.");
+
+            if ((dbUser.Unverify.EndAt - DateTime.Now).TotalSeconds <= 30.0)
+                throw new ValidationException("Aktualizace data a času již není možná. Vypršel čas, nebo zbývá méně, než půl minuty.");
+
+            await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user);
+
+            dbUser.Unverify.EndAt = newEnd;
+            dbUser.Unverify.StartAt = DateTime.Now;
+            await context.SaveChangesAsync();
+
+            try
+            {
+                var dmMessage = UnverifyMessageGenerator.CreateUpdatePMMessage(guild, newEnd);
+                await user.SendMessageAsync(dmMessage);
+            }
+            catch (HttpException ex) when (ex.DiscordCode == 50007)
+            {
+                // User have disabled DMs.
+            }
+
+            return UnverifyMessageGenerator.CreateUpdateChannelMessage(user, newEnd);
+        }
+
+        // TODO: GetList, AutoUnverify, RemoveUnverify, OnUserLeft, Recover, Selfunverify
+    }
+}

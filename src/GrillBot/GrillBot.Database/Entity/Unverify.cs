@@ -30,7 +30,7 @@ namespace GrillBot.Database.Entity
         public List<string> Roles { get; set; }
 
         [Column(TypeName = "jsonb")]
-        public List<string> Channels { get; set; }
+        public List<GuildChannelOverride> Channels { get; set; }
 
         public long SetOperationId { get; set; }
 

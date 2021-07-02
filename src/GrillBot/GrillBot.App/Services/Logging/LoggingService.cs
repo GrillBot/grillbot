@@ -16,7 +16,7 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services
+namespace GrillBot.App.Services.Logging
 {
     public class LoggingService
     {

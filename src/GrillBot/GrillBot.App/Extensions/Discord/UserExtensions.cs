@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -47,6 +48,16 @@ namespace GrillBot.App.Extensions.Discord
             var roles = requireColor ? user.Roles.Where(o => o.Color != Color.Default) : user.Roles.AsEnumerable();
 
             return roles.OrderByDescending(o => o.Position).FirstOrDefault();
+        }
+
+        public static Task TryAddRoleAsync(this IGuildUser user, IRole role)
+        {
+            return user.RoleIds.Any(o => o == role.Id) ? Task.CompletedTask : user.AddRoleAsync(role);
+        }
+
+        public static Task TryRemoveRoleAsync(this IGuildUser user, IRole role)
+        {
+            return !user.RoleIds.Any(o => o == role.Id) ? Task.CompletedTask : user.RemoveRoleAsync(role);
         }
     }
 }

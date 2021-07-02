@@ -1,5 +1,5 @@
-﻿using Discord;
-using GrillBot.App.Services.CronJobs;
+﻿using GrillBot.App.Services.CronJobs;
+using GrillBot.App.Services.Logging;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading;
@@ -27,8 +27,7 @@ namespace GrillBot.App.Services.MessageCache
             }
             catch (Exception ex)
             {
-                var msg = new LogMessage(LogSeverity.Error, nameof(MessageCacheCheckCron), "An error occured when message cache check processing.", ex);
-                await LoggingService.OnLogAsync(msg);
+                await LoggingService.ErrorAsync("MessageCacheCron", "An error occured when message cache check processing.", ex);
             }
         }
     }

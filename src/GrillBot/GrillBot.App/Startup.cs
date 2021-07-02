@@ -8,9 +8,11 @@ using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Sync;
+using GrillBot.App.Services.Unverify;
 using GrillBot.Database;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -78,7 +80,8 @@ namespace GrillBot.App
                 .AddSingleton<EmoteService>()
                 .AddSingleton<EmoteChainService>()
                 .AddSingleton<SearchingService>()
-                .AddSingleton<RemindService>();
+                .AddSingleton<RemindService>()
+                .AddUnverify();
 
             ReflectionHelper.GetAllReactionEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

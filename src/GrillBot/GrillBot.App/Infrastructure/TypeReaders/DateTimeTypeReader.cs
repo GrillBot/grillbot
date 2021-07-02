@@ -20,7 +20,7 @@ namespace GrillBot.App.Infrastructure.TypeReaders
             { new Regex("^(^(te[dď]|now|(te|za)raz)$)$", regexOptions), () => DateTime.Now } // teď, ted, now, teraz, zaraz
         };
 
-        private Regex TimeShiftRegex { get; } = new(@"^(\d+)(m|h|d|M|y)$", regexOptions);
+        private Regex TimeShiftRegex { get; } = new(@"(\d+)(m|h|d|M|y|r)", regexOptions);
 
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
         {
@@ -38,9 +38,11 @@ namespace GrillBot.App.Infrastructure.TypeReaders
             }
 
             var timeShift = TimeShiftRegex.Match(input);
-            if (timeShift.Success)
+            var timeShiftMatched = timeShift.Success;
+            var result = DateTime.Now;
+
+            while (timeShift.Success)
             {
-                var result = DateTime.Now;
                 var timeValue = Convert.ToInt32(timeShift.Groups[1].Value);
 
                 switch (timeShift.Groups[2].Value)
@@ -57,15 +59,18 @@ namespace GrillBot.App.Infrastructure.TypeReaders
                     case "M":
                         result = result.AddMonths(timeValue);
                         break;
+                    case "r":
                     case "y":
                         result = result.AddYears(timeValue);
                         break;
                 }
 
-                return Task.FromResult(TypeReaderResult.FromSuccess(result));
+                timeShift = timeShift.NextMatch();
             }
 
-            return Task.FromResult(TypeReaderResult.FromError(CommandError.ParseFailed, "Datum a čas není ve správném formátu."));
+            return timeShiftMatched
+                ? Task.FromResult(TypeReaderResult.FromSuccess(result))
+                : Task.FromResult(TypeReaderResult.FromError(CommandError.ParseFailed, "Datum a čas není ve správném formátu."));
         }
     }
 }

@@ -9,7 +9,6 @@ using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -60,7 +59,7 @@ namespace GrillBot.App.Services.Unverify
         public async Task<string> SetUnverifyAsync(SocketUser user, DateTime end, string data, SocketGuild guild, IGuildUser from, bool selfunverify, List<string> keep,
             IRole muteRole, bool dry)
         {
-            muteRole ??= await GetMutedRoleAsync(guild);
+            if (selfunverify && muteRole == null) muteRole = await GetMutedRoleAsync(guild);
             var guildUser = user as SocketGuildUser ?? guild.GetUser(user.Id);
 
             await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end);
@@ -132,7 +131,7 @@ namespace GrillBot.App.Services.Unverify
             using var context = DbFactory.Create();
 
             var dbGuild = await context.Guilds.AsNoTracking().FirstOrDefaultAsync(o => o.Id == guild.Id.ToString());
-            return dbGuild == null ? null : guild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId));
+            return string.IsNullOrEmpty(dbGuild?.MuteRoleId) ? null : guild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId));
         }
 
         private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, SocketGuild guild, IGuildUser from, bool selfunverify)

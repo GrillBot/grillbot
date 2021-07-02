@@ -29,7 +29,7 @@ namespace GrillBot.App.Modules.Help
                 .FindAllAsync(async cmd => (await cmd.CheckPreconditionsAsync(context, provider)).IsSuccess);
             foreach (var command in executableCommands.Take(EmbedBuilder.MaxFieldCount))
             {
-                var summary = string.IsNullOrEmpty(command.Summary) ? "*Tento příkaz nemá popis*" : command.Summary;
+                var summary = string.IsNullOrEmpty(command.Summary) ? "*Tento příkaz nemá popis*" : command.Summary.Replace("{prefix}", prefix);
 
                 var aliases = command.GetAliasesFormat(prefix);
                 if (!string.IsNullOrEmpty(aliases))

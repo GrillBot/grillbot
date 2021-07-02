@@ -231,6 +231,44 @@ namespace GrillBot.App.Services.Unverify
             return Logger.LogRemoveAsync(returnedRoles, channels, guild, fromUser, user);
         }
 
-        // TODO: GetList, AutoUnverify, OnUserLeft, Recover, Selfunverify
+        public async Task UnverifyAutoremoveAsync(ulong guildId, ulong userId)
+        {
+            using var context = DbFactory.Create();
+
+            try
+            {
+                var unverify = await context.Unverifies.AsQueryable()
+                    .FirstOrDefaultAsync(o => o.UserId == userId.ToString() && o.GuildId == guildId.ToString());
+
+                if (unverify == null) return;
+                var guild = DiscordClient.GetGuild(guildId);
+
+                if (guild == null)
+                {
+                    context.Remove(unverify);
+                    return;
+                }
+
+                var user = guild.GetUser(userId);
+
+                if (user == null)
+                {
+                    context.Remove(unverify);
+                    return;
+                }
+
+                await RemoveUnverifyAsync(guild, guild.CurrentUser, user, true);
+            }
+            catch (Exception ex)
+            {
+                await Logging.ErrorAsync("Unverify/Autoremove", $"An error occured when unverify returning access ({guildId}/{userId}).", ex);
+            }
+            finally
+            {
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // TODO: GetList, OnUserLeft, Recover, Selfunverify
     }
 }

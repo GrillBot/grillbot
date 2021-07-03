@@ -1,5 +1,7 @@
 ﻿using Discord.WebSocket;
 using GrillBot.App.Infrastructure;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -96,6 +98,20 @@ namespace GrillBot.App.Services.Sync
                     await SyncChannelAsync(context, channel);
                 }
             }
+
+            var application = await DiscordClient.GetApplicationInfoAsync();
+            var botOwner = await context.Users.AsQueryable().FirstOrDefaultAsync(o => o.Id == application.Owner.Id.ToString());
+            if (botOwner == null)
+            {
+                botOwner = new User()
+                {
+                    Id = application.Owner.Id.ToString(),
+                    Username = application.Owner.Username
+                };
+
+                await context.AddAsync(botOwner);
+            }
+            botOwner.Flags |= (int)UserFlags.BotAdmin;
 
             await context.SaveChangesAsync();
         }

@@ -14,7 +14,7 @@ namespace GrillBot.App.Modules.Channels
             Func<ulong, ITextChannel> channelFinder, int skip, int page = 0)
         {
             this.WithFooter(user);
-            this.WithMetadata(new ChannelboardMetadata() { PageNumber = page, GuildId = guild.Id });
+            this.WithMetadata(new ChannelboardMetadata() { Page = page, GuildId = guild.Id });
 
             WithAuthor("Statistika aktivity v kanálech");
             WithColor(Discord.Color.Blue);

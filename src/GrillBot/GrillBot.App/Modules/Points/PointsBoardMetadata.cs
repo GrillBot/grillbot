@@ -3,35 +3,35 @@ using System.Collections.Generic;
 
 namespace GrillBot.App.Modules.Points
 {
-    public class PointsBoardMetadata : IEmbedMetadata
+    public class PointsBoardMetadata : PaginatedMetadataBase
     {
-        public string EmbedKind => "Points";
+        public override string EmbedKind => "Points";
 
-        public int PageNumber { get; set; }
         public ulong GuildId { get; set; }
 
-        public void SaveInto(IDictionary<string, string> destination)
+        public override void Save(IDictionary<string, string> destination)
         {
-            destination[nameof(PageNumber)] = PageNumber.ToString();
             destination[nameof(GuildId)] = GuildId.ToString();
         }
 
-        public bool TryLoadFrom(IReadOnlyDictionary<string, string> values)
+        public override bool TryLoad(IReadOnlyDictionary<string, string> values)
         {
-            int pageNumber = 0;
             ulong guildId = 0;
 
-            var success = values.TryGetValue(nameof(PageNumber), out string _pageNumber) && int.TryParse(_pageNumber, out pageNumber);
-            success = success && values.TryGetValue(nameof(GuildId), out string _guildId) && ulong.TryParse(_guildId, out guildId);
+            var success = values.TryGetValue(nameof(GuildId), out string _guildId) && ulong.TryParse(_guildId, out guildId);
 
             if (success)
             {
-                PageNumber = pageNumber;
                 GuildId = guildId;
                 return true;
             }
 
             return false;
+        }
+
+        public override void Reset()
+        {
+            GuildId = default;
         }
     }
 }

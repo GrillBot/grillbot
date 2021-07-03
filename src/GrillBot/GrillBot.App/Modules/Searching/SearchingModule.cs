@@ -65,7 +65,7 @@ namespace GrillBot.App.Modules.Searching
                 .WithSearching(data, channel, Context.Guild, 0, Context.User);
 
             var message = await ReplyAsync(embed: embed.Build());
-            await message.AddReactionsAsync(new[] { Emojis.MoveToNext, Emojis.MoveToPrev });
+            await message.AddReactionsAsync(new[] { Emojis.MoveToPrev, Emojis.MoveToNext });
         }
     }
 }

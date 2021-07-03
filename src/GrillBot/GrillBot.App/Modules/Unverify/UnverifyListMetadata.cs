@@ -3,35 +3,35 @@ using System.Collections.Generic;
 
 namespace GrillBot.App.Modules.Unverify
 {
-    public class UnverifyListMetadata : IEmbedMetadata
+    public class UnverifyListMetadata : PaginatedMetadataBase
     {
-        public string EmbedKind => "UnverifyList";
+        public override string EmbedKind => "UnverifyList";
 
         public ulong GuildId { get; set; }
-        public int Page { get; set; }
 
-        public void SaveInto(IDictionary<string, string> destination)
+        public override void Save(IDictionary<string, string> destination)
         {
             destination[nameof(GuildId)] = GuildId.ToString();
-            destination[nameof(Page)] = Page.ToString();
         }
 
-        public bool TryLoadFrom(IReadOnlyDictionary<string, string> values)
+        public override bool TryLoad(IReadOnlyDictionary<string, string> values)
         {
             ulong guildId = 0;
-            int page = 0;
 
             var success = values.TryGetValue(nameof(GuildId), out var _guildId) && ulong.TryParse(_guildId, out guildId);
-            success &= values.TryGetValue(nameof(Page), out var _page) && int.TryParse(_page, out page);
 
             if (success)
             {
                 GuildId = guildId;
-                Page = page;
                 return true;
             }
 
             return false;
+        }
+
+        public override void Reset()
+        {
+            GuildId = default;
         }
     }
 }

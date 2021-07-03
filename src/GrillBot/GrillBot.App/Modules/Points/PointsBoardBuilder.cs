@@ -14,7 +14,7 @@ namespace GrillBot.App.Modules.Points
             Func<ulong, IGuildUser> userFinder, int skip, int page = 0)
         {
             this.WithFooter(user);
-            this.WithMetadata(new PointsBoardMetadata() { GuildId = guild.Id, PageNumber = page });
+            this.WithMetadata(new PointsBoardMetadata() { GuildId = guild.Id, Page = page });
 
             WithAuthor("Statistika aktivity dle bodů");
             WithColor(Discord.Color.Blue);

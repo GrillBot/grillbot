@@ -13,7 +13,7 @@ namespace GrillBot.Tests.App.Modules.Channels
             var combinations = new[]
             {
                 new Dictionary<string, string>(),
-                new Dictionary<string, string>(){ { "PageNumber", "1" } },
+                new Dictionary<string, string>(){ { "Page", "1" } },
                 new Dictionary<string, string>(){ { "GuildId", "50" } }
             };
 
@@ -24,7 +24,7 @@ namespace GrillBot.Tests.App.Modules.Channels
             {
                 Assert.IsFalse(metadata.TryLoadFrom(combination));
 
-                Assert.AreEqual(default, metadata.PageNumber);
+                Assert.AreEqual(default, metadata.Page);
                 Assert.AreEqual(default, metadata.GuildId);
             }
         }
@@ -34,14 +34,14 @@ namespace GrillBot.Tests.App.Modules.Channels
         {
             var data = new Dictionary<string, string>()
             {
-                { "PageNumber", "1" },
+                { "Page", "1" },
                 { "GuildId", "50" }
             };
 
             var metadata = new ChannelboardMetadata();
             Assert.AreEqual("Channelboard", metadata.EmbedKind);
             Assert.IsTrue(metadata.TryLoadFrom(data));
-            Assert.AreEqual(1, metadata.PageNumber);
+            Assert.AreEqual(1, metadata.Page);
             Assert.AreEqual((ulong)50, metadata.GuildId);
         }
     }

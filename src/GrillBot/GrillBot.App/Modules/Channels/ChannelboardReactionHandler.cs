@@ -6,6 +6,7 @@ using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Schema;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,12 +26,7 @@ namespace GrillBot.App.Modules.Channels
 
         public override async Task<bool> OnReactionAddedAsync(IUserMessage message, IEmote emote, IUser user)
         {
-            var embed = message.Embeds.FirstOrDefault();
-
-            if (embed == null || embed.Footer == null || embed.Author == null) return false;
-            if (!Emojis.PaginationEmojis.Any(o => o.IsEqual(emote))) return false;
-            if (message.ReferencedMessage == null) return false;
-            if (!embed.TryParseMetadata<ChannelboardMetadata>(out var metadata)) return false;
+            if (!TryGetEmbedAndMetadata<ChannelboardMetadata>(message, emote, out var embed, out var metadata)) return false;
 
             var guild = DiscordClient.GetGuild(metadata.GuildId);
             if (guild == null) return false;
@@ -53,16 +49,8 @@ namespace GrillBot.App.Modules.Channels
             var channelsCount = await groupedDataQuery.CountAsync();
             if (channelsCount == 0) return false;
 
-            int newPage = metadata.PageNumber;
-            if (emote.IsEqual(Emojis.MoveToFirst)) newPage = 0;
-            else if (emote.IsEqual(Emojis.MoveToLast)) newPage = channelsCount - 1;
-            else if (emote.IsEqual(Emojis.MoveToNext)) newPage++;
-            else if (emote.IsEqual(Emojis.MoveToPrev)) newPage--;
-
-            if (newPage >= channelsCount) newPage = channelsCount - 1;
-            else if (newPage < 0) newPage = 0;
-
-            if (newPage == metadata.PageNumber) return false;
+            int newPage = GetPageNumber(metadata.Page, channelsCount, emote);
+            if (newPage == metadata.Page) return false;
 
             var skip = (newPage == 0 ? 0 : newPage) * 10;
             var groupedData = await groupedDataQuery.Skip(skip).Take(10).ToListAsync();

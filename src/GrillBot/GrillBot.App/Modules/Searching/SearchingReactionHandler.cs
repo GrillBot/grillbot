@@ -1,11 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.App.Services;
-using GrillBot.Data;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Modules.Searching
@@ -23,12 +19,7 @@ namespace GrillBot.App.Modules.Searching
 
         public override async Task<bool> OnReactionAddedAsync(IUserMessage message, IEmote emote, IUser user)
         {
-            var embed = message.Embeds.FirstOrDefault();
-
-            if (embed == null || embed.Footer == null || embed.Author == null) return false;
-            if (!Emojis.PaginationEmojis.Any(o => o.IsEqual(emote))) return false;
-            if (message.ReferencedMessage == null) return false;
-            if (!embed.TryParseMetadata<SearchingMetadata>(out var metadata)) return false;
+            if (!TryGetEmbedAndMetadata<SearchingMetadata>(message, emote, out var embed, out var metadata)) return false;
 
             var guild = DiscordClient.GetGuild(metadata.GuildId);
             if (guild == null) return false;
@@ -36,11 +27,7 @@ namespace GrillBot.App.Modules.Searching
             var channel = guild.GetTextChannel(metadata.ChannelId);
             if (channel == null) return false;
 
-            int newPage = metadata.Page;
-            if (emote.IsEqual(Emojis.MoveToNext)) newPage++;
-            else if (emote.IsEqual(Emojis.MoveToPrev)) newPage--;
-
-            if (newPage < 0) newPage = 0;
+            int newPage = GetPageNumber(metadata.Page, int.MaxValue, emote);
             if (newPage == metadata.Page) return false;
 
             var data = await SearchingService.GetSearchListAsync(guild, channel, newPage);

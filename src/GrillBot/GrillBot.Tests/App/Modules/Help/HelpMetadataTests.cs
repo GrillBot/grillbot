@@ -1,11 +1,8 @@
 ﻿using GrillBot.App.Modules.Help;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Modules.Help
 {
@@ -25,8 +22,8 @@ namespace GrillBot.Tests.App.Modules.Help
             metadata.SaveInto(result);
 
             Assert.AreEqual(2, result.Count);
-            Assert.IsTrue(new[] { "Page", "PagesCount" }.SequenceEqual(result.Keys));
-            Assert.IsTrue(new[] { "1", "50" }.SequenceEqual(result.Values));
+            Assert.IsTrue(new[] { "PagesCount", "Page" }.SequenceEqual(result.Keys));
+            Assert.IsTrue(new[] { "50", "1" }.SequenceEqual(result.Values));
         }
 
         [TestMethod]

@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Services.CronJobs;
+﻿using Discord.WebSocket;
+using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -17,8 +18,8 @@ namespace GrillBot.App.Services.AuditLog
         private FileStorageFactory FileStorage { get; }
         private IConfiguration Configuration { get; }
 
-        public AuditLogClearingJob(IConfiguration configuration, GrillBotContextFactory dbFactory, FileStorageFactory fileStorage)
-            : base(configuration["AuditLog:CleaningCron"])
+        public AuditLogClearingJob(IConfiguration configuration, GrillBotContextFactory dbFactory, FileStorageFactory fileStorage,
+            DiscordSocketClient discordClient) : base(configuration["AuditLog:CleaningCron"], discordClient)
         {
             DbFactory = dbFactory;
             FileStorage = fileStorage;

@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Services.CronJobs;
+﻿using Discord.WebSocket;
+using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.Logging;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -12,8 +13,8 @@ namespace GrillBot.App.Services.Reminder
         private RemindService RemindService { get; }
         private LoggingService LoggingService { get; }
 
-        public RemindCronJob(IConfiguration configuration, RemindService remindService, LoggingService logging)
-            : base(configuration.GetValue<string>("Reminder:CronJob"))
+        public RemindCronJob(IConfiguration configuration, RemindService remindService, LoggingService logging,
+            DiscordSocketClient discordClient) : base(configuration.GetValue<string>("Reminder:CronJob"), discordClient)
         {
             RemindService = remindService;
             LoggingService = logging;

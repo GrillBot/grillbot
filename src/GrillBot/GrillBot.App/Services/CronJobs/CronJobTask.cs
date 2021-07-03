@@ -1,4 +1,6 @@
 ﻿using Cronos;
+using Discord;
+using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
@@ -11,10 +13,12 @@ namespace GrillBot.App.Services.CronJobs
     {
         private System.Timers.Timer Timer { get; set; }
         private CronExpression Expression { get; }
+        protected DiscordSocketClient DiscordClient { get; }
 
-        protected CronJobTask(string cronExpression)
+        protected CronJobTask(string cronExpression, DiscordSocketClient discordClient)
         {
             Expression = CronExpression.Parse(cronExpression);
+            DiscordClient = discordClient;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -37,7 +41,7 @@ namespace GrillBot.App.Services.CronJobs
                     Timer.Dispose();  // reset and dispose timer
                     Timer = null;
 
-                    if (!cancellationToken.IsCancellationRequested)
+                    if (!cancellationToken.IsCancellationRequested && DiscordClient.Status == UserStatus.Online)
                         await DoWorkAsync(cancellationToken);
 
                     if (!cancellationToken.IsCancellationRequested)

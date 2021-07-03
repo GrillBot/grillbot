@@ -28,6 +28,8 @@ namespace GrillBot.App.Handlers
 
         private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, SocketReaction reaction, ReactionEvents @event)
         {
+            if (DiscordClient.Status != UserStatus.Online) return;
+
             var msg = await message.GetOrDownloadAsync();
             if (msg == null) return;
 

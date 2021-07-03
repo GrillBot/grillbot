@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
@@ -29,7 +30,7 @@ namespace GrillBot.App.Services
             DiscordClient.MessageReceived += (message) =>
             {
                 // Block commands, system messages and bots.
-                if (message is not SocketUserMessage msg || !message.Author.IsUser()) return Task.CompletedTask;
+                if (message is not SocketUserMessage msg || !message.Author.IsUser() || DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
 
                 int argPos = 0;
                 var canProcess = !msg.HasMentionPrefix(DiscordClient.CurrentUser, ref argPos) && !msg.HasStringPrefix(Prefix, ref argPos);

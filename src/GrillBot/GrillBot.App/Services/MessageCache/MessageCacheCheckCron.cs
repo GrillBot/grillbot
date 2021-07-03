@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Services.CronJobs;
+﻿using Discord.WebSocket;
+using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.Logging;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -12,8 +13,8 @@ namespace GrillBot.App.Services.MessageCache
         private MessageCache MessageCache { get; }
         private LoggingService LoggingService { get; }
 
-        public MessageCacheCheckCron(IConfiguration configuration, LoggingService loggingService, MessageCache messageCache)
-            : base(configuration["Discord:MessageCache:Cron"])
+        public MessageCacheCheckCron(IConfiguration configuration, LoggingService loggingService, MessageCache messageCache,
+            DiscordSocketClient discordClient) : base(configuration["Discord:MessageCache:Cron"], discordClient)
         {
             LoggingService = loggingService;
             MessageCache = messageCache;

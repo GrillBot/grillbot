@@ -32,6 +32,7 @@ namespace GrillBot.App.Handlers
 
         private async Task OnCommandTriggerTryAsync(SocketMessage message)
         {
+            if (DiscordClient.Status != UserStatus.Online) return;
             if (!message.TryLoadMessage(out SocketUserMessage userMessage)) return;
             var context = new SocketCommandContext(DiscordClient, userMessage);
 

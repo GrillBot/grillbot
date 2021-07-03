@@ -13,14 +13,14 @@ namespace GrillBot.App.Services.Unverify
             var endDateTime = profile.End.ToCzechFormat();
             var username = profile.Destination.GetDisplayName();
 
-            return $"Dočasné odebrání přístupu pro uživatele **{username}** bylo dokončeno. Přístup bude navrácen **{endDateTime}**. Důvod: {profile.Reason}";
+            return $"Dočasné odebrání přístupu pro uživatele **{username}** bylo dokončeno. Přístup bude navrácen **{endDateTime}**. {(!profile.IsSelfUnverify ? $"Důvod: {profile.Reason}" : "")}";
         }
 
         public static string CreateUnverifyPMMessage(UnverifyUserProfile profile, IGuild guild)
         {
             var endDateTime = profile.End.ToCzechFormat();
 
-            return $"Byly ti dočasně odebrány všechny práva na serveru **{guild.Name}**. Přístup ti bude navrácen **{endDateTime}**. Důvod: {profile.Reason}";
+            return $"Byly ti dočasně odebrány všechny práva na serveru **{guild.Name}**. Přístup ti bude navrácen **{endDateTime}**. {(!profile.IsSelfUnverify ? $"Důvod: {profile.Reason}" : "")}";
         }
 
         public static string CreateUpdatePMMessage(IGuild guild, DateTime endDateTime)

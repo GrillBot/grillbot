@@ -62,7 +62,7 @@ namespace GrillBot.App.Services.Unverify
             if (selfunverify && muteRole == null) muteRole = await GetMutedRoleAsync(guild);
             var guildUser = user as SocketGuildUser ?? guild.GetUser(user.Id);
 
-            await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end);
+            await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end, keep?.Count ?? 0);
             var profile = await ProfileGenerator.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole);
 
             if (dry)
@@ -189,7 +189,7 @@ namespace GrillBot.App.Services.Unverify
                     return UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser);
 
                 var profile = ProfileGenerator.Reconstruct(dbUser.Unverify.UnverifyLog, toUser, guild);
-                await LogRemoveAsync(profile.RolesToRemove.ConvertAll(o => o as IRole), profile.ChannelsToRemove, toUser, guild, fromUser, isAuto);
+                await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto);
 
                 var muteRole = await GetMutedRoleAsync(guild);
                 if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id))
@@ -308,7 +308,5 @@ namespace GrillBot.App.Services.Unverify
             var user = guild.GetUser(Convert.ToUInt64(unverify.UserId));
             return ProfileGenerator.Reconstruct(unverify.UnverifyLog, user, guild);
         }
-
-        // TODO: Selfunverify
     }
 }

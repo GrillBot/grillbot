@@ -12,7 +12,7 @@ namespace GrillBot.Tests.App.Services.Unverify
         {
             var collection = new ServiceCollection().AddUnverify();
 
-            Assert.AreEqual(4, collection.Count);
+            Assert.AreEqual(5, collection.Count);
         }
     }
 }

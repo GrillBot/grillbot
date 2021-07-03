@@ -24,11 +24,13 @@ namespace GrillBot.App.Services.Unverify
 
         public async Task<UnverifyUserProfile> CreateAsync(SocketGuildUser user, SocketGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole)
         {
-            var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify) { Reason = ParseReason(data) };
+            var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify) { Reason = !selfunverify ? ParseReason(data) : null };
 
-            // TODO: Selfunverify
-            ProcessRoles(profile, user, guild, selfunverify, keep, mutedRole);
-            ProcessChannels(profile, guild, user, keep);
+            using var context = DbFactory.Create();
+            var keepables = (await context.SelfunverifyKeepables.ToListAsync()).GroupBy(o => o.GroupName).ToDictionary(o => o.Key, o => o.Select(o => o.Name).ToList());
+
+            ProcessRoles(profile, user, guild, selfunverify, keep, mutedRole, keepables);
+            ProcessChannels(profile, guild, user, keep, keepables);
 
             return profile;
         }
@@ -59,7 +61,7 @@ namespace GrillBot.App.Services.Unverify
             return reason;
         }
 
-        private void ProcessRoles(UnverifyUserProfile profile, SocketGuildUser user, SocketGuild guild, bool selfunverify, List<string> keep, IRole mutedRole)
+        private static void ProcessRoles(UnverifyUserProfile profile, SocketGuildUser user, SocketGuild guild, bool selfunverify, List<string> keep, IRole mutedRole, Dictionary<string, List<string>> keepables)
         {
             profile.RolesToRemove.AddRange(user.Roles.Where(o => !o.IsEveryone));
 
@@ -76,10 +78,32 @@ namespace GrillBot.App.Services.Unverify
             profile.RolesToKeep.AddRange(unavailable);
             profile.RolesToRemove.RemoveAll(o => unavailable.Any(x => x.Id == o.Id));
 
-            // TODO: Selfunverify roles keeping.
+            foreach (var toKeep in keep)
+            {
+                CheckDefinition(keepables, toKeep);
+                var role = profile.RolesToRemove.Find(o => string.Equals(o.Name, toKeep, StringComparison.InvariantCultureIgnoreCase));
+
+                if (role != null)
+                {
+                    profile.RolesToKeep.Add(role);
+                    profile.RolesToRemove.Remove(role);
+                    continue;
+                }
+
+                foreach (var group in keepables.Where(o => o.Value?.Contains(toKeep) == true))
+                {
+                    role = profile.RolesToRemove.Find(o => string.Equals(o.Name, group.Key == "_" ? toKeep : group.Key, StringComparison.InvariantCultureIgnoreCase));
+
+                    if (role != null)
+                    {
+                        profile.RolesToKeep.Add(role);
+                        profile.RolesToRemove.Remove(role);
+                    }
+                }
+            }
         }
 
-        private void ProcessChannels(UnverifyUserProfile profile, SocketGuild guild, SocketGuildUser user, List<string> keep)
+        private static void ProcessChannels(UnverifyUserProfile profile, SocketGuild guild, SocketGuildUser user, List<string> keep, Dictionary<string, List<string>> keepabless)
         {
             var channels = guild.Channels.Where(o => o is SocketTextChannel || o is SocketVoiceChannel);
 
@@ -88,8 +112,28 @@ namespace GrillBot.App.Services.Unverify
                 .Where(o => o.AllowValue > 0 || o.DenyValue > 0);
 
             profile.ChannelsToRemove.AddRange(channelsToRemove);
+            foreach (var toKeep in keep)
+            {
+                CheckDefinition(keepabless, toKeep);
+                var overwrite = profile.ChannelsToRemove.Find(o => string.Equals(guild.GetChannel(o.ChannelId)?.Name, toKeep));
 
-            // TODO: Selfunverify channels keeping.
+                if (overwrite != null)
+                {
+                    profile.ChannelsToRemove.Add(overwrite);
+                    profile.ChannelsToKeep.RemoveAll(o => o.ChannelId == overwrite.ChannelId);
+                }
+            }
+        }
+
+        private static bool ExistsInKeepDefinition(Dictionary<string, List<string>> definitions, string item)
+        {
+            return definitions.ContainsKey(item) || definitions.Values.Any(o => o?.Contains(item) == true);
+        }
+
+        private static void CheckDefinition(Dictionary<string, List<string>> definitions, string item)
+        {
+            if (!ExistsInKeepDefinition(definitions, item))
+                throw new ValidationException($"{item.ToLower()} není ponechatelné.");
         }
     }
 }

@@ -10,7 +10,8 @@ namespace GrillBot.App.Services.Unverify
                 .AddSingleton<UnverifyChecker>()
                 .AddSingleton<UnverifyLogger>()
                 .AddSingleton<UnverifyProfileGenerator>()
-                .AddSingleton<UnverifyService>();
+                .AddSingleton<UnverifyService>()
+                .AddSingleton<SelfunverifyService>();
         }
     }
 }

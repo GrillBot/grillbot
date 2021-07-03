@@ -83,6 +83,8 @@ namespace GrillBot.Database.Services
                 builder.HasMany(o => o.Files).WithOne(o => o.AuditLogItem);
             });
 
+            modelBuilder.Entity<SelfunverifyKeepable>(builder => builder.HasKey(o => new { o.GroupName, o.Name }));
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -99,5 +101,6 @@ namespace GrillBot.Database.Services
         public DbSet<AuditLogFileMeta> AuditLogFiles { get; set; }
         public DbSet<EmoteStatisticItem> Emotes { get; set; }
         public DbSet<RemindMessage> Reminders { get; set; }
+        public DbSet<SelfunverifyKeepable> SelfunverifyKeepables { get; set; }
     }
 }

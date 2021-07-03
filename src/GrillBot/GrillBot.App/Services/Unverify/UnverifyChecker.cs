@@ -21,20 +21,28 @@ namespace GrillBot.App.Services.Unverify
 
         private TimeSpan UnverifyMinimalTime { get; }
         private TimeSpan SelfunverifyMinimalTime { get; }
+        private int MaxKeepAccessCount { get; }
 
         public UnverifyChecker(GrillBotContextFactory dbFactory, IConfiguration configuration)
         {
             DbFactory = dbFactory;
 
-            var unverifyConfig = configuration.GetSection("Unverify:MinimalTimes");
-            UnverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("Unverify"));
-            SelfunverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("Selfunverify"));
+            var unverifyConfig = configuration.GetSection("Unverify");
+            UnverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("MinimalTimes:Unverify"));
+            SelfunverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("MinimalTimes:Selfunverify"));
+            MaxKeepAccessCount = unverifyConfig.GetValue<int>("MaxKeepAccessCount");
         }
 
-        public async Task ValidateUnverifyAsync(SocketGuildUser user, SocketGuild guild, bool selfunverify, DateTime end)
+        public async Task ValidateUnverifyAsync(SocketGuildUser user, SocketGuild guild, bool selfunverify, DateTime end, int keeped)
         {
+            if (keeped > MaxKeepAccessCount)
+                throw new ValidationException($"Nelze si ponechat více, než {MaxKeepAccessCount} rolí a kanálů.");
+
             if (guild.OwnerId == user.Id)
                 throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetDisplayName()}** je vlastník tohoto serveru.");
+
+            if (user.GuildPermissions.Administrator)
+                throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetDisplayName()}** má administrátorská oprávnění.");
 
             if (!selfunverify)
                 ValidateRoles(guild, user);
@@ -50,7 +58,7 @@ namespace GrillBot.App.Services.Unverify
             if (dbUser?.Unverify != null)
                 throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetDisplayName()}** již má odebraný přístup do **{dbUser.Unverify.EndAt.ToCzechFormat()}**.");
 
-            if (dbUser.User.HaveFlags(UserFlags.BotAdmin))
+            if (!selfunverify && dbUser.User.HaveFlags(UserFlags.BotAdmin))
                 throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetFullName()}** je administrátor bota.");
         }
 

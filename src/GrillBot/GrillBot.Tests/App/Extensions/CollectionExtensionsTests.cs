@@ -30,5 +30,22 @@ namespace GrillBot.Tests.App.Extensions
             Assert.IsTrue(new[] { 0, 1, 2, 3, 4 }.SequenceEqual(chunks[0]));
             Assert.IsTrue(new[] { 5, 6, 7, 8, 9 }.SequenceEqual(chunks[1]));
         }
+
+        [TestMethod]
+        public void ComputeAge()
+        {
+            var cases = new[]
+            {
+                new DateTime(2019, 07, 04),
+                new DateTime(2018, 08, 12),
+                DateTime.MinValue
+            };
+
+            foreach (var @case in cases)
+            {
+                var age = @case.ComputeAge();
+                Assert.IsTrue(age > 0);
+            }
+        }
     }
 }

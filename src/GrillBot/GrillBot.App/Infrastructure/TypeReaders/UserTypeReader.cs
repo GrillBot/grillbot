@@ -42,12 +42,22 @@ namespace GrillBot.App.Infrastructure.TypeReaders
             }
             else if (context.Guild is SocketGuild guild)
             {
-                // Finds user directly from discord and get guild user from memory.
-                var matches = await guild.SearchUsersAsync(input);
+                await guild.DownloadUsersAsync();
+
+                var matches = guild.Users
+                     .Where(o => (!string.IsNullOrEmpty(o.Nickname) && o.Nickname.Contains(input, StringComparison.CurrentCultureIgnoreCase)) || o.Username.Contains(input, StringComparison.CurrentCultureIgnoreCase))
+                     .Select(o => o as IGuildUser)
+                     .Where(o => o != null)
+                     .ToList();
 
                 if (matches.Count == 1)
+                    return TypeReaderResult.FromSuccess(matches[0]);
+
+                // Finds user directly from discord and get guild user from memory.
+                matches = (await guild.SearchUsersAsync(input)).Select(o => o as IGuildUser).Where(o => o != null).ToList();
+                if (matches.Count == 1)
                 {
-                    user = guild.GetUser(matches.First().Id);
+                    user = guild.GetUser(matches[0].Id);
                     return TypeReaderResult.FromSuccess(user);
                 }
             }

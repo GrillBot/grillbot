@@ -24,16 +24,14 @@ namespace GrillBot.App.Services.Unverify
         private UnverifyChecker Checker { get; }
         private UnverifyProfileGenerator ProfileGenerator { get; }
         private UnverifyLogger Logger { get; }
-        private GrillBotContextFactory DbFactory { get; }
         private LoggingService Logging { get; }
 
         public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator,
-            UnverifyLogger logger, GrillBotContextFactory dbFactory, LoggingService logging) : base(client)
+            UnverifyLogger logger, GrillBotContextFactory dbFactory, LoggingService logging) : base(client, dbFactory)
         {
             Checker = checker;
             ProfileGenerator = profileGenerator;
             Logger = logger;
-            DbFactory = dbFactory;
             Logging = logging;
 
             DiscordClient.UserLeft += OnUserLeftAsync;

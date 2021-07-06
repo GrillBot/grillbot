@@ -18,12 +18,10 @@ namespace GrillBot.App.Services
     public class InviteService : ServiceBase
     {
         private ConcurrentBag<InviteMetadata> MetadataCache { get; }
-        private GrillBotContextFactory DbFactory { get; }
 
-        public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory) : base(discordClient)
+        public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory) : base(discordClient, dbFactory)
         {
             MetadataCache = new ConcurrentBag<InviteMetadata>();
-            DbFactory = dbFactory;
 
             DiscordClient.Ready += () => InitAsync();
             DiscordClient.UserJoined += (user) => user.IsUser() ? OnUserJoinedAsync(user) : Task.CompletedTask;
@@ -82,8 +80,8 @@ namespace GrillBot.App.Services
             {
                 // Vanity invite not returns uses, but in library github is merged fix (PR #1832). TODO: Update library
                 var vanityInvite = await guild.GetVanityInviteAsync();
-
                 if (vanityInvite != null)
+
                     invites.Add(InviteMetadata.FromDiscord(vanityInvite));
             }
 

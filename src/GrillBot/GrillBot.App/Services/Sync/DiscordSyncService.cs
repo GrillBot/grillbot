@@ -11,9 +11,7 @@ namespace GrillBot.App.Services.Sync
 {
     public class DiscordSyncService : ServiceBase
     {
-        private GrillBotContextFactory DbFactory { get; }
-
-        public DiscordSyncService(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client)
+        public DiscordSyncService(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client, dbFactory)
         {
             DiscordClient.Ready += OnReadyAsync;
             DiscordClient.JoinedGuild += OnGuildAvailableAsync;
@@ -23,8 +21,6 @@ namespace GrillBot.App.Services.Sync
             DiscordClient.UserUpdated += OnUserUpdatedAsync;
             DiscordClient.GuildMemberUpdated += OnGuildMemberUpdated;
             DiscordClient.ChannelUpdated += OnChannelUpdatedAsync;
-
-            DbFactory = dbFactory;
         }
 
         private async Task OnChannelUpdatedAsync(SocketChannel before, SocketChannel after)

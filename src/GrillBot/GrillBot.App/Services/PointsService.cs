@@ -22,7 +22,6 @@ namespace GrillBot.App.Services
 {
     public class PointsService : ServiceBase
     {
-        private GrillBotContextFactory DbFactory { get; }
         private string CommandPrefix { get; }
         private IConfiguration Configuration { get; }
         private Random Random { get; }
@@ -35,9 +34,8 @@ namespace GrillBot.App.Services
         private SolidBrush LightGrayBrush { get; }
 
         public PointsService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
-            FileStorageFactory fileStorageFactory) : base(client)
+            FileStorageFactory fileStorageFactory) : base(client, dbFactory)
         {
-            DbFactory = dbFactory;
             CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
             Configuration = configuration.GetSection("Points");
             Random = new Random();

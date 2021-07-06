@@ -18,13 +18,11 @@ namespace GrillBot.App.Services.Reminder
 {
     public class RemindService : ServiceBase
     {
-        private GrillBotContextFactory DbFactory { get; }
         private IConfiguration Configuration { get; }
 
         public RemindService(DiscordSocketClient client, GrillBotContextFactory dbFactory,
-            IConfiguration configuration) : base(client)
+            IConfiguration configuration) : base(client, dbFactory)
         {
-            DbFactory = dbFactory;
             Configuration = configuration;
         }
 

@@ -19,13 +19,10 @@ namespace GrillBot.App.Services.AuditLog
 {
     public class AuditLogService : ServiceBase
     {
-        private GrillBotContextFactory DbFactory { get; }
         private JsonSerializerSettings JsonSerializerSettings { get; }
 
-        public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client)
+        public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client, dbFactory)
         {
-            DbFactory = dbFactory;
-
             JsonSerializerSettings = new JsonSerializerSettings()
             {
                 DefaultValueHandling = DefaultValueHandling.Ignore,

@@ -17,11 +17,8 @@ namespace GrillBot.App.Services.Unverify
 {
     public class UnverifyLogger : ServiceBase
     {
-        private GrillBotContextFactory DbFactory { get; }
-
-        public UnverifyLogger(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client)
+        public UnverifyLogger(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client, dbFactory)
         {
-            DbFactory = dbFactory;
         }
 
         public Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, IGuild guild, IGuildUser from)

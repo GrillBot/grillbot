@@ -16,14 +16,11 @@ namespace GrillBot.App.Services
 {
     public class SearchingService : ServiceBase
     {
-        private GrillBotContextFactory DbFactory { get; }
         private MessageCache.MessageCache MessageCache { get; }
-
         private Regex EmptyMessageRegex { get; }
 
-        public SearchingService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache messageCache) : base(client)
+        public SearchingService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache messageCache) : base(client, dbFactory)
         {
-            DbFactory = dbFactory;
             MessageCache = messageCache;
 
             EmptyMessageRegex = new Regex(@"(^.)hledam(\s*add)?$");

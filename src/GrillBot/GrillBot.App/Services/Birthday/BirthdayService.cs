@@ -16,11 +16,8 @@ namespace GrillBot.App.Services.Birthday
 {
     public class BirthdayService : ServiceBase
     {
-        private GrillBotContextFactory DbFactory { get; }
-
-        public BirthdayService(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client)
+        public BirthdayService(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client, dbFactory)
         {
-            DbFactory = dbFactory;
         }
 
         public async Task AddBirthdayAsync(IUser user, DateTime birthday)

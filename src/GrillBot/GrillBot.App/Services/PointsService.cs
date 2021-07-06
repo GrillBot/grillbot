@@ -57,7 +57,8 @@ namespace GrillBot.App.Services
             if (message.Channel is not SocketTextChannel textChannel) return;
 
             var guildId = textChannel.Guild.Id.ToString();
-            var userId = message.Author.Id.ToString();
+            var guildUserEntity = message.Author as IGuildUser ?? textChannel.Guild.GetUser(message.Author.Id);
+            var userId = guildUserEntity.Id.ToString();
 
             using var context = DbFactory.Create();
 
@@ -69,12 +70,7 @@ namespace GrillBot.App.Services
 
             if (guildUser == null)
             {
-                guildUser = new GuildUser()
-                {
-                    GuildId = guildId,
-                    UserId = userId
-                };
-
+                guildUser = GuildUser.FromDiscord(textChannel.Guild, guildUserEntity);
                 await context.AddAsync(guildUser);
             }
 
@@ -107,7 +103,7 @@ namespace GrillBot.App.Services
             if (reaction.Emote is not Emoji && !textChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote))) return; // Only local emotes.
 
             await textChannel.Guild.DownloadUsersAsync();
-            var user = reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId);
+            var user = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;
             if (user?.IsUser() != true) return;
 
             int argPos = 0;
@@ -128,12 +124,7 @@ namespace GrillBot.App.Services
 
             if (guildUser == null)
             {
-                guildUser = new GuildUser()
-                {
-                    GuildId = guildId,
-                    UserId = userId
-                };
-
+                guildUser = GuildUser.FromDiscord(textChannel.Guild, user);
                 await context.AddAsync(guildUser);
             }
 
@@ -229,7 +220,7 @@ namespace GrillBot.App.Services
             return SysDraw.Image.FromFile(fileinfo.FullName);
         }
 
-        public async Task IncrementPointsAsync(SocketGuild guild, SocketUser toUser, int amount)
+        public async Task IncrementPointsAsync(SocketGuild guild, SocketGuildUser toUser, int amount)
         {
             var guildId = guild.Id.ToString();
             var userId = toUser.Id.ToString();
@@ -244,12 +235,7 @@ namespace GrillBot.App.Services
 
             if (guildUser == null)
             {
-                guildUser = new GuildUser()
-                {
-                    UserId = userId,
-                    GuildId = guildId
-                };
-
+                guildUser = GuildUser.FromDiscord(guild, toUser);
                 await context.AddAsync(guildUser);
             }
 
@@ -257,7 +243,7 @@ namespace GrillBot.App.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task TransferPointsAsync(SocketGuild guild, SocketUser fromUser, SocketUser toUser, long amount)
+        public async Task TransferPointsAsync(SocketGuild guild, SocketUser fromUser, SocketGuildUser toUser, long amount)
         {
             if (fromUser == toUser)
                 throw new InvalidOperationException("Nelze převést body mezi stejnými účty.");
@@ -291,12 +277,7 @@ namespace GrillBot.App.Services
 
             if (toGuildUser == null)
             {
-                toGuildUser = new GuildUser()
-                {
-                    UserId = toUserId,
-                    GuildId = guildId
-                };
-
+                toGuildUser = GuildUser.FromDiscord(guild, toUser);
                 await context.AddAsync(toGuildUser);
             }
 

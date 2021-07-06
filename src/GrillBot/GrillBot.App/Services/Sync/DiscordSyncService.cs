@@ -99,12 +99,7 @@ namespace GrillBot.App.Services.Sync
             var botOwner = await context.Users.AsQueryable().FirstOrDefaultAsync(o => o.Id == application.Owner.Id.ToString());
             if (botOwner == null)
             {
-                botOwner = new User()
-                {
-                    Id = application.Owner.Id.ToString(),
-                    Username = application.Owner.Username
-                };
-
+                botOwner = User.FromDiscord(application.Owner);
                 await context.AddAsync(botOwner);
             }
             botOwner.Flags |= (int)UserFlags.BotAdmin;

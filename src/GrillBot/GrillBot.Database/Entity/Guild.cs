@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Discord;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -37,6 +38,15 @@ namespace GrillBot.Database.Entity
             UnverifyLogs = new HashSet<UnverifyLog>();
             Searches = new HashSet<SearchItem>();
             AuditLogs = new HashSet<AuditLogItem>();
+        }
+
+        public static Guild FromDiscord(IGuild guild)
+        {
+            return new Guild()
+            {
+                Id = guild.Id.ToString(),
+                Name = guild.Name
+            };
         }
     }
 }

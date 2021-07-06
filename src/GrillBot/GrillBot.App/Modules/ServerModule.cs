@@ -740,7 +740,7 @@ namespace GrillBot.App.Modules
 
                 [Command("assign")]
                 [Summary("Přiřazení pozvánky k uživateli.")]
-                public async Task AssignCodeToUserAsync([Name("id/tag/jmeno_uzivatele")] SocketUser user, [Name("kod_pozvanky")] string code)
+                public async Task AssignCodeToUserAsync([Name("id/tag/jmeno_uzivatele")] SocketGuildUser user, [Name("kod_pozvanky")] string code)
                 {
                     if (string.Equals(code, "vanity", StringComparison.InvariantCultureIgnoreCase))
                         code = Context.Guild.VanityURLCode;

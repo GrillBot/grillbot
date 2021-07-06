@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Discord;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -27,6 +28,16 @@ namespace GrillBot.Database.Entity
         {
             SearchItems = new HashSet<SearchItem>();
             Channels = new HashSet<GuildUserChannel>();
+        }
+
+        public static GuildChannel FromDiscord(IGuild guild, IChannel channel)
+        {
+            return new GuildChannel()
+            {
+                ChannelId = channel.Id.ToString(),
+                GuildId = guild.Id.ToString(),
+                Name = channel.Name
+            };
         }
     }
 }

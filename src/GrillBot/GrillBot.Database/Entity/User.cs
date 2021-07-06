@@ -1,4 +1,5 @@
-﻿using GrillBot.Database.Enums;
+﻿using Discord;
+using GrillBot.Database.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -53,5 +54,14 @@ namespace GrillBot.Database.Entity
         }
 
         public bool HaveFlags(UserFlags flags) => (Flags & (int)flags) != 0;
+
+        public static User FromDiscord(IUser user)
+        {
+            return new User()
+            {
+                Id = user.Id.ToString(),
+                Username = user.Username
+            };
+        }
     }
 }

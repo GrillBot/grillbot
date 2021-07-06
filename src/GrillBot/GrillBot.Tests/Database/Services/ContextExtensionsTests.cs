@@ -1,5 +1,4 @@
 ﻿using Discord;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +33,7 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = CreateContext();
 
-            context.Add(new Guild() { Id = GuildId, Name = "A" });
+            context.Add(Guild.FromDiscord(guild.Object));
             context.SaveChanges();
             context.ChangeTracker.Clear();
 
@@ -62,7 +61,7 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = CreateContext();
 
-            context.Add(new User() { Id = UserId, Username = "U" });
+            context.Add(User.FromDiscord(user.Object));
             context.SaveChanges();
             context.ChangeTracker.Clear();
 
@@ -93,7 +92,7 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = CreateContext();
 
-            context.Add(new GuildUser() { UserId = UserId, GuildId = GuildId });
+            context.Add(GuildUser.FromDiscord(guild.Object, user.Object));
             context.SaveChanges();
             context.ChangeTracker.Clear();
 
@@ -127,7 +126,7 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = CreateContext();
 
-            context.Add(new GuildChannel() { GuildId = GuildId, ChannelId = ChannelId });
+            context.Add(GuildChannel.FromDiscord(guild.Object, channel.Object));
             context.SaveChanges();
             context.ChangeTracker.Clear();
 

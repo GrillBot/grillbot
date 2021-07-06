@@ -81,7 +81,6 @@ namespace GrillBot.App.Services
                 // Vanity invite not returns uses, but in library github is merged fix (PR #1832). TODO: Update library
                 var vanityInvite = await guild.GetVanityInviteAsync();
                 if (vanityInvite != null)
-
                     invites.Add(InviteMetadata.FromDiscord(vanityInvite));
             }
 
@@ -98,7 +97,7 @@ namespace GrillBot.App.Services
             await SetInviteToUserAsync(user, user.Guild, usedInvite, latestInvites);
         }
 
-        private async Task SetInviteToUserAsync(SocketUser user, SocketGuild guild, InviteMetadata usedInvite, List<InviteMetadata> latestInvites)
+        private async Task SetInviteToUserAsync(SocketGuildUser user, SocketGuild guild, InviteMetadata usedInvite, List<InviteMetadata> latestInvites)
         {
             var guildId = guild.Id.ToString();
             var userId = user.Id.ToString();
@@ -113,12 +112,7 @@ namespace GrillBot.App.Services
 
             if (joinedUserEntity == null)
             {
-                joinedUserEntity = new GuildUser()
-                {
-                    UserId = userId,
-                    GuildId = guildId,
-                };
-
+                joinedUserEntity = GuildUser.FromDiscord(guild, user);
                 await dbContext.AddAsync(joinedUserEntity);
             }
 
@@ -182,7 +176,7 @@ namespace GrillBot.App.Services
             return result ?? latestData.Find(inv => !MetadataCache.Any(o => o.Code == inv.Code));
         }
 
-        public async Task AssignInviteToUserAsync(SocketUser user, SocketGuild guild, string code)
+        public async Task AssignInviteToUserAsync(SocketGuildUser user, SocketGuild guild, string code)
         {
             var latestInvites = await GetLatestMetadataOfGuildAsync(guild);
             var usedInvite = latestInvites.Find(o => o.Code == code);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Discord;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -49,6 +50,16 @@ namespace GrillBot.Database.Entity
         public GuildUser()
         {
             CreatedInvites = new HashSet<Invite>();
+        }
+
+        public static GuildUser FromDiscord(IGuild guild, IGuildUser user)
+        {
+            return new GuildUser()
+            {
+                GuildId = guild.Id.ToString(),
+                UserId = user.Id.ToString(),
+                Nickname = user.Nickname
+            };
         }
     }
 }

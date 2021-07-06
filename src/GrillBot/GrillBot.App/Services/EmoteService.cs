@@ -139,10 +139,10 @@ namespace GrillBot.App.Services
             await textChannel.Guild.DownloadUsersAsync();
 
             var msg = message.HasValue ? message.Value : await MessageCache.GetMessageAsync(channel, message.Id);
-            var user = reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId);
+            var user = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;
 
             if (msg == null) return;
-            if (msg.Author.Id == reaction.UserId) return;
+            if (msg.Author is not IGuildUser author || author.Id == reaction.UserId) return;
 
             using var context = DbFactory.Create();
 
@@ -154,7 +154,7 @@ namespace GrillBot.App.Services
                 await EmoteStats_OnReactionAddedAsync(context, reaction.UserId, emote);
 
                 if (user != null)
-                    await Guild_OnReactionAddedAsync(context, textChannel.Guild, user, msg.Author);
+                    await Guild_OnReactionAddedAsync(context, textChannel.Guild, user, author);
             }
             else if (@event == ReactionEvents.Removed)
             {
@@ -210,34 +210,23 @@ namespace GrillBot.App.Services
 
         #region GivenAndObtainedEmotes
 
-        private static async Task Guild_OnReactionAddedAsync(GrillBotContext context, SocketGuild guild, IUser user, IUser messageAuthor)
+        private static async Task Guild_OnReactionAddedAsync(GrillBotContext context, SocketGuild guild, IGuildUser user, IGuildUser messageAuthor)
         {
             var guildId = guild.Id.ToString();
-            var userId = user.Id.ToString();
             var authorUserId = messageAuthor.Id.ToString();
 
             await context.InitGuildAsync(guild);
             var reactingUser = await context.GuildUsers.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
             if (reactingUser == null)
             {
-                reactingUser = new GuildUser()
-                {
-                    UserId = userId,
-                    GuildId = guildId
-                };
-
+                reactingUser = GuildUser.FromDiscord(guild, user);
                 await context.AddAsync(reactingUser);
             }
 
             var authorUser = await context.GuildUsers.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == authorUserId);
             if (authorUser == null)
             {
-                authorUser = new GuildUser()
-                {
-                    UserId = authorUserId,
-                    GuildId = guildId
-                };
-
+                authorUser = GuildUser.FromDiscord(guild, messageAuthor);
                 await context.AddAsync(authorUser);
             }
 

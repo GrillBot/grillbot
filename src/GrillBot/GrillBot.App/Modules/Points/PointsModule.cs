@@ -49,7 +49,7 @@ namespace GrillBot.App.Modules.Points
         [Command("give")]
         [Alias("dej")]
         [Summary("Přidá uživateli zadané množství bodů.")]
-        public async Task GivePointsAsync([Name("mnozstvi")] int amount, [Name("uzivatel")] SocketUser user)
+        public async Task GivePointsAsync([Name("mnozstvi")] int amount, [Name("uzivatel")] SocketGuildUser user)
         {
             await PointsService.IncrementPointsAsync(Context.Guild, user, amount);
             await ReplyAsync($"Body byly úspěšně {(amount > 0 ? "přidány" : "odebrány")}.");
@@ -58,7 +58,7 @@ namespace GrillBot.App.Modules.Points
         [Command("transfer")]
         [Alias("preved")]
         [Summary("Převede určité množství bodů od jednoho uživatele druhému.")]
-        public async Task TransferPointsAsync([Name("id/tag/jmeno_uzivatele (Od koho)")] SocketUser from, [Name("id/tag/jmeno_uzivatele (Komu)")] SocketUser to, [Name("mnozstvi")] int amount)
+        public async Task TransferPointsAsync([Name("id/tag/jmeno_uzivatele (Od koho)")] SocketUser from, [Name("id/tag/jmeno_uzivatele (Komu)")] SocketGuildUser to, [Name("mnozstvi")] int amount)
         {
             try
             {

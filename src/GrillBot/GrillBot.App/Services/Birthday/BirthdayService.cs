@@ -29,12 +29,7 @@ namespace GrillBot.App.Services.Birthday
 
             if (dbUser == null)
             {
-                dbUser = new Database.Entity.User()
-                {
-                    Id = user.Id.ToString(),
-                    Username = user.Username
-                };
-
+                dbUser = User.FromDiscord(user);
                 await context.AddAsync(dbUser);
             }
 

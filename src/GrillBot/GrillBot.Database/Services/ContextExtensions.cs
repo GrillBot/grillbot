@@ -12,7 +12,7 @@ namespace GrillBot.Database.Services
             var guildId = guild.Id.ToString();
 
             if (!await context.Guilds.AnyAsync(o => o.Id == guildId))
-                await context.AddAsync(new Guild() { Id = guildId, Name = guild.Name });
+                await context.AddAsync(Guild.FromDiscord(guild));
         }
 
         static public async Task InitUserAsync(this GrillBotContext context, IUser user)
@@ -20,7 +20,7 @@ namespace GrillBot.Database.Services
             var userId = user.Id.ToString();
 
             if (!await context.Users.AnyAsync(o => o.Id == userId))
-                await context.AddAsync(new User() { Id = userId, Username = user.Username });
+                await context.AddAsync(User.FromDiscord(user));
         }
 
         static public async Task InitGuildUserAsync(this GrillBotContext context, IGuild guild, IGuildUser user)
@@ -29,7 +29,7 @@ namespace GrillBot.Database.Services
             var guildId = guild.Id.ToString();
 
             if (!await context.GuildUsers.AnyAsync(o => o.GuildId == guildId && o.UserId == userId))
-                await context.AddAsync(new GuildUser() { GuildId = guildId, UserId = userId, Nickname = user.Nickname });
+                await context.AddAsync(GuildUser.FromDiscord(guild, user));
         }
 
         static public async Task InitGuildChannelAsync(this GrillBotContext context, IGuild guild, IChannel channel)
@@ -38,7 +38,7 @@ namespace GrillBot.Database.Services
             var guildId = guild.Id.ToString();
 
             if (!await context.Channels.AnyAsync(o => o.ChannelId == channelId && o.GuildId == guildId))
-                await context.AddAsync(new GuildChannel() { GuildId = guildId, ChannelId = channelId, Name = channel.Name });
+                await context.AddAsync(GuildChannel.FromDiscord(guild, channel));
         }
     }
 }

@@ -39,5 +39,30 @@ namespace GrillBot.App.Extensions.Discord
 
             return isEveryonePerm;
         }
+
+        public static bool IsEqual(this IGuildChannel channel, IGuildChannel another)
+        {
+            if (channel.GetType() != another.GetType()) return false;
+            if (channel.Id != another.Id) return false;
+            if (channel.Name != another.Name) return false;
+            if (channel.Position != another.Position) return false;
+
+            if (channel is ITextChannel textChannel && another is ITextChannel anotherTextChannel)
+            {
+                if (textChannel.CategoryId != anotherTextChannel.CategoryId) return false;
+                if (textChannel.IsNsfw != anotherTextChannel.IsNsfw) return false;
+                if (textChannel.SlowModeInterval != anotherTextChannel.SlowModeInterval) return false;
+                if (textChannel.Topic != anotherTextChannel.Topic) return false;
+            }
+
+            if (channel is IVoiceChannel voiceChannel && another is IVoiceChannel anotherVoiceChannel)
+            {
+                if (voiceChannel.Bitrate != anotherVoiceChannel.Bitrate) return false;
+                if (voiceChannel.CategoryId != anotherVoiceChannel.CategoryId) return false;
+                if (voiceChannel.UserLimit != anotherVoiceChannel.UserLimit) return false;
+            }
+
+            return true;
+        }
     }
 }

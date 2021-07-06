@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace GrillBot.Database.Entity
 {
@@ -27,20 +26,5 @@ namespace GrillBot.Database.Entity
 
         [Required]
         public long Size { get; set; } = 0;
-
-        public byte[] ReadContent(string rootPath)
-        {
-            return File.ReadAllBytes(Path.Combine(rootPath, Filename));
-        }
-
-        public Task<byte[]> ReadContentAsync(string rootPath)
-        {
-            return File.ReadAllBytesAsync(Path.Combine(rootPath, Filename));
-        }
-
-        public StreamReader CreateStream(string rootPath)
-        {
-            return new StreamReader(Path.Combine(rootPath, Filename));
-        }
     }
 }

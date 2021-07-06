@@ -1,4 +1,5 @@
-﻿using GrillBot.Database.Enums;
+﻿using Discord;
+using GrillBot.Database.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -43,6 +44,20 @@ namespace GrillBot.Database.Entity
         public AuditLogItem()
         {
             Files = new HashSet<AuditLogFileMeta>();
+        }
+
+        public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, ulong? discordAuditLogItemId = null)
+        {
+            return new AuditLogItem()
+            {
+                ChannelId = channel?.Id.ToString(),
+                CreatedAt = DateTime.Now,
+                Data = data,
+                DiscordAuditLogItemId = discordAuditLogItemId?.ToString(),
+                GuildId = guild.Id.ToString(),
+                ProcessedUserId = processedUser?.Id.ToString(),
+                Type = type
+            };
         }
     }
 }

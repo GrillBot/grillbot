@@ -3,6 +3,8 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace GrillBot.App.Extensions.Discord
 {
@@ -45,6 +47,27 @@ namespace GrillBot.App.Extensions.Discord
                 query = query.Where(e => supportedEmotes.Any(x => x.IsEqual(e))); // Only supported emotes.
 
             return query;
+        }
+
+        static public async Task<byte[]> DownloadAsync(this IAttachment attachment)
+        {
+            using var httpClient = new HttpClient();
+
+            try
+            {
+                return await httpClient.GetByteArrayAsync(attachment.Url);
+            }
+            catch (HttpRequestException)
+            {
+                try
+                {
+                    return await httpClient.GetByteArrayAsync(attachment.ProxyUrl);
+                }
+                catch (HttpRequestException)
+                {
+                    return null;
+                }
+            }
         }
     }
 }

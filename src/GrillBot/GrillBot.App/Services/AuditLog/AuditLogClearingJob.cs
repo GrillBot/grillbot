@@ -132,8 +132,6 @@ namespace GrillBot.App.Services.AuditLog
                             new XAttribute("Size", fileEntity.Size)
                         );
 
-                        // TODO: Export files to cache.
-
                         files.Add(file);
                     }
 
@@ -144,9 +142,9 @@ namespace GrillBot.App.Services.AuditLog
                 context.Remove(item);
             }
 
-            var storage = FileStorage.Create("AuditClearing");
+            var storage = FileStorage.Create("Audit");
             var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd}.xml";
-            var fileinfo = await storage.GetFileInfoAsync("Logs", backupFilename);
+            var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
 
             using var stream = fileinfo.OpenWrite();
             await logRoot.SaveAsync(stream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, cancellationToken);

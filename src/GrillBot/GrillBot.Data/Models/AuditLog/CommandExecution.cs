@@ -7,19 +7,10 @@ namespace GrillBot.Data.Models.AuditLog
 {
     public class CommandExecution
     {
-        [JsonProperty("cmd")]
         public string Command { get; set; }
-
-        [JsonProperty("content")]
         public string MessageContent { get; set; }
-
-        [JsonProperty("success")]
         public bool IsSuccess { get; set; }
-
-        [JsonProperty("err_type")]
         public CommandError? CommandError { get; set; }
-
-        [JsonProperty("err")]
         public string ErrorReason { get; set; }
 
         public CommandExecution() { }

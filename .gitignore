@@ -386,3 +386,4 @@ FodyWeavers.xsd
 /src/GrillBot/GrillBot.App/appsettings.Development.json
 GrillBot.*.xml
 Cache/
+GrillBotData/

@@ -37,16 +37,16 @@ namespace GrillBot.App.Services.MessageCache
                     messages.ForEach(o => Cache.TryAdd(o.Id, new CachedMessage(o)));
                 }
 
-                await Task.Delay(3000);
+                await Task.Delay(2500);
             }
         }
 
         private CachedMessage GetCachedMessage(ulong id) => Cache.TryGetValue(id, out CachedMessage message) ? message : null;
 
-        public IMessage GetMessage(ulong id)
+        public IMessage GetMessage(ulong id, bool includeRemoved = false)
         {
             var msg = GetCachedMessage(id);
-            if (msg == null || msg.Metadata.State == CachedMessageState.ToBeDeleted)
+            if (msg == null || (!includeRemoved && msg.Metadata.State == CachedMessageState.ToBeDeleted))
                 return null;
 
             return msg.Message;
@@ -108,6 +108,14 @@ namespace GrillBot.App.Services.MessageCache
                     Cache[id] = new CachedMessage(newMessage);
                 }
             }
+        }
+
+        public void MarkUpdated(ulong messageId)
+        {
+            var message = GetCachedMessage(messageId);
+            if (message == null) return;
+
+            message.Metadata.State = CachedMessageState.NeedsUpdate;
         }
     }
 }

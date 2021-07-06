@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -25,6 +26,8 @@ namespace GrillBot.App.Services.AuditLog
         private JsonSerializerSettings JsonSerializerSettings { get; }
         private MessageCache.MessageCache MessageCache { get; }
         private FileStorageFactory FileStorageFactory { get; }
+
+        private DateTime NextAllowedChannelUpdateEvent { get; set; }
 
         public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
             FileStorageFactory storageFactory) : base(client, dbFactory)
@@ -56,7 +59,20 @@ namespace GrillBot.App.Services.AuditLog
 
             DiscordClient.ChannelCreated += channel => channel is SocketGuildChannel guildChannel ? OnChannelCreatedAsync(guildChannel) : Task.CompletedTask;
             DiscordClient.ChannelDestroyed += channel => channel is SocketGuildChannel guildChannel ? OnChannelDeletedAsync(guildChannel) : Task.CompletedTask;
-            DiscordClient.ChannelUpdated += (_before, _after) => _before is SocketGuildChannel before && _after is SocketGuildChannel after ? OnChannelUpdatedAsync(before, after) : Task.CompletedTask;
+            DiscordClient.ChannelUpdated += async (_before, _after) =>
+            {
+                if (_before is not SocketGuildChannel before || _after is not SocketGuildChannel after) return;
+                if (NextAllowedChannelUpdateEvent > DateTime.Now) return;
+
+                await OnChannelUpdatedAsync(before, after);
+                await OnOverwriteChangedAsync(after.Guild, after);
+                NextAllowedChannelUpdateEvent = DateTime.Now.AddHours(1);
+            };
+            DiscordClient.GuildUpdated += (before, after) =>
+            {
+                if (!before.Emotes.SequenceEqual(after.Emotes)) return OnEmotesUpdatedAsync(before, before.Emotes, after.Emotes);
+                return Task.CompletedTask;
+            };
 
             FileStorageFactory = storageFactory;
         }
@@ -281,6 +297,89 @@ namespace GrillBot.App.Services.AuditLog
             await context.InitGuildUserAsync(after.Guild, auditLog.User as IGuildUser ?? after.Guild.GetUser(auditLog.User.Id));
 
             await context.AddAsync(entity);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task OnEmotesUpdatedAsync(SocketGuild guild, IReadOnlyCollection<GuildEmote> before, IReadOnlyCollection<GuildEmote> after)
+        {
+            (List<GuildEmote> added, List<GuildEmote> removed) = new Func<(List<GuildEmote>, List<GuildEmote>)>(() =>
+            {
+                var removed = before.Where(e => !after.Contains(e)).ToList();
+                var added = after.Where(e => !before.Contains(e)).ToList();
+                return (added, removed);
+            })();
+
+            if (removed.Count == 0) return;
+
+            var auditLog = (await guild.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.EmojiDeleted).FlattenAsync())
+                .FirstOrDefault(o => removed.Any(x => x.Id == ((EmoteDeleteAuditLogData)o.Data).EmoteId));
+
+            var data = new AuditEmoteInfo(auditLog.Data as EmoteDeleteAuditLogData);
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            var entity = AuditLogItem.Create(AuditLogItemType.EmojiDeleted, guild, null, auditLog.User, json, auditLog.Id);
+
+            using var context = DbFactory.Create();
+
+            await context.InitGuildAsync(guild);
+            await context.InitUserAsync(auditLog.User);
+            await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id));
+
+            await context.AddAsync(entity);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task OnOverwriteChangedAsync(SocketGuild guild, SocketGuildChannel channel)
+        {
+            using var context = DbFactory.Create();
+            await context.InitGuildAsync(guild);
+            await context.InitGuildChannelAsync(guild, channel);
+
+            var auditLogIdsQuery = context.AuditLogs.AsQueryable()
+                .Where(o => o.GuildId == guild.Id.ToString() && o.DiscordAuditLogItemId != null && o.ChannelId == channel.Id.ToString())
+                .Select(o => o.DiscordAuditLogItemId);
+            var auditLogIds = (await auditLogIdsQuery.ToListAsync()).ConvertAll(o => Convert.ToUInt64(o));
+
+            var logs = (await guild.GetAuditLogsAsync(100).FlattenAsync())
+                .Where(o => (o.Action == ActionType.OverwriteCreated || o.Action == ActionType.OverwriteDeleted || o.Action == ActionType.OverwriteUpdated) && !auditLogIds.Contains(o.Id))
+                .ToList();
+
+            var created = logs.FindAll(o => o.Action == ActionType.OverwriteCreated && ((OverwriteCreateAuditLogData)o.Data).ChannelId == channel.Id);
+            var removed = logs.FindAll(o => o.Action == ActionType.OverwriteDeleted && ((OverwriteDeleteAuditLogData)o.Data).ChannelId == channel.Id);
+            var updated = logs.FindAll(o => o.Action == ActionType.OverwriteUpdated && ((OverwriteUpdateAuditLogData)o.Data).ChannelId == channel.Id);
+
+            foreach (var log in created)
+            {
+                var data = new AuditOverwriteInfo(((OverwriteCreateAuditLogData)log.Data).Overwrite);
+                var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+                var entity = AuditLogItem.Create(AuditLogItemType.OverwriteCreated, guild, channel, log.User, json, log.Id);
+
+                await context.InitUserAsync(log.User);
+                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
+                await context.AddAsync(entity);
+            }
+
+            foreach (var log in removed)
+            {
+                var data = new AuditOverwriteInfo(((OverwriteDeleteAuditLogData)log.Data).Overwrite);
+                var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+                var entity = AuditLogItem.Create(AuditLogItemType.OverwriteDeleted, guild, channel, log.User, json, log.Id);
+
+                await context.InitUserAsync(log.User);
+                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
+                await context.AddAsync(entity);
+            }
+
+            foreach (var log in updated)
+            {
+                var data = new OverwriteUpdatedData((OverwriteUpdateAuditLogData)log.Data);
+                var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+                var entity = AuditLogItem.Create(AuditLogItemType.OverwriteUpdated, guild, channel, log.User, json, log.Id);
+
+                await context.InitUserAsync(log.User);
+                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
+                await context.AddAsync(entity);
+            }
+
             await context.SaveChangesAsync();
         }
     }

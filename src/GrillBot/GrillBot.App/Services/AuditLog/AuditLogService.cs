@@ -74,6 +74,8 @@ namespace GrillBot.App.Services.AuditLog
                 return Task.CompletedTask;
             };
 
+            DiscordClient.UserUnbanned += OnUserUnbannedAsync;
+
             FileStorageFactory = storageFactory;
         }
 
@@ -380,6 +382,27 @@ namespace GrillBot.App.Services.AuditLog
                 await context.AddAsync(entity);
             }
 
+            await context.SaveChangesAsync();
+        }
+
+        public async Task OnUserUnbannedAsync(SocketUser user, SocketGuild guild)
+        {
+            var auditLog = (await guild.GetAuditLogsAsync(10, actionType: ActionType.Unban).FlattenAsync())
+                .FirstOrDefault(o => ((UnbanAuditLogData)o.Data).Target.Id == user.Id);
+
+            if (auditLog == null) return;
+
+            var data = new AuditUserInfo(user);
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            var entity = AuditLogItem.Create(AuditLogItemType.Unban, guild, null, auditLog.User, json, auditLog.Id);
+
+            using var context = DbFactory.Create();
+
+            await context.InitGuildAsync(guild);
+            await context.InitUserAsync(auditLog.User);
+            await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id));
+
+            await context.AddAsync(entity);
             await context.SaveChangesAsync();
         }
     }

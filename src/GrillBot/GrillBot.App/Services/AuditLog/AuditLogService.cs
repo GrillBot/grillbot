@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
@@ -17,6 +18,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services.AuditLog
@@ -28,6 +31,7 @@ namespace GrillBot.App.Services.AuditLog
         private FileStorageFactory FileStorageFactory { get; }
 
         private DateTime NextAllowedChannelUpdateEvent { get; set; }
+        private DateTime NextAllowedRoleUpdateEvent { get; set; }
 
         public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
             FileStorageFactory storageFactory) : base(client, dbFactory)
@@ -70,11 +74,30 @@ namespace GrillBot.App.Services.AuditLog
             };
             DiscordClient.GuildUpdated += (before, after) =>
             {
-                if (!before.Emotes.SequenceEqual(after.Emotes)) return OnEmotesUpdatedAsync(before, before.Emotes, after.Emotes);
+                if (!before.Emotes.SequenceEqual(after.Emotes))
+                    return OnEmotesUpdatedAsync(before, before.Emotes, after.Emotes);
+
+                if (IsGuildReallyUpdated(before, after))
+                    return OnGuildUpdatedAsync(before, after);
+
                 return Task.CompletedTask;
             };
 
             DiscordClient.UserUnbanned += OnUserUnbannedAsync;
+            DiscordClient.GuildMemberUpdated += (before, after) =>
+            {
+                if (IsMemberReallyUpdated(before, after))
+                    return OnMemberUpdatedAsync(before, after);
+
+                if (!before.Roles.SequenceEqual(after.Roles) && NextAllowedRoleUpdateEvent <= DateTime.Now)
+                {
+                    var task = OnMemberRolesUpdatedAsync(after);
+                    NextAllowedRoleUpdateEvent = DateTime.Now.AddHours(1);
+                    return task;
+                }
+
+                return Task.CompletedTask;
+            };
 
             FileStorageFactory = storageFactory;
         }
@@ -107,7 +130,7 @@ namespace GrillBot.App.Services.AuditLog
             return converter(data).ToList();
         }
 
-        public async Task OnUserLeftAsync(SocketGuildUser user)
+        private async Task OnUserLeftAsync(SocketGuildUser user)
         {
             // Disable logging if bot not have permissions.
             if (!user.Guild.CurrentUser.GuildPermissions.ViewAuditLog) return;
@@ -145,7 +168,7 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task OnUserJoinedAsync(SocketGuildUser user)
+        private async Task OnUserJoinedAsync(SocketGuildUser user)
         {
             var data = new UserJoinedAuditData(user.Guild);
             var entity = AuditLogItem.Create(AuditLogItemType.UserJoined, user.Guild, null, user, JsonConvert.SerializeObject(data, JsonSerializerSettings));
@@ -160,7 +183,7 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task OnMessageEditedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, SocketTextChannel channel)
+        private async Task OnMessageEditedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, SocketTextChannel channel)
         {
             var oldMessage = before.HasValue ? before.Value : MessageCache.GetMessage(before.Id);
             if (oldMessage == null || after == null || !oldMessage.Author.IsUser() || oldMessage.Content == after.Content) return;
@@ -179,7 +202,7 @@ namespace GrillBot.App.Services.AuditLog
             MessageCache.MarkUpdated(after.Id);
         }
 
-        public async Task OnMessageDeletedAsync(Cacheable<IMessage, ulong> message, SocketTextChannel channel)
+        private async Task OnMessageDeletedAsync(Cacheable<IMessage, ulong> message, SocketTextChannel channel)
         {
             if ((message.HasValue ? message.Value : MessageCache.GetMessage(message.Id, true)) is not IUserMessage deletedMessage) return;
 
@@ -234,7 +257,7 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task OnChannelCreatedAsync(SocketGuildChannel channel)
+        private async Task OnChannelCreatedAsync(SocketGuildChannel channel)
         {
             var auditLog = (await channel.Guild.GetAuditLogsAsync(50, actionType: ActionType.ChannelCreated).FlattenAsync())
                 .FirstOrDefault(o => ((ChannelCreateAuditLogData)o.Data).ChannelId == channel.Id);
@@ -256,7 +279,7 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task OnChannelDeletedAsync(SocketGuildChannel channel)
+        private async Task OnChannelDeletedAsync(SocketGuildChannel channel)
         {
             var auditLog = (await channel.Guild.GetAuditLogsAsync(50, actionType: ActionType.ChannelDeleted).FlattenAsync())
                 .FirstOrDefault(o => ((ChannelDeleteAuditLogData)o.Data).ChannelId == channel.Id);
@@ -278,7 +301,7 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task OnChannelUpdatedAsync(SocketGuildChannel before, SocketGuildChannel after)
+        private async Task OnChannelUpdatedAsync(SocketGuildChannel before, SocketGuildChannel after)
         {
             if (before.IsEqual(after)) return;
 
@@ -287,7 +310,8 @@ namespace GrillBot.App.Services.AuditLog
 
             if (auditLog == null) return;
 
-            var data = new ChannelUpdateAuditData(auditLog.Data as ChannelUpdateAuditLogData);
+            var auditData = auditLog.Data as ChannelUpdateAuditLogData;
+            var data = new Diff<AuditChannelInfo>(new(before.Id, auditData.Before), new(after.Id, auditData.After));
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
             var entity = AuditLogItem.Create(AuditLogItemType.ChannelUpdated, after.Guild, after, auditLog.User, json, auditLog.Id);
 
@@ -302,7 +326,7 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task OnEmotesUpdatedAsync(SocketGuild guild, IReadOnlyCollection<GuildEmote> before, IReadOnlyCollection<GuildEmote> after)
+        private async Task OnEmotesUpdatedAsync(SocketGuild guild, IReadOnlyCollection<GuildEmote> before, IReadOnlyCollection<GuildEmote> after)
         {
             (List<GuildEmote> added, List<GuildEmote> removed) = new Func<(List<GuildEmote>, List<GuildEmote>)>(() =>
             {
@@ -330,14 +354,15 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task OnOverwriteChangedAsync(SocketGuild guild, SocketGuildChannel channel)
+        private async Task OnOverwriteChangedAsync(SocketGuild guild, SocketGuildChannel channel)
         {
             using var context = DbFactory.Create();
             await context.InitGuildAsync(guild);
             await context.InitGuildChannelAsync(guild, channel);
 
+            var timeLimit = DateTime.Now.AddDays(-5);
             var auditLogIdsQuery = context.AuditLogs.AsQueryable()
-                .Where(o => o.GuildId == guild.Id.ToString() && o.DiscordAuditLogItemId != null && o.ChannelId == channel.Id.ToString())
+                .Where(o => o.GuildId == guild.Id.ToString() && o.DiscordAuditLogItemId != null && o.ChannelId == channel.Id.ToString() && o.CreatedAt >= timeLimit)
                 .Select(o => o.DiscordAuditLogItemId);
             var auditLogIds = (await auditLogIdsQuery.ToListAsync()).ConvertAll(o => Convert.ToUInt64(o));
 
@@ -373,7 +398,10 @@ namespace GrillBot.App.Services.AuditLog
 
             foreach (var log in updated)
             {
-                var data = new OverwriteUpdatedData((OverwriteUpdateAuditLogData)log.Data);
+                var auditData = (OverwriteUpdateAuditLogData)log.Data;
+                var oldPerms = new Overwrite(auditData.OverwriteTargetId, auditData.OverwriteType, auditData.OldPermissions);
+                var newPerms = new Overwrite(auditData.OverwriteTargetId, auditData.OverwriteType, auditData.NewPermissions);
+                var data = new Diff<AuditOverwriteInfo>(new(oldPerms), new(newPerms));
                 var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
                 var entity = AuditLogItem.Create(AuditLogItemType.OverwriteUpdated, guild, channel, log.User, json, log.Id);
 
@@ -385,7 +413,7 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task OnUserUnbannedAsync(SocketUser user, SocketGuild guild)
+        private async Task OnUserUnbannedAsync(SocketUser user, SocketGuild guild)
         {
             var auditLog = (await guild.GetAuditLogsAsync(10, actionType: ActionType.Unban).FlattenAsync())
                 .FirstOrDefault(o => ((UnbanAuditLogData)o.Data).Target.Id == user.Id);
@@ -401,6 +429,108 @@ namespace GrillBot.App.Services.AuditLog
             await context.InitGuildAsync(guild);
             await context.InitUserAsync(auditLog.User);
             await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id));
+
+            await context.AddAsync(entity);
+            await context.SaveChangesAsync();
+        }
+
+        private static bool IsMemberReallyUpdated(SocketGuildUser before, SocketGuildUser after)
+        {
+            if (before.IsDeafened != after.IsDeafened) return true;
+            if (before.IsMuted != after.IsMuted) return true;
+            if (before.Nickname != after.Nickname) return true;
+
+            return false;
+        }
+
+        private async Task OnMemberUpdatedAsync(SocketGuildUser before, SocketGuildUser after)
+        {
+            var auditLog = (await after.Guild.GetAuditLogsAsync(10, actionType: ActionType.MemberUpdated).FlattenAsync())
+                .FirstOrDefault(o => ((MemberUpdateAuditLogData)o.Data).Target.Id == after.Id);
+
+            if (auditLog == null) return;
+
+            var data = new MemberUpdatedData(before, after);
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            var entity = AuditLogItem.Create(AuditLogItemType.MemberUpdated, after.Guild, null, auditLog.User, json, auditLog.Id);
+
+            using var context = DbFactory.Create();
+
+            await context.InitGuildAsync(after.Guild);
+            await context.InitUserAsync(auditLog.User);
+            await context.InitGuildUserAsync(after.Guild, auditLog.User as IGuildUser ?? after.Guild.GetUser(auditLog.User.Id));
+
+            await context.AddAsync(entity);
+            await context.SaveChangesAsync();
+        }
+
+        private async Task OnMemberRolesUpdatedAsync(SocketGuildUser user)
+        {
+            using var context = DbFactory.Create();
+            await context.InitGuildAsync(user.Guild);
+            await context.InitUserAsync(user);
+            await context.InitGuildUserAsync(user.Guild, user);
+
+            var timeLimit = DateTime.Now.AddDays(-5);
+            var auditLogIdsQuery = context.AuditLogs.AsQueryable()
+                .Where(o => o.GuildId == user.Guild.Id.ToString() && o.DiscordAuditLogItemId != null && o.Type == AuditLogItemType.MemberRoleUpdated && o.CreatedAt >= timeLimit)
+                .Select(o => o.DiscordAuditLogItemId);
+            var auditLogIds = (await auditLogIdsQuery.ToListAsync()).ConvertAll(o => Convert.ToUInt64(o));
+
+            var logs = (await user.Guild.GetAuditLogsAsync(100, actionType: ActionType.MemberRoleUpdated).FlattenAsync())
+                .Where(o => !auditLogIds.Contains(o.Id) && ((MemberRoleAuditLogData)o.Data).Target.Id == user.Id);
+
+            foreach (var item in logs)
+            {
+                var data = new MemberUpdatedData(item.Data as MemberRoleAuditLogData, user.Guild);
+                var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+                var entity = AuditLogItem.Create(AuditLogItemType.MemberRoleUpdated, user.Guild, null, item.User, json, item.Id);
+
+                await context.InitUserAsync(item.User);
+                await context.InitGuildUserAsync(user.Guild, item.User as IGuildUser ?? user.Guild.GetUser(item.User.Id));
+                await context.AddAsync(entity);
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        private static bool IsGuildReallyUpdated(SocketGuild before, SocketGuild after)
+        {
+            if (before.DefaultMessageNotifications != after.DefaultMessageNotifications) return true;
+            if (before.Description != after.Description) return true;
+            if (before.VanityURLCode != after.VanityURLCode) return true;
+            if (before.BannerId != after.BannerId) return true;
+            if (before.DiscoverySplashId != after.DiscoverySplashId) return true;
+            if (before.SplashId != after.SplashId) return true;
+            if (before.IconId != after.IconId) return true;
+            if (before.VoiceRegionId != after.VoiceRegionId) return true;
+            if (before.OwnerId != after.OwnerId) return true;
+            if (before.PublicUpdatesChannel?.Id != after.PublicUpdatesChannel?.Id) return true;
+            if (before.RulesChannel?.Id != after.RulesChannel?.Id) return true;
+            if (before.SystemChannel?.Id != after.SystemChannel?.Id) return true;
+            if (before.AFKChannel?.Id != after.AFKChannel?.Id) return true;
+            if (before.AFKTimeout != after.AFKTimeout) return true;
+            if (before.Name != after.Name) return true;
+            if (before.MfaLevel != after.MfaLevel) return true;
+
+            return false;
+        }
+
+        private async Task OnGuildUpdatedAsync(SocketGuild before, SocketGuild after)
+        {
+            var auditLog = (await after.GetAuditLogsAsync(100, actionType: ActionType.GuildUpdated).FlattenAsync())
+                .OrderByDescending(o => o.CreatedAt.DateTime)
+                .FirstOrDefault();
+
+            var data = new GuildUpdatedData(before, after);
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            var entity = AuditLogItem.Create(AuditLogItemType.GuildUpdated, after, null, auditLog.User, json, auditLog.Id);
+
+            using var context = DbFactory.Create();
+
+            await context.InitGuildAsync(after);
+            await context.InitUserAsync(auditLog.User);
+            await context.InitGuildUserAsync(after, auditLog.User as IGuildUser ?? after.GetUser(auditLog.User.Id));
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();

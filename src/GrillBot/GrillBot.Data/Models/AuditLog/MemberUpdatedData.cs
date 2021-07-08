@@ -14,6 +14,8 @@ namespace GrillBot.Data.Models.AuditLog
         public Diff<bool> IsDeaf { get; set; }
         public List<AuditRoleUpdateInfo> Roles { get; set; }
 
+        public MemberUpdatedData() { }
+
         public MemberUpdatedData(Diff<string> nickname, Diff<bool> muted, Diff<bool> deaf)
         {
             Nickname = nickname;

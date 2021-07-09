@@ -28,8 +28,8 @@ namespace GrillBot.App.Modules.Points
             DbFactory = dbFactory;
         }
 
-        [Command("where")]
-        [Alias("kde", "gde")]
+        [Command]
+        [Alias("where", "kde", "gde")]
         [Summary("Získání aktuálního stavu bodů uživatele.")]
         public async Task GetPointsStateAsync([Name("id/tag/jmeno_uzivatele")] SocketUser user = null)
         {

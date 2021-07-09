@@ -7,13 +7,14 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
+using ImageMagick;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Threading.Tasks;
 using SysDraw = System.Drawing;
@@ -27,11 +28,7 @@ namespace GrillBot.App.Services
         private Random Random { get; }
         private FileStorageFactory FileStorageFactory { get; }
 
-        private Font PositionFont { get; }
-        private Font NicknameFont { get; }
-        private Font TitleTextFont { get; }
-        private SolidBrush WhiteBrush { get; }
-        private SolidBrush LightGrayBrush { get; }
+        private MagickImage TrophyImage { get; }
 
         public PointsService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
             FileStorageFactory fileStorageFactory) : base(client, dbFactory)
@@ -44,11 +41,7 @@ namespace GrillBot.App.Services
             DiscordClient.MessageReceived += (message) => message.TryLoadMessage(out SocketUserMessage msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
             DiscordClient.ReactionAdded += OnReactionAddedAsync;
 
-            PositionFont = new Font("Comic Sans MS", 45F);
-            NicknameFont = new Font("Comic Sans MS", 40F);
-            TitleTextFont = new Font("Comic Sans MS", 20F);
-            WhiteBrush = new SolidBrush(SysDraw.Color.White);
-            LightGrayBrush = new SolidBrush(SysDraw.Color.LightGray);
+            TrophyImage = new MagickImage(MiscResources.trophy, MagickFormat.Png);
         }
 
         private async Task OnMessageReceivedAsync(SocketUserMessage message)
@@ -161,34 +154,55 @@ namespace GrillBot.App.Services
             if (guildUser == null)
                 throw new NotFoundException($"{user.GetDisplayName()} ještě neprojevil na serveru žádnou aktivitu.");
 
+            const int height = 340;
+            const int width = 1000;
+            const int border = 25;
+            const double nicknameFontSize = 80;
+
             var position = await CalculatePointsPositionAsync(dbContext, guild, user);
-            var nickname = user.GetDisplayName().Cut(25, true);
+            var nickname = user.GetDisplayName(false);
 
-            using var bitmap = new Bitmap(1000, 300);
-            using var graphics = Graphics.FromImage(bitmap);
-            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-            GraphicsHelpers.CreateRectangle(graphics, new Rectangle(new Point(0, 0), bitmap.Size), SysDraw.Color.FromArgb(35, 39, 42), 15);
-            GraphicsHelpers.CreateRectangle(graphics, new Rectangle(50, 50, 900, 200), SysDraw.Color.FromArgb(100, 0, 0, 0), 15);
-
-            // Profile picture
             using var profilePicture = await GetProfilePictureAsync(user);
-            using var roundedProfilePicture = profilePicture.RoundImage();
-            graphics.DrawImage(roundedProfilePicture, 70, 70, 160, 160);
+            var cuttedNickname = nickname.CutToImageWidth(width - (border * 4) - profilePicture.Width, "Open Sans", nicknameFontSize);
 
-            var positionTextSize = graphics.MeasureString($"#{position}", PositionFont);
-            var positionTitleTextSize = graphics.MeasureString("POZICE", TitleTextFont);
+            var dominantColor = profilePicture.GetDominantColor();
+            var textBackground = dominantColor.CreateDarkerBackgroundColor();
 
-            graphics.DrawString("BODY", TitleTextFont, WhiteBrush, new PointF(250, 180));
-            graphics.DrawString("POZICE", TitleTextFont, WhiteBrush, new PointF(900 - positionTextSize.Width - positionTitleTextSize.Width, 180));
+            using var image = new MagickImage(dominantColor, width, height);
 
-            graphics.DrawString(guildUser.Points.ToString(), PositionFont, LightGrayBrush, new PointF(340, 150));
-            graphics.DrawString($"#{position}", PositionFont, WhiteBrush, new PointF(910 - positionTextSize.Width, 150));
-            graphics.DrawString(nickname, NicknameFont, WhiteBrush, new PointF(250, 60));
+            var drawable = new Drawables()
+                .StrokeAntialias(true)
+                .TextAntialias(true)
+                .FillColor(textBackground)
+                .RoundRectangle(border, border, width - border, height - border, 20, 20)
+                .TextAlignment(TextAlignment.Left)
+                .Font("Open Sans")
+                .FontPointSize(nicknameFontSize)
+                .FillColor(MagickColors.White)
+                .Text(320, 130, cuttedNickname);
+
+            // Profile picture operations
+            profilePicture.Resize(250, 250);
+            profilePicture.RoundImage();
+            drawable.Composite(border * 2, border * 2, CompositeOperator.Over, profilePicture);
+
+            double pointsInfoX = 320;
+            if (position == 1)
+            {
+                drawable.Composite(pointsInfoX, 170, CompositeOperator.Over, TrophyImage);
+                pointsInfoX += TrophyImage.Width + 10;
+            }
+
+            var pointsInfo = $"{position}. místo\n{FormatHelper.FormatPointsToCzech(guildUser.Points)}";
+            drawable
+                .Font("Arial")
+                .FontPointSize(60)
+                .Text(pointsInfoX, 210, pointsInfo);
+
+            drawable.Draw(image);
 
             var tmpFile = new TemporaryFile("png");
-            bitmap.Save(tmpFile.Path, SysDraw.Imaging.ImageFormat.Png);
-
+            await image.WriteAsync(tmpFile.Path, MagickFormat.Png);
             return tmpFile;
         }
 
@@ -205,19 +219,19 @@ namespace GrillBot.App.Services
             return (await query.CountAsync()) + 1;
         }
 
-        private async Task<SysDraw.Image> GetProfilePictureAsync(IUser user)
+        private async Task<MagickImage> GetProfilePictureAsync(IUser user)
         {
             var cache = FileStorageFactory.CreateCache();
-            var filename = $"{user.Id}_{user.AvatarId ?? user.Discriminator}_128.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
+            var filename = $"{user.Id}_{user.AvatarId ?? user.Discriminator}_256.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
             var fileinfo = await cache.GetProfilePictureInfoAsync(filename);
 
             if (!fileinfo.Exists)
             {
-                var profilePicture = await user.DownloadAvatarAsync(size: 128);
+                var profilePicture = await user.DownloadAvatarAsync(size: 256);
                 await cache.StoreProfilePictureAsync(filename, profilePicture);
             }
 
-            return SysDraw.Image.FromFile(fileinfo.FullName);
+            return new MagickImage(fileinfo.FullName);
         }
 
         public async Task IncrementPointsAsync(SocketGuild guild, SocketGuildUser toUser, int amount)

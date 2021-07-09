@@ -1,4 +1,7 @@
-﻿namespace GrillBot.App.Helpers
+﻿using Humanizer;
+using System.Globalization;
+
+namespace GrillBot.App.Helpers
 {
     static public class FormatHelper
     {
@@ -12,7 +15,7 @@
         {
             if (count == 1) return $"1 {oneSuffix}";
             else if (count > 1 && count < 5) return $"{count} {twoToFour}";
-            else return $"{count} {fiveAndMore}";
+            else return $"{"{0:N0}".FormatWith(new CultureInfo("cs-CZ"), count)} {fiveAndMore}";
         }
     }
 }

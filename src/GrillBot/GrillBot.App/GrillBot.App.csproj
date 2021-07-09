@@ -20,6 +20,7 @@
     <PackageReference Include="Discord.Net" Version="2.4.0" />
     <PackageReference Include="GrapeCity.Documents.Imaging" Version="4.1.0.662" />
     <PackageReference Include="Humanizer.Core.cs" Version="2.11.10" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="8.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.6">
       <PrivateAssets>all</PrivateAssets>

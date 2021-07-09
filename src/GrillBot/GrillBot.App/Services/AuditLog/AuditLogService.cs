@@ -99,6 +99,8 @@ namespace GrillBot.App.Services.AuditLog
                 return Task.CompletedTask;
             };
 
+            // TODO: Impelement audit log download after restart.
+
             FileStorageFactory = storageFactory;
         }
 

@@ -58,10 +58,11 @@ namespace GrillBot.App.Services
         {
             var services = new[]
             {
-                typeof(MessageCache.MessageCache), typeof(AutoReplyService), typeof(ChannelService), typeof(InviteService),
-                typeof(CommandHandler), typeof(ReactionHandler), typeof(AuditLogService), typeof(PointsService),
-                typeof(EmoteService), typeof(DiscordSyncService), typeof(EmoteChainService), typeof(SearchingService),
-                typeof(RemindService)
+                typeof(AutoReplyService), typeof(InviteService), typeof(AuditLogService),
+                typeof(PointsService), typeof(DiscordSyncService), typeof(EmoteChainService),
+                typeof(BoosterService), typeof(RemindService), typeof(MessageCache.MessageCache),
+                typeof(ChannelService), typeof(CommandHandler), typeof(EmoteService), typeof(SearchingService),
+                typeof(ReactionHandler)
             };
 
             foreach (var service in services) Provider.GetRequiredService(service);

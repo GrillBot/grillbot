@@ -84,7 +84,8 @@ namespace GrillBot.App
                 .AddSingleton<SearchingService>()
                 .AddSingleton<RemindService>()
                 .AddSingleton<BirthdayService>()
-                .AddUnverify();
+                .AddUnverify()
+                .AddSingleton<BoosterService>();
 
             ReflectionHelper.GetAllReactionEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

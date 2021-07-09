@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace GrillBot.Database.Entity
 {
@@ -17,9 +18,14 @@ namespace GrillBot.Database.Entity
         [MinLength(2)]
         public string Name { get; set; }
 
-        [Required]
         [StringLength(30)]
         public string MuteRoleId { get; set; }
+
+        [StringLength(30)]
+        public string AdminChannelId { get; set; }
+
+        [StringLength(30)]
+        public string BoosterRoleId { get; set; }
 
         public ISet<GuildUser> Users { get; set; }
         public ISet<Invite> Invites { get; set; }
@@ -45,7 +51,8 @@ namespace GrillBot.Database.Entity
             return new Guild()
             {
                 Id = guild.Id.ToString(),
-                Name = guild.Name
+                Name = guild.Name,
+                BoosterRoleId = guild.Roles.FirstOrDefault(o => o.Tags?.IsPremiumSubscriberRole == true)?.Id.ToString()
             };
         }
     }

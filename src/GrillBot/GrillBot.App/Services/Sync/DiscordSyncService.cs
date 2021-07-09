@@ -72,6 +72,9 @@ namespace GrillBot.App.Services.Sync
         {
             using var context = DbFactory.Create();
 
+            if ((await context.Database.GetPendingMigrationsAsync()).Any())
+                return;
+
             await SyncGuildAsync(context, guild);
             await context.SaveChangesAsync();
         }
@@ -82,7 +85,6 @@ namespace GrillBot.App.Services.Sync
 
             foreach (var guild in DiscordClient.Guilds)
             {
-                await SyncGuildAsync(context, guild);
                 await guild.DownloadUsersAsync();
                 foreach (var user in guild.Users)
                 {
@@ -113,6 +115,7 @@ namespace GrillBot.App.Services.Sync
             if (dbGuild == null) return;
 
             dbGuild.Name = guild.Name;
+            dbGuild.BoosterRoleId = guild.Roles.FirstOrDefault(o => o.Tags?.IsPremiumSubscriberRole == true)?.Id.ToString();
         }
 
         private static async Task SyncUserAsync(GrillBotContext context, SocketUser user)

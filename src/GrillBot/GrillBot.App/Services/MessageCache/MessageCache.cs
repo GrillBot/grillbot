@@ -1,9 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Extensions;
 using GrillBot.App.Infrastructure;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.MessageCache;
+using GrillBot.Database.Enums;
+using GrillBot.Database.Services;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +17,7 @@ namespace GrillBot.App.Services.MessageCache
     {
         private ConcurrentDictionary<ulong, CachedMessage> Cache { get; }
 
-        public MessageCache(DiscordSocketClient client) : base(client)
+        public MessageCache(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client, dbFactory)
         {
             Cache = new ConcurrentDictionary<ulong, CachedMessage>();
 
@@ -29,15 +31,20 @@ namespace GrillBot.App.Services.MessageCache
 
         private async Task OnReadyAsync()
         {
-            foreach (var chunk in DiscordClient.Guilds.SelectMany(o => o.TextChannels).SplitInParts(10))
+            using var context = DbFactory.Create();
+
+            foreach (var guild in DiscordClient.Guilds.Where(o => o.TextChannels.Count > 0))
             {
-                foreach (var channel in chunk)
+                var ignoredChannels = await context.Channels.AsQueryable()
+                    .Where(o => o.GuildId == guild.Id.ToString() && (o.Flags & (int)GuildChannelFlags.IgnoreCache) != 0)
+                    .Select(o => o.ChannelId)
+                    .ToListAsync();
+
+                foreach (var channel in guild.TextChannels.Where(o => !ignoredChannels.Contains(o.Id.ToString())))
                 {
                     var messages = (await channel.GetMessagesAsync().FlattenAsync()).ToList();
                     messages.ForEach(o => Cache.TryAdd(o.Id, new CachedMessage(o)));
                 }
-
-                await Task.Delay(2500);
             }
         }
 

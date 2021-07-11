@@ -1,4 +1,5 @@
 ﻿using Discord;
+using GrillBot.Database.Enums;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -21,6 +22,8 @@ namespace GrillBot.Database.Entity
         [StringLength(100)]
         public string Name { get; set; }
 
+        public int Flags { get; set; }
+
         public ISet<SearchItem> SearchItems { get; set; }
         public ISet<GuildUserChannel> Channels { get; set; }
 
@@ -39,5 +42,7 @@ namespace GrillBot.Database.Entity
                 Name = channel.Name
             };
         }
+
+        public bool HasFlags(GuildChannelFlags flags) => (Flags & (int)flags) != 0;
     }
 }

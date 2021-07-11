@@ -30,7 +30,7 @@ namespace GrillBot.App.Extensions
         }
 
         // Credits to https://github.com/janch32
-        static public void RoundImage(this MagickImage image)
+        static public void RoundImage(this IMagickImage<byte> image)
         {
             using var mask = new MagickImage(MagickColors.Transparent, image.Width, image.Height);
 
@@ -42,8 +42,6 @@ namespace GrillBot.App.Extensions
             image.Alpha(AlphaOption.On);
             image.Composite(mask, CompositeOperator.Multiply);
         }
-
-        static public Image ResizeImage(this Image original, Size size) => ResizeImage(original, size.Width, size.Height);
 
         /// <summary>
         /// Resizes image
@@ -62,15 +60,6 @@ namespace GrillBot.App.Extensions
             }
 
             return destImage;
-        }
-
-        static public Image CropImage(this Image image, Rectangle screen)
-        {
-            var result = new Bitmap(screen.Width, screen.Height);
-            using var graphics = Graphics.FromImage(result);
-
-            graphics.DrawImage(image, 0, 0, screen, GraphicsUnit.Pixel);
-            return result;
         }
 
         static public IEnumerable<Image> SplitGifIntoFrames(this Image image)

@@ -14,10 +14,8 @@ using ImageMagick;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using SysDraw = System.Drawing;
 
 namespace GrillBot.App.Services
 {

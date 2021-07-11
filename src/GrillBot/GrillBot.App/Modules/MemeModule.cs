@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrapeCity.Documents.Imaging;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.FileStorage;
@@ -8,19 +7,15 @@ using GrillBot.App.Services.Images;
 using GrillBot.Data;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.Duck;
-using GrillBot.Data.Resources.Peepoangry;
 using Humanizer;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
-using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using SysDraw = System.Drawing;
 
 namespace GrillBot.App.Modules
 {

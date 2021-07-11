@@ -3,7 +3,6 @@ using Discord.Commands;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.FileStorage;
 using ImageMagick;
-using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -29,6 +28,7 @@ namespace GrillBot.App.Services.Images
             {
                 var profilePicture = await user.DownloadAvatarAsync(size: (ushort)size);
                 await Cache.StoreProfilePictureAsync(filename, profilePicture);
+                fileinfo = await Cache.GetProfilePictureInfoAsync(filename);
             }
 
             return (
@@ -40,6 +40,6 @@ namespace GrillBot.App.Services.Images
         public abstract Task<string> RenderAsync(IUser user, ICommandContext commandContext);
 
         protected bool CanProcessGif(FileInfo fileinfo, IGuild guild)
-            => fileinfo.Length > 2 * (guild.CalculateFileUploadLimit() * 1024 * 1024 / 3);
+            => fileinfo.Length <= 2 * ((guild.CalculateFileUploadLimit() * 1024 * 1024) / 3);
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GrillBot.Tests.Database.Services
@@ -30,6 +31,7 @@ namespace GrillBot.Tests.Database.Services
             var guild = new Mock<IGuild>();
             guild.Setup(o => o.Name).Returns("A");
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
+            guild.Setup(o => o.Roles).Returns(new List<IRole>());
 
             using var context = CreateContext();
 

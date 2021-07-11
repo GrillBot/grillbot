@@ -18,7 +18,6 @@
     <PackageReference Include="ConsoleTableExt" Version="3.1.7" />
     <PackageReference Include="Cronos" Version="0.7.1" />
     <PackageReference Include="Discord.Net" Version="2.4.0" />
-    <PackageReference Include="GrapeCity.Documents.Imaging" Version="4.1.0.662" />
     <PackageReference Include="Humanizer.Core.cs" Version="2.11.10" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="8.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.6" />
@@ -28,7 +27,6 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.6" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.11.1" />
-    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
     <PackageReference Include="Unicode.net" Version="0.1.3" />
   </ItemGroup>
 

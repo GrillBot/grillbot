@@ -39,6 +39,9 @@ namespace GrillBot.App.Services.AuditLog
                 .ThenInclude(o => o.User)
                 .Where(o => o.CreatedAt <= beforeDate);
 
+            if (!await query.AnyAsync(cancellationToken))
+                return;
+
             var data = await query.ToListAsync(cancellationToken);
             var logRoot = new XElement("AuditLogBackup");
 
@@ -64,10 +67,7 @@ namespace GrillBot.App.Services.AuditLog
                     var user = new XElement("ProcessedUser");
 
                     user.Add(
-                        new XAttribute("UserId", o.UserId),
-                        new XAttribute("Points", o.Points),
-                        new XAttribute("GivenReactions", o.GivenReactions),
-                        new XAttribute("ObtainedReactions", o.ObtainedReactions),
+                        new XAttribute("Id", o.UserId),
                         new XAttribute("UserFlags", o.User.Flags)
                     );
 
@@ -98,7 +98,7 @@ namespace GrillBot.App.Services.AuditLog
                 var element = new XElement("Item");
 
                 element.Add(
-                    new XAttribute("ID", item.Id),
+                    new XAttribute("Id", item.Id),
                     new XAttribute("Type", item.Type.ToString()),
                     new XAttribute("CreatedAt", item.CreatedAt.ToString("o"))
                 );

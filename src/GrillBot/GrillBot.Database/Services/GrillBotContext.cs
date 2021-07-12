@@ -84,6 +84,7 @@ namespace GrillBot.Database.Services
             });
 
             modelBuilder.Entity<SelfunverifyKeepable>(builder => builder.HasKey(o => new { o.GroupName, o.Name }));
+            modelBuilder.Entity<ExplicitPermission>(builder => builder.HasKey(o => new { o.Command, o.TargetId }));
 
             base.OnModelCreating(modelBuilder);
         }
@@ -102,5 +103,6 @@ namespace GrillBot.Database.Services
         public DbSet<EmoteStatisticItem> Emotes { get; set; }
         public DbSet<RemindMessage> Reminders { get; set; }
         public DbSet<SelfunverifyKeepable> SelfunverifyKeepables { get; set; }
+        public DbSet<ExplicitPermission> ExplicitPermissions { get; set; }
     }
 }

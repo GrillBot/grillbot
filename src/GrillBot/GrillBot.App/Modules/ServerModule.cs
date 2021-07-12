@@ -5,7 +5,6 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.App.Services;
 using GrillBot.Data;
 using GrillBot.Data.Enums;
@@ -20,15 +19,14 @@ using System.Collections.Immutable;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using RequireUserPermsAttribute = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
 namespace GrillBot.App.Modules
 {
     [Name("Správa serveru")]
-    [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze provést jen na serveru.")]
     public class ServerModule : Infrastructure.ModuleBase
     {
         private IConfiguration Configuration { get; }
@@ -43,7 +41,7 @@ namespace GrillBot.App.Modules
         [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na mazání zpráv.")]
         [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidat reakce indikující stav.")]
         [RequireBotPermission(GuildPermission.ReadMessageHistory, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na čtení historie.")]
-        [RequireUserPermission(GuildPermission.ManageMessages, ErrorMessage = "Tento příkaz může použít pouze uživatel, který má oprávnění mazat zprávy.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageMessages }, false)]
         public async Task CleanAsync([Name("pocet")] int take, [Name("kanal")] ITextChannel channel = null)
         {
             await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
@@ -84,7 +82,7 @@ namespace GrillBot.App.Modules
         [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provádet odepnutí zpráv, protože nemám oprávnění pracovat se zprávami.")]
         [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidat reakce indikující stav.")]
         [RequireBotPermission(GuildPermission.ReadMessageHistory, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na čtení historie.")]
-        [RequireUserPermission(GuildPermission.ManageMessages, ErrorMessage = "Tento příkaz může použít pouze uživatel, který má oprávnění mazat zprávy.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageMessages }, false)]
         public class PinManagementSubmodule : Infrastructure.ModuleBase
         {
             private IConfiguration Configuration { get; }
@@ -161,7 +159,7 @@ namespace GrillBot.App.Modules
             [Command("send")]
             [Summary("Pošle zprávu (vč. příloh) do kanálu.")]
             [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu tenhle příkaz provést, protože nemám oprávnění mazat zprávy.")]
-            [RequireUserPremiumOrPermissions(GuildPermission.ManageMessages, ErrorMessage = "Nemůžeš provést tento příkaz, protože nemáš oprávnění spravovat zprávy, ani nemáš boost.")]
+            [RequireUserPerms(new[] { GuildPermission.ManageMessages }, true)]
             public async Task SendAnonymousToChannelAsync([Name("kanal")] IMessageChannel channel, [Remainder][Name("volitelna_zprava")] string content = null)
             {
                 if (string.IsNullOrEmpty(content) && Context.Message.ReferencedMessage != null)
@@ -214,7 +212,7 @@ namespace GrillBot.App.Modules
             [Group("info")]
             [Name("Informace o serveru")]
             [RequireBotPermission(GuildPermission.Administrator, ErrorMessage = "Nemohu provést tento příkaz, protože nemám nejvyšší oprávnění.")]
-            [RequireUserPermission(GuildPermission.ViewGuildInsights, ErrorMessage = "Tento příkaz může provést pouze uživatel, který vidí statistiky serveru ve vývojářském portálu.")]
+            [RequireUserPerms(new[] { GuildPermission.ViewGuildInsights }, false)]
             public class GuildInfoSubModule : Infrastructure.ModuleBase
             {
                 private GrillBotContextFactory DbContextFactory { get; }
@@ -355,7 +353,7 @@ namespace GrillBot.App.Modules
             [Name("Správa oprávnění serveru")]
             [RequireBotPermission(GuildPermission.ManageChannels, ErrorMessage = "Nemohu spravovat oprávnění, protože nemám oprávnění na správu kanálů.")]
             [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu spravovat oprávnění, protože nemám oprávnění na správu rolí.")]
-            [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat role.")]
+            [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
             public class GuildPermissionsSubModule : Infrastructure.ModuleBase
             {
                 private IConfiguration Configuration { get; }
@@ -596,7 +594,7 @@ namespace GrillBot.App.Modules
             {
                 [Command("clear")]
                 [Summary("Smaže reakci pro daný emote ze zprávy.")]
-                [RequireUserPermission(GuildPermission.ManageMessages, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat zprávy.")]
+                [RequireUserPerms(new[] { GuildPermission.ManageMessages }, false)]
                 public async Task RemoveReactionAsync([Name("zprava")] IMessage message, [Name("emote")] IEmote emote)
                 {
                     await message.RemoveAllReactionsForEmoteAsync(emote);
@@ -611,8 +609,7 @@ namespace GrillBot.App.Modules
             {
                 [Group("info")]
                 [Name("Informace o roli")]
-                [RequireUserPremiumOrPermissions(GuildPermission.ViewGuildInsights, GuildPermission.ManageRoles, ErrorMessage =
-                    "Tento příkaz může provést pouze uživatel, který vidí statistiky serveru ve vývojářském portálu, nebo může spravovat role, nebo má na serveru boost.")]
+                [RequireUserPerms(new[] { GuildPermission.ManageRoles }, true)]
                 public class GuildRoleInfoSubModule : Infrastructure.ModuleBase
                 {
                     [Command("")]
@@ -728,7 +725,7 @@ namespace GrillBot.App.Modules
             [Name("Pozvánky")]
             [RequireBotPermission(GuildPermission.CreateInstantInvite, ErrorMessage = "Nemohu pracovat s pozvánkami, protože nemám oprávnění pro vytvoření pozvánek.")]
             [RequireBotPermission(GuildPermission.ManageGuild, ErrorMessage = "Nemohu pracovat s pozvánkami, protože nemám oprávnění pracovat se serverem.")]
-            [RequireUserPermission(GuildPermission.ManageGuild, ErrorMessage = "Tento příkaz může použít pouze uživatel, který může spravovat server.")]
+            [RequireUserPerms(new[] { GuildPermission.ManageGuild }, false)]
             public class GuildInvitesSubModule : Infrastructure.ModuleBase
             {
                 private InviteService InviteService { get; }

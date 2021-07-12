@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.Data;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
@@ -13,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using RequireUserPermsAttribute = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
 namespace GrillBot.App.Modules.User
 {
@@ -32,7 +32,7 @@ namespace GrillBot.App.Modules.User
 
         [Command("info")]
         [Summary("Získání informací o uživateli.")]
-        [RequireUserPremiumOrPermissions(GuildPermission.ViewAuditLog, ErrorMessage = "Tento příkaz může použít pouze uživatel, který má na serveru boost, nebo může vidět audit log.")]
+        [RequireUserPerms(new[] { GuildPermission.ViewAuditLog }, true)]
         public async Task GetUserInfoAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
         {
             if (user == null) user = Context.User;
@@ -45,7 +45,7 @@ namespace GrillBot.App.Modules.User
         [Command("access")]
         [Summary("Získání seznamu přístupů uživatele.")]
         [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění v kanálech.")]
-        [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který může spravovat oprávnění v kanálech.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
         public async Task GetUserAccessListAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
         {
             if (user == null) user = Context.User;
@@ -102,19 +102,6 @@ namespace GrillBot.App.Modules.User
                 embed.AddField("Body", baseData.Points, true)
                     .AddField("Udělené reakce", baseData?.GivenReactions, true)
                     .AddField("Obdržené reakce", baseData?.ObtainedReactions, true);
-
-                if (baseData?.UsedInvite != null)
-                {
-                    var invite = baseData.UsedInvite;
-                    bool isVanity = invite.Code == context.Guild.VanityURLCode;
-                    var creator = isVanity ? null : await context.Client.FindUserAsync(Convert.ToUInt64(invite.CreatorId));
-
-                    embed.AddField(
-                        "Použitá pozvánka",
-                        $"**{invite.Code}**\n{(isVanity ? "Vanity invite" : $"Založil: **{creator?.GetFullName()}** (**{invite.CreatedAt?.ToCzechFormat()}**)")}",
-                        false
-                    );
-                }
             }
 
             var messagesCount = await dbContext.UserChannels.AsQueryable().Where(o => o.Count > 0 && o.GuildId == context.Guild.Id.ToString() && o.UserId == user.Id.ToString()).SumAsync(o => o.Count);
@@ -132,6 +119,19 @@ namespace GrillBot.App.Modules.User
             {
                 embed.AddField("Počet unverify", unverifyData.Unverify, true)
                     .AddField("Počet selfunverify", unverifyData.Selfunverify, true);
+            }
+
+            if (baseData?.UsedInvite != null)
+            {
+                var invite = baseData.UsedInvite;
+                bool isVanity = invite.Code == context.Guild.VanityURLCode;
+                var creator = isVanity ? null : await context.Client.FindUserAsync(Convert.ToUInt64(invite.CreatorId));
+
+                embed.AddField(
+                    "Použitá pozvánka",
+                    $"**{invite.Code}**\n{(isVanity ? "Vanity invite" : $"Založil: **{creator?.GetFullName()}** (**{invite.CreatedAt?.ToCzechFormat()}**)")}",
+                    false
+                );
             }
 
             var channelActivity = await userStateQueryBase.Select(o => new

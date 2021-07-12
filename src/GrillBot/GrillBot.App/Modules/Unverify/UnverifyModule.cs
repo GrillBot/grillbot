@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using RequireUserPermsAttribute = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
 namespace GrillBot.App.Modules.Unverify
 {
@@ -35,7 +36,7 @@ namespace GrillBot.App.Modules.Unverify
         )]
         [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
         [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
-        [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který má oprávnění spravovat role.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
         public async Task SetUnverifyAsync([Name("datum konce")] DateTime end, [Remainder][Name("duvod a tagy")] string data)
         {
             bool success = true;
@@ -77,7 +78,7 @@ namespace GrillBot.App.Modules.Unverify
             "Celý příkaz pak vypadá např.: {prefix}unverify remove @GrillBot")]
         [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
         [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
-        [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který má oprávnění spravovat role.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
         public async Task RemoveUnverifyAsync([Name("kdo")] IGuildUser user)
         {
             bool success = true;
@@ -109,7 +110,7 @@ namespace GrillBot.App.Modules.Unverify
             "Formát data o novém konci unverify je stejný jako při zadávání unverify.\n" +
             "Identifikace uživatele je stejná jako u příkazu `{prefix}unverify remove`." +
             "Celý příkaz vypadá např.: `{prefix}unverify update @GrillBot 1h`")]
-        [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který má oprávnění spravovat role.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
         public async Task UnverifyUpdateAsync([Name("kdo")] IGuildUser user, [Name("novy datum konce")] DateTime end)
         {
             try
@@ -133,7 +134,7 @@ namespace GrillBot.App.Modules.Unverify
         [Command("list")]
         [Summary("Seznam uživatelů, kteří mají na serveru odebraný přístup.")]
         [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
-        [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který má oprávnění spravovat role.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
         public async Task UnverifyListAsync()
         {
             var unverify = await UnverifyService.GetCurrentUnverifyAsync(Context.Guild, 0);

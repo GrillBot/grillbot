@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using RequireUserPermsAttribute = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
 namespace GrillBot.App.Modules.Unverify
 {
@@ -67,6 +68,8 @@ namespace GrillBot.App.Modules.Unverify
 
         [Group("keep")]
         [Name("Ponechatelné přístupy pro selfunverify")]
+        [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
         public class SelfunverifyKeepableSubModule : Infrastructure.ModuleBase
         {
             private SelfunverifyService SelfunverifyService { get; }
@@ -78,8 +81,6 @@ namespace GrillBot.App.Modules.Unverify
 
             [Command("add")]
             [Summary("Přidá ponechatelný přístup.")]
-            [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
-            [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který má oprávnění spravovat role.")]
             public async Task AddAsync([Name("skupina")] string group, [Name("nazev")] string name)
             {
                 try
@@ -95,8 +96,6 @@ namespace GrillBot.App.Modules.Unverify
 
             [Command("remove")]
             [Summary("Odebere ponechatelný přístup.")]
-            [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
-            [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který má oprávnění spravovat role.")]
             public async Task RemoveAsync([Name("skupina")] string group, [Name("nazev")] string name = null)
             {
                 try

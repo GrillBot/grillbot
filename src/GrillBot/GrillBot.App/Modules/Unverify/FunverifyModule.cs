@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using RequireUserPermsAttribute = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
 namespace GrillBot.App.Modules.Unverify
 {
@@ -27,7 +28,7 @@ namespace GrillBot.App.Modules.Unverify
         [Summary("Falešné odebrání přístupu uživateli.")]
         [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
         [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
-        [RequireUserPermission(GuildPermission.ManageRoles, ErrorMessage = "Tento příkaz může provést pouze uživatel, který má oprávnění spravovat role.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
         public async Task FunverifyAsync([Name("datum konce")] DateTime end, [Remainder][Name("duvod a tagy")] string data)
         {
             bool success = true;

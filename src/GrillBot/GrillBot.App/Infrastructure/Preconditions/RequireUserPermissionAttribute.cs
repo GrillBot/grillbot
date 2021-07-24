@@ -29,7 +29,7 @@ namespace GrillBot.App.Infrastructure.Preconditions
         /// <summary>
         /// Run command in specific channel types (DM/Guild). Null allows run command everywhere.
         /// </summary>
-        public ContextType? Contexts { get; }
+        public ContextType? Contexts { get; set; }
 
         /// <summary>
         /// Run command with specific guild permissions.
@@ -83,7 +83,7 @@ namespace GrillBot.App.Infrastructure.Preconditions
             var channelPermsCheck = await CheckChannelPermsAsync(context, command, services);
             if (channelPermsCheck.IsSuccess) return PreconditionResult.FromSuccess();
 
-            var boosterCheck = await CheckBoosterPermsAsync(context, command, services);
+            var boosterCheck = await CheckBoosterPermsAsync(context);
             if (boosterCheck.IsSuccess) return PreconditionResult.FromSuccess();
 
             var explicitCheck = await CheckExplicitPermissionAsync(context, command, services);
@@ -171,8 +171,8 @@ namespace GrillBot.App.Infrastructure.Preconditions
                     _ => "nějaké jiné právo"
                 }).Distinct().ToList();
 
-                var perms = string.Join(", ", formatedPerms.Skip(formatedPerms.Count - 1));
-                return PreconditionResult.FromError($"Na tento příkaz nemáš oprávnění, protože nemáš oprávnění na {perms}{(formatedPerms.Count > 1 ? $" a {formatedPerms[^1]}" : null)}.");
+                var perms = string.Join(", ", formatedPerms.Take(formatedPerms.Count - 1));
+                return PreconditionResult.FromError($"Na tento příkaz nemáš oprávnění, protože nemáš oprávnění {perms}{(formatedPerms.Count > 1 ? " a " : null)}{formatedPerms[^1]}.");
             }
 
             return PreconditionResult.FromSuccess();
@@ -227,7 +227,7 @@ namespace GrillBot.App.Infrastructure.Preconditions
             return PreconditionResult.FromSuccess();
         }
 
-        private Task<PreconditionResult> CheckBoosterPermsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        private Task<PreconditionResult> CheckBoosterPermsAsync(ICommandContext context)
         {
             if (!AllowBooster) return Task.FromResult(PreconditionResult.FromError("-"));
 

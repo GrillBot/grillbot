@@ -1,14 +1,13 @@
 ﻿using NSwag.Annotations;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace GrillBot.Data.Models.API.Params
 {
     /// <summary>
     /// Parameters for pagination.
     /// </summary>
-    public class PaginatedParams<TEntity>
+    public class PaginatedParams
     {
         /// <summary>
         /// Page.
@@ -24,10 +23,5 @@ namespace GrillBot.Data.Models.API.Params
 
         [OpenApiIgnore]
         public int Skip => (Page == 0 ? 0 : Page - 1) * PageSize;
-
-        public virtual IQueryable<TEntity> CreateQuery(IQueryable<TEntity> query)
-        {
-            return query.Skip(Skip).Take(PageSize);
-        }
     }
 }

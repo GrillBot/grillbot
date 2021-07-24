@@ -1,6 +1,7 @@
 ﻿using Discord.WebSocket;
+using System;
 
-namespace GrillBot.Data.Models.API
+namespace GrillBot.Data.Models.API.Guilds
 {
     /// <summary>
     /// Simple guild item.
@@ -23,6 +24,12 @@ namespace GrillBot.Data.Models.API
         public int MemberCount { get; set; }
 
         public Guild() { }
+
+        public Guild(Database.Entity.Guild guild)
+        {
+            Id = guild.Id;
+            Name = guild.Name;
+        }
 
         public Guild(SocketGuild guild)
         {

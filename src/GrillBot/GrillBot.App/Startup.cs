@@ -7,7 +7,6 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Birthday;
-using GrillBot.App.Services.CronJobs;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
@@ -19,7 +18,6 @@ using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,7 +83,8 @@ namespace GrillBot.App
                 .AddSingleton<RemindService>()
                 .AddSingleton<BirthdayService>()
                 .AddUnverify()
-                .AddSingleton<BoosterService>();
+                .AddSingleton<BoosterService>()
+                .AddSingleton<OAuth2Service>();
 
             ReflectionHelper.GetAllReactionEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));
@@ -135,10 +134,10 @@ namespace GrillBot.App
                 };
             });
 
-            services.AddCronJob<MessageCacheCheckCron>();
-            services.AddCronJob<AuditLogClearingJob>();
-            services.AddCronJob<RemindCronJob>();
-            services.AddCronJob<BirthdayCronJob>();
+            services.AddHostedService<MessageCacheCheckCron>();
+            services.AddHostedService<AuditLogClearingJob>();
+            services.AddHostedService<RemindCronJob>();
+            services.AddHostedService<BirthdayCronJob>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)

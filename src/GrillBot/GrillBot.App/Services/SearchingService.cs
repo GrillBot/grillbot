@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.MessageCache;
+using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
@@ -32,7 +32,7 @@ namespace GrillBot.App.Services
 
             await context.InitUserAsync(user);
             await context.InitGuildAsync(guild);
-            await context.InitGuildChannelAsync(guild, channel);
+            await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value);
 
             var entity = new SearchItem()
             {

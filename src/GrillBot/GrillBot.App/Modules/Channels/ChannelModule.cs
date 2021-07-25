@@ -7,6 +7,7 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Modules.Channels;
 using GrillBot.Data;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;

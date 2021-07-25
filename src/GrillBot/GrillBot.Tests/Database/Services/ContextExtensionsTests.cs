@@ -128,11 +128,12 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = CreateContext();
 
-            context.Add(GuildChannel.FromDiscord(guild.Object, channel.Object));
+            context.Add(GuildChannel.FromDiscord(guild.Object, channel.Object, ChannelType.Category));
             context.SaveChanges();
             context.ChangeTracker.Clear();
 
-            context.InitGuildChannelAsync(guild.Object, channel.Object).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category)
+                .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
         }
 
         [TestMethod]
@@ -147,7 +148,8 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = CreateContext();
 
-            context.InitGuildChannelAsync(guild.Object, channel.Object).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category)
+                .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
         }
     }
 }

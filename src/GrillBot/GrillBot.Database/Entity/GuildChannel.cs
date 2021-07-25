@@ -24,6 +24,8 @@ namespace GrillBot.Database.Entity
 
         public int Flags { get; set; }
 
+        public ChannelType ChannelType { get; set; }
+
         public ISet<SearchItem> SearchItems { get; set; }
         public ISet<GuildUserChannel> Channels { get; set; }
 
@@ -33,13 +35,14 @@ namespace GrillBot.Database.Entity
             Channels = new HashSet<GuildUserChannel>();
         }
 
-        public static GuildChannel FromDiscord(IGuild guild, IChannel channel)
+        public static GuildChannel FromDiscord(IGuild guild, IChannel channel, ChannelType channelType)
         {
             return new GuildChannel()
             {
                 ChannelId = channel.Id.ToString(),
                 GuildId = guild.Id.ToString(),
-                Name = channel.Name
+                Name = channel.Name,
+                ChannelType = channelType
             };
         }
 

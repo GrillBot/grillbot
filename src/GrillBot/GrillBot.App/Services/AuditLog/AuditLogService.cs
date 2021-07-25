@@ -5,6 +5,8 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
@@ -18,8 +20,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services.AuditLog
@@ -112,7 +112,7 @@ namespace GrillBot.App.Services.AuditLog
             using var dbContext = DbFactory.Create();
             await dbContext.InitGuildAsync(context.Guild);
             await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser);
-            await dbContext.InitGuildChannelAsync(context.Guild, context.Channel);
+            await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, ChannelType.Text);
 
             await dbContext.AddAsync(logItem);
             await dbContext.SaveChangesAsync();
@@ -251,7 +251,7 @@ namespace GrillBot.App.Services.AuditLog
             using var context = DbFactory.Create();
 
             await context.InitGuildAsync(channel.Guild);
-            await context.InitGuildChannelAsync(channel.Guild, channel);
+            await context.InitGuildChannelAsync(channel.Guild, channel, ChannelType.Text);
             await context.InitUserAsync(removedBy);
             await context.InitGuildUserAsync(channel.Guild, removedBy as IGuildUser ?? channel.Guild.GetUser(removedBy.Id));
 
@@ -273,7 +273,7 @@ namespace GrillBot.App.Services.AuditLog
             using var context = DbFactory.Create();
 
             await context.InitGuildAsync(channel.Guild);
-            await context.InitGuildChannelAsync(channel.Guild, channel);
+            await context.InitGuildChannelAsync(channel.Guild, channel, DiscordHelper.GetChannelType(channel).Value);
             await context.InitUserAsync(auditLog.User);
             await context.InitGuildUserAsync(channel.Guild, auditLog.User as IGuildUser ?? channel.Guild.GetUser(auditLog.User.Id));
 
@@ -295,7 +295,7 @@ namespace GrillBot.App.Services.AuditLog
             using var context = DbFactory.Create();
 
             await context.InitGuildAsync(channel.Guild);
-            await context.InitGuildChannelAsync(channel.Guild, channel);
+            await context.InitGuildChannelAsync(channel.Guild, channel, DiscordHelper.GetChannelType(channel).Value);
             await context.InitUserAsync(auditLog.User);
             await context.InitGuildUserAsync(channel.Guild, auditLog.User as IGuildUser ?? channel.Guild.GetUser(auditLog.User.Id));
 
@@ -320,7 +320,7 @@ namespace GrillBot.App.Services.AuditLog
             using var context = DbFactory.Create();
 
             await context.InitGuildAsync(after.Guild);
-            await context.InitGuildChannelAsync(after.Guild, after);
+            await context.InitGuildChannelAsync(after.Guild, after, DiscordHelper.GetChannelType(after).Value);
             await context.InitUserAsync(auditLog.User);
             await context.InitGuildUserAsync(after.Guild, auditLog.User as IGuildUser ?? after.Guild.GetUser(auditLog.User.Id));
 
@@ -360,7 +360,7 @@ namespace GrillBot.App.Services.AuditLog
         {
             using var context = DbFactory.Create();
             await context.InitGuildAsync(guild);
-            await context.InitGuildChannelAsync(guild, channel);
+            await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value);
 
             var timeLimit = DateTime.Now.AddDays(-5);
             var auditLogIdsQuery = context.AuditLogs.AsQueryable()

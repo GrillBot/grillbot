@@ -4,6 +4,7 @@ using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Unverify;
 using Humanizer;
 using System;

@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services;
 using GrillBot.Data;
+using GrillBot.Data.Extensions.Discord;
 using System;
 using System.Threading.Tasks;
 

@@ -13,6 +13,7 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Sync;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Data.Helpers;
 using GrillBot.Database;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -67,7 +68,8 @@ namespace GrillBot.App
                 .AddSingleton<RandomizationService>()
                 .AddDatabase(connectionString)
                 .AddMemoryCache()
-                .AddControllers();
+                .AddControllers()
+                .AddNewtonsoftJson();
 
             services
                 .AddSingleton<InviteService>()

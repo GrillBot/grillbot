@@ -32,13 +32,13 @@ namespace GrillBot.Database.Services
                 await context.AddAsync(GuildUser.FromDiscord(guild, user));
         }
 
-        static public async Task InitGuildChannelAsync(this GrillBotContext context, IGuild guild, IChannel channel)
+        static public async Task InitGuildChannelAsync(this GrillBotContext context, IGuild guild, IChannel channel, ChannelType channelType)
         {
             var channelId = channel.Id.ToString();
             var guildId = guild.Id.ToString();
 
             if (!await context.Channels.AnyAsync(o => o.ChannelId == channelId && o.GuildId == guildId))
-                await context.AddAsync(GuildChannel.FromDiscord(guild, channel));
+                await context.AddAsync(GuildChannel.FromDiscord(guild, channel, channelType));
         }
     }
 }

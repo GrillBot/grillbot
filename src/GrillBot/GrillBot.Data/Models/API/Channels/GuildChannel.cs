@@ -1,4 +1,7 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
+using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Helpers;
 
 namespace GrillBot.Data.Models.API.Channels
 {
@@ -6,7 +9,7 @@ namespace GrillBot.Data.Models.API.Channels
     {
         public string Id { get; set; }
         public string Name { get; set; }
-        public string Type { get; set; }
+        public ChannelType? Type { get; set; }
 
         public GuildChannel() { }
 
@@ -14,11 +17,11 @@ namespace GrillBot.Data.Models.API.Channels
         {
             Id = channel.Id.ToString();
             Name = channel.Name;
+            Type = DiscordHelper.GetChannelType(channel);
 
-            if (channel is SocketNewsChannel) Type = "News";
-            else if (channel is SocketTextChannel) Type = "Text";
-            else if (channel is SocketVoiceChannel) Type = "Voice";
-            else Type = "Unknown";
+            var category = channel.GetCategory();
+            if (category != null)
+                Name += $" ({category.Name})";
         }
     }
 }

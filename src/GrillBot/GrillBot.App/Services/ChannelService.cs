@@ -46,7 +46,7 @@ namespace GrillBot.App.Services
             await dbContext.InitGuildAsync(textChannel.Guild);
             await dbContext.InitUserAsync(message.Author);
             await dbContext.InitGuildUserAsync(textChannel.Guild, message.Author as IGuildUser);
-            await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel);
+            await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel, ChannelType.Text);
 
             // Search specific channel for specific guild and user.
             var channel = await dbContext.UserChannels.AsQueryable()

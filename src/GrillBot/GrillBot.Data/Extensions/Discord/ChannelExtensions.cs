@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using System.Linq;
 
-namespace GrillBot.App.Extensions.Discord
+namespace GrillBot.Data.Extensions.Discord
 {
     static public class ChannelExtensions
     {
@@ -63,6 +63,15 @@ namespace GrillBot.App.Extensions.Discord
             }
 
             return true;
+        }
+
+        public static ICategoryChannel GetCategory(this SocketGuildChannel channel)
+        {
+            if (channel is SocketCategoryChannel categoryChannel) return categoryChannel;
+            else if (channel is SocketTextChannel textChannel) return textChannel.Category;
+            else if (channel is SocketVoiceChannel voiceChannel) return voiceChannel.Category;
+
+            return null;
         }
     }
 }

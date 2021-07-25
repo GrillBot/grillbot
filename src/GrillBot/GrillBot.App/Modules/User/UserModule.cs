@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.Data;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;

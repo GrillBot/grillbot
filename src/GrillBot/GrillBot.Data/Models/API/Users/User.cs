@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace GrillBot.Data.Models.API
+namespace GrillBot.Data.Models.API.Users
 {
     public class User
     {

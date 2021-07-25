@@ -33,6 +33,8 @@ namespace GrillBot.Data.Models.API.Guilds
 
         public Guild(SocketGuild guild)
         {
+            if (guild == null) return;
+
             Id = guild.Id.ToString();
             Name = guild.Name;
             MemberCount = guild.MemberCount;

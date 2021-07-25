@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Data.Models.API.Users;
 using System.Collections.Generic;
 
 namespace GrillBot.Data.Models.API.Public

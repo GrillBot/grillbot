@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
 
-namespace GrillBot.Data.Models.API
+namespace GrillBot.Data.Models.API.Channels
 {
     public class GuildChannel
     {

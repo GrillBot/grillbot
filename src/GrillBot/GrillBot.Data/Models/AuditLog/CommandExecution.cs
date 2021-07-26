@@ -16,7 +16,7 @@ namespace GrillBot.Data.Models.AuditLog
 
         public CommandExecution(CommandInfo command, IMessage message, IResult result)
         {
-            Command = command.Aliases.FirstOrDefault();
+            Command = command.Aliases[0];
             MessageContent = message.Content;
 
             if (result != null)

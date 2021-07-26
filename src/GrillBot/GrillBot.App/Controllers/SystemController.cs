@@ -1,11 +1,16 @@
 ﻿using Discord.WebSocket;
+using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.API.System;
+using GrillBot.Data.Models.AuditLog;
+using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using NSwag.Annotations;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -51,22 +56,56 @@ namespace GrillBot.App.Controllers
         {
             var data = new Dictionary<string, int>()
             {
-                { nameof(DbContext.Users), await DbContext.Users.CountAsync() },
-                { nameof(DbContext.Guilds), await DbContext.Guilds.CountAsync() },
-                { nameof(DbContext.GuildUsers), await DbContext.GuildUsers.CountAsync() },
-                { nameof(DbContext.Channels), await DbContext.Channels.CountAsync() },
-                { nameof(DbContext.UserChannels), await DbContext.UserChannels.CountAsync() },
-                { nameof(DbContext.Invites), await DbContext.Invites.CountAsync() },
-                { nameof(DbContext.SearchItems), await DbContext.SearchItems.CountAsync() },
-                { nameof(DbContext.Unverifies), await DbContext.Unverifies.CountAsync() },
-                { nameof(DbContext.UnverifyLogs), await DbContext.UnverifyLogs.CountAsync() },
-                { nameof(DbContext.AuditLogs), await DbContext.AuditLogs.CountAsync() },
-                { nameof(DbContext.AuditLogFiles), await DbContext.AuditLogFiles.CountAsync() },
-                { nameof(DbContext.Emotes), await DbContext.Emotes.CountAsync() },
-                { nameof(DbContext.Reminders), await DbContext.Reminders.CountAsync() },
-                { nameof(DbContext.SelfunverifyKeepables), await DbContext.SearchItems.CountAsync() },
-                { nameof(DbContext.ExplicitPermissions), await DbContext.ExplicitPermissions.CountAsync() }
+                { nameof(DbContext.Users), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Users) },
+                { nameof(DbContext.Guilds), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Guilds) },
+                { nameof(DbContext.GuildUsers), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.GuildUsers) },
+                { nameof(DbContext.Channels), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Channels) },
+                { nameof(DbContext.UserChannels), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.UserChannels) },
+                { nameof(DbContext.Invites), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Invites) },
+                { nameof(DbContext.SearchItems), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.SearchItems) },
+                { nameof(DbContext.Unverifies), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Unverifies) },
+                { nameof(DbContext.UnverifyLogs), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.UnverifyLogs) },
+                { nameof(DbContext.AuditLogs), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.AuditLogs) },
+                { nameof(DbContext.AuditLogFiles), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.AuditLogFiles) },
+                { nameof(DbContext.Emotes), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Emotes) },
+                { nameof(DbContext.Reminders), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Reminders) },
+                { nameof(DbContext.SelfunverifyKeepables), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.SearchItems) },
+                { nameof(DbContext.ExplicitPermissions), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.ExplicitPermissions) }
             };
+
+            return Ok(data);
+        }
+
+        /// <summary>
+        /// Gets statistics about commands.
+        /// </summary>
+        [HttpGet("commands")]
+        [OpenApiOperation(nameof(SystemController) + "_" + nameof(GetCommandStatusAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<ActionResult<List<CommandStatisticItem>>> GetCommandStatusAsync()
+        {
+            var query = DbContext.AuditLogs
+                .AsQueryable()
+                .AsNoTracking()
+                .Where(o => o.Type == AuditLogItemType.Command)
+                .Select(o => new { o.CreatedAt, o.Data });
+
+            var dbData = await query.ToListAsync();
+            var data = dbData.ConvertAll(o => new
+            {
+                o.CreatedAt,
+                Data = JsonConvert.DeserializeObject<CommandExecution>(o.Data)
+            }).GroupBy(o => o.Data.Command)
+            .Where(o => o.Key != null)
+            .Select(o => new CommandStatisticItem()
+            {
+                Command = o.Key,
+                FailedCount = o.Count(x => !x.Data.IsSuccess),
+                LastCall = o.Max(x => x.CreatedAt),
+                SuccessCount = o.Count(x => x.Data.IsSuccess)
+            })
+            .OrderBy(o => o.Command)
+            .ToList();
 
             return Ok(data);
         }

@@ -24,11 +24,6 @@ namespace GrillBot.Database.Entity
         [NotMapped]
         public bool BirthdayAcceptYear => Birthday != null && Birthday.Value.Year != 1;
 
-        [Required]
-        public int WebAdminLoginCount { get; set; } = 0;
-
-        public DateTime? WebAdminBannedTo { get; set; }
-
         public string Note { get; set; }
 
         [StringLength(32)]

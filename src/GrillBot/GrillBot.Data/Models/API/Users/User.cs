@@ -43,5 +43,11 @@ namespace GrillBot.Data.Models.API.Users
         public User(IUser user) : this(user.Id, user.Username, user.Discriminator, user.IsBot, user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl())
         {
         }
+
+        public User(Database.Entity.User user)
+        {
+            Id = user.Id;
+            Username = user.Username;
+        }
     }
 }

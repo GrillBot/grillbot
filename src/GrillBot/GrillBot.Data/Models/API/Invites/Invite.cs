@@ -24,5 +24,15 @@ namespace GrillBot.Data.Models.API
         /// Use counter of invite.
         /// </summary>
         public int UsedUsersCount { get; set; }
+
+        public Invite() { }
+
+        public Invite(Database.Entity.Invite invite)
+        {
+            Code = invite.Code;
+            CreatedAt = invite.CreatedAt;
+            Creator = new User(invite.Creator.User);
+            UsedUsersCount = invite.UsedUsers.Count;
+        }
     }
 }

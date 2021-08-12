@@ -8,8 +8,10 @@ using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -305,6 +307,85 @@ namespace GrillBot.App.Services.Unverify
 
             var user = guild.GetUser(Convert.ToUInt64(unverify.UserId));
             return ProfileGenerator.Reconstruct(unverify.UnverifyLog, user, guild);
+        }
+
+        public async Task<List<UnverifyUserProfile>> GetAllUnverifiesOfGuildAsync(SocketGuild guild)
+        {
+            await guild.DownloadUsersAsync();
+            using var context = DbFactory.Create();
+
+            var unverifies = await context.Unverifies
+                .AsNoTracking()
+                .Include(o => o.UnverifyLog)
+                .Where(o => o.GuildId == guild.Id.ToString())
+                .ToListAsync();
+
+            return unverifies.ConvertAll(o =>
+            {
+                var user = guild.GetUser(Convert.ToUInt64(o.UserId));
+                return ProfileGenerator.Reconstruct(o.UnverifyLog, user, guild);
+            });
+        }
+
+        public async Task RecoverUnverifyState(long id, ulong fromUserId)
+        {
+            using var context = DbFactory.Create();
+
+            var logItem = await context.UnverifyLogs.AsNoTracking()
+                .Include(o => o.Guild)
+                .Include(o => o.ToUser)
+                .ThenInclude(o => o.Unverify)
+                .FirstOrDefaultAsync(o => o.Id == id && (o.Operation == UnverifyOperation.Selfunverify || o.Operation == UnverifyOperation.Unverify));
+
+            if (logItem == null)
+                throw new NotFoundException("Záznam o provedeném odebrání přístupu nebyl nalezen.");
+
+            if (logItem.ToUser.Unverify != null)
+                throw new InvalidOperationException("Nelze provést obnovení přístupu uživateli, protože má aktuálně platné unverify.");
+
+            var guild = DiscordClient.GetGuild(Convert.ToUInt64(logItem.GuildId));
+            if (guild == null)
+                throw new NotFoundException("Nelze najít server, na kterém bylo uděleno unverify.");
+
+            await guild.DownloadUsersAsync();
+            var user = guild.GetUser(Convert.ToUInt64(logItem.ToUserId));
+            if (user == null)
+                throw new NotFoundException($"Nelze vyhledat uživatele na serveru {guild.Name}");
+
+            var mutedRole = !string.IsNullOrEmpty(logItem.Guild.MuteRoleId) ? guild.GetRole(Convert.ToUInt64(logItem.Guild.MuteRoleId)) : null;
+            var data = JsonConvert.DeserializeObject<UnverifyLogSet>(logItem.Data);
+
+            var rolesToReturn = data.RolesToRemove.Where(o => !user.Roles.Any(x => x.Id == o))
+                .Select(o => guild.GetRole(o) as IRole)
+                .Where(role => role != null)
+                .ToList();
+
+            var channelsToReturn = data.ChannelsToRemove
+                .Select(o => new { Channel = guild.GetChannel(o.ChannelId), Perms = o.Permissions, Obj = o })
+                .Where(o => o.Channel != null)
+                .Where(o =>
+                {
+                    var perms = o.Channel.GetPermissionOverwrite(user);
+                    return perms != null && (perms.Value.AllowValue != o.Perms.AllowValue || perms.Value.DenyValue != o.Perms.DenyValue);
+                })
+                .ToList();
+
+            var fromUser = guild.GetUser(fromUserId);
+            await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.Obj), guild, fromUser, user);
+
+            if (rolesToReturn.Count > 0)
+                await user.AddRolesAsync(rolesToReturn);
+
+            if (channelsToReturn.Count > 0)
+            {
+                foreach (var channel in channelsToReturn)
+                {
+                    await channel.Channel.AddPermissionOverwriteAsync(user, channel.Perms);
+                }
+            }
+
+            if (mutedRole != null)
+                await user.RemoveRoleAsync(mutedRole);
         }
     }
 }

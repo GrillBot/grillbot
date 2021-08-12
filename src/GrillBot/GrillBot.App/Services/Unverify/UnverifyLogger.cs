@@ -82,7 +82,7 @@ namespace GrillBot.App.Services.Unverify
         {
             var entity = new UnverifyLog()
             {
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 Data = JsonConvert.SerializeObject(data),
                 FromUserId = from.Id.ToString(),
                 GuildId = guild.Id.ToString(),

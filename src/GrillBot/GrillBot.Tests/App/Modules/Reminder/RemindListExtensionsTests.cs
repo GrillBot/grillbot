@@ -2,8 +2,8 @@
 using Discord.WebSocket;
 using GrillBot.App.Modules.Reminder;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System.Collections.Generic;
 
 namespace GrillBot.Tests.App.Modules.Reminder
@@ -17,9 +17,7 @@ namespace GrillBot.Tests.App.Modules.Reminder
             var data = new List<RemindMessage>();
             var client = new DiscordSocketClient();
 
-            var forUser = new Mock<IUser>();
-            forUser.Setup(o => o.Id).Returns(1234);
-            forUser.Setup(o => o.Username).Returns("Test");
+            var forUser = DiscordHelpers.CreateUserMock(1234, "Test");
             forUser.Setup(o => o.Discriminator).Returns("0000");
             forUser.Setup(o => o.AvatarId).Returns((string)null);
             forUser.Setup(o => o.GetDefaultAvatarUrl()).Returns("http://discord.com/image.png");

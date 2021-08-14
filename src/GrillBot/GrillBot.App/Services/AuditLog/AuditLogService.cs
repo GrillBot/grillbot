@@ -8,16 +8,19 @@ using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
+using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -236,14 +239,17 @@ namespace GrillBot.App.Services.AuditLog
                         Size = attachment.Size
                     };
 
-                    var filename = string.Join("_", new[]
+                    var filenameWithoutExtension = fileEntity.FilenameWithoutExtension;
+                    var extension = fileEntity.Extension;
+
+                    fileEntity.Filename = string.Join("_", new[]
                     {
-                        fileEntity.FilenameWithoutExtension,
+                        filenameWithoutExtension,
                         attachment.Id.ToString(),
                         deletedMessage.Author.Id.ToString()
-                    }) + fileEntity.Extension;
+                    }) + extension;
 
-                    await storage.StoreFileAsync("DeletedAttachments", filename, content);
+                    await storage.StoreFileAsync("DeletedAttachments", fileEntity.Filename, content);
                     entity.Files.Add(fileEntity);
                 }
             }
@@ -536,6 +542,76 @@ namespace GrillBot.App.Services.AuditLog
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
+        }
+
+        public async Task<List<int>> GetAvailableLogYearsAsync()
+        {
+            using var context = DbFactory.Create();
+
+            var query = context.AuditLogs.AsNoTracking()
+                .Select(o => o.CreatedAt.Year)
+                .Distinct()
+                .OrderBy(o => o);
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<List<AuditLogStatItem>> GetStatisticsByMonthAtYearAsync(int year)
+        {
+            using var context = DbFactory.Create();
+
+            var query = context.AuditLogs.AsNoTracking()
+                .Where(o => o.CreatedAt.Year == year)
+                .GroupBy(o => o.CreatedAt.Month)
+                .Select(o => new AuditLogStatItem()
+                {
+                    Count = o.Count(),
+                    FirstItem = o.Min(x => x.CreatedAt),
+                    LastItem = o.Max(x => x.CreatedAt),
+                    StatName = o.Key.ToString()
+                });
+
+            var data = await query.ToListAsync();
+            var result = new List<AuditLogStatItem>();
+            var culture = new CultureInfo("cs-CZ");
+
+            for (int i = 1; i <= 12; i++)
+            {
+                var item = data.Find(o => o.StatName == i.ToString()) ?? new AuditLogStatItem() { StatName = i.ToString() };
+
+                item.StatName = culture.DateTimeFormat.GetMonthName(i).Humanize(LetterCasing.Title);
+                result.Add(item);
+            }
+
+            return result;
+        }
+
+        public async Task<bool> RemoveItemAsync(long id)
+        {
+            using var context = DbFactory.Create();
+
+            var item = await context.AuditLogs
+                .Include(o => o.Files)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (item == null) return false;
+            if (item.Files.Count > 0)
+            {
+                var storage = FileStorageFactory.Create("Audit");
+
+                foreach (var file in item.Files)
+                {
+                    var fileInfo = await storage.GetFileInfoAsync("DeletedAttachments", file.Filename);
+                    if (!fileInfo.Exists) continue;
+
+                    fileInfo.Delete();
+                }
+
+                context.RemoveRange(item.Files);
+            }
+
+            context.Remove(item);
+            return (await context.SaveChangesAsync()) > 0;
         }
     }
 }

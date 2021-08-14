@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Modules.Channels;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
@@ -12,8 +13,7 @@ namespace GrillBot.Tests.App.Modules.Channels
         [TestMethod]
         public void WithChannelboard()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Username).Returns("Test");
+            var user = DiscordHelpers.CreateUserMock(0, "Test");
             user.Setup(o => o.DiscriminatorValue).Returns(9982);
             user.Setup(o => o.Discriminator).Returns("9982");
             user.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns(null as string);

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Extensions.Discord;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -16,7 +17,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void HaveAnimatedAvatar_True()
         {
-            var mock = new Mock<IUser>();
+            var mock = DiscordHelpers.CreateUserMock(0, null);
             mock.Setup(o => o.AvatarId).Returns("a_asdf");
             var user = mock.Object;
 
@@ -26,7 +27,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void HaveAnimatedAvatar_False()
         {
-            var mock = new Mock<IUser>();
+            var mock = DiscordHelpers.CreateUserMock(0, null);
             mock.Setup(o => o.AvatarId).Returns("asdf");
             var user = mock.Object;
 
@@ -36,7 +37,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void IsUser_Webhook_False()
         {
-            var mock = new Mock<IUser>();
+            var mock = DiscordHelpers.CreateUserMock(0, null);
 
             mock.Setup(o => o.IsBot).Returns(false);
             mock.Setup(o => o.IsWebhook).Returns(true);
@@ -47,7 +48,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void IsUser_Bot_False()
         {
-            var mock = new Mock<IUser>();
+            var mock = DiscordHelpers.CreateUserMock(0, null);
 
             mock.Setup(o => o.IsBot).Returns(true);
             mock.Setup(o => o.IsWebhook).Returns(false);
@@ -58,7 +59,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void IsUser_User_True()
         {
-            var mock = new Mock<IUser>();
+            var mock = DiscordHelpers.CreateUserMock(0, null);
 
             mock.Setup(o => o.IsBot).Returns(false);
             mock.Setup(o => o.IsWebhook).Returns(false);
@@ -69,7 +70,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetAvatarUri_Default()
         {
-            var mock = new Mock<IUser>();
+            var mock = DiscordHelpers.CreateUserMock(0, null);
 
             mock.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns((string)null);
             mock.Setup(o => o.GetDefaultAvatarUrl()).Returns("https://discord.com");
@@ -81,7 +82,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetAvatarUri_User()
         {
-            var mock = new Mock<IUser>();
+            var mock = DiscordHelpers.CreateUserMock(0, null);
 
             mock.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns("https://discord.com/user.jpg");
             mock.Setup(o => o.GetDefaultAvatarUrl()).Returns("https://discord.com");
@@ -93,7 +94,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void DownloadAvatar()
         {
-            var mock = new Mock<IUser>();
+            var mock = DiscordHelpers.CreateUserMock(0, null);
             mock.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns("https://www.google.cz/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png");
 
             mock.Object.DownloadAvatarAsync().ContinueWith(data =>
@@ -107,8 +108,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetDisplayName_GuildUser_WithoutNick()
         {
-            var mock = new Mock<IGuildUser>();
-            mock.Setup(o => o.Username).Returns("Test");
+            var mock = DiscordHelpers.CreateGuildUserMock(0, "Test");
             mock.Setup(o => o.Discriminator).Returns("1234");
 
             var result = mock.Object.GetDisplayName();
@@ -118,9 +118,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetDisplayName_GuildUser_WithNick()
         {
-            var mock = new Mock<IGuildUser>();
-            mock.Setup(o => o.Nickname).Returns("Testik");
-            mock.Setup(o => o.Username).Returns("Test");
+            var mock = DiscordHelpers.CreateGuildUserMock(0, "Test", "Testik");
             mock.Setup(o => o.Discriminator).Returns("1234");
 
             var result = mock.Object.GetDisplayName();
@@ -130,8 +128,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetDisplayName_BasicUser()
         {
-            var mock = new Mock<IUser>();
-            mock.Setup(o => o.Username).Returns("Test");
+            var mock = DiscordHelpers.CreateUserMock(0, "Test");
             mock.Setup(o => o.Discriminator).Returns("1234");
 
             var result = mock.Object.GetDisplayName();
@@ -141,8 +138,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetDisplayName_BasicUser_WithoutDiscriminator()
         {
-            var mock = new Mock<IUser>();
-            mock.Setup(o => o.Username).Returns("Test");
+            var mock = DiscordHelpers.CreateUserMock(0, "Test");
             mock.Setup(o => o.Discriminator).Returns("1234");
 
             var result = mock.Object.GetDisplayName(false);
@@ -152,8 +148,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetFullName_GuildUser_WithoutNick()
         {
-            var mock = new Mock<IGuildUser>();
-            mock.Setup(o => o.Username).Returns("Test");
+            var mock = DiscordHelpers.CreateGuildUserMock(0, "Test");
             mock.Setup(o => o.Discriminator).Returns("1234");
 
             var result = mock.Object.GetFullName();
@@ -163,9 +158,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetFullName_GuildUser_WithNick()
         {
-            var mock = new Mock<IGuildUser>();
-            mock.Setup(o => o.Nickname).Returns("Testik");
-            mock.Setup(o => o.Username).Returns("Test");
+            var mock = DiscordHelpers.CreateGuildUserMock(0, "Test", "Testik");
             mock.Setup(o => o.Discriminator).Returns("1234");
 
             var result = mock.Object.GetFullName();
@@ -175,8 +168,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void GetFullName_BasicUser()
         {
-            var mock = new Mock<IUser>();
-            mock.Setup(o => o.Username).Returns("Test");
+            var mock = DiscordHelpers.CreateUserMock(0, "Test");
             mock.Setup(o => o.Discriminator).Returns("1234");
 
             var result = mock.Object.GetFullName();
@@ -186,8 +178,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void CreateProfilePicFilename_DefaultAvatar()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
             user.Setup(o => o.AvatarId).Returns((string)null);
             user.Setup(o => o.Discriminator).Returns("1234");
 
@@ -200,8 +191,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void CreateProfilePicFilename_PngAvatar()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
             user.Setup(o => o.AvatarId).Returns("abcd");
             user.Setup(o => o.Discriminator).Returns("1234");
 
@@ -214,8 +204,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void CreateProfilePicFilename_GifAvatar()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
             user.Setup(o => o.AvatarId).Returns("a_abcd");
             user.Setup(o => o.Discriminator).Returns("1234");
 
@@ -231,7 +220,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
             var role = new Mock<IRole>();
             role.Setup(o => o.Id).Returns(12345);
 
-            var user = new Mock<IGuildUser>();
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, null);
             user.Setup(o => o.RoleIds).Returns(new List<ulong>() { 12345 });
             user.Setup(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask).Verifiable();
 
@@ -244,7 +233,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
             var role = new Mock<IRole>();
             role.Setup(o => o.Id).Returns(12345);
 
-            var user = new Mock<IGuildUser>();
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, null);
             user.Setup(o => o.RoleIds).Returns(new List<ulong>());
             user.Setup(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask).Verifiable();
 
@@ -257,7 +246,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
             var role = new Mock<IRole>();
             role.Setup(o => o.Id).Returns(12345);
 
-            var user = new Mock<IGuildUser>();
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, null);
             user.Setup(o => o.RoleIds).Returns(new List<ulong>() { 12345 });
             user.Setup(o => o.RemoveRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask).Verifiable();
 
@@ -270,7 +259,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
             var role = new Mock<IRole>();
             role.Setup(o => o.Id).Returns(12345);
 
-            var user = new Mock<IGuildUser>();
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, null);
             user.Setup(o => o.RoleIds).Returns(new List<ulong>());
             user.Setup(o => o.RemoveRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask).Verifiable();
 

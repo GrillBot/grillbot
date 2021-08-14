@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using GrillBot.App.Infrastructure.TypeReaders;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Linq;
@@ -13,9 +14,7 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders
         [TestMethod]
         public void Read_Me()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
-
+            var user = DiscordHelpers.CreateUserMock(12345, "");
             var context = new Mock<ICommandContext>();
             context.Setup(o => o.User).Returns(user.Object);
 

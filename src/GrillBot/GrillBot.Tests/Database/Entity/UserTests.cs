@@ -1,9 +1,8 @@
 ﻿using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GrillBot.Tests.Database.Entity
 {
@@ -61,6 +60,42 @@ namespace GrillBot.Tests.Database.Entity
             var user = new User();
 
             Assert.IsFalse(user.HaveFlags(UserFlags.BotAdmin | UserFlags.WebAdmin));
+        }
+
+        [TestMethod]
+        public void FromDiscord_User()
+        {
+            var dcUser = DiscordHelpers.CreateUserMock(12345, "User");
+
+            dcUser.Setup(o => o.IsBot).Returns(false);
+            dcUser.Setup(o => o.IsWebhook).Returns(false);
+
+            var user = User.FromDiscord(dcUser.Object);
+            Assert.IsFalse(user.HaveFlags(UserFlags.NotUser));
+        }
+
+        [TestMethod]
+        public void FromDiscord_Bot()
+        {
+            var dcUser = DiscordHelpers.CreateUserMock(12345, "User");
+
+            dcUser.Setup(o => o.IsBot).Returns(true);
+            dcUser.Setup(o => o.IsWebhook).Returns(false);
+
+            var user = User.FromDiscord(dcUser.Object);
+            Assert.IsTrue(user.HaveFlags(UserFlags.NotUser));
+        }
+
+        [TestMethod]
+        public void FromDiscord_Webhook()
+        {
+            var dcUser = DiscordHelpers.CreateUserMock(12345, "User");
+
+            dcUser.Setup(o => o.IsBot).Returns(false);
+            dcUser.Setup(o => o.IsWebhook).Returns(true);
+
+            var user = User.FromDiscord(dcUser.Object);
+            Assert.IsTrue(user.HaveFlags(UserFlags.NotUser));
         }
     }
 }

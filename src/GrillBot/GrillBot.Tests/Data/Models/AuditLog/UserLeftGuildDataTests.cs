@@ -1,7 +1,6 @@
-﻿using Discord;
-using GrillBot.Data.Models.AuditLog;
+﻿using GrillBot.Data.Models.AuditLog;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace GrillBot.Tests.Data.Models.AuditLog
 {
@@ -17,9 +16,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void Constructor()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(123);
-            user.Setup(o => o.Username).Returns("User");
+            var user = DiscordHelpers.CreateUserMock(123, "User");
 
             var data = new UserLeftGuildData(50, false, "No", user.Object);
 

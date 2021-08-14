@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Modules.Points;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
@@ -12,8 +13,7 @@ namespace GrillBot.Tests.App.Modules.Points
         [TestMethod]
         public void WithBoard()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Username).Returns("Test");
+            var user = DiscordHelpers.CreateUserMock(0, "Test");
             user.Setup(o => o.DiscriminatorValue).Returns(9982);
             user.Setup(o => o.Discriminator).Returns("9982");
             user.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns(null as string);
@@ -22,8 +22,7 @@ namespace GrillBot.Tests.App.Modules.Points
             var guild = new Mock<IGuild>();
             guild.Setup(o => o.Id).Returns(1234);
 
-            var someUser = new Mock<IGuildUser>();
-            someUser.Setup(o => o.Username).Returns("User");
+            var someUser = DiscordHelpers.CreateGuildUserMock(0, "User");
             someUser.Setup(o => o.Discriminator).Returns("1234");
 
             var data = new List<KeyValuePair<string, long>>()

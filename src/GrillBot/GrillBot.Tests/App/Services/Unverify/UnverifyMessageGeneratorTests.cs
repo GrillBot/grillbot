@@ -1,6 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.Unverify;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -15,9 +16,7 @@ namespace GrillBot.Tests.App.Services.Unverify
         {
             const string expected = "Dočasné odebrání přístupu pro uživatele **User** bylo dokončeno. Přístup bude navrácen **02. 07. 2021 15:30:25**. Důvod: Test";
 
-            var destination = new Mock<IGuildUser>();
-            destination.Setup(o => o.Nickname).Returns("User");
-
+            var destination = DiscordHelpers.CreateGuildUserMock(0, null, "User");
             var end = new DateTime(2021, 07, 02, 15, 30, 25);
             var profile = new UnverifyUserProfile(destination.Object, DateTime.MinValue, end, false) { Reason = "Test" };
 
@@ -33,8 +32,7 @@ namespace GrillBot.Tests.App.Services.Unverify
 
             const string expected = "Byly ti dočasně odebrány všechny práva na serveru **Guild**. Přístup ti bude navrácen **02. 07. 2021 15:30:25**. Důvod: Test";
 
-            var destination = new Mock<IGuildUser>();
-            destination.Setup(o => o.Nickname).Returns("User");
+            var destination = DiscordHelpers.CreateGuildUserMock(0, null, "User");
 
             var end = new DateTime(2021, 07, 02, 15, 30, 25);
             var profile = new UnverifyUserProfile(destination.Object, DateTime.MinValue, end, false) { Reason = "Test" };
@@ -59,8 +57,7 @@ namespace GrillBot.Tests.App.Services.Unverify
         [TestMethod]
         public void CreateUpdateChannelMessage()
         {
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Nickname).Returns("User");
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
 
             const string expected = "Reset konce odebrání přístupu pro uživatele **User** byl aktualizován.\nPřístup bude navrácen **02. 07. 2021 15:30:25**";
 
@@ -83,8 +80,7 @@ namespace GrillBot.Tests.App.Services.Unverify
         [TestMethod]
         public void CreateRemoveAccessManuallyToChannel()
         {
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Nickname).Returns("User");
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
 
             const string expected = "Předčasné vrácení přístupu pro uživatele **User** bylo dokončeno.";
             var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyToChannel(user.Object);
@@ -94,9 +90,7 @@ namespace GrillBot.Tests.App.Services.Unverify
         [TestMethod]
         public void CreateRemoveAccessManuallyFailed()
         {
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Nickname).Returns("User");
-            user.Setup(o => o.Username).Returns("U");
+            var user = DiscordHelpers.CreateGuildUserMock(0, "U", "User");
             user.Setup(o => o.Discriminator).Returns("1234");
             var exception = new Exception("Test");
 
@@ -108,8 +102,7 @@ namespace GrillBot.Tests.App.Services.Unverify
         [TestMethod]
         public void CreateRemoveAccessUnverifyNotFound()
         {
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Nickname).Returns("User");
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
 
             const string expected = "Předčasné vrácení přístupu pro uživatele **User** nelze provést. Unverify nebylo nalezeno.";
             var result = UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(user.Object);
@@ -119,8 +112,7 @@ namespace GrillBot.Tests.App.Services.Unverify
         [TestMethod]
         public void CreateUnverifyFailedToChannel()
         {
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Nickname).Returns("User");
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
 
             const string expected = "Dočasné odebrání přístupu pro uživatele **User** se nezdařilo. Uživatel byl obnoven do původního stavu.";
             var result = UnverifyMessageGenerator.CreateUnverifyFailedToChannel(user.Object);

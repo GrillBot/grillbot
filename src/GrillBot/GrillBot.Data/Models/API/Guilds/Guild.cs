@@ -1,5 +1,4 @@
 ﻿using Discord.WebSocket;
-using System;
 
 namespace GrillBot.Data.Models.API.Guilds
 {

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.Data.Models.AuditLog;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
@@ -18,8 +19,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void Constructor_GuildUsers()
         {
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Nickname).Returns("User");
+            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
             user.Setup(o => o.IsMuted).Returns(false);
             user.Setup(o => o.IsDeafened).Returns(true);
 

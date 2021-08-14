@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.Data.Models.AuditLog;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -11,9 +12,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void Constructor()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
-            user.Setup(o => o.Username).Returns("User");
+            var user = DiscordHelpers.CreateUserMock(12345, "User");
             user.Setup(o => o.Discriminator).Returns("0000");
 
             var auditUser = new AuditUserInfo(user.Object);
@@ -32,8 +31,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void CompareTo_False()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
 
             var auditUser = new AuditUserInfo(user.Object);
             Assert.AreEqual(1, auditUser.CompareTo(new AuditUserInfo()));
@@ -43,8 +41,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void CompareTo_True()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
 
             var auditUser = new AuditUserInfo(user.Object);
             Assert.AreEqual(0, auditUser.CompareTo(new AuditUserInfo(user.Object)));
@@ -53,8 +50,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void Equals_True()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
 
             var auditUser = new AuditUserInfo(user.Object);
             Assert.IsTrue(auditUser.Equals(new AuditUserInfo(user.Object)));
@@ -63,8 +59,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void Equals_False()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
 
             var auditUser = new AuditUserInfo(user.Object);
             Assert.IsFalse(auditUser.Equals(new AuditUserInfo()));
@@ -74,8 +69,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void Operators_True()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
 
             var auditUser = new AuditUserInfo(user.Object);
             var anotherUser = new AuditUserInfo(user.Object);
@@ -92,8 +86,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void Operators_False()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
 
             var auditUser = new AuditUserInfo(user.Object);
             var anotherUser = new AuditUserInfo(user.Object);
@@ -110,8 +103,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void GetHashCodeTest()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
+            var user = DiscordHelpers.CreateUserMock(12345, null);
 
             var auditUser = new AuditUserInfo(user.Object);
             Assert.IsTrue(auditUser.GetHashCode() != 0);
@@ -120,9 +112,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void ToStringTest_WithoutDiscriminator()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
-            user.Setup(o => o.Username).Returns("User");
+            var user = DiscordHelpers.CreateUserMock(12345, "User");
 
             var auditUser = new AuditUserInfo(user.Object);
             Assert.AreEqual("User", auditUser.ToString());
@@ -131,9 +121,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void ToStringTest_WithDiscriminator()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345);
-            user.Setup(o => o.Username).Returns("User");
+            var user = DiscordHelpers.CreateUserMock(12345, "User");
             user.Setup(o => o.Discriminator).Returns("0000");
 
             var auditUser = new AuditUserInfo(user.Object);

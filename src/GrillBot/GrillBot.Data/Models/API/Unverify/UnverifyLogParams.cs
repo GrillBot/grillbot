@@ -48,7 +48,7 @@ namespace GrillBot.Data.Models.API.Unverify
         public string SortBy { get; set; } = "CreatedAt";
 
         /// <summary>
-        /// Descending sorting. If false, ascending sort will be used.
+        /// Descending sort. If false, ascending sort will be used.
         /// </summary>
         public bool SortDesc { get; set; }
 

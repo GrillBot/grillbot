@@ -23,5 +23,12 @@ namespace GrillBot.Data.Models.API.Channels
             if (category != null)
                 Name += $" ({category.Name})";
         }
+
+        public GuildChannel(Database.Entity.GuildChannel entity)
+        {
+            Id = entity.ChannelId;
+            Name = entity.Name;
+            Type = entity.ChannelType;
+        }
     }
 }

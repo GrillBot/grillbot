@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Extensions.Discord;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -17,8 +18,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void IsCommand_Mention()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(370506820197810176);
+            var user = DiscordHelpers.CreateUserMock(370506820197810176, null);
 
             var msg = new Mock<IUserMessage>();
             msg.Setup(o => o.Content).Returns("<@370506820197810176> hello");
@@ -33,7 +33,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void IsCommand_NoLength()
         {
-            var user = new Mock<IUser>();
+            var user = DiscordHelpers.CreateUserMock(0, null);
             user.Setup(o => o.Mention).Returns("<@1234>");
 
             var msg = new Mock<IUserMessage>();
@@ -49,7 +49,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void IsCommand_StringPrefix()
         {
-            var user = new Mock<IUser>();
+            var user = DiscordHelpers.CreateUserMock(0, null);
             user.Setup(o => o.Mention).Returns("<@1234>");
 
             var msg = new Mock<IUserMessage>();
@@ -65,7 +65,7 @@ namespace GrillBot.Tests.App.Extensions.Discord
         [TestMethod]
         public void IsCommand_WithoutArgPos()
         {
-            var user = new Mock<IUser>();
+            var user = DiscordHelpers.CreateUserMock(0, null);
             user.Setup(o => o.Mention).Returns("<@1234>");
 
             var msg = new Mock<IUserMessage>();

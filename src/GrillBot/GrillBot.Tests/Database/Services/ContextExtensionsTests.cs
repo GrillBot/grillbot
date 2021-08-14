@@ -1,6 +1,7 @@
 ﻿using Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
+using GrillBot.Tests.TestHelper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -17,14 +18,6 @@ namespace GrillBot.Tests.Database.Services
         private const string UserId = "44897489486";
         private const string ChannelId = "45867615616";
 
-        private static GrillBotContext CreateContext()
-        {
-            var opt = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase("GrillBot");
-
-            return new TestingGrillBotContext(opt.Options);
-        }
-
         [TestMethod]
         public void InitGuildAsync_Initialized()
         {
@@ -33,7 +26,7 @@ namespace GrillBot.Tests.Database.Services
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
             guild.Setup(o => o.Roles).Returns(new List<IRole>());
 
-            using var context = CreateContext();
+            using var context = TestHelpers.CreateDbContext();
 
             context.Add(Guild.FromDiscord(guild.Object));
             context.SaveChanges();
@@ -49,7 +42,7 @@ namespace GrillBot.Tests.Database.Services
             guild.Setup(o => o.Name).Returns("A");
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
 
-            using var context = CreateContext();
+            using var context = TestHelpers.CreateDbContext();
 
             context.InitGuildAsync(guild.Object).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
         }
@@ -57,11 +50,8 @@ namespace GrillBot.Tests.Database.Services
         [TestMethod]
         public void InitUserAsync_Initialized()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(Convert.ToUInt64(UserId));
-            user.Setup(o => o.Username).Returns("U");
-
-            using var context = CreateContext();
+            var user = DiscordHelpers.CreateUserMock(Convert.ToUInt64(UserId), "U");
+            using var context = TestHelpers.CreateDbContext();
 
             context.Add(User.FromDiscord(user.Object));
             context.SaveChanges();
@@ -73,11 +63,9 @@ namespace GrillBot.Tests.Database.Services
         [TestMethod]
         public void InitUserAsync_NonInitialized()
         {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(Convert.ToUInt64(UserId));
-            user.Setup(o => o.Username).Returns("U");
+            var user = DiscordHelpers.CreateUserMock(Convert.ToUInt64(UserId), "U");
 
-            using var context = CreateContext();
+            using var context = TestHelpers.CreateDbContext();
 
             context.InitUserAsync(user.Object).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
         }
@@ -88,11 +76,9 @@ namespace GrillBot.Tests.Database.Services
             var guild = new Mock<IGuild>();
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
 
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Id).Returns(Convert.ToUInt64(UserId));
-            user.Setup(o => o.Nickname).Returns("GU");
+            var user = DiscordHelpers.CreateGuildUserMock(Convert.ToUInt64(UserId), "GU");
 
-            using var context = CreateContext();
+            using var context = TestHelpers.CreateDbContext();
 
             context.Add(GuildUser.FromDiscord(guild.Object, user.Object));
             context.SaveChanges();
@@ -107,11 +93,9 @@ namespace GrillBot.Tests.Database.Services
             var guild = new Mock<IGuild>();
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
 
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Id).Returns(Convert.ToUInt64(UserId));
-            user.Setup(o => o.Nickname).Returns("GU");
+            var user = DiscordHelpers.CreateGuildUserMock(Convert.ToUInt64(UserId), "GU");
 
-            using var context = CreateContext();
+            using var context = TestHelpers.CreateDbContext();
 
             context.InitGuildUserAsync(guild.Object, user.Object).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
         }
@@ -126,7 +110,7 @@ namespace GrillBot.Tests.Database.Services
             channel.Setup(o => o.Id).Returns(Convert.ToUInt64(ChannelId));
             channel.Setup(o => o.Name).Returns("CH");
 
-            using var context = CreateContext();
+            using var context = TestHelpers.CreateDbContext();
 
             context.Add(GuildChannel.FromDiscord(guild.Object, channel.Object, ChannelType.Category));
             context.SaveChanges();
@@ -146,7 +130,7 @@ namespace GrillBot.Tests.Database.Services
             channel.Setup(o => o.Id).Returns(Convert.ToUInt64(ChannelId));
             channel.Setup(o => o.Name).Returns("CH");
 
-            using var context = CreateContext();
+            using var context = TestHelpers.CreateDbContext();
 
             context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category)
                 .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));

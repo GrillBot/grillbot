@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Modules.Emotes;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -15,8 +16,7 @@ namespace GrillBot.Tests.App.Modules.Emotes
         {
             var data = new List<Tuple<string, int, long, DateTime, DateTime>>();
 
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Username).Returns("Test");
+            var user = DiscordHelpers.CreateUserMock(0, "Test");
             user.Setup(o => o.DiscriminatorValue).Returns(9982);
             user.Setup(o => o.Discriminator).Returns("9982");
             user.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns(null as string);
@@ -44,8 +44,7 @@ namespace GrillBot.Tests.App.Modules.Emotes
                 new Tuple<string, int, long, DateTime, DateTime>("<:rtzW:567039874452946961>", 10, 50, DateTime.MinValue, DateTime.MaxValue)
             };
 
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Username).Returns("Test");
+            var user = DiscordHelpers.CreateUserMock(0, "Test");
             user.Setup(o => o.DiscriminatorValue).Returns(9982);
             user.Setup(o => o.Discriminator).Returns("9982");
             user.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns(null as string);
@@ -74,16 +73,13 @@ namespace GrillBot.Tests.App.Modules.Emotes
         {
             var data = new List<Tuple<string, int, long, DateTime, DateTime>>();
 
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Username).Returns("Test");
+            var user = DiscordHelpers.CreateUserMock(0, "Test");
             user.Setup(o => o.DiscriminatorValue).Returns(9982);
             user.Setup(o => o.Discriminator).Returns("9982");
             user.Setup(o => o.GetAvatarUrl(It.IsAny<ImageFormat>(), It.IsAny<ushort>())).Returns(null as string);
             user.Setup(o => o.GetDefaultAvatarUrl()).Returns("http://discord.com/avatar.png");
 
-            var forUser = new Mock<IUser>();
-            forUser.Setup(o => o.Id).Returns(12345);
-
+            var forUser = DiscordHelpers.CreateUserMock(12345, "");
             var embed = new EmbedBuilder()
                 .WithEmoteList(data, user.Object, forUser.Object, false, false, "count", 0);
 

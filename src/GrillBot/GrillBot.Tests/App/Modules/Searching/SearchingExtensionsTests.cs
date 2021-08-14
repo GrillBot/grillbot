@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using GrillBot.App.Modules.Searching;
 using GrillBot.Data.Models;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
@@ -26,8 +27,7 @@ namespace GrillBot.Tests.App.Modules.Searching
             var guild = new Mock<IGuild>();
             guild.Setup(o => o.Id).Returns(123456);
 
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Username).Returns("User");
+            var user = DiscordHelpers.CreateUserMock(0, "User");
             user.Setup(o => o.Discriminator).Returns("0000");
             user.Setup(o => o.AvatarId).Returns((string)null);
             user.Setup(o => o.GetDefaultAvatarUrl()).Returns("http://discord.com/image.png");

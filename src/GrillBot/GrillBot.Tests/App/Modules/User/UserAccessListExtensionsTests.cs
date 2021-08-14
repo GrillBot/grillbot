@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Modules.User;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -13,11 +14,9 @@ namespace GrillBot.Tests.App.Modules.User
         [TestMethod]
         public void WithUserAccessList()
         {
-            var forUser = new Mock<IUser>();
-            forUser.Setup(o => o.Id).Returns(12345);
+            var forUser = DiscordHelpers.CreateUserMock(12345, null);
 
-            var user = new Mock<IGuildUser>();
-            user.Setup(o => o.Nickname).Returns("User");
+            var user = DiscordHelpers.CreateGuildUserMock(0, "User");
             user.Setup(o => o.GetDefaultAvatarUrl()).Returns("http://discord.com/image.png");
 
             var guild = new Mock<IGuild>();

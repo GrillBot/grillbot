@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.Data.Models.AuditLog;
+using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -20,9 +21,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         {
             var createdAt = new DateTime(2021, 7, 9, 0, 12, 25);
 
-            var author = new Mock<IUser>();
-            author.Setup(o => o.Username).Returns("Username");
-            author.Setup(o => o.Id).Returns(12345);
+            var author = DiscordHelpers.CreateUserMock(12345, "Username");
 
             var message = new Mock<IUserMessage>();
             message.Setup(o => o.Author).Returns(author.Object);

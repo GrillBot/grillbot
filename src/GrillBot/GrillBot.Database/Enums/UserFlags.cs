@@ -18,6 +18,11 @@ namespace GrillBot.Database.Enums
         /// <summary>
         /// User have access to webadmin.
         /// </summary>
-        WebAdmin = 2
+        WebAdmin = 2,
+
+        /// <summary>
+        /// User is not standard user.
+        /// </summary>
+        NotUser = 4
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GrillBot.Data.Models.API.Statistics
+namespace GrillBot.Data.Models.API.AuditLog
 {
     public class AuditLogStatItem
     {

@@ -55,7 +55,8 @@ namespace GrillBot.Database.Entity
             return new User()
             {
                 Id = user.Id.ToString(),
-                Username = user.Username
+                Username = user.Username,
+                Flags = (int)(user.IsBot || user.IsWebhook ? UserFlags.NotUser : UserFlags.None)
             };
         }
     }

@@ -45,6 +45,11 @@ namespace GrillBot.Data.Models.API.System
         /// </summary>
         public long UsedMemory { get; set; }
 
+        /// <summary>
+        /// Status of bot account.
+        /// </summary>
+        public UserStatus UserStatus { get; set; }
+
         public DiagnosticsInfo()
         {
             var process = Process.GetCurrentProcess();
@@ -60,6 +65,7 @@ namespace GrillBot.Data.Models.API.System
             InstanceType = environmentName;
             Latency = TimeSpan.FromMilliseconds(discord.Latency);
             ConnectionState = discord.ConnectionState;
+            UserStatus = discord.Status;
         }
     }
 }

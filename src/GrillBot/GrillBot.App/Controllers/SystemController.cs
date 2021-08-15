@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
@@ -69,7 +70,7 @@ namespace GrillBot.App.Controllers
                 { nameof(DbContext.AuditLogFiles), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.AuditLogFiles) },
                 { nameof(DbContext.Emotes), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Emotes) },
                 { nameof(DbContext.Reminders), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Reminders) },
-                { nameof(DbContext.SelfunverifyKeepables), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.SearchItems) },
+                { nameof(DbContext.SelfunverifyKeepables), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.SelfunverifyKeepables) },
                 { nameof(DbContext.ExplicitPermissions), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.ExplicitPermissions) }
             };
 
@@ -84,9 +85,7 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult<List<CommandStatisticItem>>> GetCommandStatusAsync()
         {
-            var query = DbContext.AuditLogs
-                .AsQueryable()
-                .AsNoTracking()
+            var query = DbContext.AuditLogs.AsNoTracking()
                 .Where(o => o.Type == AuditLogItemType.Command)
                 .Select(o => new { o.CreatedAt, o.Data });
 
@@ -108,6 +107,22 @@ namespace GrillBot.App.Controllers
             .ToList();
 
             return Ok(data);
+        }
+
+        /// <summary>
+        /// Changes bot account status and set bot's status activity.
+        /// </summary>
+        /// <response code="200">Success</response>
+        [HttpPut("status/{status}")]
+        [OpenApiOperation(nameof(SystemController) + "_" + nameof(ChangeBotStatusAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<ActionResult> ChangeBotStatusAsync(UserStatus status)
+        {
+            if (status == UserStatus.Offline) status = UserStatus.Invisible;
+            if (status == UserStatus.AFK) status = UserStatus.Idle;
+
+            await DiscordClient.SetStatusAsync(status);
+            return Ok();
         }
     }
 }

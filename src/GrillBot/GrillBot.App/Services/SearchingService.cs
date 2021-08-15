@@ -4,8 +4,11 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
+using GrillBot.Data.Models.API.Common;
+using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +53,7 @@ namespace GrillBot.App.Services
         {
             using var context = DbFactory.Create();
 
-            var search = await context.SearchItems.FirstOrDefaultAsync(o => o.Id == id);
+            var search = await context.SearchItems.AsQueryable().FirstOrDefaultAsync(o => o.Id == id);
             if (search == null) return;
 
             if (!admin && executor.Id != Convert.ToUInt64(search.UserId))
@@ -62,49 +65,83 @@ namespace GrillBot.App.Services
 
         public async Task<List<SearchingItem>> GetSearchListAsync(SocketGuild guild, ISocketMessageChannel channel, int page)
         {
-            await guild.DownloadUsersAsync();
+            var parameters = new GetSearchingListParams()
+            {
+                ChannelId = channel.Id.ToString(),
+                GuildId = guild.Id.ToString(),
+                Page = page,
+                PageSize = EmbedBuilder.MaxFieldCount,
+                SortDesc = false,
+                SortBy = "Id"
+            };
 
+            var data = await GetPaginatedListAsync(parameters);
+
+            return data.Data.ConvertAll(o => new SearchingItem()
+            {
+                JumpLink = o.JumpLink,
+                DisplayName = o.User.Username,
+                Id = o.Id,
+                Message = o.Message
+            });
+        }
+
+        public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters)
+        {
             using var context = DbFactory.Create();
 
-            var searches = context.SearchItems.AsQueryable()
-                .Where(o => o.GuildId == guild.Id.ToString() && o.ChannelId == channel.Id.ToString())
-                .ToList();
+            var query = context.SearchItems.AsNoTracking()
+                .Include(o => o.Channel)
+                .Include(o => o.Guild)
+                .Include(o => o.User)
+                .AsQueryable();
 
-            var results = new List<SearchingItem>();
-            foreach (var search in searches)
+            query = parameters.CreateQuery(query);
+            var data = await query.ToListAsync();
+
+            var results = new List<SearchingListItem>();
+            foreach (var item in data)
             {
-                var author = guild.GetUser(Convert.ToUInt64(search.UserId));
-                if (author == null)
+                var guild = DiscordClient.GetGuild(Convert.ToUInt64(item.GuildId));
+                if (guild == null)
                 {
-                    context.Remove(search);
+                    context.Remove(item);
                     continue;
                 }
 
-                var message = await MessageCache.GetMessageAsync(channel, Convert.ToUInt64(search.MessageId));
+                var channel = guild.GetTextChannel(Convert.ToUInt64(item.ChannelId));
+                if (channel == null)
+                {
+                    context.Remove(item);
+                    continue;
+                }
+
+                await guild.DownloadUsersAsync();
+                var author = guild.GetUser(Convert.ToUInt64(item.UserId));
+                if (author == null)
+                {
+                    context.Remove(item);
+                    continue;
+                }
+
+                var message = await MessageCache.GetMessageAsync(channel, Convert.ToUInt64(item.MessageId));
                 if (message == null)
                 {
-                    context.Remove(search);
+                    context.Remove(item);
                     continue;
                 }
 
                 var messageContent = GetMessageContent(message);
                 if (string.IsNullOrEmpty(messageContent))
                 {
-                    context.Remove(search);
+                    context.Remove(item);
                     continue;
                 }
 
-                results.Add(new SearchingItem()
-                {
-                    DisplayName = author.GetDisplayName(),
-                    Id = search.Id,
-                    JumpLink = message.GetJumpUrl(),
-                    Message = messageContent
-                });
+                results.Add(new SearchingListItem(item, messageContent, message.GetJumpUrl()));
             }
 
-            var skip = page * EmbedBuilder.MaxFieldCount;
-            return results.Skip(skip).Take(EmbedBuilder.MaxFieldCount).ToList();
+            return PaginatedResponse<SearchingListItem>.Create(results, parameters);
         }
 
         private string GetMessageContent(IMessage message)

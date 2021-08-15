@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,8 @@ namespace GrillBot.App.Infrastructure.Preconditions
     /// 1) Checks for contexts, if specified. If success, it will do next checks.
     /// 2) If command is trying execute in guild, it will check guild or channel permissions. If command is trying execute in DMs, it will check channel permissions. If success, checks ends with success.
     /// 3) If command is trying execute in guild and command is enabled for booster it will check if user is server booster (have premium role). If success, checks ends with success.
-    /// 4) If command not have disabled explicit permissions for users, checks ends with fail. Otherwise will check if user have explicit allow or deny permission.
+    /// 4) If command not have disabled explicit permissions for users, checks ends with fail.
+    /// 5) If user is bot admin, checks ends with success.
     /// </remarks>
     public class RequireUserPermissionAttribute : PreconditionAttribute
     {
@@ -89,12 +91,16 @@ namespace GrillBot.App.Infrastructure.Preconditions
             var explicitCheck = await CheckExplicitPermissionAsync(context, command, services);
             if (explicitCheck.IsSuccess) return PreconditionResult.FromSuccess();
 
+            var botAdminCheck = await CheckBotAdministratorPermsAsync(context, services);
+            if (botAdminCheck.IsSuccess) return PreconditionResult.FromSuccess();
+
             var checkedPerms = new[]
             {
                 guildPermsCheck.ErrorReason,
                 channelPermsCheck.ErrorReason,
                 boosterCheck.ErrorReason,
-                explicitCheck.ErrorReason
+                explicitCheck.ErrorReason,
+                botAdminCheck.ErrorReason
             }.Where(o => o != null && o != "-").ToList();
             var perms = string.Join("\n", checkedPerms.ConvertAll(o => $"> {o}"));
 
@@ -270,6 +276,20 @@ namespace GrillBot.App.Infrastructure.Preconditions
             }
 
             return PreconditionResult.FromError("Pro tento příkaz nemáš žádné explicitní povolení.");
+        }
+
+        private static async Task<PreconditionResult> CheckBotAdministratorPermsAsync(ICommandContext context, IServiceProvider services)
+        {
+            var dbFactory = services.GetRequiredService<GrillBotContextFactory>();
+            using var dbContext = dbFactory.Create();
+
+            var isBotAdmin = await dbContext.Users.AsNoTracking()
+                .AnyAsync(o => o.Id == context.User.Id.ToString() && (o.Flags & (int)UserFlags.BotAdmin) != 0);
+
+            if (!isBotAdmin)
+                return PreconditionResult.FromError("Nejsi administrátor bota.");
+
+            return PreconditionResult.FromSuccess();
         }
     }
 }

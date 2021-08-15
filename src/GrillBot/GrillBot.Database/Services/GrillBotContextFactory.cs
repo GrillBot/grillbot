@@ -6,14 +6,14 @@ namespace GrillBot.Database.Services
 {
     public class GrillBotContextFactory
     {
-        private IServiceProvider ServiceProvider { get; }
+        protected IServiceProvider ServiceProvider { get; }
 
         public GrillBotContextFactory(IServiceProvider provider)
         {
             ServiceProvider = provider;
         }
 
-        public GrillBotContext Create()
+        public virtual GrillBotContext Create()
         {
             var options = ServiceProvider.GetRequiredService<DbContextOptions>();
             return new GrillBotContext(options);

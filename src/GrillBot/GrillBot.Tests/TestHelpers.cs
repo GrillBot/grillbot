@@ -63,10 +63,12 @@ namespace GrillBot.Tests
 
         public static TestingGrillBotContext CreateDbContext()
         {
-            var opt = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase("GrillBot");
+            return new TestingGrillBotContext(CreateDbOptionsBuilder().Options);
+        }
 
-            return new TestingGrillBotContext(opt.Options);
+        public static DbContextOptionsBuilder CreateDbOptionsBuilder()
+        {
+            return new DbContextOptionsBuilder().UseInMemoryDatabase("GrillBot");
         }
     }
 }

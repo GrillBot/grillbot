@@ -1,4 +1,6 @@
 ﻿using Discord.WebSocket;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Services;
@@ -46,6 +48,35 @@ namespace GrillBot.App.Controllers
             query = parameters.CreateQuery(query);
             var result = await PaginatedResponse<UserListItem>.CreateAsync(query, parameters, entity => new(entity, DiscordClient));
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Gets detailed information about user.
+        /// </summary>
+        /// <response code="200">Success</response>
+        /// <response code="404">User not found in database.</response>
+        [HttpGet("{id}")]
+        [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetUserDetailAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id)
+        {
+            var query = DbContext.Users.AsNoTracking()
+                .Include(o => o.Guilds).ThenInclude(o => o.Guild)
+                .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite)
+                .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites)
+                .Include(o => o.Guilds).ThenInclude(o => o.Channels).ThenInclude(o => o.Channel)
+                .Include(o => o.UsedEmotes)
+                .AsSplitQuery();
+
+            var entity = await query.FirstOrDefaultAsync(o => o.Id == id.ToString());
+
+            if (entity == null)
+                return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
+
+            var user = await DiscordClient.FindUserAsync(id);
+            var detail = new UserDetail(entity, user);
+            return Ok(detail);
         }
     }
 }

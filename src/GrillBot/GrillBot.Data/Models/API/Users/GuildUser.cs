@@ -8,7 +8,7 @@
         /// <summary>
         /// Used invite
         /// </summary>
-        public Invite UsedInvite { get; set; }
+        public Invites.Invite UsedInvite { get; set; }
 
         /// <summary>
         /// Points count
@@ -34,7 +34,7 @@
 
         public GuildUser(Database.Entity.GuildUser guildUser) : base(guildUser.User)
         {
-            UsedInvite = guildUser.UsedInvite != null ? new Invite(guildUser.UsedInvite) : null;
+            UsedInvite = guildUser.UsedInvite != null ? new Invites.Invite(guildUser.UsedInvite) : null;
             Points = guildUser.Points;
             GivenReactions = guildUser.GivenReactions;
             ObtainedReactions = guildUser.ObtainedReactions;

@@ -47,9 +47,12 @@ namespace GrillBot.Database.Entity
         [MinLength(2)]
         public string Nickname { get; set; }
 
+        public ISet<GuildUserChannel> Channels { get; set; }
+
         public GuildUser()
         {
             CreatedInvites = new HashSet<Invite>();
+            Channels = new HashSet<GuildUserChannel>();
         }
 
         public static GuildUser FromDiscord(IGuild guild, IGuildUser user)

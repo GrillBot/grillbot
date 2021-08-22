@@ -1,20 +1,9 @@
 ﻿using GrillBot.Data.Models.API.Users;
-using System;
 
-namespace GrillBot.Data.Models.API
+namespace GrillBot.Data.Models.API.Invites
 {
-    public class Invite
+    public class Invite : InviteBase
     {
-        /// <summary>
-        /// Invite code
-        /// </summary>
-        public string Code { get; set; }
-
-        /// <summary>
-        /// Datetime when invite was created.
-        /// </summary>
-        public DateTime? CreatedAt { get; set; }
-
         /// <summary>
         /// User that created the invite.
         /// </summary>
@@ -27,10 +16,8 @@ namespace GrillBot.Data.Models.API
 
         public Invite() { }
 
-        public Invite(Database.Entity.Invite invite)
+        public Invite(Database.Entity.Invite invite) : base(invite)
         {
-            Code = invite.Code;
-            CreatedAt = invite.CreatedAt;
             Creator = new User(invite.Creator.User);
             UsedUsersCount = invite.UsedUsers.Count;
         }

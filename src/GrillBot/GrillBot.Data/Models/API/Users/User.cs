@@ -1,4 +1,5 @@
 ﻿using Discord;
+using GrillBot.Database.Enums;
 
 namespace GrillBot.Data.Models.API.Users
 {
@@ -48,6 +49,7 @@ namespace GrillBot.Data.Models.API.Users
         {
             Id = user.Id;
             Username = user.Username;
+            IsBot = user.HaveFlags(UserFlags.NotUser);
         }
     }
 }

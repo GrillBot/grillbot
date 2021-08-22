@@ -135,6 +135,9 @@ namespace GrillBot.App.Services.Sync
 
             dbUser.Nickname = user.Nickname;
             dbUser.User.Username = user.Username;
+
+            if (user.IsBot)
+                dbUser.User.Flags |= (int)UserFlags.NotUser;
         }
 
         private static async Task SyncChannelAsync(GrillBotContext context, SocketTextChannel channel)

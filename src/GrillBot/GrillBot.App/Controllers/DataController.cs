@@ -1,5 +1,7 @@
-﻿using Discord.WebSocket;
+﻿using Discord.Commands;
+using Discord.WebSocket;
 using GrillBot.Data.Models.API.Channels;
+using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +20,13 @@ namespace GrillBot.App.Controllers
     {
         private DiscordSocketClient DiscordClient { get; }
         private GrillBotContext DbContext { get; }
+        private CommandService CommandService { get; }
 
-        public DataController(DiscordSocketClient discordClient, GrillBotContext dbContext)
+        public DataController(DiscordSocketClient discordClient, GrillBotContext dbContext, CommandService commandService)
         {
             DiscordClient = discordClient;
             DbContext = dbContext;
+            CommandService = commandService;
         }
 
         [HttpGet("guilds")]
@@ -92,6 +96,42 @@ namespace GrillBot.App.Controllers
                 .ToDictionary(o => o.Id.ToString(), o => o.Name);
 
             return Ok(roles);
+        }
+
+        /// <summary>
+        /// Get non-paginated commands list
+        /// </summary>
+        /// <response code="200">Success</response>
+        [HttpGet("commands")]
+        [OpenApiOperation(nameof(DataController) + "_" + nameof(GetCommandsList))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public ActionResult<List<string>> GetCommandsList()
+        {
+            var commands = CommandService.Commands
+                .Select(o => o.Aliases[0]?.Trim())
+                .OrderBy(o => o)
+                .Distinct()
+                .ToList();
+
+            return Ok(commands);
+        }
+
+        /// <summary>
+        /// Gets non-paginated list of users.
+        /// </summary>
+        /// <response code="200">Success</response>
+        [HttpGet("users")]
+        [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableUsersAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync()
+        {
+            var users = await DbContext.Users.AsNoTracking()
+                .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
+                .Select(o => new { o.Id, o.Username })
+                .OrderBy(o => o.Username)
+                .ToDictionaryAsync(o => o.Id, o => o.Username);
+
+            return Ok(users);
         }
     }
 }

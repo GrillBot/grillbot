@@ -46,5 +46,12 @@ namespace GrillBot.App.Extensions.Discord
 
             return await client.Rest.GetUserAsync(id);
         }
+
+        static public IRole FindRole(this BaseSocketClient client, ulong id)
+        {
+            return client.Guilds.SelectMany(o => o.Roles)
+                .Where(o => !o.IsEveryone)
+                .FirstOrDefault(o => o.Id == id);
+        }
     }
 }

@@ -4,9 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 
 namespace GrillBot.Database.Entity
 {
+    [DebuggerDisplay("{Username} ({Id})")]
     public class User
     {
         [Key]

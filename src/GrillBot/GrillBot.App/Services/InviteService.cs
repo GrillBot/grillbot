@@ -17,7 +17,7 @@ namespace GrillBot.App.Services
 {
     public class InviteService : ServiceBase
     {
-        private ConcurrentBag<InviteMetadata> MetadataCache { get; }
+        public ConcurrentBag<InviteMetadata> MetadataCache { get; }
 
         public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory) : base(discordClient, dbFactory)
         {

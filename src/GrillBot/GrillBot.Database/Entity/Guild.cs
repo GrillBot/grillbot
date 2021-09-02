@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Linq;
 
 namespace GrillBot.Database.Entity
 {
+    [DebuggerDisplay("{Name} ({Id})")]
     public class Guild
     {
         [Key]

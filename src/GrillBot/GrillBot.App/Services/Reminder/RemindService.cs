@@ -4,7 +4,9 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.Data;
+using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -121,7 +123,7 @@ namespace GrillBot.App.Services.Reminder
             var remind = await context.Reminders.AsQueryable()
                 .FirstOrDefaultAsync(o => o.Id == id);
 
-            if (remind == null)
+            if (remind == null || remind.At <= DateTime.Now)
                 return;
 
             if (remind.FromUserId != user.Id.ToString() && remind.ToUserId != user.Id.ToString())
@@ -129,27 +131,59 @@ namespace GrillBot.App.Services.Reminder
 
             ulong messageId = 0;
             if (notify)
-            {
-                var embed = (await CreateRemindEmbedAsync(remind, true))?.Build();
-
-                if (embed != null)
-                {
-                    var toUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(remind.ToUserId));
-
-                    try
-                    {
-                        if (toUser != null)
-                            messageId = (await toUser.SendMessageAsync(embed: embed)).Id;
-                    }
-                    catch (HttpException ex) when (ex.DiscordCode == 50007)
-                    {
-                        // User have disabled DMs.
-                    }
-                }
-            }
+                messageId = await SendNotificationMessageAsync(remind, true);
 
             remind.RemindMessageId = messageId.ToString();
             await context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Service cancellation of remind.
+        /// </summary>
+        public async Task ServiceCancellationAsync(long id, IUser user, bool notify = false)
+        {
+            using var context = DbFactory.Create();
+
+            var remind = await context.Reminders.AsQueryable()
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (remind == null) throw new NotFoundException("Požadované upozornění neexistuje.");
+            if (remind.At <= DateTime.Now || !string.IsNullOrEmpty(remind.OriginalMessageId)) throw new InvalidOperationException("Nelze zrušit již zrušené oznámení.");
+
+            ulong messageId = 0;
+            if (notify)
+                messageId = await SendNotificationMessageAsync(remind, true);
+
+            await context.InitUserAsync(user);
+            var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, user,
+                $"{user.GetDisplayName()} stornoval upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim());
+            await context.AddAsync(logItem);
+
+            remind.RemindMessageId = messageId.ToString();
+            await context.SaveChangesAsync();
+        }
+
+        private async Task<ulong> SendNotificationMessageAsync(RemindMessage remind, bool force = false)
+        {
+            var embed = (await CreateRemindEmbedAsync(remind, force))?.Build();
+
+            if (embed != null)
+            {
+                var toUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(remind.ToUserId));
+
+                try
+                {
+                    if (toUser != null)
+                        return (await toUser.SendMessageAsync(embed: embed)).Id;
+                }
+                catch (HttpException ex) when (ex.DiscordCode == 50007)
+                {
+                    // User have disabled DMs.
+                    return 0;
+                }
+            }
+
+            return 0;
         }
 
         private async Task<EmbedBuilder> CreateRemindEmbedAsync(RemindMessage remind, bool force = false)

@@ -54,7 +54,7 @@ namespace GrillBot.Database.Entity
                 CreatedAt = DateTime.Now,
                 Data = data,
                 DiscordAuditLogItemId = discordAuditLogItemId?.ToString(),
-                GuildId = guild.Id.ToString(),
+                GuildId = guild?.Id.ToString(),
                 ProcessedUserId = processedUser?.Id.ToString(),
                 Type = type
             };

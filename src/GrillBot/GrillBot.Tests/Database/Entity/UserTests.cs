@@ -3,6 +3,7 @@ using GrillBot.Database.Enums;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Runtime;
 
 namespace GrillBot.Tests.Database.Entity
 {
@@ -96,6 +97,44 @@ namespace GrillBot.Tests.Database.Entity
 
             var user = User.FromDiscord(dcUser.Object);
             Assert.IsTrue(user.HaveFlags(UserFlags.NotUser));
+        }
+
+        [TestMethod]
+        public void Entity_Properties_Default()
+        {
+            TestHelpers.CheckDefaultPropertyValues(new User(), (defaultValue, value, propertyName) =>
+            {
+                switch (propertyName)
+                {
+                    case "Guilds":
+                    case "UsedEmotes":
+                    case "IncomingReminders":
+                    case "OutgoingReminders":
+                    case "Channels":
+                    case "SearchItems":
+                        Assert.AreNotEqual(defaultValue, value);
+                        break;
+                    default:
+                        Assert.AreEqual(defaultValue, value);
+                        break;
+                }
+            });
+        }
+
+        [TestMethod]
+        public void Entity_Properties_Filled()
+        {
+            var user = new User()
+            {
+                ApiToken = Guid.NewGuid(),
+                Birthday = new DateTime(2021, 09, 09),
+                Flags = 1,
+                Id = "ABCD",
+                Note = "Note",
+                Username = "Username"
+            };
+
+            TestHelpers.CheckDefaultPropertyValues(user, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
         }
     }
 }

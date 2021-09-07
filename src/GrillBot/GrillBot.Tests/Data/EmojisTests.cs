@@ -41,5 +41,32 @@ namespace GrillBot.Tests.Data
                 }
             }
         }
+
+        [TestMethod]
+        public void EmojiToIntMap()
+        {
+            var keys = Emojis.EmojiToIntMap.Keys.ToArray();
+            var values = Emojis.EmojiToIntMap.Values.ToArray();
+
+            for (int i = 0; i < keys.Length; i++)
+            {
+                Assert.AreEqual(values[i], Emojis.EmojiToIntMap[keys[i]]);
+            }
+        }
+
+        [TestMethod]
+        public void PaginationEmojis()
+        {
+            foreach (var emoji in Emojis.PaginationEmojis)
+            {
+                Assert.IsNotNull(emoji);
+            }
+        }
+
+        [TestMethod]
+        public void AnotherEmojis()
+        {
+            Assert.IsNotNull(Emojis.PersonRisingHand);
+        }
     }
 }

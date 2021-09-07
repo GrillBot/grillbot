@@ -21,5 +21,26 @@ namespace GrillBot.Tests.Database.Entity
 
             Assert.AreEqual("Image", metadata.FilenameWithoutExtension);
         }
+
+        [TestMethod]
+        public void Entity_Properties_Default()
+        {
+            TestHelpers.CheckDefaultPropertyValues(new AuditLogFileMeta(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+        }
+
+        [TestMethod]
+        public void Entity_Properties_Filled()
+        {
+            var meta = new AuditLogFileMeta()
+            {
+                AuditLogItem = new(),
+                AuditLogItemId = 12345,
+                Filename = "File",
+                Id = 12345,
+                Size = 13156486
+            };
+
+            TestHelpers.CheckDefaultPropertyValues(meta, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+        }
     }
 }

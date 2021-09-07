@@ -28,5 +28,45 @@ namespace GrillBot.Tests.Data.Models
 
             Assert.AreEqual(expected, configuration.Options);
         }
+
+        [TestMethod]
+        public void DefaultValues()
+        {
+            TestHelpers.CheckDefaultPropertyValues(new AutoReplyConfiguration(), (defaultValue, value, propertyName) =>
+            {
+                switch (propertyName)
+                {
+                    case "Options":
+                        break;
+                    default:
+                        Assert.AreEqual(defaultValue, value);
+                        break;
+                }
+            });
+        }
+
+        [TestMethod]
+        public void FilledValues()
+        {
+            var configuration = new AutoReplyConfiguration()
+            {
+                CaseSensitive = true,
+                Disabled = true,
+                Reply = "Reply",
+                Template = "Template"
+            };
+
+            TestHelpers.CheckDefaultPropertyValues(configuration, (defaultValue, value, propertyName) =>
+            {
+                switch (propertyName)
+                {
+                    case "Options":
+                        break;
+                    default:
+                        Assert.AreNotEqual(defaultValue, value);
+                        break;
+                }
+            });
+        }
     }
 }

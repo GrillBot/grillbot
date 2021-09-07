@@ -18,7 +18,7 @@ namespace GrillBot.Database.Entity
         public string GuildId { get; set; }
 
         [ForeignKey(nameof(GuildId))]
-        public Guild Guild { get; }
+        public Guild Guild { get; set; }
 
         [Required]
         [StringLength(100)]

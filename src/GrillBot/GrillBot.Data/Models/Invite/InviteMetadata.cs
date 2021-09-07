@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using System;
 
 namespace GrillBot.Data.Models.Invite
@@ -18,16 +17,6 @@ namespace GrillBot.Data.Models.Invite
             Code = code;
             Uses = uses ?? 0;
             GuildId = guild.Id;
-        }
-
-        static public InviteMetadata FromEntity(Database.Entity.Invite invite, SocketGuild guild)
-        {
-            return new InviteMetadata(invite.Code, invite.UsedUsers.Count, guild)
-            {
-                IsVanity = guild.VanityURLCode == invite.Code,
-                CreatorId = Convert.ToUInt64(invite.CreatorId),
-                CreatedAt = invite.CreatedAt
-            };
         }
 
         static public InviteMetadata FromDiscord(IInviteMetadata metadata)

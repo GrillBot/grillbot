@@ -24,5 +24,39 @@ namespace GrillBot.Tests.Database.Entity
             var channel = new GuildChannel();
             Assert.IsFalse(channel.HasFlags(GuildChannelFlags.IgnoreCache));
         }
+
+        [TestMethod]
+        public void Entity_Properties_Default()
+        {
+            TestHelpers.CheckDefaultPropertyValues(new GuildChannel(), (defaultValue, value, propertyName) =>
+            {
+                switch (propertyName)
+                {
+                    case "SearchItems":
+                    case "Channels":
+                        Assert.AreNotEqual(defaultValue, value);
+                        break;
+                    default:
+                        Assert.AreEqual(defaultValue, value);
+                        break;
+                }
+            });
+        }
+
+        [TestMethod]
+        public void Entity_Properties_Filled()
+        {
+            var channel = new GuildChannel()
+            {
+                ChannelId = "Channel",
+                ChannelType = Discord.ChannelType.Category,
+                Flags = 50,
+                Guild = new(),
+                GuildId = "Guild",
+                Name = "Name",
+            };
+
+            TestHelpers.CheckDefaultPropertyValues(channel, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+        }
     }
 }

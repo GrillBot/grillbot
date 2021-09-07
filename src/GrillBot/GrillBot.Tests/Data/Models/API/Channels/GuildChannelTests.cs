@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.API.Channels
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new GuildChannel(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new Channel(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
         }
     }
 }

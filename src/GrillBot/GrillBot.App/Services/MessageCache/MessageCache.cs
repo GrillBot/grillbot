@@ -124,5 +124,13 @@ namespace GrillBot.App.Services.MessageCache
 
             message.Metadata.State = CachedMessageState.NeedsUpdate;
         }
+
+        public int ClearChannel(ulong channelId)
+        {
+            var toClear = Cache.Where(o => o.Value.Metadata.State != CachedMessageState.ToBeDeleted && o.Value.Message.Channel.Id == channelId).ToList();
+            toClear.ForEach(o => TryRemove(o.Key, out var _));
+
+            return toClear.Count;
+        }
     }
 }

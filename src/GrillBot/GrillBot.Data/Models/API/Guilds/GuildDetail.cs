@@ -54,7 +54,7 @@ namespace GrillBot.Data.Models.API.Guilds
         /// <summary>
         /// Admin channel.
         /// </summary>
-        public GuildChannel AdminChannel { get; set; }
+        public Channel AdminChannel { get; set; }
 
         public GuildDetail() { }
 
@@ -77,7 +77,7 @@ namespace GrillBot.Data.Models.API.Guilds
             if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
             {
                 var adminChannel = guild.GetChannel(Convert.ToUInt64(dbGuild.AdminChannelId));
-                AdminChannel = adminChannel == null ? null : new GuildChannel(adminChannel);
+                AdminChannel = adminChannel == null ? null : new Channel(adminChannel);
             }
 
             if (!string.IsNullOrEmpty(dbGuild.BoosterRoleId))

@@ -46,7 +46,7 @@ namespace GrillBot.Data.Models.API.AuditLog
         /// <summary>
         /// Channel where was processed operation.
         /// </summary>
-        public GuildChannel Channel { get; set; }
+        public Channel Channel { get; set; }
 
         /// <summary>
         /// Files attached to this log item.

@@ -25,7 +25,7 @@ namespace GrillBot.Data.Models.API.Searching
         /// <summary>
         /// Channel where was created search.
         /// </summary>
-        public GuildChannel Channel { get; set; }
+        public Channel Channel { get; set; }
 
         /// <summary>
         /// Message content
@@ -44,7 +44,7 @@ namespace GrillBot.Data.Models.API.Searching
             Id = entity.Id;
             User = new User(entity.User);
             Guild = new Guild(entity.Guild);
-            Channel = new GuildChannel(entity.Channel);
+            Channel = new Channel(entity.Channel);
             Message = message.Trim();
             JumpLink = jumpLink;
         }

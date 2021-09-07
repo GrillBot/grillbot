@@ -53,14 +53,14 @@ namespace GrillBot.App.Controllers
         {
             var guild = DiscordClient.GetGuild(guildId);
             var channels = guild.Channels
-                .Select(o => new GuildChannel(o))
+                .Select(o => new Channel(o))
                 .Where(o => o.Type != null)
                 .ToList();
 
             var dbChannelsQuery = DbContext.Channels.AsNoTracking()
                 .Where(o => o.GuildId == guildId.ToString())
                 .OrderBy(o => o.Name)
-                .Select(o => new GuildChannel()
+                .Select(o => new Channel()
                 {
                     Type = o.ChannelType,
                     Id = o.ChannelId,

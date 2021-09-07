@@ -8,6 +8,8 @@ namespace GrillBot.App.Infrastructure.TypeReaders
 {
     public class MessageTypeReader : TypeReader
     {
+        public static Regex DiscordUriRegex { get; } = new Regex(@"https:\/\/discord\.com\/channels\/(@me|\d*)\/(\d+)\/(\d+)");
+
         public override async Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
         {
             var ogTypeReader = new MessageTypeReader<IMessage>();
@@ -19,7 +21,7 @@ namespace GrillBot.App.Infrastructure.TypeReaders
             if (!Uri.IsWellFormedUriString(input, UriKind.Absolute))
                 return TypeReaderResult.FromError(CommandError.ParseFailed, "Zadaná zpráva není ani identifikátor, ani odkaz.");
 
-            var uriMatch = Regex.Match(input, @"https:\/\/discord\.com\/channels\/(@me|\d*)\/(\d+)\/(\d+)");
+            var uriMatch = DiscordUriRegex.Match(input);
             if (!uriMatch.Success)
                 return TypeReaderResult.FromError(CommandError.ParseFailed, "Zadaný odkaz není ve správném formátu odkazující na Discord zprávu.");
 

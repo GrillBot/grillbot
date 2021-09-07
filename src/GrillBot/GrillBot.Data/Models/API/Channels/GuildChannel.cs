@@ -1,34 +1,22 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Helpers;
+﻿using Discord.WebSocket;
+using GrillBot.Data.Models.API.Guilds;
 
 namespace GrillBot.Data.Models.API.Channels
 {
-    public class GuildChannel
+    public class GuildChannel : Channel
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public ChannelType? Type { get; set; }
+        public Guild Guild { get; set; }
 
         public GuildChannel() { }
 
-        public GuildChannel(SocketGuildChannel channel)
+        public GuildChannel(Database.Entity.GuildChannel channel) : base(channel)
         {
-            Id = channel.Id.ToString();
-            Name = channel.Name;
-            Type = DiscordHelper.GetChannelType(channel);
-
-            var category = channel.GetCategory();
-            if (category != null)
-                Name += $" ({category.Name})";
+            Guild = channel.Guild == null ? null : new(channel.Guild);
         }
 
-        public GuildChannel(Database.Entity.GuildChannel entity)
+        public GuildChannel(SocketGuildChannel channel) : base(channel)
         {
-            Id = entity.ChannelId;
-            Name = entity.Name;
-            Type = entity.ChannelType;
+            Guild = channel.Guild == null ? null : new(channel.Guild);
         }
     }
 }

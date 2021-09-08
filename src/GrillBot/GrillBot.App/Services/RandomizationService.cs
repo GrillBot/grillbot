@@ -24,7 +24,6 @@ namespace GrillBot.App.Services
         public int Next(string key, int maxValue) => GetOrCreateGenerator(key).Next(maxValue);
         public int Next(string key, int minValue, int maxValue) => GetOrCreateGenerator(key).Next(minValue, maxValue);
         public void NextBytes(string key, byte[] buffer) => GetOrCreateGenerator(key).NextBytes(buffer);
-        public void NextBytes(string key, Span<byte> buffer) => GetOrCreateGenerator(key).NextBytes(buffer);
         public double NextDouble(string key) => GetOrCreateGenerator(key).NextDouble();
     }
 }

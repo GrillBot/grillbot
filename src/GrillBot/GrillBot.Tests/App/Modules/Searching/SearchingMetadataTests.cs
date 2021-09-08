@@ -48,5 +48,12 @@ namespace GrillBot.Tests.App.Modules.Searching
             Assert.AreEqual((ulong)50, metadata.ChannelId);
             Assert.AreEqual((ulong)100, metadata.GuildId);
         }
+
+        [TestMethod]
+        public void Reset()
+        {
+            new SearchingMetadata().Reset();
+            Assert.IsTrue(true);
+        }
     }
 }

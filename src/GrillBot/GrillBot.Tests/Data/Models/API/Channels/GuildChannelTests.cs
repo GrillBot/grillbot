@@ -7,9 +7,11 @@ namespace GrillBot.Tests.Data.Models.API.Channels
     public class GuildChannelTests
     {
         [TestMethod]
-        public void EmptyConstructor()
+        public void Constructor_WithoutGuild()
         {
-            TestHelpers.CheckDefaultPropertyValues(new Channel(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            var entity = new GrillBot.Database.Entity.GuildChannel();
+            var channel = new GuildChannel(entity);
+            Assert.IsNull(channel.Guild);
         }
     }
 }

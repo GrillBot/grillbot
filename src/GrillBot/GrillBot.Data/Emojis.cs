@@ -11,60 +11,60 @@ namespace GrillBot.Data
         public static IEmote MoveToNext => new Emoji("▶️");
         public static IEmote MoveToLast => new Emoji("⏭️");
         public static IEmote Ok => new Emoji("✅");
-        public static Emoji Nok => new Emoji("❌");
-        public static Emoji LetterA => new Emoji("🇦");
-        public static Emoji LetterB => new Emoji("🇧");
-        public static Emoji LetterC => new Emoji("🇨");
-        public static Emoji LetterD => new Emoji("🇩");
-        public static Emoji LetterE => new Emoji("🇪");
-        public static Emoji LetterF => new Emoji("🇫");
-        public static Emoji LetterG => new Emoji("🇬");
-        public static Emoji LetterH => new Emoji("🇭");
-        public static Emoji LetterI => new Emoji("🇮");
-        public static Emoji LetterJ => new Emoji("🇯");
-        public static Emoji LetterK => new Emoji("🇰");
-        public static Emoji LetterL => new Emoji("🇱");
-        public static Emoji LetterM => new Emoji("🇲");
-        public static Emoji LetterN => new Emoji("🇳");
-        public static Emoji LetterO => new Emoji("🇴");
-        public static Emoji LetterP => new Emoji("🇵");
-        public static Emoji LetterQ => new Emoji("🇶");
-        public static Emoji LetterR => new Emoji("🇷");
-        public static Emoji LetterS => new Emoji("🇸");
-        public static Emoji LetterT => new Emoji("🇹");
-        public static Emoji LetterU => new Emoji("🇺");
-        public static Emoji LetterV => new Emoji("🇻");
-        public static Emoji LetterW => new Emoji("🇼");
-        public static Emoji LetterX => new Emoji("🇽");
-        public static Emoji LetterY => new Emoji("🇾");
-        public static Emoji LetterZ => new Emoji("🇿");
-        public static Emoji SignA => new Emoji("🅰");
-        public static Emoji SignB => new Emoji("🅱");
-        public static Emoji SignO => new Emoji("🅾");
-        public static Emoji One => new Emoji("1️⃣");
-        public static Emoji Two => new Emoji("2️⃣");
-        public static Emoji Three => new Emoji("3️⃣");
-        public static Emoji Four => new Emoji("4️⃣");
-        public static Emoji Five => new Emoji("5️⃣");
-        public static Emoji Six => new Emoji("6️⃣");
-        public static Emoji Seven => new Emoji("7️⃣");
-        public static Emoji Eight => new Emoji("8️⃣");
-        public static Emoji Nine => new Emoji("9️⃣");
-        public static Emoji PersonRisingHand => new Emoji("🙋");
+        public static Emoji Nok => new("❌");
+        public static Emoji LetterA => new("🇦");
+        public static Emoji LetterB => new("🇧");
+        public static Emoji LetterC => new("🇨");
+        public static Emoji LetterD => new("🇩");
+        public static Emoji LetterE => new("🇪");
+        public static Emoji LetterF => new("🇫");
+        public static Emoji LetterG => new("🇬");
+        public static Emoji LetterH => new("🇭");
+        public static Emoji LetterI => new("🇮");
+        public static Emoji LetterJ => new("🇯");
+        public static Emoji LetterK => new("🇰");
+        public static Emoji LetterL => new("🇱");
+        public static Emoji LetterM => new("🇲");
+        public static Emoji LetterN => new("🇳");
+        public static Emoji LetterO => new("🇴");
+        public static Emoji LetterP => new("🇵");
+        public static Emoji LetterQ => new("🇶");
+        public static Emoji LetterR => new("🇷");
+        public static Emoji LetterS => new("🇸");
+        public static Emoji LetterT => new("🇹");
+        public static Emoji LetterU => new("🇺");
+        public static Emoji LetterV => new("🇻");
+        public static Emoji LetterW => new("🇼");
+        public static Emoji LetterX => new("🇽");
+        public static Emoji LetterY => new("🇾");
+        public static Emoji LetterZ => new("🇿");
+        public static Emoji SignA => new("🅰");
+        public static Emoji SignB => new("🅱");
+        public static Emoji SignO => new("🅾");
+        public static Emoji One => new("1️⃣");
+        public static Emoji Two => new("2️⃣");
+        public static Emoji Three => new("3️⃣");
+        public static Emoji Four => new("4️⃣");
+        public static Emoji Five => new("5️⃣");
+        public static Emoji Six => new("6️⃣");
+        public static Emoji Seven => new("7️⃣");
+        public static Emoji Eight => new("8️⃣");
+        public static Emoji Nine => new("9️⃣");
+        public static Emoji PersonRisingHand => new("🙋");
 
         public static IEmote[] PaginationEmojis => new[] { MoveToFirst, MoveToPrev, MoveToNext, MoveToLast };
 
-        public static Dictionary<int, Emoji> NumberToEmojiMap => new Dictionary<int, Emoji>()
+        public static Dictionary<int, Emoji> NumberToEmojiMap => new()
         {
             { 1, One }, { 2, Two }, { 3, Three }, { 4, Four }, { 5, Five }, { 6, Six }, { 7, Seven }, { 8, Eight }, { 9, Nine }
         };
 
-        public static Dictionary<Emoji, int> EmojiToIntMap => new Dictionary<Emoji, int>()
+        public static Dictionary<Emoji, int> EmojiToIntMap => new()
         {
             { One, 1 }, { Two, 2}, { Three, 3 }, { Four, 4 }, { Five, 5 }, { Six, 6 }, { Seven, 7}, { Eight, 8 }, { Nine, 9 }
         };
 
-        public static Dictionary<char, Emoji> CharToEmojiMap => new Dictionary<char, Emoji>()
+        public static Dictionary<char, Emoji> CharToEmojiMap => new()
         {
             { 'A', LetterA },
             { 'B', LetterB },
@@ -94,7 +94,7 @@ namespace GrillBot.Data
             { 'Z', LetterZ }
         };
 
-        public static Dictionary<char, Emoji> CharToSignEmojiMap => new Dictionary<char, Emoji>()
+        public static Dictionary<char, Emoji> CharToSignEmojiMap => new()
         {
             { 'A', SignA },
             { 'B', SignB },

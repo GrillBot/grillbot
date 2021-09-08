@@ -29,5 +29,13 @@ namespace GrillBot.Tests.Data.Models.AuditLog
             Assert.AreEqual(Color.Red.RawValue, info.Color);
             Assert.IsTrue(info.Added);
         }
+
+        [TestMethod]
+        public void Constructors_WithPrimitiveTypes()
+        {
+            var role = new AuditRoleUpdateInfo(12345, "Test", Color.Blue);
+
+            Assert.AreEqual(Color.Blue.RawValue, role.Color);
+        }
     }
 }

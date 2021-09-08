@@ -48,5 +48,12 @@ namespace GrillBot.Tests.App.Modules.User
             Assert.AreEqual((ulong)30, metadata.ForUserId);
             Assert.AreEqual((ulong)50, metadata.GuildId);
         }
+
+        [TestMethod]
+        public void Reset()
+        {
+            new UserAccessListMetadata().Reset();
+            Assert.IsTrue(true);
+        }
     }
 }

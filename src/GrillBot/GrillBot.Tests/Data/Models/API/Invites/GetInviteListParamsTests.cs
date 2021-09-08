@@ -1,34 +1,31 @@
-﻿using GrillBot.Data.Models.API.Unverify;
-using GrillBot.Database.Enums;
+﻿using GrillBot.Data.Models.API.Invites;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 
-namespace GrillBot.Tests.Data.Models.API.Unverify
+namespace GrillBot.Tests.Data.Models.API.Invites
 {
     [TestClass]
-    public class UnverifyLogParamsTests
+    public class GetInviteListParamsTests
     {
         [TestMethod]
         public void Empty()
         {
-            var parameters = new UnverifyLogParams();
-            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, propertyName) => Assert.AreEqual(propertyName == "SortBy" ? "CreatedAt" : defaultValue, value));
+            var parameters = new GetInviteListParams();
+            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, propertyName) => Assert.AreEqual(propertyName == "SortBy" ? "Code" : defaultValue, value));
         }
 
         [TestMethod]
         public void Filled()
         {
-            var parameters = new UnverifyLogParams()
+            var parameters = new GetInviteListParams()
             {
-                CreatedFrom = DateTime.MinValue,
+                Code = "Code",
+                CreatedFrom = DateTime.MaxValue,
                 CreatedTo = DateTime.MaxValue,
-                FromUserId = "1",
-                GuildId = "",
-                Operations = new List<GrillBot.Database.Enums.UnverifyOperation>(),
-                SortDesc = true,
-                SortBy = "",
-                ToUserId = ""
+                CreatorId = "Creator",
+                GuildId = "Guild",
+                SortDesc = true
             };
 
             TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
@@ -39,8 +36,8 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
         {
             using var context = TestHelpers.CreateDbContext();
 
-            var parameters = new UnverifyLogParams();
-            var query = context.UnverifyLogs.AsQueryable();
+            var parameters = new GetInviteListParams();
+            var query = context.Invites.AsQueryable();
             query = parameters.CreateQuery(query);
 
             Assert.IsNotNull(query);
@@ -51,19 +48,17 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
         {
             using var context = TestHelpers.CreateDbContext();
 
-            var parameters = new UnverifyLogParams()
+            var parameters = new GetInviteListParams()
             {
-                CreatedFrom = DateTime.MinValue,
+                Code = "Code",
+                CreatedFrom = DateTime.MaxValue,
                 CreatedTo = DateTime.MaxValue,
-                FromUserId = "1",
+                CreatorId = "Creator",
                 GuildId = "Guild",
-                Operations = new List<GrillBot.Database.Enums.UnverifyOperation>() { UnverifyOperation.Unverify },
-                SortDesc = true,
-                SortBy = "",
-                ToUserId = "User"
+                SortDesc = true
             };
 
-            var query = context.UnverifyLogs.AsQueryable();
+            var query = context.Invites.AsQueryable();
             query = parameters.CreateQuery(query);
 
             Assert.IsNotNull(query);
@@ -73,9 +68,9 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
         public void CreateQuery_Sorts()
         {
             using var context = TestHelpers.CreateDbContext();
-            var cases = new List<string>() { "operation", "guild", "fromuser", "touser" };
-            var parameters = new UnverifyLogParams();
-            var baseQuery = context.UnverifyLogs.AsQueryable();
+            var cases = new List<string>() { "code", "createdat", "creator" };
+            var parameters = new GetInviteListParams();
+            var baseQuery = context.Invites.AsQueryable();
 
             foreach (var @case in cases)
             {

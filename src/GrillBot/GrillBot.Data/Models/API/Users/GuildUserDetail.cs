@@ -1,11 +1,7 @@
 ﻿using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
-using GrillBot.Data.Models.API.Unverify;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Data.Models.API.Users
 {

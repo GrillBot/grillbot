@@ -1,8 +1,6 @@
-﻿using Discord;
-using GrillBot.Database.Entity;
+﻿using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -50,8 +48,10 @@ namespace GrillBot.Tests
 
     public static class TestHelpers
     {
-        public static void CheckDefaultPropertyValues<TClass>(TClass item, Action<object, object, string> checker)
+        public static void CheckDefaultPropertyValues<TClass>(TClass item, Action<object, object, string> checker = null)
         {
+            checker ??= (defaultValue, value, _) => Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreEqual(defaultValue, value);
+
             foreach (var property in item.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(o => o.CanRead))
             {
                 var value = property.GetValue(item, null);
@@ -59,6 +59,12 @@ namespace GrillBot.Tests
 
                 checker(defaultValue, value, property.Name);
             }
+        }
+
+        public static void CheckNonDefaultPropertyValues<TClass>(TClass item, Action<object, object, string> checker = null)
+        {
+            checker ??= (defaultValue, value, _) => Microsoft.VisualStudio.TestTools.UnitTesting.Assert.AreNotEqual(defaultValue, value);
+            CheckDefaultPropertyValues(item, checker);
         }
 
         public static TestingGrillBotContext CreateDbContext()

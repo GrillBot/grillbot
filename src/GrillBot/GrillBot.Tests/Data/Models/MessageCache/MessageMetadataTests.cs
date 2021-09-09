@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.MessageCache
         [TestMethod]
         public void DefaultValues()
         {
-            TestHelpers.CheckDefaultPropertyValues(new MessageMetadata(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new MessageMetadata());
         }
 
         [TestMethod]
@@ -20,7 +20,7 @@ namespace GrillBot.Tests.Data.Models.MessageCache
                 State = GrillBot.Data.Enums.CachedMessageState.NeedsUpdate
             };
 
-            TestHelpers.CheckDefaultPropertyValues(metadata, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(metadata);
         }
     }
 }

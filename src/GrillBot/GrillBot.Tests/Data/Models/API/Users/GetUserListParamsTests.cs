@@ -10,7 +10,7 @@ namespace GrillBot.Tests.Data.Models.API.Users
         public void Empty()
         {
             var parameters = new GetUserListParams();
-            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(parameters);
         }
 
         [TestMethod]
@@ -26,7 +26,7 @@ namespace GrillBot.Tests.Data.Models.API.Users
                 Username = "Username"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(parameters);
         }
 
         [TestMethod]

@@ -15,7 +15,7 @@ namespace GrillBot.Tests.Data.Models.API.Users
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new UserDetail(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new UserDetail());
         }
 
         [TestMethod]

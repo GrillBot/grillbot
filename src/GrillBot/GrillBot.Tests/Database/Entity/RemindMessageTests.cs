@@ -10,7 +10,7 @@ namespace GrillBot.Tests.Database.Entity
         [TestMethod]
         public void Entity_Properties_Default()
         {
-            TestHelpers.CheckDefaultPropertyValues(new RemindMessage(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new RemindMessage());
         }
 
         [TestMethod]
@@ -30,7 +30,7 @@ namespace GrillBot.Tests.Database.Entity
                 ToUserId = "ABCD"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(remind, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(remind);
         }
     }
 }

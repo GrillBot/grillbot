@@ -10,7 +10,7 @@ namespace GrillBot.Tests.Data.Models.Unverify
         [TestMethod]
         public void DefaultValues()
         {
-            TestHelpers.CheckDefaultPropertyValues(new UnverifyLogUpdate(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new UnverifyLogUpdate());
         }
 
         [TestMethod]
@@ -22,7 +22,7 @@ namespace GrillBot.Tests.Data.Models.Unverify
                 Start = DateTime.MaxValue
             };
 
-            TestHelpers.CheckDefaultPropertyValues(log, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(log);
         }
     }
 }

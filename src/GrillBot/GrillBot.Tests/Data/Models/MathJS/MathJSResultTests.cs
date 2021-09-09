@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.MathJS
         [TestMethod]
         public void DefaultValues()
         {
-            TestHelpers.CheckDefaultPropertyValues(new MathJSResult(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new MathJSResult());
         }
 
         [TestMethod]
@@ -21,7 +21,7 @@ namespace GrillBot.Tests.Data.Models.MathJS
                 Result = "Res"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(metadata, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(metadata);
         }
     }
 }

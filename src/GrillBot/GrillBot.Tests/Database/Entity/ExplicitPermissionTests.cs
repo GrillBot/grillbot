@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Database.Entity
         [TestMethod]
         public void Entity_Properties_Default()
         {
-            TestHelpers.CheckDefaultPropertyValues(new ExplicitPermission(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new ExplicitPermission());
         }
 
         [TestMethod]
@@ -22,7 +22,7 @@ namespace GrillBot.Tests.Database.Entity
                 TargetId = "Target"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(permission, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(permission);
         }
     }
 }

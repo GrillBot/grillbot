@@ -25,7 +25,7 @@ namespace GrillBot.Tests.Data.Models.API.Searching
                 UserId = ""
             };
 
-            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(parameters);
         }
 
         [TestMethod]

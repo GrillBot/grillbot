@@ -11,7 +11,7 @@ namespace GrillBot.Tests.Data.Models
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new ChannelOverride(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new ChannelOverride());
         }
 
         [TestMethod]

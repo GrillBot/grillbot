@@ -43,7 +43,7 @@ namespace GrillBot.Tests.Database.Entity
                 Type = AuditLogItemType.ChannelCreated
             };
 
-            TestHelpers.CheckDefaultPropertyValues(item, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(item);
         }
 
         [TestMethod]

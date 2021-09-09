@@ -37,7 +37,7 @@ namespace GrillBot.Tests.Database.Entity
                 GuildId = "Guild"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(invite, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(invite);
         }
     }
 }

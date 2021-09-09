@@ -32,7 +32,7 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
                 Types = new List<AuditLogItemType>()
             };
 
-            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(parameters);
         }
 
         [TestMethod]

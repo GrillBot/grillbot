@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.Unverify
         [TestMethod]
         public void DefaultValues()
         {
-            TestHelpers.CheckDefaultPropertyValues(new UnverifyLogRemove(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new UnverifyLogRemove());
         }
 
         [TestMethod]
@@ -21,7 +21,7 @@ namespace GrillBot.Tests.Data.Models.Unverify
                 ReturnedRoles = new()
             };
 
-            TestHelpers.CheckDefaultPropertyValues(log, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(log);
         }
     }
 }

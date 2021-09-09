@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.API.Invites
         [TestMethod]
         public void DefaultValues()
         {
-            TestHelpers.CheckDefaultPropertyValues(new InviteBase(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new InviteBase());
         }
     }
 }

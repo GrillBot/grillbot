@@ -56,7 +56,7 @@ namespace GrillBot.Tests.Database.Entity
                 Name = "Name",
             };
 
-            TestHelpers.CheckDefaultPropertyValues(channel, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(channel);
         }
     }
 }

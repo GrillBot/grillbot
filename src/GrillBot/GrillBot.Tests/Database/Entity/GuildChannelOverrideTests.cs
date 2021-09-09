@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Database.Entity
         [TestMethod]
         public void Entity_Properties_Default()
         {
-            TestHelpers.CheckDefaultPropertyValues(new GuildChannelOverride(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new GuildChannelOverride());
         }
 
         [TestMethod]
@@ -22,7 +22,7 @@ namespace GrillBot.Tests.Database.Entity
                 DenyValue = 1024
             };
 
-            TestHelpers.CheckDefaultPropertyValues(@override, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(@override);
         }
     }
 }

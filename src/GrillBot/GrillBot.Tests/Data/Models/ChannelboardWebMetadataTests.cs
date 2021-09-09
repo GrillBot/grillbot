@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models
         [TestMethod]
         public void DefaultValues()
         {
-            TestHelpers.CheckDefaultPropertyValues(new ChannelboardWebMetadata(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new ChannelboardWebMetadata());
         }
 
         [TestMethod]
@@ -21,7 +21,7 @@ namespace GrillBot.Tests.Data.Models
                 UserId = 12345
             };
 
-            TestHelpers.CheckDefaultPropertyValues(metadata, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(metadata);
         }
     }
 }

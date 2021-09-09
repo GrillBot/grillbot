@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.API.Users
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new GuildUserDetail(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new GuildUserDetail());
         }
 
         [TestMethod]
@@ -29,7 +29,7 @@ namespace GrillBot.Tests.Data.Models.API.Users
             entity.Channels.Add(new() { Channel = new() { Name = "Channel" } });
 
             var detail = new GuildUserDetail(entity);
-            TestHelpers.CheckDefaultPropertyValues(detail, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(detail);
         }
 
         [TestMethod]

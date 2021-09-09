@@ -134,7 +134,7 @@ namespace GrillBot.Tests.Database.Entity
                 Username = "Username"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(user, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(user);
         }
     }
 }

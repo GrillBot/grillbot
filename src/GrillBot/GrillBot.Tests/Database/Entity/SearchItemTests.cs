@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Database.Entity
         [TestMethod]
         public void Entity_Properties_Default()
         {
-            TestHelpers.CheckDefaultPropertyValues(new SearchItem(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new SearchItem());
         }
 
         [TestMethod]
@@ -27,7 +27,7 @@ namespace GrillBot.Tests.Database.Entity
                 User = new()
             };
 
-            TestHelpers.CheckDefaultPropertyValues(search, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(search);
         }
     }
 }

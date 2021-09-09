@@ -10,14 +10,14 @@ namespace GrillBot.Tests.Data.Models.API.Guilds
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new Guild(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new Guild());
         }
 
         [TestMethod]
         public void SocketGuildConstructor_NullGuild()
         {
             var guild = new Guild(null as SocketGuild);
-            TestHelpers.CheckDefaultPropertyValues(guild, (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(guild);
         }
 
         [TestMethod]

@@ -28,7 +28,7 @@ namespace GrillBot.Tests.Data.Models.API.Invites
                 SortDesc = true
             };
 
-            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(parameters);
         }
 
         [TestMethod]

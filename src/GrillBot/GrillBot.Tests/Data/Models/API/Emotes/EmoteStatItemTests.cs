@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.API.Emotes
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new EmoteStatItem(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new EmoteStatItem());
         }
     }
 }

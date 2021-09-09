@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.MathJS
         [TestMethod]
         public void DefaultValues()
         {
-            TestHelpers.CheckDefaultPropertyValues(new MathJSRequest(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new MathJSRequest());
         }
 
         [TestMethod]
@@ -20,7 +20,7 @@ namespace GrillBot.Tests.Data.Models.MathJS
                 Expression = "Expr"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(metadata, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(metadata);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace GrillBot.Tests.Data.Models.MessageCache
             var msg = new Mock<IMessage>();
             var message = new CachedMessage(msg.Object);
 
-            TestHelpers.CheckDefaultPropertyValues(message, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(message);
         }
     }
 }

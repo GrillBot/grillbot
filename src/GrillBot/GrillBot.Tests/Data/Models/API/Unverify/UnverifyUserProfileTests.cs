@@ -12,7 +12,7 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new UnverifyUserProfile(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new UnverifyUserProfile());
         }
 
         [TestMethod]
@@ -36,7 +36,7 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
             profile.RolesToRemove.Add(role.Object);
 
             var userProfile = new UnverifyUserProfile(profile);
-            TestHelpers.CheckDefaultPropertyValues(userProfile, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(userProfile);
         }
     }
 }

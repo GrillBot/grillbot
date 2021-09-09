@@ -16,7 +16,7 @@ namespace GrillBot.Tests.Data.Models.Guilds
             var user = new Mock<IGuildUser>();
 
             var perm = new UselessPermission(channel.Object, user.Object, UselessPermissionType.AvailableFromRole);
-            TestHelpers.CheckDefaultPropertyValues(perm, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(perm);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace GrillBot.Tests.Database.Entity
         [TestMethod]
         public void Entity_Properties_Default()
         {
-            TestHelpers.CheckDefaultPropertyValues(new UnverifyLog(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new UnverifyLog());
         }
 
         [TestMethod]
@@ -32,7 +32,7 @@ namespace GrillBot.Tests.Database.Entity
                 Unverify = new Unverify()
             };
 
-            TestHelpers.CheckDefaultPropertyValues(logItem, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(logItem);
         }
     }
 }

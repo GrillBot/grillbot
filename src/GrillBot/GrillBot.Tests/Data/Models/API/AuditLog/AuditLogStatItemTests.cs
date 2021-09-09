@@ -10,14 +10,14 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new AuditLogStatItem(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new AuditLogStatItem());
         }
 
         [TestMethod]
         public void FilledConstructor()
         {
             var item = new AuditLogStatItem("Test", 50, DateTime.MinValue, DateTime.MaxValue);
-            TestHelpers.CheckDefaultPropertyValues(item, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(item);
         }
 
         [TestMethod]

@@ -25,7 +25,7 @@ namespace GrillBot.Tests.Database.Entity
         [TestMethod]
         public void Entity_Properties_Default()
         {
-            TestHelpers.CheckDefaultPropertyValues(new AuditLogFileMeta(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new AuditLogFileMeta());
         }
 
         [TestMethod]
@@ -40,7 +40,7 @@ namespace GrillBot.Tests.Database.Entity
                 Size = 13156486
             };
 
-            TestHelpers.CheckDefaultPropertyValues(meta, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(meta);
         }
     }
 }

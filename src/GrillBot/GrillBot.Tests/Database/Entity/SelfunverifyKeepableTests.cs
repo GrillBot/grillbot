@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Database.Entity
         [TestMethod]
         public void Entity_Properties_Default()
         {
-            TestHelpers.CheckDefaultPropertyValues(new SelfunverifyKeepable(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new SelfunverifyKeepable());
         }
 
         [TestMethod]
@@ -21,7 +21,7 @@ namespace GrillBot.Tests.Database.Entity
                 Name = "Name"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(keepable, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(keepable);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace GrillBot.Tests.Database.Entity
                 UsedInviteCode = "Code"
             };
 
-            TestHelpers.CheckDefaultPropertyValues(user, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(user);
         }
     }
 }

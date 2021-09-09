@@ -13,7 +13,7 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
         public void EmptyConstructor()
         {
             var item = new AuditLogListItem();
-            TestHelpers.CheckDefaultPropertyValues(item, (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(item);
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
             };
 
             var item = new AuditLogListItem(entity);
-            TestHelpers.CheckDefaultPropertyValues(item, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(item);
         }
 
         [TestMethod]

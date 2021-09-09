@@ -9,7 +9,7 @@ namespace GrillBot.Tests.Data.Models.API
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new MessageResponse(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new MessageResponse());
         }
 
         [TestMethod]

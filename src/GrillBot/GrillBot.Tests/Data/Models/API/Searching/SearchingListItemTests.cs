@@ -11,7 +11,7 @@ namespace GrillBot.Tests.Data.Models.API.Searching
         [TestMethod]
         public void EmptyConstructor()
         {
-            TestHelpers.CheckDefaultPropertyValues(new SearchingListItem(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new SearchingListItem());
         }
 
         [TestMethod]
@@ -26,7 +26,7 @@ namespace GrillBot.Tests.Data.Models.API.Searching
             };
 
             var item = new SearchingListItem(entity, "Něco", "http://discord.com");
-            TestHelpers.CheckDefaultPropertyValues(item, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(item);
             Assert.IsTrue(Uri.IsWellFormedUriString(item.JumpLink, UriKind.Absolute));
         }
     }

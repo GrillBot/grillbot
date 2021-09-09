@@ -11,7 +11,7 @@ namespace GrillBot.Tests.Data.Models.Duck
         [TestMethod]
         public void DefaultValues()
         {
-            TestHelpers.CheckDefaultPropertyValues(new CurrentState(), (defaultValue, value, _) => Assert.AreEqual(defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(new CurrentState());
         }
 
         [TestMethod]
@@ -32,7 +32,7 @@ namespace GrillBot.Tests.Data.Models.Duck
                 State = DuckState.OpenBar
             };
 
-            TestHelpers.CheckDefaultPropertyValues(state, (defaultValue, value, _) => Assert.AreNotEqual(defaultValue, value));
+            TestHelpers.CheckNonDefaultPropertyValues(state);
         }
     }
 }

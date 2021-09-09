@@ -18,7 +18,7 @@ namespace GrillBot.App.Services.Birthday
             }
             else
             {
-                var withoutLast = users.Take(users.Count - 1).Select(o => $"**{o.Item1.GetDisplayName(false)} {(o.Item2 != null ? $"{o.Item2} let" : null)}**".Trim());
+                var withoutLast = users.Take(users.Count - 1).Select(o => $"**{o.Item1.GetDisplayName(false)}{(o.Item2 != null ? $" ({o.Item2} let)" : null)}**".Trim());
                 var last = users[^1];
 
                 var builder = new StringBuilder("Dnes ")

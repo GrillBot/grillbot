@@ -11,6 +11,8 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Params;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
@@ -26,6 +28,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/channel")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [OpenApiTag("Channels", Description = "Channel management")]
     public class ChannelController : Controller
     {

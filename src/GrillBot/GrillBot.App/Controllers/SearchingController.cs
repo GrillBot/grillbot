@@ -2,6 +2,8 @@
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
@@ -13,6 +15,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/search")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [OpenApiTag("Searching", Description = "Searching for team, service, ...")]
     public class SearchingController : Controller
     {

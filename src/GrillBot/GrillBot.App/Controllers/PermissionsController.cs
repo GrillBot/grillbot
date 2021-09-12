@@ -5,6 +5,8 @@ using GrillBot.Data.Models.API.Permissions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
@@ -19,6 +21,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/permissions")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [OpenApiTag("Permissions", Description = "Commands permissions management")]
     public class PermissionsController : Controller
     {

@@ -5,6 +5,8 @@ using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
@@ -20,6 +22,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/unverify")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [OpenApiTag("Unverify", Description = "Unverify management.")]
     public class UnverifyController : ControllerBase
     {

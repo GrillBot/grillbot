@@ -13,7 +13,7 @@ namespace GrillBot.Data.Models.API.AuditLog
 
         public AuditLogStatItem(string name, int? count, DateTime? firstItem, DateTime? lastItem)
         {
-            StatName = name.Trim();
+            StatName = name?.Trim();
             Count = count ?? 0;
             FirstItem = firstItem;
             LastItem = lastItem;

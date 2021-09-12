@@ -9,6 +9,8 @@ using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +26,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/auditlog")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [OpenApiTag("Audit log", Description = "Logging")]
     public class AuditLogController : Controller
     {
@@ -52,7 +55,7 @@ namespace GrillBot.App.Controllers
         {
             var data = await AuditLogService.GetStatisticsAsync(o => o.Type, data =>
             {
-                return Enum.GetValues<AuditLogItemType>().Select(o =>
+                return Enum.GetValues<AuditLogItemType>().Where(o => o > AuditLogItemType.None).Select(o =>
                 {
                     var item = data.Find(x => x.Item1 == o);
                     return new AuditLogStatItem(o.GetDisplayName(), item?.Item2, item?.Item3, item?.Item4);

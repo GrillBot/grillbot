@@ -5,6 +5,8 @@ using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +21,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/system")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [OpenApiTag("System", Description = "Internal system management, ...")]
     public class SystemController : Controller
     {

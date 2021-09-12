@@ -23,10 +23,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using System;
 using System.Linq;
+using System.Text;
 
 namespace GrillBot.App
 {
@@ -129,8 +131,8 @@ namespace GrillBot.App
 
                         License = new OpenApiLicense
                         {
-                            Name = "MIT",
-                            Url = "https://opensource.org/licenses/MIT"
+                            Name = "All rights reserved",
+                            Url = "https://gist.github.com/Techcable/e7bbc22ecbc0050efbcc"
                         }
                     };
                 };
@@ -140,6 +142,26 @@ namespace GrillBot.App
             services.AddHostedService<AuditLogClearingJob>();
             services.AddHostedService<RemindCronJob>();
             services.AddHostedService<BirthdayCronJob>();
+
+            services.AddAuthorization()
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(o =>
+                {
+                    o.RequireHttpsMetadata = false;
+                    o.SaveToken = true;
+                    o.IncludeErrorDetails = true;
+
+                    var machineInfo = $"{Environment.MachineName}/{Environment.UserName}";
+                    o.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = $"GrillBot/Issuer/{machineInfo}",
+                        ValidAudience = $"GrillBot/Audience/{machineInfo}",
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["OAuth2:ClientId"]}_{Configuration["OAuth2:ClientSecret"]}"))
+                    };
+                });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)
@@ -152,6 +174,7 @@ namespace GrillBot.App
 
             app.UseRouting();
             app.UseAuthorization();
+            app.UseAuthentication();
 
             app.UseOpenApi();
             app.UseSwaggerUi3(settings =>

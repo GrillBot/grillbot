@@ -23,6 +23,8 @@ namespace GrillBot.Tests.Data.Models.API.Common
         public void Create_Empty()
         {
             using var context = TestHelpers.CreateDbContext();
+            context.RemoveRange(context.Guilds.ToList());
+            context.SaveChanges();
             var query = context.Guilds.AsQueryable();
 
             var result = PaginatedResponse<Guild>.CreateAsync(query, new PaginatedParams() { Page = 1, PageSize = 20 }, entity => entity).Result;
@@ -33,6 +35,7 @@ namespace GrillBot.Tests.Data.Models.API.Common
         public void Create_Filled()
         {
             using var context = TestHelpers.CreateDbContext();
+            context.RemoveRange(context.Guilds.ToList());
             context.Add(new Guild() { Name = "Name", Id = "1234" });
             context.SaveChanges();
 

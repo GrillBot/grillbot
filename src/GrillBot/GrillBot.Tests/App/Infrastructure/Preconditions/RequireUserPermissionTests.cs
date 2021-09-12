@@ -103,7 +103,7 @@ namespace GrillBot.Tests.App.Infrastructure.Preconditions
         [TestMethod]
         public void BotAdministrator()
         {
-            var user = DiscordHelpers.CreateUserMock(12345, "User");
+            var user = DiscordHelpers.CreateUserMock(15523512345, "User");
 
             var context = new Mock<Discord.Commands.ICommandContext>();
             context.Setup(o => o.Channel).Returns(new Mock<ITextChannel>().Object);
@@ -114,7 +114,7 @@ namespace GrillBot.Tests.App.Infrastructure.Preconditions
             var dbContextFactory = container.GetService<GrillBotContextFactory>();
             var dbContext = dbContextFactory.Create();
 
-            dbContext.Add(new User() { Id = "12345", Flags = (int)UserFlags.BotAdmin });
+            dbContext.Add(new User() { Id = "15523512345", Flags = (int)UserFlags.BotAdmin });
             dbContext.SaveChanges();
 
             var perms = Enum.GetValues<GuildPermission>().ToArray();

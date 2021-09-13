@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using GrillBot.App.Extensions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
@@ -15,7 +16,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Controllers
@@ -82,7 +82,8 @@ namespace GrillBot.App.Controllers
             if (toUser == null)
                 return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
-            var fromUser = guild.CurrentUser; // TODO: Logged user
+            var fromUserId = User.GetUserId();
+            var fromUser = guild.GetUser(fromUserId);
             var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, false);
             return Ok(new MessageResponse(result));
         }
@@ -110,7 +111,8 @@ namespace GrillBot.App.Controllers
             if (toUser == null)
                 return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
-            var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, guild.CurrentUser); // TODO: Logged user
+            var fromUser = guild.GetUser(User.GetUserId());
+            var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser);
             return Ok(new MessageResponse(result));
         }
 
@@ -154,7 +156,8 @@ namespace GrillBot.App.Controllers
         {
             try
             {
-                await UnverifyService.RecoverUnverifyState(logId, DiscordClient.CurrentUser.Id); // TODO: Logged user 
+                var processedUserId = User.GetUserId();
+                await UnverifyService.RecoverUnverifyState(logId, processedUserId);
             }
             catch (NotFoundException ex)
             {

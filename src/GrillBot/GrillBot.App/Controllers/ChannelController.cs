@@ -1,9 +1,9 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
+using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.MessageCache;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
@@ -17,11 +17,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Controllers
@@ -121,8 +118,14 @@ namespace GrillBot.App.Controllers
             if (channel != null)
                 await DbContext.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value);
 
-            // TODO: Logged user.
-            var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, channel, DiscordClient.CurrentUser,
+            var userId = User.GetUserId();
+            var user = await DiscordClient.FindUserAsync(userId);
+
+            await DbContext.InitGuildAsync(guild);
+            await DbContext.InitGuildChannelAsync(guild, channel, ChannelType.Text);
+            await DbContext.InitUserAsync(user);
+
+            var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, channel, user,
                 $"Uživatel vyčistil memory cache kanálu. Počet smazaných zpráv z cache je {clearedCount}");
             await DbContext.AddAsync(logItem);
             await DbContext.SaveChangesAsync();
@@ -199,10 +202,17 @@ namespace GrillBot.App.Controllers
             if (channel == null)
                 return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
 
-            // TODO: Processed user.
             var guild = DiscordClient.GetGuild(Convert.ToUInt64(channel.GuildId));
             var guildChannel = guild.GetChannel(channelId);
-            var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, guildChannel, DiscordClient.CurrentUser,
+            var userId = User.GetUserId();
+            var user = guild.GetUser(userId);
+
+            await DbContext.InitGuildAsync(guild);
+            await DbContext.InitGuildChannelAsync(guild, guildChannel, channel.ChannelType);
+            await DbContext.InitUserAsync(user);
+            await DbContext.InitGuildUserAsync(guild, user);
+
+            var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, guildChannel, user,
                 $"Bylo upraveno nastavení kanálu. (Před: {channel.Flags}, Po: {parameters.Flags})");
             await DbContext.AddAsync(logItem);
 

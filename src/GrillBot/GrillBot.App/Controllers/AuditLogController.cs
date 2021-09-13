@@ -152,7 +152,6 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult<List<int>>> GetAvailableLogYearsAsync()
         {
-            // TODO: Test
             var data = await AuditLogService.GetAvailableLogYearsAsync();
             return Ok(data);
         }
@@ -185,7 +184,6 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> RemoveItemAsync(long id)
         {
-            // TODO: Test
             var result = await AuditLogService.RemoveItemAsync(id);
 
             if (!result)

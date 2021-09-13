@@ -9,7 +9,6 @@ namespace GrillBot.App.Extensions
             return dateTime.ToString($"dd. MM. yyyy{(withoutTime ? "" : " HH:mm:ss")}");
         }
 
-        // TODO: Testy
         static public int ComputeAge(this DateTime dateTime)
         {
             var today = DateTime.Today;

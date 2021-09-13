@@ -1,4 +1,6 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
+using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
@@ -111,8 +113,12 @@ namespace GrillBot.App.Controllers
             else
                 user.Flags &= ~(int)UserFlags.BotAdmin;
 
-            // TODO: Processed user
-            var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, DiscordClient.CurrentUser,
+            var userId = User.GetUserId();
+            var discordUser = await DiscordClient.FindUserAsync(userId);
+
+            await DbContext.InitUserAsync(discordUser);
+
+            var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, discordUser,
                 $"Uživatel {user.Username} byl aktualizován (Flags:{user.Flags},ApiToken:{user.ApiToken},Note:{user.Note})");
 
             await DbContext.AddAsync(logItem);
@@ -148,9 +154,17 @@ namespace GrillBot.App.Controllers
             guildUser.Points += amount;
 
             var guild = DiscordClient.GetGuild(guildId);
-            if (guild != null) await DbContext.InitGuildAsync(guild);
-            // TODO: Processed user
-            var logItem = AuditLogItem.Create(AuditLogItemType.Info, guild, null, DiscordClient.CurrentUser,
+            var processedUserId = User.GetUserId();
+            var processedUser = guild?.GetUser(processedUserId) ?? await DiscordClient.FindUserAsync(processedUserId);
+
+            await DbContext.InitUserAsync(processedUser);
+            if (guild != null)
+            {
+                await DbContext.InitGuildAsync(guild);
+                await DbContext.InitGuildUserAsync(guild, processedUser as IGuildUser);
+            }
+
+            var logItem = AuditLogItem.Create(AuditLogItemType.Info, guild, null, processedUser,
                 $"Uživatel {user.Username} obdržel na serveru {guildUser.Guild.Name} body ({amount})");
 
             await DbContext.AddAsync(logItem);
@@ -201,9 +215,17 @@ namespace GrillBot.App.Controllers
             toUser.Points += amount;
 
             var guild = DiscordClient.GetGuild(guildId);
-            if (guild != null) await DbContext.InitGuildAsync(guild);
-            // TODO: Processed user
-            var logItem = AuditLogItem.Create(AuditLogItemType.Info, guild, null, DiscordClient.CurrentUser,
+            var processedUserId = User.GetUserId();
+            var processedUser = guild?.GetUser(processedUserId) ?? await DiscordClient.FindUserAsync(processedUserId);
+
+            await DbContext.InitUserAsync(processedUser);
+            if (guild != null)
+            {
+                await DbContext.InitGuildAsync(guild);
+                await DbContext.InitGuildUserAsync(guild, processedUser as IGuildUser);
+            }
+
+            var logItem = AuditLogItem.Create(AuditLogItemType.Info, guild, null, processedUser,
                 $"Byly převedeny body uživatele {fromUser.User.Username} uživateli {toUser.User.Username} ({amount})");
 
             await DbContext.AddAsync(logItem);

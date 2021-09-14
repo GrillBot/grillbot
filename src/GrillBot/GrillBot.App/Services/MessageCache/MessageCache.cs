@@ -95,7 +95,7 @@ namespace GrillBot.App.Services.MessageCache
 
         public async Task RunCheckAsync()
         {
-            foreach (var (id, msg) in Cache.ToDictionary(o => o.Key, o => o.Value))
+            foreach (var (id, msg) in Cache.Where(o => o.Value.Metadata.State != CachedMessageState.None).ToDictionary(o => o.Key, o => o.Value))
             {
                 if (msg.Metadata.State == CachedMessageState.ToBeDeleted)
                 {

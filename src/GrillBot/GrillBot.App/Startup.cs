@@ -29,6 +29,8 @@ using NSwag.Generation.Processors.Security;
 using System;
 using System.Linq;
 using System.Text;
+using Quartz;
+using GrillBot.App.Extensions;
 
 namespace GrillBot.App
 {
@@ -138,10 +140,17 @@ namespace GrillBot.App
                 };
             });
 
-            services.AddHostedService<MessageCacheCheckCron>();
-            services.AddHostedService<AuditLogClearingJob>();
-            services.AddHostedService<RemindCronJob>();
-            services.AddHostedService<BirthdayCronJob>();
+            services.AddQuartz(q =>
+            {
+                q.UseMicrosoftDependencyInjectionJobFactory();
+
+                q.AddTriggeredJob<MessageCacheCheckCron>(Configuration, "Discord:MessageCache:Period");
+                q.AddTriggeredJob<AuditLogClearingJob>(Configuration, "AuditLog:CleaningCron");
+                q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
+                q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron");
+            });
+
+            services.AddQuartzHostedService();
 
             services.AddAuthorization()
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

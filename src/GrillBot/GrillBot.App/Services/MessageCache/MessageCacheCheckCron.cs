@@ -1,29 +1,27 @@
-﻿using Discord.WebSocket;
-using GrillBot.App.Services.CronJobs;
-using GrillBot.App.Services.Logging;
-using Microsoft.Extensions.Configuration;
+﻿using GrillBot.App.Services.Logging;
+using Quartz;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services.MessageCache
 {
-    public class MessageCacheCheckCron : CronJobTask
+    [DisallowConcurrentExecution]
+    public class MessageCacheCheckCron : IJob
     {
         private MessageCache MessageCache { get; }
         private LoggingService LoggingService { get; }
 
-        public MessageCacheCheckCron(IConfiguration configuration, LoggingService loggingService, MessageCache messageCache,
-            DiscordSocketClient discordClient) : base(configuration["Discord:MessageCache:Cron"], discordClient)
+        public MessageCacheCheckCron(LoggingService loggingService, MessageCache messageCache)
         {
             LoggingService = loggingService;
             MessageCache = messageCache;
         }
 
-        public override async Task DoWorkAsync(CancellationToken cancellationToken)
+        public async Task Execute(IJobExecutionContext context)
         {
             try
             {
+                await LoggingService.InfoAsync("MessageCacheCron", $"Triggered job at {DateTime.Now}");
                 await MessageCache.RunCheckAsync();
             }
             catch (Exception ex)

@@ -1,27 +1,25 @@
-﻿using Discord.WebSocket;
-using GrillBot.App.Services.CronJobs;
-using GrillBot.App.Services.Logging;
-using Microsoft.Extensions.Configuration;
+﻿using GrillBot.App.Services.Logging;
+using Quartz;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services.Reminder
 {
-    public class RemindCronJob : CronJobTask
+    [DisallowConcurrentExecution]
+    public class RemindCronJob : IJob
     {
         private RemindService RemindService { get; }
         private LoggingService LoggingService { get; }
 
-        public RemindCronJob(IConfiguration configuration, RemindService remindService, LoggingService logging,
-            DiscordSocketClient discordClient) : base(configuration.GetValue<string>("Reminder:CronJob"), discordClient)
+        public RemindCronJob(RemindService remindService, LoggingService logging)
         {
             RemindService = remindService;
             LoggingService = logging;
         }
 
-        public override async Task DoWorkAsync(CancellationToken cancellationToken)
+        public async Task Execute(IJobExecutionContext context)
         {
+            await LoggingService.InfoAsync("RemindCron", $"Trigged remind processing job at {DateTime.Now}");
             var reminders = await RemindService.GetProcessableReminderIdsAsync();
 
             foreach (var id in reminders)

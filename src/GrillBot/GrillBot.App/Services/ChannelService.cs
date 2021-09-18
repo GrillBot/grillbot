@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services
@@ -43,10 +44,10 @@ namespace GrillBot.App.Services
             var userId = message.Author.Id.ToString();
 
             // Check DB for consistency.
-            await dbContext.InitGuildAsync(textChannel.Guild);
-            await dbContext.InitUserAsync(message.Author);
-            await dbContext.InitGuildUserAsync(textChannel.Guild, message.Author as IGuildUser);
-            await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel, ChannelType.Text);
+            await dbContext.InitGuildAsync(textChannel.Guild, CancellationToken.None);
+            await dbContext.InitUserAsync(message.Author, CancellationToken.None);
+            await dbContext.InitGuildUserAsync(textChannel.Guild, message.Author as IGuildUser, CancellationToken.None);
+            await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel, ChannelType.Text, CancellationToken.None);
 
             // Search specific channel for specific guild and user.
             var channel = await dbContext.UserChannels.AsQueryable()

@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services
@@ -53,8 +54,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(textChannel.Guild);
-            await context.InitUserAsync(message.Author);
+            await context.InitGuildAsync(textChannel.Guild, CancellationToken.None);
+            await context.InitUserAsync(message.Author, CancellationToken.None);
 
             var guildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -107,8 +108,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(textChannel.Guild);
-            await context.InitUserAsync(reaction.User.Value);
+            await context.InitGuildAsync(textChannel.Guild, CancellationToken.None);
+            await context.InitUserAsync(reaction.User.Value, CancellationToken.None);
 
             var guildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -239,8 +240,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(guild);
-            await context.InitUserAsync(toUser);
+            await context.InitGuildAsync(guild, CancellationToken.None);
+            await context.InitUserAsync(toUser, CancellationToken.None);
 
             var guildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -281,8 +282,8 @@ namespace GrillBot.App.Services
             if (fromGuildUser.Points < amount)
                 throw new InvalidOperationException($"Nelze převést body od uživatele `{fromUser.GetDisplayName()}`, protože jich nemá dostatek.");
 
-            await context.InitGuildAsync(guild);
-            await context.InitUserAsync(toUser);
+            await context.InitGuildAsync(guild, CancellationToken.None);
+            await context.InitUserAsync(toUser, CancellationToken.None);
 
             var toGuildUser = await context.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == toUserId);

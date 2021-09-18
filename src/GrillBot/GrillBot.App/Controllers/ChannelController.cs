@@ -19,6 +19,7 @@ using NSwag.Annotations;
 using System;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Controllers
@@ -114,16 +115,16 @@ namespace GrillBot.App.Controllers
             var channel = guild?.GetTextChannel(channelId);
 
             if (guild != null)
-                await DbContext.InitGuildAsync(guild);
+                await DbContext.InitGuildAsync(guild, CancellationToken.None);
             if (channel != null)
-                await DbContext.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value);
+                await DbContext.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value, CancellationToken.None);
 
             var userId = User.GetUserId();
             var user = await DiscordClient.FindUserAsync(userId);
 
-            await DbContext.InitGuildAsync(guild);
-            await DbContext.InitGuildChannelAsync(guild, channel, ChannelType.Text);
-            await DbContext.InitUserAsync(user);
+            await DbContext.InitGuildAsync(guild, CancellationToken.None);
+            await DbContext.InitGuildChannelAsync(guild, channel, ChannelType.Text, CancellationToken.None);
+            await DbContext.InitUserAsync(user, CancellationToken.None);
 
             var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, channel, user,
                 $"Uživatel vyčistil memory cache kanálu. Počet smazaných zpráv z cache je {clearedCount}");
@@ -207,10 +208,10 @@ namespace GrillBot.App.Controllers
             var userId = User.GetUserId();
             var user = guild.GetUser(userId);
 
-            await DbContext.InitGuildAsync(guild);
-            await DbContext.InitGuildChannelAsync(guild, guildChannel, channel.ChannelType);
-            await DbContext.InitUserAsync(user);
-            await DbContext.InitGuildUserAsync(guild, user);
+            await DbContext.InitGuildAsync(guild, CancellationToken.None);
+            await DbContext.InitGuildChannelAsync(guild, guildChannel, channel.ChannelType, CancellationToken.None);
+            await DbContext.InitUserAsync(user, CancellationToken.None);
+            await DbContext.InitGuildUserAsync(guild, user, CancellationToken.None);
 
             var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, guildChannel, user,
                 $"Bylo upraveno nastavení kanálu. (Před: {channel.Flags}, Po: {parameters.Flags})");

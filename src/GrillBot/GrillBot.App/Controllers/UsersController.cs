@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Controllers
@@ -116,7 +117,7 @@ namespace GrillBot.App.Controllers
             var userId = User.GetUserId();
             var discordUser = await DiscordClient.FindUserAsync(userId);
 
-            await DbContext.InitUserAsync(discordUser);
+            await DbContext.InitUserAsync(discordUser, CancellationToken.None);
 
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, discordUser,
                 $"Uživatel {user.Username} byl aktualizován (Flags:{user.Flags},ApiToken:{user.ApiToken},Note:{user.Note})");
@@ -157,11 +158,11 @@ namespace GrillBot.App.Controllers
             var processedUserId = User.GetUserId();
             var processedUser = guild?.GetUser(processedUserId) ?? await DiscordClient.FindUserAsync(processedUserId);
 
-            await DbContext.InitUserAsync(processedUser);
+            await DbContext.InitUserAsync(processedUser, CancellationToken.None);
             if (guild != null)
             {
-                await DbContext.InitGuildAsync(guild);
-                await DbContext.InitGuildUserAsync(guild, processedUser as IGuildUser);
+                await DbContext.InitGuildAsync(guild, CancellationToken.None);
+                await DbContext.InitGuildUserAsync(guild, processedUser as IGuildUser, CancellationToken.None);
             }
 
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, guild, null, processedUser,
@@ -218,11 +219,11 @@ namespace GrillBot.App.Controllers
             var processedUserId = User.GetUserId();
             var processedUser = guild?.GetUser(processedUserId) ?? await DiscordClient.FindUserAsync(processedUserId);
 
-            await DbContext.InitUserAsync(processedUser);
+            await DbContext.InitUserAsync(processedUser, CancellationToken.None);
             if (guild != null)
             {
-                await DbContext.InitGuildAsync(guild);
-                await DbContext.InitGuildUserAsync(guild, processedUser as IGuildUser);
+                await DbContext.InitGuildAsync(guild, CancellationToken.None);
+                await DbContext.InitGuildUserAsync(guild, processedUser as IGuildUser, CancellationToken.None);
             }
 
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, guild, null, processedUser,

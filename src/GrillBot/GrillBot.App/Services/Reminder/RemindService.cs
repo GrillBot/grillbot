@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services.Reminder
@@ -48,10 +49,10 @@ namespace GrillBot.App.Services.Reminder
 
             using var context = DbFactory.Create();
 
-            await context.InitUserAsync(from);
+            await context.InitUserAsync(from, CancellationToken.None);
 
             if (from != to)
-                await context.InitUserAsync(to);
+                await context.InitUserAsync(to, CancellationToken.None);
 
             var remind = new RemindMessage()
             {
@@ -154,7 +155,7 @@ namespace GrillBot.App.Services.Reminder
             if (notify)
                 messageId = await SendNotificationMessageAsync(remind, true);
 
-            await context.InitUserAsync(user);
+            await context.InitUserAsync(user, CancellationToken.None);
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, user,
                 $"{user.GetDisplayName()} stornoval upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim());
             await context.AddAsync(logItem);

@@ -23,6 +23,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services.AuditLog
@@ -113,9 +114,9 @@ namespace GrillBot.App.Services.AuditLog
             var logItem = AuditLogItem.Create(AuditLogItemType.Command, context.Guild, context.Channel, context.User, JsonConvert.SerializeObject(data, JsonSerializerSettings));
 
             using var dbContext = DbFactory.Create();
-            await dbContext.InitGuildAsync(context.Guild);
-            await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser);
-            await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, ChannelType.Text);
+            await dbContext.InitGuildAsync(context.Guild, CancellationToken.None);
+            await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser, CancellationToken.None);
+            await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, ChannelType.Text, CancellationToken.None);
 
             await dbContext.AddAsync(logItem);
             await dbContext.SaveChangesAsync();
@@ -159,14 +160,14 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(user.Guild);
-            await context.InitUserAsync(user);
-            await context.InitGuildUserAsync(user.Guild, user);
+            await context.InitGuildAsync(user.Guild, CancellationToken.None);
+            await context.InitUserAsync(user, CancellationToken.None);
+            await context.InitGuildUserAsync(user.Guild, user, CancellationToken.None);
 
             if (auditLog?.User != null)
             {
-                await context.InitUserAsync(auditLog.User);
-                await context.InitGuildUserAsync(user.Guild, user.Guild.GetUser(auditLog.User.Id));
+                await context.InitUserAsync(auditLog.User, CancellationToken.None);
+                await context.InitGuildUserAsync(user.Guild, user.Guild.GetUser(auditLog.User.Id), CancellationToken.None);
             }
 
             await context.AddAsync(entity);
@@ -180,9 +181,9 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(user.Guild);
-            await context.InitUserAsync(user);
-            await context.InitGuildUserAsync(user.Guild, user);
+            await context.InitGuildAsync(user.Guild, CancellationToken.None);
+            await context.InitUserAsync(user, CancellationToken.None);
+            await context.InitGuildUserAsync(user.Guild, user, CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -198,9 +199,9 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(channel.Guild);
-            await context.InitUserAsync(after.Author);
-            await context.InitGuildUserAsync(channel.Guild, after.Author as IGuildUser ?? channel.Guild.GetUser(after.Author.Id));
+            await context.InitGuildAsync(channel.Guild, CancellationToken.None);
+            await context.InitUserAsync(after.Author, CancellationToken.None);
+            await context.InitGuildUserAsync(channel.Guild, after.Author as IGuildUser ?? channel.Guild.GetUser(after.Author.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -256,10 +257,10 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(channel.Guild);
-            await context.InitGuildChannelAsync(channel.Guild, channel, ChannelType.Text);
-            await context.InitUserAsync(removedBy);
-            await context.InitGuildUserAsync(channel.Guild, removedBy as IGuildUser ?? channel.Guild.GetUser(removedBy.Id));
+            await context.InitGuildAsync(channel.Guild, CancellationToken.None);
+            await context.InitGuildChannelAsync(channel.Guild, channel, ChannelType.Text, CancellationToken.None);
+            await context.InitUserAsync(removedBy, CancellationToken.None);
+            await context.InitGuildUserAsync(channel.Guild, removedBy as IGuildUser ?? channel.Guild.GetUser(removedBy.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -278,10 +279,10 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(channel.Guild);
-            await context.InitGuildChannelAsync(channel.Guild, channel, DiscordHelper.GetChannelType(channel).Value);
-            await context.InitUserAsync(auditLog.User);
-            await context.InitGuildUserAsync(channel.Guild, auditLog.User as IGuildUser ?? channel.Guild.GetUser(auditLog.User.Id));
+            await context.InitGuildAsync(channel.Guild, CancellationToken.None);
+            await context.InitGuildChannelAsync(channel.Guild, channel, DiscordHelper.GetChannelType(channel).Value, CancellationToken.None);
+            await context.InitUserAsync(auditLog.User, CancellationToken.None);
+            await context.InitGuildUserAsync(channel.Guild, auditLog.User as IGuildUser ?? channel.Guild.GetUser(auditLog.User.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -300,10 +301,10 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(channel.Guild);
-            await context.InitGuildChannelAsync(channel.Guild, channel, DiscordHelper.GetChannelType(channel).Value);
-            await context.InitUserAsync(auditLog.User);
-            await context.InitGuildUserAsync(channel.Guild, auditLog.User as IGuildUser ?? channel.Guild.GetUser(auditLog.User.Id));
+            await context.InitGuildAsync(channel.Guild, CancellationToken.None);
+            await context.InitGuildChannelAsync(channel.Guild, channel, DiscordHelper.GetChannelType(channel).Value, CancellationToken.None);
+            await context.InitUserAsync(auditLog.User, CancellationToken.None);
+            await context.InitGuildUserAsync(channel.Guild, auditLog.User as IGuildUser ?? channel.Guild.GetUser(auditLog.User.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -325,10 +326,10 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(after.Guild);
-            await context.InitGuildChannelAsync(after.Guild, after, DiscordHelper.GetChannelType(after).Value);
-            await context.InitUserAsync(auditLog.User);
-            await context.InitGuildUserAsync(after.Guild, auditLog.User as IGuildUser ?? after.Guild.GetUser(auditLog.User.Id));
+            await context.InitGuildAsync(after.Guild, CancellationToken.None);
+            await context.InitGuildChannelAsync(after.Guild, after, DiscordHelper.GetChannelType(after).Value, CancellationToken.None);
+            await context.InitUserAsync(auditLog.User, CancellationToken.None);
+            await context.InitGuildUserAsync(after.Guild, auditLog.User as IGuildUser ?? after.Guild.GetUser(auditLog.User.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -354,9 +355,9 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(guild);
-            await context.InitUserAsync(auditLog.User);
-            await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id));
+            await context.InitGuildAsync(guild, CancellationToken.None);
+            await context.InitUserAsync(auditLog.User, CancellationToken.None);
+            await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -365,8 +366,8 @@ namespace GrillBot.App.Services.AuditLog
         private async Task OnOverwriteChangedAsync(SocketGuild guild, SocketGuildChannel channel)
         {
             using var context = DbFactory.Create();
-            await context.InitGuildAsync(guild);
-            await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value);
+            await context.InitGuildAsync(guild, CancellationToken.None);
+            await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value, CancellationToken.None);
 
             var timeLimit = DateTime.Now.AddDays(-5);
             var auditLogIdsQuery = context.AuditLogs.AsQueryable()
@@ -388,8 +389,8 @@ namespace GrillBot.App.Services.AuditLog
                 var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
                 var entity = AuditLogItem.Create(AuditLogItemType.OverwriteCreated, guild, channel, log.User, json, log.Id);
 
-                await context.InitUserAsync(log.User);
-                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
+                await context.InitUserAsync(log.User, CancellationToken.None);
+                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id), CancellationToken.None);
                 await context.AddAsync(entity);
             }
 
@@ -399,8 +400,8 @@ namespace GrillBot.App.Services.AuditLog
                 var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
                 var entity = AuditLogItem.Create(AuditLogItemType.OverwriteDeleted, guild, channel, log.User, json, log.Id);
 
-                await context.InitUserAsync(log.User);
-                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
+                await context.InitUserAsync(log.User, CancellationToken.None);
+                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id), CancellationToken.None);
                 await context.AddAsync(entity);
             }
 
@@ -413,8 +414,8 @@ namespace GrillBot.App.Services.AuditLog
                 var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
                 var entity = AuditLogItem.Create(AuditLogItemType.OverwriteUpdated, guild, channel, log.User, json, log.Id);
 
-                await context.InitUserAsync(log.User);
-                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
+                await context.InitUserAsync(log.User, CancellationToken.None);
+                await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id), CancellationToken.None);
                 await context.AddAsync(entity);
             }
 
@@ -434,9 +435,9 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(guild);
-            await context.InitUserAsync(auditLog.User);
-            await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id));
+            await context.InitGuildAsync(guild, CancellationToken.None);
+            await context.InitUserAsync(auditLog.User, CancellationToken.None);
+            await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -464,9 +465,9 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(after.Guild);
-            await context.InitUserAsync(auditLog.User);
-            await context.InitGuildUserAsync(after.Guild, auditLog.User as IGuildUser ?? after.Guild.GetUser(auditLog.User.Id));
+            await context.InitGuildAsync(after.Guild, CancellationToken.None);
+            await context.InitUserAsync(auditLog.User, CancellationToken.None);
+            await context.InitGuildUserAsync(after.Guild, auditLog.User as IGuildUser ?? after.Guild.GetUser(auditLog.User.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
@@ -475,9 +476,9 @@ namespace GrillBot.App.Services.AuditLog
         private async Task OnMemberRolesUpdatedAsync(SocketGuildUser user)
         {
             using var context = DbFactory.Create();
-            await context.InitGuildAsync(user.Guild);
-            await context.InitUserAsync(user);
-            await context.InitGuildUserAsync(user.Guild, user);
+            await context.InitGuildAsync(user.Guild, CancellationToken.None);
+            await context.InitUserAsync(user, CancellationToken.None);
+            await context.InitGuildUserAsync(user.Guild, user, CancellationToken.None);
 
             var timeLimit = DateTime.Now.AddDays(-5);
             var auditLogIdsQuery = context.AuditLogs.AsQueryable()
@@ -494,8 +495,8 @@ namespace GrillBot.App.Services.AuditLog
                 var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
                 var entity = AuditLogItem.Create(AuditLogItemType.MemberRoleUpdated, user.Guild, null, item.User, json, item.Id);
 
-                await context.InitUserAsync(item.User);
-                await context.InitGuildUserAsync(user.Guild, item.User as IGuildUser ?? user.Guild.GetUser(item.User.Id));
+                await context.InitUserAsync(item.User, CancellationToken.None);
+                await context.InitGuildUserAsync(user.Guild, item.User as IGuildUser ?? user.Guild.GetUser(item.User.Id), CancellationToken.None);
                 await context.AddAsync(entity);
             }
 
@@ -536,9 +537,9 @@ namespace GrillBot.App.Services.AuditLog
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(after);
-            await context.InitUserAsync(auditLog.User);
-            await context.InitGuildUserAsync(after, auditLog.User as IGuildUser ?? after.GetUser(auditLog.User.Id));
+            await context.InitGuildAsync(after, CancellationToken.None);
+            await context.InitUserAsync(auditLog.User, CancellationToken.None);
+            await context.InitGuildUserAsync(after, auditLog.User as IGuildUser ?? after.GetUser(auditLog.User.Id), CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();

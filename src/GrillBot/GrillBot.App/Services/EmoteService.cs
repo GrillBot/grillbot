@@ -10,6 +10,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services
@@ -75,7 +76,7 @@ namespace GrillBot.App.Services
             var userId = message.Author.Id.ToString();
 
             using var context = DbFactory.Create();
-            await context.InitUserAsync(message.Author);
+            await context.InitUserAsync(message.Author, CancellationToken.None);
 
             foreach (var emote in emotes)
             {
@@ -146,8 +147,8 @@ namespace GrillBot.App.Services
 
             using var context = DbFactory.Create();
 
-            await context.InitUserAsync(user);
-            await context.InitUserAsync(msg.Author);
+            await context.InitUserAsync(user, CancellationToken.None);
+            await context.InitUserAsync(msg.Author, CancellationToken.None);
 
             if (@event == ReactionEvents.Added)
             {
@@ -215,7 +216,7 @@ namespace GrillBot.App.Services
             var guildId = guild.Id.ToString();
             var authorUserId = messageAuthor.Id.ToString();
 
-            await context.InitGuildAsync(guild);
+            await context.InitGuildAsync(guild, CancellationToken.None);
             var reactingUser = await context.GuildUsers.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
             if (reactingUser == null)
             {

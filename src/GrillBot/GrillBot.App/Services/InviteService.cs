@@ -11,6 +11,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services
@@ -32,7 +33,7 @@ namespace GrillBot.App.Services
             using var dbContext = DbFactory.Create();
 
             var botId = DiscordClient.CurrentUser.Id.ToString();
-            await dbContext.InitUserAsync(DiscordClient.CurrentUser);
+            await dbContext.InitUserAsync(DiscordClient.CurrentUser, CancellationToken.None);
 
             var invites = new List<InviteMetadata>();
             foreach (var guild in DiscordClient.Guilds)
@@ -40,8 +41,8 @@ namespace GrillBot.App.Services
                 var guildInvites = await GetLatestMetadataOfGuildAsync(guild);
                 if (guildInvites == null) continue;
 
-                await dbContext.InitGuildAsync(guild);
-                await dbContext.InitGuildUserAsync(guild, guild.CurrentUser);
+                await dbContext.InitGuildAsync(guild, CancellationToken.None);
+                await dbContext.InitGuildUserAsync(guild, guild.CurrentUser, CancellationToken.None);
 
                 var logItem = new AuditLogItem()
                 {
@@ -104,8 +105,8 @@ namespace GrillBot.App.Services
 
             using var dbContext = DbFactory.Create();
 
-            await dbContext.InitGuildAsync(guild);
-            await dbContext.InitUserAsync(user);
+            await dbContext.InitGuildAsync(guild, CancellationToken.None);
+            await dbContext.InitUserAsync(user, CancellationToken.None);
 
             var joinedUserEntity = await dbContext.GuildUsers.AsQueryable()
                 .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
@@ -135,8 +136,8 @@ namespace GrillBot.App.Services
                 {
                     var creatorUser = guild.GetUser(usedInvite.CreatorId.Value);
 
-                    await dbContext.InitUserAsync(creatorUser);
-                    await dbContext.InitGuildUserAsync(guild, creatorUser);
+                    await dbContext.InitUserAsync(creatorUser, CancellationToken.None);
+                    await dbContext.InitGuildUserAsync(guild, creatorUser, CancellationToken.None);
                 }
 
                 var invite = await dbContext.Invites.AsQueryable()

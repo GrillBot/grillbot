@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Services
@@ -33,9 +34,9 @@ namespace GrillBot.App.Services
         {
             using var context = DbFactory.Create();
 
-            await context.InitUserAsync(user);
-            await context.InitGuildAsync(guild);
-            await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value);
+            await context.InitUserAsync(user, CancellationToken.None);
+            await context.InitGuildAsync(guild, CancellationToken.None);
+            await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value, CancellationToken.None);
 
             var entity = new SearchItem()
             {

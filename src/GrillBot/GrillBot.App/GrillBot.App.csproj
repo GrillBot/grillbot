@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>D:\Dev\grillbot\src\GrillBot\GrillBot.App\GrillBot.App.xml</DocumentationFile>
+    <DocumentationFile>GrillBot.App.xml</DocumentationFile>
     <NoWarn>1701;1702;1591;1090</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>D:\Dev\grillbot\src\GrillBot\GrillBot.App\GrillBot.App.xml</DocumentationFile>
+    <DocumentationFile>GrillBot.App.xml</DocumentationFile>
     <NoWarn>1701;1702;1591;1090</NoWarn>
   </PropertyGroup>
 

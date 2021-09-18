@@ -2,12 +2,12 @@
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace GrillBot.Tests.Database.Services
 {
@@ -32,7 +32,7 @@ namespace GrillBot.Tests.Database.Services
             context.SaveChanges();
             context.ChangeTracker.Clear();
 
-            context.InitGuildAsync(guild.Object).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            context.InitGuildAsync(guild.Object, CancellationToken.None).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = TestHelpers.CreateDbContext();
 
-            context.InitGuildAsync(guild.Object).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            context.InitGuildAsync(guild.Object, CancellationToken.None).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace GrillBot.Tests.Database.Services
             context.SaveChanges();
             context.ChangeTracker.Clear();
 
-            context.InitUserAsync(user.Object).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            context.InitUserAsync(user.Object, CancellationToken.None).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
         }
 
         [TestMethod]
@@ -67,7 +67,7 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = TestHelpers.CreateDbContext();
 
-            context.InitUserAsync(user.Object).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            context.InitUserAsync(user.Object, CancellationToken.None).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
         }
 
         [TestMethod]
@@ -84,7 +84,7 @@ namespace GrillBot.Tests.Database.Services
             context.SaveChanges();
             context.ChangeTracker.Clear();
 
-            context.InitGuildUserAsync(guild.Object, user.Object).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            context.InitGuildUserAsync(guild.Object, user.Object, CancellationToken.None).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
         }
 
         [TestMethod]
@@ -97,7 +97,7 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = TestHelpers.CreateDbContext();
 
-            context.InitGuildUserAsync(guild.Object, user.Object).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            context.InitGuildUserAsync(guild.Object, user.Object, CancellationToken.None).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
         }
 
         [TestMethod]
@@ -116,7 +116,7 @@ namespace GrillBot.Tests.Database.Services
             context.SaveChanges();
             context.ChangeTracker.Clear();
 
-            context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category)
+            context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category, CancellationToken.None)
                 .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
         }
 
@@ -132,7 +132,7 @@ namespace GrillBot.Tests.Database.Services
 
             using var context = TestHelpers.CreateDbContext();
 
-            context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category)
+            context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category, CancellationToken.None)
                 .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
         }
     }

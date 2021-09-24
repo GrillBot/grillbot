@@ -137,7 +137,7 @@ namespace GrillBot.App.Modules
             var left = currentState.NextOpeningDateTime.Value - DateTime.Now;
 
             titleBuilder
-                .Append("Do další otvíračky zbývá ")
+                .Append("Další otvíračka bude za ")
                 .Append(left.Humanize(culture: Culture))
                 .Append('.');
 

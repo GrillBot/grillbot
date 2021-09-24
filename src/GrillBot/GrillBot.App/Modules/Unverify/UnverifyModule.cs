@@ -46,6 +46,9 @@ namespace GrillBot.App.Modules.Unverify
                 await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
 
                 var users = Context.Message.MentionedUsers.Where(o => o != null).ToList();
+                var mentionedRoles = Context.Message.MentionedRoles.Where(o => !o.IsEveryone).ToList();
+                if (mentionedRoles.Count > 0) users.AddRange(mentionedRoles.SelectMany(o => o.Members));
+                users = users.GroupBy(o => o.Id).Select(o => o.First()).ToList();
                 if (users.Count == 0) return;
 
                 var messages = await UnverifyService.SetUnverifyAsync(users, end, data, Context.Guild, Context.User, false);

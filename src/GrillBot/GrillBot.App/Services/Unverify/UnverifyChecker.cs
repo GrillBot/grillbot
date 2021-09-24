@@ -8,6 +8,7 @@ using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace GrillBot.App.Services.Unverify
         private TimeSpan UnverifyMinimalTime { get; }
         private TimeSpan SelfunverifyMinimalTime { get; }
         private int MaxKeepAccessCount { get; }
+        private int MaxMemberPerCall { get; }
 
         public UnverifyChecker(GrillBotContextFactory dbFactory, IConfiguration configuration)
         {
@@ -31,6 +33,13 @@ namespace GrillBot.App.Services.Unverify
             UnverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("MinimalTimes:Unverify"));
             SelfunverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("MinimalTimes:Selfunverify"));
             MaxKeepAccessCount = unverifyConfig.GetValue<int>("MaxKeepAccessCount");
+            MaxMemberPerCall = unverifyConfig.GetValue<int>("MaxMembersPerCall");
+        }
+
+        public void ValidateUnverifyGroup(List<SocketUser> users)
+        {
+            if (users.Count > MaxMemberPerCall)
+                throw new ValidationException($"Příliš mnoho lidí. Maximálně lze zpracovat {MaxMemberPerCall}");
         }
 
         public async Task ValidateUnverifyAsync(SocketGuildUser user, SocketGuild guild, bool selfunverify, DateTime end, int keeped)

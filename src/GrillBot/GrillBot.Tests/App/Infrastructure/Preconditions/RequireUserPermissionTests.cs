@@ -32,9 +32,11 @@ namespace GrillBot.Tests.App.Infrastructure.Preconditions
         {
             var context = new Mock<Discord.Commands.ICommandContext>();
             context.Setup(o => o.Channel).Returns(new Mock<IDMChannel>().Object);
+            context.Setup(o => o.User).Returns(new Mock<IUser>().Object);
 
-            var attribute = new RequireUserPermissionAttribute(new[] { ChannelPermission.AddReactions }, false);
-            var result = attribute.CheckPermissionsAsync(context.Object, null, null).Result;
+            using var container = DIHelpers.CreateContainer();
+            var attribute = new RequireUserPermissionAttribute(new[] { ChannelPermission.AddReactions }, false, true);
+            var result = attribute.CheckPermissionsAsync(context.Object, null, container).Result;
 
             Assert.IsTrue(result.IsSuccess);
         }

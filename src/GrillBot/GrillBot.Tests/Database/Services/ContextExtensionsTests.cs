@@ -17,6 +17,7 @@ namespace GrillBot.Tests.Database.Services
         private const string GuildId = "2115465674";
         private const string UserId = "44897489486";
         private const string ChannelId = "45867615616";
+        private CancellationToken CancellationToken => CancellationToken.None;
 
         [TestMethod]
         public void InitGuildAsync_Initialized()
@@ -26,13 +27,20 @@ namespace GrillBot.Tests.Database.Services
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
             guild.Setup(o => o.Roles).Returns(new List<IRole>());
 
-            using var context = TestHelpers.CreateDbContext();
+            var context = TestHelpers.CreateDbContext();
 
-            context.Add(Guild.FromDiscord(guild.Object));
-            context.SaveChanges();
-            context.ChangeTracker.Clear();
+            try
+            {
+                context.Add(Guild.FromDiscord(guild.Object));
+                context.SaveChanges();
+                context.ChangeTracker.Clear();
 
-            context.InitGuildAsync(guild.Object, CancellationToken.None).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+                context.InitGuildAsync(guild.Object, CancellationToken).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
 
         [TestMethod]
@@ -42,32 +50,51 @@ namespace GrillBot.Tests.Database.Services
             guild.Setup(o => o.Name).Returns("A");
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
 
-            using var context = TestHelpers.CreateDbContext();
-
-            context.InitGuildAsync(guild.Object, CancellationToken.None).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            var context = TestHelpers.CreateDbContext();
+            try
+            {
+                context.InitGuildAsync(guild.Object, CancellationToken).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
 
         [TestMethod]
         public void InitUserAsync_Initialized()
         {
             var user = DiscordHelpers.CreateUserMock(Convert.ToUInt64(UserId), "U");
-            using var context = TestHelpers.CreateDbContext();
+            var context = TestHelpers.CreateDbContext();
 
-            context.Add(User.FromDiscord(user.Object));
-            context.SaveChanges();
-            context.ChangeTracker.Clear();
+            try
+            {
+                context.Add(User.FromDiscord(user.Object));
+                context.SaveChanges();
+                context.ChangeTracker.Clear();
 
-            context.InitUserAsync(user.Object, CancellationToken.None).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+                context.InitUserAsync(user.Object, CancellationToken).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
 
         [TestMethod]
         public void InitUserAsync_NonInitialized()
         {
             var user = DiscordHelpers.CreateUserMock(Convert.ToUInt64(UserId), "U");
-
             using var context = TestHelpers.CreateDbContext();
 
-            context.InitUserAsync(user.Object, CancellationToken.None).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            try
+            {
+                context.InitUserAsync(user.Object, CancellationToken).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
 
         [TestMethod]
@@ -77,14 +104,20 @@ namespace GrillBot.Tests.Database.Services
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
 
             var user = DiscordHelpers.CreateGuildUserMock(Convert.ToUInt64(UserId), "GU");
+            var context = TestHelpers.CreateDbContext();
 
-            using var context = TestHelpers.CreateDbContext();
+            try
+            {
+                context.Add(GuildUser.FromDiscord(guild.Object, user.Object));
+                context.SaveChanges();
+                context.ChangeTracker.Clear();
 
-            context.Add(GuildUser.FromDiscord(guild.Object, user.Object));
-            context.SaveChanges();
-            context.ChangeTracker.Clear();
-
-            context.InitGuildUserAsync(guild.Object, user.Object, CancellationToken.None).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+                context.InitGuildUserAsync(guild.Object, user.Object, CancellationToken).ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
 
         [TestMethod]
@@ -94,10 +127,16 @@ namespace GrillBot.Tests.Database.Services
             guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
 
             var user = DiscordHelpers.CreateGuildUserMock(Convert.ToUInt64(UserId), "GU");
+            var context = TestHelpers.CreateDbContext();
 
-            using var context = TestHelpers.CreateDbContext();
-
-            context.InitGuildUserAsync(guild.Object, user.Object, CancellationToken.None).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            try
+            {
+                context.InitGuildUserAsync(guild.Object, user.Object, CancellationToken).ContinueWith(_ => Assert.IsTrue(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
 
         [TestMethod]
@@ -110,14 +149,20 @@ namespace GrillBot.Tests.Database.Services
             channel.Setup(o => o.Id).Returns(Convert.ToUInt64(ChannelId));
             channel.Setup(o => o.Name).Returns("CH");
 
-            using var context = TestHelpers.CreateDbContext();
+            var context = TestHelpers.CreateDbContext();
+            try
+            {
+                context.Add(GuildChannel.FromDiscord(guild.Object, channel.Object, ChannelType.Category));
+                context.SaveChanges();
+                context.ChangeTracker.Clear();
 
-            context.Add(GuildChannel.FromDiscord(guild.Object, channel.Object, ChannelType.Category));
-            context.SaveChanges();
-            context.ChangeTracker.Clear();
-
-            context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category, CancellationToken.None)
-                .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+                context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category, CancellationToken)
+                    .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
 
         [TestMethod]
@@ -130,10 +175,16 @@ namespace GrillBot.Tests.Database.Services
             channel.Setup(o => o.Id).Returns(Convert.ToUInt64(ChannelId));
             channel.Setup(o => o.Name).Returns("CH");
 
-            using var context = TestHelpers.CreateDbContext();
-
-            context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category, CancellationToken.None)
+            var context = TestHelpers.CreateDbContext();
+            try
+            {
+                context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.Category, CancellationToken)
                 .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
     }
 }

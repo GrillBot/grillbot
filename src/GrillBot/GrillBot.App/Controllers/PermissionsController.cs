@@ -57,7 +57,8 @@ namespace GrillBot.App.Controllers
             {
                 IsRole = parameters.IsRole,
                 TargetId = parameters.TargetId,
-                Command = parameters.Command
+                Command = parameters.Command,
+                State = parameters.State
             };
 
             await DbContext.AddAsync(permission);
@@ -130,6 +131,28 @@ namespace GrillBot.App.Controllers
 
             result = result.OrderBy(o => o.Command).ToList();
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Sets permission state of command.
+        /// </summary>
+        /// <response code="200">Success</response>
+        /// <response code="404">Permission not found.</response>
+        [HttpPut("set")]
+        [OpenApiOperation(nameof(PermissionsController) + "_" + nameof(GetExplicitPermissionsListAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult> SetExplicitPermissionState([Required] string command, [Required] string targetId, ExplicitPermissionState state)
+        {
+            var permission = await DbContext.ExplicitPermissions.AsQueryable()
+                .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
+
+            if (permission == null)
+                return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
+
+            permission.State = state;
+            await DbContext.SaveChangesAsync();
+            return Ok();
         }
     }
 }

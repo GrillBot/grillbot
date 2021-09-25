@@ -11,7 +11,7 @@ namespace GrillBot.Tests.TestHelper
         {
             var services = new ServiceCollection()
                 .AddSingleton(TestHelpers.CreateDbOptionsBuilder().Options)
-                .AddSingleton(TestHelpers.CreateDbContext())
+                .AddTransient(_ => TestHelpers.CreateDbContext())
                 .AddSingleton<GrillBotContextFactory, TestingGrillBotContextFactory>();
 
             return services.BuildServiceProvider();

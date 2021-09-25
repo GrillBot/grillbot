@@ -21,10 +21,10 @@ namespace GrillBot.App.Infrastructure.Preconditions
     /// <remarks>
     /// Order of checks:
     /// 1) Checks for contexts, if specified. If success, it will do next checks.
-    /// 2) If command is trying execute in guild, it will check guild or channel permissions. If command is trying execute in DMs, it will check channel permissions. If success, checks ends with success.
-    /// 3) If command is trying execute in guild and command is enabled for booster it will check if user is server booster (have premium role). If success, checks ends with success.
-    /// 4) If command not have disabled explicit permissions for users, checks ends with fail.
-    /// 5) If user is bot admin, checks ends with success.
+    /// 2) If user is bot admin, checks ends with success.
+    /// 3) If command not have disabled explicit permissions for users, checks ends with fail.
+    /// 4) If command is trying execute in guild, it will check guild or channel permissions. If command is trying execute in DMs, it will check channel permissions. If success, checks ends with success.
+    /// 5) If command is trying execute in guild and command is enabled for booster it will check if user is server booster (have premium role). If success, checks ends with success.
     /// </remarks>
     public class RequireUserPermissionAttribute : PreconditionAttribute
     {
@@ -79,6 +79,12 @@ namespace GrillBot.App.Infrastructure.Preconditions
             var contextCheck = await CheckContextsAsync(context, command, services);
             if (!contextCheck.IsSuccess) return contextCheck;
 
+            var botAdminCheck = await CheckBotAdministratorPermsAsync(context, services);
+            if (botAdminCheck.IsSuccess) return PreconditionResult.FromSuccess();
+
+            var explicitBanCheck = await CheckExplicitPermissionBans(context, command, services);
+            if (!explicitBanCheck.IsSuccess) return explicitBanCheck;
+
             var guildPermsCheck = await CheckGuildPermissionsAsync(context, command, services);
             if (guildPermsCheck.IsSuccess) return PreconditionResult.FromSuccess();
 
@@ -90,9 +96,6 @@ namespace GrillBot.App.Infrastructure.Preconditions
 
             var explicitCheck = await CheckExplicitPermissionAsync(context, command, services);
             if (explicitCheck.IsSuccess) return PreconditionResult.FromSuccess();
-
-            var botAdminCheck = await CheckBotAdministratorPermsAsync(context, services);
-            if (botAdminCheck.IsSuccess) return PreconditionResult.FromSuccess();
 
             var checkedPerms = new[]
             {
@@ -254,8 +257,8 @@ namespace GrillBot.App.Infrastructure.Preconditions
             using var dbContext = dbFactory.Create();
 
             var permissions = await dbContext.ExplicitPermissions
-                .AsQueryable()
-                .Where(o => o.Command == command.Aliases[0].Trim())
+                .AsNoTracking()
+                .Where(o => o.Command == command.Aliases[0].Trim() && o.State == ExplicitPermissionState.Allowed)
                 .ToListAsync();
 
             if (permissions.Count == 0)
@@ -276,6 +279,23 @@ namespace GrillBot.App.Infrastructure.Preconditions
             }
 
             return PreconditionResult.FromError("Pro tento příkaz nemáš žádné explicitní povolení.");
+        }
+
+        private async Task<PreconditionResult> CheckExplicitPermissionBans(ICommandContext context, CommandInfo command, IServiceProvider services)
+        {
+            if (DisallowExplicit) return PreconditionResult.FromSuccess();
+
+            var dbFactory = services.GetRequiredService<GrillBotContextFactory>();
+            using var dbContext = dbFactory.Create();
+
+            var permissionExists = await dbContext.ExplicitPermissions
+                .AsNoTracking()
+                .AnyAsync(o => o.Command == command.Aliases[0].Trim() && o.State == ExplicitPermissionState.Banned && !o.IsRole && o.TargetId == context.User.Id.ToString());
+
+            if (!permissionExists)
+                return PreconditionResult.FromSuccess();
+            else
+                return PreconditionResult.FromError("Tento příkaz nemůžeš použít. Byl ti k němu zakázán přístup.");
         }
 
         private static async Task<PreconditionResult> CheckBotAdministratorPermsAsync(ICommandContext context, IServiceProvider services)

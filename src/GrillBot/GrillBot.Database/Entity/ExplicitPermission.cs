@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using GrillBot.Database.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GrillBot.Database.Entity
@@ -13,5 +14,7 @@ namespace GrillBot.Database.Entity
 
         [StringLength(255)]
         public string Command { get; set; }
+
+        public ExplicitPermissionState State { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using GrillBot.Data.Models.API.Permissions;
+using GrillBot.Database.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GrillBot.Tests.Data.Models.API.Permissions
@@ -19,7 +20,8 @@ namespace GrillBot.Tests.Data.Models.API.Permissions
             {
                 Command = "Command",
                 IsRole = true,
-                TargetId = "Target"
+                TargetId = "Target",
+                State = ExplicitPermissionState.Banned
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(parameters);

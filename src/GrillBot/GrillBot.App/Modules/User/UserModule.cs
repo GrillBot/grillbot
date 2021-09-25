@@ -44,22 +44,63 @@ namespace GrillBot.App.Modules.User
         }
 
         [Command("access")]
-        [Summary("Získání seznamu přístupů uživatele.")]
+        [Summary("Získání seznamu přístupů uživatelů.")]
         [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění v kanálech.")]
         [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
-        public async Task GetUserAccessListAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
+        public async Task GetUsersAccessListAsync([Name("id/tagy/jmena_uzivatelu")] params IUser[] users)
         {
-            if (user == null) user = Context.User;
-            if (user is not SocketGuildUser guildUser) return;
+            if (users == null || users.Length == 0) users = new[] { Context.User };
+            users = users.OfType<SocketGuildUser>().ToArray();
+            if (users.Length == 0) return;
 
             await Context.Guild.DownloadUsersAsync();
+            if (users.Length > 1)
+            {
+                var channels = users.Select(o => o as SocketGuildUser).ToDictionary(
+                    o => o,
+                    o => GetUserVisibleChannels(Context.Guild, o).SelectMany(o => o.Item2).SplitInParts(20).ToList()
+                );
 
-            var visibleChannels = GetUserVisibleChannels(Context.Guild, guildUser).Take(EmbedBuilder.MaxFieldCount).ToList();
-            var embed = new EmbedBuilder().WithUserAccessList(visibleChannels, guildUser, Context.User, Context.Guild, 0);
+                var fields = channels.SelectMany(o =>
+                    o.Value.ConvertAll(x => new EmbedFieldBuilder().WithName(o.Key.GetFullName()).WithValue(string.Join(" ", x)))
+                ).Take(EmbedBuilder.MaxFieldCount).ToList();
 
-            var message = await ReplyAsync(embed: embed.Build());
-            if (visibleChannels.Count >= EmbedBuilder.MaxFieldCount)
-                await message.AddReactionsAsync(new[] { Emojis.MoveToPrev, Emojis.MoveToNext });
+                var embed = new EmbedBuilder()
+                    .WithFooter(Context.User)
+                    .WithAuthor("Seznam oprávnění pro uživatele")
+                    .WithColor(Color.Blue)
+                    .WithCurrentTimestamp()
+                    .WithFields(fields)
+                    .Build();
+
+                await ReplyAsync(embed: embed);
+            }
+            else
+            {
+                var guildUser = users[0] as SocketGuildUser;
+                var visibleChannels = GetUserVisibleChannels(Context.Guild, guildUser).Take(EmbedBuilder.MaxFieldCount).ToList();
+                var embed = new EmbedBuilder().WithUserAccessList(visibleChannels, guildUser, Context.User, Context.Guild, 0);
+
+                var message = await ReplyAsync(embed: embed.Build());
+                if (visibleChannels.Count >= EmbedBuilder.MaxFieldCount)
+                    await message.AddReactionsAsync(new[] { Emojis.MoveToPrev, Emojis.MoveToNext });
+            }
+        }
+
+        [Command("access")]
+        [Summary("Získání seznamu přístupů uživatelů na základě role.")]
+        [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění v kanálech.")]
+        [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
+        public async Task GetUsersAccessListAsync([Name("id/tag/jmeno_role")] SocketRole role)
+        {
+            if (role.IsEveryone)
+            {
+                await ReplyAsync("Nezle provést detekci přístupu pro everyone roli.");
+                return;
+            }
+
+            var members = role.Members.Where(o => o.IsUser()).ToArray();
+            await GetUsersAccessListAsync(members);
         }
 
         public static async Task<Embed> GetUserInfoEmbedAsync(SocketCommandContext context, GrillBotContextFactory dbFactory, IConfiguration configuration,

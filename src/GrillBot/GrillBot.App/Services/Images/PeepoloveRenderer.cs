@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
 using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Resources.Peepolove;
 using ImageMagick;
 using System;

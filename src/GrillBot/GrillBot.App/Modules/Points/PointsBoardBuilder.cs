@@ -2,6 +2,7 @@
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Extensions.Discord;
 using System;
 using System.Collections.Generic;
 using System.Linq;

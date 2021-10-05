@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.Commands;
 using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Images;
 using GrillBot.Data;
 using GrillBot.Data.Enums;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Duck;
 using Humanizer;
 using Microsoft.Extensions.Configuration;

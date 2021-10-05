@@ -3,6 +3,7 @@ using Discord.Commands;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Extensions.Discord;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

@@ -22,6 +22,11 @@ namespace GrillBot.Data.Models.API.Guilds
         /// </summary>
         public int MemberCount { get; set; }
 
+        /// <summary>
+        /// Flag that describe information about connection state.
+        /// </summary>
+        public bool IsConnected { get; set; }
+
         public Guild() { }
 
         public Guild(Database.Entity.Guild guild)
@@ -37,6 +42,7 @@ namespace GrillBot.Data.Models.API.Guilds
             Id = guild.Id.ToString();
             Name = guild.Name;
             MemberCount = guild.MemberCount;
+            IsConnected = guild.IsConnected;
         }
     }
 }

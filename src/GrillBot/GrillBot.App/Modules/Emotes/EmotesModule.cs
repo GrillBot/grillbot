@@ -5,6 +5,7 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Data;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Humanizer;

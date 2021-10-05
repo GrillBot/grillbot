@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
 using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;

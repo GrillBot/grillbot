@@ -9,6 +9,7 @@ using GrillBot.App.Services;
 using GrillBot.Data;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Guilds;
 using GrillBot.Database.Services;
 using Microsoft.Extensions.Caching.Memory;

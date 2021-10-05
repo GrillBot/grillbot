@@ -53,6 +53,7 @@ namespace GrillBot.App.Controllers
                 if (guild == null) continue;
 
                 guildData.MemberCount = guild.MemberCount;
+                guildData.IsConnected = guild.IsConnected;
             }
 
             return Ok(result);

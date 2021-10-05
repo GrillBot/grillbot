@@ -7,6 +7,7 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;

@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.App.Extensions.Discord;
+using GrillBot.Data.Extensions.Discord;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;

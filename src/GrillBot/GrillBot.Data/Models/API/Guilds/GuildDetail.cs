@@ -22,11 +22,6 @@ namespace GrillBot.Data.Models.API.Guilds
         public string IconUrl { get; set; }
 
         /// <summary>
-        /// Flag that describe information about connection state.
-        /// </summary>
-        public bool IsConnected { get; set; }
-
-        /// <summary>
         /// Owner of guild
         /// </summary>
         public User Owner { get; set; }
@@ -69,7 +64,6 @@ namespace GrillBot.Data.Models.API.Guilds
 
             CreatedAt = guild.CreatedAt;
             IconUrl = guild.IconUrl;
-            IsConnected = guild.IsConnected;
             Owner = new User(guild.Owner);
             PremiumTier = guild.PremiumTier;
             VanityUrl = !string.IsNullOrEmpty(guild.VanityURLCode) ? DiscordConfig.InviteUrl + guild.VanityURLCode : null;

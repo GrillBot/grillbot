@@ -47,7 +47,7 @@ namespace GrillBot.Data.Models.API.Users
                 query = query.Where(o => o.ApiToken != null);
 
             if (Flags != null)
-                query = query.Where(o => (o.Flags & Flags) != 0);
+                query = query.Where(o => (o.Flags & Flags) == Flags);
 
             if (HaveBirthday)
                 query = query.Where(o => o.Birthday != null);

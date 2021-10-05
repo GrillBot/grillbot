@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;

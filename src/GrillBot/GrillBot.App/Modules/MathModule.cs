@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.MathJS;
 using Newtonsoft.Json;
 using System.Net.Http;

@@ -1,11 +1,10 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Extensions.Discord
+namespace GrillBot.Data.Extensions.Discord
 {
     static public class UserExtensions
     {

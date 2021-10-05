@@ -182,6 +182,7 @@ namespace GrillBot.App
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
 
+            app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
             app.UseRouting();
             app.UseAuthorization();
             app.UseAuthentication();

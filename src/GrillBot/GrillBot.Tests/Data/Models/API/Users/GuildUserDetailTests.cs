@@ -1,5 +1,7 @@
-﻿using GrillBot.Data.Models.API.Users;
+﻿using Discord;
+using GrillBot.Data.Models.API.Users;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace GrillBot.Tests.Data.Models.API.Users
 {
@@ -28,7 +30,9 @@ namespace GrillBot.Tests.Data.Models.API.Users
             entity.CreatedInvites.Add(new());
             entity.Channels.Add(new() { Channel = new() { Name = "Channel" } });
 
-            var detail = new GuildUserDetail(entity);
+            var guild = new Mock<IGuild>();
+
+            var detail = new GuildUserDetail(entity, guild.Object);
             TestHelpers.CheckNonDefaultPropertyValues(detail);
         }
 
@@ -45,8 +49,9 @@ namespace GrillBot.Tests.Data.Models.API.Users
             };
 
             entity.Channels.Add(new() { Channel = new() { Name = "Channel" } });
+            var guild = new Mock<IGuild>();
 
-            var detail = new GuildUserDetail(entity);
+            var detail = new GuildUserDetail(entity, guild.Object);
             TestHelpers.CheckDefaultPropertyValues(detail, (defaultValue, value, propertyName) =>
             {
                 switch (propertyName)

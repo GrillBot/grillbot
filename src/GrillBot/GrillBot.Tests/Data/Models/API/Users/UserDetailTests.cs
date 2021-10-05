@@ -33,9 +33,9 @@ namespace GrillBot.Tests.Data.Models.API.Users
 
             entity.Guilds.Add(new() { Guild = new() });
             entity.UsedEmotes.Add(new() { EmoteId = "<:rtzW:567039874452946961>" });
+            var discordClient = new Mock<IDiscordClient>();
 
-            var userDetail = new UserDetail(entity, user.Object);
-            Assert.IsTrue(userDetail.HaveApiToken);
+            var userDetail = new UserDetail(entity, user.Object, discordClient.Object);
             Assert.IsNotNull(userDetail.ActiveClients);
         }
 
@@ -43,9 +43,9 @@ namespace GrillBot.Tests.Data.Models.API.Users
         public void FilledConstructor_UnknownUser()
         {
             var entity = new GrillBot.Database.Entity.User();
+            var discordClient = new Mock<IDiscordClient>();
 
-            var userDetail = new UserDetail(entity, null);
-            Assert.IsFalse(userDetail.HaveApiToken);
+            var userDetail = new UserDetail(entity, null, discordClient.Object);
             Assert.IsNull(userDetail.ActiveClients);
         }
 
@@ -53,8 +53,9 @@ namespace GrillBot.Tests.Data.Models.API.Users
         public void FilledConstructor_WithBirthday()
         {
             var entity = new GrillBot.Database.Entity.User() { Birthday = DateTime.Now };
+            var discordClient = new Mock<IDiscordClient>();
 
-            var userDetail = new UserDetail(entity, null);
+            var userDetail = new UserDetail(entity, null, discordClient.Object);
             Assert.IsTrue(userDetail.HaveBirthday);
         }
     }

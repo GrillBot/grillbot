@@ -55,7 +55,7 @@ namespace GrillBot.App.Controllers
         public async Task<ActionResult<Dictionary<string, string>>> GetChannelsOfGuild(ulong guildId)
         {
             var guild = DiscordClient.GetGuild(guildId);
-            var channels = guild.Channels
+            var channels = (guild?.Channels ?? Enumerable.Empty<SocketGuildChannel>().ToArray())
                 .Select(o => new Channel(o))
                 .Where(o => o.Type != null)
                 .ToList();

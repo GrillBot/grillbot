@@ -111,7 +111,7 @@ namespace GrillBot.Database.Enums
         /// <summary>
         /// Message modified.
         /// </summary>
-        [Display(Name = "Zpráva upravena.")]
+        [Display(Name = "Zpráva upravena")]
         MessageEdited = 18,
 
         /// <summary>

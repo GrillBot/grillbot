@@ -15,7 +15,7 @@ namespace GrillBot.Data.Models.API.AuditLog
         public string GuildId { get; set; }
 
         /// <summary>
-        /// Who processed operation (Nickname/Username).
+        /// Who processed operation.
         /// </summary>
         public string ProcessedUserId { get; set; }
 
@@ -52,7 +52,7 @@ namespace GrillBot.Data.Models.API.AuditLog
         /// <summary>
         /// Descending sort. If false, ascending sort will be used.
         /// </summary>
-        public bool SortDesc { get; set; }
+        public bool SortDesc { get; set; } = true;
 
         public IQueryable<AuditLogItem> CreateQuery(IQueryable<AuditLogItem> query)
         {

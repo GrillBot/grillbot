@@ -122,20 +122,6 @@ namespace GrillBot.App.Services.AuditLog
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<List<AuditLogStatItem>> GetStatisticsAsync<TKey>(Expression<Func<AuditLogItem, TKey>> keySelector,
-            Func<List<Tuple<TKey, int, DateTime, DateTime>>, IEnumerable<AuditLogStatItem>> converter)
-        {
-            using var dbContext = DbFactory.Create();
-
-            var query = dbContext.AuditLogs.AsQueryable()
-                .GroupBy(keySelector)
-                .OrderBy(o => o.Key)
-                .Select(o => new Tuple<TKey, int, DateTime, DateTime>(o.Key, o.Count(), o.Min(x => x.CreatedAt), o.Max(x => x.CreatedAt)));
-
-            var data = await query.ToListAsync();
-            return converter(data).ToList();
-        }
-
         private async Task OnUserLeftAsync(SocketGuildUser user)
         {
             // Disable logging if bot not have permissions.
@@ -543,48 +529,6 @@ namespace GrillBot.App.Services.AuditLog
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
-        }
-
-        public async Task<List<int>> GetAvailableLogYearsAsync()
-        {
-            using var context = DbFactory.Create();
-
-            var query = context.AuditLogs.AsNoTracking()
-                .Select(o => o.CreatedAt.Year)
-                .Distinct()
-                .OrderBy(o => o);
-
-            return await query.ToListAsync();
-        }
-
-        public async Task<List<AuditLogStatItem>> GetStatisticsByMonthAtYearAsync(int year)
-        {
-            using var context = DbFactory.Create();
-
-            var query = context.AuditLogs.AsNoTracking()
-                .Where(o => o.CreatedAt.Year == year)
-                .GroupBy(o => o.CreatedAt.Month)
-                .Select(o => new AuditLogStatItem()
-                {
-                    Count = o.Count(),
-                    FirstItem = o.Min(x => x.CreatedAt),
-                    LastItem = o.Max(x => x.CreatedAt),
-                    StatName = o.Key.ToString()
-                });
-
-            var data = await query.ToListAsync();
-            var result = new List<AuditLogStatItem>();
-            var culture = new CultureInfo("cs-CZ");
-
-            for (int i = 1; i <= 12; i++)
-            {
-                var item = data.Find(o => o.StatName == i.ToString()) ?? new AuditLogStatItem() { StatName = i.ToString() };
-
-                item.StatName = culture.DateTimeFormat.GetMonthName(i).Humanize(LetterCasing.Title);
-                result.Add(item);
-            }
-
-            return result;
         }
 
         public async Task<bool> RemoveItemAsync(long id)

@@ -1,12 +1,11 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.App.Extensions;
+﻿using Discord.WebSocket;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.FileStorage;
-using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Models;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,8 +15,6 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using NSwag.Annotations;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -112,17 +109,24 @@ namespace GrillBot.App.Controllers
             if (string.IsNullOrEmpty(item.Data))
                 return NoContent();
 
-            switch (item.Type)
+            return item.Type switch
             {
-                case AuditLogItemType.Error:
-                case AuditLogItemType.Info:
-                case AuditLogItemType.Warning:
-                    return Ok(item.Data);
-                default:
-                    var obj = JsonConvert.DeserializeObject(item.Data);
-                    return Ok(obj);
-            }
-
+                AuditLogItemType.Error or AuditLogItemType.Info or AuditLogItemType.Warning => Ok(new MessageResponse(item.Data)),
+                AuditLogItemType.Command => Ok(JsonConvert.DeserializeObject<CommandExecution>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.ChannelCreated or AuditLogItemType.ChannelDeleted => Ok(JsonConvert.DeserializeObject<AuditChannelInfo>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.ChannelUpdated => Ok(JsonConvert.DeserializeObject<Diff<AuditChannelInfo>>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.EmojiDeleted => Ok(JsonConvert.DeserializeObject<AuditEmoteInfo>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.GuildUpdated => Ok(JsonConvert.DeserializeObject<GuildUpdatedData>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.MemberRoleUpdated or AuditLogItemType.MemberUpdated => Ok(JsonConvert.DeserializeObject<MemberUpdatedData>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.MessageDeleted => Ok(JsonConvert.DeserializeObject<MessageDeletedData>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.MessageEdited => Ok(JsonConvert.DeserializeObject<MessageEditedData>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.OverwriteCreated or AuditLogItemType.OverwriteDeleted => Ok(JsonConvert.DeserializeObject<AuditOverwriteInfo>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.OverwriteUpdated => Ok(JsonConvert.DeserializeObject<Diff<AuditOverwriteInfo>>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.Unban => Ok(JsonConvert.DeserializeObject<AuditUserInfo>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.UserJoined => Ok(JsonConvert.DeserializeObject<UserJoinedAuditData>(item.Data, AuditLogService.JsonSerializerSettings)),
+                AuditLogItemType.UserLeft => Ok(JsonConvert.DeserializeObject<UserLeftGuildData>(item.Data, AuditLogService.JsonSerializerSettings)),
+                _ => NoContent(),
+            };
         }
 
         /// <summary>

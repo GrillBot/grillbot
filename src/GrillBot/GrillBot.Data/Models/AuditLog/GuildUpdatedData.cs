@@ -72,6 +72,7 @@ namespace GrillBot.Data.Models.AuditLog
             if (Owner?.IsEmpty == true) Owner = null;
             if (PublicUpdatesChannel?.IsEmpty == true) PublicUpdatesChannel = null;
             if (RulesChannel?.IsEmpty == true) RulesChannel = null;
+            if (SystemChannel?.IsEmpty == true) SystemChannel = null;
             if (AfkTimeout?.IsEmpty == true) AfkTimeout = null;
             if (AfkChannel?.IsEmpty == true) AfkChannel = null;
             if (Name?.IsEmpty == true) Name = null;

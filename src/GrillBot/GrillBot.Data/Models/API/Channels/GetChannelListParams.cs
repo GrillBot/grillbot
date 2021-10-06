@@ -1,6 +1,5 @@
 ﻿using Discord;
 using GrillBot.Data.Models.API.Params;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace GrillBot.Data.Models.API.Channels
@@ -9,7 +8,7 @@ namespace GrillBot.Data.Models.API.Channels
     {
         public string GuildId { get; set; }
         public string NameContains { get; set; }
-        public List<ChannelType> ChannelTypes { get; set; }
+        public ChannelType? ChannelType { get; set; }
 
         /// <summary>
         /// Available options: Name, Type. Default is Name.
@@ -26,8 +25,8 @@ namespace GrillBot.Data.Models.API.Channels
             if (!string.IsNullOrEmpty(NameContains))
                 query = query.Where(o => o.Name.Contains(NameContains));
 
-            if (ChannelTypes?.Count > 0)
-                query = query.Where(o => ChannelTypes.Contains(o.ChannelType));
+            if (ChannelType != null)
+                query = query.Where(o => o.ChannelType == ChannelType.Value);
 
             return SortBy.ToLower() switch
             {

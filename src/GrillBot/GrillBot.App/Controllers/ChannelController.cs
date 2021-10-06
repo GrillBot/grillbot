@@ -90,13 +90,13 @@ namespace GrillBot.App.Controllers
         [HttpGet]
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelsListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<ActionResult<PaginatedResponse<GuildChannel>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters)
         {
             var query = DbContext.Channels.AsNoTracking()
                 .Include(o => o.Guild)
                 .AsQueryable();
-
+             
             query = parameters.CreateQuery(query);
             var result = await PaginatedResponse<GuildChannel>.CreateAsync(query, parameters, entity => new(entity));
             return Ok(result);

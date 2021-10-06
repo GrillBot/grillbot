@@ -8,21 +8,16 @@ using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
-using GrillBot.Data.Models.API.AuditLog;
-using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
-using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +25,7 @@ namespace GrillBot.App.Services.AuditLog
 {
     public class AuditLogService : ServiceBase
     {
-        private JsonSerializerSettings JsonSerializerSettings { get; }
+        public JsonSerializerSettings JsonSerializerSettings { get; }
         private MessageCache.MessageCache MessageCache { get; }
         private FileStorageFactory FileStorageFactory { get; }
 
@@ -74,7 +69,7 @@ namespace GrillBot.App.Services.AuditLog
 
                 await OnChannelUpdatedAsync(before, after);
                 await OnOverwriteChangedAsync(after.Guild, after);
-                NextAllowedChannelUpdateEvent = DateTime.Now.AddHours(1);
+                NextAllowedChannelUpdateEvent = DateTime.Now.AddMinutes(1);
             };
             DiscordClient.GuildUpdated += (before, after) =>
             {
@@ -96,7 +91,7 @@ namespace GrillBot.App.Services.AuditLog
                 if (!before.Roles.SequenceEqual(after.Roles) && NextAllowedRoleUpdateEvent <= DateTime.Now)
                 {
                     var task = OnMemberRolesUpdatedAsync(after);
-                    NextAllowedRoleUpdateEvent = DateTime.Now.AddHours(1);
+                    NextAllowedRoleUpdateEvent = DateTime.Now.AddMinutes(1);
                     return task;
                 }
 

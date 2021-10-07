@@ -13,7 +13,21 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
         public void Empty()
         {
             var parameters = new AuditLogListParams();
-            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, propertyName) => Assert.AreEqual(propertyName == "SortBy" ? "CreatedAt" : defaultValue, value));
+            TestHelpers.CheckDefaultPropertyValues(parameters, (defaultValue, value, propertyName) =>
+            {
+                switch (propertyName)
+                {
+                    case "SortBy":
+                        Assert.AreEqual("CreatedAt", value);
+                        break;
+                    case "SortDesc":
+                        Assert.IsTrue((bool)value);
+                        break;
+                    default:
+                        Assert.AreEqual(defaultValue, value);
+                        break;
+                }
+            });
         }
 
         [TestMethod]

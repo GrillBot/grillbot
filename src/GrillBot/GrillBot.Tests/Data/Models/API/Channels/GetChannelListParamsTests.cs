@@ -24,7 +24,7 @@ namespace GrillBot.Tests.Data.Models.API.Channels
         {
             var parameters = new GetChannelListParams()
             {
-                ChannelTypes = new(),
+                ChannelType = ChannelType.Category,
                 GuildId = "Guild",
                 NameContains = "Name",
                 SortDesc = true
@@ -52,7 +52,7 @@ namespace GrillBot.Tests.Data.Models.API.Channels
 
             var parameters = new GetChannelListParams()
             {
-                ChannelTypes = new() { ChannelType.Category },
+                ChannelType = ChannelType.Category,
                 GuildId = "Guild",
                 NameContains = "Name",
                 SortDesc = true,

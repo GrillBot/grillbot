@@ -20,7 +20,8 @@ namespace GrillBot.Tests.Data.Models.API.Users
             {
                 ApiToken = Guid.NewGuid(),
                 BotAdmin = true,
-                Note = "Note"
+                Note = "Note",
+                WebAdminAllowed = true
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(parameters);

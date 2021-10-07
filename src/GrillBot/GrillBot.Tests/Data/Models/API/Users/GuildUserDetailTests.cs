@@ -2,6 +2,7 @@
 using GrillBot.Data.Models.API.Users;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.Threading.Tasks;
 
 namespace GrillBot.Tests.Data.Models.API.Users
 {
@@ -31,6 +32,7 @@ namespace GrillBot.Tests.Data.Models.API.Users
             entity.Channels.Add(new() { Channel = new() { Name = "Channel" } });
 
             var guild = new Mock<IGuild>();
+            guild.Setup(o => o.GetUserAsync(It.IsAny<ulong>(), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(new Mock<IGuildUser>().Object));
 
             var detail = new GuildUserDetail(entity, guild.Object);
             TestHelpers.CheckNonDefaultPropertyValues(detail);
@@ -50,6 +52,7 @@ namespace GrillBot.Tests.Data.Models.API.Users
 
             entity.Channels.Add(new() { Channel = new() { Name = "Channel" } });
             var guild = new Mock<IGuild>();
+            guild.Setup(o => o.GetUserAsync(It.IsAny<ulong>(), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(new Mock<IGuildUser>().Object));
 
             var detail = new GuildUserDetail(entity, guild.Object);
             TestHelpers.CheckDefaultPropertyValues(detail, (defaultValue, value, propertyName) =>

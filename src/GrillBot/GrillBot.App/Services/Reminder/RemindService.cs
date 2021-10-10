@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Net;
 using Discord.WebSocket;
+using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.Data;
@@ -15,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -142,7 +144,7 @@ namespace GrillBot.App.Services.Reminder
         /// <summary>
         /// Service cancellation of remind.
         /// </summary>
-        public async Task ServiceCancellationAsync(long id, IUser user, bool notify = false)
+        public async Task ServiceCancellationAsync(long id, ClaimsPrincipal loggedUser, bool notify = false)
         {
             using var context = DbFactory.Create();
 
@@ -150,15 +152,17 @@ namespace GrillBot.App.Services.Reminder
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (remind == null) throw new NotFoundException("Požadované upozornění neexistuje.");
-            if (remind.At <= DateTime.Now || !string.IsNullOrEmpty(remind.OriginalMessageId)) throw new InvalidOperationException("Nelze zrušit již zrušené oznámení.");
+            if (remind.At <= DateTime.Now || !string.IsNullOrEmpty(remind.RemindMessageId)) throw new InvalidOperationException("Nelze zrušit již zrušené oznámení.");
 
             ulong messageId = 0;
             if (notify)
                 messageId = await SendNotificationMessageAsync(remind, true);
 
-            await context.InitUserAsync(user, CancellationToken.None);
-            var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, user,
-                $"{user.GetDisplayName()} stornoval upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim());
+            var loggedUserId = loggedUser.GetUserId();
+            var loggedUserEntity = await DiscordClient.FindUserAsync(loggedUserId);
+            await context.InitUserAsync(loggedUserEntity, CancellationToken.None);
+            var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, loggedUserEntity,
+                $"{loggedUserEntity.GetDisplayName()} stornoval upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim());
             await context.AddAsync(logItem);
 
             remind.RemindMessageId = messageId.ToString();

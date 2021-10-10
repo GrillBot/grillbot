@@ -82,18 +82,17 @@ namespace GrillBot.App.Controllers
         }
 
         /// <summary>
-        /// Get roles of guild.
+        /// Get roles
         /// </summary>
-        [HttpGet("{guildId}/roles")]
-        [OpenApiOperation(nameof(DataController) + "_" + nameof(GetRolesOfGuild))]
+        [HttpGet("roles")]
+        [OpenApiOperation(nameof(DataController) + "_" + nameof(GetRoles))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public ActionResult<Dictionary<string, string>> GetRolesOfGuild(ulong guildId)
+        public ActionResult<Dictionary<string, string>> GetRoles(ulong? guildId)
         {
-            var guild = DiscordClient.GetGuild(guildId);
-            if (guild == null)
-                return Ok(new Dictionary<string, string>());
+            var guilds = DiscordClient.Guilds.AsEnumerable();
+            if (guildId != null) guilds = guilds.Where(o => o.Id == guildId.Value);
 
-            var roles = guild.Roles
+            var roles = guilds.SelectMany(o => o.Roles)
                 .Where(o => !o.IsEveryone)
                 .OrderBy(o => o.Name)
                 .ToDictionary(o => o.Id.ToString(), o => o.Name);

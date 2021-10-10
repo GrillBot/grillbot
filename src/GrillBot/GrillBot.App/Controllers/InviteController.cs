@@ -1,16 +1,12 @@
-﻿using Discord.WebSocket;
-using GrillBot.App.Services;
+﻿using GrillBot.App.Services;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
-using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -52,41 +48,6 @@ namespace GrillBot.App.Controllers
             query = parameters.CreateQuery(query);
             var result = await PaginatedResponse<GuildInvite>.CreateAsync(query, parameters, entity => new(entity));
             return Ok(result);
-        }
-
-        /// <summary>
-        /// Gets non-paginated list of active invites.
-        /// </summary>
-        /// <response code="200">Success</response>
-        [HttpGet("active")]
-        [OpenApiOperation(nameof(InviteController) + "_" + nameof(GetActiveInviteListAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<List<GuildInvite>>> GetActiveInviteListAsync()
-        {
-            var guilds = await DbContext.Guilds.AsNoTracking()
-                .Select(o => new Database.Entity.Guild() { Id = o.Id, Name = o.Name })
-                .ToListAsync();
-
-            var users = await DbContext.Users.AsNoTracking()
-                .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
-                .ToListAsync();
-
-            var invites = InviteService.MetadataCache.Select(o =>
-            {
-                var creator = users.Find(x => x.Id == o.CreatorId?.ToString());
-                var guild = guilds.Find(x => x.Id == o.GuildId.ToString());
-
-                return new GuildInvite()
-                {
-                    Code = o.Code,
-                    CreatedAt = o.CreatedAt,
-                    UsedUsersCount = o.Uses,
-                    Creator = creator == null ? null : new(creator),
-                    Guild = guild == null ? null : new(guild)
-                };
-            }).ToList();
-
-            return Ok(invites);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace GrillBot.Data.Models.API.Reminder
         public DateTime At { get; set; }
         public string Message { get; set; }
         public int Postpone { get; set; }
+        public bool Notified { get; set; }
 
         public RemindMessage() { }
 
@@ -22,6 +23,7 @@ namespace GrillBot.Data.Models.API.Reminder
             At = entity.At;
             Message = entity.Message;
             Postpone = entity.Postpone;
+            Notified = entity.RemindMessageId != null;
         }
     }
 }

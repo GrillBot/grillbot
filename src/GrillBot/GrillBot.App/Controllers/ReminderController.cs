@@ -73,7 +73,7 @@ namespace GrillBot.App.Controllers
         {
             try
             {
-                await RemindService.ServiceCancellationAsync(id, DiscordClient.CurrentUser, notify);
+                await RemindService.ServiceCancellationAsync(id, User, notify);
                 return Ok();
             }
             catch (NotFoundException ex)

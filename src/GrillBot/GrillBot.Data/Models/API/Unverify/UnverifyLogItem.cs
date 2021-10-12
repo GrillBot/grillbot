@@ -1,9 +1,10 @@
-﻿using GrillBot.Data.Models.API.Guilds;
+﻿using Discord.WebSocket;
+using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using Newtonsoft.Json;
 using System;
+using UnverifyEntity = GrillBot.Data.Models.Unverify;
 
 namespace GrillBot.Data.Models.API.Unverify
 {
@@ -59,7 +60,7 @@ namespace GrillBot.Data.Models.API.Unverify
 
         public UnverifyLogItem() { }
 
-        public UnverifyLogItem(Database.Entity.UnverifyLog item)
+        public UnverifyLogItem(Database.Entity.UnverifyLog item, SocketGuild guild)
         {
             Id = item.Id;
             Operation = item.Operation;
@@ -73,14 +74,14 @@ namespace GrillBot.Data.Models.API.Unverify
                 case UnverifyOperation.Autoremove:
                 case UnverifyOperation.Recover:
                 case UnverifyOperation.Remove:
-                    RemoveData = JsonConvert.DeserializeObject<UnverifyLogRemove>(item.Data);
+                    RemoveData = new(JsonConvert.DeserializeObject<UnverifyEntity.UnverifyLogRemove>(item.Data), guild);
                     break;
                 case UnverifyOperation.Selfunverify:
                 case UnverifyOperation.Unverify:
-                    SetData = JsonConvert.DeserializeObject<UnverifyLogSet>(item.Data);
+                    SetData = new(JsonConvert.DeserializeObject<UnverifyEntity.UnverifyLogSet>(item.Data), guild);
                     break;
                 case UnverifyOperation.Update:
-                    UpdateData = JsonConvert.DeserializeObject<UnverifyLogUpdate>(item.Data);
+                    UpdateData = new(JsonConvert.DeserializeObject<UnverifyEntity.UnverifyLogUpdate>(item.Data));
                     break;
             }
         }

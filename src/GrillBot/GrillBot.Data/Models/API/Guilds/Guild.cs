@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 
 namespace GrillBot.Data.Models.API.Guilds
 {
@@ -43,6 +44,15 @@ namespace GrillBot.Data.Models.API.Guilds
             Name = guild.Name;
             MemberCount = guild.MemberCount;
             IsConnected = guild.IsConnected;
+        }
+
+        public Guild(IGuild guild)
+        {
+            if (guild == null) return;
+
+            Id = guild.Id.ToString();
+            Name = guild.Name;
+            MemberCount = guild.ApproximateMemberCount ?? 0;
         }
     }
 }

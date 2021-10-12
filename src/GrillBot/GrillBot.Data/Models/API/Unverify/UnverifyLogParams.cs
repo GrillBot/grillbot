@@ -15,7 +15,7 @@ namespace GrillBot.Data.Models.API.Unverify
         /// <summary>
         /// Selected operations.
         /// </summary>
-        public List<UnverifyOperation> Operations { get; set; }
+        public UnverifyOperation? Operation { get; set; }
 
         /// <summary>
         /// Guild ID
@@ -54,8 +54,8 @@ namespace GrillBot.Data.Models.API.Unverify
 
         public IQueryable<UnverifyLog> CreateQuery(IQueryable<UnverifyLog> query)
         {
-            if (Operations?.Count > 0)
-                query = query.Where(o => Operations.Contains(o.Operation));
+            if (Operation != null)
+                query = query.Where(o => o.Operation == Operation);
 
             if (!string.IsNullOrEmpty(GuildId))
                 query = query.Where(o => o.GuildId == GuildId);

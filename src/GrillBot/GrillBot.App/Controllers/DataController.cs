@@ -49,35 +49,36 @@ namespace GrillBot.App.Controllers
         /// Get channels of guild.
         /// </summary>
         /// <param name="guildId">Guild ID</param>
-        [HttpGet("{guildId}/channels")]
-        [OpenApiOperation(nameof(DataController) + "_" + nameof(GetChannelsOfGuild))]
+        [HttpGet("channels")]
+        [OpenApiOperation(nameof(DataController) + "_" + nameof(GetChannelsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Dictionary<string, string>>> GetChannelsOfGuild(ulong guildId)
+        public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId)
         {
-            var guild = DiscordClient.GetGuild(guildId);
-            var channels = (guild?.Channels ?? Enumerable.Empty<SocketGuildChannel>().ToArray())
-                .Select(o => new Channel(o))
-                .Where(o => o.Type != null)
-                .ToList();
+            var guilds = DiscordClient.Guilds.AsEnumerable();
+            if (guildId != null) guilds = guilds.Where(o => o.Id == guildId.Value);
+
+            var channels = guilds.SelectMany(o => o.Channels.Select(o => new Channel(o)))
+                .Where(o => o.Type != null).ToList();
 
             var dbChannelsQuery = DbContext.Channels.AsNoTracking()
-                .Where(o => o.GuildId == guildId.ToString())
-                .OrderBy(o => o.Name)
-                .Select(o => new Channel()
-                {
-                    Type = o.ChannelType,
-                    Id = o.ChannelId,
-                    Name = o.Name
-                });
+                .OrderBy(o => o.Name).AsQueryable();
 
-            var dbChannels = (await dbChannelsQuery.ToListAsync())
+            if (guildId != null)
+                dbChannelsQuery = dbChannelsQuery.Where(o => o.GuildId == guildId.ToString());
+
+            var query = dbChannelsQuery.Select(o => new Channel()
+            {
+                Type = o.ChannelType,
+                Id = o.ChannelId,
+                Name = o.Name
+            });
+
+            var dbChannels = (await query.ToListAsync())
                 .Where(o => !channels.Any(x => x.Id == o.Id));
 
             channels.AddRange(dbChannels);
 
-            var result = channels
-                .OrderBy(o => o.Name)
-                .ToDictionary(o => o.Id, o => o.Name);
+            var result = channels.OrderBy(o => o.Name).ToDictionary(o => o.Id, o => o.Name);
             return Ok(result);
         }
 

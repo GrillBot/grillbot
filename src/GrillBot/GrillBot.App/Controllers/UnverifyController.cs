@@ -41,21 +41,14 @@ namespace GrillBot.App.Controllers
         /// <summary>
         /// Gets list of current unverifies in guild.
         /// </summary>
-        /// <param name="guildId">Guild ID</param>
         /// <response code="200">Success</response>
-        [HttpGet("{guildId}/current")]
+        [HttpGet("current")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetCurrentUnverifiesAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync(ulong guildId)
+        public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync()
         {
-            var guild = DiscordClient.GetGuild(guildId);
-
-            if (guild == null)
-                return NotFound(new MessageResponse("Požadovaný server nebyl nalezen."));
-
-            var unverifies = await UnverifyService.GetAllUnverifiesOfGuildAsync(guild);
-            var result = unverifies.ConvertAll(o => new UnverifyUserProfile(o));
+            var unverifies = await UnverifyService.GetAllUnverifiesAsync();
+            var result = unverifies.ConvertAll(o => new UnverifyUserProfile(o.Item1, o.Item2));
             return Ok(result);
         }
 
@@ -128,15 +121,17 @@ namespace GrillBot.App.Controllers
         public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifLogsAsync([FromQuery] UnverifyLogParams parameters)
         {
             var query = DbContext.UnverifyLogs.AsNoTracking()
-                .Include(o => o.FromUser)
-                .ThenInclude(o => o.User)
+                .Include(o => o.FromUser).ThenInclude(o => o.User)
                 .Include(o => o.Guild)
-                .Include(o => o.ToUser)
-                .ThenInclude(o => o.User)
+                .Include(o => o.ToUser).ThenInclude(o => o.User)
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<UnverifyLogItem>.CreateAsync(query, parameters, entity => new UnverifyLogItem(entity));
+            var result = await PaginatedResponse<UnverifyLogItem>.CreateAsync(query, parameters, entity =>
+            {
+                var guild = DiscordClient.GetGuild(Convert.ToUInt64(entity.GuildId));
+                return new UnverifyLogItem(entity, guild);
+            });
             return Ok(result);
         }
 

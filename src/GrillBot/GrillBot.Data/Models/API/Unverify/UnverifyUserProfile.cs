@@ -1,4 +1,6 @@
-﻿using GrillBot.Data.Models.API.Users;
+﻿using Discord;
+using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Data.Models.API.Users;
 using System;
 using System.Collections.Generic;
 
@@ -42,12 +44,12 @@ namespace GrillBot.Data.Models.API.Unverify
         /// <summary>
         /// Keeped channels.
         /// </summary>
-        public List<ChannelOverride> ChannelsToKeep { get; set; }
+        public List<string> ChannelsToKeep { get; set; }
 
         /// <summary>
         /// Removed channels.
         /// </summary>
-        public List<ChannelOverride> ChannelsToRemove { get; set; }
+        public List<string> ChannelsToRemove { get; set; }
 
         /// <summary>
         /// Reason of remove.
@@ -59,9 +61,11 @@ namespace GrillBot.Data.Models.API.Unverify
         /// </summary>
         public bool IsSelfUnverify { get; set; }
 
+        public Guild Guild { get; set; }
+
         public UnverifyUserProfile() { }
 
-        public UnverifyUserProfile(Models.Unverify.UnverifyUserProfile profile)
+        public UnverifyUserProfile(Models.Unverify.UnverifyUserProfile profile, IGuild guild)
         {
             User = new User(profile.Destination);
             Start = profile.Start;
@@ -69,10 +73,11 @@ namespace GrillBot.Data.Models.API.Unverify
             EndTo = profile.End - DateTime.Now;
             RolesToRemove = profile.RolesToRemove.ConvertAll(o => new Role(o));
             RolesToKeep = profile.RolesToKeep.ConvertAll(o => new Role(o));
-            ChannelsToKeep = profile.ChannelsToKeep;
-            ChannelsToRemove = profile.ChannelsToRemove;
+            ChannelsToKeep = profile.ChannelsToKeep.ConvertAll(o => o.ChannelId.ToString());
+            ChannelsToRemove = profile.ChannelsToRemove.ConvertAll(o => o.ChannelId.ToString());
             Reason = profile.Reason;
             IsSelfUnverify = profile.IsSelfUnverify;
+            Guild = new(guild);
         }
     }
 }

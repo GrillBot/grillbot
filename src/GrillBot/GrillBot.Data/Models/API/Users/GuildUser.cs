@@ -1,4 +1,6 @@
-﻿namespace GrillBot.Data.Models.API.Users
+﻿using Discord;
+
+namespace GrillBot.Data.Models.API.Users
 {
     /// <summary>
     /// Guild variant of user

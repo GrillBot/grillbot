@@ -190,7 +190,7 @@ namespace GrillBot.App.Services.Unverify
                 if (dbUser?.Unverify == null)
                     return UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser);
 
-                var profile = ProfileGenerator.Reconstruct(dbUser.Unverify.UnverifyLog, toUser, guild);
+                var profile = ProfileGenerator.Reconstruct(dbUser.Unverify, toUser, guild);
                 await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto, cancellationToken);
 
                 var muteRole = await GetMutedRoleAsync(guild);
@@ -309,25 +309,32 @@ namespace GrillBot.App.Services.Unverify
                 return null;
 
             var user = guild.GetUser(Convert.ToUInt64(unverify.UserId));
-            return ProfileGenerator.Reconstruct(unverify.UnverifyLog, user, guild);
+            return ProfileGenerator.Reconstruct(unverify, user, guild);
         }
 
-        public async Task<List<UnverifyUserProfile>> GetAllUnverifiesOfGuildAsync(SocketGuild guild)
+        public async Task<List<Tuple<UnverifyUserProfile, IGuild>>> GetAllUnverifiesAsync()
         {
-            await guild.DownloadUsersAsync();
             using var context = DbFactory.Create();
 
             var unverifies = await context.Unverifies
                 .AsNoTracking()
                 .Include(o => o.UnverifyLog)
-                .Where(o => o.GuildId == guild.Id.ToString())
                 .ToListAsync();
 
-            return unverifies.ConvertAll(o =>
+            var profiles = new List<Tuple<UnverifyUserProfile, IGuild>>();
+            foreach (var unverify in unverifies)
             {
-                var user = guild.GetUser(Convert.ToUInt64(o.UserId));
-                return ProfileGenerator.Reconstruct(o.UnverifyLog, user, guild);
-            });
+                var guild = DiscordClient.GetGuild(Convert.ToUInt64(unverify.GuildId));
+                if (guild == null) continue;
+
+                var user = guild.GetUser(Convert.ToUInt64(unverify.UserId));
+                profiles.Add(new Tuple<UnverifyUserProfile, IGuild>(
+                    ProfileGenerator.Reconstruct(unverify, user, guild),
+                    guild
+                ));
+            }
+
+            return profiles;
         }
 
         public async Task RecoverUnverifyState(long id, ulong fromUserId)

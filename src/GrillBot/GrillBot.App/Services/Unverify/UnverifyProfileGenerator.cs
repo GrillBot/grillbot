@@ -35,11 +35,11 @@ namespace GrillBot.App.Services.Unverify
             return profile;
         }
 
-        public UnverifyUserProfile Reconstruct(UnverifyLog log, IGuildUser toUser, SocketGuild guild)
+        public UnverifyUserProfile Reconstruct(GrillBot.Database.Entity.Unverify unverify, IGuildUser toUser, SocketGuild guild)
         {
-            var logData = JsonConvert.DeserializeObject<UnverifyLogSet>(log.Data);
+            var logData = JsonConvert.DeserializeObject<UnverifyLogSet>(unverify.UnverifyLog.Data);
 
-            return new UnverifyUserProfile(toUser, logData.Start, logData.End, logData.IsSelfUnverify)
+            return new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify)
             {
                 ChannelsToKeep = logData.ChannelsToKeep,
                 ChannelsToRemove = logData.ChannelsToRemove,

@@ -23,7 +23,8 @@ namespace GrillBot.Tests.Data.Models.API.Reminder
                 Id = 50,
                 At = DateTime.MaxValue,
                 Message = "Message",
-                Postpone = 100
+                Postpone = 100,
+                RemindMessageId = "12345"
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(new RemindMessage(entity));

@@ -3,12 +3,8 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Extensions.Discord
 {
@@ -113,6 +109,38 @@ namespace GrillBot.Tests.App.Extensions.Discord
             var emotes = message.Object.GetEmotesFromMessage(new List<GuildEmote>()).ToList();
 
             Assert.AreEqual(0, emotes.Count);
+        }
+
+        [TestMethod]
+        public void Download_OK()
+        {
+            var attachment = new Mock<IAttachment>();
+            attachment.Setup(o => o.Url).Returns("http://google.cz/index.html");
+
+            var result = attachment.Object.DownloadAsync().Result;
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public void Download_ProxyUrl_OK()
+        {
+            var attachment = new Mock<IAttachment>();
+            attachment.Setup(o => o.Url).Returns("http://google.cz/bagr.html");
+            attachment.Setup(o => o.ProxyUrl).Returns("http://google.cz/index.html");
+
+            var result = attachment.Object.DownloadAsync().Result;
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public void Download_Failed()
+        {
+            var attachment = new Mock<IAttachment>();
+            attachment.Setup(o => o.Url).Returns("http://google.cz/bagr.html");
+            attachment.Setup(o => o.ProxyUrl).Returns("http://google.cz/testddd.html");
+
+            var result = attachment.Object.DownloadAsync().Result;
+            Assert.IsNull(result);
         }
     }
 }

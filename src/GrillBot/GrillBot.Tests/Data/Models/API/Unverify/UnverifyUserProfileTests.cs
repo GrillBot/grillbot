@@ -27,6 +27,7 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
             user.Setup(o => o.GetDefaultAvatarUrl()).Returns("http://discord.com/image.png");
 
             var role = new Mock<IRole>();
+            var guild = new Mock<IGuild>();
 
             var profile = new GrillBot.Data.Models.Unverify.UnverifyUserProfile(user.Object, DateTime.Now, DateTime.MaxValue, true)
             {
@@ -35,7 +36,7 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
             profile.RolesToKeep.Add(role.Object);
             profile.RolesToRemove.Add(role.Object);
 
-            var userProfile = new UnverifyUserProfile(profile);
+            var userProfile = new UnverifyUserProfile(profile, guild.Object);
             TestHelpers.CheckNonDefaultPropertyValues(userProfile);
         }
     }

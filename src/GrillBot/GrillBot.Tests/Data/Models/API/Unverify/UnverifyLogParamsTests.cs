@@ -25,7 +25,7 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
                 CreatedTo = DateTime.MaxValue,
                 FromUserId = "1",
                 GuildId = "",
-                Operations = new List<GrillBot.Database.Enums.UnverifyOperation>(),
+                Operation = UnverifyOperation.Autoremove,
                 SortDesc = true,
                 SortBy = "",
                 ToUserId = ""
@@ -57,7 +57,7 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
                 CreatedTo = DateTime.MaxValue,
                 FromUserId = "1",
                 GuildId = "Guild",
-                Operations = new List<GrillBot.Database.Enums.UnverifyOperation>() { UnverifyOperation.Unverify },
+                Operation = UnverifyOperation.Unverify,
                 SortDesc = true,
                 SortBy = "",
                 ToUserId = "User"

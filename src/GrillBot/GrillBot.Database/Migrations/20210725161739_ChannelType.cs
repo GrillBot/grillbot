@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Database.Migrations
 {
+    [ExcludeFromCodeCoverage]
     public partial class ChannelType : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

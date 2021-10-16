@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GrillBot.Database.Migrations
 {
+    [ExcludeFromCodeCoverage]
     public partial class NullableIndex : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

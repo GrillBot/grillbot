@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Database.Migrations
 {
+    [ExcludeFromCodeCoverage]
     public partial class AuditLog_FilesMetadata : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

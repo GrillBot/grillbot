@@ -31,6 +31,7 @@ namespace GrillBot.App.Modules.Points
         [Command]
         [Alias("where", "kde", "gde")]
         [Summary("Získání aktuálního stavu bodů uživatele.")]
+        [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
         public async Task GetPointsStateAsync([Name("id/tag/jmeno_uzivatele")] SocketUser user = null)
         {
             if (user == null) user = Context.User;
@@ -49,6 +50,7 @@ namespace GrillBot.App.Modules.Points
         [Command("give")]
         [Alias("dej")]
         [Summary("Přidá uživateli zadané množství bodů.")]
+        [Infrastructure.Preconditions.RequireUserPermission(new[] { GuildPermission.Administrator }, false)]
         public async Task GivePointsAsync([Name("mnozstvi")] int amount, [Name("uzivatel")] SocketGuildUser user)
         {
             await PointsService.IncrementPointsAsync(Context.Guild, user, amount);
@@ -58,6 +60,7 @@ namespace GrillBot.App.Modules.Points
         [Command("transfer")]
         [Alias("preved")]
         [Summary("Převede určité množství bodů od jednoho uživatele druhému.")]
+        [Infrastructure.Preconditions.RequireUserPermission(new[] { GuildPermission.Administrator }, false)]
         public async Task TransferPointsAsync([Name("id/tag/jmeno_uzivatele (Od koho)")] SocketUser from, [Name("id/tag/jmeno_uzivatele (Komu)")] SocketGuildUser to, [Name("mnozstvi")] int amount)
         {
             try
@@ -73,6 +76,7 @@ namespace GrillBot.App.Modules.Points
 
         [Command("board")]
         [Summary("Získání TOP 10 statistik v počtu bodů.")]
+        [Infrastructure.Preconditions.RequireUserPermission(new[] { GuildPermission.SendMessages }, false)]
         public async Task GetPointsLeaderboardAsync()
         {
             using var dbContext = DbFactory.Create();

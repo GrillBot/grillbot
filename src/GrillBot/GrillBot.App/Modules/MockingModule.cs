@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace GrillBot.App.Modules
 {
     [Name("Mockování zpráv")]
+    [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
     public class MockingModule : Infrastructure.ModuleBase
     {
         private Emote MockingEmote { get; }

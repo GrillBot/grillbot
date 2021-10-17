@@ -53,7 +53,7 @@ namespace GrillBot.App.Infrastructure.Preconditions
         /// </summary>
         public bool DisallowExplicit { get; }
 
-        private RequireUserPermissionAttribute(bool booster, ContextType? contexts, bool disallowExplicit)
+        public RequireUserPermissionAttribute(bool booster, ContextType? contexts, bool disallowExplicit)
         {
             AllowBooster = booster;
             Contexts = contexts;

@@ -1,22 +1,18 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Data;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace GrillBot.App.Modules.Reminder
 {
     [Group("remind")]
     [Name("Připomínání")]
+    [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
     public class RemindModule : Infrastructure.ModuleBase
     {
         private RemindService RemindService { get; }

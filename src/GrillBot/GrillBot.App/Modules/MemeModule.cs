@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 namespace GrillBot.App.Modules
 {
     [Name("Náhodné věci")]
+    [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
     public class MemeModule : Infrastructure.ModuleBase
     {
         private FileStorageFactory FileStorageFactory { get; }

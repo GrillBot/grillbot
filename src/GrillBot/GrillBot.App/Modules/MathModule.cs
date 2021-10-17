@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace GrillBot.App.Modules
 {
     [Name("Matematické výpočty")]
+    [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
     public class MathModule : Infrastructure.ModuleBase
     {
         private IHttpClientFactory HttpClientFactory { get; }

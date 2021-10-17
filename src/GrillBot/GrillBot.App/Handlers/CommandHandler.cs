@@ -82,7 +82,7 @@ namespace GrillBot.App.Handlers
                     await context.Message.ReplyAsync(reply, allowedMentions: new AllowedMentions { MentionRepliedUser = true });
             }
 
-            if (result.Error != CommandError.UnknownCommand && context.Guild != null) // Log only available commands in guild.
+            if (result.Error != CommandError.UnknownCommand)
                 await AuditLogService.LogExecutedCommandAsync(command.Value, context, result);
         }
     }

@@ -20,6 +20,7 @@ namespace GrillBot.App.Modules.Emotes
     [Group("emote")]
     [Name("Emotes")]
     [Summary("Správa emotů")]
+    [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
     public class EmotesModule : Infrastructure.ModuleBase
     {
         private GrillBotContextFactory DbFactory { get; }

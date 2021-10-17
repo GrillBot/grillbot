@@ -106,12 +106,17 @@ namespace GrillBot.App.Services.AuditLog
         public async Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, IResult result)
         {
             var data = new CommandExecution(command, context.Message, result);
-            var logItem = AuditLogItem.Create(AuditLogItemType.Command, context.Guild, context.Channel, context.User, JsonConvert.SerializeObject(data, JsonSerializerSettings));
+            var logItem = AuditLogItem.Create(AuditLogItemType.Command, context.Guild, context.Channel, context.Guild != null ? context.User : null, JsonConvert.SerializeObject(data, JsonSerializerSettings));
 
             using var dbContext = DbFactory.Create();
-            await dbContext.InitGuildAsync(context.Guild, CancellationToken.None);
-            await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser, CancellationToken.None);
-            await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, ChannelType.Text, CancellationToken.None);
+
+            await dbContext.InitUserAsync(context.User, CancellationToken.None);
+            if (context.Guild != null)
+            {
+                await dbContext.InitGuildAsync(context.Guild, CancellationToken.None);
+                await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser, CancellationToken.None);
+                await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, ChannelType.Text, CancellationToken.None);
+            }
 
             await dbContext.AddAsync(logItem);
             await dbContext.SaveChangesAsync();

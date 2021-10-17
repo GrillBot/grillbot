@@ -13,6 +13,7 @@ namespace GrillBot.App.Modules.Searching
     [Group("hledam")]
     [Name("Hledání (něčeho, třeba týmu)")]
     [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze provést pouze na serveru.")]
+    [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
     public class SearchingModule : Infrastructure.ModuleBase
     {
         private SearchingService Service { get; }

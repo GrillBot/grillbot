@@ -24,7 +24,8 @@ namespace GrillBot.App.Infrastructure.TypeReaders
                     return TypeReaderResult.FromSuccess(emote);
             }
 
-            emote = context.Guild.Emotes.FirstOrDefault(o => o.Name == input);
+            if (context.Guild != null)
+                emote = context.Guild.Emotes.FirstOrDefault(o => o.Name == input);
 
             if (emote != null)
                 return TypeReaderResult.FromSuccess(emote);

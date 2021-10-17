@@ -50,7 +50,7 @@ namespace GrillBot.Database.Entity
         {
             return new AuditLogItem()
             {
-                ChannelId = channel?.Id.ToString(),
+                ChannelId = guild != null ? channel?.Id.ToString() : null,
                 CreatedAt = DateTime.Now,
                 Data = data,
                 DiscordAuditLogItemId = discordAuditLogItemId?.ToString(),

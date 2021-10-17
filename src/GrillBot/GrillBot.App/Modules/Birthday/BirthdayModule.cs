@@ -11,6 +11,7 @@ namespace GrillBot.App.Modules.Birthday
     [Group("birthday")]
     [Alias("narozeniny")]
     [Name("Narozeniny")]
+    [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
     public class BirthdayModule : Infrastructure.ModuleBase
     {
         private BirthdayService BirthdayService { get; }

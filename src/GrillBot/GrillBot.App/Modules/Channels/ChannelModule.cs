@@ -130,9 +130,10 @@ namespace GrillBot.App.Modules
         }
 
         [Command("web")]
-        [Summary("Získání kompletní statistiky zpráv pro uživatele.")]
+        [Summary("Získání kompletní statistiky zpráv pro uživatele. **Momentálně \"nedostupné\"**. Třeba doimplementovat client UI.")]
         public async Task GetChannelBoardWebAsync()
         {
+            return;
             var sessionId = Guid.NewGuid().ToString().Replace("-", "");
 
             var metadata = new ChannelboardWebMetadata()

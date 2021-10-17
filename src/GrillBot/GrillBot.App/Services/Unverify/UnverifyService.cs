@@ -48,7 +48,6 @@ namespace GrillBot.App.Services.Unverify
             var muteRole = await GetMutedRoleAsync(guild);
             var fromUser = from as IGuildUser ?? guild.GetUser(from.Id);
 
-            Checker.ValidateUnverifyGroup(users);
             foreach (var user in users)
             {
                 var message = await SetUnverifyAsync(user, end, data, guild, fromUser, false, new List<string>(), muteRole, dry);

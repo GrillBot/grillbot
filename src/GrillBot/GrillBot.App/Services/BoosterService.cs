@@ -6,6 +6,7 @@ using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,11 +23,20 @@ namespace GrillBot.App.Services
 
             DiscordClient.GuildMemberUpdated += (before, after) =>
             {
-                if (!before.Roles.SequenceEqual(after.Roles))
+                if (!IsPremiumRoleChanged(before.Roles, after.Roles))
                     return OnGuildMemberUpdatedAsync(before, after);
 
                 return Task.CompletedTask;
             };
+        }
+
+        private static bool IsPremiumRoleChanged(IReadOnlyCollection<SocketRole> before, IReadOnlyCollection<SocketRole> after)
+        {
+            if (before.SequenceEqual(after)) return false;
+
+            var premiumRolesBefore = before.Where(o => o.Tags?.IsPremiumSubscriberRole == true).ToList();
+            var premiumRolesAfter = after.Where(o => o.Tags?.IsPremiumSubscriberRole == true).ToList();
+            return !premiumRolesBefore.SequenceEqual(premiumRolesAfter);
         }
 
         private async Task OnGuildMemberUpdatedAsync(SocketGuildUser before, SocketGuildUser after)
@@ -43,8 +53,6 @@ namespace GrillBot.App.Services
             var adminChannel = before.Guild.GetTextChannel(Convert.ToUInt64(guild.AdminChannelId));
             if (adminChannel == null) return;
 
-            await before.Guild.DownloadUsersAsync();
-            await after.Guild.DownloadUsersAsync();
             var boostBefore = before.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
             var boostAfter = after.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
 

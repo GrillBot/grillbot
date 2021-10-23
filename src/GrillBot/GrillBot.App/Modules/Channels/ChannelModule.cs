@@ -109,7 +109,7 @@ namespace GrillBot.App.Modules
             var topTenFormatted = string.Join("\n", topTenData.Select((o, i) =>
             {
                 var user = Context.Guild.GetUser(Convert.ToUInt64(o.UserId));
-                return $"**{i + 1,2}.** {user.GetDisplayName()} ({FormatHelper.FormatMessagesToCzech(o.Count)})";
+                return $"**{i + 1,2}.** {(user == null ? "*(Neznámý uživatel)*" : user.GetDisplayName())} ({FormatHelper.FormatMessagesToCzech(o.Count)})";
             }));
 
             var embed = new EmbedBuilder()

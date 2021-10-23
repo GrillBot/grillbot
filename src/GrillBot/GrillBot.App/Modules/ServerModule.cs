@@ -243,7 +243,7 @@ namespace GrillBot.App.Modules
                         .WithCurrentTimestamp();
 
                     if (!string.IsNullOrEmpty(guild.Description))
-                        embed.WithDescription(guild.Description[EmbedBuilder.MaxDescriptionLength..]);
+                        embed.WithDescription(guild.Description.Cut(EmbedBuilder.MaxDescriptionLength, true));
 
                     if (!string.IsNullOrEmpty(guild.BannerId))
                         embed.WithImageUrl(guild.BannerUrl);

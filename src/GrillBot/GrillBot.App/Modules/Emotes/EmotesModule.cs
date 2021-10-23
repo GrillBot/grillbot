@@ -154,7 +154,7 @@ namespace GrillBot.App.Modules.Emotes
 
         [Command("get")]
         [Summary("Získá informace o požadovaném emote.")]
-        public async Task GetEmoteInfoAsync([Name("samotny/id/nazev emote")] IEmote emote)
+        public async Task GetEmoteInfoAsync([Name("emote/id/nazev emote")] IEmote emote)
         {
             if (emote is not Emote _emote)
             {

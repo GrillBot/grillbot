@@ -87,8 +87,8 @@ namespace GrillBot.App.Modules
             var data = JsonConvert.DeserializeObject<CurrentState>(json);
 
             var embed = new EmbedBuilder()
-                .WithAuthor("U kachničky")
-                .WithColor(Discord.Color.Gold)
+                .WithAuthor("U Kachničky")
+                .WithColor(Color.Gold)
                 .WithCurrentTimestamp();
 
             var titleBuilder = new StringBuilder();

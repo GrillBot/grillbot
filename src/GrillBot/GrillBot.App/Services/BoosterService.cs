@@ -23,20 +23,13 @@ namespace GrillBot.App.Services
 
             DiscordClient.GuildMemberUpdated += (before, after) =>
             {
-                if (!IsPremiumRoleChanged(before.Roles, after.Roles))
+                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+
+                if (!before.Roles.SequenceEqual(after.Roles))
                     return OnGuildMemberUpdatedAsync(before, after);
 
                 return Task.CompletedTask;
             };
-        }
-
-        private static bool IsPremiumRoleChanged(IReadOnlyCollection<SocketRole> before, IReadOnlyCollection<SocketRole> after)
-        {
-            if (before.SequenceEqual(after)) return false;
-
-            var premiumRolesBefore = before.Where(o => o.Tags?.IsPremiumSubscriberRole == true).ToList();
-            var premiumRolesAfter = after.Where(o => o.Tags?.IsPremiumSubscriberRole == true).ToList();
-            return !premiumRolesBefore.SequenceEqual(premiumRolesAfter);
         }
 
         private async Task OnGuildMemberUpdatedAsync(SocketGuildUser before, SocketGuildUser after)
@@ -53,8 +46,11 @@ namespace GrillBot.App.Services
             var adminChannel = before.Guild.GetTextChannel(Convert.ToUInt64(guild.AdminChannelId));
             if (adminChannel == null) return;
 
+            await before.Guild.DownloadUsersAsync();
+            await after.Guild.DownloadUsersAsync();
             var boostBefore = before.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
             var boostAfter = after.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
+            if (!IsBoostReallyChanged(boostBefore, boostAfter)) return;
 
             var embed = new EmbedBuilder()
                 .WithColor(boostRole.Color)
@@ -68,6 +64,14 @@ namespace GrillBot.App.Services
                 embed.WithTitle($"Uživatel již není Server Booster {Configuration["Discord:Emotes:Sadge"]}");
 
             await adminChannel.SendMessageAsync(embed: embed.Build());
+        }
+
+        private static bool IsBoostReallyChanged(bool before, bool after)
+        {
+            if (before && after) return false;
+            if (!before && !after) return false;
+
+            return true;
         }
     }
 }

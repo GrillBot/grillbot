@@ -149,18 +149,16 @@ namespace GrillBot.App.Modules.User
             var messagesCount = await dbContext.UserChannels.AsQueryable().Where(o => o.Count > 0 && o.GuildId == context.Guild.Id.ToString() && o.UserId == user.Id.ToString()).SumAsync(o => o.Count);
             embed.AddField("Počet zpráv", messagesCount, true);
 
-            var unverifyData = await dbContext.UnverifyLogs.AsQueryable()
-                .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == context.Guild.Id.ToString())
-                .GroupBy(o => o.Operation).Select(o => new
-                {
-                    Unverify = o.Count(_ => o.Key == UnverifyOperation.Unverify),
-                    Selfunverify = o.Count(_ => o.Key == UnverifyOperation.Selfunverify)
-                }).FirstOrDefaultAsync();
+            var unverifyStatsQuery = dbContext.UnverifyLogs.AsQueryable().AsNoTracking()
+                .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == context.Guild.Id.ToString());
 
-            if (unverifyData != null)
+            var unverifyCount = await unverifyStatsQuery.CountAsync(o => o.Operation == UnverifyOperation.Unverify);
+            var selfUnverifyCount = await unverifyStatsQuery.CountAsync(o => o.Operation == UnverifyOperation.Selfunverify);
+
+            if (unverifyCount + selfUnverifyCount > 0)
             {
-                embed.AddField("Počet unverify", unverifyData.Unverify, true)
-                    .AddField("Počet selfunverify", unverifyData.Selfunverify, true);
+                embed.AddField("Počet unverify", unverifyCount, true)
+                    .AddField("Počet selfunverify", selfUnverifyCount, true);
             }
 
             if (baseData?.UsedInvite != null)

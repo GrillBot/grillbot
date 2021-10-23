@@ -70,7 +70,7 @@ namespace GrillBot.App.Modules
             }
 
             // Easter egg. If user is mocking bot, send peepoangry instead
-            if (Context.Message.ReferencedMessage.Author == Context.Guild.CurrentUser)
+            if (Context.Message.ReferencedMessage.Author.Id == Context.Client.CurrentUser.Id)
                 return new CommandRedirectResult($"angry {Context.User.Id}");
 
             var message = referencedMsg.ToString();
@@ -81,7 +81,7 @@ namespace GrillBot.App.Modules
                 CreateMockingString(message),
                 options: RequestOptions.Default,
                 allowedMentions: new AllowedMentions() { MentionRepliedUser = true },
-                messageReference: new MessageReference(Context.Message.ReferencedMessage.Id, Context.Channel.Id, Context.Guild.Id)
+                messageReference: new MessageReference(Context.Message.ReferencedMessage.Id, Context.Channel.Id, Context.Guild?.Id)
             );
 
             return null;

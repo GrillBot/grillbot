@@ -73,6 +73,7 @@ namespace GrillBot.App.Controllers
         public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters)
         {
             var query = DbContext.AuditLogs.AsNoTracking()
+                .AsSplitQuery()
                 .Include(o => o.Files)
                 .Include(o => o.Guild)
                 .Include(o => o.GuildChannel)

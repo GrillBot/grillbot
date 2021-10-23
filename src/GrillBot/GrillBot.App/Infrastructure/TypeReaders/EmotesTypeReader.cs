@@ -16,16 +16,18 @@ namespace GrillBot.App.Infrastructure.TypeReaders
             if (Emote.TryParse(input, out Emote emote))
                 return TypeReaderResult.FromSuccess(emote);
 
-            if (ulong.TryParse(input, out ulong emoteId))
-            {
-                emote = await context.Guild.GetEmoteAsync(emoteId);
-
-                if (emote != null)
-                    return TypeReaderResult.FromSuccess(emote);
-            }
-
             if (context.Guild != null)
+            {
+                if (ulong.TryParse(input, out ulong emoteId))
+                {
+                    emote = await context.Guild.GetEmoteAsync(emoteId);
+
+                    if (emote != null)
+                        return TypeReaderResult.FromSuccess(emote);
+                }
+
                 emote = context.Guild.Emotes.FirstOrDefault(o => o.Name == input);
+            }
 
             if (emote != null)
                 return TypeReaderResult.FromSuccess(emote);

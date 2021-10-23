@@ -46,6 +46,7 @@ namespace GrillBot.App.Controllers
         public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters)
         {
             var query = DbContext.Users.AsNoTracking()
+                .AsSplitQuery()
                 .Include(o => o.Guilds)
                 .ThenInclude(o => o.Guild)
                 .AsQueryable();

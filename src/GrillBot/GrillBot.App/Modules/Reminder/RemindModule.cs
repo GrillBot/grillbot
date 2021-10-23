@@ -25,7 +25,7 @@ namespace GrillBot.App.Modules.Reminder
         [Command("")]
         [Summary("Vytvoří připomenutí k určitému datu. Připomenutí pro sebe lze klíčovým slovem `me`. Datum a čas musí být v budoucnosti a musí být později, než 5 minut od doby, založení připomenutí.")]
         [RequireBotPermission(ChannelPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám v tomto kanálu oprávnění přidávat reakce.")]
-        public async Task CreateAsync([Name("kdy")] IUser who, [Name("kdy")] DateTime at, [Remainder][Name("zprava")] string message)
+        public async Task CreateAsync([Name("komu")] IUser who, [Name("kdy")] DateTime at, [Remainder][Name("zprava")] string message)
         {
             var time = message.ParseTime();
             if (time != null)

@@ -245,6 +245,11 @@ namespace GrillBot.App.Modules
             }
 
             var emojized = Emojis.ConvertStringToEmoji(message, true);
+            if (emojized.Count == 0)
+            {
+                await ReplyAsync("Nepodařilo se převést zprávu na emoji.");
+                return;
+            }
 
             if (!Context.IsPrivate)
                 await Context.Message.DeleteAsync();
@@ -260,6 +265,12 @@ namespace GrillBot.App.Modules
             if (Context.Message.ReferencedMessage == null)
             {
                 await ReplyAsync("Tento příkaz vyžaduje reply.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(msg))
+            {
+                await ReplyAsync("Nelze vytvořit text z reakcí nad prázdnou zprávou.");
                 return;
             }
 

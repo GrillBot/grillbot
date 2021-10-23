@@ -18,8 +18,8 @@ namespace GrillBot.Data.Models.API.Invites
 
         public Invite(Database.Entity.Invite invite) : base(invite)
         {
-            Creator = new User(invite.Creator.User);
-            UsedUsersCount = invite.UsedUsers.Count;
+            Creator = invite.Creator == null ? null : new User(invite.Creator.User);
+            UsedUsersCount = invite.UsedUsers?.Count ?? 0;
         }
     }
 }

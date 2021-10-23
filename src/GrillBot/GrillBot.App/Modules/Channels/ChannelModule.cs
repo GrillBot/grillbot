@@ -120,8 +120,8 @@ namespace GrillBot.App.Modules
                 .WithTitle($"#{channel.Name}")
                 .AddField("Vytvořeno", channel.CreatedAt.LocalDateTime.ToCzechFormat(), true)
                 .AddField("Počet zpráv", FormatHelper.FormatMessagesToCzech(channelData.Count), true)
-                .AddField("První zpráva", channelData.LastMessageAt.ToCzechFormat(), true)
-                .AddField("Poslední zpráva", channelData.FirstMessageAt.ToCzechFormat(), true)
+                .AddField("První zpráva", channelData.FirstMessageAt == DateTime.MinValue ? "Není známo" : channelData.FirstMessageAt.ToCzechFormat(), true)
+                .AddField("Poslední zpráva", channelData.LastMessageAt.ToCzechFormat(), true)
                 .AddField("Počet uživatelů", FormatHelper.FormatMembersToCzech(channel.Users.Count), true)
                 .AddField("Počet oprávnění", FormatHelper.FormatPermissionstoCzech(channel.PermissionOverwrites.Count), true)
                 .AddField("TOP 10 uživatelů", topTenFormatted, false);

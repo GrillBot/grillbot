@@ -24,7 +24,7 @@ namespace GrillBot.App.Modules.Points
             WithDescription(string.Join("\n", data.Select((o, i) =>
             {
                 var user = userFinder(Convert.ToUInt64(o.Key));
-                return $"**{i + skip + 1,2}.** {user.GetDisplayName()} ({FormatHelper.FormatPointsToCzech(o.Value)})";
+                return $"**{i + skip + 1,2}.** {(user == null ? "*(Neznámý uživatel)*" : user.GetDisplayName())} ({FormatHelper.FormatPointsToCzech(o.Value)})";
             })));
 
             return this;

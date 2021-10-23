@@ -40,6 +40,11 @@ namespace GrillBot.App.Services
             var boostRole = before.Guild.GetRole(Convert.ToUInt64(guild.BoosterRoleId));
             if (boostRole == null) return;
 
+            var adminChannel = before.Guild.GetTextChannel(Convert.ToUInt64(guild.AdminChannelId));
+            if (adminChannel == null) return;
+
+            await before.Guild.DownloadUsersAsync();
+            await after.Guild.DownloadUsersAsync();
             var boostBefore = before.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
             var boostAfter = after.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
 
@@ -54,8 +59,7 @@ namespace GrillBot.App.Services
             else if (boostBefore && !boostAfter)
                 embed.WithTitle($"Uživatel již není Server Booster {Configuration["Discord:Emotes:Sadge"]}");
 
-            var adminChannel = before.Guild.GetTextChannel(Convert.ToUInt64(guild.AdminChannelId));
-            if (adminChannel != null) await adminChannel.SendMessageAsync(embed: embed.Build());
+            await adminChannel.SendMessageAsync(embed: embed.Build());
         }
     }
 }

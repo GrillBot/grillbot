@@ -26,12 +26,15 @@ namespace GrillBot.App.Modules.Birthday
         [Command("")]
         [Summary("Přidání data narození a včasné upozornění.\n" +
             "Pokud si nepřejete ukládat věk, tak jako rok dejte rok (přesně) `0001`.\n" +
-            "Celý příkaz pak vypadá např.:\n`{prefix}narozeniny 1. 4. 1998` nebo `{prefix}narozeniny 1. 4. 0001`")]
+            "Celý příkaz pak vypadá např.:\n`{prefix}narozeniny 1998-04-01` nebo `{prefix}narozeniny 0001-04-01`")]
         [RequireBotPermission(ChannelPermission.AddReactions, ErrorMessage = "Nelze provést tento příkaz, protože nemám práva přidávat reakce.")]
         public async Task AddAsync([Remainder][Name("kdy")] DateTime when)
         {
             await BirthdayService.AddBirthdayAsync(Context.User, when);
             await Context.Message.AddReactionAsync(Emojis.Ok);
+
+            if (!Context.IsPrivate && Context.Guild.CurrentUser.GuildPermissions.ManageMessages)
+                await Context.Message.DeleteAsync();
         }
 
         [Command("have?")]

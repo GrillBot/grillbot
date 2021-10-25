@@ -1,8 +1,6 @@
-﻿using Discord;
-using GrillBot.Data.Models.AuditLog;
+﻿using GrillBot.Data.Models.AuditLog;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System.Collections.Generic;
 
 namespace GrillBot.Tests.Data.Models.AuditLog
@@ -13,7 +11,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
         [TestMethod]
         public void EmptyConstructor()
         {
-            Assert.IsNull(new MemberUpdatedData().Nickname);
+            Assert.IsNull(new MemberUpdatedData(new AuditUserInfo()).Nickname);
         }
 
         [TestMethod]
@@ -28,13 +26,13 @@ namespace GrillBot.Tests.Data.Models.AuditLog
             Assert.IsTrue(data.Nickname.IsEmpty);
             Assert.IsTrue(data.IsMuted.IsEmpty);
             Assert.IsTrue(data.IsDeaf.IsEmpty);
-            Assert.IsNull(data.Roles);
+            Assert.IsFalse(data.Roles.Count > 0);
         }
 
         [TestMethod]
         public void Initializer()
         {
-            _ = new MemberUpdatedData()
+            _ = new MemberUpdatedData(new AuditUserInfo())
             {
                 Roles = new List<AuditRoleUpdateInfo>()
             };

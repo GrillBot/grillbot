@@ -34,9 +34,9 @@ namespace GrillBot.Data.Models.API.AuditLog
         public GuildUser ProcessedUser { get; set; }
 
         /// <summary>
-        /// Id of auditlog item in discord.
+        /// Id of auditlog items in discord.
         /// </summary>
-        public string DiscordAuditLogItemId { get; set; }
+        public List<string> DiscordAuditLogItemIds { get; set; }
 
         /// <summary>
         /// Type.
@@ -66,7 +66,7 @@ namespace GrillBot.Data.Models.API.AuditLog
             CreatedAt = entity.CreatedAt;
             Guild = entity.Guild == null ? null : new(entity.Guild);
             ProcessedUser = entity.ProcessedGuildUser == null ? null : new(entity.ProcessedGuildUser);
-            DiscordAuditLogItemId = entity.DiscordAuditLogItemId;
+            DiscordAuditLogItemIds = !string.IsNullOrEmpty(entity.DiscordAuditLogItemId) ? entity.DiscordAuditLogItemId.Split(',').ToList() : null;
             Type = entity.Type;
             Channel = entity.GuildChannel == null ? null : new(entity.GuildChannel);
             ContainsData = !string.IsNullOrEmpty(entity.Data);

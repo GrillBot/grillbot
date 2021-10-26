@@ -72,7 +72,8 @@ namespace GrillBot.App
                 .AddSingleton<RandomizationService>()
                 .AddDatabase(connectionString)
                 .AddMemoryCache()
-                .AddControllers();
+                .AddControllers()
+                .AddNewtonsoftJson();
 
             services
                 .AddSingleton<InviteService>()

@@ -137,7 +137,6 @@ namespace GrillBot.App.Services
             if (SupportedEmotes?.IsEmpty != false) return;
             if (reaction.Emote is not Emote emote) return;
             if (!SupportedEmotes.Any(o => o.IsEqual(emote))) return;
-            await textChannel.Guild.DownloadUsersAsync();
 
             var msg = message.HasValue ? message.Value : await MessageCache.GetMessageAsync(channel, message.Id);
             var user = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;

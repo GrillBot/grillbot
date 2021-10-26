@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using GrillBot.App.Infrastructure;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -25,6 +26,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnChannelUpdatedAsync(SocketChannel before, SocketChannel after)
         {
+            if (DiscordClient.Status != UserStatus.Online) return;
             if (after is not SocketTextChannel textChannel || ((SocketTextChannel)before).Name == textChannel.Name)
                 return;
 
@@ -35,6 +37,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnGuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
         {
+            if (DiscordClient.Status != UserStatus.Online) return;
             if (before.Nickname == after.Nickname) return;
 
             using var context = DbFactory.Create();
@@ -44,6 +47,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnUserUpdatedAsync(SocketUser before, SocketUser after)
         {
+            if (DiscordClient.Status != UserStatus.Online) return;
             if (before.Username == after.Username) return;
 
             using var context = DbFactory.Create();
@@ -53,6 +57,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnUserJoinedAsync(SocketGuildUser user)
         {
+            if (DiscordClient.Status != UserStatus.Online) return;
             using var context = DbFactory.Create();
 
             await SyncGuildUserAsync(context, user);
@@ -61,6 +66,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task GuildUpdatedAsync(SocketGuild before, SocketGuild after)
         {
+            if (DiscordClient.Status != UserStatus.Online) return;
             if (before.Name == after.Name) return;
 
             using var context = DbFactory.Create();
@@ -70,6 +76,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnGuildAvailableAsync(SocketGuild guild)
         {
+            if (DiscordClient.Status != UserStatus.Online) return;
             using var context = DbFactory.Create();
 
             if ((await context.Database.GetPendingMigrationsAsync()).Any())
@@ -85,15 +92,37 @@ namespace GrillBot.App.Services.Sync
 
             foreach (var guild in DiscordClient.Guilds)
             {
-                await guild.DownloadUsersAsync();
+                var userIds = guild.Users.Select(o => o.Id.ToString()).ToList();
+                var users = await context.GuildUsers.AsQueryable()
+                    .Include(o => o.User)
+                    .Where(o => o.GuildId == guild.Id.ToString() && userIds.Contains(o.UserId))
+                    .ToListAsync();
+
                 foreach (var user in guild.Users)
                 {
-                    await SyncGuildUserAsync(context, user);
+                    var dbUser = users.Find(o => o.UserId == user.Id.ToString());
+                    if (dbUser == null) continue;
+
+                    dbUser.Nickname = user.Nickname;
+                    dbUser.User.Username = user.Username;
+
+                    if (user.IsBot)
+                        dbUser.User.Flags |= (int)UserFlags.NotUser;
                 }
+
+                var channelsQuery = guild.Channels.Where(o => o is SocketTextChannel || o is SocketVoiceChannel);
+                var channelIds = channelsQuery.Select(o => o.Id.ToString()).ToList();
+                var dbChannels = await context.Channels
+                    .AsQueryable()
+                    .Where(o => o.GuildId == guild.Id.ToString() && channelIds.Contains(o.ChannelId))
+                    .ToListAsync();
 
                 foreach (var channel in guild.TextChannels)
                 {
-                    await SyncChannelAsync(context, channel);
+                    var dbChannel = dbChannels.Find(o => o.ChannelId == channel.Id.ToString());
+                    if (dbChannel == null) continue;
+
+                    dbChannel.Name = channel.Name;
                 }
             }
 

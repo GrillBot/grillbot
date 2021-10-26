@@ -95,7 +95,6 @@ namespace GrillBot.App.Services
             if (channel is not SocketTextChannel textChannel) return; // Only guilds
             if (reaction.Emote is not Emoji && !textChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote))) return; // Only local emotes.
 
-            await textChannel.Guild.DownloadUsersAsync();
             var user = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;
             if (user?.IsUser() != true) return;
 

@@ -97,7 +97,7 @@ namespace GrillBot.App.Modules
                 LastMessageAt = o.Max(x => x.LastMessageAt)
             });
 
-            var channelData = groupedDataQuery.FirstOrDefault();
+            var channelData = await groupedDataQuery.FirstOrDefaultAsync();
             if (channelData == null)
             {
                 await ReplyAsync("Promiň, ale zatím nemám informace o aktivitě v tomto kanálu.");

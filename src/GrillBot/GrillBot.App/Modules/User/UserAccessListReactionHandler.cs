@@ -30,8 +30,8 @@ namespace GrillBot.App.Modules.User
             if (newPage == metadata.Page) return false;
 
             var channels = UserModule.GetUserVisibleChannels(guild, forUser)
-                .Skip(newPage * EmbedBuilder.MaxFieldCount)
-                .Take(EmbedBuilder.MaxFieldCount)
+                .Skip(newPage * UserModule.UserAccessMaxCountPerPage)
+                .Take(UserModule.UserAccessMaxCountPerPage)
                 .ToList();
             if (channels.Count == 0) return false;
 

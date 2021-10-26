@@ -46,8 +46,6 @@ namespace GrillBot.App.Services
             var adminChannel = before.Guild.GetTextChannel(Convert.ToUInt64(guild.AdminChannelId));
             if (adminChannel == null) return;
 
-            await before.Guild.DownloadUsersAsync();
-            await after.Guild.DownloadUsersAsync();
             var boostBefore = before.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
             var boostAfter = after.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
             if (!IsBoostReallyChanged(boostBefore, boostAfter)) return;

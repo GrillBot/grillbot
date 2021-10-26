@@ -10,6 +10,7 @@ namespace GrillBot.Database.Enums
         /// <summary>
         /// Ignores cache loading when bot connectiong on discord.
         /// </summary>
+        [Obsolete("Dont use")]
         IgnoreCache = 1
     }
 }

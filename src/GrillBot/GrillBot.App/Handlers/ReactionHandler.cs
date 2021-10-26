@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.MessageCache;
 using GrillBot.Data;
 using Microsoft.Extensions.Logging;
 using System;
@@ -16,21 +17,24 @@ namespace GrillBot.App.Handlers
     {
         private IEnumerable<ReactionEventHandler> EventHandlers { get; }
         private ILogger<ReactionHandler> Logger { get; }
+        private MessageCache MessageCache { get; }
 
-        public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers, ILogger<ReactionHandler> logger) : base(client)
+        public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers, ILogger<ReactionHandler> logger,
+            MessageCache messageCache) : base(client)
         {
             DiscordClient.ReactionAdded += (message, _, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added);
             DiscordClient.ReactionRemoved += (message, _, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed);
 
             EventHandlers = eventHandlers;
             Logger = logger;
+            MessageCache = messageCache;
         }
 
         private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, SocketReaction reaction, ReactionEvents @event)
         {
             if (DiscordClient.Status != UserStatus.Online) return;
 
-            var msg = await message.GetOrDownloadAsync();
+            var msg = (message.HasValue ? message.Value : await MessageCache.GetMessageAsync(reaction.Channel, message.Id) as IUserMessage);
             if (msg == null) return;
 
             var user = reaction.User.IsSpecified ? reaction.User.Value : DiscordClient.GetUser(reaction.UserId);

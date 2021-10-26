@@ -65,6 +65,7 @@ namespace GrillBot.App.Services.AuditLog
             DiscordClient.ChannelUpdated += async (_before, _after) =>
             {
                 if (_before is not SocketGuildChannel before || _after is not SocketGuildChannel after) return;
+                if (DiscordClient.Status != UserStatus.Online) return;
                 if (NextAllowedChannelUpdateEvent > DateTime.Now) return;
 
                 await OnChannelUpdatedAsync(before, after);
@@ -73,6 +74,7 @@ namespace GrillBot.App.Services.AuditLog
             };
             DiscordClient.GuildUpdated += (before, after) =>
             {
+                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
                 if (!before.Emotes.SequenceEqual(after.Emotes))
                     return OnEmotesUpdatedAsync(before, before.Emotes, after.Emotes);
 
@@ -85,6 +87,7 @@ namespace GrillBot.App.Services.AuditLog
             DiscordClient.UserUnbanned += OnUserUnbannedAsync;
             DiscordClient.GuildMemberUpdated += (before, after) =>
             {
+                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
                 if (IsMemberReallyUpdated(before, after))
                     return OnMemberUpdatedAsync(before, after);
 
@@ -486,7 +489,6 @@ namespace GrillBot.App.Services.AuditLog
                 logItem.Item2.Merge(item.Data as MemberRoleAuditLogData, user.Guild);
             }
 
-            await user.Guild.DownloadUsersAsync();
             foreach (var logItem in logData)
             {
                 var json = JsonConvert.SerializeObject(logItem.Value.Item2, JsonSerializerSettings);

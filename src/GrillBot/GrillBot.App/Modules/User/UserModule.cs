@@ -25,6 +25,8 @@ namespace GrillBot.App.Modules.User
         private IConfiguration Configuration { get; }
         private GrillBotContextFactory DbFactory { get; }
 
+        public const int UserAccessMaxCountPerPage = 15;
+
         public UserModule(IConfiguration configuration, GrillBotContextFactory dbFactory)
         {
             Configuration = configuration;
@@ -78,11 +80,11 @@ namespace GrillBot.App.Modules.User
             else
             {
                 var guildUser = users[0] as SocketGuildUser;
-                var visibleChannels = GetUserVisibleChannels(Context.Guild, guildUser).Take(EmbedBuilder.MaxFieldCount).ToList();
+                var visibleChannels = GetUserVisibleChannels(Context.Guild, guildUser).Take(UserAccessMaxCountPerPage).ToList();
                 var embed = new EmbedBuilder().WithUserAccessList(visibleChannels, guildUser, Context.User, Context.Guild, 0);
 
                 var message = await ReplyAsync(embed: embed.Build());
-                if (visibleChannels.Count >= EmbedBuilder.MaxFieldCount)
+                if (visibleChannels.Count >= UserAccessMaxCountPerPage)
                     await message.AddReactionsAsync(new[] { Emojis.MoveToPrev, Emojis.MoveToNext });
             }
         }

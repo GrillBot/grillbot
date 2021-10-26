@@ -51,7 +51,7 @@ namespace GrillBot.App
             {
                 GatewayIntents = DiscordHelper.GetAllIntents(),
                 LogLevel = LogSeverity.Verbose,
-                MessageCacheSize = 50000,
+                MessageCacheSize = 5000,
                 RateLimitPrecision = RateLimitPrecision.Millisecond
             };
 
@@ -72,8 +72,7 @@ namespace GrillBot.App
                 .AddSingleton<RandomizationService>()
                 .AddDatabase(connectionString)
                 .AddMemoryCache()
-                .AddControllers()
-                .AddNewtonsoftJson();
+                .AddControllers();
 
             services
                 .AddSingleton<InviteService>()

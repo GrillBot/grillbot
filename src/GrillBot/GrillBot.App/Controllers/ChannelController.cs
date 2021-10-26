@@ -96,7 +96,7 @@ namespace GrillBot.App.Controllers
             var query = DbContext.Channels.AsNoTracking()
                 .Include(o => o.Guild)
                 .AsQueryable();
-             
+
             query = parameters.CreateQuery(query);
             var result = await PaginatedResponse<GuildChannel>.CreateAsync(query, parameters, entity => new(entity));
             return Ok(result);

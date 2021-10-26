@@ -42,8 +42,6 @@ namespace GrillBot.App.Infrastructure.TypeReaders
             }
             else if (context.Guild is SocketGuild guild)
             {
-                await guild.DownloadUsersAsync();
-
                 var matches = guild.Users
                      .Where(o => (!string.IsNullOrEmpty(o.Nickname) && o.Nickname.Contains(input, StringComparison.CurrentCultureIgnoreCase)) || o.Username.Contains(input, StringComparison.CurrentCultureIgnoreCase))
                      .Select(o => o as IGuildUser)
@@ -57,7 +55,7 @@ namespace GrillBot.App.Infrastructure.TypeReaders
                 matches = (await guild.SearchUsersAsync(input)).Select(o => o as IGuildUser).Where(o => o != null).ToList();
                 if (matches.Count == 1)
                 {
-                    user = guild.GetUser(matches[0].Id);
+                    user = guild.GetUser(matches[0].Id) ?? matches[0];
                     return TypeReaderResult.FromSuccess(user);
                 }
             }

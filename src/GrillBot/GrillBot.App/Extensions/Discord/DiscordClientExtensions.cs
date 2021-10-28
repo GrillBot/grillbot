@@ -47,6 +47,21 @@ namespace GrillBot.App.Extensions.Discord
             return await client.Rest.GetUserAsync(id);
         }
 
+        static public async Task<IGuildUser> TryFindGuildUserAsync(this BaseSocketClient client, ulong guildId, ulong userId)
+        {
+            var guild = client.GetGuild(guildId);
+            if (guild == null) return null;
+
+            IGuildUser user = guild.GetUser(userId);
+            if (user == null)
+            {
+                var restGuild = await client.Rest.GetGuildAsync(guildId);
+                user = await restGuild.GetUserAsync(userId);
+            }
+
+            return user;
+        }
+
         static public IRole FindRole(this BaseSocketClient client, ulong id)
         {
             return client.Guilds.SelectMany(o => o.Roles)

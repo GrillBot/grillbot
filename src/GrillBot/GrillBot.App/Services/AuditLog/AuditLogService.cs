@@ -190,10 +190,15 @@ namespace GrillBot.App.Services.AuditLog
 
             await context.InitGuildAsync(channel.Guild, CancellationToken.None);
             await context.InitUserAsync(after.Author, CancellationToken.None);
-            await context.InitGuildUserAsync(channel.Guild, after.Author as IGuildUser ?? channel.Guild.GetUser(after.Author.Id), CancellationToken.None);
 
-            await context.AddAsync(entity);
-            await context.SaveChangesAsync();
+            var author = after.Author as IGuildUser ?? await DiscordClient.TryFindGuildUserAsync(channel.Guild.Id, after.Author.Id);
+            if (author != null)
+            {
+                await context.InitGuildUserAsync(channel.Guild, author, CancellationToken.None);
+                await context.AddAsync(entity);
+                await context.SaveChangesAsync();
+            }
+
             MessageCache.MarkUpdated(after.Id);
         }
 

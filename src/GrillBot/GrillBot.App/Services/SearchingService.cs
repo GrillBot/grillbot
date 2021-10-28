@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
@@ -106,14 +106,14 @@ namespace GrillBot.App.Services
                 var guild = DiscordClient.GetGuild(Convert.ToUInt64(item.GuildId));
                 if (guild == null)
                 {
-                    context.Remove(item);
+                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
                     continue;
                 }
 
                 var channel = guild.GetTextChannel(Convert.ToUInt64(item.ChannelId));
                 if (channel == null)
                 {
-                    context.Remove(item);
+                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
                     continue;
                 }
 
@@ -121,27 +121,28 @@ namespace GrillBot.App.Services
                 var author = guild.GetUser(Convert.ToUInt64(item.UserId));
                 if (author == null)
                 {
-                    context.Remove(item);
+                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
                     continue;
                 }
 
                 var message = await MessageCache.GetMessageAsync(channel, Convert.ToUInt64(item.MessageId));
                 if (message == null)
                 {
-                    context.Remove(item);
+                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
                     continue;
                 }
 
                 var messageContent = GetMessageContent(message);
                 if (string.IsNullOrEmpty(messageContent))
                 {
-                    context.Remove(item);
+                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
                     continue;
                 }
 
                 results.Add(new SearchingListItem(item, messageContent, message.GetJumpUrl()));
             }
 
+            await context.SaveChangesAsync();
             return PaginatedResponse<SearchingListItem>.Create(results, parameters);
         }
 

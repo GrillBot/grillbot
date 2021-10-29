@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Rest;
+using GrillBot.App.Services.Logging;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -15,6 +16,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable S1075 // URIs should not be hardcoded
@@ -24,11 +26,13 @@ namespace GrillBot.App.Services
     {
         private IConfiguration Configuration { get; }
         private GrillBotContextFactory DbFactory { get; }
+        private LoggingService LoggingService { get; }
 
-        public OAuth2Service(IConfiguration configuration, GrillBotContextFactory dbFactory)
+        public OAuth2Service(IConfiguration configuration, GrillBotContextFactory dbFactory, LoggingService loggingService)
         {
             Configuration = configuration.GetSection("OAuth2");
             DbFactory = dbFactory;
+            LoggingService = loggingService;
         }
 
         public OAuth2GetLink GetRedirectLink()
@@ -84,25 +88,27 @@ namespace GrillBot.App.Services
             return JObject.Parse(json)["access_token"].ToString();
         }
 
-        private static async Task<ulong> GetUserIdAsync(string token)
+        private async Task<IUser> GetUserAsync(string token)
         {
-            using var client = new DiscordRestClient();
+            using var client = new DiscordRestClient(new() { LogLevel = LogSeverity.Verbose });
+            client.Log += LoggingService.OnLogAsync;
             await client.LoginAsync(TokenType.Bearer, token);
 
-            return client.CurrentUser.Id;
+            return client.CurrentUser;
         }
 
         public async Task<OAuth2LoginToken> CreateTokenAsync(string sessionId)
         {
-            var userId = await GetUserIdAsync(sessionId);
+            var user = await GetUserAsync(sessionId);
 
             using var context = DbFactory.Create();
-            var user = await context.Users.FirstOrDefaultAsync(o => o.Id == userId.ToString() && (o.Flags & (int)UserFlags.WebAdmin) != 0);
+            var dbUser = await context.Users.AsNoTracking()
+                .FirstOrDefaultAsync(o => o.Id == user.Id.ToString() && (o.Flags & (int)UserFlags.WebAdmin) != 0);
 
-            if (user == null)
-                return new OAuth2LoginToken("Uživatel použitý pod tímto přihlášení nebyl nalezen, nebo nemá oprávnění pro přístup do administrace.");
+            if (dbUser == null)
+                return new OAuth2LoginToken($"Uživatel {user.Username} nebyl nalezen nebo nemá oprávnění pro přístup do administrace.");
 
-            var jwt = CreateJwtAccessToken(user, out var expiresAt);
+            var jwt = CreateJwtAccessToken(dbUser, out var expiresAt);
             return new OAuth2LoginToken(jwt, expiresAt);
         }
 

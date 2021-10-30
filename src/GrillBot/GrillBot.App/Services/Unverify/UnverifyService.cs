@@ -74,7 +74,7 @@ namespace GrillBot.App.Services.Unverify
             {
                 await profile.Destination.TryAddRoleAsync(muteRole);
                 await profile.RemoveRolesAsync();
-                await profile.ReturnChannelsAsync(guild);
+                await profile.RemoveChannelsAsync(guild);
 
                 using var context = DbFactory.Create();
 

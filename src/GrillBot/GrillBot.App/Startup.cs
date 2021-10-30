@@ -172,6 +172,10 @@ namespace GrillBot.App
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["OAuth2:ClientId"]}_{Configuration["OAuth2:ClientSecret"]}"))
                     };
                 });
+
+            services.AddHealthChecks()
+                .AddCheck<DiscordHealthCheck>(nameof(DiscordHealthCheck))
+                .AddNpgSql(connectionString);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)
@@ -197,7 +201,11 @@ namespace GrillBot.App
                 };
             });
 
-            app.UseEndpoints(endpoints => endpoints.MapControllers());
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health");
+            });
         }
     }
 }

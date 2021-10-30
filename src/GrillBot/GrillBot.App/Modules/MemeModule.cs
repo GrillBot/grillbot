@@ -8,6 +8,7 @@ using GrillBot.Data.Enums;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Duck;
 using Humanizer;
+using Humanizer.Localisation;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -139,7 +140,7 @@ namespace GrillBot.App.Modules
 
             titleBuilder
                 .Append("Další otvíračka bude za ")
-                .Append(left.Humanize(culture: Culture))
+                .Append(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute))
                 .Append('.');
 
             AddNoteToEmbed(embedBuilder, currentState.Note);
@@ -168,7 +169,7 @@ namespace GrillBot.App.Modules
             {
                 var left = currentState.ExpectedEnd.Value - DateTime.Now;
 
-                titleBuilder.Append(" Do konce zbývá ").Append(left.Humanize(culture: Culture)).Append('.');
+                titleBuilder.Append(" Do konce zbývá ").Append(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)).Append('.');
                 embedBuilder.AddField("Zavíráme", currentState.ExpectedEnd.Value.ToString("HH:mm"), true);
             }
 

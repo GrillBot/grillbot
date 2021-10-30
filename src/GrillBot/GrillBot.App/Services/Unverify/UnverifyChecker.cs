@@ -5,6 +5,7 @@ using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Humanizer;
+using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -47,7 +48,6 @@ namespace GrillBot.App.Services.Unverify
             if (!selfunverify)
                 ValidateRoles(guild, user);
 
-            ValidateUnverifyDate(end, selfunverify);
             using var context = DbFactory.Create();
 
             var dbUser = await context.GuildUsers
@@ -55,6 +55,7 @@ namespace GrillBot.App.Services.Unverify
                 .Include(o => o.User)
                 .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString()) ?? new GuildUser() { User = new User() };
 
+            ValidateUnverifyDate(end, dbUser.User.SelfUnverifyMinimalTime, selfunverify);
             if (dbUser?.Unverify != null)
                 throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetDisplayName()}** již má odebraný přístup do **{dbUser.Unverify.EndAt.ToCzechFormat()}**.");
 
@@ -62,16 +63,16 @@ namespace GrillBot.App.Services.Unverify
                 throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetFullName()}** je administrátor bota.");
         }
 
-        public void ValidateUnverifyDate(DateTime end, bool selfunverify)
+        public void ValidateUnverifyDate(DateTime end, TimeSpan? usersMinimalSelfUnverifyTime, bool selfunverify)
         {
             var diff = end - DateTime.Now.AddSeconds(-5); // Add 5 seconds tolerance.
 
             if (diff.TotalMinutes < 0)
                 throw new ValidationException("Konec unverify musí být v budoucnosti.");
 
-            var minimal = selfunverify ? SelfunverifyMinimalTime : UnverifyMinimalTime;
+            var minimal = selfunverify ? (usersMinimalSelfUnverifyTime ?? SelfunverifyMinimalTime) : UnverifyMinimalTime;
             if (diff < minimal)
-                throw new ValidationException($"Minimální čas pro unverify je {minimal.Humanize(culture: new CultureInfo("cs-CZ"))}");
+                throw new ValidationException($"Minimální čas pro unverify je {minimal.Humanize(culture: new CultureInfo("cs-CZ"), precision: int.MaxValue, minUnit: TimeUnit.Second)}");
         }
 
         private static void ValidateRoles(SocketGuild guild, SocketGuildUser user)

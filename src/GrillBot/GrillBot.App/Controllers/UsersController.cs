@@ -47,8 +47,7 @@ namespace GrillBot.App.Controllers
         {
             var query = DbContext.Users.AsNoTracking()
                 .AsSplitQuery()
-                .Include(o => o.Guilds)
-                .ThenInclude(o => o.Guild)
+                .Include(o => o.Guilds).ThenInclude(o => o.Guild)
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
@@ -106,6 +105,7 @@ namespace GrillBot.App.Controllers
 
             user.ApiToken = parameters.ApiToken;
             user.Note = parameters.Note;
+            user.SelfUnverifyMinimalTime = parameters.SelfUnverifyMinimalTime;
 
             if (parameters.BotAdmin)
                 user.Flags |= (int)UserFlags.BotAdmin;

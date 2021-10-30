@@ -8,5 +8,6 @@ namespace GrillBot.Data.Models.API.Users
         public bool BotAdmin { get; set; }
         public string Note { get; set; }
         public bool WebAdminAllowed { get; set; }
+        public TimeSpan? SelfUnverifyMinimalTime { get; set; }
     }
 }

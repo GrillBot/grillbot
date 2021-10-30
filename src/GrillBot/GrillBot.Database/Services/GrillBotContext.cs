@@ -1,5 +1,6 @@
 ﻿using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace GrillBot.Database.Services
 {
@@ -26,7 +27,15 @@ namespace GrillBot.Database.Services
                 builder.HasOne(o => o.Guild).WithMany(o => o.Invites);
             });
 
-            modelBuilder.Entity<User>(builder => builder.HasIndex(o => o.ApiToken).IsUnique());
+            modelBuilder.Entity<User>(builder =>
+            {
+                builder.HasIndex(o => o.ApiToken).IsUnique();
+                builder.Property(o => o.SelfUnverifyMinimalTime).HasConversion(
+                    o => o.HasValue ? o.Value.ToString("c") : null,
+                    o => !string.IsNullOrEmpty(o) ? TimeSpan.Parse(o) : null
+                );
+            });
+
             modelBuilder.Entity<EmoteStatisticItem>(builder =>
             {
                 builder.HasKey(o => new { o.EmoteId, o.UserId });

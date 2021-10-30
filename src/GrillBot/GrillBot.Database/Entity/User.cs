@@ -33,6 +33,8 @@ namespace GrillBot.Database.Entity
         [Required]
         public string Username { get; set; }
 
+        public TimeSpan? SelfUnverifyMinimalTime { get; set; }
+
         public ISet<GuildUser> Guilds { get; set; }
         public ISet<EmoteStatisticItem> UsedEmotes { get; set; }
         public ISet<RemindMessage> IncomingReminders { get; set; }

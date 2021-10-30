@@ -5,7 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Quartz;
 using System;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -42,7 +45,8 @@ namespace GrillBot.App.Services.AuditLog
                     .Include(o => o.GuildChannel)
                     .Include(o => o.ProcessedGuildUser)
                     .ThenInclude(o => o.User)
-                    .Where(o => o.CreatedAt <= beforeDate);
+                    .Where(o => o.CreatedAt <= beforeDate)
+                    .AsSplitQuery();
 
                 if (!await query.AnyAsync(context.CancellationToken))
                     return;
@@ -147,18 +151,29 @@ namespace GrillBot.App.Services.AuditLog
                     dbContext.Remove(item);
                 }
 
-                var storage = FileStorage.Create("Audit");
-                var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd}.xml";
-                var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
-
-                using var stream = fileinfo.OpenWrite();
-                await logRoot.SaveAsync(stream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, context.CancellationToken);
+                await StoreDataAsync(logRoot, context.CancellationToken);
                 await dbContext.SaveChangesAsync(context.CancellationToken);
             }
             catch (Exception ex)
             {
                 await Logging.ErrorAsync("AuditLogClearingJob", "An error occuret at audit log backuping.", ex);
             }
+        }
+
+        private async Task StoreDataAsync(XElement logRoot, CancellationToken cancellationToken)
+        {
+            var storage = FileStorage.Create("Audit");
+            var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd}.xml";
+            var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
+
+            using (var stream = fileinfo.OpenWrite())
+            {
+                await logRoot.SaveAsync(stream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, cancellationToken);
+            }
+
+            using var archive = ZipFile.Open(Path.ChangeExtension(fileinfo.FullName, ".zip"), ZipArchiveMode.Create);
+            archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
+            File.Delete(fileinfo.FullName);
         }
     }
 }

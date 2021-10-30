@@ -5,7 +5,6 @@ namespace GrillBot.Data.Models.API.Channels
 {
     public class ChannelDetail : GuildChannel
     {
-        public long Flags { get; set; }
         public long MessagesCount { get; set; }
         public DateTime? FirstMessageAt { get; set; }
         public DateTime? LastMessageAt { get; set; }
@@ -14,9 +13,6 @@ namespace GrillBot.Data.Models.API.Channels
 
         public ChannelDetail() { }
 
-        public ChannelDetail(Database.Entity.GuildChannel channel) : base(channel)
-        {
-            Flags = channel.Flags;
-        }
+        public ChannelDetail(Database.Entity.GuildChannel channel) : base(channel) { }
     }
 }

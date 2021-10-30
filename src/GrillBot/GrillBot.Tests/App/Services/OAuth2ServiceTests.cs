@@ -18,7 +18,7 @@ namespace GrillBot.Tests.App.Services
                     { "OAuth2:RedirectUrl", "http://localhost" }
                 }).Build();
 
-            var service = new OAuth2Service(configuration, null);
+            var service = new OAuth2Service(configuration, null, null);
             var result = service.GetRedirectLink();
 
             Assert.IsNotNull(result);

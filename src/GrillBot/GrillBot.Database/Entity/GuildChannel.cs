@@ -24,8 +24,6 @@ namespace GrillBot.Database.Entity
         [StringLength(100)]
         public string Name { get; set; }
 
-        public int Flags { get; set; }
-
         public ChannelType ChannelType { get; set; }
 
         public ISet<SearchItem> SearchItems { get; set; }
@@ -47,7 +45,5 @@ namespace GrillBot.Database.Entity
                 ChannelType = channelType
             };
         }
-
-        public bool HasFlags(GuildChannelFlags flags) => (Flags & (int)flags) != 0;
     }
 }

@@ -185,44 +185,6 @@ namespace GrillBot.App.Controllers
         }
 
         /// <summary>
-        /// Updates channel.
-        /// </summary>
-        /// <response code="200">Success</response>
-        /// <response code="400">Validation failed.</response>
-        /// <response code="404">Channel not found.</response>
-        [HttpPut("{channelId}")]
-        [OpenApiOperation(nameof(ChannelController) + "_" + nameof(UpdateChannelAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> UpdateChannelAsync(ulong channelId, [FromBody] UpdateChannelParams parameters)
-        {
-            var channel = await DbContext.Channels.AsQueryable()
-                .FirstOrDefaultAsync(o => o.ChannelId == channelId.ToString());
-
-            if (channel == null)
-                return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
-
-            var guild = DiscordClient.GetGuild(Convert.ToUInt64(channel.GuildId));
-            var guildChannel = guild.GetChannel(channelId);
-            var userId = User.GetUserId();
-            var user = guild.GetUser(userId);
-
-            await DbContext.InitGuildAsync(guild, CancellationToken.None);
-            await DbContext.InitGuildChannelAsync(guild, guildChannel, channel.ChannelType, CancellationToken.None);
-            await DbContext.InitUserAsync(user, CancellationToken.None);
-            await DbContext.InitGuildUserAsync(guild, user, CancellationToken.None);
-
-            var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, guildChannel, user,
-                $"Bylo upraveno nastavení kanálu. (Před: {channel.Flags}, Po: {parameters.Flags})");
-            await DbContext.AddAsync(logItem);
-
-            channel.Flags = parameters.Flags;
-            await DbContext.SaveChangesAsync();
-            return Ok();
-        }
-
-        /// <summary>
         /// Gets paginated list of user statistics in channels.
         /// </summary>
         /// <response code="200">Success</response>

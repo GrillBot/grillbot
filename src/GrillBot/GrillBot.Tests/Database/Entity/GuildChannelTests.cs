@@ -31,7 +31,6 @@ namespace GrillBot.Tests.Database.Entity
             {
                 ChannelId = "Channel",
                 ChannelType = Discord.ChannelType.Category,
-                Flags = 50,
                 Guild = new(),
                 GuildId = "Guild",
                 Name = "Name",

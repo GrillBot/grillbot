@@ -20,7 +20,6 @@ namespace GrillBot.Tests.Data.Models.API.Channels
             {
                 ChannelId = "Id",
                 ChannelType = Discord.ChannelType.Category,
-                Flags = 50,
                 Guild = new(),
                 GuildId = "Id",
                 Name = "Name"

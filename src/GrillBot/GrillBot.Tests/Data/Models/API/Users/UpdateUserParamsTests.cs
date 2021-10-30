@@ -21,7 +21,8 @@ namespace GrillBot.Tests.Data.Models.API.Users
                 ApiToken = Guid.NewGuid(),
                 BotAdmin = true,
                 Note = "Note",
-                WebAdminAllowed = true
+                WebAdminAllowed = true,
+                SelfUnverifyMinimalTime = TimeSpan.FromSeconds(50)
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(parameters);

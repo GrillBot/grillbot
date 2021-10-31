@@ -149,6 +149,7 @@ namespace GrillBot.App
                 q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
                 q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron");
                 q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
+                q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
             });
 
             services.AddQuartzHostedService();

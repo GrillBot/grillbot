@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,21 +13,24 @@ namespace GrillBot.Data.Models.API.Users
         public int Flags { get; set; }
         public bool HaveBirthday { get; set; }
         public string Username { get; set; }
+        public UserStatus DiscordStatus { get; set; }
 
         /// <summary>
         /// Guild names where user is/was.
         /// </summary>
         public Dictionary<string, bool> Guilds { get; set; }
 
+
         public UserListItem() { }
 
-        public UserListItem(Database.Entity.User user, DiscordSocketClient discordClient)
+        public UserListItem(Database.Entity.User user, DiscordSocketClient discordClient, IUser dcUser)
         {
             Id = user.Id;
             HaveApi = user.ApiToken != null;
             HaveBirthday = user.Birthday != null;
             Flags = user.Flags;
             Username = user.Username;
+            DiscordStatus = dcUser?.Status ?? UserStatus.Offline;
 
             Guilds = user.Guilds.ToDictionary(
                 o => o.Guild.Name,

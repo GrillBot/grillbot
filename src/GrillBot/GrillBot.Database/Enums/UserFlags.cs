@@ -23,6 +23,11 @@ namespace GrillBot.Database.Enums
         /// <summary>
         /// User is not standard user.
         /// </summary>
-        NotUser = 4
+        NotUser = 4,
+
+        /// <summary>
+        /// User is logged in webadmin.
+        /// </summary>
+        WebAdminOnline = 8
     }
 }

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -45,13 +46,16 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters)
         {
-            var query = DbContext.Users.AsNoTracking()
-                .AsSplitQuery()
+            var query = DbContext.Users.AsNoTracking().AsSplitQuery()
                 .Include(o => o.Guilds).ThenInclude(o => o.Guild)
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<UserListItem>.CreateAsync(query, parameters, entity => new(entity, DiscordClient));
+            var result = await PaginatedResponse<UserListItem>.CreateAsync(query, parameters, async entity =>
+            {
+                var discordUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(entity.Id));
+                return new(entity, DiscordClient, discordUser);
+            });
             return Ok(result);
         }
 
@@ -128,6 +132,46 @@ namespace GrillBot.App.Controllers
             await DbContext.AddAsync(logItem);
             await DbContext.SaveChangesAsync();
             return await GetUserDetailAsync(id);
+        }
+
+        /// <summary>
+        /// Heartbeat event to set the user to be logged in to the administration.
+        /// </summary>
+        /// <response code="200">Success</response>
+        [HttpPost("hearthbeat")]
+        [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<ActionResult> HearthbeatAsync()
+        {
+            await SetWebAdminStatusAsync(true);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Heartbeat event to set that the user is no longer logged in to the administration.
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("hearthbeat")]
+        [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatOffAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<ActionResult> HearthbeatOffAsync()
+        {
+            await SetWebAdminStatusAsync(false);
+            return Ok();
+        }
+
+        private async Task SetWebAdminStatusAsync(bool isOnline)
+        {
+            var userId = User.GetUserId().ToString();
+            var user = await DbContext.Users.AsQueryable()
+                .FirstOrDefaultAsync(o => (o.Flags & (int)UserFlags.WebAdmin) != 0 && o.Id == userId);
+
+            if (isOnline)
+                user.Flags |= (int)UserFlags.WebAdminOnline;
+            else
+                user.Flags &= ~(int)UserFlags.WebAdminOnline;
+
+            await DbContext.SaveChangesAsync();
         }
     }
 }

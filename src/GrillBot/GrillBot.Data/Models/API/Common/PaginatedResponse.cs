@@ -57,6 +57,25 @@ namespace GrillBot.Data.Models.API.Common
             return result;
         }
 
+        public static async Task<PaginatedResponse<TModel>> CreateAsync<TEntity>(IQueryable<TEntity> query, PaginatedParams @params,
+            Func<TEntity, Task<TModel>> asyncConverter)
+        {
+            var result = CreateEmpty(@params);
+            result.TotalItemsCount = await query.CountAsync();
+            result.SetFlags(@params.Skip, @params.PageSize);
+            result.Data = new List<TModel>();
+
+            if (result.TotalItemsCount == 0) return result;
+
+            query = query.Skip(@params.Skip).Take(@params.PageSize);
+            foreach (var item in await query.ToListAsync())
+            {
+                result.Data.Add(await asyncConverter(item));
+            }
+
+            return result;
+        }
+
         public static PaginatedResponse<TModel> Create(List<TModel> data, PaginatedParams request)
         {
             var result = CreateEmpty(request);

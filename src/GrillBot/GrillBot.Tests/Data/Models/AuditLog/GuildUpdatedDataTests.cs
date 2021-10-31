@@ -1,6 +1,7 @@
 ﻿using GrillBot.Data.Models;
 using GrillBot.Data.Models.AuditLog;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace GrillBot.Tests.Data.Models.AuditLog
 {
@@ -40,6 +41,37 @@ namespace GrillBot.Tests.Data.Models.AuditLog
                 property.GetValue(data, null);
 
             Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public void Serialization_WithData()
+        {
+            var item = new GuildUpdatedData()
+            {
+                AfkChannel = new(),
+                AfkTimeout = new(),
+                DefaultMessageNotifications = new(),
+                Description = new(),
+                VanityUrl = new(),
+                VoiceRegionId = new(),
+                Owner = new(),
+                PublicUpdatesChannel = new(),
+                RulesChannel = new(),
+                SystemChannel = new(),
+                Name = new(),
+                MfaLevel = new()
+            };
+
+            var json = JsonConvert.SerializeObject(item);
+            Assert.IsNotNull(json);
+        }
+
+        [TestMethod]
+        public void Serialization_WithoutData()
+        {
+            var item = new GuildUpdatedData();
+            var json = JsonConvert.SerializeObject(item);
+            Assert.IsNotNull(json);
         }
     }
 }

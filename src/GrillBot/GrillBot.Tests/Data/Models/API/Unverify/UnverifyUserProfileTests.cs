@@ -31,7 +31,9 @@ namespace GrillBot.Tests.Data.Models.API.Unverify
 
             var profile = new GrillBot.Data.Models.Unverify.UnverifyUserProfile(user.Object, DateTime.Now, DateTime.MaxValue, true)
             {
-                Reason = "Prostě důvod"
+                Reason = "Prostě důvod",
+                ChannelsToRemove = new() { new(1, 0, 0) },
+                ChannelsToKeep = new() { new(2, 0, 0) }
             };
             profile.RolesToKeep.Add(role.Object);
             profile.RolesToRemove.Add(role.Object);

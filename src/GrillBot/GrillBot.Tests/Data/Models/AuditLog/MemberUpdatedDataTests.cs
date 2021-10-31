@@ -1,6 +1,7 @@
 ﻿using GrillBot.Data.Models.AuditLog;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace GrillBot.Tests.Data.Models.AuditLog
@@ -38,6 +39,32 @@ namespace GrillBot.Tests.Data.Models.AuditLog
             };
 
             Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public void Serialization_WithData()
+        {
+            var data = new MemberUpdatedData()
+            {
+                IsDeaf = new(),
+                IsMuted = new(),
+                Nickname = new()
+            };
+
+            var json = JsonConvert.SerializeObject(data);
+            Assert.IsNotNull(json);
+        }
+
+        [TestMethod]
+        public void Serialization_WithoutData()
+        {
+            var data = new MemberUpdatedData()
+            {
+                Roles = null
+            };
+
+            var json = JsonConvert.SerializeObject(data);
+            Assert.IsNotNull(json);
         }
     }
 }

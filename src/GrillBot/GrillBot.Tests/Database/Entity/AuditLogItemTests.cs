@@ -1,7 +1,10 @@
-﻿using GrillBot.Database.Entity;
+﻿using Discord;
+using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System;
+using System.Linq;
 
 namespace GrillBot.Tests.Database.Entity
 {
@@ -49,8 +52,16 @@ namespace GrillBot.Tests.Database.Entity
         [TestMethod]
         public void Create()
         {
-            var item = AuditLogItem.Create(AuditLogItemType.ChannelCreated, null, null, null, "{}", 12345);
-            Assert.IsNotNull(item);
+            new[]
+            {
+                AuditLogItem.Create(AuditLogItemType.ChannelCreated, null, null, null, "{}"),
+                AuditLogItem.Create(AuditLogItemType.ChannelCreated, null, null, null, "{}", 12345),
+                AuditLogItem.Create(AuditLogItemType.ChannelCreated, null, null, null, "{}", "12345"),
+                AuditLogItem.Create(AuditLogItemType.ChannelCreated, null, null, null, "{}", null as ulong?),
+                AuditLogItem.Create(AuditLogItemType.ChannelCreated, new Mock<IGuild>().Object, new Mock<IChannel>().Object, null, "{}", null as ulong?),
+                AuditLogItem.Create(AuditLogItemType.ChannelCreated, new Mock<IGuild>().Object, null, null, "{}", null as ulong?),
+                AuditLogItem.Create(AuditLogItemType.ChannelCreated, new Mock<IGuild>().Object, new Mock<IChannel>().Object, new Mock<IUser>().Object, "{}", null as ulong?)
+            }.ToList().ForEach(o => Assert.IsNotNull(o));
         }
     }
 }

@@ -62,5 +62,18 @@ namespace GrillBot.Tests.Data.Models.API.Common
 
             Assert.IsFalse(response.CanNext);
         }
+
+        [TestMethod]
+        public void Create_AsyncConverter()
+        {
+            using var context = TestHelpers.CreateDbContext();
+            context.RemoveRange(context.Guilds.ToList());
+            context.Add(new Guild() { Name = "Name", Id = "1234" });
+            context.SaveChanges();
+
+            var query = context.Guilds.AsQueryable();
+            var result = PaginatedResponse<Guild>.CreateAsync(query, new PaginatedParams() { Page = 1, PageSize = 20 }, entity => Task.FromResult(entity)).Result;
+            Assert.AreEqual(1, result.TotalItemsCount);
+        }
     }
 }

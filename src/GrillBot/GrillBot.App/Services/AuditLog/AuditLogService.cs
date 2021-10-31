@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -551,7 +552,7 @@ namespace GrillBot.App.Services.AuditLog
             await context.SaveChangesAsync();
         }
 
-        public async Task<bool> RemoveItemAsync(long id)
+        public virtual async Task<bool> RemoveItemAsync(long id)
         {
             using var context = DbFactory.Create();
 

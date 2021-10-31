@@ -28,15 +28,12 @@ namespace GrillBot.App.Controllers
     public class AuditLogController : Controller
     {
         private AuditLogService AuditLogService { get; }
-        private DiscordSocketClient DiscordClient { get; }
         private GrillBotContext DbContext { get; }
         private FileStorageFactory FileStorageFactory { get; }
 
-        public AuditLogController(AuditLogService auditLogService, DiscordSocketClient discordClient, GrillBotContext dbContext,
-            FileStorageFactory fileStorageFactory)
+        public AuditLogController(AuditLogService auditLogService, GrillBotContext dbContext, FileStorageFactory fileStorageFactory)
         {
             AuditLogService = auditLogService;
-            DiscordClient = discordClient;
             DbContext = dbContext;
             FileStorageFactory = fileStorageFactory;
         }

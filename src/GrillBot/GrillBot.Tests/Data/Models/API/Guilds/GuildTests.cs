@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using GrillBot.Data.Models.API.Guilds;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,6 +26,13 @@ namespace GrillBot.Tests.Data.Models.API.Guilds
         {
             var guild = new Guild() { MemberCount = 50 };
             Assert.AreEqual(50, guild.MemberCount);
+        }
+
+        [TestMethod]
+        public void Constructor_NullInterfaceGuild()
+        {
+            var guild = new Guild(null as IGuild);
+            TestHelpers.CheckDefaultPropertyValues(guild);
         }
     }
 }

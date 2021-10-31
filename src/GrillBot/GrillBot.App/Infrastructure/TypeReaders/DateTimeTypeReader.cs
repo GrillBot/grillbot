@@ -28,7 +28,7 @@ namespace GrillBot.App.Infrastructure.TypeReaders
             if (input.Contains('/') && DateTime.TryParse(input, new CultureInfo("en-US"), DateTimeStyles.None, out DateTime dateTime))
                 return Task.FromResult(TypeReaderResult.FromSuccess(dateTime));
 
-            if (DateTime.TryParse(input, CultureInfo.CurrentCulture, DateTimeStyles.None, out dateTime))
+            if (DateTime.TryParse(input, new CultureInfo("cs-CZ"), DateTimeStyles.None, out dateTime))
                 return Task.FromResult(TypeReaderResult.FromSuccess(dateTime));
 
             foreach (var func in MatchingFunctions)

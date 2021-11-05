@@ -31,9 +31,13 @@ namespace GrillBot.Data.Models.API.Users
             Nickname = user.Nickname;
             UsedInvite = user.UsedInvite == null ? null : new Invites.Invite(user.UsedInvite);
             CreatedInvites = user.CreatedInvites.Select(o => new Invites.InviteBase(o)).OrderByDescending(o => o.CreatedAt).ToList();
-            Channels = user.Channels.Select(o => new UserGuildChannel(o)).OrderByDescending(o => o.Count).OrderBy(o => o.Channel.Name).ToList();
             IsGuildKnown = guild != null;
             IsUserInGuild = IsGuildKnown && guild.GetUserAsync(Convert.ToUInt64(user.UserId)).Result != null;
+            Channels = user.Channels
+                .Select(o => new UserGuildChannel(o))
+                .OrderByDescending(o => o.Count)
+                .OrderBy(o => o.Channel.Name)
+                .ToList();
         }
     }
 }

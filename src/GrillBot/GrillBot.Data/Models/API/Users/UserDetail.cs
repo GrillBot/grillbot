@@ -34,9 +34,15 @@ namespace GrillBot.Data.Models.API.Users
             Flags = entity.Flags;
             HaveBirthday = entity.Birthday != null;
             Guilds = entity.Guilds.Select(o => new GuildUserDetail(o, discordClient.GetGuildAsync(Convert.ToUInt64(o.GuildId)).Result)).OrderBy(o => o.Guild.Name).ToList();
-            Emotes = entity.UsedEmotes.Select(o => new EmoteStatItem(o)).OrderByDescending(o => o.UseCount).ThenByDescending(o => o.LastOccurence).ThenBy(o => o.Name).ToList();
             IsKnown = user != null;
             SelfUnverifyMinimalTime = entity.SelfUnverifyMinimalTime;
+
+            Emotes = entity.UsedEmotes
+                .Select(o => new EmoteStatItem(o))
+                .OrderByDescending(o => o.UseCount)
+                .ThenByDescending(o => o.LastOccurence)
+                .ThenBy(o => o.Name)
+                .ToList();
 
             if (IsKnown)
             {

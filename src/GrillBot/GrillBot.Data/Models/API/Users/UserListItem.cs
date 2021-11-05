@@ -20,7 +20,6 @@ namespace GrillBot.Data.Models.API.Users
         /// </summary>
         public Dictionary<string, bool> Guilds { get; set; }
 
-
         public UserListItem() { }
 
         public UserListItem(Database.Entity.User user, DiscordSocketClient discordClient, IUser dcUser)
@@ -29,10 +28,10 @@ namespace GrillBot.Data.Models.API.Users
             HaveApi = user.ApiToken != null;
             HaveBirthday = user.Birthday != null;
             Flags = user.Flags;
-            Username = user.Username;
+            Username = dcUser == null ? user.Username : $"{user.Username}#{dcUser.Discriminator}";
             DiscordStatus = dcUser?.Status ?? UserStatus.Offline;
 
-            Guilds = user.Guilds.ToDictionary(
+            Guilds = user.Guilds.OrderBy(o => o.Guild.Name).ToDictionary(
                 o => o.Guild.Name,
                 o => discordClient.GetGuild(Convert.ToUInt64(o.GuildId))?.GetUser(Convert.ToUInt64(o.UserId)) != null
             );

@@ -23,14 +23,18 @@ namespace GrillBot.App.Services
         private IConfiguration Configuration { get; }
         private IServiceProvider Provider { get; }
         private CommandService CommandService { get; }
+        private IHostApplicationLifetime Lifetime { get; }
 
         public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-            LoggingService _)
+            LoggingService _, IHostApplicationLifetime hostApplicationLifetime)
         {
             DiscordSocketClient = client;
             Configuration = configuration;
             Provider = provider;
             CommandService = commandService;
+            Lifetime = hostApplicationLifetime;
+
+            DiscordSocketClient.Log += OnLogAsync;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -72,6 +76,15 @@ namespace GrillBot.App.Services
         {
             await DiscordSocketClient.StopAsync();
             await DiscordSocketClient.LogoutAsync();
+        }
+
+        private Task OnLogAsync(LogMessage message)
+        {
+            if (message.Source != "Gateway" || message.Exception == null) return Task.CompletedTask;
+            if (message.Exception is GatewayReconnectException && message.Exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase))
+                Lifetime.StopApplication();
+
+            return Task.CompletedTask;
         }
     }
 }

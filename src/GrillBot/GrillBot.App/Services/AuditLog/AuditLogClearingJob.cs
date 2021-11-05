@@ -156,7 +156,7 @@ namespace GrillBot.App.Services.AuditLog
             }
             catch (Exception ex)
             {
-                await Logging.ErrorAsync("AuditLogClearingJob", "An error occuret at audit log backuping.", ex);
+                await Logging.ErrorAsync("AuditLogClearingJob", "An error occurred while backing up the log.", ex);
             }
         }
 
@@ -171,7 +171,9 @@ namespace GrillBot.App.Services.AuditLog
                 await logRoot.SaveAsync(stream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, cancellationToken);
             }
 
-            using var archive = ZipFile.Open(Path.ChangeExtension(fileinfo.FullName, ".zip"), ZipArchiveMode.Create);
+            var zipFilename = Path.ChangeExtension(fileinfo.FullName, ".zip");
+            if (File.Exists(zipFilename)) File.Delete(zipFilename);
+            using var archive = ZipFile.Open(zipFilename, ZipArchiveMode.Create);
             archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
             File.Delete(fileinfo.FullName);
         }

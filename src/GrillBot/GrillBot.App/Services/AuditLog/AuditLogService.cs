@@ -183,22 +183,19 @@ namespace GrillBot.App.Services.AuditLog
         {
             var oldMessage = before.HasValue ? before.Value : MessageCache.GetMessage(before.Id);
             if (oldMessage == null || after == null || !oldMessage.Author.IsUser() || oldMessage.Content == after.Content) return;
+            var author = await DiscordClient.TryFindGuildUserAsync(channel.Guild.Id, oldMessage.Author.Id);
+            if (author == null) return;
 
             var data = new MessageEditedData(oldMessage, after);
-            var entity = AuditLogItem.Create(AuditLogItemType.MessageEdited, channel.Guild, channel, after.Author, JsonConvert.SerializeObject(data, JsonSerializerSettings));
+            var entity = AuditLogItem.Create(AuditLogItemType.MessageEdited, channel.Guild, channel, author, JsonConvert.SerializeObject(data, JsonSerializerSettings));
 
             using var context = DbFactory.Create();
 
             await context.InitGuildAsync(channel.Guild, CancellationToken.None);
-            await context.InitUserAsync(after.Author, CancellationToken.None);
-
-            var author = after.Author as IGuildUser ?? await DiscordClient.TryFindGuildUserAsync(channel.Guild.Id, after.Author.Id);
-            if (author != null)
-            {
-                await context.InitGuildUserAsync(channel.Guild, author, CancellationToken.None);
-                await context.AddAsync(entity);
-                await context.SaveChangesAsync();
-            }
+            await context.InitUserAsync(author, CancellationToken.None);
+            await context.InitGuildUserAsync(channel.Guild, author, CancellationToken.None);
+            await context.AddAsync(entity);
+            await context.SaveChangesAsync();
 
             MessageCache.MarkUpdated(after.Id);
         }

@@ -445,6 +445,32 @@ namespace GrillBot.App.Modules
                     await Context.Message.AddReactionAsync(Emojis.Ok);
                 }
 
+                [Command("remove user")]
+                [Name("Smaže oprávnění uživatele v kanálech.")]
+                public async Task RemoveUserFromChannelsAsync([Name("id/tag/jmeno_uzivatele")] IGuildUser user, [Name("kanaly")] params IGuildChannel[] channels)
+                {
+                    if (channels.Length == 0) return;
+                    await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
+
+                    var formatMessage = new Func<double, string>(removed => $"Probíhá úklid oprávnění **{removed}** / **{channels.Length}** (**{Math.Round(removed / channels.Length * 100)} %**)");
+                    var msg = await ReplyAsync(formatMessage(0));
+
+                    double removed = 0;
+                    foreach (var channel in channels)
+                    {
+                        var userPermission = channel.GetPermissionOverwrite(user);
+                        if (userPermission != null)
+                            await channel.RemovePermissionOverwriteAsync(user);
+
+                        removed++;
+                        await msg.ModifyAsync(o => o.Content = formatMessage(removed));
+                    }
+
+                    await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
+                    await Context.Message.RemoveAllReactionsAsync();
+                    await Context.Message.AddReactionAsync(Emojis.Ok);
+                }
+
                 [Group("useless")]
                 [Name("Zbytečná oprávnění")]
                 [Summary("Detekce a smazání zbytečných oprávnění.")]

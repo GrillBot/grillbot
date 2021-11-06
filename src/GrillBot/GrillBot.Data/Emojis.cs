@@ -51,17 +51,36 @@ namespace GrillBot.Data
         public static Emoji Eight => new("8️⃣");
         public static Emoji Nine => new("9️⃣");
         public static Emoji PersonRisingHand => new("🙋");
+        public static Emoji EEmail => new("📧");
+        public static Emoji Parking => new("🅿️");
+        public static Emoji InformationSource => new("ℹ️");
 
         public static IEmote[] PaginationEmojis => new[] { MoveToFirst, MoveToPrev, MoveToNext, MoveToLast };
 
         public static Dictionary<int, Emoji> NumberToEmojiMap => new()
         {
-            { 1, One }, { 2, Two }, { 3, Three }, { 4, Four }, { 5, Five }, { 6, Six }, { 7, Seven }, { 8, Eight }, { 9, Nine }
+            { 1, One },
+            { 2, Two },
+            { 3, Three },
+            { 4, Four },
+            { 5, Five },
+            { 6, Six },
+            { 7, Seven },
+            { 8, Eight },
+            { 9, Nine }
         };
 
         public static Dictionary<Emoji, int> EmojiToIntMap => new()
         {
-            { One, 1 }, { Two, 2}, { Three, 3 }, { Four, 4 }, { Five, 5 }, { Six, 6 }, { Seven, 7}, { Eight, 8 }, { Nine, 9 }
+            { One, 1 },
+            { Two, 2 },
+            { Three, 3 },
+            { Four, 4 },
+            { Five, 5 },
+            { Six, 6 },
+            { Seven, 7 },
+            { Eight, 8 },
+            { Nine, 9 }
         };
 
         public static Dictionary<char, Emoji> CharToEmojiMap => new()
@@ -99,6 +118,9 @@ namespace GrillBot.Data
             { 'A', SignA },
             { 'B', SignB },
             { 'O', SignO },
+            { 'E', EEmail },
+            { 'P', Parking },
+            { 'I', InformationSource },
             { 'X', Nok }
         };
 

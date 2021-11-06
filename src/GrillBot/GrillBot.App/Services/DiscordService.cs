@@ -7,6 +7,9 @@ using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Sync;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
+using GrillBot.Database.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -78,13 +81,22 @@ namespace GrillBot.App.Services
             await DiscordSocketClient.LogoutAsync();
         }
 
-        private Task OnLogAsync(LogMessage message)
+        private async Task OnLogAsync(LogMessage message)
         {
-            if (message.Source != "Gateway" || message.Exception == null) return Task.CompletedTask;
+            if (message.Source != "Gateway" || message.Exception == null) return;
             if (message.Exception is GatewayReconnectException && message.Exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase))
-                Lifetime.StopApplication();
+            {
+                var auditLogItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, DiscordSocketClient.CurrentUser, "Restart aplikace po odpojení.");
+                var dbFactory = Provider.GetRequiredService<GrillBotContextFactory>();
+                using var dbContext = dbFactory.Create();
+                await dbContext.InitUserAsync(DiscordSocketClient.CurrentUser, CancellationToken.None);
+                await dbContext.AddAsync(auditLogItem);
+                await dbContext.SaveChangesAsync();
 
-            return Task.CompletedTask;
+                Lifetime.StopApplication();
+            }
+
+            return;
         }
     }
 }

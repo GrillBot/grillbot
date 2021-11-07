@@ -119,8 +119,8 @@ namespace GrillBot.App.Services.Unverify
 
                 if (overwrite != null)
                 {
-                    profile.ChannelsToRemove.Add(overwrite);
-                    profile.ChannelsToKeep.RemoveAll(o => o.ChannelId == overwrite.ChannelId);
+                    profile.ChannelsToKeep.Add(overwrite);
+                    profile.ChannelsToRemove.RemoveAll(o => o.ChannelId == overwrite.ChannelId);
                 }
             }
         }

@@ -93,10 +93,8 @@ namespace GrillBot.App.Services
                 await dbContext.AddAsync(auditLogItem);
                 await dbContext.SaveChangesAsync();
 
-                Lifetime.StopApplication();
+                Environment.Exit(1);
             }
-
-            return;
         }
     }
 }

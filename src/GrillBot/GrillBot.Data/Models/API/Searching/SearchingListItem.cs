@@ -39,14 +39,14 @@ namespace GrillBot.Data.Models.API.Searching
 
         public SearchingListItem() { }
 
-        public SearchingListItem(Entities.SearchItem entity, string message, string jumpLink)
+        public SearchingListItem(Entities.SearchItem entity)
         {
             Id = entity.Id;
             User = new User(entity.User);
             Guild = new Guild(entity.Guild);
             Channel = new Channel(entity.Channel);
-            Message = message.Trim();
-            JumpLink = jumpLink;
+            Message = entity.MessageContent;
+            JumpLink = entity.JumpUrl;
         }
     }
 }

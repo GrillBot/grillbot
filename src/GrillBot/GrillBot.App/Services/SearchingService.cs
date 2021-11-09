@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using GrillBot.App.Extensions;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.Data.Helpers;
@@ -11,6 +12,7 @@ using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -32,6 +34,8 @@ namespace GrillBot.App.Services
 
         public async Task CreateAsync(IGuild guild, IUser user, IChannel channel, IUserMessage message)
         {
+            var messageContent = ParseAndCheckMessage(message);
+
             using var context = DbFactory.Create();
 
             await context.InitUserAsync(user, CancellationToken.None);
@@ -42,12 +46,25 @@ namespace GrillBot.App.Services
             {
                 ChannelId = channel.Id.ToString(),
                 GuildId = guild.Id.ToString(),
-                MessageId = message.Id.ToString(),
-                UserId = user.Id.ToString()
+                UserId = user.Id.ToString(),
+                JumpUrl = message.GetJumpUrl(),
+                MessageContent = messageContent
             };
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();
+        }
+
+        private string ParseAndCheckMessage(IUserMessage message)
+        {
+            var messageContent = GetMessageContent(message);
+            if (string.IsNullOrEmpty(messageContent))
+                throw new ValidationException("Obsah zprávy nesmí být prázdný.");
+
+            if (messageContent.Length > EmbedFieldBuilder.MaxFieldValueLength)
+                throw new ValidationException($"Zpráva nesmí být delší, než {EmbedFieldBuilder.MaxFieldValueLength} znaků.");
+
+            return messageContent;
         }
 
         public async Task RemoveSearchAsync(long id, IUser executor, bool admin)
@@ -91,7 +108,7 @@ namespace GrillBot.App.Services
         {
             using var context = DbFactory.Create();
 
-            var query = context.SearchItems.AsNoTracking()
+            var query = context.SearchItems.AsSplitQuery()
                 .Include(o => o.Channel)
                 .Include(o => o.Guild)
                 .Include(o => o.User)
@@ -101,6 +118,8 @@ namespace GrillBot.App.Services
             var data = await query.ToListAsync();
 
             var results = new List<SearchingListItem>();
+            var synchronizedGuilds = new List<ulong>();
+
             foreach (var item in data)
             {
                 var guild = DiscordClient.GetGuild(Convert.ToUInt64(item.GuildId));
@@ -117,7 +136,12 @@ namespace GrillBot.App.Services
                     continue;
                 }
 
-                await guild.DownloadUsersAsync();
+                if (!synchronizedGuilds.Contains(guild.Id))
+                {
+                    await guild.DownloadUsersAsync();
+                    synchronizedGuilds.Add(guild.Id);
+                }
+
                 var author = guild.GetUser(Convert.ToUInt64(item.UserId));
                 if (author == null)
                 {
@@ -125,21 +149,29 @@ namespace GrillBot.App.Services
                     continue;
                 }
 
-                var message = await MessageCache.GetMessageAsync(channel, Convert.ToUInt64(item.MessageId));
-                if (message == null)
+                if (string.IsNullOrEmpty(item.MessageContent))
                 {
-                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
-                    continue;
+                    // Old version. Download message, store to entity/db and return object. Next load will take from DB.
+                    var message = await MessageCache.GetMessageAsync(channel, Convert.ToUInt64(item.MessageId));
+                    if (message == null)
+                    {
+                        CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
+                        continue;
+                    }
+
+                    var messageContent = GetMessageContent(message);
+                    if (string.IsNullOrEmpty(messageContent))
+                    {
+                        CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
+                        continue;
+                    }
+
+                    item.MessageContent = messageContent.Cut(EmbedFieldBuilder.MaxFieldValueLength);
+                    item.JumpUrl = message.GetJumpUrl();
+                    item.MessageId = null;
                 }
 
-                var messageContent = GetMessageContent(message);
-                if (string.IsNullOrEmpty(messageContent))
-                {
-                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
-                    continue;
-                }
-
-                results.Add(new SearchingListItem(item, messageContent, message.GetJumpUrl()));
+                results.Add(new SearchingListItem(item));
             }
 
             await context.SaveChangesAsync();

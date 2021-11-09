@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services;
 using GrillBot.Data;
 using GrillBot.Data.Extensions.Discord;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Modules.Searching
@@ -27,8 +27,16 @@ namespace GrillBot.App.Modules.Searching
         [Summary("Vytvoří hledání.")]
         public async Task CreateSearchAsync([Remainder][Name("obsah")] string _)
         {
-            await Service.CreateAsync(Context.Guild, Context.User, Context.Channel, Context.Message);
-            await Context.Message.AddReactionAsync(Emojis.Ok);
+            try
+            {
+                await Service.CreateAsync(Context.Guild, Context.User, Context.Channel, Context.Message);
+                await Context.Message.AddReactionAsync(Emojis.Ok);
+            }
+            catch (ValidationException ex)
+            {
+                await ReplyAsync(ex.Message);
+                await Context.Message.AddReactionAsync(Emojis.Nok);
+            }
         }
 
         [Command("remove")]

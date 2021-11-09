@@ -11,7 +11,7 @@ namespace GrillBot.App.Extensions
 
             var withoutDotsLen = withoutDots ? 0 : 3;
             if (str.Length >= maxLength - withoutDotsLen)
-                str = str.Substring(0, maxLength - withoutDotsLen) + (withoutDots ? "" : "...");
+                str = str[..(maxLength - withoutDotsLen)] + (withoutDots ? "" : "...");
 
             return str;
         }

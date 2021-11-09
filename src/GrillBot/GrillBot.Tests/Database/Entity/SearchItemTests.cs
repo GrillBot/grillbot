@@ -24,7 +24,9 @@ namespace GrillBot.Tests.Database.Entity
                 GuildId = "ABCD",
                 Id = 42,
                 MessageId = "ABCD",
-                User = new()
+                User = new(),
+                JumpUrl = "JumpUrl",
+                MessageContent = "Message"
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(search);

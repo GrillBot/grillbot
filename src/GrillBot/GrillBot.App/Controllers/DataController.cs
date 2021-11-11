@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
@@ -46,9 +47,9 @@ namespace GrillBot.App.Controllers
         }
 
         /// <summary>
-        /// Get channels of guild.
+        /// Get channels
         /// </summary>
-        /// <param name="guildId">Guild ID</param>
+        /// <param name="guildId">Optional guild ID</param>
         [HttpGet("channels")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetChannelsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
@@ -58,9 +59,10 @@ namespace GrillBot.App.Controllers
             if (guildId != null) guilds = guilds.Where(o => o.Id == guildId.Value);
 
             var channels = guilds.SelectMany(o => o.Channels.Select(o => new Channel(o)))
-                .Where(o => o.Type != null).ToList();
+                .Where(o => o.Type != null && o.Type != ChannelType.Category).ToList();
 
             var dbChannelsQuery = DbContext.Channels.AsNoTracking()
+                .Where(o => o.ChannelType != ChannelType.Category)
                 .OrderBy(o => o.Name).AsQueryable();
 
             if (guildId != null)

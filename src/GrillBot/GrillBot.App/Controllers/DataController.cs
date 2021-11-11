@@ -114,8 +114,8 @@ namespace GrillBot.App.Controllers
         {
             var commands = CommandService.Commands
                 .Select(o => o.Aliases[0]?.Trim())
-                .OrderBy(o => o)
                 .Distinct()
+                .OrderBy(o => o)
                 .ToList();
 
             return Ok(commands);

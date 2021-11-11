@@ -91,7 +91,11 @@ namespace GrillBot.App.Services
                 using var dbContext = dbFactory.Create();
                 await dbContext.InitUserAsync(DiscordSocketClient.CurrentUser, CancellationToken.None);
                 await dbContext.AddAsync(auditLogItem);
-                await dbContext.SaveChangesAsync();
+
+                await Task.WhenAll(
+                    dbContext.SaveChangesAsync(),
+                    Task.Delay(5000)
+                );
 
                 Environment.Exit(1);
             }

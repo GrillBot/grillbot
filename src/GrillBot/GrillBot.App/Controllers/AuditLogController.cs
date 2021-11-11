@@ -1,19 +1,14 @@
-﻿using Discord.WebSocket;
-using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.FileStorage;
-using GrillBot.Data.Models;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using NSwag.Annotations;
 using System.Linq;
 using System.Net;
@@ -79,52 +74,8 @@ namespace GrillBot.App.Controllers
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<AuditLogListItem>.CreateAsync(query, parameters, entity => new(entity));
+            var result = await PaginatedResponse<AuditLogListItem>.CreateAsync(query, parameters, entity => new(entity, AuditLogService.JsonSerializerSettings));
             return Ok(result);
-        }
-
-        /// <summary>
-        /// Gets data of operation.
-        /// </summary>
-        /// <param name="id">Log ID</param>
-        /// <response code="200">Success</response>
-        /// <response code="204">Item not have data.</response>
-        /// <response code="404">Item not found.</response>
-        [HttpGet("{id}")]
-        [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetAuditLogDataAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NoContent)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<object>> GetAuditLogDataAsync(long id)
-        {
-            var item = await DbContext.AuditLogs.AsNoTracking()
-                .Select(o => new { o.Id, o.Type, o.Data })
-                .FirstOrDefaultAsync(o => o.Id == id);
-
-            if (item == null)
-                return NotFound(new MessageResponse("Požadovaný záznam v logu nebyl nalezen nebo nemáš oprávnění přistoupit k tomuto záznamu."));
-
-            if (string.IsNullOrEmpty(item.Data))
-                return NoContent();
-
-            return item.Type switch
-            {
-                AuditLogItemType.Error or AuditLogItemType.Info or AuditLogItemType.Warning => Ok(new MessageResponse(item.Data)),
-                AuditLogItemType.Command => Ok(JsonConvert.DeserializeObject<CommandExecution>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.ChannelCreated or AuditLogItemType.ChannelDeleted => Ok(JsonConvert.DeserializeObject<AuditChannelInfo>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.ChannelUpdated => Ok(JsonConvert.DeserializeObject<Diff<AuditChannelInfo>>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.EmojiDeleted => Ok(JsonConvert.DeserializeObject<AuditEmoteInfo>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.GuildUpdated => Ok(JsonConvert.DeserializeObject<GuildUpdatedData>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.MemberRoleUpdated or AuditLogItemType.MemberUpdated => Ok(JsonConvert.DeserializeObject<MemberUpdatedData>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.MessageDeleted => Ok(JsonConvert.DeserializeObject<MessageDeletedData>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.MessageEdited => Ok(JsonConvert.DeserializeObject<MessageEditedData>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.OverwriteCreated or AuditLogItemType.OverwriteDeleted => Ok(JsonConvert.DeserializeObject<AuditOverwriteInfo>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.OverwriteUpdated => Ok(JsonConvert.DeserializeObject<Diff<AuditOverwriteInfo>>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.Unban => Ok(JsonConvert.DeserializeObject<AuditUserInfo>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.UserJoined => Ok(JsonConvert.DeserializeObject<UserJoinedAuditData>(item.Data, AuditLogService.JsonSerializerSettings)),
-                AuditLogItemType.UserLeft => Ok(JsonConvert.DeserializeObject<UserLeftGuildData>(item.Data, AuditLogService.JsonSerializerSettings)),
-                _ => NoContent(),
-            };
         }
 
         /// <summary>

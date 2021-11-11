@@ -17,7 +17,7 @@ namespace GrillBot.Data.Models.API.AuditLog
         /// <summary>
         /// Who processed operation.
         /// </summary>
-        public string ProcessedUserId { get; set; }
+        public List<string> ProcessedUserIds { get; set; }
 
         /// <summary>
         /// Types of operations.
@@ -59,8 +59,8 @@ namespace GrillBot.Data.Models.API.AuditLog
             if (!string.IsNullOrEmpty(GuildId))
                 query = query.Where(o => o.GuildId == GuildId);
 
-            if (!string.IsNullOrEmpty(ProcessedUserId))
-                query = query.Where(o => o.ProcessedUserId == ProcessedUserId);
+            if (ProcessedUserIds?.Count > 0)
+                query = query.Where(o => ProcessedUserIds.Contains(o.ProcessedUserId));
 
             if (Types?.Count > 0)
                 query = query.Where(o => Types.Contains(o.Type));

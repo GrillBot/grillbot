@@ -1,7 +1,9 @@
 ﻿using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Data.Models.API.Users;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +33,7 @@ namespace GrillBot.Data.Models.API.AuditLog
         /// <summary>
         /// Processed user.
         /// </summary>
-        public GuildUser ProcessedUser { get; set; }
+        public User ProcessedUser { get; set; }
 
         /// <summary>
         /// Id of auditlog items in discord.
@@ -54,23 +56,44 @@ namespace GrillBot.Data.Models.API.AuditLog
         public List<AuditLogFileMetadata> Files { get; set; }
 
         /// <summary>
-        /// This item contains detail?
+        /// Data
         /// </summary>
-        public bool ContainsData { get; set; }
+        public object Data { get; set; }
 
         public AuditLogListItem() { }
 
-        public AuditLogListItem(Database.Entity.AuditLogItem entity)
+        public AuditLogListItem(Database.Entity.AuditLogItem entity, JsonSerializerSettings jsonSerializerSettings)
         {
             Id = entity.Id;
             CreatedAt = entity.CreatedAt;
             Guild = entity.Guild == null ? null : new(entity.Guild);
-            ProcessedUser = entity.ProcessedGuildUser == null ? null : new(entity.ProcessedGuildUser);
+            ProcessedUser = entity.ProcessedGuildUser == null ? null : new(entity.ProcessedGuildUser.User);
             DiscordAuditLogItemIds = !string.IsNullOrEmpty(entity.DiscordAuditLogItemId) ? entity.DiscordAuditLogItemId.Split(',').ToList() : null;
             Type = entity.Type;
             Channel = entity.GuildChannel == null ? null : new(entity.GuildChannel);
-            ContainsData = !string.IsNullOrEmpty(entity.Data);
             Files = entity.Files.Select(o => new AuditLogFileMetadata(o)).ToList();
+
+            if (!string.IsNullOrEmpty(entity.Data))
+            {
+                Data = entity.Type switch
+                {
+                    AuditLogItemType.Error or AuditLogItemType.Info or AuditLogItemType.Warning => entity.Data,
+                    AuditLogItemType.Command => JsonConvert.DeserializeObject<CommandExecution>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.ChannelCreated or AuditLogItemType.ChannelDeleted => JsonConvert.DeserializeObject<AuditChannelInfo>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.ChannelUpdated => JsonConvert.DeserializeObject<Diff<AuditChannelInfo>>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.EmojiDeleted => JsonConvert.DeserializeObject<AuditEmoteInfo>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.GuildUpdated => JsonConvert.DeserializeObject<GuildUpdatedData>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.MemberRoleUpdated or AuditLogItemType.MemberUpdated => JsonConvert.DeserializeObject<MemberUpdatedData>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.MessageDeleted => JsonConvert.DeserializeObject<MessageDeletedData>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.MessageEdited => JsonConvert.DeserializeObject<MessageEditedData>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.OverwriteCreated or AuditLogItemType.OverwriteDeleted => JsonConvert.DeserializeObject<AuditOverwriteInfo>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.OverwriteUpdated => JsonConvert.DeserializeObject<Diff<AuditOverwriteInfo>>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.Unban => JsonConvert.DeserializeObject<AuditUserInfo>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.UserJoined => JsonConvert.DeserializeObject<UserJoinedAuditData>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.UserLeft => JsonConvert.DeserializeObject<UserLeftGuildData>(entity.Data, jsonSerializerSettings),
+                    _ => null
+                };
+            }
         }
     }
 }

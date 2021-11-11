@@ -40,7 +40,7 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
                 CreatedTo = DateTime.MaxValue,
                 GuildId = "1",
                 IgnoreBots = true,
-                ProcessedUserId = "1",
+                ProcessedUserIds = new() { "1" },
                 SortBy = "CreatedAt",
                 SortDesc = true,
                 Types = new List<AuditLogItemType>()
@@ -73,7 +73,7 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
                 CreatedTo = DateTime.MaxValue,
                 GuildId = "1",
                 IgnoreBots = true,
-                ProcessedUserId = "1",
+                ProcessedUserIds = new() { "1" },
                 SortBy = "CreatedAt",
                 SortDesc = true,
                 Types = new List<AuditLogItemType>() { AuditLogItemType.ChannelCreated }

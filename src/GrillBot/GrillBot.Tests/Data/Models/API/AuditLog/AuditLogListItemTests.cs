@@ -26,20 +26,20 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
                 Guild = new Guild(),
                 ProcessedGuildUser = new GuildUser() { User = new User() },
                 DiscordAuditLogItemId = "1234",
-                Type = GrillBot.Database.Enums.AuditLogItemType.ChannelCreated,
+                Type = GrillBot.Database.Enums.AuditLogItemType.Info,
                 GuildChannel = new GuildChannel(),
                 Data = "13",
                 Files = new HashSet<AuditLogFileMeta>() { new AuditLogFileMeta() }
             };
 
-            var item = new AuditLogListItem(entity);
+            var item = new AuditLogListItem(entity, new Newtonsoft.Json.JsonSerializerSettings());
             TestHelpers.CheckNonDefaultPropertyValues(item);
         }
 
         [TestMethod]
         public void BasicConstructor_WithoutOptional()
         {
-            var item = new AuditLogListItem(new AuditLogItem());
+            var item = new AuditLogListItem(new AuditLogItem(), new Newtonsoft.Json.JsonSerializerSettings());
 
             Assert.IsNull(item.Guild);
             Assert.IsNull(item.ProcessedUser);

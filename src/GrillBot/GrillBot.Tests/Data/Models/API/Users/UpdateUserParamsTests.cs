@@ -22,7 +22,8 @@ namespace GrillBot.Tests.Data.Models.API.Users
                 BotAdmin = true,
                 Note = "Note",
                 WebAdminAllowed = true,
-                SelfUnverifyMinimalTime = TimeSpan.FromSeconds(50)
+                SelfUnverifyMinimalTime = TimeSpan.FromSeconds(50),
+                PublicAdminBlocked = true
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(parameters);

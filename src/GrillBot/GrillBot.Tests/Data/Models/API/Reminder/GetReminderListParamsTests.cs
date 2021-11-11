@@ -27,7 +27,8 @@ namespace GrillBot.Tests.Data.Models.API.Reminder
                 OriginalMessageId = "Id",
                 SortBy = "Id",
                 SortDesc = true,
-                ToUserId = "Id"
+                ToUserId = "Id",
+                OnlyWaiting = true
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(parameters);
@@ -59,7 +60,8 @@ namespace GrillBot.Tests.Data.Models.API.Reminder
                 OriginalMessageId = "Id",
                 SortBy = "Id",
                 SortDesc = true,
-                ToUserId = "Id"
+                ToUserId = "Id",
+                OnlyWaiting = true
             };
 
             var query = context.Reminders.AsQueryable();

@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Net;
 using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
@@ -8,11 +7,8 @@ using GrillBot.App.Helpers;
 using GrillBot.App.Modules.Channels;
 using GrillBot.Data;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Models;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
 using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
@@ -27,14 +23,10 @@ namespace GrillBot.App.Modules
     public class ChannelModule : Infrastructure.ModuleBase
     {
         private GrillBotContextFactory DbFactory { get; }
-        private IMemoryCache MemoryCache { get; }
-        private IConfiguration Configuration { get; }
 
-        public ChannelModule(GrillBotContextFactory dbFactory, IMemoryCache memoryCache, IConfiguration configuration)
+        public ChannelModule(GrillBotContextFactory dbFactory)
         {
             DbFactory = dbFactory;
-            MemoryCache = memoryCache;
-            Configuration = configuration;
         }
 
         [Command("board")]
@@ -127,33 +119,6 @@ namespace GrillBot.App.Modules
                 .AddField("TOP 10 uživatelů", topTenFormatted, false);
 
             await ReplyAsync(embed: embed.Build());
-        }
-
-        [Command("web")]
-        [Summary("Získání kompletní statistiky zpráv pro uživatele. **Momentálně \"nedostupné\"**. Třeba doimplementovat client UI.")]
-        public async Task GetChannelBoardWebAsync()
-        {
-            return;
-            var sessionId = Guid.NewGuid().ToString().Replace("-", "");
-
-            var metadata = new ChannelboardWebMetadata()
-            {
-                GuildId = Context.Guild.Id,
-                UserId = Context.User.Id
-            };
-
-            MemoryCache.Set(sessionId, metadata);
-            var url = string.Format(Configuration["Channelboard:Web:Address"], sessionId);
-            var message = $"Zda máš odkaz pro přístup na kompletní statistiku kanálů pro server **{Context.Guild.Name}**: <{url}>";
-
-            try
-            {
-                await Context.User.SendMessageAsync(message);
-            }
-            catch (HttpException ex) when (ex.DiscordCode == 50007)
-            {
-                // User have disabled DMs.
-            }
         }
     }
 }

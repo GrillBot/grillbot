@@ -28,6 +28,11 @@ namespace GrillBot.Database.Enums
         /// <summary>
         /// User is logged in webadmin.
         /// </summary>
-        WebAdminOnline = 8
+        WebAdminOnline = 8,
+
+        /// <summary>
+        /// Public web administration blocked.
+        /// </summary>
+        PublicAdministrationBlocked = 16
     }
 }

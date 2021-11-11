@@ -36,7 +36,7 @@ namespace GrillBot.Data.Models.API.Users
             Channels = user.Channels
                 .Select(o => new UserGuildChannel(o))
                 .OrderByDescending(o => o.Count)
-                .OrderBy(o => o.Channel.Name)
+                .ThenBy(o => o.Channel.Name)
                 .ToList();
         }
     }

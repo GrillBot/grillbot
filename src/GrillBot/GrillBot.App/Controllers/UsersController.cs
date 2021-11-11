@@ -121,6 +121,11 @@ namespace GrillBot.App.Controllers
             else
                 user.Flags &= ~(int)UserFlags.WebAdmin;
 
+            if (parameters.PublicAdminBlocked)
+                user.Flags |= (int)UserFlags.PublicAdministrationBlocked;
+            else
+                user.Flags &= ~(int)UserFlags.PublicAdministrationBlocked;
+
             var userId = User.GetUserId();
             var discordUser = await DiscordClient.FindUserAsync(userId);
 

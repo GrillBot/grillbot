@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using GrillBot.Data.Models.API.Channels;
+using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -128,15 +129,23 @@ namespace GrillBot.App.Controllers
         [HttpGet("users")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableUsersAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync()
+        public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null)
         {
-            var users = await DbContext.Users.AsNoTracking()
-                .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
-                .Select(o => new { o.Id, o.Username })
-                .OrderBy(o => o.Username)
-                .ToDictionaryAsync(o => o.Id, o => o.Username);
+            var query = DbContext.Users.AsNoTracking().AsQueryable();
 
-            return Ok(users);
+            if (bots != null)
+            {
+                if (bots == true)
+                    query = query.Where(o => (o.Flags & (int)UserFlags.NotUser) != 0);
+                else
+                    query = query.Where(o => (o.Flags & (int)UserFlags.NotUser) == 0);
+            }
+
+            query = query.Select(o => new User() { Id = o.Id, Username = o.Username })
+                .OrderBy(o => o.Username);
+
+            var dict = await query.ToDictionaryAsync(o => o.Id, o => o.Username);
+            return Ok(dict);
         }
     }
 }

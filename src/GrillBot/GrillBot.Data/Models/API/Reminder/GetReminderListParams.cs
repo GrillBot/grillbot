@@ -19,6 +19,7 @@ namespace GrillBot.Data.Models.API.Reminder
         public DateTime? CreatedFrom { get; set; }
         public DateTime? CreatedTo { get; set; }
         public bool SortDesc { get; set; }
+        public bool OnlyWaiting { get; set; }
 
         public IQueryable<Database.Entity.RemindMessage> CreateQuery(IQueryable<Database.Entity.RemindMessage> query)
         {
@@ -39,6 +40,9 @@ namespace GrillBot.Data.Models.API.Reminder
 
             if (CreatedTo != null)
                 query = query.Where(o => o.At <= CreatedTo.Value);
+
+            if (OnlyWaiting)
+                query = query.Where(o => o.At >= DateTime.Now);
 
             return SortBy.ToLower() switch
             {

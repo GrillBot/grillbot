@@ -23,6 +23,9 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
                     case "SortDesc":
                         Assert.IsTrue((bool)value);
                         break;
+                    case "Types":
+                        Assert.IsNotNull(value);
+                        break;
                     default:
                         Assert.AreEqual(defaultValue, value);
                         break;

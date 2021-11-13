@@ -8,7 +8,6 @@ namespace GrillBot.Data.Models.AuditLog
 {
     public class AuditChannelInfo : IComparable
     {
-        [JsonIgnore]
         public ulong Id { get; set; }
         public string Name { get; set; }
         public ChannelType? Type { get; set; }

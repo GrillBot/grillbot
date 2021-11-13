@@ -22,7 +22,7 @@ namespace GrillBot.Data.Models.API.AuditLog
         /// <summary>
         /// Types of operations.
         /// </summary>
-        public List<AuditLogItemType> Types { get; set; } = new List<AuditLogItemType>();
+        public List<AuditLogItemType> Types { get; set; }
 
         /// <summary>
         /// Start of range when operation did.
@@ -56,7 +56,8 @@ namespace GrillBot.Data.Models.API.AuditLog
 
         public IQueryable<AuditLogItem> CreateQuery(IQueryable<AuditLogItem> query)
         {
-            query = query.Where(o => Types.Contains(o.Type));
+            if (Types?.Count > 0)
+                query = query.Where(o => Types.Contains(o.Type));
 
             if (!string.IsNullOrEmpty(GuildId))
                 query = query.Where(o => o.GuildId == GuildId);

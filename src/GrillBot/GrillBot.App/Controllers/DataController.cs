@@ -34,6 +34,9 @@ namespace GrillBot.App.Controllers
             CommandService = commandService;
         }
 
+        /// <summary>
+        /// Get non paginated list of available guilds.
+        /// </summary>
         [HttpGet("guilds")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableGuildsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
@@ -48,7 +51,7 @@ namespace GrillBot.App.Controllers
         }
 
         /// <summary>
-        /// Get channels
+        /// Get non paginated list of channels.
         /// </summary>
         /// <param name="guildId">Optional guild ID</param>
         [HttpGet("channels")]

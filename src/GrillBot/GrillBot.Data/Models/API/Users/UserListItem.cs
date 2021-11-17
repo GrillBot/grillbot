@@ -25,7 +25,6 @@ namespace GrillBot.Data.Models.API.Users
         public UserListItem(Database.Entity.User user, DiscordSocketClient discordClient, IUser dcUser)
         {
             Id = user.Id;
-            HaveApi = user.ApiToken != null;
             HaveBirthday = user.Birthday != null;
             Flags = user.Flags;
             Username = dcUser == null ? user.Username : $"{user.Username}#{dcUser.Discriminator}";

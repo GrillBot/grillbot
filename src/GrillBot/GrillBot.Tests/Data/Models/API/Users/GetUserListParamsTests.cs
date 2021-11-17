@@ -20,7 +20,6 @@ namespace GrillBot.Tests.Data.Models.API.Users
             {
                 Flags = 42,
                 GuildId = "Guild",
-                HaveApiAccess = true,
                 HaveBirthday = true,
                 SortDesc = true,
                 Username = "Username"
@@ -50,7 +49,6 @@ namespace GrillBot.Tests.Data.Models.API.Users
             {
                 Flags = 42,
                 GuildId = "Guild",
-                HaveApiAccess = true,
                 HaveBirthday = true,
                 SortDesc = true,
                 Username = "Username"

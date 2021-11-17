@@ -10,7 +10,6 @@ namespace GrillBot.Data.Models.API.Users
     public class UserDetail
     {
         public string Id { get; set; }
-        public Guid? ApiToken { get; set; }
         public string Username { get; set; }
         public string Note { get; set; }
         public long Flags { get; set; }
@@ -28,7 +27,6 @@ namespace GrillBot.Data.Models.API.Users
         public UserDetail(Database.Entity.User entity, IUser user, IDiscordClient discordClient)
         {
             Id = entity.Id;
-            ApiToken = entity.ApiToken;
             Username = entity.Username;
             Note = entity.Note;
             Flags = entity.Flags;

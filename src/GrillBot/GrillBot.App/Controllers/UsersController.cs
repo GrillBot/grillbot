@@ -107,7 +107,6 @@ namespace GrillBot.App.Controllers
             if (user == null)
                 return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
 
-            user.ApiToken = parameters.ApiToken;
             user.Note = parameters.Note;
             user.SelfUnverifyMinimalTime = parameters.SelfUnverifyMinimalTime;
 
@@ -132,7 +131,7 @@ namespace GrillBot.App.Controllers
             await DbContext.InitUserAsync(discordUser, CancellationToken.None);
 
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, discordUser,
-                $"Uživatel {user.Username} byl aktualizován (Flags:{user.Flags},ApiToken:{user.ApiToken},Note:{user.Note})");
+                $"Uživatel {user.Username} byl aktualizován (Flags:{user.Flags},Note:{user.Note})");
 
             await DbContext.AddAsync(logItem);
             await DbContext.SaveChangesAsync();

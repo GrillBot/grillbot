@@ -16,11 +16,6 @@ namespace GrillBot.Data.Models.API.Users
         public string GuildId { get; set; }
 
         /// <summary>
-        /// Flag that describe user have API access.
-        /// </summary>
-        public bool HaveApiAccess { get; set; }
-
-        /// <summary>
         /// Selected flags from UserFlags enum.
         /// </summary>
         public long? Flags { get; set; }
@@ -42,9 +37,6 @@ namespace GrillBot.Data.Models.API.Users
 
             if (!string.IsNullOrEmpty(GuildId))
                 query = query.Where(o => o.Guilds.Any(x => x.GuildId == GuildId));
-
-            if (HaveApiAccess)
-                query = query.Where(o => o.ApiToken != null);
 
             if (Flags != null)
                 query = query.Where(o => (o.Flags & Flags) == Flags);

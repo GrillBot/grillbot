@@ -126,7 +126,6 @@ namespace GrillBot.Tests.Database.Entity
         {
             var user = new User()
             {
-                ApiToken = Guid.NewGuid(),
                 Birthday = new DateTime(2021, 09, 09),
                 Flags = 1,
                 Id = "ABCD",

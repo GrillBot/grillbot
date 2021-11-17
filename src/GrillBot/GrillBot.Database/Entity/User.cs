@@ -16,8 +16,6 @@ namespace GrillBot.Database.Entity
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string Id { get; set; }
 
-        public Guid? ApiToken { get; set; }
-
         [Required]
         public int Flags { get; set; } = 0;
 

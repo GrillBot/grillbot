@@ -29,7 +29,6 @@ namespace GrillBot.Database.Services
 
             modelBuilder.Entity<User>(builder =>
             {
-                builder.HasIndex(o => o.ApiToken).IsUnique();
                 builder.Property(o => o.SelfUnverifyMinimalTime).HasConversion(
                     o => o.HasValue ? o.Value.ToString("c") : null,
                     o => !string.IsNullOrEmpty(o) ? TimeSpan.Parse(o) : null

@@ -26,11 +26,7 @@ namespace GrillBot.Tests.Data.Models.API.Users
             var user = new Mock<IUser>();
             user.Setup(o => o.ActiveClients).Returns(activeClients.ToImmutableHashSet());
 
-            var entity = new GrillBot.Database.Entity.User()
-            {
-                ApiToken = Guid.NewGuid(),
-            };
-
+            var entity = new GrillBot.Database.Entity.User();
             entity.Guilds.Add(new() { Guild = new() });
             entity.UsedEmotes.Add(new() { EmoteId = "<:rtzW:567039874452946961>" });
             var discordClient = new Mock<IDiscordClient>();

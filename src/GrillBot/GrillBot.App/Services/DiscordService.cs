@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +39,7 @@ namespace GrillBot.App.Services
             Lifetime = hostApplicationLifetime;
 
             DiscordSocketClient.Log += OnLogAsync;
+            CommandService.Log += OnLogAsync;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -94,10 +96,10 @@ namespace GrillBot.App.Services
 
                 await Task.WhenAll(
                     dbContext.SaveChangesAsync(),
-                    Task.Delay(5000)
+                    Task.Delay(3000)
                 );
 
-                Environment.Exit(1);
+                Process.GetCurrentProcess().Kill();
             }
         }
     }

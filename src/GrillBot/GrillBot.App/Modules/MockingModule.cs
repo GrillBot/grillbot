@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using GrillBot.App.Extensions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Services;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,9 @@ namespace GrillBot.App.Modules
     {
         private Emote MockingEmote { get; }
         private Random Random { get; }
+
+        // MaxMessageSize - 2xMocking emotes - Spaces
+        private int MaxMessageLength => DiscordConfig.MaxMessageSize - (2 * MockingEmote.ToString().Length) - 2;
 
         public MockingModule(IConfiguration configuration, RandomizationService randomization)
         {
@@ -33,7 +37,7 @@ namespace GrillBot.App.Modules
 
         private string CreateMockingString(string original)
         {
-            original = original.ToLower();
+            original = original.ToLower().Cut(MaxMessageLength, true);
 
             var resultBuilder = new StringBuilder();
             var coeffIndex = 0;

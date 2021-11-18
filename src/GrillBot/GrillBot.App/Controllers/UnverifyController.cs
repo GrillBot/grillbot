@@ -22,7 +22,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/unverify")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Unverify", Description = "Unverify management.")]
     public class UnverifyController : ControllerBase
     {

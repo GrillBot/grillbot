@@ -22,7 +22,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Users", Description = "User management")]
     public class UsersController : Controller
     {

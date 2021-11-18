@@ -18,7 +18,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/auditlog")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Audit log", Description = "Logging")]
     public class AuditLogController : Controller
     {

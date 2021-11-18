@@ -19,7 +19,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/remind")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Reminder", Description = "Reminder management")]
     public class ReminderController : Controller
     {

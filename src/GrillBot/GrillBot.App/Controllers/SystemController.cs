@@ -21,7 +21,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/system")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("System", Description = "Internal system management, ...")]
     public class SystemController : Controller
     {

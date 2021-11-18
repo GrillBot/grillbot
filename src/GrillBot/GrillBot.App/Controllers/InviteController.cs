@@ -15,7 +15,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/invite")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Invites", Description = "Invite management")]
     public class InviteController : Controller
     {

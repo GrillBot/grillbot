@@ -15,7 +15,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/search")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Searching", Description = "Searching for team, service, ...")]
     public class SearchingController : Controller
     {

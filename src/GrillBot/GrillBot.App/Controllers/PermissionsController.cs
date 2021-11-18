@@ -21,7 +21,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/permissions")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Permissions", Description = "Commands permissions management")]
     public class PermissionsController : Controller
     {

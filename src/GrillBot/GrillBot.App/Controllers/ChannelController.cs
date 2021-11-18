@@ -26,7 +26,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/channel")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Channels", Description = "Channel management")]
     public class ChannelController : Controller
     {

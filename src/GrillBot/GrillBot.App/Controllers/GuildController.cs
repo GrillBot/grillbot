@@ -18,7 +18,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/guild")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Guilds", Description = "Guild management")]
     public class GuildController : Controller
     {

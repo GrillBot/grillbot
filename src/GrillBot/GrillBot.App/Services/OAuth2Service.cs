@@ -35,7 +35,7 @@ namespace GrillBot.App.Services
             LoggingService = loggingService;
         }
 
-        public OAuth2GetLink GetRedirectLink()
+        public OAuth2GetLink GetRedirectLink(bool isPublic)
         {
             var builder = new UriBuilder("https://discord.com/api/oauth2/authorize")
             {
@@ -44,20 +44,26 @@ namespace GrillBot.App.Services
                     $"client_id={Configuration["ClientId"]}",
                     $"redirect_uri={WebUtility.UrlEncode(Configuration["RedirectUrl"])}",
                     "response_type=code",
-                    "scope=identify"
+                    "scope=identify",
+                    $"state={isPublic}"
                 })
             };
 
             return new OAuth2GetLink(builder.ToString());
         }
 
-        public async Task<string> CreateRedirectUrlAsync(string code)
+        public async Task<string> CreateRedirectUrlAsync(string code, bool isPublic)
         {
             var accessToken = await CreateAccessTokenAsync(code);
 
-            var uriBuilder = new UriBuilder(Configuration["ClientRedirectUrl"])
+            var redirectUrl = Configuration[isPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"];
+            var uriBuilder = new UriBuilder(redirectUrl)
             {
-                Query = $"sessionId={accessToken}"
+                Query = string.Join("&", new[]
+                {
+                    $"sessionId={accessToken}",
+                    $"isPublic={isPublic}"
+                })
             };
 
             return uriBuilder.ToString();
@@ -97,22 +103,33 @@ namespace GrillBot.App.Services
             return client.CurrentUser;
         }
 
-        public async Task<OAuth2LoginToken> CreateTokenAsync(string sessionId)
+        public async Task<OAuth2LoginToken> CreateTokenAsync(string sessionId, bool isPublic)
         {
             var user = await GetUserAsync(sessionId);
 
             using var context = DbFactory.Create();
             var dbUser = await context.Users.AsNoTracking()
-                .FirstOrDefaultAsync(o => o.Id == user.Id.ToString() && (o.Flags & (int)UserFlags.WebAdmin) != 0);
+                .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
 
             if (dbUser == null)
-                return new OAuth2LoginToken($"Uživatel {user.Username} nebyl nalezen nebo nemá oprávnění pro přístup do administrace.");
+                return new OAuth2LoginToken($"Uživatel {user.Username} nebyl nalezen.");
 
-            var jwt = CreateJwtAccessToken(dbUser, out var expiresAt);
+            if (isPublic)
+            {
+                if (dbUser.HaveFlags(UserFlags.PublicAdministrationBlocked))
+                    return new OAuth2LoginToken($"Uživatel {user.Username} má zablokovaný přístup do osobní administrace.");
+            }
+            else
+            {
+                if (!dbUser.HaveFlags(UserFlags.WebAdmin))
+                    return new OAuth2LoginToken($"Uživatel {user.Username} nemá oprávnění pro přístup do administrace.");
+            }
+
+            var jwt = CreateJwtAccessToken(dbUser, isPublic, out var expiresAt);
             return new OAuth2LoginToken(jwt, expiresAt);
         }
 
-        private string CreateJwtAccessToken(User user, out DateTimeOffset expiresAt)
+        private string CreateJwtAccessToken(User user, bool isPublic, out DateTimeOffset expiresAt)
         {
             expiresAt = DateTimeOffset.UtcNow.AddHours(3); // Token will be valid for 3 hours.
 
@@ -130,7 +147,8 @@ namespace GrillBot.App.Services
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id)
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Role, isPublic ? "User" : "Admin")
                 })
             };
 

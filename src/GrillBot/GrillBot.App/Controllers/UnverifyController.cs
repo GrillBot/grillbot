@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
@@ -131,9 +132,23 @@ namespace GrillBot.App.Controllers
                 .Include(o => o.ToUser).ThenInclude(o => o.User)
                 .AsQueryable();
 
-            var loggedUserId = User.HaveUserPermission() ? User.GetUserId() : (ulong?)null;
+            if (User.HaveUserPermission())
+            {
+                var loggedUserId = User.GetUserId();
+                parameters.FromUserId = null;
+                parameters.ToUserId = loggedUserId.ToString();
 
-            query = parameters.CreateQuery(query, loggedUserId);
+                var mutualGuilds = DiscordClient.FindMutualGuilds(loggedUserId)
+                    .Select(o => o.Id.ToString()).ToList();
+
+                query = parameters.CreateQuery(query)
+                    .Where(o => mutualGuilds.Contains(o.GuildId));
+            }
+            else
+            {
+                query = parameters.CreateQuery(query);
+            }
+
             var result = await PaginatedResponse<UnverifyLogItem>.CreateAsync(query, parameters, entity =>
             {
                 var guild = DiscordClient.GetGuild(Convert.ToUInt64(entity.GuildId));

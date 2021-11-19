@@ -52,7 +52,7 @@ namespace GrillBot.Data.Models.API.Unverify
         /// </summary>
         public bool SortDesc { get; set; }
 
-        public IQueryable<UnverifyLog> CreateQuery(IQueryable<UnverifyLog> query, ulong? loggedUserId)
+        public IQueryable<UnverifyLog> CreateQuery(IQueryable<UnverifyLog> query)
         {
             if (Operation != null)
                 query = query.Where(o => o.Operation == Operation);
@@ -60,18 +60,11 @@ namespace GrillBot.Data.Models.API.Unverify
             if (!string.IsNullOrEmpty(GuildId))
                 query = query.Where(o => o.GuildId == GuildId);
 
-            if (loggedUserId != null)
-            {
-                query = query.Where(o => o.ToUserId == loggedUserId.Value.ToString());
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(FromUserId))
-                    query = query.Where(o => o.FromUserId == FromUserId);
+            if (!string.IsNullOrEmpty(FromUserId))
+                query = query.Where(o => o.FromUserId == FromUserId);
 
-                if (!string.IsNullOrEmpty(ToUserId))
-                    query = query.Where(o => o.ToUserId == ToUserId);
-            }
+            if (!string.IsNullOrEmpty(ToUserId))
+                query = query.Where(o => o.ToUserId == ToUserId);
 
             if (CreatedFrom != null)
                 query = query.Where(o => o.CreatedAt >= CreatedFrom.Value);

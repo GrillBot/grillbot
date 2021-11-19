@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -19,7 +21,6 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/data")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [OpenApiTag("Data", Description = "Support for form fields, ...")]
     public class DataController : ControllerBase
     {
@@ -38,13 +39,25 @@ namespace GrillBot.App.Controllers
         /// Get non paginated list of available guilds.
         /// </summary>
         [HttpGet("guilds")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableGuildsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync()
         {
-            var guilds = await DbContext.Guilds.AsNoTracking()
-                .OrderBy(o => o.Name)
+            var guildsQuery = DbContext.Guilds.AsNoTracking();
+
+            if (User.HaveUserPermission())
+            {
+                var currentUserId = User.GetUserId();
+                var mutualGuilds = DiscordClient.FindMutualGuilds(currentUserId)
+                    .Select(o => o.Id.ToString()).ToList();
+
+                guildsQuery = guildsQuery.Where(o => mutualGuilds.Contains(o.Id));
+            }
+
+            var guilds = await guildsQuery
                 .Select(o => new { o.Id, o.Name })
+                .OrderBy(o => o.Name)
                 .ToDictionaryAsync(o => o.Id, o => o.Name);
 
             return Ok(guilds);
@@ -55,22 +68,32 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <param name="guildId">Optional guild ID</param>
         [HttpGet("channels")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetChannelsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId)
         {
-            var guilds = DiscordClient.Guilds.AsEnumerable();
+            var currentUserId = User.GetUserId();
+            IEnumerable<SocketGuild> guilds;
+            if (User.HaveUserPermission())
+                guilds = DiscordClient.FindMutualGuilds(currentUserId);
+            else
+                guilds = DiscordClient.Guilds.AsEnumerable();
             if (guildId != null) guilds = guilds.Where(o => o.Id == guildId.Value);
 
-            var channels = guilds.SelectMany(o => o.Channels.Select(o => new Channel(o)))
-                .Where(o => o.Type != null && o.Type != ChannelType.Category).ToList();
+            var availableChannels = User.HaveUserPermission() ?
+                guilds.SelectMany(o => o.GetAvailableChannelsFor(o.GetUser(currentUserId))).ToList() :
+                guilds.SelectMany(o => o.Channels);
 
+            var channels = availableChannels.Select(o => new Channel(o))
+                .Where(o => o.Type != null && o.Type != ChannelType.Category)
+                .ToList();
+
+            var guildIds = guilds.Select(o => o.Id.ToString()).ToList();
             var dbChannelsQuery = DbContext.Channels.AsNoTracking()
-                .Where(o => o.ChannelType != ChannelType.Category)
-                .OrderBy(o => o.Name).AsQueryable();
-
-            if (guildId != null)
-                dbChannelsQuery = dbChannelsQuery.Where(o => o.GuildId == guildId.ToString());
+                .Where(o => o.ChannelType != ChannelType.Category && guildIds.Contains(o.GuildId))
+                .OrderBy(o => o.Name)
+                .AsQueryable();
 
             var query = dbChannelsQuery.Select(o => new Channel()
             {
@@ -92,11 +115,17 @@ namespace GrillBot.App.Controllers
         /// Get roles
         /// </summary>
         [HttpGet("roles")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetRoles))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public ActionResult<Dictionary<string, string>> GetRoles(ulong? guildId)
         {
-            var guilds = DiscordClient.Guilds.AsEnumerable();
+            var currentUserId = User.GetUserId();
+            IEnumerable<SocketGuild> guilds;
+            if (User.HaveUserPermission())
+                guilds = DiscordClient.FindMutualGuilds(currentUserId);
+            else
+                guilds = DiscordClient.Guilds.AsEnumerable();
             if (guildId != null) guilds = guilds.Where(o => o.Id == guildId.Value);
 
             var roles = guilds.SelectMany(o => o.Roles)
@@ -112,6 +141,7 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <response code="200">Success</response>
         [HttpGet("commands")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetCommandsList))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public ActionResult<List<string>> GetCommandsList()
@@ -130,6 +160,7 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <response code="200">Success</response>
         [HttpGet("users")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableUsersAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null)
@@ -142,6 +173,15 @@ namespace GrillBot.App.Controllers
                     query = query.Where(o => (o.Flags & (int)UserFlags.NotUser) != 0);
                 else
                     query = query.Where(o => (o.Flags & (int)UserFlags.NotUser) == 0);
+            }
+
+            if (User.HaveUserPermission())
+            {
+                var currentUserId = User.GetUserId();
+                var mutualGuilds = DiscordClient.FindMutualGuilds(currentUserId)
+                    .Select(o => o.Id.ToString()).ToList();
+
+                query = query.Where(o => o.Guilds.Any(x => mutualGuilds.Contains(x.GuildId)));
             }
 
             query = query.Select(o => new User() { Id = o.Id, Username = o.Username })

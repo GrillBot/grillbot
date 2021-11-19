@@ -57,6 +57,7 @@ namespace GrillBot.Data.Models.API.Users
         public void RemoveSecretData()
         {
             Note = null;
+            Guilds = Guilds.Where(o => o.IsUserInGuild).ToList();
         }
     }
 }

@@ -50,6 +50,11 @@ namespace GrillBot.Data.Models.API.System
         /// </summary>
         public UserStatus UserStatus { get; set; }
 
+        /// <summary>
+        /// Current datetime on server.
+        /// </summary>
+        public DateTime CurrentDateTime { get; set; }
+
         public DiagnosticsInfo()
         {
             var process = Process.GetCurrentProcess();
@@ -58,6 +63,7 @@ namespace GrillBot.Data.Models.API.System
             Uptime = DateTime.Now - process.StartTime;
             CpuTime = process.TotalProcessorTime;
             UsedMemory = process.WorkingSet64;
+            CurrentDateTime = DateTime.Now;
         }
 
         public DiagnosticsInfo(string environmentName, DiscordSocketClient discord) : this()

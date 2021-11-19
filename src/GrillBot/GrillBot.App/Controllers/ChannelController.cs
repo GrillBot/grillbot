@@ -13,10 +13,12 @@ using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -26,7 +28,6 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/channel")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Channels", Description = "Channel management")]
     public class ChannelController : Controller
     {
@@ -50,6 +51,7 @@ namespace GrillBot.App.Controllers
         /// <response code="200">Success</response>
         /// <response code="404">Guild or channel not exists</response>
         [HttpPost("{guildId}/{channelId}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(SendMessageToChannelAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -88,6 +90,7 @@ namespace GrillBot.App.Controllers
         /// Gets paginated list of channels.
         /// </summary>
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelsListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -106,6 +109,7 @@ namespace GrillBot.App.Controllers
         /// Removes all messages in message cache.
         /// </summary>
         [HttpDelete("{guildId}/{channelId}/cache")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(ClearChannelCacheAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult> ClearChannelCacheAsync(ulong guildId, ulong channelId)
@@ -141,6 +145,7 @@ namespace GrillBot.App.Controllers
         /// <response code="200">Success</response>
         /// <response code="404">Channel not found.</response>
         [HttpGet("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelDetailAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -190,6 +195,7 @@ namespace GrillBot.App.Controllers
         /// <response code="200">Success</response>
         /// <response code="400">Validation failed</response>
         [HttpGet("{id}/userStats")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelUsersAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -212,6 +218,65 @@ namespace GrillBot.App.Controllers
 
             for (int i = 0; i < result.Data.Count; i++) result.Data[i].Position = pagination.Skip + i + 1;
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Gets channelboard for channels where user have access.
+        /// </summary>
+        /// <response code="200">Success</response>
+        [HttpGet("board")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+        [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelboardAsync))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync()
+        {
+            var userId = User.GetUserId();
+            var mutualGuilds = DiscordClient.FindMutualGuilds(userId).ToList();
+            var channelboard = new List<ChannelboardItem>();
+
+            foreach (var guild in mutualGuilds)
+            {
+                var guildUser = guild.GetUser(userId);
+                var availableChannels = guild.GetAvailableTextChannelsFor(guildUser)
+                    .Select(o => o.Id.ToString()).ToList();
+
+                if (availableChannels.Count == 0) continue;
+
+                var channelsDataQuery = DbContext.UserChannels.AsNoTracking()
+                    .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString())
+                    .AsQueryable();
+
+                var groupedChannelsQuery = channelsDataQuery.GroupBy(o => o.Id).Select(o => new
+                {
+                    ChannelId = o.Key,
+                    Count = o.Sum(x => x.Count),
+                    LastMessageAt = o.Max(x => x.LastMessageAt),
+                    FirstMessageAt = o.Min(x => x.FirstMessageAt)
+                });
+
+                var groupedChannels = await groupedChannelsQuery.ToListAsync();
+                if (groupedChannels.Count == 0) continue;
+
+                var channelsQuery = DbContext.Channels.AsNoTracking()
+                    .Include(o => o.Guild)
+                    .Where(o => o.GuildId == guild.Id.ToString())
+                    .AsQueryable();
+
+                foreach (var channelData in groupedChannels.Where(o => availableChannels.Contains(o.ChannelId)))
+                {
+                    var channel = await channelsQuery.FirstOrDefaultAsync(o => o.ChannelId == channelData.ChannelId);
+                    if (channel == null) continue;
+
+                    channelboard.Add(new ChannelboardItem(channel, channelData.Count, channelData.LastMessageAt, channelData.FirstMessageAt));
+                }
+            }
+
+            channelboard = channelboard
+                .OrderByDescending(o => o.Count)
+                .ThenByDescending(o => o.LastMessageAt)
+                .ToList();
+
+            return Ok(channelboard);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -67,6 +68,12 @@ namespace GrillBot.App.Extensions.Discord
             return client.Guilds.SelectMany(o => o.Roles)
                 .Where(o => !o.IsEveryone)
                 .FirstOrDefault(o => o.Id == id);
+        }
+
+        static public IEnumerable<SocketGuild> FindMutualGuilds(this BaseSocketClient client, ulong userId)
+        {
+            return client.Guilds
+                .Where(o => o.GetUser(userId) != null);
         }
     }
 }

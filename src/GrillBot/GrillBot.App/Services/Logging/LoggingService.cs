@@ -50,6 +50,7 @@ namespace GrillBot.App.Services.Logging
         {
             try
             {
+                if (message.Source == "API") return; // API errors are written from global logger.
                 var logger = LoggerFactory.CreateLogger(message.Source);
 
                 switch (message.Severity)

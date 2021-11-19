@@ -53,5 +53,10 @@ namespace GrillBot.Data.Models.API.Users
                 AvatarUrl = CDN.GetDefaultUserAvatarUrl(0);
             }
         }
+
+        public void RemoveSecretData()
+        {
+            Note = null;
+        }
     }
 }

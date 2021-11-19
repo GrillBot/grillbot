@@ -22,7 +22,7 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
     [OpenApiTag("Users", Description = "User management")]
     public class UsersController : Controller
     {
@@ -86,6 +86,35 @@ namespace GrillBot.App.Controllers
             var user = await DiscordClient.FindUserAsync(id);
             var detail = new UserDetail(entity, user, DiscordClient);
             return Ok(detail);
+        }
+
+        /// <summary>
+        /// Gets data about currently logged user.
+        /// </summary>
+        /// <response code="200">Success</response>
+        /// <response code="404">User not found.</response>
+        /// <remarks>Only for users with User permission.s</remarks>
+        [HttpGet("me")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+        [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetCurrentUserDetailAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
+        {
+            var currentUserId = User.GetUserId();
+            var user = await GetUserDetailAsync(currentUserId);
+
+            if (user.Result is NotFoundResult)
+                return user;
+
+            // Remove private data. User not have permission to view this.
+            if (user.Result is OkObjectResult okResult && okResult.Value is UserDetail userDetail)
+            {
+                userDetail.RemoveSecretData();
+                return user;
+            }
+
+            throw new InvalidOperationException("Při načítání aktuálně přihlášeného uživatele došlo k neočekávanému výstupu.");
         }
 
         /// <summary>

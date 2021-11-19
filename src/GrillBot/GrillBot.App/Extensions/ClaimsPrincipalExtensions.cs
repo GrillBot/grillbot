@@ -10,5 +10,10 @@ namespace GrillBot.App.Extensions
             var identifier = user.FindFirstValue(ClaimTypes.NameIdentifier);
             return string.IsNullOrEmpty(identifier) ? default : Convert.ToUInt64(identifier);
         }
+
+        public static string GetUserRole(this ClaimsPrincipal user) => user.FindFirstValue(ClaimTypes.Role);
+
+        public static bool HaveUserPermission(this ClaimsPrincipal user) => user.GetUserRole() == "User";
+        public static bool HaveAdminPermission(this ClaimsPrincipal user) => user.GetUserRole() == "Admin";
     }
 }

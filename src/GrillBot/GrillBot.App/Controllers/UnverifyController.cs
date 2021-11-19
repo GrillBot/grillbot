@@ -22,7 +22,6 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/unverify")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiTag("Unverify", Description = "Unverify management.")]
     public class UnverifyController : ControllerBase
     {
@@ -43,11 +42,14 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <response code="200">Success</response>
         [HttpGet("current")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetCurrentUnverifiesAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync()
         {
-            var unverifies = await UnverifyService.GetAllUnverifiesAsync();
+            var userId = User.HaveUserPermission() ? User.GetUserId() : (ulong?)null;
+
+            var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId);
             var result = unverifies.ConvertAll(o => new UnverifyUserProfile(o.Item1, o.Item2));
             return Ok(result);
         }
@@ -60,6 +62,7 @@ namespace GrillBot.App.Controllers
         /// <response code="200">Success</response>
         /// <response code="404">Unverify or guild not found.</response>
         [HttpDelete("{guildId}/{userId}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RemoveUnverifyAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -88,6 +91,7 @@ namespace GrillBot.App.Controllers
         /// <param name="userId">User Id</param>
         /// <param name="endTime">New unverify end.</param>
         [HttpPut("{guildId}/{userId}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(UpdateUnverifyTimeAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -115,6 +119,7 @@ namespace GrillBot.App.Controllers
         /// <response code="200">Success</response>
         /// <response code="400">Validation failed</response>
         [HttpGet("log")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifLogsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -143,6 +148,7 @@ namespace GrillBot.App.Controllers
         /// <response code="400">Validation failed.</response>
         /// <response code="404">Unverify, guild or users not found.</response>
         [HttpPost("log/{logId}/recover")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifLogsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]

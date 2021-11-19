@@ -311,15 +311,18 @@ namespace GrillBot.App.Services.Unverify
             return ProfileGenerator.Reconstruct(unverify, user, guild);
         }
 
-        public async Task<List<Tuple<UnverifyUserProfile, IGuild>>> GetAllUnverifiesAsync()
+        public async Task<List<Tuple<UnverifyUserProfile, IGuild>>> GetAllUnverifiesAsync(ulong? userId = null)
         {
             using var context = DbFactory.Create();
 
-            var unverifies = await context.Unverifies
-                .AsNoTracking()
+            var unverifyQuery = context.Unverifies.AsNoTracking()
                 .Include(o => o.UnverifyLog)
-                .ToListAsync();
+                .AsQueryable();
 
+            if (userId != null)
+                unverifyQuery = unverifyQuery.Where(o => o.UserId == userId.Value.ToString());
+
+            var unverifies = await unverifyQuery.ToListAsync();
             var profiles = new List<Tuple<UnverifyUserProfile, IGuild>>();
             foreach (var unverify in unverifies)
             {

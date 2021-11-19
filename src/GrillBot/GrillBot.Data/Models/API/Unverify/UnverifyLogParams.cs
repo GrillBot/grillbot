@@ -23,12 +23,12 @@ namespace GrillBot.Data.Models.API.Unverify
         public string GuildId { get; set; }
 
         /// <summary>
-        /// Who did operation.
+        /// Who did operation. If user have lower permission, this property is ignored.
         /// </summary>
         public string FromUserId { get; set; }
 
         /// <summary>
-        /// Who was target of operation.
+        /// Who was target of operation. If user have lower permission, this property is ignored.
         /// </summary>
         public string ToUserId { get; set; }
 
@@ -43,7 +43,7 @@ namespace GrillBot.Data.Models.API.Unverify
         public DateTime? CreatedTo { get; set; }
 
         /// <summary>
-        /// Sorting (Values are Operation, Guild, FromUser, ToUser, CreatedAt). Default is CreatedAt
+        /// Sorting (Values are Operation, Guild, FromUser, ToUser, CreatedAt). Default is CreatedAt.
         /// </summary>
         public string SortBy { get; set; } = "CreatedAt";
 
@@ -52,7 +52,7 @@ namespace GrillBot.Data.Models.API.Unverify
         /// </summary>
         public bool SortDesc { get; set; }
 
-        public IQueryable<UnverifyLog> CreateQuery(IQueryable<UnverifyLog> query)
+        public IQueryable<UnverifyLog> CreateQuery(IQueryable<UnverifyLog> query, ulong? loggedUserId)
         {
             if (Operation != null)
                 query = query.Where(o => o.Operation == Operation);
@@ -60,11 +60,18 @@ namespace GrillBot.Data.Models.API.Unverify
             if (!string.IsNullOrEmpty(GuildId))
                 query = query.Where(o => o.GuildId == GuildId);
 
-            if (!string.IsNullOrEmpty(FromUserId))
-                query = query.Where(o => o.FromUserId == FromUserId);
+            if (loggedUserId != null)
+            {
+                query = query.Where(o => o.ToUserId == loggedUserId.Value.ToString());
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(FromUserId))
+                    query = query.Where(o => o.FromUserId == FromUserId);
 
-            if (!string.IsNullOrEmpty(ToUserId))
-                query = query.Where(o => o.ToUserId == ToUserId);
+                if (!string.IsNullOrEmpty(ToUserId))
+                    query = query.Where(o => o.ToUserId == ToUserId);
+            }
 
             if (CreatedFrom != null)
                 query = query.Where(o => o.CreatedAt >= CreatedFrom.Value);

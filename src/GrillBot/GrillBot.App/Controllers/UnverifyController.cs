@@ -119,7 +119,7 @@ namespace GrillBot.App.Controllers
         /// <response code="200">Success</response>
         /// <response code="400">Validation failed</response>
         [HttpGet("log")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifLogsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -131,7 +131,9 @@ namespace GrillBot.App.Controllers
                 .Include(o => o.ToUser).ThenInclude(o => o.User)
                 .AsQueryable();
 
-            query = parameters.CreateQuery(query);
+            var loggedUserId = User.HaveUserPermission() ? User.GetUserId() : (ulong?)null;
+
+            query = parameters.CreateQuery(query, loggedUserId);
             var result = await PaginatedResponse<UnverifyLogItem>.CreateAsync(query, parameters, entity =>
             {
                 var guild = DiscordClient.GetGuild(Convert.ToUInt64(entity.GuildId));

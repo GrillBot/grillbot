@@ -22,7 +22,6 @@ namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
     [OpenApiTag("Users", Description = "User management")]
     public class UsersController : Controller
     {
@@ -41,6 +40,7 @@ namespace GrillBot.App.Controllers
         /// <response code="200">Success</response>
         /// <response code="400">Validation failed</response>
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetUsersListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -65,6 +65,7 @@ namespace GrillBot.App.Controllers
         /// <response code="200">Success</response>
         /// <response code="404">User not found in database.</response>
         [HttpGet("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetUserDetailAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -124,6 +125,7 @@ namespace GrillBot.App.Controllers
         /// <response code="400">Validation failed.</response>
         /// <response code="404">User not found</response>
         [HttpPut("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(UpdateUserAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -172,11 +174,12 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <response code="200">Success</response>
         [HttpPost("hearthbeat")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> HearthbeatAsync()
+        public async Task<ActionResult> HearthbeatAsync(bool isPublic)
         {
-            await SetWebAdminStatusAsync(true);
+            await SetWebAdminStatusAsync(true, isPublic);
             return Ok();
         }
 
@@ -185,24 +188,25 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpDelete("hearthbeat")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatOffAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> HearthbeatOffAsync()
+        public async Task<ActionResult> HearthbeatOffAsync(bool isPublic)
         {
-            await SetWebAdminStatusAsync(false);
+            await SetWebAdminStatusAsync(false, isPublic);
             return Ok();
         }
 
-        private async Task SetWebAdminStatusAsync(bool isOnline)
+        private async Task SetWebAdminStatusAsync(bool isOnline, bool isPublic)
         {
             var userId = User.GetUserId().ToString();
             var user = await DbContext.Users.AsQueryable()
-                .FirstOrDefaultAsync(o => (o.Flags & (int)UserFlags.WebAdmin) != 0 && o.Id == userId);
+                .FirstOrDefaultAsync(o => o.Id == userId);
 
             if (isOnline)
-                user.Flags |= (int)UserFlags.WebAdminOnline;
+                user.Flags |= (int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
             else
-                user.Flags &= ~(int)UserFlags.WebAdminOnline;
+                user.Flags &= ~(int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
 
             await DbContext.SaveChangesAsync();
         }

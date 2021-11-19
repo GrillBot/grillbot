@@ -33,6 +33,11 @@ namespace GrillBot.Database.Enums
         /// <summary>
         /// Public web administration blocked.
         /// </summary>
-        PublicAdministrationBlocked = 16
+        PublicAdministrationBlocked = 16,
+
+        /// <summary>
+        /// User is logged to public administration.
+        /// </summary>
+        PublicAdminOnline = 32
     }
 }

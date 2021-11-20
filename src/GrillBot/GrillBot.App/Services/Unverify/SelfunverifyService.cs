@@ -2,7 +2,6 @@
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
-using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

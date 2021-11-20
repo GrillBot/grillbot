@@ -75,5 +75,17 @@ namespace GrillBot.Tests.Data.Models.API.Common
             var result = PaginatedResponse<Guild>.CreateAsync(query, new PaginatedParams() { Page = 1, PageSize = 20 }, entity => Task.FromResult(entity)).Result;
             Assert.AreEqual(1, result.TotalItemsCount);
         }
+
+        [TestMethod]
+        public void Create_AsyncConverter_Empty()
+        {
+            using var context = TestHelpers.CreateDbContext();
+            context.RemoveRange(context.Guilds.ToList());
+            context.SaveChanges();
+
+            var query = context.Guilds.AsQueryable();
+            var result = PaginatedResponse<Guild>.CreateAsync(query, new PaginatedParams() { Page = 1, PageSize = 20 }, entity => Task.FromResult(entity)).Result;
+            Assert.AreEqual(0, result.TotalItemsCount);
+        }
     }
 }

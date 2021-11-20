@@ -21,6 +21,7 @@ namespace GrillBot.Tests.Data.Models.API.System
             Assert.IsTrue(info.UsedMemory > 0);
             Assert.AreEqual(UserStatus.Offline, info.UserStatus);
             Assert.IsTrue(info.CpuTime.TotalMilliseconds >= 0);
+            Assert.AreNotEqual(DateTime.MinValue, info.CurrentDateTime);
         }
 
         [TestMethod]

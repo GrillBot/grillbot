@@ -72,9 +72,10 @@ namespace GrillBot.App.Services.MessageCache
             return message;
         }
 
-        public async Task AppendAroundAsync(ISocketMessageChannel channel, ulong id)
+        public async Task AppendAroundAsync(IMessageChannel channel, ulong id)
         {
             if (channel is IDMChannel) return;
+
             var messages = (await channel.GetMessagesAsync(id, Direction.Around).FlattenAsync())
                 .Where(m => !Cache.ContainsKey(m.Id))
                 .ToList();

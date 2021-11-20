@@ -9,7 +9,6 @@ namespace GrillBot.Data.Models.API.Users
     public class UserListItem
     {
         public string Id { get; set; }
-        public bool HaveApi { get; set; }
         public int Flags { get; set; }
         public bool HaveBirthday { get; set; }
         public string Username { get; set; }

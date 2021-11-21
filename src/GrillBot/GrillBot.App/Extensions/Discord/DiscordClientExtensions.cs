@@ -45,6 +45,9 @@ namespace GrillBot.App.Extensions.Discord
                     return user;
             }
 
+            if (client.LoginState != LoginState.LoggedIn)
+                return null;
+
             return await client.Rest.GetUserAsync(id);
         }
 

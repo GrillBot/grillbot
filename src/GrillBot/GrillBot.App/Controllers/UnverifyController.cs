@@ -121,10 +121,10 @@ namespace GrillBot.App.Controllers
         /// <response code="400">Validation failed</response>
         [HttpGet("log")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifLogsAsync))]
+        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifyLogsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifLogsAsync([FromQuery] UnverifyLogParams parameters)
+        public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters)
         {
             var query = DbContext.UnverifyLogs.AsNoTracking()
                 .Include(o => o.FromUser).ThenInclude(o => o.User)
@@ -166,7 +166,7 @@ namespace GrillBot.App.Controllers
         /// <response code="404">Unverify, guild or users not found.</response>
         [HttpPost("log/{logId}/recover")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifLogsAsync))]
+        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RecoverUnverifyAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]

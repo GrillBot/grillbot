@@ -27,7 +27,7 @@ namespace GrillBot.App.Services
             DiscordClient.MessageReceived += (msg) => msg.TryLoadMessage(out var message) ? OnMessageReceivedAsync(message) : Task.CompletedTask;
         }
 
-        public void Cleanup(SocketGuildChannel channel)
+        public void Cleanup(IGuildChannel channel)
         {
             lock (Locker)
             {
@@ -35,7 +35,7 @@ namespace GrillBot.App.Services
             }
         }
 
-        public void CleanupNoLock(SocketGuildChannel channel)
+        public void CleanupNoLock(IGuildChannel channel)
         {
             var key = GetKey(channel);
             if (LastMessages.ContainsKey(key)) LastMessages[key].Clear();

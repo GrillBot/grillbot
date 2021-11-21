@@ -105,7 +105,7 @@ namespace GrillBot.App.Controllers
             var currentUserId = User.GetUserId();
             var user = await GetUserDetailAsync(currentUserId);
 
-            if (user.Result is NotFoundResult)
+            if (user.Result is NotFoundObjectResult)
                 return user;
 
             // Remove private data. User not have permission to view this.

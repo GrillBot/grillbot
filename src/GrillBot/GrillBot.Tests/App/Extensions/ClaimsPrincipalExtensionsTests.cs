@@ -32,5 +32,48 @@ namespace GrillBot.Tests.App.Extensions
             var userId = user.GetUserId();
             Assert.AreEqual(id, userId);
         }
+
+        #region Permissions
+
+        private static ClaimsPrincipal CreatePrincipal(string role)
+        {
+            return new ClaimsPrincipal(new[]
+            {
+                new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Role, role)
+                })
+            });
+        }
+
+        [TestMethod]
+        public void HaveUserRole_True()
+        {
+            var user = CreatePrincipal("User");
+            Assert.IsTrue(user.HaveUserPermission());
+        }
+
+        [TestMethod]
+        public void HaveUserRole_False()
+        {
+            var user = CreatePrincipal("Admin");
+            Assert.IsFalse(user.HaveUserPermission());
+        }
+
+        [TestMethod]
+        public void HaveAdminPermission_True()
+        {
+            var user = CreatePrincipal("Admin");
+            Assert.IsTrue(user.HaveAdminPermission());
+        }
+
+        [TestMethod]
+        public void HaveAdminPermission_False()
+        {
+            var user = CreatePrincipal("User");
+            Assert.IsFalse(user.HaveAdminPermission());
+        }
+
+        #endregion
     }
 }

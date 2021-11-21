@@ -6,6 +6,7 @@ using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -147,6 +148,47 @@ namespace GrillBot.Tests.App.Controllers
             var result = controller.GetFileContentAsync(1, 1).Result;
             Assert.IsInstanceOfType(result, typeof(FileContentResult));
             File.Delete(Path.Combine(currentDirectory, "DeletedAttachments", Path.GetFileName(currentLocation)));
+        }
+
+        [TestMethod]
+        public void GetFileContent_RandomContentType()
+        {
+            var currentLocation = Assembly.GetExecutingAssembly().Location;
+            var currentDirectory = Path.GetDirectoryName(currentLocation);
+            var filename = Path.Combine(Path.Combine(currentDirectory, "DeletedAttachments"), "randomfile.jpg");
+
+            try
+            {
+                File.WriteAllBytes(filename, new byte[] { 0, 0, 0, 0, 0, 0, 0 });
+
+                using var container = TestHelper.DIHelpers.CreateContainer();
+                var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
+                dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
+                dbContext.AuditLogFiles.RemoveRange(dbContext.AuditLogFiles.ToList());
+                var item = new AuditLogItem() { Id = 1 };
+                item.Files.Add(new AuditLogFileMeta()
+                {
+                    Id = 1,
+                    Filename = Path.GetFileName(filename)
+                });
+                dbContext.AuditLogs.Add(item);
+                dbContext.SaveChanges();
+
+                var configuration = TestHelper.ConfigHelpers.CreateConfiguration(0, new System.Collections.Generic.Dictionary<string, string>()
+                {
+                    { "FileStorage:Audit:Location", currentDirectory }
+                });
+
+                var fileStorageFactory = new FileStorageFactory(configuration);
+
+                var controller = new AuditLogController(null, dbContext, fileStorageFactory);
+                var result = controller.GetFileContentAsync(1, 1).Result;
+                Assert.IsInstanceOfType(result, typeof(FileContentResult));
+            }
+            finally
+            {
+                File.Delete(filename);
+            }
         }
     }
 }

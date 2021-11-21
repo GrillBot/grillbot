@@ -7,6 +7,7 @@ namespace GrillBot.App.Extensions
     {
         public static ulong GetUserId(this ClaimsPrincipal user)
         {
+            if (user?.Identity == null) return default;
             var identifier = user.FindFirstValue(ClaimTypes.NameIdentifier);
             return string.IsNullOrEmpty(identifier) ? default : Convert.ToUInt64(identifier);
         }

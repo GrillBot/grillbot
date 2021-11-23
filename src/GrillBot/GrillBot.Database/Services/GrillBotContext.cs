@@ -8,10 +8,6 @@ namespace GrillBot.Database.Services
     {
         public GrillBotContext(DbContextOptions options) : base(options)
         {
-            if (Database.IsNpgsql())
-            {
-                Database.ExecuteSqlRaw("SET TIMEZONE=Europe/Prague");
-            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

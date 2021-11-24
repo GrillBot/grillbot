@@ -188,6 +188,7 @@ namespace GrillBot.App.Controllers
                 LastMessageFrom = lastMessageFrom == null ? null : new(lastMessageFrom),
                 MessagesCount = channelDetailData?.MessagesCount ?? 0,
                 MostActiveUser = mostActiveUser == null ? null : new(mostActiveUser),
+                CachedMessagesCount = MessageCache.GetMessagesFromChannel(Convert.ToUInt64(channel.ChannelId)).Count()
             };
 
             return Ok(channelDetail);

@@ -18,7 +18,6 @@ namespace GrillBot.Tests.Data.Models.API.Users
         {
             var parameters = new UpdateUserParams()
             {
-                ApiToken = Guid.NewGuid(),
                 BotAdmin = true,
                 Note = "Note",
                 WebAdminAllowed = true,

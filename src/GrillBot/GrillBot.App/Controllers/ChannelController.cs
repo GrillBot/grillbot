@@ -101,7 +101,11 @@ namespace GrillBot.App.Controllers
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<GuildChannel>.CreateAsync(query, parameters, entity => new(entity));
+            var result = await PaginatedResponse<GuildChannel>.CreateAsync(query, parameters, entity =>
+            {
+                var cachedMessagesCount = MessageCache.GetMessagesFromChannel(Convert.ToUInt64(entity.ChannelId)).Count();
+                return new(entity, cachedMessagesCount);
+            });
             return Ok(result);
         }
 

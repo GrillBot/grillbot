@@ -9,7 +9,7 @@ namespace GrillBot.Data.Models.API.Channels
 
         public GuildChannel() { }
 
-        public GuildChannel(Database.Entity.GuildChannel channel) : base(channel)
+        public GuildChannel(Database.Entity.GuildChannel channel, int cachedMessagesCount = 0) : base(channel, cachedMessagesCount)
         {
             Guild = channel.Guild == null ? null : new(channel.Guild);
         }

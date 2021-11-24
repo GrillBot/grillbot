@@ -10,6 +10,7 @@ namespace GrillBot.Data.Models.API.Channels
         public string Id { get; set; }
         public string Name { get; set; }
         public ChannelType? Type { get; set; }
+        public int CachedMessagesCount { get; set; }
 
         public Channel() { }
 
@@ -22,13 +23,17 @@ namespace GrillBot.Data.Models.API.Channels
             var category = channel.GetCategory();
             if (category != null)
                 Name += $" ({category.Name})";
+
+            if (channel is SocketTextChannel textChannel)
+                CachedMessagesCount = textChannel.CachedMessages.Count;
         }
 
-        public Channel(Database.Entity.GuildChannel entity)
+        public Channel(Database.Entity.GuildChannel entity, int cachedMessagesCount = 0)
         {
             Id = entity.ChannelId;
             Name = entity.Name;
             Type = entity.ChannelType;
+            CachedMessagesCount = cachedMessagesCount;
         }
     }
 }

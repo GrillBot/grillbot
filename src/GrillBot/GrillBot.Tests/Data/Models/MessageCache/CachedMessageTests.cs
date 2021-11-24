@@ -12,7 +12,7 @@ namespace GrillBot.Tests.Data.Models.MessageCache
         public void Constructor()
         {
             var msg = new Mock<IMessage>();
-            var message = new CachedMessage(msg.Object);
+            var message = new CachedMessage(msg.Object) { Metadata = new MessageMetadata() { State = GrillBot.Data.Enums.CachedMessageState.ToBeDeleted } };
 
             TestHelpers.CheckNonDefaultPropertyValues(message);
         }

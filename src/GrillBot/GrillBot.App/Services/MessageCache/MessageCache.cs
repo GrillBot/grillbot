@@ -135,5 +135,14 @@ namespace GrillBot.App.Services.MessageCache
 
             return toClear.Count;
         }
+
+        public IEnumerable<IMessage> GetMessagesFromChannel(ulong channelId)
+        {
+            return Cache.Values
+                .Where(o => !o.IsDeleted && o.Message.Channel.Id == channelId)
+                .Select(o => o.Message);
+        }
+
+        public IEnumerable<IMessage> GetMessagesFromChannel(IChannel channel) => GetMessagesFromChannel(channel.Id);
     }
 }

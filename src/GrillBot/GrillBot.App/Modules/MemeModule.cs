@@ -75,8 +75,8 @@ namespace GrillBot.App.Modules
         [Summary("Zjistí stav kachny.")]
         public async Task GetDuckInfoAsync()
         {
-            var client = HttpClientFactory.CreateClient("IsKachnaOpen");
-            var response = await client.GetAsync("duck/currentState");
+            var client = HttpClientFactory.CreateClient("KachnaOnline");
+            var response = await client.GetAsync("states/current/legacy");
 
             if (!response.IsSuccessStatusCode)
             {

@@ -101,10 +101,10 @@ namespace GrillBot.App
                 c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Math:Timeout"]));
             });
 
-            services.AddHttpClient("IsKachnaOpen", c =>
+            services.AddHttpClient("KachnaOnline", c =>
             {
-                c.BaseAddress = new Uri(Configuration["IsKachnaOpen:Api"]);
-                c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["IsKachnaOpen:Timeout"]));
+                c.BaseAddress = new Uri(Configuration["KachnaOnline:Api"]);
+                c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["KachnaOnline:Timeout"]));
             });
 
             services.AddHostedService<DiscordService>();

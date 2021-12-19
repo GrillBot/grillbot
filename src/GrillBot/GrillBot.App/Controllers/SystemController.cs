@@ -86,30 +86,36 @@ namespace GrillBot.App.Controllers
         [HttpGet("commands")]
         [OpenApiOperation(nameof(SystemController) + "_" + nameof(GetCommandStatusAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<List<CommandStatisticItem>>> GetCommandStatusAsync()
+        public async Task<ActionResult<List<CommandStatisticItem>>> GetCommandStatusAsync(string searchQuery = null)
         {
             var query = DbContext.AuditLogs.AsNoTracking()
                 .Where(o => o.Type == AuditLogItemType.Command)
                 .Select(o => new { o.CreatedAt, o.Data });
 
             var dbData = await query.ToListAsync();
-            var data = dbData.ConvertAll(o => new
+            var deserializedData = dbData.ConvertAll(o => new
             {
                 o.CreatedAt,
                 Data = JsonConvert.DeserializeObject<CommandExecution>(o.Data)
-            }).GroupBy(o => o.Data.Command)
-            .Where(o => o.Key != null)
-            .Select(o => new CommandStatisticItem()
-            {
-                Command = o.Key,
-                FailedCount = o.Count(x => !x.Data.IsSuccess),
-                LastCall = o.Max(x => x.CreatedAt),
-                SuccessCount = o.Count(x => x.Data.IsSuccess)
-            })
-            .OrderBy(o => o.Command)
-            .ToList();
+            });
 
-            return Ok(data);
+            var dataQuery = deserializedData.Where(o => o.Data.Command != null);
+            if (!string.IsNullOrEmpty(searchQuery))
+                dataQuery = dataQuery.Where(o => o.Data.Command.Contains(searchQuery));
+
+            var groupedData = dataQuery
+                .GroupBy(o => o.Data.Command)
+                .Select(o => new CommandStatisticItem()
+                {
+                    Command = o.Key,
+                    FailedCount = o.Count(x => !x.Data.IsSuccess),
+                    LastCall = o.Max(x => x.CreatedAt),
+                    SuccessCount = o.Count(x => x.Data.IsSuccess)
+                })
+                .OrderBy(o => o.Command)
+                .ToList();
+
+            return Ok(groupedData);
         }
 
         /// <summary>

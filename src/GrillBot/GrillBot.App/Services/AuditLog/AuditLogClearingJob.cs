@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Quartz;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -43,8 +44,7 @@ namespace GrillBot.App.Services.AuditLog
                     .Include(o => o.Files)
                     .Include(o => o.Guild)
                     .Include(o => o.GuildChannel)
-                    .Include(o => o.ProcessedGuildUser)
-                    .ThenInclude(o => o.User)
+                    .Include(o => o.ProcessedGuildUser).ThenInclude(o => o.User)
                     .Where(o => o.CreatedAt <= beforeDate)
                     .AsSplitQuery();
 
@@ -151,7 +151,7 @@ namespace GrillBot.App.Services.AuditLog
                     dbContext.Remove(item);
                 }
 
-                await StoreDataAsync(logRoot, context.CancellationToken);
+                await StoreDataAsync(logRoot, data.SelectMany(o => o.Files), context.CancellationToken);
                 await dbContext.SaveChangesAsync(context.CancellationToken);
             }
             catch (Exception ex)
@@ -160,10 +160,10 @@ namespace GrillBot.App.Services.AuditLog
             }
         }
 
-        private async Task StoreDataAsync(XElement logRoot, CancellationToken cancellationToken)
+        private async Task StoreDataAsync(XElement logRoot, IEnumerable<Database.Entity.AuditLogFileMeta> files, CancellationToken cancellationToken)
         {
             var storage = FileStorage.Create("Audit");
-            var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd}.xml";
+            var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
             var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
 
             using (var stream = fileinfo.OpenWrite())
@@ -175,6 +175,16 @@ namespace GrillBot.App.Services.AuditLog
             if (File.Exists(zipFilename)) File.Delete(zipFilename);
             using var archive = ZipFile.Open(zipFilename, ZipArchiveMode.Create);
             archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
+
+            foreach (var file in files.Select(o => o.Filename))
+            {
+                var attachmentFile = await storage.GetFileInfoAsync("DeletedAttachments", file);
+                if (!attachmentFile.Exists) continue;
+
+                archive.CreateEntryFromFile(attachmentFile.FullName, file, CompressionLevel.Optimal);
+                attachmentFile.Delete();
+            }
+
             File.Delete(fileinfo.FullName);
         }
     }

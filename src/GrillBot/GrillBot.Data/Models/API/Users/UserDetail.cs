@@ -21,6 +21,7 @@ namespace GrillBot.Data.Models.API.Users
         public bool IsKnown { get; set; }
         public string AvatarUrl { get; set; }
         public TimeSpan? SelfUnverifyMinimalTime { get; set; }
+        public DateTime? RegisteredAt { get; set; }
 
         public UserDetail() { }
 
@@ -47,6 +48,7 @@ namespace GrillBot.Data.Models.API.Users
                 ActiveClients = user.ActiveClients.Select(o => o.ToString()).OrderBy(o => o).ToList();
                 Status = user.Status;
                 AvatarUrl = user.GetAvatarUri();
+                RegisteredAt = user.CreatedAt.LocalDateTime;
             }
             else
             {
@@ -58,6 +60,11 @@ namespace GrillBot.Data.Models.API.Users
         {
             Note = null;
             Guilds = Guilds.Where(o => o.IsUserInGuild).ToList();
+
+            foreach (var guild in Guilds)
+            {
+                guild.Channels = guild.Channels.Where(o => !o.Channel.Name.StartsWith("Imported")).ToList();
+            }
         }
     }
 }

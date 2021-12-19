@@ -94,7 +94,7 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <response code="200">Success</response>
         /// <response code="404">User not found.</response>
-        /// <remarks>Only for users with User permission.s</remarks>
+        /// <remarks>Only for users with User permissions.</remarks>
         [HttpGet("me")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetCurrentUserDetailAsync))]

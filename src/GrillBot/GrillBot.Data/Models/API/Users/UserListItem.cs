@@ -13,6 +13,7 @@ namespace GrillBot.Data.Models.API.Users
         public bool HaveBirthday { get; set; }
         public string Username { get; set; }
         public UserStatus DiscordStatus { get; set; }
+        public DateTime? RegisteredAt { get; set; }
 
         /// <summary>
         /// Guild names where user is/was.
@@ -28,6 +29,9 @@ namespace GrillBot.Data.Models.API.Users
             Flags = user.Flags;
             Username = dcUser == null ? user.Username : $"{user.Username}#{dcUser.Discriminator}";
             DiscordStatus = dcUser?.Status ?? UserStatus.Offline;
+
+            if (dcUser != null)
+                RegisteredAt = dcUser.CreatedAt.LocalDateTime;
 
             Guilds = user.Guilds.OrderBy(o => o.Guild.Name).ToDictionary(
                 o => o.Guild.Name,

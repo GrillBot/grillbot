@@ -2,6 +2,8 @@
 using Discord.WebSocket;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Helpers;
+using System;
+using System.Linq;
 
 namespace GrillBot.Data.Models.API.Channels
 {
@@ -11,6 +13,10 @@ namespace GrillBot.Data.Models.API.Channels
         public string Name { get; set; }
         public ChannelType? Type { get; set; }
         public int CachedMessagesCount { get; set; }
+
+        public DateTime? FirstMessageAt { get; set; }
+        public DateTime? LastMessageAt { get; set; }
+        public long MessagesCount { get; set; }
 
         public Channel() { }
 
@@ -34,6 +40,13 @@ namespace GrillBot.Data.Models.API.Channels
             Name = entity.Name;
             Type = entity.ChannelType;
             CachedMessagesCount = cachedMessagesCount;
+
+            if (entity.Channels.Count > 0)
+            {
+                FirstMessageAt = entity.Channels.Min(o => o.FirstMessageAt);
+                LastMessageAt = entity.Channels.Max(o => o.LastMessageAt);
+                MessagesCount = entity.Channels.Sum(o => o.Count);
+            }
         }
     }
 }

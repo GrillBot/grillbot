@@ -96,8 +96,9 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<ActionResult<PaginatedResponse<GuildChannel>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters)
         {
-            var query = DbContext.Channels.AsNoTracking()
+            var query = DbContext.Channels.AsNoTracking().AsSplitQuery()
                 .Include(o => o.Guild)
+                .Include(o => o.Channels)
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
@@ -157,6 +158,7 @@ namespace GrillBot.App.Controllers
         {
             var channel = await DbContext.Channels.AsNoTracking()
                 .Include(o => o.Guild)
+                .Include(o => o.Channels)
                 .FirstOrDefaultAsync(o => o.ChannelId == id.ToString());
 
             if (channel == null)
@@ -164,16 +166,6 @@ namespace GrillBot.App.Controllers
 
             var userChannelsQuery = DbContext.UserChannels.AsNoTracking()
                 .Where(o => o.Id == id.ToString());
-
-            var channelDetailQuery = userChannelsQuery.GroupBy(o => o.Id)
-                .Select(o => new
-                {
-                    MessagesCount = o.Sum(x => x.Count),
-                    FirstMessageAt = o.Min(x => x.FirstMessageAt),
-                    LastMessageAt = o.Max(x => x.LastMessageAt)
-                });
-
-            var channelDetailData = await channelDetailQuery.FirstOrDefaultAsync();
 
             var mostActiveUser = await userChannelsQuery.OrderByDescending(o => o.Count)
                 .Select(o => o.User.User).FirstOrDefaultAsync();
@@ -183,10 +175,7 @@ namespace GrillBot.App.Controllers
 
             var channelDetail = new ChannelDetail(channel)
             {
-                FirstMessageAt = channelDetailData?.FirstMessageAt,
-                LastMessageAt = channelDetailData?.LastMessageAt,
                 LastMessageFrom = lastMessageFrom == null ? null : new(lastMessageFrom),
-                MessagesCount = channelDetailData?.MessagesCount ?? 0,
                 MostActiveUser = mostActiveUser == null ? null : new(mostActiveUser),
                 CachedMessagesCount = MessageCache.GetMessagesFromChannel(Convert.ToUInt64(channel.ChannelId)).Count()
             };

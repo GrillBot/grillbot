@@ -531,7 +531,9 @@ namespace GrillBot.App.Services.AuditLog
 
         private async Task OnGuildUpdatedAsync(SocketGuild before, SocketGuild after)
         {
-            var auditLog = (await after.GetAuditLogsAsync(100, actionType: ActionType.GuildUpdated).FlattenAsync())
+            var timeLimit = DateTime.UtcNow.AddMinutes(-5);
+            var auditLog = (await after.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.GuildUpdated).FlattenAsync())
+                .Where(o => o.CreatedAt.DateTime >= timeLimit)
                 .OrderByDescending(o => o.CreatedAt.DateTime)
                 .FirstOrDefault();
 

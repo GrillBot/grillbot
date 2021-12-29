@@ -114,5 +114,6 @@ namespace GrillBot.Database.Services
         public DbSet<RemindMessage> Reminders { get; set; }
         public DbSet<SelfunverifyKeepable> SelfunverifyKeepables { get; set; }
         public DbSet<ExplicitPermission> ExplicitPermissions { get; set; }
+        public DbSet<AutoReplyItem> AutoReplies { get; set; }
     }
 }

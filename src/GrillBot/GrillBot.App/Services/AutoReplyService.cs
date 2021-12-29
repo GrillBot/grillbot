@@ -1,10 +1,12 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Models;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -17,34 +19,42 @@ namespace GrillBot.App.Services
         private string Prefix { get; }
 
         private List<ulong> DisabledChannels { get; }
-        private List<AutoReplyConfiguration> Messages { get; }
+        private ConcurrentBag<AutoReplyItem> Messages { get; }
 
-        public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient) : base(discordClient)
+        public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotContextFactory dbFactory) : base(discordClient, dbFactory)
         {
-            var config = configuration.GetSection("AutoReply");
-            DisabledChannels = config.GetSection("DisabledChannels").Get<ulong[]>()?.ToList() ?? new List<ulong>();
-            Messages = config.GetSection("Messages").Get<AutoReplyConfiguration[]>().ToList();
-
+            DisabledChannels = configuration.GetSection("AutoReply:DisabledChannels").Get<ulong[]>()?.ToList() ?? new List<ulong>();
             Prefix = configuration["Discord:Commands:Prefix"];
+            Messages = new ConcurrentBag<AutoReplyItem>();
 
+            DiscordClient.Ready += InitAsync;
             DiscordClient.MessageReceived += (message) =>
             {
-                // Block commands, system messages and bots.
-                if (message is not SocketUserMessage msg || !message.Author.IsUser() || DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+                if (!message.TryLoadMessage(out var userMessage)) return Task.CompletedTask;
+                if (userMessage.IsCommand(DiscordClient.CurrentUser, Prefix)) return Task.CompletedTask;
 
-                int argPos = 0;
-                var canProcess = !msg.HasMentionPrefix(DiscordClient.CurrentUser, ref argPos) && !msg.HasStringPrefix(Prefix, ref argPos);
-
-                return canProcess ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
+                return OnMessageReceivedAsync(userMessage);
             };
+        }
+
+        public async Task InitAsync()
+        {
+            using var dbContext = DbFactory.Create();
+            var messages = await dbContext.AutoReplies
+                .AsNoTracking().ToListAsync();
+
+            Messages.Clear();
+            foreach (var message in messages)
+                Messages.Add(message);
         }
 
         private Task OnMessageReceivedAsync(SocketUserMessage message)
         {
             if (DisabledChannels.Contains(message.Channel.Id)) return Task.CompletedTask;
 
-            var matched = Messages.Where(o => !o.Disabled)
-                .FirstOrDefault(o => Regex.IsMatch(message.Content, o.Template, o.Options));
+            var matched = Messages.Where(o => !o.IsDisabled)
+                .FirstOrDefault(o => Regex.IsMatch(message.Content, o.Template, o.RegexOptions));
 
             if (matched == null) return Task.CompletedTask;
             return message.Channel.SendMessageAsync(matched.Reply);

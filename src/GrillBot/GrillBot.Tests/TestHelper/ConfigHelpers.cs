@@ -12,7 +12,8 @@ namespace GrillBot.Tests.TestHelper
                 {
                     { "Discord:Emotes:Sadge", "<sadge>" },
                     { "Discord:Emotes:Hypers", "<hypers>" },
-                    { "Reminder:MinimalTimeMinutes", reminderMinimalTime.ToString() }
+                    { "Reminder:MinimalTimeMinutes", reminderMinimalTime.ToString() },
+                    { "Discord:Commands:Prefix", "$" }
                 });
 
             if (inMemoryCollection != null)

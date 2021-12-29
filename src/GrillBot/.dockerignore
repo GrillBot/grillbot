@@ -42,3 +42,4 @@ README.md
 appsettings.*.json
 docker.ps1
 docker.sh
+**/GrillBotData

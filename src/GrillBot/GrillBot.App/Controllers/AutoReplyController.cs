@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.App.Controllers
@@ -37,10 +38,33 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync()
         {
-            var query = DbContext.AutoReplies.AsNoTracking();
+            var query = DbContext.AutoReplies.AsQueryable()
+                .OrderBy(o => o.Id).AsNoTracking();
+
             var data = await query.ToListAsync();
             var result = data.ConvertAll(o => new AutoReplyItem(o));
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Gets reply item
+        /// </summary>
+        /// <param name="id">Reply ID</param>
+        /// <response code="200">Success</response>
+        /// <response code="404">Reply not found</response>
+        [HttpGet("{id}")]
+        [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(GetItemAsync))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id)
+        {
+            var entity = await DbContext.AutoReplies.AsQueryable()
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (entity == null)
+                return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
+
+            return Ok(new AutoReplyItem(entity));
         }
 
         /// <summary>
@@ -82,7 +106,8 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<AutoReplyItem>> UpdateItemAsync(long id, [FromBody] AutoReplyItemParams parameters)
         {
-            var entity = await DbContext.AutoReplies.FirstOrDefaultAsync(o => o.Id == id);
+            var entity = await DbContext.AutoReplies.AsQueryable()
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (entity == null)
                 return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
@@ -108,7 +133,8 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> RemoveItemAsync(long id)
         {
-            var entity = await DbContext.AutoReplies.FirstOrDefaultAsync(o => o.Id == id);
+            var entity = await DbContext.AutoReplies.AsQueryable()
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (entity == null)
                 return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));

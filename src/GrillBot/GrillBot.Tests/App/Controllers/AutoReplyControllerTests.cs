@@ -59,6 +59,35 @@ namespace GrillBot.Tests.App.Controllers
         }
 
         [TestMethod]
+        public void GetItem_NotFound()
+        {
+            using var container = CreateController(out var controller);
+            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
+            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
+            dbContext.SaveChanges();
+
+            var result = controller.GetItemAsync(1).Result;
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.Result);
+            Assert.IsInstanceOfType(result.Result, typeof(NotFoundObjectResult));
+        }
+
+        [TestMethod]
+        public void GetItem_Found()
+        {
+            using var container = CreateController(out var controller);
+            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
+            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
+            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1 });
+            dbContext.SaveChanges();
+
+            var result = controller.GetItemAsync(1).Result;
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.Result);
+            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        }
+
+        [TestMethod]
         public void CreateItem()
         {
             using var _ = CreateController(out var controller);

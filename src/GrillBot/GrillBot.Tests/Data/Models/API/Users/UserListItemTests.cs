@@ -5,9 +5,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.Data.Models.API.Users
 {
@@ -30,7 +27,8 @@ namespace GrillBot.Tests.Data.Models.API.Users
                 Guilds = new Dictionary<string, bool>() { { "A", true } },
                 HaveBirthday = true,
                 Id = "12345",
-                Username = "Test"
+                Username = "Test",
+                RegisteredAt = DateTime.MaxValue
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(userListItem);

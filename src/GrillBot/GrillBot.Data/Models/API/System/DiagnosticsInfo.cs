@@ -46,9 +46,9 @@ namespace GrillBot.Data.Models.API.System
         public long UsedMemory { get; set; }
 
         /// <summary>
-        /// Status of bot account.
+        /// Bot is initialized and listening.
         /// </summary>
-        public UserStatus UserStatus { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Current datetime on server.
@@ -66,12 +66,12 @@ namespace GrillBot.Data.Models.API.System
             CurrentDateTime = DateTime.Now;
         }
 
-        public DiagnosticsInfo(string environmentName, DiscordSocketClient discord) : this()
+        public DiagnosticsInfo(string environmentName, DiscordSocketClient discord, bool isActive) : this()
         {
             InstanceType = environmentName;
             Latency = TimeSpan.FromMilliseconds(discord.Latency);
             ConnectionState = discord.ConnectionState;
-            UserStatus = discord.Status;
+            IsActive = isActive;
         }
     }
 }

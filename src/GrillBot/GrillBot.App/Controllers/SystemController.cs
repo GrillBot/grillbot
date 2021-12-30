@@ -1,5 +1,5 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
+using GrillBot.App.Services.Discord;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
@@ -28,13 +28,15 @@ namespace GrillBot.App.Controllers
         private IWebHostEnvironment Environment { get; }
         private DiscordSocketClient DiscordClient { get; }
         private GrillBotContext DbContext { get; }
+        private DiscordInitializationService InitializationService { get; }
 
         public SystemController(IWebHostEnvironment environment, DiscordSocketClient discordClient,
-            GrillBotContext dbContext)
+            GrillBotContext dbContext, DiscordInitializationService initializationService)
         {
             Environment = environment;
             DiscordClient = discordClient;
             DbContext = dbContext;
+            InitializationService = initializationService;
         }
 
         /// <summary>
@@ -46,7 +48,7 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public ActionResult<DiagnosticsInfo> GetDiagnostics()
         {
-            var data = new DiagnosticsInfo(Environment.EnvironmentName, DiscordClient);
+            var data = new DiagnosticsInfo(Environment.EnvironmentName, DiscordClient, InitializationService.Get());
             return Ok(data);
         }
 
@@ -74,7 +76,8 @@ namespace GrillBot.App.Controllers
                 { nameof(DbContext.Emotes), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Emotes) },
                 { nameof(DbContext.Reminders), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Reminders) },
                 { nameof(DbContext.SelfunverifyKeepables), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.SelfunverifyKeepables) },
-                { nameof(DbContext.ExplicitPermissions), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.ExplicitPermissions) }
+                { nameof(DbContext.ExplicitPermissions), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.ExplicitPermissions) },
+                { nameof(DbContext.AutoReplies), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.AutoReplies) }
             };
 
             return Ok(data);
@@ -122,15 +125,12 @@ namespace GrillBot.App.Controllers
         /// Changes bot account status and set bot's status activity.
         /// </summary>
         /// <response code="200">Success</response>
-        [HttpPut("status/{status}")]
-        [OpenApiOperation(nameof(SystemController) + "_" + nameof(ChangeBotStatusAsync))]
+        [HttpPut("status")]
+        [OpenApiOperation(nameof(SystemController) + "_" + nameof(ChangeBotStatus))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> ChangeBotStatusAsync(UserStatus status)
+        public ActionResult ChangeBotStatus(bool isActive)
         {
-            if (status == UserStatus.Offline) status = UserStatus.Invisible;
-            if (status == UserStatus.AFK) status = UserStatus.Idle;
-
-            await DiscordClient.SetStatusAsync(status);
+            InitializationService.Set(isActive);
             return Ok();
         }
     }

@@ -26,6 +26,7 @@ namespace GrillBot.App.Services
 
             DiscordClient.Ready += () => InitAsync();
             DiscordClient.UserJoined += (user) => user.IsUser() ? OnUserJoinedAsync(user) : Task.CompletedTask;
+            DiscordClient.InviteCreated += OnInviteCreated;
         }
 
         public async Task InitAsync()
@@ -166,6 +167,9 @@ namespace GrillBot.App.Services
 
         private InviteMetadata FindUsedInvite(SocketGuild guild, List<InviteMetadata> latestData)
         {
+            var missingInvite = MetadataCache.FirstOrDefault(o => !latestData.Any(x => x.Code == o.Code));
+            if (missingInvite != null) return missingInvite; // User joined via invite with max use limit.
+
             var result = MetadataCache
                 .Where(o => o.GuildId == guild.Id)
                 .FirstOrDefault(inv =>
@@ -187,5 +191,13 @@ namespace GrillBot.App.Services
 
             await SetInviteToUserAsync(user, guild, usedInvite, latestInvites);
         }
+
+        private Task OnInviteCreated(SocketInvite invite)
+        {
+            var metadata = InviteMetadata.FromDiscord(invite);
+            MetadataCache.Add(metadata);
+            return Task.CompletedTask;
+        }
+
     }
 }

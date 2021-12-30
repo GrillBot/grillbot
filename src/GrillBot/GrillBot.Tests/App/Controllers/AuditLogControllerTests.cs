@@ -3,13 +3,10 @@ using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -24,7 +21,7 @@ namespace GrillBot.Tests.App.Controllers
         public void RemoveItem_Success()
         {
             var discord = new DiscordSocketClient();
-            var auditLogService = new Mock<AuditLogService>(new object[] { discord, null, null, null });
+            var auditLogService = new Mock<AuditLogService>(new object[] { discord, null, null, null, null });
             auditLogService.Setup(o => o.RemoveItemAsync(It.IsAny<long>())).Returns(Task.FromResult(true));
 
             var controller = new AuditLogController(auditLogService.Object, null, null);
@@ -37,7 +34,7 @@ namespace GrillBot.Tests.App.Controllers
         public void RemoveItem_NotFound()
         {
             var discord = new DiscordSocketClient();
-            var auditLogService = new Mock<AuditLogService>(new object[] { discord, null, null, null });
+            var auditLogService = new Mock<AuditLogService>(new object[] { discord, null, null, null, null });
             auditLogService.Setup(o => o.RemoveItemAsync(It.IsAny<long>())).Returns(Task.FromResult(false));
 
             var controller = new AuditLogController(auditLogService.Object, null, null);

@@ -6,7 +6,6 @@ using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Reminder;
-using GrillBot.App.Services.Sync;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
@@ -20,7 +19,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services
+namespace GrillBot.App.Services.Discord
 {
     public class DiscordService : IHostedService
     {
@@ -29,15 +28,17 @@ namespace GrillBot.App.Services
         private IServiceProvider Provider { get; }
         private CommandService CommandService { get; }
         private IWebHostEnvironment Environment { get; }
+        private DiscordInitializationService InitializationService { get; }
 
         public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-            LoggingService _, IWebHostEnvironment webHostEnvironment)
+            LoggingService _, IWebHostEnvironment webHostEnvironment, DiscordInitializationService initializationService)
         {
             DiscordSocketClient = client;
             Configuration = configuration;
             Provider = provider;
             CommandService = commandService;
             Environment = webHostEnvironment;
+            InitializationService = initializationService;
 
             DiscordSocketClient.Log += OnLogAsync;
             CommandService.Log += OnLogAsync;
@@ -48,11 +49,10 @@ namespace GrillBot.App.Services
             var token = Configuration.GetValue<string>("Discord:Token");
 
             InitServices();
-            DiscordSocketClient.Ready += () => DiscordSocketClient.SetStatusAsync(UserStatus.Online);
+            DiscordSocketClient.Ready += () => Task.Run(() => InitializationService.Set(true));
 
             await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
             await DiscordSocketClient.StartAsync();
-            await DiscordSocketClient.SetStatusAsync(UserStatus.Idle);
 
             CommandService.AddTypeReader<Guid>(new GuidTypeReader());
             CommandService.AddTypeReader<IMessage>(new MessageTypeReader(), true);

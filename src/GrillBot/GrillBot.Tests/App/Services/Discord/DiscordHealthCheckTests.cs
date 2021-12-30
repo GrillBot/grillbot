@@ -1,10 +1,10 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Services;
+using GrillBot.App.Services.Discord;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 
-namespace GrillBot.Tests.App.Services
+namespace GrillBot.Tests.App.Services.Discord
 {
     [TestClass]
     public class DiscordHealthCheckTests

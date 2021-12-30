@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using GrillBot.App.Services.Discord;
 using GrillBot.Database.Services;
 
 namespace GrillBot.App.Infrastructure
@@ -10,11 +11,14 @@ namespace GrillBot.App.Infrastructure
     {
         protected DiscordSocketClient DiscordClient { get; }
         protected GrillBotContextFactory DbFactory { get; }
+        protected DiscordInitializationService InitializationService { get; }
 
-        protected ServiceBase(DiscordSocketClient client, GrillBotContextFactory dbFactory = null)
+        protected ServiceBase(DiscordSocketClient client, GrillBotContextFactory dbFactory = null,
+            DiscordInitializationService initializationService = null)
         {
             DiscordClient = client;
             DbFactory = dbFactory;
+            InitializationService = initializationService;
         }
     }
 }

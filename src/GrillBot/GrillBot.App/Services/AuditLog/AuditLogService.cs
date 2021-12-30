@@ -4,6 +4,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Helpers;
@@ -34,7 +35,7 @@ namespace GrillBot.App.Services.AuditLog
         private DateTime NextAllowedRoleUpdateEvent { get; set; }
 
         public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
-            FileStorageFactory storageFactory) : base(client, dbFactory)
+            FileStorageFactory storageFactory, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
         {
             JsonSerializerSettings = new JsonSerializerSettings()
             {
@@ -49,14 +50,14 @@ namespace GrillBot.App.Services.AuditLog
             DiscordClient.UserJoined += user => user?.IsUser() != true ? Task.CompletedTask : OnUserJoinedAsync(user);
             DiscordClient.MessageUpdated += (before, after, channel) =>
             {
-                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+                if (!InitializationService.Get()) return Task.CompletedTask;
                 if (channel is not SocketTextChannel textChannel) return Task.CompletedTask;
                 return OnMessageEditedAsync(before, after, textChannel);
             };
 
             DiscordClient.MessageDeleted += (message, channel) =>
             {
-                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+                if (!InitializationService.Get()) return Task.CompletedTask;
                 if (channel is not SocketTextChannel textChannel) return Task.CompletedTask;
                 return OnMessageDeletedAsync(message, textChannel);
             };
@@ -66,7 +67,7 @@ namespace GrillBot.App.Services.AuditLog
             DiscordClient.ChannelUpdated += async (_before, _after) =>
             {
                 if (_before is not SocketGuildChannel before || _after is not SocketGuildChannel after) return;
-                if (DiscordClient.Status != UserStatus.Online) return;
+                if (!InitializationService.Get()) return;
                 if (NextAllowedChannelUpdateEvent > DateTime.Now) return;
 
                 await OnChannelUpdatedAsync(before, after);
@@ -75,7 +76,7 @@ namespace GrillBot.App.Services.AuditLog
             };
             DiscordClient.GuildUpdated += (before, after) =>
             {
-                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+                if (!InitializationService.Get()) return Task.CompletedTask;
                 if (!before.Emotes.SequenceEqual(after.Emotes))
                     return OnEmotesUpdatedAsync(before, before.Emotes, after.Emotes);
 
@@ -88,7 +89,7 @@ namespace GrillBot.App.Services.AuditLog
             DiscordClient.UserUnbanned += OnUserUnbannedAsync;
             DiscordClient.GuildMemberUpdated += (before, after) =>
             {
-                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+                if (!InitializationService.Get()) return Task.CompletedTask;
                 if (IsMemberReallyUpdated(before, after))
                     return OnMemberUpdatedAsync(before, after);
 

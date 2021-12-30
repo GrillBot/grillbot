@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ namespace GrillBot.App.Handlers
         private MessageCache MessageCache { get; }
 
         public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers, ILogger<ReactionHandler> logger,
-            MessageCache messageCache) : base(client)
+            MessageCache messageCache, DiscordInitializationService initializationService) : base(client, null, initializationService)
         {
             DiscordClient.ReactionAdded += (message, _, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added);
             DiscordClient.ReactionRemoved += (message, _, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed);
@@ -32,7 +33,7 @@ namespace GrillBot.App.Handlers
 
         private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, SocketReaction reaction, ReactionEvents @event)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
+            if (!InitializationService.Get()) return;
 
             var msg = (message.HasValue ? message.Value : await MessageCache.GetMessageAsync(reaction.Channel, message.Id) as IUserMessage);
             if (msg == null) return;

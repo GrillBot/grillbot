@@ -17,7 +17,7 @@ namespace GrillBot.Tests.App.Services.MessageCache
         public void ComplexTest()
         {
             var client = new DiscordSocketClient();
-            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client);
+            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client, null);
 
             var message = new Mock<IMessage>();
             message.Setup(o => o.Id).Returns(12345);
@@ -52,7 +52,7 @@ namespace GrillBot.Tests.App.Services.MessageCache
         public void MarkUpdated()
         {
             var client = new DiscordSocketClient();
-            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client);
+            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client, null);
 
             var message = new Mock<IMessage>();
             message.Setup(o => o.Id).Returns(12345);
@@ -77,7 +77,7 @@ namespace GrillBot.Tests.App.Services.MessageCache
         public void AppendAround_DMs()
         {
             var client = new DiscordSocketClient();
-            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client);
+            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client, null);
 
             var channelMock = new Mock<IDMChannel>();
             var channel = channelMock.Object;
@@ -90,7 +90,7 @@ namespace GrillBot.Tests.App.Services.MessageCache
         public void ClearChannel()
         {
             var client = new DiscordSocketClient();
-            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client);
+            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client, null);
 
             var message = new Mock<IMessage>();
             message.Setup(o => o.Id).Returns(12345);
@@ -126,7 +126,7 @@ namespace GrillBot.Tests.App.Services.MessageCache
         public void GetMessageWithDownload()
         {
             var client = new DiscordSocketClient();
-            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client);
+            var cache = new GrillBot.App.Services.MessageCache.MessageCache(client, null);
 
             var message = new Mock<IMessage>();
             message.Setup(o => o.Id).Returns(12345);

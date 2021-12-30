@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
 using Quartz;
 using System;
@@ -13,19 +14,22 @@ namespace GrillBot.App.Services.Unverify
         private UnverifyService Service { get; }
         private LoggingService Logging { get; }
         private DiscordSocketClient DiscordClient { get; }
+        private DiscordInitializationService InitializationService { get; }
 
-        public UnverifyCronJob(UnverifyService service, LoggingService logging, DiscordSocketClient discordClient)
+        public UnverifyCronJob(UnverifyService service, LoggingService logging, DiscordSocketClient discordClient,
+            DiscordInitializationService initializationService)
         {
             Service = service;
             Logging = logging;
             DiscordClient = discordClient;
+            InitializationService = initializationService;
         }
 
         public async Task Execute(IJobExecutionContext context)
         {
             try
             {
-                if (DiscordClient.Status != UserStatus.Online) return;
+                if (!InitializationService.Get()) return;
                 await Logging.InfoAsync(nameof(UnverifyCronJob), $"Triggered job at {DateTime.Now}");
                 var pending = await Service.GetPendingUnverifiesForRemoveAsync(context.CancellationToken);
 

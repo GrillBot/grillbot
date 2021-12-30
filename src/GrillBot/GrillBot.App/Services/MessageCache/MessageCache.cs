@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.MessageCache;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ namespace GrillBot.App.Services.MessageCache
         private ConcurrentDictionary<ulong, CachedMessage> Cache { get; }
         private ConcurrentBag<ulong> InitializedChannels { get; }
 
-        public MessageCache(DiscordSocketClient client) : base(client)
+        public MessageCache(DiscordSocketClient client, DiscordInitializationService initializationService) : base(client, null, initializationService)
         {
             Cache = new ConcurrentDictionary<ulong, CachedMessage>();
             InitializedChannels = new ConcurrentBag<ulong>();
@@ -32,7 +33,7 @@ namespace GrillBot.App.Services.MessageCache
 
         private async Task OnMessageReceived(SocketMessage message)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
+            if (!InitializationService.Get()) return;
             if (InitializedChannels.Contains(message.Channel.Id)) return;
 
             await Task.WhenAll(

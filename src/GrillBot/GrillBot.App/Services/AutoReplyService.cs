@@ -1,7 +1,7 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +21,8 @@ namespace GrillBot.App.Services
         private List<ulong> DisabledChannels { get; }
         private ConcurrentBag<AutoReplyItem> Messages { get; }
 
-        public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotContextFactory dbFactory) : base(discordClient, dbFactory)
+        public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotContextFactory dbFactory,
+            DiscordInitializationService initializationService) : base(discordClient, dbFactory, initializationService)
         {
             DisabledChannels = configuration.GetSection("AutoReply:DisabledChannels").Get<ulong[]>()?.ToList() ?? new List<ulong>();
             Prefix = configuration["Discord:Commands:Prefix"];
@@ -30,9 +31,10 @@ namespace GrillBot.App.Services
             DiscordClient.Ready += InitAsync;
             DiscordClient.MessageReceived += (message) =>
             {
-                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+                if (!InitializationService.Get()) return Task.CompletedTask;
                 if (!message.TryLoadMessage(out var userMessage)) return Task.CompletedTask;
                 if (userMessage.IsCommand(DiscordClient.CurrentUser, Prefix)) return Task.CompletedTask;
+                if (DisabledChannels.Contains(message.Channel.Id)) return Task.CompletedTask;
 
                 return OnMessageReceivedAsync(userMessage);
             };
@@ -51,8 +53,6 @@ namespace GrillBot.App.Services
 
         private Task OnMessageReceivedAsync(SocketUserMessage message)
         {
-            if (DisabledChannels.Contains(message.Channel.Id)) return Task.CompletedTask;
-
             var matched = Messages.Where(o => !o.IsDisabled)
                 .FirstOrDefault(o => Regex.IsMatch(message.Content, o.Template, o.RegexOptions));
 

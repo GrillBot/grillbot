@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services
+namespace GrillBot.App.Services.Discord
 {
     public class DiscordHealthCheck : IHealthCheck
     {

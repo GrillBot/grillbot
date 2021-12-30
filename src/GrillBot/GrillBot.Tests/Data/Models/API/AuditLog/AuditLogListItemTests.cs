@@ -73,7 +73,7 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
                 AuditLogItemType.UserLeft
             };
 
-            var jsonSettings = new AuditLogService(new DiscordSocketClient(), null, null, null).JsonSerializerSettings;
+            var jsonSettings = new AuditLogService(new DiscordSocketClient(), null, null, null, null).JsonSerializerSettings;
             foreach (var type in types)
             {
                 var entity = new AuditLogItem()

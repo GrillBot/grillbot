@@ -11,7 +11,6 @@ using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Reminder;
-using GrillBot.App.Services.Sync;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Helpers;
 using GrillBot.Database;
@@ -31,6 +30,7 @@ using System.Linq;
 using System.Text;
 using Quartz;
 using GrillBot.App.Extensions;
+using GrillBot.App.Services.Discord;
 
 namespace GrillBot.App
 {
@@ -90,7 +90,8 @@ namespace GrillBot.App
                 .AddSingleton<BirthdayService>()
                 .AddUnverify()
                 .AddSingleton<BoosterService>()
-                .AddSingleton<OAuth2Service>();
+                .AddSingleton<OAuth2Service>()
+                .AddSingleton<DiscordInitializationService>();
 
             ReflectionHelper.GetAllReactionEventHandlers().ToList()
                 .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

@@ -4,18 +4,15 @@ using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services
 {
     [TestClass]
     public class AutoReplyServiceTests
     {
-        private ServiceProvider CreateService(out AutoReplyService service, Dictionary<string, string> inMemoryCollection = null)
+        private static ServiceProvider CreateService(out AutoReplyService service, Dictionary<string, string> inMemoryCollection = null)
         {
             service = null;
             var container = DIHelpers.CreateContainer();
@@ -26,8 +23,8 @@ namespace GrillBot.Tests.App.Services
                 return null;
             }
 
-            var configuration = TestHelper.ConfigHelpers.CreateConfiguration(inMemoryCollection: inMemoryCollection);
-            service = new AutoReplyService(configuration, new DiscordSocketClient(), dbFactory);
+            var configuration = ConfigHelpers.CreateConfiguration(inMemoryCollection: inMemoryCollection);
+            service = new AutoReplyService(configuration, new DiscordSocketClient(), dbFactory, null);
             return container;
         }
 

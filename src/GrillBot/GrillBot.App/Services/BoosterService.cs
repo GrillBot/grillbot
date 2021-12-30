@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -17,13 +18,13 @@ namespace GrillBot.App.Services
         private IConfiguration Configuration { get; }
 
         public BoosterService(DiscordSocketClient client, GrillBotContextFactory dbFactory,
-            IConfiguration configuration) : base(client, dbFactory)
+            IConfiguration configuration, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
         {
             Configuration = configuration;
 
             DiscordClient.GuildMemberUpdated += (before, after) =>
             {
-                if (DiscordClient.Status != UserStatus.Online) return Task.CompletedTask;
+                if (!InitializationService.Get()) return Task.CompletedTask;
 
                 if (!before.Roles.SequenceEqual(after.Roles))
                     return OnGuildMemberUpdatedAsync(before, after);

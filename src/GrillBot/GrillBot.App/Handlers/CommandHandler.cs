@@ -5,6 +5,7 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace GrillBot.App.Handlers
         private AuditLogService AuditLogService { get; }
 
         public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IConfiguration configuration,
-            AuditLogService auditLogService) : base(client)
+            AuditLogService auditLogService, DiscordInitializationService initializationService) : base(client, initializationService: initializationService)
         {
             CommandService = commandService;
             Provider = provider;
@@ -32,7 +33,7 @@ namespace GrillBot.App.Handlers
 
         private async Task OnCommandTriggerTryAsync(SocketMessage message)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
+            if (!InitializationService.Get()) return;
             if (!message.TryLoadMessage(out SocketUserMessage userMessage)) return;
             var context = new SocketCommandContext(DiscordClient, userMessage);
 

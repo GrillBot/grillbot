@@ -7,11 +7,7 @@ using GrillBot.Tests.TestHelper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers
 {
@@ -29,8 +25,8 @@ namespace GrillBot.Tests.App.Controllers
                 return null;
             }
 
-            var configuration = TestHelper.ConfigHelpers.CreateConfiguration();
-            service = new AutoReplyService(configuration, new DiscordSocketClient(), dbFactory);
+            var configuration = ConfigHelpers.CreateConfiguration();
+            service = new AutoReplyService(configuration, new DiscordSocketClient(), dbFactory, null);
             return container;
         }
 

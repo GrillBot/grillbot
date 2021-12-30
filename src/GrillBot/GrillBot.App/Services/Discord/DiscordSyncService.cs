@@ -8,11 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Sync
+namespace GrillBot.App.Services.Discord
 {
     public class DiscordSyncService : ServiceBase
     {
-        public DiscordSyncService(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client, dbFactory)
+        public DiscordSyncService(DiscordSocketClient client, GrillBotContextFactory dbFactory, DiscordInitializationService initializationService)
+            : base(client, dbFactory, initializationService)
         {
             DiscordClient.Ready += OnReadyAsync;
             DiscordClient.JoinedGuild += OnGuildAvailableAsync;
@@ -26,9 +27,8 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnChannelUpdatedAsync(SocketChannel before, SocketChannel after)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
-            if (after is not SocketTextChannel textChannel || ((SocketTextChannel)before).Name == textChannel.Name)
-                return;
+            if (!InitializationService.Get()) return;
+            if (after is not SocketTextChannel textChannel || ((SocketTextChannel)before).Name == textChannel.Name) return;
 
             using var context = DbFactory.Create();
             await SyncChannelAsync(context, textChannel);
@@ -37,7 +37,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnGuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
+            if (!InitializationService.Get()) return;
             if (before.Nickname == after.Nickname) return;
 
             using var context = DbFactory.Create();
@@ -47,7 +47,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnUserUpdatedAsync(SocketUser before, SocketUser after)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
+            if (!InitializationService.Get()) return;
             if (before.Username == after.Username) return;
 
             using var context = DbFactory.Create();
@@ -57,7 +57,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnUserJoinedAsync(SocketGuildUser user)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
+            if (!InitializationService.Get()) return;
             using var context = DbFactory.Create();
 
             await SyncGuildUserAsync(context, user);
@@ -66,7 +66,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task GuildUpdatedAsync(SocketGuild before, SocketGuild after)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
+            if (!InitializationService.Get()) return;
             if (before.Name == after.Name) return;
 
             using var context = DbFactory.Create();
@@ -76,7 +76,7 @@ namespace GrillBot.App.Services.Sync
 
         private async Task OnGuildAvailableAsync(SocketGuild guild)
         {
-            if (DiscordClient.Status != UserStatus.Online) return;
+            if (!InitializationService.Get()) return;
             using var context = DbFactory.Create();
 
             if ((await context.Database.GetPendingMigrationsAsync()).Any())

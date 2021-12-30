@@ -46,6 +46,9 @@ namespace GrillBot.Data.Models.API.Channels
                 FirstMessageAt = entity.Channels.Min(o => o.FirstMessageAt);
                 LastMessageAt = entity.Channels.Max(o => o.LastMessageAt);
                 MessagesCount = entity.Channels.Sum(o => o.Count);
+
+                if (FirstMessageAt == DateTime.MinValue) FirstMessageAt = null;
+                if (LastMessageAt == DateTime.MinValue) LastMessageAt = null;
             }
         }
     }

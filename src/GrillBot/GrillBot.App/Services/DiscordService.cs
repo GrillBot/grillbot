@@ -10,6 +10,7 @@ using GrillBot.App.Services.Sync;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,16 +28,16 @@ namespace GrillBot.App.Services
         private IConfiguration Configuration { get; }
         private IServiceProvider Provider { get; }
         private CommandService CommandService { get; }
-        private IHostApplicationLifetime Lifetime { get; }
+        private IWebHostEnvironment Environment { get; }
 
         public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-            LoggingService _, IHostApplicationLifetime hostApplicationLifetime)
+            LoggingService _, IWebHostEnvironment webHostEnvironment)
         {
             DiscordSocketClient = client;
             Configuration = configuration;
             Provider = provider;
             CommandService = commandService;
-            Lifetime = hostApplicationLifetime;
+            Environment = webHostEnvironment;
 
             DiscordSocketClient.Log += OnLogAsync;
             CommandService.Log += OnLogAsync;
@@ -85,7 +86,7 @@ namespace GrillBot.App.Services
 
         private async Task OnLogAsync(LogMessage message)
         {
-            if (message.Source != "Gateway" || message.Exception == null) return;
+            if (message.Source != "Gateway" || message.Exception == null || Environment.IsDevelopment()) return;
             if (message.Exception is GatewayReconnectException && message.Exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase))
             {
                 var auditLogItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, DiscordSocketClient.CurrentUser, "Restart aplikace po odpojení.");

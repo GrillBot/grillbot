@@ -1,4 +1,5 @@
 ﻿using GrillBot.Data.Models.API.Params;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace GrillBot.Data.Models.API.Users
@@ -30,6 +31,11 @@ namespace GrillBot.Data.Models.API.Users
         /// </summary>
         public bool SortDesc { get; set; }
 
+        /// <summary>
+        /// Used invite code
+        /// </summary>
+        public string UsedInviteCode { get; set; }
+
         public IQueryable<Database.Entity.User> CreateQuery(IQueryable<Database.Entity.User> query)
         {
             if (!string.IsNullOrEmpty(Username))
@@ -43,6 +49,9 @@ namespace GrillBot.Data.Models.API.Users
 
             if (HaveBirthday)
                 query = query.Where(o => o.Birthday != null);
+
+            if (!string.IsNullOrEmpty(UsedInviteCode))
+                query = query.Where(o => o.Guilds.Any(x => EF.Functions.ILike(x.UsedInviteCode, $"{UsedInviteCode.ToLower()}%")));
 
             return SortDesc switch
             {

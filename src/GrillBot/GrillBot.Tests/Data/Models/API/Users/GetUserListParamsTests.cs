@@ -22,7 +22,8 @@ namespace GrillBot.Tests.Data.Models.API.Users
                 GuildId = "Guild",
                 HaveBirthday = true,
                 SortDesc = true,
-                Username = "Username"
+                Username = "Username",
+                UsedInviteCode = "Invite"
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(parameters);
@@ -51,7 +52,8 @@ namespace GrillBot.Tests.Data.Models.API.Users
                 GuildId = "Guild",
                 HaveBirthday = true,
                 SortDesc = true,
-                Username = "Username"
+                Username = "Username",
+                UsedInviteCode = "Invite"
             };
 
             var query = context.Users.AsQueryable();

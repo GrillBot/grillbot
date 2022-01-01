@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
+using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data;
 using Microsoft.Extensions.Configuration;
@@ -107,6 +109,35 @@ namespace GrillBot.App.Modules.Unverify
                 {
                     await ReplyAsync(ex.Message);
                 }
+            }
+
+            [Command("list")]
+            [Summary("Vypíše seznam ponechatelných přístupů. S možností zobrazit určitou skupinu.")]
+            public async Task ListAsync([Name("skupina")] string group = null)
+            {
+                var data = await SelfunverifyService.GetKeepablesAsync(group);
+
+                if (data.Count == 0)
+                {
+                    await ReplyAsync("Nebyly nalezeny žádné ponechatelné přístupy.");
+                    return;
+                }
+
+                var embed = new EmbedBuilder()
+                    .WithColor(Color.Blue)
+                    .WithCurrentTimestamp()
+                    .WithFooter(Context.User)
+                    .WithTitle("Ponechatelné role a kanály");
+
+                foreach (var grp in data.GroupBy(o => string.Join("|", o.Value)))
+                {
+                    var keys = string.Join(", ", grp.Select(o => o.Key == "_" ? "Ostatní" : o.Key));
+
+                    foreach (var part in grp.First().Value.SplitInParts(50))
+                        embed.AddField(keys, string.Join(", ", part), false);
+                }
+
+                await ReplyAsync(embed: embed.Build());
             }
         }
     }

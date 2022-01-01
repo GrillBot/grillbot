@@ -74,5 +74,22 @@ namespace GrillBot.App.Services.Unverify
 
             await context.SaveChangesAsync();
         }
+
+        public async Task<Dictionary<string, List<string>>> GetKeepablesAsync(string group)
+        {
+            var groupName = group?.ToLower();
+
+            using var context = DbFactory.Create();
+            var query = context.SelfunverifyKeepables.AsQueryable()
+                .OrderBy(o => o.GroupName).ThenBy(o => o.Name)
+                .AsNoTracking();
+
+            if (!string.IsNullOrEmpty(groupName))
+                query = query.Where(o => EF.Functions.ILike(o.GroupName, $"{groupName}%"));
+
+            var data = await query.ToListAsync();
+            return data.GroupBy(o => o.GroupName.ToUpper())
+                .ToDictionary(o => o.Key, o => o.Select(o => o.Name.ToUpper()).ToList());
+        }
     }
 }

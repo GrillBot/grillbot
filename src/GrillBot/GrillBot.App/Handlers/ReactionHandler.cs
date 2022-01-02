@@ -23,19 +23,22 @@ namespace GrillBot.App.Handlers
         public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers, ILogger<ReactionHandler> logger,
             MessageCache messageCache, DiscordInitializationService initializationService) : base(client, null, initializationService)
         {
-            DiscordClient.ReactionAdded += (message, _, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added);
-            DiscordClient.ReactionRemoved += (message, _, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed);
+            DiscordClient.ReactionAdded += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added, channel);
+            DiscordClient.ReactionRemoved += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed, channel);
 
             EventHandlers = eventHandlers;
             Logger = logger;
             MessageCache = messageCache;
         }
 
-        private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, SocketReaction reaction, ReactionEvents @event)
+        private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, SocketReaction reaction, ReactionEvents @event, Cacheable<IMessageChannel, ulong> channel)
         {
             if (!InitializationService.Get()) return;
 
-            var msg = (message.HasValue ? message.Value : await MessageCache.GetMessageAsync(reaction.Channel, message.Id) as IUserMessage);
+            var messageChannel = await channel.GetOrDownloadAsync();
+            if (messageChannel == null) return;
+
+            var msg = (message.HasValue ? message.Value : await MessageCache.GetMessageAsync(messageChannel, message.Id) as IUserMessage);
             if (msg == null) return;
 
             var user = reaction.User.IsSpecified ? reaction.User.Value : DiscordClient.GetUser(reaction.UserId);

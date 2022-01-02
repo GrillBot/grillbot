@@ -110,7 +110,7 @@ namespace GrillBot.App.Services.Unverify
                     var dmMessage = UnverifyMessageGenerator.CreateUnverifyPMMessage(profile, guild);
                     await profile.Destination.SendMessageAsync(dmMessage);
                 }
-                catch (HttpException ex) when (ex.DiscordCode == 50007)
+                catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
                 {
                     // User have disabled DMs.
                 }
@@ -168,7 +168,7 @@ namespace GrillBot.App.Services.Unverify
                 var dmMessage = UnverifyMessageGenerator.CreateUpdatePMMessage(guild, newEnd);
                 await user.SendMessageAsync(dmMessage);
             }
-            catch (HttpException ex) when (ex.DiscordCode == 50007)
+            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
             {
                 // User have disabled DMs.
             }
@@ -209,7 +209,7 @@ namespace GrillBot.App.Services.Unverify
                         var dmMessage = UnverifyMessageGenerator.CreateRemoveAccessManuallyPMMessage(guild);
                         await toUser.SendMessageAsync(dmMessage);
                     }
-                    catch (HttpException ex) when (ex.DiscordCode == 50007)
+                    catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
                     {
                         // User have disabled DMs.
                     }
@@ -272,11 +272,12 @@ namespace GrillBot.App.Services.Unverify
             }
         }
 
-        public async Task OnUserLeftAsync(SocketGuildUser user)
+        public async Task OnUserLeftAsync(SocketGuild guild, SocketUser user)
         {
             using var context = DbFactory.Create();
 
-            var unverify = await context.Unverifies.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == user.Guild.Id.ToString() && o.UserId == user.Id.ToString());
+            var unverify = await context.Unverifies.AsQueryable()
+                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
 
             if (unverify != null)
             {

@@ -24,10 +24,11 @@ namespace GrillBot.App.Services
 
             DiscordClient.GuildMemberUpdated += (before, after) =>
             {
+                if (!before.HasValue) return Task.CompletedTask;
                 if (!InitializationService.Get()) return Task.CompletedTask;
 
-                if (!before.Roles.SequenceEqual(after.Roles))
-                    return OnGuildMemberUpdatedAsync(before, after);
+                if (!before.Value.Roles.SequenceEqual(after.Roles))
+                    return OnGuildMemberUpdatedAsync(before.Value, after);
 
                 return Task.CompletedTask;
             };

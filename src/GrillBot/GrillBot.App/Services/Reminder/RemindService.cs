@@ -182,7 +182,7 @@ namespace GrillBot.App.Services.Reminder
                     if (toUser != null)
                         return (await toUser.SendMessageAsync(embed: embed)).Id;
                 }
-                catch (HttpException ex) when (ex.DiscordCode == 50007)
+                catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
                 {
                     // User have disabled DMs.
                     return 0;
@@ -260,7 +260,7 @@ namespace GrillBot.App.Services.Reminder
                     messageId = msg.Id;
                 }
             }
-            catch (HttpException ex) when (ex.DiscordCode == 50007)
+            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
             {
                 // User have disabled DMs.
             }

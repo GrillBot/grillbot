@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Interactions;
+using Discord.Net;
 using Discord.WebSocket;
 using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure.TypeReaders;
@@ -29,9 +31,12 @@ namespace GrillBot.App.Services.Discord
         private CommandService CommandService { get; }
         private IWebHostEnvironment Environment { get; }
         private DiscordInitializationService InitializationService { get; }
+        private LoggingService LoggingService { get; }
+        private InteractionService InteractionService { get; }
 
         public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-            LoggingService _, IWebHostEnvironment webHostEnvironment, DiscordInitializationService initializationService)
+            LoggingService loggingService, IWebHostEnvironment webHostEnvironment, DiscordInitializationService initializationService,
+            InteractionService interactionService)
         {
             DiscordSocketClient = client;
             Configuration = configuration;
@@ -39,6 +44,8 @@ namespace GrillBot.App.Services.Discord
             CommandService = commandService;
             Environment = webHostEnvironment;
             InitializationService = initializationService;
+            LoggingService = loggingService;
+            InteractionService = interactionService;
 
             DiscordSocketClient.Log += OnLogAsync;
             CommandService.Log += OnLogAsync;
@@ -49,19 +56,35 @@ namespace GrillBot.App.Services.Discord
             var token = Configuration.GetValue<string>("Discord:Token");
 
             InitServices();
-            DiscordSocketClient.Ready += () => Task.Run(() => InitializationService.Set(true));
+            DiscordSocketClient.Ready += async () =>
+            {
+                if (InteractionService.Modules.Count > 0)
+                {
+                    foreach (var guild in DiscordSocketClient.Guilds)
+                    {
+                        try
+                        {
+                            await InteractionService.RegisterCommandsToGuildAsync(guild.Id);
+                        }
+                        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.MissingOAuth2Scope)
+                        {
+                            await LoggingService.ErrorAsync("Event(Ready)", $"Guild {guild.Name} not have OAuth2 scope for interaction registration.", ex);
+                        }
+                    }
+                }
+
+                InitializationService.Set(true);
+            };
+
+            CommandService.RegisterTypeReaders();
+            InteractionService.RegisterTypeConverters();
+
+            var assembly = Assembly.GetEntryAssembly();
+            await CommandService.AddModulesAsync(assembly, Provider);
+            await InteractionService.AddModulesAsync(assembly, Provider);
 
             await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
             await DiscordSocketClient.StartAsync();
-
-            CommandService.AddTypeReader<Guid>(new GuidTypeReader());
-            CommandService.AddTypeReader<IMessage>(new MessageTypeReader(), true);
-            CommandService.AddTypeReader<IEmote>(new EmotesTypeReader());
-            CommandService.AddTypeReader<IUser>(new UserTypeReader(), true);
-            CommandService.AddTypeReader<DateTime>(new DateTimeTypeReader(), true);
-            CommandService.AddTypeReader<bool>(new BooleanTypeReader(), true);
-
-            await CommandService.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
         }
 
         private void InitServices()
@@ -72,7 +95,7 @@ namespace GrillBot.App.Services.Discord
                 typeof(PointsService), typeof(EmoteChainService),
                 typeof(BoosterService), typeof(RemindService), typeof(MessageCache.MessageCache),
                 typeof(ChannelService), typeof(CommandHandler), typeof(EmoteService), typeof(SearchingService),
-                typeof(ReactionHandler)
+                typeof(ReactionHandler), typeof(InteractionHandler)
             };
 
             foreach (var service in services) Provider.GetRequiredService(service);

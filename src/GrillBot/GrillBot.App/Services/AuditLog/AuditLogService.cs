@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
@@ -18,7 +19,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,15 +27,14 @@ namespace GrillBot.App.Services.AuditLog
 {
     public class AuditLogService : ServiceBase
     {
-        public JsonSerializerSettings JsonSerializerSettings { get; }
+        public static JsonSerializerSettings JsonSerializerSettings { get; }
         private MessageCache.MessageCache MessageCache { get; }
         private FileStorageFactory FileStorageFactory { get; }
 
         private DateTime NextAllowedChannelUpdateEvent { get; set; }
         private DateTime NextAllowedRoleUpdateEvent { get; set; }
 
-        public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
-            FileStorageFactory storageFactory, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
+        static AuditLogService()
         {
             JsonSerializerSettings = new JsonSerializerSettings()
             {
@@ -43,10 +42,14 @@ namespace GrillBot.App.Services.AuditLog
                 Formatting = Formatting.None,
                 NullValueHandling = NullValueHandling.Ignore
             };
+        }
 
+        public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
+            FileStorageFactory storageFactory, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
+        {
             MessageCache = cache;
 
-            DiscordClient.UserLeft += user => user == null || user.Id == DiscordClient.CurrentUser.Id ? Task.CompletedTask : OnUserLeftAsync(user);
+            DiscordClient.UserLeft += (guild, user) => user == null || user.Id == DiscordClient.CurrentUser.Id ? Task.CompletedTask : OnUserLeftAsync(guild, user);
             DiscordClient.UserJoined += user => user?.IsUser() != true ? Task.CompletedTask : OnUserJoinedAsync(user);
             DiscordClient.MessageUpdated += (before, after, channel) =>
             {
@@ -57,8 +60,9 @@ namespace GrillBot.App.Services.AuditLog
 
             DiscordClient.MessageDeleted += (message, channel) =>
             {
+                if (!channel.HasValue) return Task.CompletedTask;
                 if (!InitializationService.Get()) return Task.CompletedTask;
-                if (channel is not SocketTextChannel textChannel) return Task.CompletedTask;
+                if (channel.Value is not SocketTextChannel textChannel) return Task.CompletedTask;
                 return OnMessageDeletedAsync(message, textChannel);
             };
 
@@ -89,11 +93,12 @@ namespace GrillBot.App.Services.AuditLog
             DiscordClient.UserUnbanned += OnUserUnbannedAsync;
             DiscordClient.GuildMemberUpdated += (before, after) =>
             {
+                if (!before.HasValue) return Task.CompletedTask;
                 if (!InitializationService.Get()) return Task.CompletedTask;
-                if (IsMemberReallyUpdated(before, after))
-                    return OnMemberUpdatedAsync(before, after);
+                if (IsMemberReallyUpdated(before.Value, after))
+                    return OnMemberUpdatedAsync(before.Value, after);
 
-                if (!before.Roles.SequenceEqual(after.Roles) && NextAllowedRoleUpdateEvent <= DateTime.Now)
+                if (!before.Value.Roles.SequenceEqual(after.Roles) && NextAllowedRoleUpdateEvent <= DateTime.Now)
                 {
                     var task = OnMemberRolesUpdatedAsync(after);
                     NextAllowedRoleUpdateEvent = DateTime.Now.AddSeconds(30);
@@ -108,7 +113,7 @@ namespace GrillBot.App.Services.AuditLog
             FileStorageFactory = storageFactory;
         }
 
-        public async Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, IResult result)
+        public async Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result)
         {
             var data = new CommandExecution(command, context.Message, result);
             var logItem = AuditLogItem.Create(AuditLogItemType.Command, context.Guild, context.Channel, context.Guild != null ? context.User : null, JsonConvert.SerializeObject(data, JsonSerializerSettings));
@@ -127,38 +132,59 @@ namespace GrillBot.App.Services.AuditLog
             await dbContext.SaveChangesAsync();
         }
 
-        private async Task OnUserLeftAsync(SocketGuildUser user)
+        public async Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result)
+        {
+            var data = InteractionCommandExecuted.Create(context.Interaction, command, result);
+            var logItem = AuditLogItem.Create(AuditLogItemType.InteractionCommand, context.Guild, context.Channel,
+                context.Guild != null ? context.User : null, JsonConvert.SerializeObject(data, JsonSerializerSettings));
+
+            using var dbContext = DbFactory.Create();
+
+            await dbContext.InitUserAsync(context.User, CancellationToken.None);
+            if (context.Guild != null)
+            {
+                await dbContext.InitGuildAsync(context.Guild, CancellationToken.None);
+                await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, ChannelType.Text, CancellationToken.None);
+                await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser, CancellationToken.None);
+            }
+
+            await dbContext.AddAsync(logItem);
+            await dbContext.SaveChangesAsync();
+
+        }
+
+        private async Task OnUserLeftAsync(SocketGuild guild, SocketUser user)
         {
             // Disable logging if bot not have permissions.
-            if (!user.Guild.CurrentUser.GuildPermissions.ViewAuditLog) return;
+            if (!guild.CurrentUser.GuildPermissions.ViewAuditLog) return;
 
-            var ban = await user.Guild.GetBanAsync(user);
+            var ban = await guild.GetBanAsync(user);
             var from = DateTime.UtcNow.AddMinutes(-1);
             RestAuditLogEntry auditLog;
             if (ban != null)
             {
-                auditLog = (await user.Guild.GetAuditLogsAsync(5, actionType: ActionType.Ban).FlattenAsync())
+                auditLog = (await guild.GetAuditLogsAsync(5, actionType: ActionType.Ban).FlattenAsync())
                     .FirstOrDefault(o => (o.Data as BanAuditLogData)?.Target.Id == user.Id && o.CreatedAt.DateTime >= from);
             }
             else
             {
-                auditLog = (await user.Guild.GetAuditLogsAsync(5, actionType: ActionType.Kick).FlattenAsync())
+                auditLog = (await guild.GetAuditLogsAsync(5, actionType: ActionType.Kick).FlattenAsync())
                     .FirstOrDefault(o => (o.Data as KickAuditLogData)?.Target.Id == user.Id && o.CreatedAt.DateTime >= from);
             }
 
-            var data = new UserLeftGuildData(user.Guild, user, ban != null, ban?.Reason);
-            var entity = AuditLogItem.Create(AuditLogItemType.UserLeft, user.Guild, null, auditLog?.User ?? user, JsonConvert.SerializeObject(data, JsonSerializerSettings));
+            var data = new UserLeftGuildData(guild, user, ban != null, ban?.Reason);
+            var entity = AuditLogItem.Create(AuditLogItemType.UserLeft, guild, null, auditLog?.User ?? user, JsonConvert.SerializeObject(data, JsonSerializerSettings));
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(user.Guild, CancellationToken.None);
+            await context.InitGuildAsync(guild, CancellationToken.None);
             await context.InitUserAsync(user, CancellationToken.None);
-            await context.InitGuildUserAsync(user.Guild, user, CancellationToken.None);
+            await context.InitGuildUserAsync(guild.Id, user.Id, CancellationToken.None);
 
             if (auditLog?.User != null)
             {
                 await context.InitUserAsync(auditLog.User, CancellationToken.None);
-                await context.InitGuildUserAsync(user.Guild, user.Guild.GetUser(auditLog.User.Id), CancellationToken.None);
+                await context.InitGuildUserAsync(guild, guild.GetUser(auditLog.User.Id), CancellationToken.None);
             }
 
             await context.AddAsync(entity);

@@ -59,7 +59,8 @@ namespace GrillBot.Tests.App.Controllers
             dbContext.Users.RemoveRange(dbContext.Users.AsEnumerable());
             dbContext.Users.Add(new GrillBot.Database.Entity.User()
             {
-                Id = "1"
+                Id = "1",
+                Username = "Username"
             });
             dbContext.SaveChanges();
 
@@ -77,7 +78,8 @@ namespace GrillBot.Tests.App.Controllers
             dbContext.Users.RemoveRange(dbContext.Users.AsEnumerable());
             dbContext.Users.Add(new GrillBot.Database.Entity.User()
             {
-                Id = "1"
+                Id = "1",
+                Username = "Username"
             });
             dbContext.SaveChanges();
 
@@ -95,7 +97,8 @@ namespace GrillBot.Tests.App.Controllers
             dbContext.Users.RemoveRange(dbContext.Users.AsEnumerable());
             dbContext.Users.Add(new GrillBot.Database.Entity.User()
             {
-                Id = "1"
+                Id = "1",
+                Username = "Username"
             });
             dbContext.SaveChanges();
 

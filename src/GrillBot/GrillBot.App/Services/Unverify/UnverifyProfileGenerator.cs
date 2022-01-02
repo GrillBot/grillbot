@@ -2,8 +2,8 @@
 using Discord.WebSocket;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
-using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -90,9 +90,9 @@ namespace GrillBot.App.Services.Unverify
                     continue;
                 }
 
-                foreach (var group in keepables.Where(o => o.Value?.Contains(toKeep) == true))
+                foreach (var groupKey in keepables.Where(o => o.Value?.Contains(toKeep) == true).Select(o => o.Key))
                 {
-                    role = profile.RolesToRemove.Find(o => string.Equals(o.Name, group.Key == "_" ? toKeep : group.Key, StringComparison.InvariantCultureIgnoreCase));
+                    role = profile.RolesToRemove.Find(o => string.Equals(o.Name, groupKey == "_" ? toKeep : groupKey, StringComparison.InvariantCultureIgnoreCase));
 
                     if (role != null)
                     {

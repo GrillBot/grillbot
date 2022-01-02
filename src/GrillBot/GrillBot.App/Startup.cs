@@ -12,7 +12,6 @@ using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Unverify;
-using GrillBot.Data.Helpers;
 using GrillBot.Database;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,184 +30,198 @@ using System.Text;
 using Quartz;
 using GrillBot.App.Extensions;
 using GrillBot.App.Services.Discord;
+using Discord.Interactions;
 
-namespace GrillBot.App
+namespace GrillBot.App;
+
+public class Startup
 {
-    public class Startup
+    public Startup(IConfiguration configuration)
     {
-        public Startup(IConfiguration configuration)
+        Configuration = configuration;
+    }
+
+    public IConfiguration Configuration { get; }
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        var connectionString = Configuration.GetConnectionString("Default");
+
+        var discordConfig = new DiscordSocketConfig()
         {
-            Configuration = configuration;
-        }
+            GatewayIntents = GatewayIntents.All,
+            LogLevel = LogSeverity.Verbose,
+            MessageCacheSize = 5000,
+            AlwaysDownloadDefaultStickers = true,
+            AlwaysDownloadUsers = true,
+            AlwaysResolveStickers = true,
+            LogGatewayIntentWarnings = false
+        };
 
-        public IConfiguration Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
+        var commandsConfig = new CommandServiceConfig()
         {
-            var connectionString = Configuration.GetConnectionString("Default");
+            CaseSensitiveCommands = true,
+            DefaultRunMode = Discord.Commands.RunMode.Async,
+            LogLevel = LogSeverity.Verbose
+        };
 
-            var discordConfig = new DiscordSocketConfig()
+        var interactionsConfig = new InteractionServiceConfig()
+        {
+            DefaultRunMode = Discord.Interactions.RunMode.Async,
+            EnableAutocompleteHandlers = true,
+            LogLevel = LogSeverity.Verbose,
+            UseCompiledLambda = true
+        };
+
+        services
+            .AddSingleton(new DiscordSocketClient(discordConfig))
+            .AddSingleton(new CommandService(commandsConfig))
+            .AddSingleton(container => new InteractionService(container.GetRequiredService<DiscordSocketClient>(), interactionsConfig))
+            .AddSingleton<DiscordSyncService>()
+            .AddSingleton<LoggingService>()
+            .AddSingleton<MessageCache>()
+            .AddSingleton<FileStorageFactory>()
+            .AddSingleton<RandomizationService>()
+            .AddDatabase(connectionString)
+            .AddMemoryCache()
+            .AddControllers()
+            .AddNewtonsoftJson();
+
+        services
+            .AddSingleton<InviteService>()
+            .AddSingleton<AutoReplyService>()
+            .AddSingleton<ChannelService>()
+            .AddSingleton<CommandHandler>()
+            .AddSingleton<ReactionHandler>()
+            .AddSingleton<AuditLogService>()
+            .AddSingleton<PointsService>()
+            .AddSingleton<EmoteService>()
+            .AddSingleton<EmoteChainService>()
+            .AddSingleton<SearchingService>()
+            .AddSingleton<RemindService>()
+            .AddSingleton<BirthdayService>()
+            .AddUnverify()
+            .AddSingleton<BoosterService>()
+            .AddSingleton<OAuth2Service>()
+            .AddSingleton<DiscordInitializationService>()
+            .AddSingleton<MockingService>()
+            .AddSingleton<InteractionHandler>();
+
+        ReflectionHelper.GetAllReactionEventHandlers().ToList()
+            .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));
+
+        services.AddHttpClient("MathJS", c =>
+        {
+            c.BaseAddress = new Uri(Configuration["Math:Api"]);
+            c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Math:Timeout"]));
+        });
+
+        services.AddHttpClient("KachnaOnline", c =>
+        {
+            c.BaseAddress = new Uri(Configuration["KachnaOnline:Api"]);
+            c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["KachnaOnline:Timeout"]));
+        });
+
+        services.AddHostedService<DiscordService>();
+
+        services.AddOpenApiDocument(doc =>
+        {
+            doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
             {
-                GatewayIntents = DiscordHelper.GetAllIntents(),
-                LogLevel = LogSeverity.Verbose,
-                MessageCacheSize = 5000,
-                RateLimitPrecision = RateLimitPrecision.Millisecond
-            };
-
-            var commandsConfig = new CommandServiceConfig()
-            {
-                CaseSensitiveCommands = true,
-                DefaultRunMode = RunMode.Async,
-                LogLevel = LogSeverity.Verbose
-            };
-
-            services
-                .AddSingleton(new DiscordSocketClient(discordConfig))
-                .AddSingleton(new CommandService(commandsConfig))
-                .AddSingleton<DiscordSyncService>()
-                .AddSingleton<LoggingService>()
-                .AddSingleton<MessageCache>()
-                .AddSingleton<FileStorageFactory>()
-                .AddSingleton<RandomizationService>()
-                .AddDatabase(connectionString)
-                .AddMemoryCache()
-                .AddControllers()
-                .AddNewtonsoftJson();
-
-            services
-                .AddSingleton<InviteService>()
-                .AddSingleton<AutoReplyService>()
-                .AddSingleton<ChannelService>()
-                .AddSingleton<CommandHandler>()
-                .AddSingleton<ReactionHandler>()
-                .AddSingleton<AuditLogService>()
-                .AddSingleton<PointsService>()
-                .AddSingleton<EmoteService>()
-                .AddSingleton<EmoteChainService>()
-                .AddSingleton<SearchingService>()
-                .AddSingleton<RemindService>()
-                .AddSingleton<BirthdayService>()
-                .AddUnverify()
-                .AddSingleton<BoosterService>()
-                .AddSingleton<OAuth2Service>()
-                .AddSingleton<DiscordInitializationService>();
-
-            ReflectionHelper.GetAllReactionEventHandlers().ToList()
-                .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));
-
-            services.AddHttpClient("MathJS", c =>
-            {
-                c.BaseAddress = new Uri(Configuration["Math:Api"]);
-                c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Math:Timeout"]));
+                BearerFormat = "JWT",
+                Description = "JWT Authentication token",
+                Name = "JWT",
+                Scheme = JwtBearerDefaults.AuthenticationScheme,
+                Type = OpenApiSecuritySchemeType.Http,
+                In = OpenApiSecurityApiKeyLocation.Header
             });
 
-            services.AddHttpClient("KachnaOnline", c =>
+            doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
+
+            doc.PostProcess = document =>
             {
-                c.BaseAddress = new Uri(Configuration["KachnaOnline:Api"]);
-                c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["KachnaOnline:Timeout"]));
-            });
-
-            services.AddHostedService<DiscordService>();
-
-            services.AddOpenApiDocument(doc =>
-            {
-                doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
+                document.Info = new OpenApiInfo
                 {
-                    BearerFormat = "JWT",
-                    Description = "JWT Authentication token",
-                    Name = "JWT",
-                    Scheme = JwtBearerDefaults.AuthenticationScheme,
-                    Type = OpenApiSecuritySchemeType.Http,
-                    In = OpenApiSecurityApiKeyLocation.Header
-                });
+                    Title = "GrillBot",
+                    Description = "Discord bot primarly for VUT FIT Discord server",
+                    Version = "v1",
 
-                doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
-
-                doc.PostProcess = document =>
-                {
-                    document.Info = new OpenApiInfo
+                    License = new OpenApiLicense
                     {
-                        Title = "GrillBot",
-                        Description = "Discord bot primarly for VUT FIT Discord server",
-                        Version = "v1",
+                        Name = "All rights reserved",
+                        Url = "https://gist.github.com/Techcable/e7bbc22ecbc0050efbcc"
+                    }
+                };
+            };
+        });
 
-                        License = new OpenApiLicense
-                        {
-                            Name = "All rights reserved",
-                            Url = "https://gist.github.com/Techcable/e7bbc22ecbc0050efbcc"
-                        }
-                    };
+        services.AddQuartz(q =>
+        {
+            q.UseMicrosoftDependencyInjectionJobFactory();
+
+            q.AddTriggeredJob<MessageCacheCheckCron>(Configuration, "Discord:MessageCache:Period");
+            q.AddTriggeredJob<AuditLogClearingJob>(Configuration, "AuditLog:CleaningCron");
+            q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
+            q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron");
+            q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
+            q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
+        });
+
+        services.AddQuartzHostedService();
+
+        services.AddAuthorization()
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(o =>
+            {
+                o.RequireHttpsMetadata = false;
+                o.SaveToken = true;
+                o.IncludeErrorDetails = true;
+
+                var machineInfo = $"{Environment.MachineName}/{Environment.UserName}";
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = $"GrillBot/Issuer/{machineInfo}",
+                    ValidAudience = $"GrillBot/Audience/{machineInfo}",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["OAuth2:ClientId"]}_{Configuration["OAuth2:ClientSecret"]}"))
                 };
             });
 
-            services.AddQuartz(q =>
-            {
-                q.UseMicrosoftDependencyInjectionJobFactory();
+        services.AddHealthChecks()
+            .AddCheck<DiscordHealthCheck>(nameof(DiscordHealthCheck))
+            .AddNpgSql(connectionString);
+    }
 
-                q.AddTriggeredJob<MessageCacheCheckCron>(Configuration, "Discord:MessageCache:Period");
-                q.AddTriggeredJob<AuditLogClearingJob>(Configuration, "AuditLog:CleaningCron");
-                q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
-                q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron");
-                q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
-                q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
-            });
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)
+    {
+        if (db.Database.GetPendingMigrations().Any())
+            db.Database.Migrate();
 
-            services.AddQuartzHostedService();
+        if (env.IsDevelopment())
+            app.UseDeveloperExceptionPage();
 
-            services.AddAuthorization()
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(o =>
-                {
-                    o.RequireHttpsMetadata = false;
-                    o.SaveToken = true;
-                    o.IncludeErrorDetails = true;
+        app.UseMiddleware<ErrorHandlingMiddleware>();
+        app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
+        app.UseRouting();
+        app.UseAuthorization();
+        app.UseAuthentication();
 
-                    var machineInfo = $"{Environment.MachineName}/{Environment.UserName}";
-                    o.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = $"GrillBot/Issuer/{machineInfo}",
-                        ValidAudience = $"GrillBot/Audience/{machineInfo}",
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["OAuth2:ClientId"]}_{Configuration["OAuth2:ClientSecret"]}"))
-                    };
-                });
-
-            services.AddHealthChecks()
-                .AddCheck<DiscordHealthCheck>(nameof(DiscordHealthCheck))
-                .AddNpgSql(connectionString);
-        }
-
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)
+        app.UseOpenApi();
+        app.UseSwaggerUi3(settings =>
         {
-            if (db.Database.GetPendingMigrations().Any())
-                db.Database.Migrate();
-
-            if (env.IsDevelopment())
-                app.UseDeveloperExceptionPage();
-
-            app.UseMiddleware<ErrorHandlingMiddleware>();
-            app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
-            app.UseRouting();
-            app.UseAuthorization();
-            app.UseAuthentication();
-
-            app.UseOpenApi();
-            app.UseSwaggerUi3(settings =>
+            settings.TransformToExternalPath = (route, request) =>
             {
-                settings.TransformToExternalPath = (route, request) =>
-                {
-                    string pathBase = request.Headers["X-Forwarded-PathBase"].FirstOrDefault();
-                    return !string.IsNullOrEmpty(pathBase) ? pathBase + route : route;
-                };
-            });
+                string pathBase = request.Headers["X-Forwarded-PathBase"].FirstOrDefault();
+                return !string.IsNullOrEmpty(pathBase) ? pathBase + route : route;
+            };
+        });
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapHealthChecks("/health");
-            });
-        }
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints.MapHealthChecks("/health");
+        });
     }
 }

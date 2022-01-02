@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure.TypeReaders;
+using GrillBot.App.Infrastructure.TypeReaders.Implementations;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models.API;
@@ -75,7 +76,7 @@ namespace GrillBot.App.Controllers
 
                 if (reference == null && Uri.IsWellFormedUriString(parameters.Reference, UriKind.Absolute))
                 {
-                    var messageUriMatch = MessageTypeReader.DiscordUriRegex.Match(parameters.Reference);
+                    var messageUriMatch = MessageConverter.DiscordUriRegex.Match(parameters.Reference);
 
                     if (messageUriMatch.Success)
                         reference = new MessageReference(Convert.ToUInt64(messageUriMatch.Groups[3].Value), channelId, guildId);

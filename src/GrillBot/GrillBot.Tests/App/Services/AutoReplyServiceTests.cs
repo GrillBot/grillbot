@@ -53,7 +53,7 @@ namespace GrillBot.Tests.App.Services
             using var container = CreateService(out var service);
             var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
             dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem());
+            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Reply = "Reply", Template = "Template" });
             dbContext.SaveChanges();
 
             service.InitAsync().Wait();

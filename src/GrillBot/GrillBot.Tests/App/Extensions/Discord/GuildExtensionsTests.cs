@@ -37,44 +37,6 @@ namespace GrillBot.Tests.App.Extensions.Discord
         }
 
         [TestMethod]
-        public void GetTranslatedFeatures_Empty()
-        {
-            var guild = new Mock<IGuild>();
-            guild.Setup(o => o.Features).Returns(new List<string>());
-
-            var result = guild.Object.GetTranslatedFeatures();
-            Assert.IsFalse(result.Any());
-        }
-
-        [TestMethod]
-        public void GetTranslatedFeatures_Filled()
-        {
-            var features = new[]
-            {
-                "ANIMATED_ICON",
-                "BANNER",
-                "COMMERCE",
-                "COMMUNITY",
-                "DISCOVERABLE",
-                "INVITE_SPLASH",
-                "MEMBER_VERIFICATION_GATE_ENABLED",
-                "NEWS",
-                "PARTNERED",
-                "PREVIEW_ENABLED",
-                "VANITY_URL",
-                "VERIFIED",
-                "VIP_REGIONS",
-                "WELCOME_SCREEN_ENABLED"
-            };
-
-            var guild = new Mock<IGuild>();
-            guild.Setup(o => o.Features).Returns(features);
-
-            var result = guild.Object.GetTranslatedFeatures().ToList();
-            Assert.AreEqual(features.Length, result.Count);
-        }
-
-        [TestMethod]
         public void GetHighestRole_WithoutColor()
         {
             var role = new Mock<IRole>();

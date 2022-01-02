@@ -155,25 +155,35 @@ namespace GrillBot.App.Infrastructure.Preconditions
                     GuildPermission.ChangeNickname => "měnit si přezdívku",
                     GuildPermission.Connect => "připojovat se do kanálů",
                     GuildPermission.CreateInstantInvite => "vytvářet pozvánky",
+                    GuildPermission.CreatePrivateThreads => "vytvářet soukromé vlákna",
+                    GuildPermission.CreatePublicThreads => "vytvářet veřejná vlánka",
                     GuildPermission.DeafenMembers or GuildPermission.MuteMembers => "umlčet uživatele",
                     GuildPermission.EmbedLinks => "posílat odkazy",
                     GuildPermission.KickMembers => "vyhazovat uživatele",
                     GuildPermission.ManageChannels => "spravovat kanály",
-                    GuildPermission.ManageEmojis => "spravovat emotikony",
+                    GuildPermission.ManageEmojisAndStickers => "spravovat emotikony",
+                    GuildPermission.ManageEvents => "spravovat události",
                     GuildPermission.ManageGuild => "spravovat server",
                     GuildPermission.ManageMessages => "spravovat zprávy",
                     GuildPermission.ManageNicknames => "měnit ostatním přezdívky",
                     GuildPermission.ManageRoles => "spravovat role",
                     GuildPermission.ManageWebhooks => "spravovat webhooky",
                     GuildPermission.MentionEveryone => "tagovat všechny",
+                    GuildPermission.ModerateMembers => "moderovat uživatele",
                     GuildPermission.MoveMembers => "přesouvat uživatele v hlasových kanálech",
                     GuildPermission.PrioritySpeaker => "mít prioritní hlas v hovoru",
                     GuildPermission.ReadMessageHistory => "číst historii zpráv",
+                    GuildPermission.RequestToSpeak => "požádat o možnost hovořit",
                     GuildPermission.SendMessages => "posílat zprávy",
                     GuildPermission.SendTTSMessages => "posílat TTS zprávy",
+                    GuildPermission.SendMessagesInThreads => "posílat zprávy ve vlánkech",
                     GuildPermission.Speak => "mluvit v hlasovém kanálu",
+                    GuildPermission.StartEmbeddedActivities => "spouštět hry a různé aktivity",
                     GuildPermission.Stream => "streamovat",
+                    GuildPermission.UseApplicationCommands => "používat příkazy",
                     GuildPermission.UseExternalEmojis => "používat externí emotikony",
+                    GuildPermission.UseExternalStickers => "používat externí nálepky",
+                    GuildPermission.UseVAD => "použít detekci hlasu",
                     GuildPermission.ViewAuditLog => "vidět logy",
                     GuildPermission.ViewChannel => "číst zprávy v kanálu",
                     GuildPermission.ViewGuildInsights => "vidět statistiky serveru",
@@ -226,7 +236,15 @@ namespace GrillBot.App.Infrastructure.Preconditions
                     ChannelPermission.Stream => "streamovat",
                     ChannelPermission.UseExternalEmojis => "používat externí emotikony",
                     ChannelPermission.ViewChannel => "číst zprávy v kanálu",
-                    _ => "nějaké jiné právo"
+                    ChannelPermission.CreatePrivateThreads => "vytvářet soukromé vlákna",
+                    ChannelPermission.CreatePublicThreads => "vytvářet veřejná vlákna",
+                    ChannelPermission.ManageEmojis => "spravovat emotikony",
+                    ChannelPermission.ManageThreads => "spravovat vlánka",
+                    ChannelPermission.SendMessagesInThreads => "posílat zprávy ve vlánkech",
+                    ChannelPermission.StartEmbeddedActivities => "spouštět hry a různé aktivity",
+                    ChannelPermission.UseApplicationCommands => "používat příkazy",
+                    ChannelPermission.UseExternalStickers => "používat externí nálepky",
+                    _ => $"nějaké jiné právo ({o})"
                 }).Distinct().ToList();
 
                 var perms = string.Join(", ", formatedPerms.Skip(formatedPerms.Count - 1));
@@ -267,11 +285,8 @@ namespace GrillBot.App.Infrastructure.Preconditions
             // It user explicit permission not found and user is in guild.
             if (!permissions.Any(o => !o.IsRole && o.TargetId == context.User.Id.ToString()) && context.User is SocketGuildUser user)
             {
-                foreach (var role in user.Roles)
-                {
-                    if (permissions.Any(o => o.IsRole && o.TargetId == role.Id.ToString()))
-                        return PreconditionResult.FromSuccess();
-                }
+                if (user.Roles.Any(role => permissions.Any(o => o.IsRole && o.TargetId == role.Id.ToString())))
+                    return PreconditionResult.FromSuccess();
             }
             else
             {

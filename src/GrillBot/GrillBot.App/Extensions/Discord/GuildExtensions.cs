@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using GrillBot.Data.Extensions.Discord;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,57 +18,82 @@ namespace GrillBot.App.Extensions.Discord
 
         static public IEnumerable<string> GetTranslatedFeatures(this IGuild guild)
         {
-            if (guild.Features.Count == 0)
+            if (guild.Features.Value == GuildFeature.None)
                 yield break;
 
-            foreach (var feature in guild.Features)
+            var features = Enum.GetValues<GuildFeature>()
+                .Where(o => o > 0 && guild.Features.HasFeature(o));
+
+            foreach (var feature in features)
             {
-                switch (feature.ToUpper())
+                switch (feature)
                 {
-                    case "ANIMATED_ICON":
+                    case GuildFeature.AnimatedIcon:
                         yield return "Animovaná ikona";
                         break;
-                    case "BANNER":
+                    case GuildFeature.Banner:
                         yield return "Banner";
                         break;
-                    case "COMMERCE":
+                    case GuildFeature.Commerce:
                         yield return "eKomerce";
                         break;
-                    case "COMMUNITY":
+                    case GuildFeature.Community:
                         yield return "Komunitní režim";
                         break;
-                    case "DISCOVERABLE":
+                    case GuildFeature.Discoverable:
                         yield return "Veřejně viditelný";
                         break;
-                    case "INVITE_SPLASH":
+                    case GuildFeature.InviteSplash:
                         yield return "Pozadí u pozvánky";
                         break;
-                    case "MEMBER_VERIFICATION_GATE_ENABLED":
+                    case GuildFeature.MemberVerificationGateEnabled:
                         yield return "Verifikace při připojení";
                         break;
-                    case "NEWS":
+                    case GuildFeature.News:
                         yield return "Novinky";
                         break;
-                    case "PARTNERED":
+                    case GuildFeature.Partnered:
                         yield return "Partnerský program";
                         break;
-                    case "PREVIEW_ENABLED":
+                    case GuildFeature.PreviewEnabled:
                         yield return "Náhled serveru před připojením.";
                         break;
-                    case "VANITY_URL":
+                    case GuildFeature.VanityUrl:
                         yield return "Vanity URL";
                         break;
-                    case "VERIFIED":
+                    case GuildFeature.Verified:
                         yield return "Ověřený server";
                         break;
-                    case "VIP_REGIONS":
+                    case GuildFeature.VIPRegions:
                         yield return "VIP hlasová oblast";
                         break;
-                    case "WELCOME_SCREEN_ENABLED":
+                    case GuildFeature.WelcomeScreenEnabled:
                         yield return "Uvítací obrazovka";
+                        break;
+                    case GuildFeature.MonetizationEnabled:
+                        yield return "Monetizace";
+                        break;
+                    case GuildFeature.MoreStickers:
+                        yield return "Nálepky";
+                        break;
+                    case GuildFeature.PrivateThreads:
+                        yield return "Privátní vlákna";
+                        break;
+                    case GuildFeature.RoleIcons:
+                        yield return "Ikony rolí";
+                        break;
+                    case GuildFeature.SevenDayThreadArchive:
+                        yield return "Archivace vláken po týdnu";
+                        break;
+                    case GuildFeature.ThreeDayThreadArchive:
+                        yield return "Archivace vláken po 3 dnech";
+                        break;
+                    case GuildFeature.TicketedEventsEnabled:
+                        yield return "Události";
                         break;
                 }
             }
+
         }
 
         static public int CalculateFileUploadLimit(this IGuild guild)

@@ -90,9 +90,9 @@ namespace GrillBot.App.Services
             return true;
         }
 
-        private async Task OnReactionAddedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
+        private async Task OnReactionAddedAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
-            if (channel is not SocketTextChannel textChannel) return; // Only guilds
+            if (!channel.HasValue || channel.Value is not SocketTextChannel textChannel) return; // Only guilds
             if (reaction.Emote is not Emoji && !textChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote))) return; // Only local emotes.
 
             var user = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;

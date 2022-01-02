@@ -72,10 +72,10 @@ namespace GrillBot.App.Services
             await dbContext.SaveChangesAsync();
         }
 
-        private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel messageChannel)
+        private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> messageChannel)
         {
             var msg = message.HasValue ? message.Value : MessageCache.GetMessage(message.Id);
-            if (msg == null || messageChannel is not SocketTextChannel channel) return;
+            if (!messageChannel.HasValue || msg == null || messageChannel.Value is not SocketTextChannel channel) return;
 
             var guildId = channel.Guild.Id.ToString();
             var userId = msg.Author.Id.ToString();

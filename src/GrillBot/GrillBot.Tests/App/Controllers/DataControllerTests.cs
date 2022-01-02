@@ -1,20 +1,14 @@
 ﻿using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using GrillBot.App.Controllers;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers
 {
@@ -25,10 +19,11 @@ namespace GrillBot.Tests.App.Controllers
         {
             var client = new DiscordSocketClient();
             var commandService = new CommandService();
+            var interactionService = new InteractionService(client);
             var container = DIHelpers.CreateContainer();
             var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
 
-            controller = new DataController(client, dbContext, commandService)
+            controller = new DataController(client, dbContext, commandService, null, interactionService)
             {
                 ControllerContext = new ControllerContext()
                 {

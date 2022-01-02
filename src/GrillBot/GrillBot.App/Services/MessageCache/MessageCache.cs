@@ -25,7 +25,9 @@ namespace GrillBot.App.Services.MessageCache
             DiscordClient.MessageDeleted += (message, channel) =>
             {
                 TryRemove(message.Id, out var _);
-                return AppendAroundAsync(channel, message.Id);
+                if (!channel.HasValue) return Task.CompletedTask;
+
+                return AppendAroundAsync(channel.Value, message.Id);
             };
 
             DiscordClient.MessageReceived += OnMessageReceived;
@@ -61,7 +63,7 @@ namespace GrillBot.App.Services.MessageCache
             return msg.Message;
         }
 
-        public async Task<IMessage> GetMessageAsync(ISocketMessageChannel channel, ulong id)
+        public async Task<IMessage> GetMessageAsync(IMessageChannel channel, ulong id)
         {
             var message = GetMessage(id);
             if (message != null) return message;

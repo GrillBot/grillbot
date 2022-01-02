@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.API.System;
@@ -8,10 +9,12 @@ using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using NSwag.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -84,6 +87,25 @@ namespace GrillBot.App.Controllers
         }
 
         /// <summary>
+        /// Gets information about audit logs statistics.
+        /// </summary>
+        [HttpGet("db/audit-log")]
+        [OpenApiOperation(nameof(SystemController) + "_" + nameof(GetAuditLogsStatisticsAsync))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsAsync()
+        {
+            var statistics = DbContext.AuditLogs.AsNoTracking()
+                .GroupBy(o => o.Type)
+                .Select(o => new { Type = o.Key, Count = o.Count() });
+
+            var dbData = await statistics.ToDictionaryAsync(o => o.Type, o => o.Count);
+            var data = Enum.GetValues<AuditLogItemType>()
+                .Where(o => o > AuditLogItemType.None)
+                .ToDictionary(o => o, o => dbData.TryGetValue(o, out int val) ? val : 0);
+            return Ok(data);
+        }
+
+        /// <summary>
         /// Gets statistics about commands.
         /// </summary>
         [HttpGet("commands")]
@@ -99,7 +121,7 @@ namespace GrillBot.App.Controllers
             var deserializedData = dbData.ConvertAll(o => new
             {
                 o.CreatedAt,
-                Data = JsonConvert.DeserializeObject<CommandExecution>(o.Data)
+                Data = JsonConvert.DeserializeObject<CommandExecution>(o.Data, AuditLogService.JsonSerializerSettings)
             });
 
             var dataQuery = deserializedData.Where(o => o.Data.Command != null);
@@ -119,6 +141,43 @@ namespace GrillBot.App.Controllers
                 .ToList();
 
             return Ok(groupedData);
+        }
+
+        /// <summary>
+        /// Gets statistics about interactions.
+        /// </summary>
+        [HttpGet("interactions")]
+        [OpenApiOperation(nameof(SystemController) + "_" + nameof(GetInteractionsStatusAsync))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<CommandStatisticItem>>> GetInteractionsStatusAsync(string searchQuery = null)
+        {
+            var query = DbContext.AuditLogs.AsNoTracking()
+                .Where(o => o.Type == AuditLogItemType.InteractionCommand)
+                .Select(o => new { o.CreatedAt, o.Data });
+
+            var dbData = await query.ToListAsync();
+            var deserializedData = dbData.ConvertAll(o => new
+            {
+                o.CreatedAt,
+                Data = JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogService.JsonSerializerSettings)
+            });
+
+            var dataQuery = deserializedData.AsEnumerable();
+            if (!string.IsNullOrEmpty(searchQuery))
+                dataQuery = dataQuery.Where(o => o.Data.FullName.Contains(searchQuery));
+
+            var groupedData = dataQuery.GroupBy(o => o.Data.FullName)
+                .Select(o => new CommandStatisticItem()
+                {
+                    Command = o.Key,
+                    FailedCount = o.Count(x => !x.Data.IsSuccess),
+                    LastCall = o.Max(x => x.CreatedAt),
+                    SuccessCount = o.Count(x => x.Data.IsSuccess)
+                }).OrderBy(o => o.Command)
+                .ToList();
+
+            return Ok(groupedData);
+
         }
 
         /// <summary>

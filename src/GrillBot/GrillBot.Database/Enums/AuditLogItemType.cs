@@ -118,6 +118,12 @@ namespace GrillBot.Database.Enums
         /// Message removed.
         /// </summary>
         [Display(Name = "Zpráva odebrána")]
-        MessageDeleted = 19
+        MessageDeleted = 19,
+
+        /// <summary>
+        /// Interaction command
+        /// </summary>
+        [Display(Name = "Integrovaný příkaz")]
+        InteractionCommand = 20
     }
 }

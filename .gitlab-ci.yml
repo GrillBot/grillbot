@@ -4,9 +4,8 @@ variables:
   SOURCE_CODE_PATH: "src/GrillBot"
 
 stages:
-  - docs_check
-  - build
-  - test
+  - Build
+  - Unit tests
 
 cache:
   key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
@@ -18,15 +17,15 @@ cache:
   policy: pull-push
 
 build:
-  image: mcr.microsoft.com/dotnet/sdk:5.0
-  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:6.0
+  stage: Build
   script:
     - "dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY"
-    - "dotnet build $SOURCE_CODE_PATH --no-restore"
+    - "dotnet build $SOURCE_CODE_PATH --no-restore -c Release"
 
 tests:
-  image: mcr.microsoft.com/dotnet/sdk:5.0
-  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:6.0
+  stage: Unit tests
   script:
     - "dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY"
     - 'dotnet test $SOURCE_CODE_PATH --no-restore --test-adapter-path:. --logger:"junit;LogFilePath=..\artifacts\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"'
@@ -37,9 +36,3 @@ tests:
     reports:
       junit:
         - ./**/*test-result.xml
-
-documentation:
-  stage: docs_check
-  image: registry.gitlab.com/pipeline-components/markdownlint:latest
-  script:
-    - mdl --style all --warnings .

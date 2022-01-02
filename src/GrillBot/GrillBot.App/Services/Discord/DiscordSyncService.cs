@@ -35,10 +35,11 @@ namespace GrillBot.App.Services.Discord
             await context.SaveChangesAsync();
         }
 
-        private async Task OnGuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
+        private async Task OnGuildMemberUpdated(Cacheable<SocketGuildUser, ulong> before, SocketGuildUser after)
         {
+            if (!before.HasValue) return;
             if (!InitializationService.Get()) return;
-            if (before.Nickname == after.Nickname) return;
+            if (before.Value.Nickname == after.Nickname) return;
 
             using var context = DbFactory.Create();
             await SyncGuildUserAsync(context, after);

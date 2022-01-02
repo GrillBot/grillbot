@@ -45,7 +45,7 @@ namespace GrillBot.Tests.App.Controllers
             using var container = CreateController(out var controller);
             var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
             dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem());
+            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Reply = "Reply", Template = "Template" });
             dbContext.SaveChanges();
 
             var list = controller.GetAutoReplyListAsync().Result;
@@ -74,7 +74,7 @@ namespace GrillBot.Tests.App.Controllers
             using var container = CreateController(out var controller);
             var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
             dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1 });
+            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1, Template = "Template", Reply = "Reply" });
             dbContext.SaveChanges();
 
             var result = controller.GetItemAsync(1).Result;
@@ -121,7 +121,7 @@ namespace GrillBot.Tests.App.Controllers
             using var container = CreateController(out var controller);
             var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
             dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1 });
+            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1, Template = "Template", Reply = "Reply" });
             dbContext.SaveChanges();
 
             var parameters = new AutoReplyItemParams()
@@ -156,7 +156,7 @@ namespace GrillBot.Tests.App.Controllers
             using var container = CreateController(out var controller);
             var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
             dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1 });
+            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1, Template = "Template", Reply = "Reply" });
             dbContext.SaveChanges();
 
             var result = controller.RemoveItemAsync(1).Result;

@@ -102,9 +102,9 @@ namespace GrillBot.App.Services
             await context.SaveChangesAsync();
         }
 
-        private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel messageChannel)
+        private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> messageChannel)
         {
-            if (messageChannel is not SocketTextChannel _) return;
+            if (!messageChannel.HasValue || messageChannel.Value is not SocketTextChannel _) return;
             if (SupportedEmotes?.IsEmpty != false) return;
 
             var msg = message.HasValue ? message.Value : MessageCache.GetMessage(message.Id);
@@ -131,14 +131,14 @@ namespace GrillBot.App.Services
             await context.SaveChangesAsync();
         }
 
-        private async Task OnReactionAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction, ReactionEvents @event)
+        private async Task OnReactionAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction, ReactionEvents @event)
         {
-            if (channel is not SocketTextChannel textChannel) return;
+            if (!channel.HasValue || channel.Value is not SocketTextChannel textChannel) return;
             if (SupportedEmotes?.IsEmpty != false) return;
             if (reaction.Emote is not Emote emote) return;
             if (!SupportedEmotes.Any(o => o.IsEqual(emote))) return;
 
-            var msg = message.HasValue ? message.Value : await MessageCache.GetMessageAsync(channel, message.Id);
+            var msg = message.HasValue ? message.Value : await MessageCache.GetMessageAsync(channel.Value, message.Id);
             var user = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;
 
             if (msg == null) return;

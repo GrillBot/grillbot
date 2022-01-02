@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using NSwag.Annotations;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,12 +29,17 @@ namespace GrillBot.App.Controllers
         private DiscordSocketClient DiscordClient { get; }
         private GrillBotContext DbContext { get; }
         private CommandService CommandService { get; }
+        private IConfiguration Configuration { get; }
+        private InteractionService InteractionService { get; }
 
-        public DataController(DiscordSocketClient discordClient, GrillBotContext dbContext, CommandService commandService)
+        public DataController(DiscordSocketClient discordClient, GrillBotContext dbContext, CommandService commandService,
+            IConfiguration configuration, InteractionService interactionService)
         {
             DiscordClient = discordClient;
             DbContext = dbContext;
             CommandService = commandService;
+            Configuration = configuration;
+            InteractionService = interactionService;
         }
 
         /// <summary>
@@ -147,12 +154,17 @@ namespace GrillBot.App.Controllers
         public ActionResult<List<string>> GetCommandsList()
         {
             var commands = CommandService.Commands
-                .Select(o => o.Aliases[0]?.Trim())
-                .Distinct()
-                .OrderBy(o => o)
-                .ToList();
+                .Select(o => Configuration.GetValue<string>("Discord:Commands:Prefix") + (o.Aliases[0]?.Trim()))
+                .Distinct();
 
-            return Ok(commands);
+            var slashCommands = InteractionService.SlashCommands
+                .Select(o => o.ToString().Trim())
+                .Where(o => !string.IsNullOrEmpty(o))
+                .Select(o => $"/{o}")
+                .Distinct();
+
+            var result = commands.Concat(slashCommands).OrderBy(o => o[1..]).ToList();
+            return Ok(result);
         }
 
         /// <summary>

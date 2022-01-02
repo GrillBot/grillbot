@@ -394,13 +394,15 @@ namespace GrillBot.App.Services.AuditLog
                 .Select(o => o.DiscordAuditLogItemId);
             var auditLogIds = (await auditLogIdsQuery.ToListAsync()).ConvertAll(o => Convert.ToUInt64(o));
 
-            var logs = (await guild.GetAuditLogsAsync(100).FlattenAsync())
-                .Where(o => (o.Action == ActionType.OverwriteCreated || o.Action == ActionType.OverwriteDeleted || o.Action == ActionType.OverwriteUpdated) && !auditLogIds.Contains(o.Id))
-                .ToList();
+            var auditLogs = new List<RestAuditLogEntry>();
+            auditLogs.AddRange(await guild.GetAuditLogsAsync(100, actionType: ActionType.OverwriteCreated).FlattenAsync());
+            auditLogs.AddRange(await guild.GetAuditLogsAsync(100, actionType: ActionType.OverwriteDeleted).FlattenAsync());
+            auditLogs.AddRange(await guild.GetAuditLogsAsync(100, actionType: ActionType.OverwriteUpdated).FlattenAsync());
+            auditLogs = auditLogs.FindAll(o => !auditLogIds.Contains(o.Id));
 
-            var created = logs.FindAll(o => o.Action == ActionType.OverwriteCreated && ((OverwriteCreateAuditLogData)o.Data).ChannelId == channel.Id);
-            var removed = logs.FindAll(o => o.Action == ActionType.OverwriteDeleted && ((OverwriteDeleteAuditLogData)o.Data).ChannelId == channel.Id);
-            var updated = logs.FindAll(o => o.Action == ActionType.OverwriteUpdated && ((OverwriteUpdateAuditLogData)o.Data).ChannelId == channel.Id);
+            var created = auditLogs.FindAll(o => o.Action == ActionType.OverwriteCreated && ((OverwriteCreateAuditLogData)o.Data).ChannelId == channel.Id);
+            var removed = auditLogs.FindAll(o => o.Action == ActionType.OverwriteDeleted && ((OverwriteDeleteAuditLogData)o.Data).ChannelId == channel.Id);
+            var updated = auditLogs.FindAll(o => o.Action == ActionType.OverwriteUpdated && ((OverwriteUpdateAuditLogData)o.Data).ChannelId == channel.Id);
 
             foreach (var log in created)
             {

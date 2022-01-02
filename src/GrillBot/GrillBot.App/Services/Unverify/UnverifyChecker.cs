@@ -6,8 +6,10 @@ using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Humanizer;
 using Humanizer.Localisation;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -23,10 +25,12 @@ namespace GrillBot.App.Services.Unverify
         private TimeSpan UnverifyMinimalTime { get; }
         private TimeSpan SelfunverifyMinimalTime { get; }
         private int MaxKeepAccessCount { get; }
+        private IWebHostEnvironment Environment { get; }
 
-        public UnverifyChecker(GrillBotContextFactory dbFactory, IConfiguration configuration)
+        public UnverifyChecker(GrillBotContextFactory dbFactory, IConfiguration configuration, IWebHostEnvironment environment)
         {
             DbFactory = dbFactory;
+            Environment = environment;
 
             var unverifyConfig = configuration.GetSection("Unverify");
             UnverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("MinimalTimes:Unverify"));
@@ -42,7 +46,7 @@ namespace GrillBot.App.Services.Unverify
             if (guild.OwnerId == user.Id)
                 throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetDisplayName()}** je vlastník tohoto serveru.");
 
-            if (user.GuildPermissions.Administrator)
+            if (!selfunverify && !Environment.IsDevelopment() && user.GuildPermissions.Administrator)
                 throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetDisplayName()}** má administrátorská oprávnění.");
 
             if (!selfunverify)

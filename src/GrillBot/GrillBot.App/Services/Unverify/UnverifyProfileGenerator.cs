@@ -105,7 +105,8 @@ namespace GrillBot.App.Services.Unverify
 
         private static void ProcessChannels(UnverifyUserProfile profile, SocketGuild guild, SocketGuildUser user, List<string> keep, Dictionary<string, List<string>> keepabless)
         {
-            var channels = guild.Channels.Where(o => o is SocketTextChannel || o is SocketVoiceChannel);
+            var channels = guild.Channels
+                .Where(o => (o is SocketTextChannel || o is SocketVoiceChannel) && o is not SocketThreadChannel); // Select channels but ignore channels
 
             var channelsToRemove = channels
                 .Select(o => new ChannelOverride(o, o.GetPermissionOverwrite(user) ?? OverwritePermissions.InheritAll))

@@ -17,7 +17,6 @@ public class RemindModule : Infrastructure.InteractionsModuleBase
     }
 
     [SlashCommand("remind", "Vytvoření připomenutí k určitému datu.")]
-    [RequireBotPermission(ChannelPermission.AddReactions)]
     public async Task CreateAsync(
         [Summary("kdo", "Označení uživatele, který si přeje dostat upozornění")]
         IUser who,

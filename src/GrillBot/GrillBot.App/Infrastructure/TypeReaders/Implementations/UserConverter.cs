@@ -15,6 +15,10 @@ public class UserConverter : ConverterBase<IUser>
     {
     }
 
+    public UserConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
+    {
+    }
+
     public override async Task<IUser> ConvertAsync(string value)
     {
         // Match on caller

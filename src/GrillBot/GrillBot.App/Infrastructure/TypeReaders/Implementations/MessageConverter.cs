@@ -17,6 +17,10 @@ public class MessageConverter : ConverterBase<IMessage>
     {
     }
 
+    public MessageConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
+    {
+    }
+
     public override async Task<IMessage> ConvertAsync(string value)
     {
         if (ulong.TryParse(value, out var messageId))

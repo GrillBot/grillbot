@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Threading.Tasks;
 
@@ -7,6 +8,10 @@ namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 public class GuidConverter : ConverterBase<Guid?>
 {
     public GuidConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
+    {
+    }
+
+    public GuidConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
     {
     }
 

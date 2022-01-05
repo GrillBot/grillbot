@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +14,10 @@ public class DateTimeConverter : ConverterBase<DateTime>
     private const RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.CultureInvariant | RegexOptions.IgnorePatternWhitespace;
 
     public DateTimeConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
+    {
+    }
+
+    public DateTimeConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
     {
     }
 

@@ -44,5 +44,7 @@ public abstract class ConverterBase<TResult> : ConverterBase
     {
     }
 
+    protected ConverterBase(IServiceProvider provider, IInteractionContext context) : base(provider, context) { }
+
     public virtual Task<TResult> ConvertAsync(string value) { return Task.FromResult(default(TResult)); }
 }

@@ -12,6 +12,10 @@ public class EmotesConverter : ConverterBase<IEmote>
     {
     }
 
+    public EmotesConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
+    {
+    }
+
     public override async Task<IEmote> ConvertAsync(string value)
     {
         if (NeoSmart.Unicode.Emoji.IsEmoji(value)) return new Emoji(value);

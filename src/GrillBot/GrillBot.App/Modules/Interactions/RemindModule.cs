@@ -18,7 +18,7 @@ public class RemindModule : Infrastructure.InteractionsModuleBase
 
     [SlashCommand("remind", "Vytvoření připomenutí k určitému datu.")]
     public async Task CreateAsync(
-        [Summary("kdo", "Označení uživatele, který si přeje dostat upozornění")]
+        [Summary("komu", "Označení uživatele, který si přeje dostat upozornění")]
         IUser who,
         [Summary("kdy", "Datum a čas události. Musí být v budoucnosti.")]
         DateTime at,

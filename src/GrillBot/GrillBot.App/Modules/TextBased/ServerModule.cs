@@ -6,6 +6,7 @@ using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Services;
+using GrillBot.App.Services.Unverify;
 using GrillBot.Data;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Exceptions;
@@ -446,7 +447,7 @@ public class ServerModule : Infrastructure.ModuleBase
             }
 
             [Command("remove user")]
-            [Name("Smaže oprávnění uživatele v kanálech.")]
+            [Summary("Smaže oprávnění uživatele v kanálech.")]
             public async Task RemoveUserFromChannelsAsync([Name("id/tag/jmeno_uzivatele")] IGuildUser user, [Name("kanaly")] params IGuildChannel[] channels)
             {
                 if (channels.Length == 0) return;
@@ -479,11 +480,13 @@ public class ServerModule : Infrastructure.ModuleBase
             {
                 private IMemoryCache Cache { get; }
                 private IConfiguration Configuration { get; }
+                private UnverifyService UnverifyService { get; }
 
-                public GuildUselessPermissionsSubModule(IMemoryCache cache, IConfiguration configuration)
+                public GuildUselessPermissionsSubModule(IMemoryCache cache, IConfiguration configuration, UnverifyService unverifyService)
                 {
                     Cache = cache;
                     Configuration = configuration;
+                    UnverifyService = unverifyService;
                 }
 
                 [Command("check")]
@@ -577,10 +580,15 @@ public class ServerModule : Infrastructure.ModuleBase
                 {
                     await Context.Guild.DownloadUsersAsync();
                     var permissions = new List<UselessPermission>();
+                    var unverifies = await UnverifyService.GetUserIdsWithUnverify(Context.Guild);
+                    var channelsQuery = Context.Guild.Channels
+                        .Where(o => o is not SocketThreadChannel && (o is SocketTextChannel || o is SocketVoiceChannel))
+                        .ToList();
 
-                    foreach (var user in Context.Guild.Users)
+                    // Ignore members with unverify.
+                    foreach (var user in Context.Guild.Users.Where(user => !unverifies.Contains(user.Id)))
                     {
-                        foreach (var channel in Context.Guild.Channels.Where(o => o.PermissionOverwrites is ImmutableArray<Overwrite> overwriteArray && !overwriteArray.IsDefault))
+                        foreach (var channel in channelsQuery)
                         {
                             var overwrite = channel.GetPermissionOverwrite(user);
                             if (overwrite == null) continue; // Overwrite not exists. Skip.
@@ -604,8 +612,12 @@ public class ServerModule : Infrastructure.ModuleBase
                                 var roleOverwrite = channel.GetPermissionOverwrite(role);
                                 if (roleOverwrite == null) continue;
 
-                                if (roleOverwrite.Value.AllowValue == overwrite.Value.AllowValue && roleOverwrite.Value.DenyValue == overwrite.Value.DenyValue)
-                                    permissions.Add(new UselessPermission(channel, user, UselessPermissionType.AvailableFromRole));
+                                // User have something extra.
+                                if (roleOverwrite.Value.AllowValue != overwrite.Value.AllowValue || roleOverwrite.Value.DenyValue != overwrite.Value.DenyValue)
+                                    break;
+
+                                permissions.Add(new UselessPermission(channel, user, UselessPermissionType.AvailableFromRole));
+                                break;
                             }
                         }
                     }

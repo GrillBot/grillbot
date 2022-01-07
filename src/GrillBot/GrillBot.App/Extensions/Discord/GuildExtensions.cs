@@ -108,18 +108,16 @@ namespace GrillBot.App.Extensions.Discord
 
         static public IEnumerable<SocketTextChannel> GetAvailableTextChannelsFor(this SocketGuild guild, SocketGuildUser user)
         {
-            return guild.TextChannels.Where(o => o.HaveAccess(user));
+            return guild.TextChannels
+                .Where(o => o is not SocketThreadChannel && o.HaveAccess(user));
         }
 
         static public IEnumerable<SocketGuildChannel> GetAvailableChannelsFor(this SocketGuild guild, SocketGuildUser user)
         {
-            var textChannels = GetAvailableTextChannelsFor(guild, user);
-            var voiceChannels = guild.VoiceChannels.Where(o => o.HaveAccess(user));
-
-            var channels = textChannels.Select(o => o as SocketGuildChannel).ToList();
-            channels.AddRange(voiceChannels);
-
-            return channels.Where(o => o != null);
+            return GetAvailableTextChannelsFor(guild, user)
+                .Select(o => o as SocketGuildChannel)
+                .Where(o => o != null)
+                .Concat(guild.VoiceChannels.Where(o => o.HaveAccess(user)));
         }
     }
 }

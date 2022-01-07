@@ -118,7 +118,8 @@ namespace GrillBot.App.Services.Logging
                 },
                 // 11 is magic constant represents error "Resource temporarily unavailable".
                 () => ex is HttpRequestException && ex.InnerException is SocketException s && s.ErrorCode == 11,
-                () => ex.InnerException != null && (ex.InnerException is WebSocketException || ex.InnerException is WebSocketClosedException)
+                () => ex.InnerException != null && (ex.InnerException is WebSocketException || ex.InnerException is WebSocketClosedException),
+                () => ex is TaskCanceledException && ex.InnerException is null
             };
 
             return !invalidCases.Any(o => o());

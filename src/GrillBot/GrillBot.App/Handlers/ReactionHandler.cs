@@ -48,10 +48,29 @@ namespace GrillBot.App.Handlers
             if (user.Id == DiscordClient.CurrentUser.Id)
                 return;
 
-            if (msg.Author.Id != reaction.UserId && msg.Author.Id != DiscordClient.CurrentUser.Id && !reaction.Emote.IsEqual(Emojis.PersonRisingHand) && !Emojis.NumberToEmojiMap.Any(o => o.Value.IsEqual(reaction.Emote)))
+            if (msg.Author.Id != DiscordClient.CurrentUser.Id)
             {
-                // Reaction added another user than message author and emote is remind emote.
-                return;
+                if (messageChannel is IDMChannel)
+                {
+                    // Only numbers are allowed in dms
+                    if (!Emojis.NumberToEmojiMap.Any(o => o.Value.IsEqual(reaction.Emote)))
+                        return;
+                }
+                else
+                {
+                    // Only remind copy is allowed.
+                    if (!reaction.Emote.IsEqual(Emojis.PersonRisingHand))
+                        return;
+                }
+            }
+            else
+            {
+                if (Emojis.PaginationEmojis.Any(o => o.IsEqual(reaction.Emote)))
+                {
+                    // Restrict pagination only on author.
+                    if (msg.ReferencedMessage == null) return;
+                    if (msg.ReferencedMessage.Author.Id != reaction.UserId) return;
+                }
             }
 
             foreach (var handler in EventHandlers)

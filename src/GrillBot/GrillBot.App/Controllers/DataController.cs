@@ -90,7 +90,7 @@ namespace GrillBot.App.Controllers
 
             var availableChannels = User.HaveUserPermission() ?
                 guilds.SelectMany(o => o.GetAvailableChannelsFor(o.GetUser(currentUserId))).ToList() :
-                guilds.SelectMany(o => o.Channels);
+                guilds.SelectMany(o => o.Channels.Where(x => x is not SocketThreadChannel));
 
             var channels = availableChannels.Select(o => new Channel(o))
                 .Where(o => o.Type != null && o.Type != ChannelType.Category)

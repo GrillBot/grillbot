@@ -373,7 +373,7 @@ public class ServerModule : Infrastructure.ModuleBase
                 var guild = Context.Guild;
 
                 var channels = guild.Channels
-                    .Where(o => o.PermissionOverwrites is ImmutableArray<Overwrite> overwriteArray && !overwriteArray.IsDefault)
+                    .Where(o => o is not SocketThreadChannel && o.PermissionOverwrites is ImmutableArray<Overwrite> overwriteArray && !overwriteArray.IsDefault)
                     .OrderBy(o => o.Position).Select(o => new
                     {
                         o.Position,

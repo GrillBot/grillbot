@@ -90,7 +90,7 @@ namespace GrillBot.App.Controllers
 
             var availableChannels = User.HaveUserPermission() ?
                 guilds.SelectMany(o => o.GetAvailableChannelsFor(o.GetUser(currentUserId))).ToList() :
-                guilds.SelectMany(o => o.Channels.Where(x => x is not SocketThreadChannel));
+                guilds.SelectMany(o => o.Channels);
 
             var channels = availableChannels.Select(o => new Channel(o))
                 .Where(o => o.Type != null && o.Type != ChannelType.Category)
@@ -114,7 +114,10 @@ namespace GrillBot.App.Controllers
 
             channels.AddRange(dbChannels);
 
-            var result = channels.OrderBy(o => o.Name).ToDictionary(o => o.Id, o => o.Name);
+            var result = channels
+                .OrderBy(o => o.Name)
+                .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type == ChannelType.PublicThread || o.Type == ChannelType.PrivateThread ? "(Thread)" : "")}".Trim());
+            
             return Ok(result);
         }
 

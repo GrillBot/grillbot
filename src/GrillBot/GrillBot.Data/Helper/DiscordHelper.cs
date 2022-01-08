@@ -11,6 +11,8 @@ namespace GrillBot.Data.Helpers
 
             return channel switch
             {
+                SocketThreadChannel thread => thread.IsPrivateThread ? ChannelType.PrivateThread : ChannelType.PublicThread,
+                SocketStageChannel => ChannelType.Stage,
                 SocketTextChannel => ChannelType.Text,
                 SocketVoiceChannel => ChannelType.Voice,
                 SocketCategoryChannel => ChannelType.Category,

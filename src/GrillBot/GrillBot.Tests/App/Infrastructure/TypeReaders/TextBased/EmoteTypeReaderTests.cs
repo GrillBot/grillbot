@@ -19,8 +19,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         {
             var emoji = Emojis.Ok.ToString();
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new EmotesTypeReader();
-            var result = reader.ReadAsync(null, emoji, null).Result;
+            var result = reader.ReadAsync(context, emoji, null).Result;
 
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual(1, result.Values.Count);
@@ -32,8 +33,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         {
             const string rtzW = "<:rtzW:567039874452946961>";
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new EmotesTypeReader();
-            var result = reader.ReadAsync(null, rtzW, null).Result;
+            var result = reader.ReadAsync(context, rtzW, null).Result;
 
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual(1, result.Values.Count);

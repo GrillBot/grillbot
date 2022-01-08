@@ -1,5 +1,7 @@
-﻿using GrillBot.App.Infrastructure.TypeReaders.TextBased;
+﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.TypeReaders.TextBased;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -15,8 +17,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
             var datetime = new DateTime(2021, 12, 14, 10, 0, 0);
             var strDate = datetime.ToString("o", CultureInfo.InvariantCulture);
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new DateTimeTypeReader();
-            var result = reader.ReadAsync(null, strDate, null).Result;
+            var result = reader.ReadAsync(context, strDate, null).Result;
 
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual(1, result.Values.Count);
@@ -28,10 +31,11 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         {
             var cases = new[] { "today", "tommorow", "yesterday", "pozajtra", "now" };
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new DateTimeTypeReader();
             foreach (var @case in cases)
             {
-                var result = reader.ReadAsync(null, @case, null).Result;
+                var result = reader.ReadAsync(context, @case, null).Result;
 
                 Assert.IsTrue(result.IsSuccess);
                 Assert.AreEqual(1, result.Values.Count);
@@ -41,8 +45,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         [TestMethod]
         public void Read_Regex_False()
         {
+            var context = new Mock<ICommandContext>().Object;
             var reader = new DateTimeTypeReader();
-            var result = reader.ReadAsync(null, "test", null).Result;
+            var result = reader.ReadAsync(context, "test", null).Result;
 
             Assert.IsFalse(result.IsSuccess);
         }
@@ -50,8 +55,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         [TestMethod]
         public void Read_EN()
         {
+            var context = new Mock<ICommandContext>().Object;
             var reader = new DateTimeTypeReader();
-            var result = reader.ReadAsync(null, "07/02/2021", null).Result;
+            var result = reader.ReadAsync(context, "07/02/2021", null).Result;
 
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual(1, result.Values.Count);
@@ -63,10 +69,11 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         {
             var cases = new[] { "1m", "1h", "1d", "1M", "1r", "1y", "1h1m", "3d4h5m" };
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new DateTimeTypeReader();
             foreach (var @case in cases)
             {
-                var result = reader.ReadAsync(null, @case, null).Result;
+                var result = reader.ReadAsync(context, @case, null).Result;
 
                 Assert.IsTrue(result.IsSuccess);
                 Assert.AreEqual(1, result.Values.Count);

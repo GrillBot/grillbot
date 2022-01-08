@@ -1,5 +1,7 @@
-﻿using GrillBot.App.Infrastructure.TypeReaders.TextBased;
+﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.TypeReaders.TextBased;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System;
 using System.Linq;
 
@@ -13,8 +15,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         {
             var guid = Guid.NewGuid();
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new GuidTypeReader();
-            var result = reader.ReadAsync(null, guid.ToString(), null).Result;
+            var result = reader.ReadAsync(context, guid.ToString(), null).Result;
 
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual(1, result.Values.Count);
@@ -24,8 +27,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         [TestMethod]
         public void Read_Fail()
         {
+            var context = new Mock<ICommandContext>().Object;
             var reader = new GuidTypeReader();
-            var result = reader.ReadAsync(null, "ABCD", null).Result;
+            var result = reader.ReadAsync(context, "ABCD", null).Result;
 
             Assert.IsFalse(result.IsSuccess);
         }

@@ -17,8 +17,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         [TestMethod]
         public void Read_InvalidUri()
         {
+            var context = new Mock<ICommandContext>().Object;
             var reader = new MessageTypeReader();
-            var result = reader.ReadAsync(null, "message", null).Result;
+            var result = reader.ReadAsync(context, "message", null).Result;
 
             Assert.IsFalse(result.IsSuccess);
             Assert.AreEqual(CommandError.ParseFailed, result.Error);
@@ -29,8 +30,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         {
             const string uri = "http://discord.com";
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new MessageTypeReader();
-            var result = reader.ReadAsync(null, uri, null).Result;
+            var result = reader.ReadAsync(context, uri, null).Result;
 
             Assert.IsFalse(result.IsSuccess);
             Assert.AreEqual(CommandError.ParseFailed, result.Error);
@@ -41,8 +43,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         {
             const string uri = "https://discord.com/channels/@me/604712748793724966/858635240830009366";
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new MessageTypeReader();
-            var result = reader.ReadAsync(null, uri, null).Result;
+            var result = reader.ReadAsync(context, uri, null).Result;
 
             Assert.IsFalse(result.IsSuccess);
             Assert.AreEqual(CommandError.Unsuccessful, result.Error);
@@ -53,8 +56,9 @@ namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
         {
             const string uri = "https://discord.com/channels/597759515615615616591178174465/604712748793724966/858635240830009366";
 
+            var context = new Mock<ICommandContext>().Object;
             var reader = new MessageTypeReader();
-            var result = reader.ReadAsync(null, uri, null).Result;
+            var result = reader.ReadAsync(context, uri, null).Result;
 
             Assert.IsFalse(result.IsSuccess);
             Assert.AreEqual(CommandError.ParseFailed, result.Error);

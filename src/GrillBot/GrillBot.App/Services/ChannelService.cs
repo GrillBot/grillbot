@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
+using GrillBot.Data.Helpers;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -47,7 +48,8 @@ namespace GrillBot.App.Services
             await dbContext.InitGuildAsync(textChannel.Guild, CancellationToken.None);
             await dbContext.InitUserAsync(message.Author, CancellationToken.None);
             await dbContext.InitGuildUserAsync(textChannel.Guild, message.Author as IGuildUser, CancellationToken.None);
-            await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel, ChannelType.Text, CancellationToken.None);
+            var channelType = DiscordHelper.GetChannelType(textChannel);
+            await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel, channelType.Value, CancellationToken.None);
 
             // Search specific channel for specific guild and user.
             var channel = await dbContext.UserChannels.AsQueryable()

@@ -131,9 +131,6 @@ namespace GrillBot.App.Controllers
 
             var userId = User.GetUserId();
             var user = await DiscordClient.FindUserAsync(userId);
-
-            await DbContext.InitGuildAsync(guild, CancellationToken.None);
-            await DbContext.InitGuildChannelAsync(guild, channel, ChannelType.Text, CancellationToken.None);
             await DbContext.InitUserAsync(user, CancellationToken.None);
 
             var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, channel, user,

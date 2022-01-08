@@ -125,7 +125,9 @@ namespace GrillBot.App.Services.AuditLog
             {
                 await dbContext.InitGuildAsync(context.Guild, CancellationToken.None);
                 await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser, CancellationToken.None);
-                await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, ChannelType.Text, CancellationToken.None);
+
+                var channelType = DiscordHelper.GetChannelType(context.Channel).Value;
+                await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, channelType, CancellationToken.None);
             }
 
             await dbContext.AddAsync(logItem);
@@ -144,7 +146,9 @@ namespace GrillBot.App.Services.AuditLog
             if (context.Guild != null)
             {
                 await dbContext.InitGuildAsync(context.Guild, CancellationToken.None);
-                await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, ChannelType.Text, CancellationToken.None);
+
+                var channelType = DiscordHelper.GetChannelType(context.Channel).Value;
+                await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, channelType, CancellationToken.None);
                 await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser, CancellationToken.None);
             }
 
@@ -277,9 +281,11 @@ namespace GrillBot.App.Services.AuditLog
             using var context = DbFactory.Create();
 
             await context.InitGuildAsync(channel.Guild, CancellationToken.None);
-            await context.InitGuildChannelAsync(channel.Guild, channel, ChannelType.Text, CancellationToken.None);
             await context.InitUserAsync(removedBy, CancellationToken.None);
             await context.InitGuildUserAsync(channel.Guild, removedBy as IGuildUser ?? channel.Guild.GetUser(removedBy.Id), CancellationToken.None);
+
+            var channelType = DiscordHelper.GetChannelType(channel).Value;
+            await context.InitGuildChannelAsync(channel.Guild, channel, channelType, CancellationToken.None);
 
             await context.AddAsync(entity);
             await context.SaveChangesAsync();

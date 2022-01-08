@@ -117,7 +117,7 @@ namespace GrillBot.App.Controllers
             var result = channels
                 .OrderBy(o => o.Name)
                 .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type == ChannelType.PublicThread || o.Type == ChannelType.PrivateThread ? "(Thread)" : "")}".Trim());
-            
+
             return Ok(result);
         }
 

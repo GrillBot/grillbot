@@ -4,29 +4,18 @@ using GrillBot.Tests.TestHelper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.Unverify
 {
     [TestClass]
     public class SelfUnverifyServiceTests
     {
-        private ServiceProvider CreateService(out SelfunverifyService service)
+        private static ServiceProvider CreateService(out SelfunverifyService service)
         {
             service = null;
             var container = DIHelpers.CreateContainer();
 
-            if (container.GetService<GrillBotContextFactory>() is not TestingGrillBotContextFactory dbFactory)
-            {
-                Assert.Fail("DbFactory není TestingGrillBotContextFactory.");
-                return null;
-            }
-
-            service = new SelfunverifyService(null, dbFactory);
+            service = new SelfunverifyService(null, container.GetService<GrillBotContextFactory>());
             return container;
         }
 
@@ -75,6 +64,7 @@ namespace GrillBot.Tests.App.Services.Unverify
 
             service.AddKeepableAsync(group, name).Wait();
             service.RemoveKeepableAsync(group).Wait();
+            Assert.IsTrue(true);
         }
 
         [TestMethod]
@@ -87,6 +77,7 @@ namespace GrillBot.Tests.App.Services.Unverify
 
             service.AddKeepableAsync(group, name).Wait();
             service.RemoveKeepableAsync(group, name).Wait();
+            Assert.IsTrue(true);
         }
     }
 }

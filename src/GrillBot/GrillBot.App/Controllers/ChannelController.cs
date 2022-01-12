@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Infrastructure.TypeReaders.Implementations;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Helpers;
@@ -99,7 +98,7 @@ namespace GrillBot.App.Controllers
         {
             var query = DbContext.Channels.AsNoTracking().AsSplitQuery()
                 .Include(o => o.Guild)
-                .Include(o => o.Channels)
+                .Include(o => o.Users)
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
@@ -156,7 +155,8 @@ namespace GrillBot.App.Controllers
         {
             var channel = await DbContext.Channels.AsNoTracking()
                 .Include(o => o.Guild)
-                .Include(o => o.Channels)
+                .Include(o => o.Users)
+                .Include(o => o.ParentChannel)
                 .FirstOrDefaultAsync(o => o.ChannelId == id.ToString());
 
             if (channel == null)

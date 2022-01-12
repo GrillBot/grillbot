@@ -14,7 +14,7 @@ namespace GrillBot.Tests.Database.Entity
                 switch (propertyName)
                 {
                     case "SearchItems":
-                    case "Channels":
+                    case "Users":
                         Assert.AreNotEqual(defaultValue, value);
                         break;
                     default:
@@ -34,6 +34,8 @@ namespace GrillBot.Tests.Database.Entity
                 Guild = new(),
                 GuildId = "Guild",
                 Name = "Name",
+                ParentChannelId = "ParentChannel",
+                ParentChannel = new()
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(channel);

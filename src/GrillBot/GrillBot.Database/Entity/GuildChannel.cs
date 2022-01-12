@@ -26,24 +26,35 @@ namespace GrillBot.Database.Entity
 
         public ChannelType ChannelType { get; set; }
 
+        [StringLength(30)]
+        public string ParentChannelId { get; set; }
+
+        [ForeignKey(nameof(ParentChannelId))]
+        public GuildChannel ParentChannel { get; set; }
+
         public ISet<SearchItem> SearchItems { get; set; }
-        public ISet<GuildUserChannel> Channels { get; set; }
+        public ISet<GuildUserChannel> Users { get; set; }
 
         public GuildChannel()
         {
             SearchItems = new HashSet<SearchItem>();
-            Channels = new HashSet<GuildUserChannel>();
+            Users = new HashSet<GuildUserChannel>();
         }
 
         public static GuildChannel FromDiscord(IGuild guild, IChannel channel, ChannelType channelType)
         {
-            return new GuildChannel()
+            var guildChannel = new GuildChannel()
             {
                 ChannelId = channel.Id.ToString(),
                 GuildId = guild.Id.ToString(),
                 Name = channel.Name,
                 ChannelType = channelType
             };
+
+            if (channel is IThreadChannel thread && thread.CategoryId != null)
+                guildChannel.ParentChannelId = thread.CategoryId.Value.ToString();
+
+            return guildChannel;
         }
     }
 }

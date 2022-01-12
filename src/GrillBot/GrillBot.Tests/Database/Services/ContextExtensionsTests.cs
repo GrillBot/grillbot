@@ -166,6 +166,36 @@ namespace GrillBot.Tests.Database.Services
         }
 
         [TestMethod]
+        public void InitGuildChannelAsync_Thread()
+        {
+            var guild = new Mock<IGuild>();
+            guild.Setup(o => o.Id).Returns(Convert.ToUInt64(GuildId));
+
+            var channel = new Mock<IThreadChannel>();
+            channel.Setup(o => o.Id).Returns(Convert.ToUInt64(ChannelId));
+            channel.Setup(o => o.Name).Returns("CH");
+            channel.Setup(o => o.CategoryId).Returns(Convert.ToUInt64(ChannelId));
+
+            var context = TestHelpers.CreateDbContext();
+            context.Channels.RemoveRange(context.Channels);
+            context.SaveChanges();
+
+            try
+            {
+                context.Add(GuildChannel.FromDiscord(guild.Object, channel.Object, ChannelType.PublicThread));
+                context.SaveChanges();
+                context.ChangeTracker.Clear();
+
+                context.InitGuildChannelAsync(guild.Object, channel.Object, ChannelType.PublicThread, CancellationToken)
+                    .ContinueWith(_ => Assert.IsFalse(context.ChangeTracker.Entries().Any()));
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        [TestMethod]
         public void InitGuildChannelAsync_NonInitialized()
         {
             var guild = new Mock<IGuild>();

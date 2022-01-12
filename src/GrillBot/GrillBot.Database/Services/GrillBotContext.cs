@@ -55,13 +55,14 @@ namespace GrillBot.Database.Services
                 builder.HasKey(o => new { o.GuildId, o.Id, o.UserId });
                 builder.HasOne(o => o.Guild).WithMany().HasForeignKey(o => o.GuildId);
                 builder.HasOne(o => o.User).WithMany(o => o.Channels).HasForeignKey(o => new { o.GuildId, o.UserId });
-                builder.HasOne(o => o.Channel).WithMany(o => o.Channels).HasForeignKey(o => new { o.GuildId, o.Id });
+                builder.HasOne(o => o.Channel).WithMany(o => o.Users).HasForeignKey(o => new { o.GuildId, o.Id });
             });
 
             modelBuilder.Entity<GuildChannel>(builder =>
             {
                 builder.HasKey(o => new { o.GuildId, o.ChannelId });
                 builder.HasOne(o => o.Guild).WithMany(o => o.Channels);
+                builder.HasOne(o => o.ParentChannel).WithMany().HasForeignKey(o => new { o.GuildId, o.ParentChannelId });
             });
 
             modelBuilder.Entity<SearchItem>(builder =>

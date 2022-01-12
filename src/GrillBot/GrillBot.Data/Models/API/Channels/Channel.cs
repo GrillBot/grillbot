@@ -41,11 +41,11 @@ namespace GrillBot.Data.Models.API.Channels
             Type = entity.ChannelType;
             CachedMessagesCount = cachedMessagesCount;
 
-            if (entity.Channels.Count > 0)
+            if (entity.Users.Count > 0)
             {
-                FirstMessageAt = entity.Channels.Min(o => o.FirstMessageAt);
-                LastMessageAt = entity.Channels.Max(o => o.LastMessageAt);
-                MessagesCount = entity.Channels.Sum(o => o.Count);
+                FirstMessageAt = entity.Users.Min(o => o.FirstMessageAt);
+                LastMessageAt = entity.Users.Max(o => o.LastMessageAt);
+                MessagesCount = entity.Users.Sum(o => o.Count);
 
                 if (FirstMessageAt == DateTime.MinValue) FirstMessageAt = null;
                 if (LastMessageAt == DateTime.MinValue) LastMessageAt = null;

@@ -22,7 +22,8 @@ namespace GrillBot.Tests.Data.Models.API.Channels
                 ChannelType = Discord.ChannelType.Category,
                 Guild = new(),
                 GuildId = "Id",
-                Name = "Name"
+                Name = "Name",
+                ParentChannel = new()
             };
 
             var detail = new ChannelDetail(entity)
@@ -35,6 +36,14 @@ namespace GrillBot.Tests.Data.Models.API.Channels
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(detail);
+        }
+
+        [TestMethod]
+        public void FilledConstructor_WithoutParentChannel()
+        {
+            var entity = new GrillBot.Database.Entity.GuildChannel();
+            var detail = new ChannelDetail(entity);
+            Assert.IsNull(detail.ParentChannel);
         }
     }
 }

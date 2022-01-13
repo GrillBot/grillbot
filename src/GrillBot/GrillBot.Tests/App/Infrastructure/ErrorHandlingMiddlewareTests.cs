@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Logging;
@@ -33,7 +34,8 @@ namespace GrillBot.Tests.App.Infrastructure
             var client = new DiscordSocketClient();
             var commandService = new CommandService();
             var configuration = ConfigHelpers.CreateConfiguration();
-            var logging = new LoggingService(client, commandService, null, configuration, null);
+            var interactions = new InteractionService(client);
+            var logging = new LoggingService(client, commandService, null, configuration, null, interactions);
             var middleware = new ErrorHandlingMiddleware(@delegate, logging);
 
             var request = new Mock<HttpRequest>();

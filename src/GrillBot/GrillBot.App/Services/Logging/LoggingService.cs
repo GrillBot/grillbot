@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.Net;
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
@@ -26,18 +27,21 @@ namespace GrillBot.App.Services.Logging
         private ILoggerFactory LoggerFactory { get; }
         private IConfiguration Configuration { get; }
         private GrillBotContextFactory DbFactory { get; }
+        private InteractionService InteractionService { get; }
 
         public LoggingService(DiscordSocketClient discordSocketClient, CommandService commandService, ILoggerFactory loggerFactory, IConfiguration configuration,
-            GrillBotContextFactory dbFactory)
+            GrillBotContextFactory dbFactory, InteractionService interactionService)
         {
             DiscordClient = discordSocketClient;
             CommandService = commandService;
             LoggerFactory = loggerFactory;
             Configuration = configuration.GetSection("Discord:Logging");
             DbFactory = dbFactory;
+            InteractionService = interactionService;
 
             DiscordClient.Log += OnLogAsync;
             CommandService.Log += OnLogAsync;
+            InteractionService.Log += OnLogAsync;
         }
 
         public async Task OnLogAsync(LogMessage message)

@@ -142,7 +142,7 @@ namespace GrillBot.App.Services
             lastIncrementReset(user);
         }
 
-        public async Task<TemporaryFile> GetPointsOfUserImageAsync(SocketGuild guild, SocketUser user)
+        public async Task<TemporaryFile> GetPointsOfUserImageAsync(SocketGuild guild, IUser user)
         {
             using var dbContext = DbFactory.Create();
 
@@ -205,7 +205,7 @@ namespace GrillBot.App.Services
             return tmpFile;
         }
 
-        private static async Task<int> CalculatePointsPositionAsync(GrillBotContext context, SocketGuild guild, SocketUser user)
+        private static async Task<int> CalculatePointsPositionAsync(GrillBotContext context, SocketGuild guild, IUser user)
         {
             var guildId = guild.Id.ToString();
 

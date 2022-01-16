@@ -1,31 +1,23 @@
 ﻿using Discord;
 using Discord.Rest;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 
 namespace GrillBot.Data.Models.AuditLog
 {
-    public class AuditChannelInfo : IComparable
+    public class AuditChannelInfo : AuditChannelBaseInfo
     {
-        public ulong Id { get; set; }
-        public string Name { get; set; }
         public ChannelType? Type { get; set; }
         public bool? IsNsfw { get; set; }
         public int? Bitrate { get; set; }
-        public int? SlowMode { get; set; }
         public string Topic { get; set; }
 
         public AuditChannelInfo() { }
 
         public AuditChannelInfo(ulong id, string name, ChannelType? type, bool? nsfw, int? bitrate, int? slowMode, string topic)
+            : base(id, name, slowMode)
         {
-            Id = id;
-            Name = name;
             Type = type;
             IsNsfw = nsfw;
             Bitrate = bitrate;
-            SlowMode = slowMode;
             Topic = topic;
         }
 
@@ -42,15 +34,5 @@ namespace GrillBot.Data.Models.AuditLog
             : this(channel.Id, channel.Name, channel is IVoiceChannel ? ChannelType.Voice : ChannelType.Text, (channel as ITextChannel)?.IsNsfw,
                   (channel as IVoiceChannel)?.Bitrate, (channel as ITextChannel)?.SlowModeInterval, (channel as ITextChannel)?.Topic)
         { }
-
-        public int CompareTo(object obj) => obj is AuditChannelInfo channel && channel.Id == Id ? 0 : 1;
-        public override bool Equals(object obj) => CompareTo(obj) == 0;
-        public override int GetHashCode() => Id.ToString().GetHashCode();
-        public static bool operator ==(AuditChannelInfo left, AuditChannelInfo right) => EqualityComparer<AuditChannelInfo>.Default.Equals(left, right);
-        public static bool operator !=(AuditChannelInfo left, AuditChannelInfo right) => !(left == right);
-        public static bool operator >(AuditChannelInfo left, AuditChannelInfo right) => left.CompareTo(right) != 0;
-        public static bool operator <(AuditChannelInfo left, AuditChannelInfo right) => left.CompareTo(right) != 0;
-        public static bool operator <=(AuditChannelInfo left, AuditChannelInfo right) => left.CompareTo(right) != 0;
-        public static bool operator >=(AuditChannelInfo left, AuditChannelInfo right) => left.CompareTo(right) != 0;
     }
 }

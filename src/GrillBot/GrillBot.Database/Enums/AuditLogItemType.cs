@@ -124,6 +124,12 @@ namespace GrillBot.Database.Enums
         /// Interaction command
         /// </summary>
         [Display(Name = "Integrovaný příkaz")]
-        InteractionCommand = 20
+        InteractionCommand = 20,
+
+        /// <summary>
+        /// Thread was deleted.
+        /// </summary>
+        [Display(Name = "Smazáno vlákno")]
+        ThreadDeleted = 21
     }
 }

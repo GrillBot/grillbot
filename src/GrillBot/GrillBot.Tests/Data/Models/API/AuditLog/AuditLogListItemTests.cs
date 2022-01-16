@@ -6,6 +6,7 @@ using GrillBot.Database.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GrillBot.Tests.Data.Models.API.AuditLog
 {
@@ -53,25 +54,8 @@ namespace GrillBot.Tests.Data.Models.API.AuditLog
         [TestMethod]
         public void Deserialization_Data()
         {
-            var types = new[]
-            {
-                AuditLogItemType.Command,
-                AuditLogItemType.ChannelCreated,
-                AuditLogItemType.ChannelDeleted,
-                AuditLogItemType.ChannelUpdated,
-                AuditLogItemType.EmojiDeleted,
-                AuditLogItemType.GuildUpdated,
-                AuditLogItemType.MemberRoleUpdated,
-                AuditLogItemType.MemberUpdated,
-                AuditLogItemType.MessageDeleted,
-                AuditLogItemType.MessageEdited,
-                AuditLogItemType.OverwriteCreated,
-                AuditLogItemType.OverwriteDeleted,
-                AuditLogItemType.OverwriteUpdated,
-                AuditLogItemType.Unban,
-                AuditLogItemType.UserJoined,
-                AuditLogItemType.UserLeft
-            };
+            var types = Enum.GetValues<AuditLogItemType>()
+                .Where(o => o != AuditLogItemType.None);
 
             var jsonSettings = AuditLogService.JsonSerializerSettings;
             foreach (var type in types)

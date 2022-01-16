@@ -254,7 +254,7 @@ namespace GrillBot.App.Services.Reminder
                 if (toUser != null)
                 {
                     var msg = await toUser.SendMessageAsync(embed: embed);
-                    var hourEmojis = Emojis.NumberToEmojiMap.Select(o => o.Value);
+                    var hourEmojis = Emojis.NumberToEmojiMap.Where(o => o.Key > 0).Select(o => o.Value);
                     await msg.AddReactionsAsync(hourEmojis.ToArray());
 
                     messageId = msg.Id;

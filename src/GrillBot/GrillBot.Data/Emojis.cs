@@ -41,6 +41,7 @@ namespace GrillBot.Data
         public static Emoji SignA => new("🅰");
         public static Emoji SignB => new("🅱");
         public static Emoji SignO => new("🅾");
+        public static Emoji Zero => new("0️⃣");
         public static Emoji One => new("1️⃣");
         public static Emoji Two => new("2️⃣");
         public static Emoji Three => new("3️⃣");
@@ -59,6 +60,7 @@ namespace GrillBot.Data
 
         public static Dictionary<int, Emoji> NumberToEmojiMap => new()
         {
+            { 0, Zero },
             { 1, One },
             { 2, Two },
             { 3, Three },
@@ -72,6 +74,7 @@ namespace GrillBot.Data
 
         public static Dictionary<Emoji, int> EmojiToIntMap => new()
         {
+            { Zero, 0 },
             { One, 1 },
             { Two, 2 },
             { Three, 3 },

@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Reminder;
 using GrillBot.Data;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +28,9 @@ public class RemindPostponeReactionHandler : ReactionEventHandler
         if (message.Embeds.Count != 1) return false; // Contains embed
         if (emote is not Emoji emoji) return false; // Is Emoji
 
-        var hoursMove = Emojis.NumberToEmojiMap.FirstOrDefault(o => o.Value.IsEqual(emote)).Key;
+        var hoursMove = Emojis.NumberToEmojiMap
+            .Where(o => o.Key > 0)
+            .FirstOrDefault(o => o.Value.IsEqual(emote)).Key;
         if (hoursMove == default) return false; // Not known emoji.
 
         var reactions = await message.GetReactionUsersAsync(emote, 5).FlattenAsync();

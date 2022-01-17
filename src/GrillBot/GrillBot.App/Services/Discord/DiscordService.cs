@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Database.Entity;

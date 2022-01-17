@@ -43,7 +43,8 @@ namespace GrillBot.Tests.Database.Entity
                 Id = 50,
                 ProcessedGuildUser = new(),
                 ProcessedUserId = "User",
-                Type = AuditLogItemType.ChannelCreated
+                Type = AuditLogItemType.ChannelCreated,
+                ProcessedUser = new()
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(item);

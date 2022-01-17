@@ -69,6 +69,7 @@ namespace GrillBot.App.Controllers
                 .Include(o => o.Guild)
                 .Include(o => o.GuildChannel)
                 .Include(o => o.ProcessedGuildUser).ThenInclude(o => o.User)
+                .Include(o => o.ProcessedUser)
                 .AsSplitQuery().AsQueryable();
 
             query = parameters.CreateQuery(query);

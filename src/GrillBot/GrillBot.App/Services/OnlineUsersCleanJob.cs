@@ -40,7 +40,7 @@ namespace GrillBot.App.Services
             }
             catch (Exception ex)
             {
-                await Logging.ErrorAsync(nameof(OnlineUsersCleanJob), "An error occuret at online users clearing.", ex);
+                await Logging.ErrorAsync(nameof(OnlineUsersCleanJob), "An error occured at online users clearing.", ex);
             }
 
         }

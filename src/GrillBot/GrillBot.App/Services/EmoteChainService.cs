@@ -21,7 +21,7 @@ namespace GrillBot.App.Services
 
         public EmoteChainService(IConfiguration configuration, DiscordSocketClient client) : base(client)
         {
-            RequiredCount = configuration.GetValue<int>("EmoteChain:RequiredCount");
+            RequiredCount = configuration.GetValue<int>("Emotes:ChainRequiredCount");
             LastMessages = new Dictionary<string, List<Tuple<ulong, string>>>();
 
             DiscordClient.MessageReceived += (msg) => msg.TryLoadMessage(out var message) ? OnMessageReceivedAsync(message) : Task.CompletedTask;

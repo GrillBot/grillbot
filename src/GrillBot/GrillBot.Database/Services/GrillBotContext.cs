@@ -92,6 +92,7 @@ namespace GrillBot.Database.Services
                 builder.HasOne(o => o.Guild).WithMany(o => o.AuditLogs);
                 builder.HasOne(o => o.ProcessedGuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.ProcessedUserId });
                 builder.HasOne(o => o.GuildChannel).WithMany().HasForeignKey(o => new { o.GuildId, o.ChannelId });
+                builder.HasOne(o => o.ProcessedUser).WithMany().HasForeignKey(o => o.ProcessedUserId);
                 builder.HasMany(o => o.Files).WithOne(o => o.AuditLogItem);
             });
 

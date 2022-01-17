@@ -147,7 +147,9 @@ public partial class AuditLogService : ServiceBase
     /// <param name="processedUser"></param>
     /// <param name="data"></param>
     /// <param name="auditLogItemId">ID of discord audit log record. Allowed types are ulong?, string or null. Otherwise method throws <see cref="NotSupportedException"/></param>
-    private async Task StoreItemAsync(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, object auditLogItemId = null)
+    /// <param name="cancellationToken"></param>
+    public async Task StoreItemAsync(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, object auditLogItemId = null,
+        CancellationToken? cancellationToken = null)
     {
         AuditLogItem entity;
         if (auditLogItemId is null)
@@ -162,11 +164,11 @@ public partial class AuditLogService : ServiceBase
         using var dbContext = DbFactory.Create();
 
         if (processedUser != null)
-            await dbContext.InitUserAsync(processedUser, CancellationToken.None);
+            await dbContext.InitUserAsync(processedUser, cancellationToken ?? CancellationToken.None);
 
         if (guild != null)
         {
-            await dbContext.InitGuildAsync(guild, CancellationToken.None);
+            await dbContext.InitGuildAsync(guild, cancellationToken ?? CancellationToken.None);
 
             if (processedUser != null)
             {
@@ -174,18 +176,18 @@ public partial class AuditLogService : ServiceBase
                     guildUser = await guild.GetUserAsync(processedUser.Id);
 
                 if (guildUser != null)
-                    await dbContext.InitGuildUserAsync(guild, guildUser, CancellationToken.None);
+                    await dbContext.InitGuildUserAsync(guild, guildUser, cancellationToken ?? CancellationToken.None);
             }
 
             if (channel != null)
             {
                 var channelType = DiscordHelper.GetChannelType(channel);
-                await dbContext.InitGuildChannelAsync(guild, channel, channelType.Value, CancellationToken.None);
+                await dbContext.InitGuildChannelAsync(guild, channel, channelType.Value, cancellationToken ?? CancellationToken.None);
             }
         }
 
-        await dbContext.AddAsync(entity);
-        await dbContext.SaveChangesAsync();
+        await dbContext.AddAsync(entity, cancellationToken ?? CancellationToken.None);
+        await dbContext.SaveChangesAsync(cancellationToken ?? CancellationToken.None);
     }
 
     public async Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result)

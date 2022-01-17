@@ -67,11 +67,15 @@ namespace GrillBot.Data.Models.API.AuditLog
             Id = entity.Id;
             CreatedAt = entity.CreatedAt;
             Guild = entity.Guild == null ? null : new(entity.Guild);
-            ProcessedUser = entity.ProcessedGuildUser == null ? null : new(entity.ProcessedGuildUser.User);
             DiscordAuditLogItemIds = !string.IsNullOrEmpty(entity.DiscordAuditLogItemId) ? entity.DiscordAuditLogItemId.Split(',').ToList() : null;
             Type = entity.Type;
             Channel = entity.GuildChannel == null ? null : new(entity.GuildChannel);
             Files = entity.Files.Select(o => new AuditLogFileMetadata(o)).ToList();
+
+            if (entity.ProcessedGuildUser != null)
+                ProcessedUser = new(entity.ProcessedGuildUser.User);
+            else if (entity.ProcessedUser != null)
+                ProcessedUser = new(entity.ProcessedUser);
 
             if (!string.IsNullOrEmpty(entity.Data))
             {

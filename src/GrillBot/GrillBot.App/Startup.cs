@@ -31,6 +31,7 @@ using Quartz;
 using GrillBot.App.Extensions;
 using GrillBot.App.Services.Discord;
 using Discord.Interactions;
+using GrillBot.App.Services.Emotes;
 
 namespace GrillBot.App;
 
@@ -165,6 +166,7 @@ public class Startup
             q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron");
             q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
             q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
+            q.AddTriggeredJob<EmoteStatsCleaningJob>(Configuration, "Emotes:CleaningInterval");
         });
 
         services.AddQuartzHostedService();

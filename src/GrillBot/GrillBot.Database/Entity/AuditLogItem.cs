@@ -27,6 +27,8 @@ namespace GrillBot.Database.Entity
 
         public GuildUser ProcessedGuildUser { get; set; }
 
+        public User ProcessedUser { get; set; }
+
         public string DiscordAuditLogItemId { get; set; }
 
         public string Data { get; set; }

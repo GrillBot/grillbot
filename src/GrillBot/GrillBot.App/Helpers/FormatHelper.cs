@@ -1,7 +1,7 @@
 ﻿using Humanizer;
 using System.Globalization;
 
-namespace GrillBot.App.Helpers
+namespace GrillBot.Data.Helpers
 {
     static public class FormatHelper
     {

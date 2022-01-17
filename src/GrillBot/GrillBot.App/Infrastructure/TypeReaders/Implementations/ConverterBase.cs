@@ -3,7 +3,7 @@ using Discord.Commands;
 using System;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
+namespace GrillBot.Data.Infrastructure.TypeReaders.Implementations;
 
 public abstract class ConverterBase
 {

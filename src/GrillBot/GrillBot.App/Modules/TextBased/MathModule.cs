@@ -1,13 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrillBot.App.Extensions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.MathJS;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.TextBased;
+namespace GrillBot.Data.Modules.TextBased;
 
 [Name("Matematické výpočty")]
 [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]

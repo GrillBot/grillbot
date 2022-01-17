@@ -1,9 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Extensions;
-using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Helpers;
+using GrillBot.Data.Infrastructure;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
@@ -18,7 +17,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services
+namespace GrillBot.Data.Services
 {
     public class SearchingService : ServiceBase
     {

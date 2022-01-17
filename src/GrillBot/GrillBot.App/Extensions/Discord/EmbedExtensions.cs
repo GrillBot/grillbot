@@ -1,7 +1,6 @@
 ﻿using Discord;
-using GrillBot.Data.Extensions.Discord;
 
-namespace GrillBot.App.Extensions.Discord
+namespace GrillBot.Data.Extensions.Discord
 {
     static public class EmbedExtensions
     {

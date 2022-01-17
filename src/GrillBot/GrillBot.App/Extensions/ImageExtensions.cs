@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace GrillBot.App.Extensions
+namespace GrillBot.Data.Extensions
 {
     static public class ImageExtensions
     {

@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions;
+using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Infrastructure;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Birthday
+namespace GrillBot.Data.Services.Birthday
 {
     public class BirthdayService : ServiceBase
     {

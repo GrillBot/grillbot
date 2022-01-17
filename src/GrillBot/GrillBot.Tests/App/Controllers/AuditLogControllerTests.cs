@@ -1,7 +1,7 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Controllers;
-using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.FileStorage;
+using GrillBot.Data.Controllers;
+using GrillBot.Data.Services.AuditLog;
+using GrillBot.Data.Services.FileStorage;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Mvc;

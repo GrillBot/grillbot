@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Controllers;
-using GrillBot.App.Services;
+﻿using GrillBot.Data.Controllers;
+using GrillBot.Data.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

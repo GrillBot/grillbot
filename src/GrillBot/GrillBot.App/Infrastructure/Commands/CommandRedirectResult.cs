@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
 
-namespace GrillBot.App.Infrastructure.Commands
+namespace GrillBot.Data.Infrastructure.Commands
 {
     public class CommandRedirectResult : RuntimeResult
     {

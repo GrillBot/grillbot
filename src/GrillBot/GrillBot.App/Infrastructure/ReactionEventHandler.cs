@@ -1,11 +1,10 @@
 ﻿using Discord;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.Embeds;
-using GrillBot.Data;
+using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Infrastructure.Embeds;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure
+namespace GrillBot.Data.Infrastructure
 {
     public abstract class ReactionEventHandler
     {

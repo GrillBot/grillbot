@@ -1,12 +1,11 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure.Commands;
-using GrillBot.App.Modules.Implementations.Emotes;
-using GrillBot.Data;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Helpers;
+using GrillBot.Data.Infrastructure.Commands;
+using GrillBot.Data.Modules.Implementations.Emotes;
+using GrillBot.Data.Models;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Humanizer;
@@ -16,7 +15,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.TextBased;
+namespace GrillBot.Data.Modules.TextBased;
 
 [Group("emote")]
 [Name("Emotes")]
@@ -123,7 +122,7 @@ public class EmotesModule : Infrastructure.ModuleBase
                 await message.AddReactionsAsync(Emojis.PaginationEmojis);
         }
 
-        public static IQueryable<Tuple<string, int, long, DateTime, DateTime>> GetListQuery(GrillBotContext context, ulong? userId,
+        public static IQueryable<EmoteStatItem> GetListQuery(GrillBotContext context, ulong? userId,
             Func<IQueryable<IGrouping<string, EmoteStatisticItem>>, IQueryable<IGrouping<string, EmoteStatisticItem>>> orderFunc,
             int? skip, int? take)
         {
@@ -135,13 +134,14 @@ public class EmotesModule : Infrastructure.ModuleBase
             var groupQuery = query.GroupBy(o => o.EmoteId);
             groupQuery = orderFunc(groupQuery);
 
-            var resultQuery = groupQuery.Select(o => new Tuple<string, int, long, DateTime, DateTime>(
-                o.Key,
-                o.Count(),
-                o.Sum(x => x.UseCount),
-                o.Min(x => x.FirstOccurence),
-                o.Max(x => x.LastOccurence)
-            ));
+            var resultQuery = groupQuery.Select(o => new EmoteStatItem()
+            {
+                Id = o.Key,
+                UsersCount = o.Count(),
+                UseCount = o.Sum(x => x.UseCount),
+                FirstOccurence = o.Min(x => x.FirstOccurence),
+                LastOccurence = o.Max(x => x.LastOccurence)
+            });
 
             if (skip != null)
                 resultQuery = resultQuery.Skip(skip.Value);

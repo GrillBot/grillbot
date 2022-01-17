@@ -1,10 +1,10 @@
 ﻿using Discord;
-using GrillBot.App.Extensions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Unverify;
 using System;
 
-namespace GrillBot.App.Services.Unverify
+namespace GrillBot.Data.Services.Unverify
 {
     public static class UnverifyMessageGenerator
     {

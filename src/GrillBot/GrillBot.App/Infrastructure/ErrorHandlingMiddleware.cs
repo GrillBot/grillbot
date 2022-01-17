@@ -1,9 +1,9 @@
-﻿using GrillBot.App.Services.Logging;
+﻿using GrillBot.Data.Services.Logging;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure
+namespace GrillBot.Data.Infrastructure
 {
     public class ErrorHandlingMiddleware
     {

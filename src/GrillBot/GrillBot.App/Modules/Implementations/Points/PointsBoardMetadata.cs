@@ -1,7 +1,7 @@
-﻿using GrillBot.App.Infrastructure.Embeds;
+﻿using GrillBot.Data.Infrastructure.Embeds;
 using System.Collections.Generic;
 
-namespace GrillBot.App.Modules.Implementations.Points;
+namespace GrillBot.Data.Modules.Implementations.Points;
 
 public class PointsBoardMetadata : PaginatedMetadataBase
 {

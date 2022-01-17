@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Web;
 
-namespace GrillBot.App.Infrastructure.Embeds
+namespace GrillBot.Data.Infrastructure.Embeds
 {
     // Source: https://github.com/Misha12/Inkluzitron/blob/master/src/Inkluzitron/Extensions/EmbedMetadataExtensions.cs
     // Credits to Khub

@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Helpers;
+﻿using GrillBot.Data.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 

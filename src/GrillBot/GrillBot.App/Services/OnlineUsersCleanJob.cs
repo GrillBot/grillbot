@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.Logging;
+﻿using GrillBot.Data.Services.Logging;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services
+namespace GrillBot.Data.Services
 {
     [DisallowConcurrentExecution]
     public class OnlineUsersCleanJob : IJob

@@ -1,7 +1,7 @@
-﻿using GrillBot.App.Infrastructure.Embeds;
+﻿using GrillBot.Data.Infrastructure.Embeds;
 using System.Collections.Generic;
 
-namespace GrillBot.App.Modules.Implementations.Emotes;
+namespace GrillBot.Data.Modules.Implementations.Emotes;
 
 public class EmoteListMetadata : PaginatedMetadataBase
 {

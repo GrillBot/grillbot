@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Modules.Implementations.Searching;
+using GrillBot.Data.Modules.Implementations.Searching;
 using GrillBot.Data.Models;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

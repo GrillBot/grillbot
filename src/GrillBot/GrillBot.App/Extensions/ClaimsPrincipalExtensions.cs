@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Claims;
 
-namespace GrillBot.App.Extensions
+namespace GrillBot.Data.Extensions
 {
     public static class ClaimsPrincipalExtensions
     {

@@ -4,7 +4,7 @@ using GrillBot.Database.Services;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.TextBased.User;
+namespace GrillBot.Data.Modules.TextBased.User;
 
 [Name("Správa uživatelů")]
 [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]

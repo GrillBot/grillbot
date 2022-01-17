@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Permissions;
 using GrillBot.Database.Entity;
@@ -17,7 +17,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.Data.Controllers
 {
     [ApiController]
     [Route("api/permissions")]

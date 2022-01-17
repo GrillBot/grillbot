@@ -1,6 +1,5 @@
 ﻿using Discord;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Models.API.Emotes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +14,7 @@ namespace GrillBot.Data.Models.API.Users
         public long Flags { get; set; }
         public bool HaveBirthday { get; set; }
         public List<GuildUserDetail> Guilds { get; set; }
-        public List<EmoteStatItem> Emotes { get; set; }
+        public List<Emotes.EmoteStatItem> Emotes { get; set; }
         public UserStatus Status { get; set; }
         public List<string> ActiveClients { get; set; }
         public bool IsKnown { get; set; }
@@ -37,7 +36,7 @@ namespace GrillBot.Data.Models.API.Users
             SelfUnverifyMinimalTime = entity.SelfUnverifyMinimalTime;
 
             Emotes = entity.UsedEmotes
-                .Select(o => new EmoteStatItem(o))
+                .Select(o => new Emotes.EmoteStatItem(o))
                 .OrderByDescending(o => o.UseCount)
                 .ThenByDescending(o => o.LastOccurence)
                 .ThenBy(o => o.Name)

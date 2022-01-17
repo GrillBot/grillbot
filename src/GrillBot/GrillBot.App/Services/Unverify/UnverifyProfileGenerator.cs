@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Unverify
+namespace GrillBot.Data.Services.Unverify
 {
     public class UnverifyProfileGenerator
     {

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure.Preconditions
+namespace GrillBot.Data.Infrastructure.Preconditions
 {
     /// <summary>
     /// Permission system to control command running.

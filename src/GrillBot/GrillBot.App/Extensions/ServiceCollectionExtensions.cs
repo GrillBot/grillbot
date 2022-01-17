@@ -2,7 +2,7 @@
 using Quartz;
 using System;
 
-namespace GrillBot.App.Extensions
+namespace GrillBot.Data.Extensions
 {
     public static class ServiceCollectionExtensions
     {

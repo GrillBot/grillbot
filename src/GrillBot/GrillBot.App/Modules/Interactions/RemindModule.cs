@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.Interactions;
-using GrillBot.App.Services.Reminder;
+using GrillBot.Data.Services.Reminder;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.Interactions;
+namespace GrillBot.Data.Modules.Interactions;
 
 public class RemindModule : Infrastructure.InteractionsModuleBase
 {

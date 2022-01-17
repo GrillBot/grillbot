@@ -1,7 +1,7 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Controllers;
-using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
+using GrillBot.Data.Controllers;
+using GrillBot.Data.Services.AuditLog;
+using GrillBot.Data.Services.Discord;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;

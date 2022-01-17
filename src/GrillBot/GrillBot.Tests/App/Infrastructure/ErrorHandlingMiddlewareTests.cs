@@ -1,8 +1,8 @@
 ﻿using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Logging;
+using GrillBot.Data.Infrastructure;
+using GrillBot.Data.Services.Logging;
 using GrillBot.Tests.TestHelper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

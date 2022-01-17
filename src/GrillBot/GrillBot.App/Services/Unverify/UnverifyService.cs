@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Net;
 using Discord.WebSocket;
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Logging;
+using GrillBot.Data.Infrastructure;
+using GrillBot.Data.Services.Logging;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models;
@@ -20,7 +20,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Unverify
+namespace GrillBot.Data.Services.Unverify
 {
     public class UnverifyService : ServiceBase
     {

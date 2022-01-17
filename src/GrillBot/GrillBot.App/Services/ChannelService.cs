@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Infrastructure;
 using GrillBot.Data.Helpers;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services
+namespace GrillBot.Data.Services
 {
     public class ChannelService : ServiceBase
     {

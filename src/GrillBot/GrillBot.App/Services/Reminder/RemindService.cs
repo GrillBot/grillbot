@@ -1,12 +1,10 @@
 ﻿using Discord;
 using Discord.Net;
 using Discord.WebSocket;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure;
-using GrillBot.Data;
-using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Infrastructure;
+using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
@@ -20,7 +18,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Reminder
+namespace GrillBot.Data.Services.Reminder
 {
     public class RemindService : ServiceBase
     {

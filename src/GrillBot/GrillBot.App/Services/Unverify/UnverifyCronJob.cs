@@ -1,12 +1,11 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.App.Services.Discord;
-using GrillBot.App.Services.Logging;
+﻿using Discord.WebSocket;
+using GrillBot.Data.Services.Discord;
+using GrillBot.Data.Services.Logging;
 using Quartz;
 using System;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Unverify
+namespace GrillBot.Data.Services.Unverify
 {
     [DisallowConcurrentExecution]
     public class UnverifyCronJob : IJob

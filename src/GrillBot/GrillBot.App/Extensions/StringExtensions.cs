@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace GrillBot.App.Extensions
+namespace GrillBot.Data.Extensions
 {
     static public class StringExtensions
     {

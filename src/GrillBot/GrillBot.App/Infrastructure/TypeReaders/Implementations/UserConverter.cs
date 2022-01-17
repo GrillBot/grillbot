@@ -1,13 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
+using GrillBot.Data.Extensions.Discord;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
+namespace GrillBot.Data.Infrastructure.TypeReaders.Implementations;
 
 public class UserConverter : ConverterBase<IUser>
 {

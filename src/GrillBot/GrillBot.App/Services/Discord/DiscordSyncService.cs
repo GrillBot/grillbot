@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Infrastructure;
+using GrillBot.Data.Infrastructure;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Discord
+namespace GrillBot.Data.Services.Discord
 {
     public class DiscordSyncService : ServiceBase
     {

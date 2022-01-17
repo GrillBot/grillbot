@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services;
+﻿using GrillBot.Data.Services;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Services;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.Data.Controllers
 {
     [ApiController]
     [Route("api/search")]

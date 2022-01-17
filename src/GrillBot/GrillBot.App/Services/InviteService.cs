@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Infrastructure;
+using GrillBot.Data.Infrastructure;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Invite;
@@ -14,7 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services
+namespace GrillBot.Data.Services
 {
     public class InviteService : ServiceBase
     {

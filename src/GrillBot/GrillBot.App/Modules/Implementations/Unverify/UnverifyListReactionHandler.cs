@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Unverify;
+using GrillBot.Data.Infrastructure;
+using GrillBot.Data.Services.Unverify;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.Implementations.Unverify;
+namespace GrillBot.Data.Modules.Implementations.Unverify;
 
 public class UnverifyListReactionHandler : ReactionEventHandler
 {

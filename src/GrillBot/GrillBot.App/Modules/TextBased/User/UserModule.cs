@@ -1,11 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Modules.Implementations.User;
-using GrillBot.Data;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Modules.Implementations.User;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RequireUserPermsAttribute = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+using RequireUserPermsAttribute = GrillBot.Data.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
-namespace GrillBot.App.Modules.TextBased.User;
+namespace GrillBot.Data.Modules.TextBased.User;
 
 [Group("user")]
 [Name("Správa uživatelů")]

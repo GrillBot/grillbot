@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
+using GrillBot.Data.Extensions;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
@@ -18,7 +18,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.Data.Controllers
 {
     [ApiController]
     [Route("api/users")]

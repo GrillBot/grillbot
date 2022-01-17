@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.Interactions;
 using Discord.Net;
 using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -18,7 +17,7 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Logging
+namespace GrillBot.Data.Services.Logging
 {
     public class LoggingService
     {

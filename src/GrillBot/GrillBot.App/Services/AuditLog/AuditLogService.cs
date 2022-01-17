@@ -3,11 +3,10 @@ using Discord.Commands;
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Discord;
-using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Infrastructure;
+using GrillBot.Data.Services.Discord;
+using GrillBot.Data.Services.FileStorage;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.AuditLog;
@@ -23,7 +22,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.AuditLog;
+namespace GrillBot.Data.Services.AuditLog;
 
 public partial class AuditLogService : ServiceBase
 {

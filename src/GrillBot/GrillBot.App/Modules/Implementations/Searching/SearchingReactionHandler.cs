@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Services;
+using GrillBot.Data.Infrastructure;
+using GrillBot.Data.Services;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.Implementations.Searching;
+namespace GrillBot.Data.Modules.Implementations.Searching;
 
 public class SearchingReactionHandler : ReactionEventHandler
 {

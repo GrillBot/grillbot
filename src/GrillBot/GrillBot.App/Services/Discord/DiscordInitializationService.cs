@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace GrillBot.App.Services.Discord
+namespace GrillBot.Data.Services.Discord
 {
     public class DiscordInitializationService
     {

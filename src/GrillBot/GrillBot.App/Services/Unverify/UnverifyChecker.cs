@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Extensions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -16,7 +16,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Unverify
+namespace GrillBot.Data.Services.Unverify
 {
     public class UnverifyChecker
     {

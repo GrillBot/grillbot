@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace GrillBot.App.Extensions
+namespace GrillBot.Data.Extensions
 {
     static public class ExceptionExtensions
     {

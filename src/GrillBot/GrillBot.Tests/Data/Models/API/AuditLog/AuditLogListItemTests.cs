@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.Data.Services.AuditLog;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;

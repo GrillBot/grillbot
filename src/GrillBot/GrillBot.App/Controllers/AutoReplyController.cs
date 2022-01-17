@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services;
+﻿using GrillBot.Data.Services;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AutoReply;
 using GrillBot.Database.Services;
@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.Data.Controllers
 {
     [ApiController]
     [Route("api/autoreply")]

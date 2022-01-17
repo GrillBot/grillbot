@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace GrillBot.App.Extensions
+namespace GrillBot.Data.Extensions
 {
     static public class EnumExtensions
     {

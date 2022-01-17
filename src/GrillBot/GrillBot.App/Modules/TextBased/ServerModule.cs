@@ -2,15 +2,13 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Helpers;
-using GrillBot.App.Services;
-using GrillBot.App.Services.Unverify;
-using GrillBot.Data;
+using GrillBot.Data.Extensions;
+using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Helpers;
+using GrillBot.Data.Services;
+using GrillBot.Data.Services.Unverify;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Guilds;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -25,9 +23,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using RequireUserPermsAttribute = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+using RequireUserPermsAttribute = GrillBot.Data.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
-namespace GrillBot.App.Modules.TextBased;
+namespace GrillBot.Data.Modules.TextBased;
 
 [Name("Správa serveru")]
 public class ServerModule : Infrastructure.ModuleBase

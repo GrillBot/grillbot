@@ -1,6 +1,6 @@
 ﻿using Discord;
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Infrastructure;
+using GrillBot.Data.Infrastructure.Embeds;
 using GrillBot.Data;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

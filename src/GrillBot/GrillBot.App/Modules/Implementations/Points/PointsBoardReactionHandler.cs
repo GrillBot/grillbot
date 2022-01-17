@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Infrastructure;
+using GrillBot.Data.Infrastructure;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.Implementations.Points;
+namespace GrillBot.Data.Modules.Implementations.Points;
 
 public class PointsBoardReactionHandler : ReactionEventHandler
 {

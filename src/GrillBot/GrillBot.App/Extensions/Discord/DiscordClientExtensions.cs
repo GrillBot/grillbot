@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Extensions.Discord
+namespace GrillBot.Data.Extensions.Discord
 {
     static public class DiscordClientExtensions
     {

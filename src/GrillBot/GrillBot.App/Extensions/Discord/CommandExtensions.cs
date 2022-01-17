@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace GrillBot.App.Extensions.Discord
+namespace GrillBot.Data.Extensions.Discord
 {
     static public class CommandExtensions
     {

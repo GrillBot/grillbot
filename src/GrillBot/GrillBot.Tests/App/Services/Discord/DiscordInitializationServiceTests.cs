@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.Discord;
+﻿using GrillBot.Data.Services.Discord;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

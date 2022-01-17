@@ -1,9 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrillBot.App.Extensions;
-using GrillBot.App.Services.FileStorage;
-using GrillBot.App.Services.Images;
-using GrillBot.Data;
+using GrillBot.Data.Extensions;
+using GrillBot.Data.Services.FileStorage;
+using GrillBot.Data.Services.Images;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Duck;
@@ -18,7 +17,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.TextBased;
+namespace GrillBot.Data.Modules.TextBased;
 
 [Name("Náhodné věci")]
 [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]

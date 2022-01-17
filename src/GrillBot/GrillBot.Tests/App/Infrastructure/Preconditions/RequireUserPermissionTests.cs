@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.App.Infrastructure.Preconditions;
+using GrillBot.Data.Infrastructure.Preconditions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;

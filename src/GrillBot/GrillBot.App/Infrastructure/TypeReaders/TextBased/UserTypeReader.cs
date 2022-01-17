@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrillBot.App.Infrastructure.TypeReaders.Implementations;
+using GrillBot.Data.Infrastructure.TypeReaders.Implementations;
 using System;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure.TypeReaders.TextBased
+namespace GrillBot.Data.Infrastructure.TypeReaders.TextBased
 {
     public class UserTypeReader : TextBasedTypeReader<UserConverter>
     {

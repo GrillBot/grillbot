@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Discord;
+using GrillBot.Data.Infrastructure;
+using GrillBot.Data.Services.Discord;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.MessageCache;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.MessageCache
+namespace GrillBot.Data.Services.MessageCache
 {
     public class MessageCache : ServiceBase
     {

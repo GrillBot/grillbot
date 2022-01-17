@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.Interactions;
-using GrillBot.App.Services;
+using GrillBot.Data.Services;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.Interactions;
+namespace GrillBot.Data.Modules.Interactions;
 
 public class MockingModule : Infrastructure.InteractionsModuleBase
 {

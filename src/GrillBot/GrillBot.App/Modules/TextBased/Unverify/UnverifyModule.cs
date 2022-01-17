@@ -1,19 +1,16 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrillBot.App.Modules.Implementations.Unverify;
-using GrillBot.App.Services.Unverify;
-using GrillBot.Data;
+using GrillBot.Data.Modules.Implementations.Unverify;
+using GrillBot.Data.Services.Unverify;
 using GrillBot.Data.Exceptions;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using RequireUserPermsAttribute = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+using RequireUserPermsAttribute = GrillBot.Data.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
-namespace GrillBot.App.Modules.TextBased.Unverify;
+namespace GrillBot.Data.Modules.TextBased.Unverify;
 
 [Group("unverify")]
 [Name("Odebrání přístupu")]

@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Services;
+using GrillBot.Data.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

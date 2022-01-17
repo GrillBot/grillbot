@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 #pragma warning disable S1172 // Unused method parameters should be removed
-namespace GrillBot.App.Services.AuditLog;
+namespace GrillBot.Data.Services.AuditLog;
 
 public partial class AuditLogService
 {

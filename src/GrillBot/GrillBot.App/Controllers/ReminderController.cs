@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Services.Reminder;
+using GrillBot.Data.Services.Reminder;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
@@ -15,7 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.Data.Controllers
 {
     [ApiController]
     [Route("api/remind")]

@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.Logging
+namespace GrillBot.Data.Services.Logging
 {
     public static class LoggingServiceExtensions
     {

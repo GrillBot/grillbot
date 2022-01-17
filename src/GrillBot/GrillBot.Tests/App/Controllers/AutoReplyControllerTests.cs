@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Controllers;
-using GrillBot.App.Services;
+using GrillBot.Data.Controllers;
+using GrillBot.Data.Services;
 using GrillBot.Data.Models.API.AutoReply;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;

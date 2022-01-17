@@ -4,7 +4,7 @@ using Discord.Rest;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure;
+namespace GrillBot.Data.Infrastructure;
 
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {

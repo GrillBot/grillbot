@@ -1,9 +1,9 @@
-﻿using GrillBot.App.Services.Logging;
+﻿using GrillBot.Data.Services.Logging;
 using Quartz;
 using System;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Services.MessageCache
+namespace GrillBot.Data.Services.MessageCache
 {
     [DisallowConcurrentExecution]
     public class MessageCacheCheckCron : IJob

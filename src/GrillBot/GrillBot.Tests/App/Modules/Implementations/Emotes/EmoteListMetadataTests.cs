@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Modules.Implementations.Emotes;
+﻿using GrillBot.Data.Modules.Implementations.Emotes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 

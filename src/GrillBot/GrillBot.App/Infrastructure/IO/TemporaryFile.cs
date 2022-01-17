@@ -1,7 +1,7 @@
 ﻿using System;
 using SysIO = System.IO;
 
-namespace GrillBot.App.Infrastructure.IO
+namespace GrillBot.Data.Infrastructure.IO
 {
     public sealed class TemporaryFile : IDisposable
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GrillBot.App.Infrastructure.Embeds
+namespace GrillBot.Data.Infrastructure.Embeds
 {
     public abstract class PaginatedMetadataBase : IEmbedMetadata
     {

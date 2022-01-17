@@ -4,7 +4,7 @@ using Discord.Rest;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure
+namespace GrillBot.Data.Infrastructure
 {
     public class ModuleBase : ModuleBase<SocketCommandContext>
     {

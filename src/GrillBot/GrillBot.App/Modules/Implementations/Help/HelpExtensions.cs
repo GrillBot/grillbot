@@ -1,14 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Infrastructure.Embeds;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.Implementations.Help;
+namespace GrillBot.Data.Modules.Implementations.Help;
 
 static public class HelpExtensions
 {

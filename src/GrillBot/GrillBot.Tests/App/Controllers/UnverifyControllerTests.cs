@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Controllers;
-using GrillBot.App.Services.Unverify;
+using GrillBot.Data.Controllers;
+using GrillBot.Data.Services.Unverify;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;

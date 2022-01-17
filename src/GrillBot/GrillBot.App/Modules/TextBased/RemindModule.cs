@@ -1,15 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrillBot.App.Extensions;
-using GrillBot.App.Modules.Implementations.Reminder;
-using GrillBot.App.Services.Reminder;
-using GrillBot.Data;
+using GrillBot.Data.Extensions;
+using GrillBot.Data.Modules.Implementations.Reminder;
+using GrillBot.Data.Services.Reminder;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Modules.TextBased;
+namespace GrillBot.Data.Modules.TextBased;
 
 [Group("remind")]
 [Name("Připomínání")]

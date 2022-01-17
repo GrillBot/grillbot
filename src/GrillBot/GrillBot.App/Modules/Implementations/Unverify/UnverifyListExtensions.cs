@@ -1,17 +1,16 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
+using GrillBot.Data.Helpers;
+using GrillBot.Data.Infrastructure.Embeds;
 using GrillBot.Data.Models.Unverify;
 using Humanizer;
 using System;
 using System.Globalization;
 using System.Linq;
 
-namespace GrillBot.App.Modules.Implementations.Unverify;
+namespace GrillBot.Data.Modules.Implementations.Unverify;
 
 public static class UnverifyListExtensions
 {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GrillBot.App.Infrastructure.Embeds
+namespace GrillBot.Data.Infrastructure.Embeds
 {
     // Source: https://github.com/Misha12/Inkluzitron/blob/master/src/Inkluzitron/Contracts/IEmbedMetadata.cs
     public interface IEmbedMetadata

@@ -1,7 +1,7 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Controllers;
-using GrillBot.App.Services.Discord;
-using GrillBot.App.Services.MessageCache;
+using GrillBot.Data.Controllers;
+using GrillBot.Data.Services.Discord;
+using GrillBot.Data.Services.MessageCache;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;
 using Microsoft.AspNetCore.Mvc;

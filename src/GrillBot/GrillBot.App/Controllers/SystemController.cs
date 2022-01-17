@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
+using GrillBot.Data.Services.AuditLog;
+using GrillBot.Data.Services.Discord;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
@@ -20,7 +20,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.Data.Controllers
 {
     [ApiController]
     [Route("api/system")]

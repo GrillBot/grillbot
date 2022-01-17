@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace GrillBot.App.Services.Birthday
+namespace GrillBot.Data.Services.Birthday
 {
     public static class BirthdayHelper
     {

@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.App.Services.Birthday;
+using GrillBot.Data.Services.Birthday;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

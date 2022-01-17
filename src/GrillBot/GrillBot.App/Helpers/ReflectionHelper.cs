@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace GrillBot.App.Helpers
+namespace GrillBot.Data.Helpers
 {
     static public class ReflectionHelper
     {

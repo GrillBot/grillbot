@@ -1,5 +1,5 @@
 ﻿using Discord.Commands;
-using GrillBot.App.Infrastructure.Commands;
+using GrillBot.Data.Infrastructure.Commands;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GrillBot.Tests.App.Infrastructure.Commands

@@ -1,16 +1,15 @@
 ﻿using Discord;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
-using System;
+using GrillBot.Data.Infrastructure.Embeds;
+using GrillBot.Data.Models;
 using System.Collections.Generic;
 
-namespace GrillBot.App.Modules.Implementations.Emotes;
+namespace GrillBot.Data.Modules.Implementations.Emotes;
 
 public static class EmoteListExtensions
 {
-    public static EmbedBuilder WithEmoteList(this EmbedBuilder embed, List<Tuple<string, int, long, DateTime, DateTime>> data, IUser user, IUser forUser,
+    public static EmbedBuilder WithEmoteList(this EmbedBuilder embed, List<EmoteStatItem> data, IUser user, IUser forUser,
         bool isPrivate, bool desc, string sortBy, int page = 0)
     {
         embed.WithFooter(user);
@@ -29,20 +28,9 @@ public static class EmoteListExtensions
         }
         else
         {
-            data.ForEach(o => embed.AddField(o.Item1, FormatEmoteListItem(o.Item2, o.Item3, o.Item4, o.Item5), true));
+            data.ForEach(o => embed.AddField(o.Id, o.ToString(), true));
         }
 
         return embed;
-    }
-
-    private static string FormatEmoteListItem(int usersCount, long useCount, DateTime firstOccurence, DateTime lastOccurence)
-    {
-        return string.Join("\n", new[]
-        {
-            $"Počet použití: **{useCount}**",
-            $"Použilo uživatelů: **{usersCount}**",
-            $"První použití: **{firstOccurence.ToCzechFormat()}**",
-            $"Poslední použití: **{lastOccurence.ToCzechFormat()}**"
-        });
     }
 }

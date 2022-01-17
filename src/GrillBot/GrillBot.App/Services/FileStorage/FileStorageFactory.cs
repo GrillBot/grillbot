@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 
-namespace GrillBot.App.Services.FileStorage
+namespace GrillBot.Data.Services.FileStorage
 {
     public class FileStorageFactory
     {

@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
+namespace GrillBot.Data.Infrastructure.TypeReaders.Implementations;
 
 public class EmotesConverter : ConverterBase<IEmote>
 {

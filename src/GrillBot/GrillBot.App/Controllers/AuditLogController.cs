@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.FileStorage;
+﻿using GrillBot.Data.Services.AuditLog;
+using GrillBot.Data.Services.FileStorage;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;
@@ -14,7 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.Data.Controllers
 {
     [ApiController]
     [Route("api/auditlog")]

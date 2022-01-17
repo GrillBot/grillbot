@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.Rest;
-using GrillBot.App.Services.Logging;
+using GrillBot.Data.Services.Logging;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -16,11 +16,10 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable S1075 // URIs should not be hardcoded
-namespace GrillBot.App.Services
+namespace GrillBot.Data.Services
 {
     public class OAuth2Service
     {

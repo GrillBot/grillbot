@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace GrillBot.App
+namespace GrillBot.Data
 {
     static public class Program
     {

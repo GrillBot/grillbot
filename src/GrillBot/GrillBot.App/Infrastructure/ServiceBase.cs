@@ -1,8 +1,8 @@
 ﻿using Discord.WebSocket;
-using GrillBot.App.Services.Discord;
+using GrillBot.Data.Services.Discord;
 using GrillBot.Database.Services;
 
-namespace GrillBot.App.Infrastructure
+namespace GrillBot.Data.Infrastructure
 {
     /// <summary>
     /// Base class for all singleton services that uses event handlers (message received, invite, ...) or database.

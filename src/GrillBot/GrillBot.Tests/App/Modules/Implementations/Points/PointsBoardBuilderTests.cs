@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.App.Modules.Implementations.Points;
+using GrillBot.Data.Modules.Implementations.Points;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

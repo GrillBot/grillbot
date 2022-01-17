@@ -47,6 +47,13 @@ public class HelpModule : Infrastructure.ModuleBase
         if (!string.IsNullOrEmpty(query))
         {
             var foundModule = availableModules.Find(m => m.Commands.Any(c => c.Aliases.Any(a => a.Contains(query))));
+            if (foundModule == null)
+            {
+                var commandSearch = CommandService.Search(query);
+                if (commandSearch.IsSuccess)
+                    foundModule = commandSearch.Commands[0].Command.Module;
+            }
+
             if (foundModule != null)
                 module = foundModule;
         }

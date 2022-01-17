@@ -1,4 +1,5 @@
 ﻿using Discord;
+using GrillBot.Data.Models;
 using GrillBot.Data.Modules.Implementations.Emotes;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,7 +15,7 @@ namespace GrillBot.Tests.App.Modules.Implementations.Emotes
         [TestMethod]
         public void WithEmoteList_WithoutData_WithoutUser()
         {
-            var data = new List<Tuple<string, int, long, DateTime, DateTime>>();
+            var data = new List<EmoteStatItem>();
 
             var user = DiscordHelpers.CreateUserMock(0, "Test");
             user.Setup(o => o.DiscriminatorValue).Returns(9982);
@@ -39,9 +40,16 @@ namespace GrillBot.Tests.App.Modules.Implementations.Emotes
         [TestMethod]
         public void WithEmoteList_WithData_WithoutUser()
         {
-            var data = new List<Tuple<string, int, long, DateTime, DateTime>>()
+            var data = new List<EmoteStatItem>()
             {
-                new Tuple<string, int, long, DateTime, DateTime>("<:rtzW:567039874452946961>", 10, 50, DateTime.MinValue, DateTime.MaxValue)
+                new()
+                {
+                    LastOccurence = DateTime.MaxValue,
+                    FirstOccurence = DateTime.MinValue,
+                    UsersCount = 10,
+                    UseCount = 50,
+                    Id = "<:rtzW:567039874452946961>"
+                }
             };
 
             var user = DiscordHelpers.CreateUserMock(0, "Test");
@@ -71,7 +79,7 @@ namespace GrillBot.Tests.App.Modules.Implementations.Emotes
         [TestMethod]
         public void WithEmoteList_WithoutData_WithUser()
         {
-            var data = new List<Tuple<string, int, long, DateTime, DateTime>>();
+            var data = new List<EmoteStatItem>();
 
             var user = DiscordHelpers.CreateUserMock(0, "Test");
             user.Setup(o => o.DiscriminatorValue).Returns(9982);

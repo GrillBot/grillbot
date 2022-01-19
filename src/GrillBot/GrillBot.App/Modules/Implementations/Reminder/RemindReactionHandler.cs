@@ -1,14 +1,9 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Services.Reminder;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Reminder;
 
-namespace GrillBot.Data.Modules.Implementations.Reminder;
+namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public class RemindReactionHandler : ReactionEventHandler
 {

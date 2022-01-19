@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
-
-namespace GrillBot.Data.Extensions
+﻿namespace GrillBot.App.Extensions
 {
     static public class ExceptionExtensions
     {

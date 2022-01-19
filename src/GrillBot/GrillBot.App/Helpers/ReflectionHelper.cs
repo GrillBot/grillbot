@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace GrillBot.Data.Helpers
+namespace GrillBot.App.Helpers
 {
     static public class ReflectionHelper
     {

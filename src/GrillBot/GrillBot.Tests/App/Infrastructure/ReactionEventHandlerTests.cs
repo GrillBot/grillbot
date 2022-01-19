@@ -1,16 +1,12 @@
 ﻿using Discord;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Infrastructure.Embeds;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Infrastructure
 {

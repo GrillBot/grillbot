@@ -1,11 +1,9 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.Interactions;
-using GrillBot.Data.Infrastructure.TypeReaders.Interactions;
-using GrillBot.Data.Infrastructure.TypeReaders.TextBased;
-using System;
+using GrillBot.App.Infrastructure.TypeReaders.Interactions;
+using GrillBot.App.Infrastructure.TypeReaders.TextBased;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders
+namespace GrillBot.App.Infrastructure.TypeReaders
 {
     public static class TypeReadersExtensions
     {

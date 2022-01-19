@@ -1,13 +1,10 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Services.MessageCache;
+﻿using Discord.Commands;
+using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders.Implementations;
+namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
 public class MessageConverter : ConverterBase<IMessage>
 {

@@ -1,18 +1,14 @@
-﻿using GrillBot.Data.Services;
+﻿using GrillBot.App.Services;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AutoReply;
-using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/autoreply")]

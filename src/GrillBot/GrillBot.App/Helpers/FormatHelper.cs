@@ -1,7 +1,6 @@
-﻿using Humanizer;
-using System.Globalization;
+﻿using Markdig;
 
-namespace GrillBot.Data.Helpers
+namespace GrillBot.App.Helpers
 {
     static public class FormatHelper
     {
@@ -16,6 +15,19 @@ namespace GrillBot.Data.Helpers
             if (count == 1) return $"1 {oneSuffix}";
             else if (count > 1 && count < 5) return $"{count} {twoToFour}";
             else return $"{"{0:N0}".FormatWith(new CultureInfo("cs-CZ"), count)} {fiveAndMore}";
+        }
+
+        static public string FormatCommandDescription(string description, string prefix, bool toHtml = false)
+        {
+            if (string.IsNullOrEmpty(description)) return null;
+            description = description.Trim().Replace("{prefix}", prefix);
+
+            return toHtml ? Markdown.ToHtml(description).Replace("\n", " ") : description;
+        }
+
+        static public string FormatParameter(string name, bool isOptional)
+        {
+            return (isOptional ? "[" : "") + name + (isOptional ? "]" : "");
         }
     }
 }

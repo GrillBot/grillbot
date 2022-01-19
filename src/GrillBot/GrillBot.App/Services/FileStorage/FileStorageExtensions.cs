@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-
-namespace GrillBot.Data.Services.FileStorage
+﻿namespace GrillBot.App.Services.FileStorage
 {
     static public class FileStorageExtensions
     {

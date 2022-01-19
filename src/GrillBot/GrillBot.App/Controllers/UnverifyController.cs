@@ -1,25 +1,17 @@
-﻿using Discord.WebSocket;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Services.Unverify;
-using GrillBot.Data.Exceptions;
-using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.Common;
+﻿using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.API.Unverify;
-using GrillBot.Database.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using GrillBot.App.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using GrillBot.Data.Models.API;
+using GrillBot.Data.Models.API.Common;
+using Microsoft.EntityFrameworkCore;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.Data.Exceptions;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/unverify")]

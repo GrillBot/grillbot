@@ -1,16 +1,10 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Services.Discord;
+﻿using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.MessageCache;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.MessageCache
+namespace GrillBot.App.Services.MessageCache
 {
     public class MessageCache : ServiceBase
     {
@@ -40,13 +34,13 @@ namespace GrillBot.Data.Services.MessageCache
 
             await Task.WhenAll(
                 AppendAroundAsync(message.Channel, message.Id),
-                DownloadLatestAsync(message.Channel)
+                DownloadLatestFromChannelAsync(message.Channel)
             );
 
             InitializedChannels.Add(message.Channel.Id);
         }
 
-        private async Task DownloadLatestAsync(ISocketMessageChannel channel)
+        public async Task DownloadLatestFromChannelAsync(ISocketMessageChannel channel)
         {
             var messages = (await channel.GetMessagesAsync().FlattenAsync()).ToList();
             messages.ForEach(o => Cache.TryAdd(o.Id, new CachedMessage(o)));
@@ -147,5 +141,13 @@ namespace GrillBot.Data.Services.MessageCache
         }
 
         public IEnumerable<IMessage> GetMessagesFromChannel(IChannel channel) => GetMessagesFromChannel(channel.Id);
+
+        public IMessage GetLastMessageFromUserInChannel(IChannel channel, IUser user)
+        {
+            return GetMessagesFromChannel(channel)
+                .Where(o => o.Author.Id == user.Id)
+                .OrderByDescending(o => o.Id)
+                .FirstOrDefault();
+        }
     }
 }

@@ -1,39 +1,30 @@
-using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
-using GrillBot.Data.Handlers;
-using GrillBot.Data.Helpers;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Services;
-using GrillBot.Data.Services.AuditLog;
-using GrillBot.Data.Services.Birthday;
-using GrillBot.Data.Services.FileStorage;
-using GrillBot.Data.Services.Logging;
-using GrillBot.Data.Services.MessageCache;
-using GrillBot.Data.Services.Reminder;
-using GrillBot.Data.Services.Unverify;
-using GrillBot.Database;
-using GrillBot.Database.Services;
+using Discord.Interactions;
+using GrillBot.App.Extensions;
+using GrillBot.App.Handlers;
+using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Services;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Birthday;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.Emotes;
+using GrillBot.App.Services.FileStorage;
+using GrillBot.App.Services.Logging;
+using GrillBot.App.Services.MessageCache;
+using GrillBot.App.Services.Reminder;
+using GrillBot.App.Services.Unverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
-using System;
-using System.Linq;
-using System.Text;
 using Quartz;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Services.Discord;
-using Discord.Interactions;
-using GrillBot.Data.Services.Emotes;
 
-namespace GrillBot.Data;
+namespace GrillBot.App;
 
 public class Startup
 {
@@ -106,7 +97,8 @@ public class Startup
             .AddSingleton<OAuth2Service>()
             .AddSingleton<DiscordInitializationService>()
             .AddSingleton<MockingService>()
-            .AddSingleton<InteractionHandler>();
+            .AddSingleton<InteractionHandler>()
+            .AddSingleton<HelpService>();
 
         ReflectionHelper.GetAllReactionEventHandlers().ToList()
             .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

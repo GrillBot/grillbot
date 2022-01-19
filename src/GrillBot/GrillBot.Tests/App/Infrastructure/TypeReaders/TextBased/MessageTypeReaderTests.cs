@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
-using GrillBot.Data.Infrastructure.TypeReaders.TextBased;
-using GrillBot.Data.Services.MessageCache;
+using GrillBot.App.Infrastructure.TypeReaders.TextBased;
+using GrillBot.App.Services.MessageCache;
 using GrillBot.Tests.TestHelper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

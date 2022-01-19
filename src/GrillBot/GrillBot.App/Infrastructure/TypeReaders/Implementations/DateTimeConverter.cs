@@ -1,13 +1,7 @@
-﻿using Discord;
-using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using Discord.Commands;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders.Implementations;
+namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
 public class DateTimeConverter : ConverterBase<DateTime>
 {

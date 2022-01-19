@@ -1,14 +1,8 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Database.Services;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Modules.Implementations.Reminder;
+namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public class RemindPostponeReactionHandler : ReactionEventHandler
 {

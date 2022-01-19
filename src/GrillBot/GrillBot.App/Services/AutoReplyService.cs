@@ -1,18 +1,12 @@
-﻿using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Services.Discord;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services
+namespace GrillBot.App.Services
 {
     public class AutoReplyService : ServiceBase
     {

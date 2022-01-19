@@ -1,9 +1,7 @@
-﻿using GrillBot.Data.Services.Logging;
+﻿using GrillBot.App.Services.Logging;
 using Quartz;
-using System;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Reminder
+namespace GrillBot.App.Services.Reminder
 {
     [DisallowConcurrentExecution]
     public class RemindCronJob : IJob

@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.IO;
-using System.Threading.Tasks;
-
-namespace GrillBot.Data.Services.FileStorage
+﻿namespace GrillBot.App.Services.FileStorage
 {
     public class FileStorage
     {

@@ -1,14 +1,6 @@
-﻿using Discord.WebSocket;
-using GrillBot.Database.Entity;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GrillBot.Database.Entity;
 
-namespace GrillBot.Data.Services.Unverify
+namespace GrillBot.App.Services.Unverify
 {
     public class SelfunverifyService
     {

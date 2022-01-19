@@ -1,23 +1,16 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.Interactions;
 using Discord.Net;
-using Discord.WebSocket;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Net.WebSockets;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Logging
+namespace GrillBot.App.Services.Logging
 {
     public class LoggingService
     {

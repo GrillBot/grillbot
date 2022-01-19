@@ -1,16 +1,8 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Services.Discord;
+﻿using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services
+namespace GrillBot.App.Services
 {
     public class BoosterService : ServiceBase
     {

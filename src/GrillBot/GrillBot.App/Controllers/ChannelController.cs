@@ -1,30 +1,21 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure.TypeReaders.Implementations;
-using GrillBot.Data.Services.MessageCache;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure.TypeReaders.Implementations;
+using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Params;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
+using GrillBot.App.Extensions;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/channel")]

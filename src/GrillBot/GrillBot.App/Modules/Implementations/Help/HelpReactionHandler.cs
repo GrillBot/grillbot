@@ -1,14 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Infrastructure;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions;
+using GrillBot.App.Infrastructure;
 
-namespace GrillBot.Data.Modules.Implementations.Help;
+namespace GrillBot.App.Modules.Implementations.Help;
 
 public class HelpReactionHandler : ReactionEventHandler
 {

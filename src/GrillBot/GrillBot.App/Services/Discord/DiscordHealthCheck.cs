@@ -1,11 +1,6 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace GrillBot.Data.Services.Discord
+namespace GrillBot.App.Services.Discord
 {
     public class DiscordHealthCheck : IHealthCheck
     {

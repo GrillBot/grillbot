@@ -1,16 +1,10 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Services.Unverify;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using RequireUserPermsAttribute = GrillBot.Data.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Services.Unverify;
+using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
-namespace GrillBot.Data.Modules.TextBased.Unverify;
+namespace GrillBot.App.Modules.TextBased.Unverify;
 
 [Group("selfunverify")]
 [Name("Selfunverify")]

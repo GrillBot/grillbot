@@ -1,11 +1,7 @@
-﻿using Discord.WebSocket;
-using GrillBot.Data.Services.Logging;
-using Microsoft.Extensions.Configuration;
+﻿using GrillBot.App.Services.Logging;
 using Quartz;
-using System;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Birthday
+namespace GrillBot.App.Services.Birthday
 {
     [DisallowConcurrentExecution]
     public class BirthdayCronJob : IJob

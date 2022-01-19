@@ -1,31 +1,23 @@
-﻿using ConsoleTableExt;
-using Discord;
+﻿using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 using Discord.Commands;
-using Discord.WebSocket;
+using System.Net.Http;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Extensions;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Helpers;
-using GrillBot.Data.Services;
-using GrillBot.Data.Services.Unverify;
-using GrillBot.Data.Enums;
-using GrillBot.Data.Exceptions;
-using GrillBot.Data.Models.Guilds;
-using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using RequireUserPermsAttribute = GrillBot.Data.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+using ConsoleTableExt;
+using Microsoft.Extensions.Caching.Memory;
+using GrillBot.App.Services.Unverify;
+using GrillBot.Data.Models.Guilds;
+using GrillBot.Data.Enums;
+using GrillBot.App.Helpers;
+using GrillBot.App.Services;
+using GrillBot.Data.Exceptions;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Name("Správa serveru")]
 public class ServerModule : Infrastructure.ModuleBase
@@ -155,6 +147,7 @@ public class ServerModule : Infrastructure.ModuleBase
     }
 
     [Group("guild")]
+    [Name("Servery")]
     public class GuildManagementSubmodule : Infrastructure.ModuleBase
     {
         [Command("send")]

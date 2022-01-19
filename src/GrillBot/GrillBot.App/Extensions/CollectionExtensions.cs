@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GrillBot.Data.Extensions
+﻿namespace GrillBot.App.Extensions
 {
     static public class CollectionExtensions
     {

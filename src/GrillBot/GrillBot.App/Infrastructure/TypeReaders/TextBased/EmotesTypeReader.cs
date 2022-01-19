@@ -1,9 +1,7 @@
 ﻿using Discord.Commands;
-using GrillBot.Data.Infrastructure.TypeReaders.Implementations;
-using System;
-using System.Threading.Tasks;
+using GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders.TextBased
+namespace GrillBot.App.Infrastructure.TypeReaders.TextBased
 {
     public class EmotesTypeReader : TextBasedTypeReader<EmotesConverter>
     {

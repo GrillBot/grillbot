@@ -1,6 +1,6 @@
 ﻿using Discord;
 using GrillBot.Data.Models;
-using GrillBot.Data.Modules.Implementations.Emotes;
+using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

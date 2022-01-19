@@ -1,14 +1,9 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Services.Unverify;
+﻿using Discord.Commands;
+using GrillBot.App.Services.Unverify;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using RequireUserPermsAttribute = GrillBot.Data.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
-namespace GrillBot.Data.Modules.TextBased.Unverify;
+namespace GrillBot.App.Modules.TextBased.Unverify;
 
 [Name("Falešné odebrání přístupu")]
 [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]

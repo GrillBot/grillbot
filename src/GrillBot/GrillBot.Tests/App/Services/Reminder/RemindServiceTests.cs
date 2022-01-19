@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.Data.Services.Reminder;
+using GrillBot.App.Services.Reminder;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,23 +1,14 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions;
+﻿using GrillBot.App.Extensions;
+using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure;
 using GrillBot.Data.Helpers;
-using GrillBot.Data.Infrastructure;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services
+namespace GrillBot.App.Services
 {
     public class SearchingService : ServiceBase
     {

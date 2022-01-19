@@ -1,7 +1,6 @@
 ﻿using NeoSmart.Unicode;
-using System.Linq;
 
-namespace GrillBot.Data.Extensions.Discord
+namespace GrillBot.App.Extensions.Discord
 {
     static public class EmoteExtensions
     {

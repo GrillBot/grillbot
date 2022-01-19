@@ -1,10 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Infrastructure.Commands;
-using GrillBot.Data.Services;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Services;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Name("Mockování zpráv")]
 [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]

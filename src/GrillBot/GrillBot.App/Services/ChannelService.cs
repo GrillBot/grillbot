@@ -1,18 +1,9 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
 using GrillBot.Data.Helpers;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services
+namespace GrillBot.App.Services
 {
     public class ChannelService : ServiceBase
     {
@@ -106,6 +97,48 @@ namespace GrillBot.Data.Services
 
             dbContext.RemoveRange(channels);
             await dbContext.SaveChangesAsync();
+        }
+
+        public async Task<SocketTextChannel> GetMostActiveChannelOfUserAsync(IUser user, IGuild guild)
+        {
+            using var dbContext = DbFactory.Create();
+
+            var channelIdQuery = dbContext.UserChannels.AsNoTracking()
+                .OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt)
+                .Where(o => o.Channel.ChannelType == ChannelType.Text && o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString())
+                .Select(o => o.Id);
+            var channelId = await channelIdQuery.FirstOrDefaultAsync();
+
+            // User not have any active channel.
+            if (string.IsNullOrEmpty(channelId)) return null;
+            return (await guild.GetTextChannelAsync(Convert.ToUInt64(channelId))) as SocketTextChannel;
+        }
+
+        public async Task<IUserMessage> GetLastMsgFromMostActiveChannelAsync(SocketGuild guild, IUser loggedUser)
+        {
+            // Using statistics and finding most active channel will help find channel where logged user have any message.
+            // This eliminates the need to browser channels and finds some activity.
+            var mostActiveChannel = await GetMostActiveChannelOfUserAsync(loggedUser, guild);
+            if (mostActiveChannel == null) return null;
+
+            return await TryFindLastMessageFromUserAsync(mostActiveChannel, loggedUser, true);
+        }
+
+        private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryRepeat)
+        {
+            var lastMessage = new[]
+            {
+                channel.CachedMessages.Where(o => o.Author.Id == loggedUser.Id).OrderByDescending(o => o.Id).FirstOrDefault(),
+                MessageCache.GetLastMessageFromUserInChannel(channel, loggedUser)
+            }.Where(o => o != null).OrderByDescending(o => o.Id).FirstOrDefault();
+
+            if (lastMessage == null && canTryRepeat)
+            {
+                await MessageCache.DownloadLatestFromChannelAsync(channel);
+                return await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
+            }
+
+            return lastMessage as IUserMessage;
         }
     }
 }

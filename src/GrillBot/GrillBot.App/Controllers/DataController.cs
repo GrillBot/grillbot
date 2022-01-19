@@ -1,25 +1,17 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.Interactions;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Models.API.Channels;
-using GrillBot.Database.Entity;
-using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using NSwag.Annotations;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+using GrillBot.Data.Models.API.Channels;
+using GrillBot.Database.Enums;
+using GrillBot.Database.Entity;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/data")]

@@ -1,14 +1,9 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.Data.Extensions.Discord;
-using Humanizer;
-using Humanizer.Localisation;
-using System;
 using System.Diagnostics;
-using System.Globalization;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Name("Obecné informace o botovi")]
 public class BotInfoModule : Infrastructure.ModuleBase

@@ -1,11 +1,7 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Modules.TextBased.User;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GrillBot.App.Infrastructure;
+using GrillBot.App.Modules.TextBased.User;
 
-namespace GrillBot.Data.Modules.Implementations.User;
+namespace GrillBot.App.Modules.Implementations.User;
 
 public class UserAccessListReactionHandler : ReactionEventHandler
 {

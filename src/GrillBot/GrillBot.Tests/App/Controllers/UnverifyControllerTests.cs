@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
-using GrillBot.Data.Controllers;
-using GrillBot.Data.Services.Unverify;
+using GrillBot.App.Controllers;
+using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;
@@ -8,12 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers
 {

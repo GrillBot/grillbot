@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.Data.Services.Unverify;
+using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

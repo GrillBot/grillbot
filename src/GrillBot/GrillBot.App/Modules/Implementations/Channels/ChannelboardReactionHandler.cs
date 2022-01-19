@@ -1,14 +1,7 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
 
-namespace GrillBot.Data.Modules.Implementations.Channels;
+namespace GrillBot.App.Modules.Implementations.Channels;
 
 public class ChannelboardReactionHandler : ReactionEventHandler
 {

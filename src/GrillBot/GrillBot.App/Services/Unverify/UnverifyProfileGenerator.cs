@@ -1,17 +1,7 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Models;
+﻿using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Unverify
+namespace GrillBot.App.Services.Unverify
 {
     public class UnverifyProfileGenerator
     {

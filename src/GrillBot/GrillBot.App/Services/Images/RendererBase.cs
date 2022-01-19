@@ -1,12 +1,10 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Services.FileStorage;
 using ImageMagick;
-using System.IO;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Images
+namespace GrillBot.App.Services.Images
 {
     public abstract class RendererBase
     {

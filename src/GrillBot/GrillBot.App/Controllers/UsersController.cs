@@ -1,24 +1,19 @@
-﻿using Discord.WebSocket;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Database.Entity;
-using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
-using System;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
+using GrillBot.Database.Enums;
+using GrillBot.Database.Entity;
+using GrillBot.Data.Models.API.Help;
+using Microsoft.AspNetCore.Http;
+using GrillBot.App.Services;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/users")]
@@ -27,11 +22,13 @@ namespace GrillBot.Data.Controllers
     {
         private GrillBotContext DbContext { get; }
         private DiscordSocketClient DiscordClient { get; }
+        private HelpService HelpService { get; }
 
-        public UsersController(GrillBotContext dbContext, DiscordSocketClient discordClient)
+        public UsersController(GrillBotContext dbContext, DiscordSocketClient discordClient, HelpService helpService)
         {
             DbContext = dbContext;
             DiscordClient = discordClient;
+            HelpService = helpService;
         }
 
         /// <summary>
@@ -116,6 +113,20 @@ namespace GrillBot.Data.Controllers
             }
 
             throw new InvalidOperationException("Při načítání aktuálně přihlášeného uživatele došlo k neočekávanému výstupu.");
+        }
+
+        /// <summary>
+        /// Gets non paginated list of user available text commands.
+        /// </summary>
+        [HttpGet("me/commands")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+        [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetAvailableCommandsAsync))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync()
+        {
+            var currentUserId = User.GetUserId();
+            var result = await HelpService.GetHelpAsync(currentUserId);
+            return Ok(result);
         }
 
         /// <summary>

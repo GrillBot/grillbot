@@ -1,11 +1,8 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure.Embeds;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data.Models;
-using System.Collections.Generic;
 
-namespace GrillBot.Data.Modules.Implementations.Searching;
+namespace GrillBot.App.Modules.Implementations.Searching;
 
 public static class SearchingExtensions
 {

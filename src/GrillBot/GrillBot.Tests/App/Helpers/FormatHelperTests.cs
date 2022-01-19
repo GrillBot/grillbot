@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Helpers;
+﻿using GrillBot.App.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GrillBot.Tests.App.Helpers
@@ -96,6 +96,36 @@ namespace GrillBot.Tests.App.Helpers
         public void FormatPointsToCzech()
         {
             Assert.AreEqual("1 bod", FormatHelper.FormatPointsToCzech(1));
+        }
+
+        [TestMethod]
+        public void FormatCommandDescription_Null()
+        {
+            Assert.IsNull(FormatHelper.FormatCommandDescription(null, null));
+        }
+
+        [TestMethod]
+        public void FormatCommandDescription_NotHtml()
+        {
+            Assert.AreEqual("$cmd", FormatHelper.FormatCommandDescription("{prefix}cmd", "$"));
+        }
+
+        [TestMethod]
+        public void FormatCommandDescription_Html()
+        {
+            Assert.AreEqual("<p><code>$cmd</code></p> ", FormatHelper.FormatCommandDescription("`{prefix}cmd`", "$", true));
+        }
+
+        [TestMethod]
+        public void FormatParameter_Optional()
+        {
+            Assert.AreEqual("[Name]", FormatHelper.FormatParameter("Name", true));
+        }
+
+        [TestMethod]
+        public void FormatParameter_Required()
+        {
+            Assert.AreEqual("Name", FormatHelper.FormatParameter("Name", false));
         }
     }
 }

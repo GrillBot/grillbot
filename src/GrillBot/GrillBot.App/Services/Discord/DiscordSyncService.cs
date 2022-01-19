@@ -1,14 +1,8 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Discord
+namespace GrillBot.App.Services.Discord
 {
     public class DiscordSyncService : ServiceBase
     {

@@ -1,17 +1,13 @@
-﻿using GrillBot.Data.Services;
+﻿using GrillBot.App.Services;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
-using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/invite")]

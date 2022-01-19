@@ -1,11 +1,8 @@
-﻿using Discord;
-using Discord.Interactions;
-using GrillBot.Data.Infrastructure.TypeReaders.Implementations;
+﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.TypeReaders.Implementations;
 using GrillBot.Data.Exceptions;
-using System;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders.Interactions
+namespace GrillBot.App.Infrastructure.TypeReaders.Interactions
 {
     public class MessageTypeConverter : InteractionsTypeConverter<MessageConverter, IMessage>
     {

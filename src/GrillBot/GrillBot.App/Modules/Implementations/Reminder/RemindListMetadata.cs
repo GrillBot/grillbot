@@ -1,7 +1,6 @@
-﻿using GrillBot.Data.Infrastructure.Embeds;
-using System.Collections.Generic;
+﻿using GrillBot.App.Infrastructure.Embeds;
 
-namespace GrillBot.Data.Modules.Implementations.Reminder;
+namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public class RemindListMetadata : PaginatedMetadataBase
 {

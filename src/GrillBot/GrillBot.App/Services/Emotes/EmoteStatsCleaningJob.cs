@@ -1,18 +1,12 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Services.AuditLog;
-using GrillBot.Data.Services.Discord;
-using GrillBot.Data.Services.Logging;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.Logging;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Emotes;
+namespace GrillBot.App.Services.Emotes;
 
 [DisallowConcurrentExecution]
 public class EmoteStatsCleaningJob : IJob

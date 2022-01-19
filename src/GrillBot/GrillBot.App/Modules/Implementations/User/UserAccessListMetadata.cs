@@ -1,7 +1,6 @@
-﻿using GrillBot.Data.Infrastructure.Embeds;
-using System.Collections.Generic;
+﻿using GrillBot.App.Infrastructure.Embeds;
 
-namespace GrillBot.Data.Modules.Implementations.User;
+namespace GrillBot.App.Modules.Implementations.User;
 
 public class UserAccessListMetadata : PaginatedMetadataBase
 {

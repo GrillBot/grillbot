@@ -1,11 +1,7 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Services.Birthday;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
+using GrillBot.App.Services.Birthday;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Group("birthday")]
 [Alias("narozeniny")]

@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Infrastructure.Embeds;
+﻿using GrillBot.App.Infrastructure.Embeds;
 using System;
 using System.Collections.Generic;
 using System.Linq;

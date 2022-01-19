@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Quartz;
-using System;
+﻿using Quartz;
 
-namespace GrillBot.Data.Extensions
+namespace GrillBot.App.Extensions
 {
     public static class ServiceCollectionExtensions
     {

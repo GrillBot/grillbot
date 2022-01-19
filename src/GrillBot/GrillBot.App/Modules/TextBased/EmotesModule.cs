@@ -1,21 +1,15 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Helpers;
-using GrillBot.Data.Infrastructure.Commands;
-using GrillBot.Data.Modules.Implementations.Emotes;
 using GrillBot.Data.Models;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Services;
-using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Group("emote")]
 [Name("Emotes")]

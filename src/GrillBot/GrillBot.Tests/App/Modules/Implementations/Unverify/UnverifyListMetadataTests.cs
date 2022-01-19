@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Modules.Implementations.Unverify;
+﻿using GrillBot.App.Modules.Implementations.Unverify;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 

@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.Data.Modules.Implementations.Reminder;
+using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.TestHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

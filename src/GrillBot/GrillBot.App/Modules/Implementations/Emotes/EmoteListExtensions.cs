@@ -1,11 +1,9 @@
-﻿using Discord;
-using GrillBot.Data.Extensions;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure.Embeds;
 using GrillBot.Data.Models;
-using System.Collections.Generic;
 
-namespace GrillBot.Data.Modules.Implementations.Emotes;
+namespace GrillBot.App.Modules.Implementations.Emotes;
 
 public static class EmoteListExtensions
 {

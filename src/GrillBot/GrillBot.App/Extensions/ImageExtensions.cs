@@ -1,9 +1,6 @@
 ﻿using ImageMagick;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 
-namespace GrillBot.Data.Extensions
+namespace GrillBot.App.Extensions
 {
     static public class ImageExtensions
     {
@@ -29,11 +26,11 @@ namespace GrillBot.Data.Extensions
 
         static public MagickColor CreateDarkerBackgroundColor(this MagickColor color)
         {
-            var tmpColor = Color.FromArgb(color.A, color.R, color.G, color.B);
+            var tmpColor = System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
             if (tmpColor.GetBrightness() <= 0.2)
-                tmpColor = Color.FromArgb(25, Color.White);
+                tmpColor = System.Drawing.Color.FromArgb(25, System.Drawing.Color.White);
             else
-                tmpColor = Color.FromArgb(100, Color.Black);
+                tmpColor = System.Drawing.Color.FromArgb(100, System.Drawing.Color.Black);
 
             return MagickColor.FromRgba(tmpColor.R, tmpColor.G, tmpColor.B, tmpColor.A);
         }

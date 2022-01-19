@@ -1,16 +1,11 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Infrastructure.Commands;
-using GrillBot.Data.Services.AuditLog;
-using GrillBot.Data.Services.Discord;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
 
-namespace GrillBot.Data.Handlers
+namespace GrillBot.App.Handlers
 {
     public class CommandHandler : ServiceBase
     {

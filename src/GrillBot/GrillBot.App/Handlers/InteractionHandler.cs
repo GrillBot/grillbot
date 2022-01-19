@@ -1,14 +1,9 @@
-﻿using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Services.AuditLog;
-using GrillBot.Data.Services.Discord;
-using GrillBot.Database.Services;
-using System;
-using System.Threading.Tasks;
+﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
 
-namespace GrillBot.Data.Handlers;
+namespace GrillBot.App.Handlers;
 
 public class InteractionHandler : ServiceBase
 {

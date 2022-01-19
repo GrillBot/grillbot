@@ -1,26 +1,18 @@
-﻿using Discord.WebSocket;
-using GrillBot.Data.Services.AuditLog;
-using GrillBot.Data.Services.Discord;
+﻿using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using NSwag.Annotations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/system")]

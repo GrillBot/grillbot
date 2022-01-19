@@ -1,13 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure.TypeReaders.TextBased;
+using GrillBot.App.Infrastructure.TypeReaders.TextBased;
 using GrillBot.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GrillBot.App.Extensions.Discord;
 
 namespace GrillBot.Tests.App.Infrastructure.TypeReaders.TextBased
 {

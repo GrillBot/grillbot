@@ -1,12 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Discord.Commands;
+using GrillBot.Data.Extensions.Discord;
 using System.Net.Http;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Extensions.Discord
+namespace GrillBot.App.Extensions.Discord
 {
     static public class MessageExtensions
     {

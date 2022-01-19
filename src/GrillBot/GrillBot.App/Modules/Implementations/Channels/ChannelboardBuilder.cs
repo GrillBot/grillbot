@@ -1,12 +1,8 @@
-﻿using Discord;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Helpers;
-using GrillBot.Data.Infrastructure.Embeds;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure.Embeds;
 
-namespace GrillBot.Data.Modules.Implementations.Channels;
+namespace GrillBot.App.Modules.Implementations.Channels;
 
 public class ChannelboardBuilder : EmbedBuilder
 {

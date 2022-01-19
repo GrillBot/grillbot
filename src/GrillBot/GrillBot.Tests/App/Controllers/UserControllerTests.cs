@@ -1,17 +1,18 @@
-﻿using Discord.WebSocket;
-using GrillBot.Data.Controllers;
+﻿using Discord.Commands;
+using Discord.WebSocket;
+using GrillBot.App.Controllers;
+using GrillBot.App.Services;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.MessageCache;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers
 {
@@ -23,8 +24,14 @@ namespace GrillBot.Tests.App.Controllers
             var client = new DiscordSocketClient();
             var container = DIHelpers.CreateContainer();
             var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
+            var commandService = new CommandService();
+            var initializationService = new DiscordInitializationService(NullLogger<DiscordInitializationService>.Instance);
+            var cache = new MessageCache(client, initializationService);
+            var configuration = ConfigHelpers.CreateConfiguration();
+            var channelService = new ChannelService(client, null, configuration, cache);
+            var helpService = new HelpService(client, commandService, channelService, container, configuration);
 
-            controller = new UsersController(dbContext, client)
+            controller = new UsersController(dbContext, client, helpService)
             {
                 ControllerContext = new ControllerContext()
                 {
@@ -106,6 +113,17 @@ namespace GrillBot.Tests.App.Controllers
 
             Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result, typeof(OkResult));
+        }
+
+        [TestMethod]
+        public void GetAvailableCommands()
+        {
+            using var _ = CreateController("User", out var controller);
+
+            var result = controller.GetAvailableCommandsAsync().Result;
+
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
         }
     }
 }

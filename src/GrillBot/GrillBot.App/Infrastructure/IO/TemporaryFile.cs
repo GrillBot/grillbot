@@ -1,7 +1,4 @@
-﻿using System;
-using SysIO = System.IO;
-
-namespace GrillBot.Data.Infrastructure.IO
+﻿namespace GrillBot.App.Infrastructure.IO
 {
     public sealed class TemporaryFile : IDisposable
     {
@@ -9,13 +6,13 @@ namespace GrillBot.Data.Infrastructure.IO
 
         public TemporaryFile(string extension)
         {
-            Path = SysIO.Path.Combine(SysIO.Path.GetTempPath(), $"{SysIO.Path.GetRandomFileName()}.{extension}");
+            Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{System.IO.Path.GetRandomFileName()}.{extension}");
         }
 
         public void Dispose()
         {
-            if (SysIO.File.Exists(Path))
-                SysIO.File.Delete(Path);
+            if (File.Exists(Path))
+                File.Delete(Path);
         }
 
         public override string ToString() => Path;

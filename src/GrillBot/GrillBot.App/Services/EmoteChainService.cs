@@ -1,15 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
 
-namespace GrillBot.Data.Services
+namespace GrillBot.App.Services
 {
     public class EmoteChainService : ServiceBase
     {

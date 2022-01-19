@@ -1,10 +1,4 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GrillBot.Data.Extensions.Discord
+﻿namespace GrillBot.App.Extensions.Discord
 {
     static public class DiscordClientExtensions
     {

@@ -1,4 +1,4 @@
-﻿namespace GrillBot.Data.Infrastructure
+﻿namespace GrillBot.App.Infrastructure
 {
     public enum ReactionEvents
     {

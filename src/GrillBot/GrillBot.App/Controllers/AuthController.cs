@@ -1,13 +1,10 @@
-﻿using GrillBot.Data.Services;
+﻿using GrillBot.App.Services;
 using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/auth")]

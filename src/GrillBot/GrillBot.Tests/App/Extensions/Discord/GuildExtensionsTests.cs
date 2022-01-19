@@ -1,14 +1,8 @@
 ﻿using Discord;
-using GrillBot.Data.Extensions.Discord;
+using GrillBot.App.Extensions.Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Npgsql.Replication;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Extensions.Discord
 {

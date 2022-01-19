@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.Data.Extensions.Discord;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;

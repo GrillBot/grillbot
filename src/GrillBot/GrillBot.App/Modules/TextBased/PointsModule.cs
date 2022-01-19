@@ -1,17 +1,9 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using GrillBot.Data.Modules.Implementations.Points;
-using GrillBot.Data.Services;
+﻿using Discord.Commands;
+using GrillBot.App.Modules.Implementations.Points;
+using GrillBot.App.Services;
 using GrillBot.Data.Exceptions;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Group("points")]
 [Alias("body")]

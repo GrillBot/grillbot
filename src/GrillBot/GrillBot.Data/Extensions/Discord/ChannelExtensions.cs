@@ -25,7 +25,7 @@ namespace GrillBot.Data.Extensions.Discord
             var everyonePerm = channel.GetPermissionOverwrite(user.Guild.EveryoneRole);
             var isEveryonePerm = everyonePerm != null && (everyonePerm.Value.ViewChannel == PermValue.Allow || everyonePerm.Value.ViewChannel == PermValue.Inherit);
 
-            foreach (var role in user.Roles.Where(o => !o.IsEveryone))
+            foreach (var role in user.Roles.OrderByDescending(o => o.Position).Where(o => !o.IsEveryone))
             {
                 var roleOverwrite = channel.GetPermissionOverwrite(role);
                 if (roleOverwrite == null) continue;
@@ -39,7 +39,7 @@ namespace GrillBot.Data.Extensions.Discord
 
             return isEveryonePerm;
         }
-
+        
         public static bool IsEqual(this IGuildChannel channel, IGuildChannel another)
         {
             if (channel.GetType() != another.GetType()) return false;

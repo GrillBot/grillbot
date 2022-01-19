@@ -1,9 +1,6 @@
-﻿using Discord;
-using Discord.Commands;
-using System;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders.Implementations;
+namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
 public abstract class ConverterBase
 {

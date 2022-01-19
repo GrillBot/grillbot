@@ -1,10 +1,6 @@
-﻿using Discord;
-using Discord.Interactions;
-using Discord.Rest;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Discord.Interactions;
 
-namespace GrillBot.Data.Infrastructure;
+namespace GrillBot.App.Infrastructure;
 
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {

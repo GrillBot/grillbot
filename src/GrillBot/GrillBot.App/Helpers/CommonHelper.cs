@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GrillBot.Data.Helpers
+﻿namespace GrillBot.App.Helpers
 {
     public static class CommonHelper
     {

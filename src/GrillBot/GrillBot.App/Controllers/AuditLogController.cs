@@ -1,20 +1,16 @@
-﻿using GrillBot.Data.Services.AuditLog;
-using GrillBot.Data.Services.FileStorage;
+﻿using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;
-using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Controllers
+namespace GrillBot.App.Controllers
 {
     [ApiController]
     [Route("api/auditlog")]

@@ -1,10 +1,8 @@
-﻿using Discord;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure.Embeds;
-using System;
-using System.Collections.Generic;
 
-namespace GrillBot.Data.Modules.Implementations.User;
+namespace GrillBot.App.Modules.Implementations.User;
 
 public static class UserAccessListExtensions
 {

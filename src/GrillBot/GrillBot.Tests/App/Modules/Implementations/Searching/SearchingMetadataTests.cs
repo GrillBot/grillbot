@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Modules.Implementations.Searching;
+﻿using GrillBot.App.Modules.Implementations.Searching;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 

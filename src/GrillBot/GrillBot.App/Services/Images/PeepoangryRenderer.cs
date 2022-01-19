@@ -1,14 +1,10 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Extensions;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Resources.Peepoangry;
 using ImageMagick;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Images
+namespace GrillBot.App.Services.Images
 {
     public sealed class PeepoangryRenderer : RendererBase, IDisposable
     {

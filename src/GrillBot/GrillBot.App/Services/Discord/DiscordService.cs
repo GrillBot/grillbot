@@ -1,28 +1,21 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.Interactions;
 using Discord.Net;
-using Discord.WebSocket;
-using GrillBot.Data.Handlers;
-using GrillBot.Data.Infrastructure.TypeReaders;
-using GrillBot.Data.Services.AuditLog;
-using GrillBot.Data.Services.Emotes;
-using GrillBot.Data.Services.Logging;
-using GrillBot.Data.Services.Reminder;
+using GrillBot.App.Handlers;
+using GrillBot.App.Infrastructure.TypeReaders;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Emotes;
+using GrillBot.App.Services.Logging;
+using GrillBot.App.Services.Reminder;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Discord
+namespace GrillBot.App.Services.Discord
 {
     public class DiscordService : IHostedService
     {

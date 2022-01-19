@@ -1,10 +1,7 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.Interactions;
-using GrillBot.Data.Services;
-using System.Threading.Tasks;
+﻿using Discord.Interactions;
+using GrillBot.App.Services;
 
-namespace GrillBot.Data.Modules.Interactions;
+namespace GrillBot.App.Modules.Interactions;
 
 public class MockingModule : Infrastructure.InteractionsModuleBase
 {
@@ -17,8 +14,7 @@ public class MockingModule : Infrastructure.InteractionsModuleBase
 
     [SlashCommand("mock", "Mockuje zadanou zprávu")]
     public Task MockAsync(
-        [Remainder]
-        [Name("zpráva")]
+        [Summary("zprava", "Zpráva k mockování")]
         string message
     )
     {

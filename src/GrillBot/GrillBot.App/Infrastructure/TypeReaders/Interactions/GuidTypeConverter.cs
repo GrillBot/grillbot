@@ -1,14 +1,10 @@
-﻿using Discord;
-using Discord.Interactions;
-using GrillBot.Data.Infrastructure.TypeReaders.Implementations;
-using System;
-using System.Threading.Tasks;
+﻿using Discord.Interactions;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders.Interactions
+namespace GrillBot.App.Infrastructure.TypeReaders.Interactions
 {
-    public class GuidTypeConverter : InteractionsTypeConverter<GuidConverter, Guid>
+    public class GuidTypeConverter : InteractionsTypeConverter<Implementations.GuidConverter, Guid>
     {
-        protected override async Task<TypeConverterResult> ProcessAsync(GuidConverter converter, string input, IInteractionContext context, IServiceProvider provider)
+        protected override async Task<TypeConverterResult> ProcessAsync(Implementations.GuidConverter converter, string input, IInteractionContext context, IServiceProvider provider)
         {
             var result = await converter.ConvertAsync(input);
 

@@ -1,15 +1,11 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Services.FileStorage;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions;
+using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Resources.Peepolove;
 using ImageMagick;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Images
+namespace GrillBot.App.Services.Images
 {
     public sealed class PeepoloveRenderer : RendererBase, IDisposable
     {

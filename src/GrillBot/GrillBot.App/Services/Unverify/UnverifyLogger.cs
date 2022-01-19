@@ -1,18 +1,10 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Unverify
+namespace GrillBot.App.Services.Unverify
 {
     public class UnverifyLogger : ServiceBase
     {

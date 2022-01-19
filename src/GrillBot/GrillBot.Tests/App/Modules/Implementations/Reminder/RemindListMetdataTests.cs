@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Modules.Implementations.Reminder;
+﻿using GrillBot.App.Modules.Implementations.Reminder;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;

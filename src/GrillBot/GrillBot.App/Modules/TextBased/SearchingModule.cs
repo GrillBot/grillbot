@@ -1,14 +1,9 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using GrillBot.Data.Modules.Implementations.Searching;
-using GrillBot.Data.Services;
+﻿using Discord.Commands;
+using GrillBot.App.Modules.Implementations.Searching;
+using GrillBot.App.Services;
 using GrillBot.Data.Extensions.Discord;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Group("hledam")]
 [Name("Hledání (něčeho, třeba týmu)")]

@@ -1,13 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Modules.Implementations.Help;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions;
+using GrillBot.App.Modules.Implementations.Help;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Name("Nápověda")]
 public class HelpModule : Infrastructure.ModuleBase

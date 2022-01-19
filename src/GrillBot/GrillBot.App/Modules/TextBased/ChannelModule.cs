@@ -1,19 +1,11 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Helpers;
+using GrillBot.App.Modules.Implementations.Channels;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Helpers;
-using GrillBot.Data.Modules.Implementations.Channels;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using Namotion.Reflection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Modules.TextBased;
+namespace GrillBot.App.Modules.TextBased;
 
 [Group("channel")]
 [Name("Správa kanálů")]

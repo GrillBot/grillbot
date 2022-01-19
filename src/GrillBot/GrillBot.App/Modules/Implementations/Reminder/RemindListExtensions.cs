@@ -1,16 +1,10 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure.Embeds;
 using GrillBot.Database.Entity;
-using Humanizer;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Modules.Implementations.Reminder;
+namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public static class RemindListExtensions
 {

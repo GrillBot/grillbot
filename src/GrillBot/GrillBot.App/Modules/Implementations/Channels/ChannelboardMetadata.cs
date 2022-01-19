@@ -1,7 +1,6 @@
-﻿using GrillBot.Data.Infrastructure.Embeds;
-using System.Collections.Generic;
+﻿using GrillBot.App.Infrastructure.Embeds;
 
-namespace GrillBot.Data.Modules.Implementations.Channels;
+namespace GrillBot.App.Modules.Implementations.Channels;
 
 public class ChannelboardMetadata : PaginatedMetadataBase
 {

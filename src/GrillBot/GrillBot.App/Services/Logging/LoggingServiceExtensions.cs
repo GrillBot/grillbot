@@ -1,8 +1,4 @@
-﻿using Discord;
-using System;
-using System.Threading.Tasks;
-
-namespace GrillBot.Data.Services.Logging
+﻿namespace GrillBot.App.Services.Logging
 {
     public static class LoggingServiceExtensions
     {

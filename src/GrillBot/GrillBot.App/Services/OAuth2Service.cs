@@ -1,25 +1,14 @@
-﻿using Discord;
-using Discord.Rest;
-using GrillBot.Data.Services.Logging;
+﻿#pragma warning disable S1075 // URIs should not be hardcoded
+using GrillBot.App.Services.Logging;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
-#pragma warning disable S1075 // URIs should not be hardcoded
-namespace GrillBot.Data.Services
+namespace GrillBot.App.Services
 {
     public class OAuth2Service
     {

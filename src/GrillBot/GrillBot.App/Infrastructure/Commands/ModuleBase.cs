@@ -1,10 +1,6 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.Rest;
-using System.IO;
-using System.Threading.Tasks;
+﻿using Discord.Commands;
 
-namespace GrillBot.Data.Infrastructure
+namespace GrillBot.App.Infrastructure
 {
     public class ModuleBase : ModuleBase<SocketCommandContext>
     {

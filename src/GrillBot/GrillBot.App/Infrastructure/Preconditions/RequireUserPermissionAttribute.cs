@@ -1,16 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
+﻿using Discord.Commands;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Infrastructure.Preconditions
+namespace GrillBot.App.Infrastructure.Preconditions
 {
     /// <summary>
     /// Permission system to control command running.

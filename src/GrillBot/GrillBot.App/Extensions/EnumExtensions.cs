@@ -1,9 +1,6 @@
-﻿using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace GrillBot.Data.Extensions
+namespace GrillBot.App.Extensions
 {
     static public class EnumExtensions
     {

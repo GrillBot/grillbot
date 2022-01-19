@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using GrillBot.Data.Services.Discord;
+using GrillBot.App.Services.Discord;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;

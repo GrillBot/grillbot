@@ -1,10 +1,8 @@
-﻿using Discord;
-using Discord.Interactions;
-using GrillBot.Data.Services;
+﻿using Discord.Interactions;
+using GrillBot.App.Services;
 using GrillBot.Data.Exceptions;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Modules.Interactions;
+namespace GrillBot.App.Modules.Interactions;
 
 public class PointsModule : Infrastructure.InteractionsModuleBase
 {

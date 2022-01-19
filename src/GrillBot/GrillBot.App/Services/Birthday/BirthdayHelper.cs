@@ -1,12 +1,6 @@
-﻿using Discord;
-using GrillBot.Data.Extensions.Discord;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using GrillBot.Data.Extensions.Discord;
 
-namespace GrillBot.Data.Services.Birthday
+namespace GrillBot.App.Services.Birthday
 {
     public static class BirthdayHelper
     {

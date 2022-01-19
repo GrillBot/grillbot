@@ -1,16 +1,15 @@
 ﻿using Discord.Commands;
-using System.Linq;
-using System.Text;
+using GrillBot.App.Helpers;
 
-namespace GrillBot.Data.Extensions.Discord
+namespace GrillBot.App.Extensions.Discord
 {
     static public class CommandExtensions
     {
+        static public IEnumerable<string> GetAliases(this CommandInfo command, string prefix)
+            => command.Aliases.Skip(1).Select(a => prefix + a);
+
         static public string GetAliasesFormat(this CommandInfo command, string prefix)
-        {
-            var aliases = command.Aliases.Skip(1).Select(a => prefix + a);
-            return string.Join(", ", aliases);
-        }
+            => string.Join(", ", GetAliases(command, prefix));
 
         // Credits to Janch
         static public string GetCommandFormat(this CommandInfo command, string prefix = null)
@@ -24,7 +23,7 @@ namespace GrillBot.Data.Extensions.Discord
             {
                 builder
                     .Append(" `")
-                    .Append(param.IsOptional ? "[" : "").Append(param.Name).Append(param.IsOptional ? "]" : "")
+                    .Append(FormatHelper.FormatParameter(param.Name, param.IsOptional))
                     .Append('`');
             }
 

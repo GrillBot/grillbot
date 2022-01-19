@@ -1,24 +1,14 @@
-﻿using Discord;
-using Discord.Net;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
+﻿using Discord.Net;
+using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services.Reminder
+namespace GrillBot.App.Services.Reminder
 {
     public class RemindService : ServiceBase
     {

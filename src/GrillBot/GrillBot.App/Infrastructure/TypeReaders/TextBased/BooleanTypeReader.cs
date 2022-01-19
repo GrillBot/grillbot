@@ -1,13 +1,10 @@
 ﻿using Discord.Commands;
-using GrillBot.Data.Infrastructure.TypeReaders.Implementations;
-using System;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders.TextBased
+namespace GrillBot.App.Infrastructure.TypeReaders.TextBased
 {
-    public class BooleanTypeReader : TextBasedTypeReader<BooleanConverter>
+    public class BooleanTypeReader : TextBasedTypeReader<Implementations.BooleanConverter>
     {
-        protected override async Task<TypeReaderResult> ProcessAsync(BooleanConverter converter, string input, ICommandContext context, IServiceProvider provider)
+        protected override async Task<TypeReaderResult> ProcessAsync(Implementations.BooleanConverter converter, string input, ICommandContext context, IServiceProvider provider)
         {
             var result = await converter.ConvertAsync(input);
 

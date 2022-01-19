@@ -1,20 +1,13 @@
-﻿using Discord.WebSocket;
-using GrillBot.Data.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Invite;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services
+namespace GrillBot.App.Services
 {
     public class InviteService : ServiceBase
     {

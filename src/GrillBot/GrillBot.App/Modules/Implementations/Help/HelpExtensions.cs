@@ -1,13 +1,11 @@
-﻿using Discord;
-using Discord.Commands;
-using GrillBot.Data.Extensions;
+﻿using Discord.Commands;
+using GrillBot.App.Extensions;
+using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure.Embeds;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Helpers;
 
-namespace GrillBot.Data.Modules.Implementations.Help;
+namespace GrillBot.App.Modules.Implementations.Help;
 
 static public class HelpExtensions
 {
@@ -29,7 +27,7 @@ static public class HelpExtensions
             .FindAllAsync(async cmd => (await cmd.CheckPreconditionsAsync(context, provider)).IsSuccess);
         foreach (var command in executableCommands.Take(EmbedBuilder.MaxFieldCount))
         {
-            var summary = string.IsNullOrEmpty(command.Summary) ? "*Tento příkaz nemá popis*" : command.Summary.Replace("{prefix}", prefix);
+            var summary = string.IsNullOrEmpty(command.Summary) ? "*Tento příkaz nemá popis*" : FormatHelper.FormatCommandDescription(command.Summary, prefix);
 
             var aliases = command.GetAliasesFormat(prefix);
             if (!string.IsNullOrEmpty(aliases))

@@ -1,10 +1,7 @@
-﻿using Discord;
-using Discord.Interactions;
-using GrillBot.Data.Infrastructure.TypeReaders.Implementations;
-using System;
-using System.Threading.Tasks;
+﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
-namespace GrillBot.Data.Infrastructure.TypeReaders;
+namespace GrillBot.App.Infrastructure.TypeReaders;
 
 public abstract class InteractionsTypeConverter<TConverter, TType> : TypeConverter<TType> where TConverter : ConverterBase
 {

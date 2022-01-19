@@ -1,10 +1,6 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using GrillBot.Data.Extensions.Discord;
 
-namespace GrillBot.Data.Extensions.Discord
+namespace GrillBot.App.Extensions.Discord
 {
     static public class GuildExtensions
     {

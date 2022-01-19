@@ -1,19 +1,11 @@
-﻿using GrillBot.Data.Services.FileStorage;
-using GrillBot.Data.Services.Logging;
-using GrillBot.Database.Services;
+﻿using GrillBot.App.Services.FileStorage;
+using GrillBot.App.Services.Logging;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Quartz;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace GrillBot.Data.Services.AuditLog
+namespace GrillBot.App.Services.AuditLog
 {
     [DisallowConcurrentExecution]
     public class AuditLogClearingJob : IJob

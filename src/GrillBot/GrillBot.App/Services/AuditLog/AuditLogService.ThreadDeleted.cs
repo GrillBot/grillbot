@@ -1,14 +1,8 @@
-﻿using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
+﻿#pragma warning disable S1172 // Unused method parameters should be removed
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using Newtonsoft.Json;
-using System.Linq;
-using System.Threading.Tasks;
 
-#pragma warning disable S1172 // Unused method parameters should be removed
-namespace GrillBot.Data.Services.AuditLog;
+namespace GrillBot.App.Services.AuditLog;
 
 public partial class AuditLogService
 {

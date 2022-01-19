@@ -1,7 +1,6 @@
-﻿using GrillBot.Data.Infrastructure.Embeds;
-using System.Collections.Generic;
+﻿using GrillBot.App.Infrastructure.Embeds;
 
-namespace GrillBot.Data.Modules.Implementations.Help;
+namespace GrillBot.App.Modules.Implementations.Help;
 
 public class HelpMetadata : PaginatedMetadataBase
 {

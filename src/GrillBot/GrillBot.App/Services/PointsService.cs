@@ -1,24 +1,16 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Helpers;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Infrastructure.IO;
-using GrillBot.Data.Services.FileStorage;
+﻿using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Infrastructure.IO;
+using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Services;
 using ImageMagick;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Services
+namespace GrillBot.App.Services
 {
     public class PointsService : ServiceBase
     {

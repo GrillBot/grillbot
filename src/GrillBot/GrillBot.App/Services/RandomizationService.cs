@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-
-namespace GrillBot.Data.Services
+﻿namespace GrillBot.App.Services
 {
     public class RandomizationService
     {

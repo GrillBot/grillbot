@@ -1,17 +1,10 @@
-﻿using Discord;
-using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Infrastructure;
-using GrillBot.Data.Services.Discord;
-using GrillBot.Data.Services.Logging;
-using GrillBot.Data.Services.MessageCache;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.Logging;
+using GrillBot.App.Services.MessageCache;
 
-namespace GrillBot.Data.Handlers
+namespace GrillBot.App.Handlers
 {
     // Credits to Janch and Khub.
     public class ReactionHandler : ServiceBase

@@ -1,10 +1,6 @@
-﻿using Discord;
-using GrillBot.Data.Extensions;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Text;
+﻿using GrillBot.App.Extensions;
 
-namespace GrillBot.Data.Services;
+namespace GrillBot.App.Services;
 
 public class MockingService
 {

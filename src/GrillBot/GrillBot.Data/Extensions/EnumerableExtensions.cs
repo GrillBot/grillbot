@@ -11,7 +11,9 @@ public static class EnumerableExtensions
         {
             yield return item;
 
-            foreach (var child in getChildren(item).Flatten(getChildren))
+            var childrenData = getChildren(item);
+            if (childrenData == null) yield break;
+            foreach (var child in childrenData.Flatten(getChildren))
                 yield return child;
         }
     }

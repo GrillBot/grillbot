@@ -188,29 +188,30 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> HearthbeatAsync(bool isPublic)
+        public async Task<ActionResult> HearthbeatAsync()
         {
-            await SetWebAdminStatusAsync(true, isPublic);
+            await SetWebAdminStatusAsync(true);
             return Ok();
         }
 
         /// <summary>
         /// Heartbeat event to set that the user is no longer logged in to the administration.
         /// </summary>
-        /// <returns></returns>
         [HttpDelete("hearthbeat")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatOffAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> HearthbeatOffAsync(bool isPublic)
+        public async Task<ActionResult> HearthbeatOffAsync()
         {
-            await SetWebAdminStatusAsync(false, isPublic);
+            await SetWebAdminStatusAsync(false);
             return Ok();
         }
 
-        private async Task SetWebAdminStatusAsync(bool isOnline, bool isPublic)
+        private async Task SetWebAdminStatusAsync(bool isOnline)
         {
             var userId = User.GetUserId().ToString();
+            var isPublic = User.HaveUserPermission();
+
             var user = await DbContext.Users.AsQueryable()
                 .FirstOrDefaultAsync(o => o.Id == userId);
 

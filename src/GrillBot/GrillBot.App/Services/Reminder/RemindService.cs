@@ -115,8 +115,8 @@ namespace GrillBot.App.Services.Reminder
             var remind = await context.Reminders.AsQueryable()
                 .FirstOrDefaultAsync(o => o.Id == id);
 
-            if (remind == null || remind.At <= DateTime.Now)
-                return;
+            if (remind == null || remind.At <= DateTime.Now || !string.IsNullOrEmpty(remind.RemindMessageId))
+                throw new ValidationException("Upozornění nebylo nalezeno, uplynula doba upozornění, nebo již proběhlo upozornění.");
 
             if (remind.FromUserId != user.Id.ToString() && remind.ToUserId != user.Id.ToString())
                 throw new ValidationException("Upozornění může zrušit pouze ten, komu je určeno, nebo kdo jej založil.");

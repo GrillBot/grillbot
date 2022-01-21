@@ -74,6 +74,7 @@ public class RemindModule : Infrastructure.ModuleBase
         try
         {
             await RemindService.CancelRemindAsync(id, Context.User, notify);
+            await ReplyAsync($"Upozornění bylo úspěšně zrušeno{(notify ? " a cílový uživatel byl upozorněn" : "")}.");
         }
         catch (ValidationException ex)
         {

@@ -90,7 +90,7 @@ namespace GrillBot.Tests.App.Controllers
             });
             dbContext.SaveChanges();
 
-            var result = controller.HearthbeatAsync(true).Result;
+            var result = controller.HearthbeatAsync().Result;
 
             Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result, typeof(OkResult));
@@ -109,7 +109,7 @@ namespace GrillBot.Tests.App.Controllers
             });
             dbContext.SaveChanges();
 
-            var result = controller.HearthbeatOffAsync(true).Result;
+            var result = controller.HearthbeatOffAsync().Result;
 
             Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result, typeof(OkResult));

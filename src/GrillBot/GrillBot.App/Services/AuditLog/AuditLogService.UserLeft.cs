@@ -5,7 +5,7 @@ namespace GrillBot.App.Services.AuditLog;
 
 public partial class AuditLogService
 {
-    public Task<bool> CanProcessUserLeft(SocketGuild guild, SocketUser user)
+    private Task<bool> CanProcessUserLeft(SocketGuild guild, SocketUser user)
     {
         return Task.FromResult(
             user != null &&
@@ -14,7 +14,7 @@ public partial class AuditLogService
         );
     }
 
-    public async Task ProcessUserLeftAsync(SocketGuild guild, SocketUser user)
+    private async Task ProcessUserLeftAsync(SocketGuild guild, SocketUser user)
     {
         var ban = await guild.GetBanAsync(user);
         var from = DateTime.UtcNow.AddMinutes(-1);

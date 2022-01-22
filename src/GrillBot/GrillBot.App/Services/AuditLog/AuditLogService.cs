@@ -10,7 +10,6 @@ using GrillBot.Data.Models;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.App.Services.AuditLog;
 
@@ -38,7 +37,7 @@ public partial class AuditLogService : ServiceBase
     {
         MessageCache = cache;
 
-        DiscordClient.UserLeft += (guild, user) => user == null || user.Id == DiscordClient.CurrentUser.Id ? Task.CompletedTask : OnUserLeftAsync(guild, user);
+        DiscordClient.UserLeft += async (guild, user) => { if (await CanExecuteEvent(() => CanProcessUserLeft(guild, user))) await ProcessUserLeftAsync(guild, user); };
         DiscordClient.UserJoined += user => user?.IsUser() != true ? Task.CompletedTask : OnUserJoinedAsync(user);
         DiscordClient.MessageUpdated += (before, after, channel) =>
         {
@@ -179,6 +178,14 @@ public partial class AuditLogService : ServiceBase
         await dbContext.SaveChangesAsync(cancellationToken ?? CancellationToken.None);
     }
 
+    private async Task<bool> CanExecuteEvent(Func<Task<bool>> eventSpecificCheck = null)
+    {
+        if (!InitializationService.Get()) return false;
+        if (eventSpecificCheck == null) return true;
+
+        return await eventSpecificCheck();
+    }
+
     public async Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result)
     {
         var data = new CommandExecution(command, context.Message, result);
@@ -220,45 +227,6 @@ public partial class AuditLogService : ServiceBase
 
         await dbContext.AddAsync(logItem);
         await dbContext.SaveChangesAsync();
-
-    }
-
-    private async Task OnUserLeftAsync(SocketGuild guild, SocketUser user)
-    {
-        // Disable logging if bot not have permissions.
-        if (!guild.CurrentUser.GuildPermissions.ViewAuditLog) return;
-
-        var ban = await guild.GetBanAsync(user);
-        var from = DateTime.UtcNow.AddMinutes(-1);
-        RestAuditLogEntry auditLog;
-        if (ban != null)
-        {
-            auditLog = (await guild.GetAuditLogsAsync(5, actionType: ActionType.Ban).FlattenAsync())
-                .FirstOrDefault(o => (o.Data as BanAuditLogData)?.Target.Id == user.Id && o.CreatedAt.DateTime >= from);
-        }
-        else
-        {
-            auditLog = (await guild.GetAuditLogsAsync(5, actionType: ActionType.Kick).FlattenAsync())
-                .FirstOrDefault(o => (o.Data as KickAuditLogData)?.Target.Id == user.Id && o.CreatedAt.DateTime >= from);
-        }
-
-        var data = new UserLeftGuildData(guild, user, ban != null, ban?.Reason);
-        var entity = AuditLogItem.Create(AuditLogItemType.UserLeft, guild, null, auditLog?.User ?? user, JsonConvert.SerializeObject(data, JsonSerializerSettings));
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(guild, CancellationToken.None);
-        await context.InitUserAsync(user, CancellationToken.None);
-        await context.InitGuildUserAsync(guild.Id, user.Id, CancellationToken.None);
-
-        if (auditLog?.User != null)
-        {
-            await context.InitUserAsync(auditLog.User, CancellationToken.None);
-            await context.InitGuildUserAsync(guild, guild.GetUser(auditLog.User.Id), CancellationToken.None);
-        }
-
-        await context.AddAsync(entity);
-        await context.SaveChangesAsync();
     }
 
     private async Task OnUserJoinedAsync(SocketGuildUser user)

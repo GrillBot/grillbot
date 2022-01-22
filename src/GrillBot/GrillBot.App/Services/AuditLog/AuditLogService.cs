@@ -39,14 +39,14 @@ public partial class AuditLogService : ServiceBase
 
         DiscordClient.UserLeft += async (guild, user) => { if (await CanExecuteEvent(() => CanProcessUserLeft(guild, user))) await ProcessUserLeftAsync(guild, user); };
         DiscordClient.UserJoined += async user => { if (await CanExecuteEvent(() => CanProcessUserJoined(user))) await ProcessUserJoinedAsync(user); };
-        DiscordClient.MessageUpdated += async (before, after, channel) => { if (await CanExecuteEvent(() => CanProcessMessageUpdated(before, after, channel))) await ProcessMessageUpdatedAsync(before, after, channel); };
-
-        DiscordClient.MessageDeleted += (message, channel) =>
+        DiscordClient.MessageUpdated += async (before, after, channel) =>
         {
-            if (!channel.HasValue) return Task.CompletedTask;
-            if (!InitializationService.Get()) return Task.CompletedTask;
-            if (channel.Value is not SocketTextChannel textChannel) return Task.CompletedTask;
-            return OnMessageDeletedAsync(message, textChannel);
+            if (await CanExecuteEvent(() => CanProcessMessageUpdated(before, after, channel))) await ProcessMessageUpdatedAsync(before, after, channel);
+        };
+
+        DiscordClient.MessageDeleted += async (message, channel) =>
+        {
+            if (await CanExecuteEvent(() => CanProcessMessageDeletedAsync(message, channel))) await ProcessChannelDeletedAsync(message, channel);
         };
 
         DiscordClient.ChannelCreated += channel => channel is SocketGuildChannel guildChannel ? OnChannelCreatedAsync(guildChannel) : Task.CompletedTask;
@@ -131,8 +131,9 @@ public partial class AuditLogService : ServiceBase
     /// <param name="data"></param>
     /// <param name="auditLogItemId">ID of discord audit log record. Allowed types are ulong?, string or null. Otherwise method throws <see cref="NotSupportedException"/></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="attachments"></param>
     public async Task StoreItemAsync(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, object auditLogItemId = null,
-        CancellationToken? cancellationToken = null)
+        CancellationToken? cancellationToken = null, List<AuditLogFileMeta> attachments = null)
     {
         AuditLogItem entity;
         if (auditLogItemId is null)
@@ -143,6 +144,9 @@ public partial class AuditLogService : ServiceBase
             entity = AuditLogItem.Create(type, guild, channel, processedUser, data, __auditLogItemId);
         else
             throw new NotSupportedException("Unsupported type Discord audit log item ID.");
+
+        if (attachments != null)
+            attachments.ForEach(a => entity.Files.Add(a));
 
         using var dbContext = DbFactory.Create();
 
@@ -222,66 +226,6 @@ public partial class AuditLogService : ServiceBase
 
         await dbContext.AddAsync(logItem);
         await dbContext.SaveChangesAsync();
-    }
-
-    private async Task OnMessageDeletedAsync(Cacheable<IMessage, ulong> message, SocketTextChannel channel)
-    {
-        if ((message.HasValue ? message.Value : MessageCache.GetMessage(message.Id, true)) is not IUserMessage deletedMessage) return;
-
-        var timeLimit = DateTime.UtcNow.AddMinutes(-1);
-        var auditLog = (await channel.Guild.GetAuditLogsAsync(5, actionType: ActionType.MessageDeleted).FlattenAsync())
-            .Where(o => o.CreatedAt.DateTime >= timeLimit)
-            .FirstOrDefault(o =>
-            {
-                var data = (MessageDeleteAuditLogData)o.Data;
-                return data.Target.Id == deletedMessage.Author.Id && data.ChannelId == channel.Id;
-            });
-
-        var data = new MessageDeletedData(deletedMessage);
-        var removedBy = auditLog?.User ?? deletedMessage.Author;
-        var entity = AuditLogItem.Create(AuditLogItemType.MessageDeleted, channel.Guild, channel, removedBy, JsonConvert.SerializeObject(data, JsonSerializerSettings));
-
-        if (deletedMessage.Attachments.Count > 0)
-        {
-            var storage = FileStorageFactory.Create("Audit");
-
-            foreach (var attachment in deletedMessage.Attachments.Where(o => o.Size <= 10 * 1024 * 1024)) // Max 10MB per file
-            {
-                var content = await attachment.DownloadAsync();
-                if (content == null) continue;
-
-                var fileEntity = new AuditLogFileMeta
-                {
-                    Filename = attachment.Filename,
-                    Size = attachment.Size
-                };
-
-                var filenameWithoutExtension = fileEntity.FilenameWithoutExtension;
-                var extension = fileEntity.Extension;
-
-                fileEntity.Filename = string.Join("_", new[]
-                {
-                        filenameWithoutExtension,
-                        attachment.Id.ToString(),
-                        deletedMessage.Author.Id.ToString()
-                    }) + extension;
-
-                await storage.StoreFileAsync("DeletedAttachments", fileEntity.Filename, content);
-                entity.Files.Add(fileEntity);
-            }
-        }
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(channel.Guild, CancellationToken.None);
-        await context.InitUserAsync(removedBy, CancellationToken.None);
-        await context.InitGuildUserAsync(channel.Guild, removedBy as IGuildUser ?? channel.Guild.GetUser(removedBy.Id), CancellationToken.None);
-
-        var channelType = DiscordHelper.GetChannelType(channel).Value;
-        await context.InitGuildChannelAsync(channel.Guild, channel, channelType, CancellationToken.None);
-
-        await context.AddAsync(entity);
-        await context.SaveChangesAsync();
     }
 
     private async Task OnChannelCreatedAsync(SocketGuildChannel channel)

@@ -38,7 +38,7 @@ public partial class AuditLogService : ServiceBase
         MessageCache = cache;
 
         DiscordClient.UserLeft += async (guild, user) => { if (await CanExecuteEvent(() => CanProcessUserLeft(guild, user))) await ProcessUserLeftAsync(guild, user); };
-        DiscordClient.UserJoined += user => user?.IsUser() != true ? Task.CompletedTask : OnUserJoinedAsync(user);
+        DiscordClient.UserJoined += async user => { if (await CanExecuteEvent(() => CanProcessUserJoined(user))) await ProcessUserJoinedAsync(user); };
         DiscordClient.MessageUpdated += (before, after, channel) =>
         {
             if (!InitializationService.Get()) return Task.CompletedTask;
@@ -227,21 +227,6 @@ public partial class AuditLogService : ServiceBase
 
         await dbContext.AddAsync(logItem);
         await dbContext.SaveChangesAsync();
-    }
-
-    private async Task OnUserJoinedAsync(SocketGuildUser user)
-    {
-        var data = new UserJoinedAuditData(user.Guild);
-        var entity = AuditLogItem.Create(AuditLogItemType.UserJoined, user.Guild, null, user, JsonConvert.SerializeObject(data, JsonSerializerSettings));
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(user.Guild, CancellationToken.None);
-        await context.InitUserAsync(user, CancellationToken.None);
-        await context.InitGuildUserAsync(user.Guild, user, CancellationToken.None);
-
-        await context.AddAsync(entity);
-        await context.SaveChangesAsync();
     }
 
     private async Task OnMessageEditedAsync(Cacheable<IMessage, ulong> before, SocketMessage after, SocketTextChannel channel)

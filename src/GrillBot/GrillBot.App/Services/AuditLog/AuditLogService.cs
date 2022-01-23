@@ -38,17 +38,10 @@ public partial class AuditLogService : ServiceBase
     {
         MessageCache = cache;
 
-        DiscordClient.UserLeft += async (guild, user) => { if (await CanExecuteEvent(() => CanProcessUserLeft(guild, user))) await ProcessUserLeftAsync(guild, user); };
-        DiscordClient.UserJoined += async user => { if (await CanExecuteEvent(() => CanProcessUserJoined(user))) await ProcessUserJoinedAsync(user); };
-        DiscordClient.MessageUpdated += async (before, after, channel) =>
-        {
-            if (await CanExecuteEvent(() => CanProcessMessageUpdated(before, after, channel))) await ProcessMessageUpdatedAsync(before, after, channel);
-        };
-
-        DiscordClient.MessageDeleted += async (message, channel) =>
-        {
-            if (await CanExecuteEvent(() => CanProcessMessageDeletedAsync(message, channel))) await ProcessChannelDeletedAsync(message, channel);
-        };
+        DiscordClient.UserLeft += (guild, user) => HandleEventAsync(new UserLeftEvent(this, guild, user));
+        DiscordClient.UserJoined += user => HandleEventAsync(new UserJoinedEvent(this, user));
+        DiscordClient.MessageUpdated += (before, after, channel) => HandleEventAsync(new MessageEditedEvent(this, before, after, channel, MessageCache, DiscordClient));
+        DiscordClient.MessageDeleted += (message, channel) => HandleEventAsync(new MessageDeletedEvent(this, message, channel, MessageCache, FileStorageFactory));
 
         DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, channel));
         DiscordClient.ChannelDestroyed += channel => channel is SocketGuildChannel guildChannel ? OnChannelDeletedAsync(guildChannel) : Task.CompletedTask;
@@ -91,11 +84,7 @@ public partial class AuditLogService : ServiceBase
 
             return Task.CompletedTask;
         };
-        DiscordClient.ThreadDeleted += async thread =>
-        {
-            if (await CanProcessThreadDeletedAsync(thread))
-                await ProcessThreadDeletedAsync(thread);
-        };
+        DiscordClient.ThreadDeleted += thread => HandleEventAsync(new ThreadDeletedEvent(this, thread));
 
         // TODO: Impelement audit log download after restart.
 
@@ -106,7 +95,7 @@ public partial class AuditLogService : ServiceBase
     /// Tries find guild from channel. If channel is DM method will return null;
     /// If channel is null and channelId is filled (typical usage for <see cref="Cacheable{TEntity, TId}"/>) method tries find guild with database data.
     /// </summary>
-    private async Task<IGuild> GetGuildFromChannelAsync(IChannel channel, ulong channelId)
+    public async Task<IGuild> GetGuildFromChannelAsync(IChannel channel, ulong channelId)
     {
         if (channel is IDMChannel) return null; // Direct messages
         if (channel is IGuildChannel guildChannel) return guildChannel.Guild;

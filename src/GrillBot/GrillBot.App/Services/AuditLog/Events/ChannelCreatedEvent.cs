@@ -26,6 +26,6 @@ public class ChannelCreatedEvent : AuditEventBase
 
         var data = new AuditChannelInfo(auditLog.Data as ChannelCreateAuditLogData);
         var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await StoreItemAsync(AuditLogItemType.ChannelCreated, channel.Guild, channel, auditLog.User, json, auditLog.Id);
+        await AuditLogService.StoreItemAsync(AuditLogItemType.ChannelCreated, channel.Guild, channel, auditLog.User, json, auditLog.Id);
     }
 }

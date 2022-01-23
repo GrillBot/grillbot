@@ -1,35 +1,49 @@
-﻿#pragma warning disable RCS1163 // Unused parameter.
-using GrillBot.App.Extensions.Discord;
+﻿using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 
-namespace GrillBot.App.Services.AuditLog;
+namespace GrillBot.App.Services.AuditLog.Events;
 
-public partial class AuditLogService
+public class MessageDeletedEvent : AuditEventBase
 {
-    private Task<bool> CanProcessMessageDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
-        => Task.FromResult(channel.HasValue && channel.Value is SocketTextChannel);
+    private Cacheable<IMessage, ulong> Message { get; }
+    private Cacheable<IMessageChannel, ulong> Channel { get; }
+    private MessageCache.MessageCache MessageCache { get; }
+    private FileStorageFactory FileStorageFactory { get; }
 
-    private async Task ProcessChannelDeletedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel)
+    public MessageDeletedEvent(AuditLogService auditLogService, Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel,
+        MessageCache.MessageCache messageCache, FileStorageFactory fileStorageFactory) : base(auditLogService)
     {
-        var textChannel = channel.Value as SocketTextChannel;
-        if ((message.HasValue ? message.Value : MessageCache.GetMessage(message.Id, true)) is not IUserMessage deletedMessage) return;
+        Message = message;
+        Channel = channel;
+        MessageCache = messageCache;
+        FileStorageFactory = fileStorageFactory;
+    }
+
+    public override Task<bool> CanProcessAsync() =>
+        Task.FromResult(Channel.HasValue && Channel.Value is SocketTextChannel);
+
+    public override async Task ProcessAsync()
+    {
+        var textChannel = Channel.Value as SocketTextChannel;
+        if ((Message.HasValue ? Message.Value : MessageCache.GetMessage(Message.Id, true)) is not IUserMessage deletedMessage) return;
         var timeLimit = DateTime.UtcNow.AddMinutes(-1);
         var auditLog = (await textChannel.Guild.GetAuditLogsAsync(5, actionType: ActionType.MessageDeleted).FlattenAsync())
             .Where(o => o.CreatedAt.DateTime >= timeLimit)
             .FirstOrDefault(o =>
             {
                 var data = (MessageDeleteAuditLogData)o.Data;
-                return data.Target.Id == deletedMessage.Author.Id && data.ChannelId == channel.Id;
+                return data.Target.Id == deletedMessage.Author.Id && data.ChannelId == textChannel.Id;
             });
 
         var data = new MessageDeletedData(deletedMessage);
-        var jsonData = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+        var jsonData = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
         var removedBy = auditLog?.User ?? deletedMessage.Author;
 
         var attachments = await GetAndStoreAttachmentsAsync(deletedMessage);
-        await StoreItemAsync(AuditLogItemType.MessageDeleted, textChannel.Guild, textChannel, removedBy, jsonData, auditLog?.Id, null, attachments);
+        await AuditLogService.StoreItemAsync(AuditLogItemType.MessageDeleted, textChannel.Guild, textChannel, removedBy, jsonData, auditLog?.Id, null, attachments);
     }
 
     private async Task<List<AuditLogFileMeta>> GetAndStoreAttachmentsAsync(IUserMessage message)

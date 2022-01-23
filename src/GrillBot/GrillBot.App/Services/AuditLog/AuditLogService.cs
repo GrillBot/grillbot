@@ -49,17 +49,8 @@ public partial class AuditLogService : ServiceBase
             await HandleEventAsync(new OverwriteChangedEvent(this, after, NextAllowedChannelUpdateEvent, DbFactory));
             NextAllowedChannelUpdateEvent = DateTime.Now.AddMinutes(1);
         };
-        DiscordClient.GuildUpdated += (before, after) =>
-        {
-            if (!InitializationService.Get()) return Task.CompletedTask;
-            if (!before.Emotes.SequenceEqual(after.Emotes))
-                return OnEmotesUpdatedAsync(before, before.Emotes, after.Emotes);
-
-            if (IsGuildReallyUpdated(before, after))
-                return OnGuildUpdatedAsync(before, after);
-
-            return Task.CompletedTask;
-        };
+        DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new EmotesUpdatedEvent(this, before, after));
+        DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new GuildUpdatedEvent(this, before, after));
 
         DiscordClient.UserUnbanned += OnUserUnbannedAsync;
         DiscordClient.GuildMemberUpdated += (before, after) =>
@@ -216,34 +207,6 @@ public partial class AuditLogService : ServiceBase
         await dbContext.SaveChangesAsync();
     }
 
-    private async Task OnEmotesUpdatedAsync(SocketGuild guild, IReadOnlyCollection<GuildEmote> before, IReadOnlyCollection<GuildEmote> after)
-    {
-        (List<GuildEmote> added, List<GuildEmote> removed) = new Func<(List<GuildEmote>, List<GuildEmote>)>(() =>
-        {
-            var removed = before.Where(e => !after.Contains(e)).ToList();
-            var added = after.Where(e => !before.Contains(e)).ToList();
-            return (added, removed);
-        })();
-
-        if (removed.Count == 0) return;
-
-        var auditLog = (await guild.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.EmojiDeleted).FlattenAsync())
-            .FirstOrDefault(o => removed.Any(x => x.Id == ((EmoteDeleteAuditLogData)o.Data).EmoteId));
-
-        var data = new AuditEmoteInfo(auditLog.Data as EmoteDeleteAuditLogData);
-        var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-        var entity = AuditLogItem.Create(AuditLogItemType.EmojiDeleted, guild, null, auditLog.User, json, auditLog.Id);
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(guild, CancellationToken.None);
-        await context.InitUserAsync(auditLog.User, CancellationToken.None);
-        await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id), CancellationToken.None);
-
-        await context.AddAsync(entity);
-        await context.SaveChangesAsync();
-    }
-
     private async Task OnUserUnbannedAsync(SocketUser user, SocketGuild guild)
     {
         var auditLog = (await guild.GetAuditLogsAsync(10, actionType: ActionType.Unban).FlattenAsync())
@@ -334,50 +297,6 @@ public partial class AuditLogService : ServiceBase
             await context.AddAsync(entity);
         }
 
-        await context.SaveChangesAsync();
-    }
-
-    private static bool IsGuildReallyUpdated(SocketGuild before, SocketGuild after)
-    {
-        if (before.DefaultMessageNotifications != after.DefaultMessageNotifications) return true;
-        if (before.Description != after.Description) return true;
-        if (before.VanityURLCode != after.VanityURLCode) return true;
-        if (before.BannerId != after.BannerId) return true;
-        if (before.DiscoverySplashId != after.DiscoverySplashId) return true;
-        if (before.SplashId != after.SplashId) return true;
-        if (before.IconId != after.IconId) return true;
-        if (before.VoiceRegionId != after.VoiceRegionId) return true;
-        if (before.OwnerId != after.OwnerId) return true;
-        if (before.PublicUpdatesChannel?.Id != after.PublicUpdatesChannel?.Id) return true;
-        if (before.RulesChannel?.Id != after.RulesChannel?.Id) return true;
-        if (before.SystemChannel?.Id != after.SystemChannel?.Id) return true;
-        if (before.AFKChannel?.Id != after.AFKChannel?.Id) return true;
-        if (before.AFKTimeout != after.AFKTimeout) return true;
-        if (before.Name != after.Name) return true;
-        if (before.MfaLevel != after.MfaLevel) return true;
-
-        return false;
-    }
-
-    private async Task OnGuildUpdatedAsync(SocketGuild before, SocketGuild after)
-    {
-        var timeLimit = DateTime.UtcNow.AddMinutes(-5);
-        var auditLog = (await after.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.GuildUpdated).FlattenAsync())
-            .Where(o => o.CreatedAt.DateTime >= timeLimit)
-            .OrderByDescending(o => o.CreatedAt.DateTime)
-            .FirstOrDefault();
-
-        var data = new GuildUpdatedData(before, after);
-        var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-        var entity = AuditLogItem.Create(AuditLogItemType.GuildUpdated, after, null, auditLog.User, json, auditLog.Id);
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(after, CancellationToken.None);
-        await context.InitUserAsync(auditLog.User, CancellationToken.None);
-        await context.InitGuildUserAsync(after, auditLog.User as IGuildUser ?? after.GetUser(auditLog.User.Id), CancellationToken.None);
-
-        await context.AddAsync(entity);
         await context.SaveChangesAsync();
     }
 

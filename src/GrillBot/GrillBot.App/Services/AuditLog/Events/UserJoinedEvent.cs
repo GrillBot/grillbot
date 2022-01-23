@@ -20,6 +20,6 @@ public class UserJoinedEvent : AuditEventBase
     {
         var data = new UserJoinedAuditData(User.Guild);
         var jsonData = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await StoreItemAsync(AuditLogItemType.UserJoined, User.Guild, null, User, jsonData);
+        await AuditLogService.StoreItemAsync(AuditLogItemType.UserJoined, User.Guild, null, User, jsonData);
     }
 }

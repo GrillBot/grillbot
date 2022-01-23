@@ -41,6 +41,6 @@ public class UserLeftEvent : AuditEventBase
 
         var data = new UserLeftGuildData(Guild, User, ban != null, ban?.Reason);
         var jsonData = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await StoreItemAsync(AuditLogItemType.UserLeft, Guild, null, auditLog?.User ?? User, jsonData, auditLog?.Id);
+        await AuditLogService.StoreItemAsync(AuditLogItemType.UserLeft, Guild, null, auditLog?.User ?? User, jsonData, auditLog?.Id);
     }
 }

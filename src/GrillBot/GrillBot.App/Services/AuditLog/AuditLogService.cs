@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.AuditLog.Events;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Extensions.Discord;
@@ -49,7 +50,7 @@ public partial class AuditLogService : ServiceBase
             if (await CanExecuteEvent(() => CanProcessMessageDeletedAsync(message, channel))) await ProcessChannelDeletedAsync(message, channel);
         };
 
-        DiscordClient.ChannelCreated += channel => channel is SocketGuildChannel guildChannel ? OnChannelCreatedAsync(guildChannel) : Task.CompletedTask;
+        DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, channel));
         DiscordClient.ChannelDestroyed += channel => channel is SocketGuildChannel guildChannel ? OnChannelDeletedAsync(guildChannel) : Task.CompletedTask;
         DiscordClient.ChannelUpdated += async (_before, _after) =>
         {
@@ -185,6 +186,12 @@ public partial class AuditLogService : ServiceBase
         return await eventSpecificCheck();
     }
 
+    private async Task HandleEventAsync(AuditEventBase @event)
+    {
+        if (await CanExecuteEvent(@event.CanProcessAsync))
+            await @event.ProcessAsync();
+    }
+
     public async Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result)
     {
         var data = new CommandExecution(command, context.Message, result);
@@ -226,28 +233,6 @@ public partial class AuditLogService : ServiceBase
 
         await dbContext.AddAsync(logItem);
         await dbContext.SaveChangesAsync();
-    }
-
-    private async Task OnChannelCreatedAsync(SocketGuildChannel channel)
-    {
-        var auditLog = (await channel.Guild.GetAuditLogsAsync(50, actionType: ActionType.ChannelCreated).FlattenAsync())
-            .FirstOrDefault(o => ((ChannelCreateAuditLogData)o.Data).ChannelId == channel.Id);
-
-        if (auditLog == null) return;
-
-        var data = new AuditChannelInfo(auditLog.Data as ChannelCreateAuditLogData);
-        var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-        var entity = AuditLogItem.Create(AuditLogItemType.ChannelCreated, channel.Guild, channel, auditLog.User, json, auditLog.Id);
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(channel.Guild, CancellationToken.None);
-        await context.InitGuildChannelAsync(channel.Guild, channel, DiscordHelper.GetChannelType(channel).Value, CancellationToken.None);
-        await context.InitUserAsync(auditLog.User, CancellationToken.None);
-        await context.InitGuildUserAsync(channel.Guild, auditLog.User as IGuildUser ?? channel.Guild.GetUser(auditLog.User.Id), CancellationToken.None);
-
-        await context.AddAsync(entity);
-        await context.SaveChangesAsync();
     }
 
     private async Task OnChannelDeletedAsync(SocketGuildChannel channel)

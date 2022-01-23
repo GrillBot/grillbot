@@ -52,7 +52,7 @@ public partial class AuditLogService : ServiceBase
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new EmotesUpdatedEvent(this, before, after));
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new GuildUpdatedEvent(this, before, after));
 
-        DiscordClient.UserUnbanned += OnUserUnbannedAsync;
+        DiscordClient.UserUnbanned += (user, guild) => HandleEventAsync(new UserUnbannedEvent(this, guild, user));
         DiscordClient.GuildMemberUpdated += (before, after) =>
         {
             if (!before.HasValue) return Task.CompletedTask;
@@ -205,27 +205,6 @@ public partial class AuditLogService : ServiceBase
 
         await dbContext.AddAsync(logItem);
         await dbContext.SaveChangesAsync();
-    }
-
-    private async Task OnUserUnbannedAsync(SocketUser user, SocketGuild guild)
-    {
-        var auditLog = (await guild.GetAuditLogsAsync(10, actionType: ActionType.Unban).FlattenAsync())
-            .FirstOrDefault(o => ((UnbanAuditLogData)o.Data).Target.Id == user.Id);
-
-        if (auditLog == null) return;
-
-        var data = new AuditUserInfo(user);
-        var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-        var entity = AuditLogItem.Create(AuditLogItemType.Unban, guild, null, auditLog.User, json, auditLog.Id);
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(guild, CancellationToken.None);
-        await context.InitUserAsync(auditLog.User, CancellationToken.None);
-        await context.InitGuildUserAsync(guild, auditLog.User as IGuildUser ?? guild.GetUser(auditLog.User.Id), CancellationToken.None);
-
-        await context.AddAsync(entity);
-        await context.SaveChangesAsync();
     }
 
     private static bool IsMemberReallyUpdated(SocketGuildUser before, SocketGuildUser after)

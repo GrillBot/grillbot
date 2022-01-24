@@ -155,48 +155,11 @@ public partial class AuditLogService : ServiceBase
             await @event.ProcessAsync();
     }
 
-    public async Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result)
-    {
-        var data = new CommandExecution(command, context.Message, result);
-        var logItem = AuditLogItem.Create(AuditLogItemType.Command, context.Guild, context.Channel, context.Guild != null ? context.User : null, JsonConvert.SerializeObject(data, JsonSerializerSettings));
+    public Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result)
+        => HandleEventAsync(new ExecutedCommandEvent(this, command, context, result));
 
-        using var dbContext = DbFactory.Create();
-
-        await dbContext.InitUserAsync(context.User, CancellationToken.None);
-        if (context.Guild != null)
-        {
-            await dbContext.InitGuildAsync(context.Guild, CancellationToken.None);
-            await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser, CancellationToken.None);
-
-            var channelType = DiscordHelper.GetChannelType(context.Channel).Value;
-            await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, channelType, CancellationToken.None);
-        }
-
-        await dbContext.AddAsync(logItem);
-        await dbContext.SaveChangesAsync();
-    }
-
-    public async Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result)
-    {
-        var data = InteractionCommandExecuted.Create(context.Interaction, command, result);
-        var logItem = AuditLogItem.Create(AuditLogItemType.InteractionCommand, context.Guild, context.Channel,
-            context.Guild != null ? context.User : null, JsonConvert.SerializeObject(data, JsonSerializerSettings));
-
-        using var dbContext = DbFactory.Create();
-
-        await dbContext.InitUserAsync(context.User, CancellationToken.None);
-        if (context.Guild != null)
-        {
-            await dbContext.InitGuildAsync(context.Guild, CancellationToken.None);
-
-            var channelType = DiscordHelper.GetChannelType(context.Channel).Value;
-            await dbContext.InitGuildChannelAsync(context.Guild, context.Channel, channelType, CancellationToken.None);
-            await dbContext.InitGuildUserAsync(context.Guild, context.User as IGuildUser, CancellationToken.None);
-        }
-
-        await dbContext.AddAsync(logItem);
-        await dbContext.SaveChangesAsync();
-    }
+    public Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result)
+        => HandleEventAsync(new ExecutedInteractionCommandEvent(this, command, context, result));
 
     public virtual async Task<bool> RemoveItemAsync(long id)
     {

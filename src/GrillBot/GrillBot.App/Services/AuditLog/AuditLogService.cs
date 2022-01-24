@@ -53,12 +53,11 @@ public partial class AuditLogService : ServiceBase
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new GuildUpdatedEvent(this, before, after));
 
         DiscordClient.UserUnbanned += (user, guild) => HandleEventAsync(new UserUnbannedEvent(this, guild, user));
+        DiscordClient.GuildMemberUpdated += (before, after) => HandleEventAsync(new MemberUpdatedEvent(this, before, after));
         DiscordClient.GuildMemberUpdated += (before, after) =>
         {
             if (!before.HasValue) return Task.CompletedTask;
             if (!InitializationService.Get()) return Task.CompletedTask;
-            if (IsMemberReallyUpdated(before.Value, after))
-                return OnMemberUpdatedAsync(before.Value, after);
 
             if (!before.Value.Roles.SequenceEqual(after.Roles) && NextAllowedRoleUpdateEvent <= DateTime.Now)
             {
@@ -205,36 +204,6 @@ public partial class AuditLogService : ServiceBase
 
         await dbContext.AddAsync(logItem);
         await dbContext.SaveChangesAsync();
-    }
-
-    private static bool IsMemberReallyUpdated(SocketGuildUser before, SocketGuildUser after)
-    {
-        if (before.IsDeafened != after.IsDeafened) return true;
-        if (before.IsMuted != after.IsMuted) return true;
-        if (before.Nickname != after.Nickname) return true;
-
-        return false;
-    }
-
-    private async Task OnMemberUpdatedAsync(SocketGuildUser before, SocketGuildUser after)
-    {
-        var auditLog = (await after.Guild.GetAuditLogsAsync(10, actionType: ActionType.MemberUpdated).FlattenAsync())
-            .FirstOrDefault(o => ((MemberUpdateAuditLogData)o.Data).Target.Id == after.Id);
-
-        if (auditLog == null) return;
-
-        var data = new MemberUpdatedData(before, after);
-        var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-        var entity = AuditLogItem.Create(AuditLogItemType.MemberUpdated, after.Guild, null, auditLog.User, json, auditLog.Id);
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(after.Guild, CancellationToken.None);
-        await context.InitUserAsync(auditLog.User, CancellationToken.None);
-        await context.InitGuildUserAsync(after.Guild, auditLog.User as IGuildUser ?? after.Guild.GetUser(auditLog.User.Id), CancellationToken.None);
-
-        await context.AddAsync(entity);
-        await context.SaveChangesAsync();
     }
 
     private async Task OnMemberRolesUpdatedAsync(SocketGuildUser user)

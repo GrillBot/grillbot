@@ -5,8 +5,6 @@ using GrillBot.App.Services.AuditLog.Events;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Helpers;
-using GrillBot.Data.Models;
-using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 
@@ -197,7 +195,7 @@ public partial class AuditLogService : ServiceBase
     /// <param name="channel"></param>
     /// <param name="types"></param>
     /// <param name="after"></param>
-    public async Task<List<ulong>> GetDiscordAuditLogIds(GrillBotContext dbContext, IGuild guild, IChannel channel, AuditLogItemType[] types, DateTime after)
+    public async Task<List<ulong>> GetDiscordAuditLogIdsAsync(GrillBotContext dbContext, IGuild guild, IChannel channel, AuditLogItemType[] types, DateTime after)
     {
         var baseQuery = dbContext.AuditLogs.AsNoTracking()
             .Where(o => o.DiscordAuditLogItemId != null && o.CreatedAt >= after);

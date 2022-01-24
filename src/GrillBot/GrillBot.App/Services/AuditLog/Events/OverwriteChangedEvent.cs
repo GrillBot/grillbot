@@ -39,7 +39,7 @@ public class OverwriteChangedEvent : AuditEventBase
         await context.InitGuildChannelAsync(guild, Channel, DiscordHelper.GetChannelType(Channel).Value, CancellationToken.None);
 
         var timeLimit = DateTime.Now.AddDays(-5);
-        var auditLogIds = await AuditLogService.GetDiscordAuditLogIds(context, Guild, Channel,
+        var auditLogIds = await AuditLogService.GetDiscordAuditLogIdsAsync(context, Guild, Channel,
             new[] { AuditLogItemType.OverwriteCreated, AuditLogItemType.OverwriteDeleted, AuditLogItemType.OverwriteUpdated }, timeLimit);
 
         var auditLogs = new List<RestAuditLogEntry>();

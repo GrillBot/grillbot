@@ -40,11 +40,7 @@ public class MemberRolesUpdatedEvent : AuditEventBase
         await context.InitGuildUserAsync(Guild, After, CancellationToken.None);
 
         var timeLimit = DateTime.Now.AddDays(-7);
-        var auditLogIdsQuery = context.AuditLogs.AsQueryable()
-            .Where(o => o.GuildId == Guild.Id.ToString() && o.DiscordAuditLogItemId != null && o.Type == AuditLogItemType.MemberRoleUpdated && o.CreatedAt >= timeLimit)
-            .Select(o => o.DiscordAuditLogItemId);
-        var auditLogIds = (await auditLogIdsQuery.ToListAsync()).SelectMany(o => o.Split(',')).Select(o => Convert.ToUInt64(o)).ToList();
-
+        var auditLogIds = await AuditLogService.GetDiscordAuditLogIds(context, Guild, null, new[] { AuditLogItemType.MemberRoleUpdated }, timeLimit);
         var logs = (await Guild.GetAuditLogsAsync(100, actionType: ActionType.MemberRoleUpdated).FlattenAsync())
             .Where(o => !auditLogIds.Contains(o.Id) && ((MemberRoleAuditLogData)o.Data).Target.Id == After.Id);
 

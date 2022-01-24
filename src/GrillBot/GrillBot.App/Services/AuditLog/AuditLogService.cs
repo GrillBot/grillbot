@@ -225,4 +225,35 @@ public partial class AuditLogService : ServiceBase
         context.Remove(item);
         return (await context.SaveChangesAsync()) > 0;
     }
+
+    /// <summary>
+    /// Gets IDs of audit log in discord.
+    /// </summary>
+    /// <param name="dbContext"></param>
+    /// <param name="guild"></param>
+    /// <param name="channel"></param>
+    /// <param name="types"></param>
+    /// <param name="after"></param>
+    public async Task<List<ulong>> GetDiscordAuditLogIds(GrillBotContext dbContext, IGuild guild, IChannel channel, AuditLogItemType[] types, DateTime after)
+    {
+        var baseQuery = dbContext.AuditLogs.AsNoTracking()
+            .Where(o => o.DiscordAuditLogItemId != null && o.CreatedAt >= after);
+
+        if (guild != null)
+            baseQuery = baseQuery.Where(o => o.GuildId == guild.Id.ToString());
+
+        if (channel != null)
+            baseQuery = baseQuery.Where(o => o.ChannelId == channel.Id.ToString());
+
+        if (types?.Length > 0)
+            baseQuery = baseQuery.Where(o => types.Contains(o.Type));
+
+        var idsQuery = baseQuery.Select(o => o.DiscordAuditLogItemId).AsQueryable();
+        var ids = await idsQuery.ToListAsync();
+        return ids
+            .SelectMany(o => o.Split(','))
+            .Select(o => Convert.ToUInt64(o))
+            .Distinct()
+            .ToList();
+    }
 }

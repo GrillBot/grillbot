@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Extensions.Discord;
+﻿using GrillBot.App.Extensions;
+using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
@@ -64,7 +65,7 @@ public class MessageDeletedEvent : AuditEventBase
                 Size = attachment.Size
             };
 
-            var filenameWithoutExtension = file.FilenameWithoutExtension;
+            var filenameWithoutExtension = file.FilenameWithoutExtension.Cut(100, true);
             var extension = file.Extension;
             file.Filename = string.Join("_", new[] {
                 filenameWithoutExtension,

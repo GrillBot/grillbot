@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using Discord.Net;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
@@ -21,7 +22,7 @@ public class EmotesConverter : ConverterBase<IEmote>
         {
             if (ulong.TryParse(value, out ulong emoteId))
             {
-                emote = await Guild.GetEmoteAsync(emoteId);
+                emote = await TryDownloadEmoteAsync(emoteId);
 
                 if (emote != null) return emote;
             }
@@ -30,5 +31,17 @@ public class EmotesConverter : ConverterBase<IEmote>
         }
 
         return emote;
+    }
+
+    private async Task<Emote> TryDownloadEmoteAsync(ulong emoteId)
+    {
+        try
+        {
+            return await Guild.GetEmoteAsync(emoteId);
+        }
+        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownEmoji)
+        {
+            return null;
+        }
     }
 }

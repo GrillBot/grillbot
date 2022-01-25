@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿#pragma warning disable S1075 // URIs should not be hardcoded
+using Discord.Commands;
 using GrillBot.App.Extensions;
 using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data.Extensions.Discord;
@@ -16,16 +17,19 @@ static public class HelpExtensions
             .WithTitle(module.Name)
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
-            .WithAuthor(o => o.WithName("Nápověda").WithIconUrl(context.Client.CurrentUser.GetAvatarUri()))
+            .WithAuthor(o => o.WithName("Nápověda").WithIconUrl(context.Client.CurrentUser.GetAvatarUri()).WithUrl("https://public.grillbot.cloud"))
             .WithFooter($"{page + 1}/{pagesCount}")
             .WithMetadata(new HelpMetadata() { Page = page, PagesCount = pagesCount });
 
+        const string summaryTitle = "Kompletní seznam lze také najít ve veřejné administraci bota (https://public.grillbot.cloud)";
         if (!string.IsNullOrEmpty(module.Summary))
-            embed.WithDescription(module.Summary);
+            embed.WithDescription(summaryTitle + "\n" + module.Summary);
+        else
+            embed.WithDescription(summaryTitle);
 
         var executableCommands = await module.Commands
             .FindAllAsync(async cmd => (await cmd.CheckPreconditionsAsync(context, provider)).IsSuccess);
-        foreach (var command in executableCommands.Take(EmbedBuilder.MaxFieldCount))
+        foreach (var command in executableCommands.Take(EmbedBuilder.MaxFieldCount - 1))
         {
             var summary = string.IsNullOrEmpty(command.Summary) ? "*Tento příkaz nemá popis*" : FormatHelper.FormatCommandDescription(command.Summary, prefix);
 

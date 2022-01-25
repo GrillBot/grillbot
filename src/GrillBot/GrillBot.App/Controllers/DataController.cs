@@ -66,11 +66,12 @@ namespace GrillBot.App.Controllers
         /// Get non paginated list of channels.
         /// </summary>
         /// <param name="guildId">Optional guild ID</param>
+        /// <param name="ignoreThreads">Flag that removes threads from list.</param>
         [HttpGet("channels")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetChannelsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId)
+        public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
         {
             var currentUserId = User.GetUserId();
             IEnumerable<SocketGuild> guilds;
@@ -88,11 +89,17 @@ namespace GrillBot.App.Controllers
                 .Where(o => o.Type != null && o.Type != ChannelType.Category)
                 .ToList();
 
+            if (ignoreThreads)
+                channels = channels.FindAll(o => o.Type != ChannelType.PrivateThread && o.Type != ChannelType.PublicThread);
+
             var guildIds = guilds.Select(o => o.Id.ToString()).ToList();
             var dbChannelsQuery = DbContext.Channels.AsNoTracking()
                 .Where(o => o.ChannelType != ChannelType.Category && guildIds.Contains(o.GuildId))
                 .OrderBy(o => o.Name)
                 .AsQueryable();
+
+            if (ignoreThreads)
+                dbChannelsQuery = dbChannelsQuery.Where(o => o.ChannelType != ChannelType.PublicThread && o.ChannelType != ChannelType.PrivateThread);
 
             var query = dbChannelsQuery.Select(o => new Channel()
             {

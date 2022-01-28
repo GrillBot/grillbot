@@ -116,7 +116,7 @@ namespace GrillBot.Tests.App.Infrastructure.Preconditions
             var dbContextFactory = container.GetService<GrillBotContextFactory>();
             var dbContext = dbContextFactory.Create();
 
-            dbContext.Add(new User() { Id = "15523512345", Flags = (int)UserFlags.BotAdmin, Username = "Username" });
+            dbContext.Add(new User() { Id = "15523512345", Flags = (int)UserFlags.BotAdmin, Username = "Username", Discriminator = "9999" });
             dbContext.SaveChanges();
 
             var perms = Enum.GetValues<GuildPermission>().ToArray();

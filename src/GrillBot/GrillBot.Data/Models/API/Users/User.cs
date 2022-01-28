@@ -49,6 +49,7 @@ namespace GrillBot.Data.Models.API.Users
         {
             Id = user.Id;
             Username = user.Username;
+            Discriminator = user.Discriminator;
             IsBot = user.HaveFlags(UserFlags.NotUser);
         }
     }

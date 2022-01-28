@@ -67,7 +67,8 @@ namespace GrillBot.Tests.App.Controllers
             dbContext.Users.Add(new GrillBot.Database.Entity.User()
             {
                 Id = "1",
-                Username = "Username"
+                Username = "Username",
+                Discriminator = "9999"
             });
             dbContext.SaveChanges();
 
@@ -86,7 +87,8 @@ namespace GrillBot.Tests.App.Controllers
             dbContext.Users.Add(new GrillBot.Database.Entity.User()
             {
                 Id = "1",
-                Username = "Username"
+                Username = "Username",
+                Discriminator = "9999"
             });
             dbContext.SaveChanges();
 
@@ -105,7 +107,8 @@ namespace GrillBot.Tests.App.Controllers
             dbContext.Users.Add(new GrillBot.Database.Entity.User()
             {
                 Id = "1",
-                Username = "Username"
+                Username = "Username",
+                Discriminator = "9999"
             });
             dbContext.SaveChanges();
 

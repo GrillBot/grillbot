@@ -173,7 +173,7 @@ namespace GrillBot.App.Controllers
             await DbContext.InitUserAsync(discordUser, CancellationToken.None);
 
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, discordUser,
-                $"Uživatel {user.Username} byl aktualizován (Flags:{user.Flags},Note:{user.Note})");
+                $"Uživatel {user.Username}#{user.Discriminator} byl aktualizován (Flags:{user.Flags},Note:{user.Note})");
 
             await DbContext.AddAsync(logItem);
             await DbContext.SaveChangesAsync();

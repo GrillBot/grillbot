@@ -86,8 +86,8 @@ namespace GrillBot.Data.Models.API.AuditLog
                 },
                 "processed" => SortDesc switch
                 {
-                    true => query.OrderByDescending(o => o.ProcessedGuildUser.Nickname).ThenByDescending(o => o.ProcessedGuildUser.User.Username).ThenByDescending(o => o.Id),
-                    _ => query.OrderBy(o => o.ProcessedGuildUser.Nickname).ThenBy(o => o.ProcessedGuildUser.User.Username).ThenBy(o => o.Id)
+                    true => query.OrderByDescending(o => o.ProcessedGuildUser.Nickname).ThenByDescending(o => o.ProcessedUser.Username).ThenByDescending(o => o.ProcessedUser.Discriminator).ThenByDescending(o => o.Id),
+                    _ => query.OrderBy(o => o.ProcessedGuildUser.Nickname).ThenBy(o => o.ProcessedUser.Username).ThenBy(o => o.Id)
                 },
                 "type" => SortDesc switch
                 {

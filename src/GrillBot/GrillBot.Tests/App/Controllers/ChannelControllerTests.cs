@@ -93,7 +93,7 @@ namespace GrillBot.Tests.App.Controllers
             dbContext.UserChannels.RemoveRange(dbContext.UserChannels.AsEnumerable());
             dbContext.Users.RemoveRange(dbContext.Users.AsEnumerable());
             dbContext.GuildUsers.RemoveRange(dbContext.GuildUsers.AsEnumerable());
-            dbContext.Users.Add(new GrillBot.Database.Entity.User() { Id = "3", Username = "Username" });
+            dbContext.Users.Add(new GrillBot.Database.Entity.User() { Id = "3", Username = "Username", Discriminator = "9999" });
             dbContext.Guilds.Add(new GrillBot.Database.Entity.Guild() { Id = "2", Name = "Name" });
             dbContext.GuildUsers.Add(new GrillBot.Database.Entity.GuildUser() { GuildId = "2", UserId = "3" });
             var channel = new GrillBot.Database.Entity.GuildChannel()

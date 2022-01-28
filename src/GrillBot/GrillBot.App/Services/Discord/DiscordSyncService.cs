@@ -100,6 +100,7 @@ namespace GrillBot.App.Services.Discord
 
                     dbUser.Nickname = user.Nickname;
                     dbUser.User.Username = user.Username;
+                    dbUser.User.Discriminator = user.Discriminator;
 
                     if (user.IsBot)
                         dbUser.User.Flags |= (int)UserFlags.NotUser;
@@ -148,6 +149,7 @@ namespace GrillBot.App.Services.Discord
             if (dbUser == null) return;
 
             dbUser.Username = user.Username;
+            dbUser.Discriminator = user.Discriminator;
         }
 
         private static async Task SyncGuildUserAsync(GrillBotContext context, SocketGuildUser user)
@@ -159,6 +161,7 @@ namespace GrillBot.App.Services.Discord
 
             dbUser.Nickname = user.Nickname;
             dbUser.User.Username = user.Username;
+            dbUser.User.Discriminator = user.Discriminator;
 
             if (user.IsBot)
                 dbUser.User.Flags |= (int)UserFlags.NotUser;

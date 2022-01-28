@@ -120,6 +120,7 @@ public class AuditLogServiceTests
         var user = new Mock<IUser>();
         user.Setup(o => o.Id).Returns(1);
         user.Setup(o => o.Username).Returns("User");
+        user.Setup(o => o.Discriminator).Returns("9999");
 
         service.StoreItemAsync(AuditLogItemType.ChannelCreated, guild.Object, null, user.Object, "{}", null, null, null).Wait();
         Assert.IsTrue(true);
@@ -138,6 +139,7 @@ public class AuditLogServiceTests
         user.Setup(o => o.Id).Returns(1);
         user.Setup(o => o.Username).Returns("User");
         user.Setup(o => o.Nickname).Returns("User");
+        user.Setup(o => o.Discriminator).Returns("9999");
 
         service.StoreItemAsync(AuditLogItemType.ChannelCreated, guild.Object, null, user.Object, "{}", "12345", CancellationToken.None, null).Wait();
         Assert.IsTrue(true);

@@ -131,7 +131,8 @@ namespace GrillBot.Tests.Database.Entity
                 Id = "ABCD",
                 Note = "Note",
                 Username = "Username",
-                SelfUnverifyMinimalTime = TimeSpan.FromSeconds(50)
+                SelfUnverifyMinimalTime = TimeSpan.FromSeconds(50),
+                Discriminator = "9999"
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(user);

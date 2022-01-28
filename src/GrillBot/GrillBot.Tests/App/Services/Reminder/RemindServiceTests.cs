@@ -155,6 +155,7 @@ namespace GrillBot.Tests.App.Services.Reminder
             fromTo.Setup(o => o.Id).Returns(12345);
             fromTo.Setup(o => o.Username).Returns("Username");
             fromTo.Setup(o => o.IsBot).Returns(false);
+            fromTo.Setup(o => o.Discriminator).Returns("9999");
 
             var message = new Mock<IMessage>();
             message.Setup(o => o.Id).Returns(123456);
@@ -171,11 +172,13 @@ namespace GrillBot.Tests.App.Services.Reminder
             from.Setup(o => o.Id).Returns(12345);
             from.Setup(o => o.Username).Returns("Username");
             from.Setup(o => o.IsBot).Returns(false);
+            from.Setup(o => o.Discriminator).Returns("9999");
 
             var to = new Mock<IUser>();
             to.Setup(o => o.Id).Returns(123425);
             to.Setup(o => o.Username).Returns("Username2");
             to.Setup(o => o.IsBot).Returns(false);
+            to.Setup(o => o.Discriminator).Returns("9999");
 
             var message = new Mock<IMessage>();
             message.Setup(o => o.Id).Returns(222123456);

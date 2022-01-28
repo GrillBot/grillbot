@@ -11,6 +11,7 @@ namespace GrillBot.Tests.TestHelper
 
             user.Setup(o => o.Id).Returns(id);
             user.Setup(o => o.Username).Returns(username);
+            user.Setup(o => o.Discriminator).Returns("9999");
 
             return user;
         }

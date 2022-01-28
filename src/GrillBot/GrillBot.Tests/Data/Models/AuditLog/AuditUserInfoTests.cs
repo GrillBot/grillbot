@@ -115,7 +115,7 @@ namespace GrillBot.Tests.Data.Models.AuditLog
             var user = DiscordHelpers.CreateUserMock(12345, "User");
 
             var auditUser = new AuditUserInfo(user.Object);
-            Assert.AreEqual("User", auditUser.ToString());
+            Assert.AreEqual("User#9999", auditUser.ToString());
         }
 
         [TestMethod]

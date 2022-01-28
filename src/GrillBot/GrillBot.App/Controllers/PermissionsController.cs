@@ -104,7 +104,7 @@ namespace GrillBot.App.Controllers
             {
                 var users = await DbContext.Users.AsNoTracking()
                     .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
-                    .Select(o => new User() { Flags = o.Flags, Id = o.Id, Username = o.Username })
+                    .Select(o => new User() { Flags = o.Flags, Id = o.Id, Username = o.Username, Discriminator = o.Discriminator })
                     .ToListAsync();
 
                 result.AddRange(userPermissions.Select(o =>

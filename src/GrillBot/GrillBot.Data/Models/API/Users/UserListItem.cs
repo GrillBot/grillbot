@@ -27,7 +27,7 @@ namespace GrillBot.Data.Models.API.Users
             Id = user.Id;
             HaveBirthday = user.Birthday != null;
             Flags = user.Flags;
-            Username = dcUser == null ? user.Username : $"{user.Username}#{dcUser.Discriminator}";
+            Username = string.IsNullOrEmpty(user.Discriminator) ? user.Username : $"{user.Username}#{user.Discriminator}";
             DiscordStatus = dcUser?.Status ?? UserStatus.Offline;
 
             if (dcUser != null)

@@ -10,6 +10,7 @@ namespace GrillBot.Data.Models.API.Users
     {
         public string Id { get; set; }
         public string Username { get; set; }
+        public string Discriminator { get; set; }
         public string Note { get; set; }
         public long Flags { get; set; }
         public bool HaveBirthday { get; set; }
@@ -28,6 +29,7 @@ namespace GrillBot.Data.Models.API.Users
         {
             Id = entity.Id;
             Username = entity.Username;
+            Discriminator = entity.Discriminator;
             Note = entity.Note;
             Flags = entity.Flags;
             HaveBirthday = entity.Birthday != null;

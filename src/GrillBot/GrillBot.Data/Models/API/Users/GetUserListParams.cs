@@ -55,8 +55,8 @@ namespace GrillBot.Data.Models.API.Users
 
             return SortDesc switch
             {
-                true => query.OrderByDescending(o => o.Username),
-                _ => query.OrderBy(o => o.Username)
+                true => query.OrderByDescending(o => o.Username).ThenByDescending(o => o.Discriminator),
+                _ => query.OrderBy(o => o.Username).ThenBy(o => o.Discriminator)
             };
         }
     }

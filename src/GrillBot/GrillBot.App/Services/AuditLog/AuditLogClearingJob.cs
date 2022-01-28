@@ -69,7 +69,9 @@ namespace GrillBot.App.Services.AuditLog
 
                         user.Add(
                             new XAttribute("Id", o.UserId),
-                            new XAttribute("UserFlags", o.User.Flags)
+                            new XAttribute("UserFlags", o.User.Flags),
+                            new XAttribute("Username", o.User.Username),
+                            new XAttribute("Discriminator", o.User.Discriminator)
                         );
 
                         if (!string.IsNullOrEmpty(o.UsedInviteCode))
@@ -77,9 +79,6 @@ namespace GrillBot.App.Services.AuditLog
 
                         if (!string.IsNullOrEmpty(o.Nickname))
                             user.Add(new XAttribute("Nickname", o.Nickname));
-
-                        if (!string.IsNullOrEmpty(o.User.Username))
-                            user.Add(new XAttribute("Username", o.User.Username));
 
                         return user;
                     });

@@ -134,7 +134,7 @@ namespace GrillBot.App.Services
                 ),
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Name, $"{user.Username}#{user.Discriminator}"),
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
                     new Claim(ClaimTypes.Role, isPublic ? "User" : "Admin")
                 })

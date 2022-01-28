@@ -46,8 +46,8 @@ namespace GrillBot.Data.Models.API.Searching
             {
                 "user" => SortDesc switch
                 {
-                    true => query.OrderByDescending(o => o.User.Username).ThenByDescending(o => o.Id),
-                    _ => query.OrderBy(o => o.User.Username).ThenBy(o => o.Id)
+                    true => query.OrderByDescending(o => o.User.Username).ThenByDescending(o => o.User.Discriminator).ThenByDescending(o => o.Id),
+                    _ => query.OrderBy(o => o.User.Username).ThenBy(o => o.User.Discriminator).ThenBy(o => o.Id)
                 },
                 "guild" => SortDesc switch
                 {

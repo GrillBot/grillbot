@@ -48,8 +48,8 @@ namespace GrillBot.Data.Models.API.Reminder
             {
                 "fromuser" => SortDesc switch
                 {
-                    true => query.OrderByDescending(o => o.FromUser.Username).ThenByDescending(o => o.Id),
-                    _ => query.OrderBy(o => o.FromUser.Username).ThenBy(o => o.Id)
+                    true => query.OrderByDescending(o => o.FromUser.Username).ThenByDescending(o => o.FromUser.Discriminator).ThenByDescending(o => o.Id),
+                    _ => query.OrderBy(o => o.FromUser.Username).ThenBy(o => o.FromUser.Discriminator).ThenBy(o => o.Id)
                 },
                 "touser" => SortDesc switch
                 {

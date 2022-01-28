@@ -31,6 +31,10 @@ namespace GrillBot.Database.Entity
         [Required]
         public string Username { get; set; }
 
+        [Required]
+        [StringLength(4)]
+        public string Discriminator { get; set; }
+
         public TimeSpan? SelfUnverifyMinimalTime { get; set; }
 
         public ISet<GuildUser> Guilds { get; set; }
@@ -58,7 +62,8 @@ namespace GrillBot.Database.Entity
             {
                 Id = user.Id.ToString(),
                 Username = user.Username,
-                Flags = (int)(user.IsBot || user.IsWebhook ? UserFlags.NotUser : UserFlags.None)
+                Flags = (int)(user.IsBot || user.IsWebhook ? UserFlags.NotUser : UserFlags.None),
+                Discriminator = user.Discriminator
             };
         }
     }

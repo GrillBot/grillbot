@@ -86,13 +86,13 @@ namespace GrillBot.Data.Models.API.Unverify
                 },
                 "fromuser" => SortDesc switch
                 {
-                    true => query.OrderByDescending(o => o.FromUser.User.Username).ThenByDescending(o => o.Id),
-                    _ => query.OrderBy(o => o.FromUser.User.Username).ThenBy(o => o.Id)
+                    true => query.OrderByDescending(o => o.FromUser.User.Username).ThenByDescending(o => o.FromUser.User.Discriminator).ThenByDescending(o => o.Id),
+                    _ => query.OrderBy(o => o.FromUser.User.Username).ThenBy(o => o.FromUser.User.Discriminator).ThenBy(o => o.Id)
                 },
                 "touser" => SortDesc switch
                 {
-                    true => query.OrderByDescending(o => o.ToUser.User.Username).ThenByDescending(o => o.Id),
-                    _ => query.OrderBy(o => o.ToUser.User.Username).ThenBy(o => o.Id)
+                    true => query.OrderByDescending(o => o.ToUser.User.Username).ThenByDescending(o => o.ToUser.User.Discriminator).ThenByDescending(o => o.Id),
+                    _ => query.OrderBy(o => o.ToUser.User.Username).ThenBy(o => o.ToUser.User.Discriminator).ThenBy(o => o.Id)
                 },
                 _ => SortDesc switch
                 {

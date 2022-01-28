@@ -198,10 +198,12 @@ namespace GrillBot.App.Controllers
                 query = query.Where(o => o.Guilds.Any(x => mutualGuilds.Contains(x.GuildId)));
             }
 
-            query = query.Select(o => new User() { Id = o.Id, Username = o.Username })
-                .OrderBy(o => o.Username);
+            query = query
+                .Select(o => new User() { Id = o.Id, Username = o.Username, Discriminator = o.Discriminator })
+                .OrderBy(o => o.Username)
+                .ThenBy(o => o.Discriminator);
 
-            var dict = await query.ToDictionaryAsync(o => o.Id, o => o.Username);
+            var dict = await query.ToDictionaryAsync(o => o.Id, o => $"{o.Username}#{o.Discriminator}");
             return Ok(dict);
         }
     }

@@ -24,12 +24,15 @@ namespace GrillBot.App.Services
                 using var dbContext = DbFactory.Create();
 
                 var usersQuery = dbContext.Users.AsQueryable()
-                    .Where(o => (o.Flags & (int)UserFlags.WebAdminOnline) != 0);
+                    .Where(o => (o.Flags & (int)UserFlags.WebAdminOnline) != 0 || (o.Flags & (int)UserFlags.PublicAdminOnline) != 0);
                 var users = await usersQuery.ToListAsync(context.CancellationToken);
                 if (users.Count == 0) return;
 
                 foreach (var user in users)
+                {
                     user.Flags &= ~(int)UserFlags.WebAdminOnline;
+                    user.Flags &= ~(int)UserFlags.PublicAdminOnline;
+                }
 
                 await dbContext.SaveChangesAsync();
             }
@@ -37,7 +40,6 @@ namespace GrillBot.App.Services
             {
                 await Logging.ErrorAsync(nameof(OnlineUsersCleanJob), "An error occured at online users clearing.", ex);
             }
-
         }
     }
 }

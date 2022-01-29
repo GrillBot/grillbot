@@ -155,7 +155,7 @@ public class Startup
             q.AddTriggeredJob<MessageCacheCheckCron>(Configuration, "Discord:MessageCache:Period");
             q.AddTriggeredJob<AuditLogClearingJob>(Configuration, "AuditLog:CleaningCron");
             q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
-            q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron");
+            q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron", true);
             q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
             q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
             q.AddTriggeredJob<EmoteStatsCleaningJob>(Configuration, "Emotes:CleaningInterval");

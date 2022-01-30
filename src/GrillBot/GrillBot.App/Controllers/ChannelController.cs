@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 using GrillBot.App.Extensions;
 
@@ -170,6 +169,31 @@ namespace GrillBot.App.Controllers
             };
 
             return Ok(channelDetail);
+        }
+
+        /// <summary>
+        /// Updates channel
+        /// </summary>
+        /// <response code="200">Success</response>
+        /// <response code="400">Validation failed.</response>
+        /// <response code="404">Channel not found</response>
+        [HttpPut("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [OpenApiOperation(nameof(ChannelController) + "_" + nameof(UpdateChannelAsync))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult> UpdateChannelAsync(ulong id, [FromBody] UpdateChannelParams parameters)
+        {
+            var channel = await DbContext.Channels
+                .FirstOrDefaultAsync(o => o.ChannelId == id.ToString());
+
+            if (channel == null)
+                return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
+
+            channel.Flags = parameters.Flags;
+            await DbContext.SaveChangesAsync();
+            return Ok();
         }
 
         /// <summary>

@@ -4,6 +4,7 @@ using GrillBot.App.Helpers;
 using GrillBot.App.Modules.Implementations.Channels;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
+using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Modules.TextBased;
 
@@ -32,7 +33,7 @@ public class ChannelModule : Infrastructure.ModuleBase
         using var dbContext = DbFactory.Create();
 
         var query = dbContext.UserChannels.AsQueryable()
-            .Where(o => o.GuildId == Context.Guild.Id.ToString() && availableChannels.Contains(o.Id) && o.Count > 0);
+            .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.Count > 0 && (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 && availableChannels.Contains(o.Id));
 
         var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.Id }).Select(o => new
         {

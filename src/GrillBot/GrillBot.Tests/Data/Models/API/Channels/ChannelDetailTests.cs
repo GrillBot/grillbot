@@ -23,7 +23,8 @@ namespace GrillBot.Tests.Data.Models.API.Channels
                 Guild = new(),
                 GuildId = "Id",
                 Name = "Name",
-                ParentChannel = new()
+                ParentChannel = new(),
+                Flags = 1
             };
 
             var detail = new ChannelDetail(entity)

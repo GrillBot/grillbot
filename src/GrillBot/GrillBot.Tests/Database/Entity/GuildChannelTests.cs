@@ -35,7 +35,8 @@ namespace GrillBot.Tests.Database.Entity
                 GuildId = "Guild",
                 Name = "Name",
                 ParentChannelId = "ParentChannel",
-                ParentChannel = new()
+                ParentChannel = new(),
+                Flags = 1
             };
 
             TestHelpers.CheckNonDefaultPropertyValues(channel);

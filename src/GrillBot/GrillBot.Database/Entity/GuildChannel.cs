@@ -32,6 +32,8 @@ namespace GrillBot.Database.Entity
         [ForeignKey(nameof(ParentChannelId))]
         public GuildChannel ParentChannel { get; set; }
 
+        public long Flags { get; set; }
+
         public ISet<SearchItem> SearchItems { get; set; }
         public ISet<GuildUserChannel> Users { get; set; }
 
@@ -56,5 +58,7 @@ namespace GrillBot.Database.Entity
 
             return guildChannel;
         }
+
+        public bool HasFlag(ChannelFlags flags) => (Flags & (long)flags) != 0;
     }
 }

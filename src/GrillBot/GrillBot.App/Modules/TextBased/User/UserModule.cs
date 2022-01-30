@@ -127,8 +127,7 @@ public class UserModule : Infrastructure.ModuleBase
         if (clients.Any())
             embed.AddField("Aktivní zařízení", string.Join(", ", clients), false);
 
-        var userStateQueryBase = dbContext.GuildUsers.AsQueryable()
-            .AsNoTracking()
+        var userStateQueryBase = dbContext.GuildUsers.AsNoTracking()
             .Where(o => o.GuildId == context.Guild.Id.ToString() && o.UserId == user.Id.ToString());
 
         var baseData = await userStateQueryBase.Include(o => o.UsedInvite)
@@ -140,7 +139,9 @@ public class UserModule : Infrastructure.ModuleBase
                 .AddField("Obdržené reakce", baseData?.ObtainedReactions, true);
         }
 
-        var messagesCount = await dbContext.UserChannels.AsQueryable().Where(o => o.Count > 0 && o.GuildId == context.Guild.Id.ToString() && o.UserId == user.Id.ToString()).SumAsync(o => o.Count);
+        var messagesCount = await dbContext.UserChannels.AsNoTracking()
+            .Where(o => o.Count > 0 && o.GuildId == context.Guild.Id.ToString() && o.UserId == user.Id.ToString() && (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0)
+            .SumAsync(o => o.Count);
         embed.AddField("Počet zpráv", messagesCount, true);
 
         var unverifyStatsQuery = dbContext.UnverifyLogs.AsQueryable().AsNoTracking()
@@ -168,12 +169,21 @@ public class UserModule : Infrastructure.ModuleBase
             );
         }
 
-        var channelActivity = await userStateQueryBase.Select(o => new
+        var channelActivityQuery = userStateQueryBase.Select(o => new
         {
-            MostActive = o.User.Channels.Where(x => x.GuildId == o.GuildId).OrderByDescending(o => o.Count).Select(o => new { o.Id, o.Count }).FirstOrDefault(),
-            LastMessage = o.User.Channels.Where(x => x.GuildId == o.GuildId).OrderByDescending(o => o.LastMessageAt).Select(o => new { o.Id, o.LastMessageAt }).FirstOrDefault()
-        }).FirstOrDefaultAsync();
+            MostActive = o.User.Channels
+                .Where(x => x.GuildId == o.GuildId && (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0)
+                .OrderByDescending(o => o.Count)
+                .Select(o => new { o.Id, o.Count })
+                .FirstOrDefault(),
+            LastMessage = o.User.Channels
+                .Where(x => x.GuildId == o.GuildId && (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0)
+                .OrderByDescending(o => o.LastMessageAt)
+                .Select(o => new { o.Id, o.LastMessageAt })
+                .FirstOrDefault()
+        });
 
+        var channelActivity = await channelActivityQuery.FirstOrDefaultAsync();
         if (channelActivity != null)
         {
             if (channelActivity.MostActive != null)

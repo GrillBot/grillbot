@@ -14,6 +14,7 @@ public class MessageEditedEvent : AuditEventBase
     private DiscordSocketClient DiscordClient { get; }
 
     private SocketTextChannel TextChannel => Channel as SocketTextChannel;
+    private IMessage OldMessage => Before.HasValue ? Before.Value : MessageCache.GetMessage(Before.Id);
 
     public MessageEditedEvent(AuditLogService auditLogService, Cacheable<IMessage, ulong> before, SocketMessage after,
         ISocketMessageChannel channel, MessageCache.MessageCache messageCache, DiscordSocketClient discordClient) : base(auditLogService)
@@ -26,13 +27,21 @@ public class MessageEditedEvent : AuditEventBase
     }
 
     public override Task<bool> CanProcessAsync()
-        => Task.FromResult(TextChannel != null);
+    {
+        var oldMessage = OldMessage;
+
+        return Task.FromResult(
+            TextChannel != null &&
+            oldMessage?.Author.IsUser() == true &&
+            !string.IsNullOrEmpty(After?.Content) &&
+            oldMessage.Content != After.Content
+        );
+    }
 
     public override async Task ProcessAsync()
     {
         var textChannel = TextChannel;
-        var oldMessage = Before.HasValue ? Before.Value : MessageCache.GetMessage(Before.Id);
-        if (oldMessage == null || After == null || !oldMessage.Author.IsUser() || oldMessage.Content == After.Content) return;
+        var oldMessage = OldMessage;
         var author = await DiscordClient.TryFindGuildUserAsync(textChannel.Guild.Id, oldMessage.Author.Id);
         if (author == null) return;
 

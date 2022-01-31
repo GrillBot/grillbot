@@ -8,7 +8,7 @@ namespace GrillBot.Database.Entity
     {
         [StringLength(30)]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public string Id { get; set; }
+        public string ChannelId { get; set; }
 
         public GuildChannel Channel { get; set; }
 

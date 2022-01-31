@@ -153,7 +153,7 @@ namespace GrillBot.App.Controllers
                 return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
 
             var userChannelsQuery = DbContext.UserChannels.AsNoTracking()
-                .Where(o => o.Id == id.ToString());
+                .Where(o => o.ChannelId == id.ToString());
 
             var mostActiveUser = await userChannelsQuery.OrderByDescending(o => o.Count)
                 .Select(o => o.User.User).FirstOrDefaultAsync();
@@ -211,7 +211,7 @@ namespace GrillBot.App.Controllers
             var query = DbContext.UserChannels.AsNoTracking()
                 .Include(o => o.User).ThenInclude(o => o.User)
                 .OrderByDescending(o => o.Count)
-                .Where(o => o.Id == id.ToString());
+                .Where(o => o.ChannelId == id.ToString());
 
             var result = await PaginatedResponse<ChannelUserStatItem>.CreateAsync(query, pagination, entity => new()
             {
@@ -253,7 +253,7 @@ namespace GrillBot.App.Controllers
                     .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString())
                     .AsQueryable();
 
-                var groupedChannelsQuery = channelsDataQuery.GroupBy(o => o.Id).Select(o => new
+                var groupedChannelsQuery = channelsDataQuery.GroupBy(o => o.ChannelId).Select(o => new
                 {
                     ChannelId = o.Key,
                     Count = o.Sum(x => x.Count),

@@ -108,7 +108,7 @@ namespace GrillBot.Tests.App.Controllers
                 Count = 50,
                 FirstMessageAt = DateTime.MaxValue,
                 GuildId = "2",
-                Id = "1",
+                ChannelId = "1",
                 LastMessageAt = DateTime.MaxValue,
                 UserId = "3"
             });

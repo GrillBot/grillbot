@@ -52,10 +52,10 @@ namespace GrillBot.Database.Services
 
             modelBuilder.Entity<GuildUserChannel>(builder =>
             {
-                builder.HasKey(o => new { o.GuildId, o.Id, o.UserId });
+                builder.HasKey(o => new { o.GuildId, o.ChannelId, o.UserId });
                 builder.HasOne(o => o.Guild).WithMany().HasForeignKey(o => o.GuildId);
                 builder.HasOne(o => o.User).WithMany(o => o.Channels).HasForeignKey(o => new { o.GuildId, o.UserId });
-                builder.HasOne(o => o.Channel).WithMany(o => o.Users).HasForeignKey(o => new { o.GuildId, o.Id });
+                builder.HasOne(o => o.Channel).WithMany(o => o.Users).HasForeignKey(o => new { o.GuildId, o.ChannelId });
             });
 
             modelBuilder.Entity<GuildChannel>(builder =>

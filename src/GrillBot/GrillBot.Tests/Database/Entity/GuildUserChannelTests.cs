@@ -23,7 +23,7 @@ namespace GrillBot.Tests.Database.Entity
                 Channel = new(),
                 Count = 42,
                 FirstMessageAt = DateTime.MaxValue,
-                Id = "Id",
+                ChannelId = "Id",
                 LastMessageAt = DateTime.MaxValue,
                 User = new(),
                 UserId = "User"

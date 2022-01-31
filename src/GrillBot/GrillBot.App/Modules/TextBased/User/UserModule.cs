@@ -174,12 +174,12 @@ public class UserModule : Infrastructure.ModuleBase
             MostActive = o.User.Channels
                 .Where(x => x.GuildId == o.GuildId && (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0)
                 .OrderByDescending(o => o.Count)
-                .Select(o => new { o.Id, o.Count })
+                .Select(o => new { o.ChannelId, o.Count })
                 .FirstOrDefault(),
             LastMessage = o.User.Channels
                 .Where(x => x.GuildId == o.GuildId && (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0)
                 .OrderByDescending(o => o.LastMessageAt)
-                .Select(o => new { o.Id, o.LastMessageAt })
+                .Select(o => new { o.ChannelId, o.LastMessageAt })
                 .FirstOrDefault()
         });
 
@@ -187,10 +187,10 @@ public class UserModule : Infrastructure.ModuleBase
         if (channelActivity != null)
         {
             if (channelActivity.MostActive != null)
-                embed.AddField("Nejaktivnější kanál", $"<#{channelActivity.MostActive.Id}> ({channelActivity.MostActive.Count})", false);
+                embed.AddField("Nejaktivnější kanál", $"<#{channelActivity.MostActive.ChannelId}> ({channelActivity.MostActive.Count})", false);
 
             if (channelActivity.LastMessage != null)
-                embed.AddField("Poslední zpráva", $"<#{channelActivity.LastMessage.Id}> ({channelActivity.LastMessage.LastMessageAt.ToCzechFormat()})", false);
+                embed.AddField("Poslední zpráva", $"<#{channelActivity.LastMessage.ChannelId}> ({channelActivity.LastMessage.LastMessageAt.ToCzechFormat()})", false);
         }
 
         return embed.Build();

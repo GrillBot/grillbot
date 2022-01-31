@@ -33,11 +33,11 @@ public class ChannelModule : Infrastructure.ModuleBase
         using var dbContext = DbFactory.Create();
 
         var query = dbContext.UserChannels.AsQueryable()
-            .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.Count > 0 && (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 && availableChannels.Contains(o.Id));
+            .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.Count > 0 && (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 && availableChannels.Contains(o.ChannelId));
 
-        var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.Id }).Select(o => new
+        var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.ChannelId }).Select(o => new
         {
-            ChannelId = o.Key.Id,
+            o.Key.ChannelId,
             Count = o.Sum(x => x.Count)
         }).OrderByDescending(o => o.Count).Select(o => new KeyValuePair<string, long>(o.ChannelId, o.Count));
 
@@ -70,11 +70,11 @@ public class ChannelModule : Infrastructure.ModuleBase
         using var dbContext = DbFactory.Create();
 
         var channelDataQuery = dbContext.UserChannels.AsQueryable()
-            .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.Id == channel.Id.ToString() && o.Count > 0);
+            .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.ChannelId == channel.Id.ToString() && o.Count > 0);
 
-        var groupedDataQuery = channelDataQuery.GroupBy(o => new { o.GuildId, o.Id }).Select(o => new
+        var groupedDataQuery = channelDataQuery.GroupBy(o => new { o.GuildId, o.ChannelId }).Select(o => new
         {
-            ChannelId = o.Key.Id,
+            o.Key.ChannelId,
             Count = o.Sum(x => x.Count),
             FirstMessageAt = o.Min(x => x.FirstMessageAt),
             LastMessageAt = o.Max(x => x.LastMessageAt)

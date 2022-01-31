@@ -44,7 +44,7 @@ namespace GrillBot.App.Services
 
             // Search specific channel for specific guild and user.
             var channel = await dbContext.UserChannels.AsQueryable()
-                .FirstOrDefaultAsync(o => o.GuildId == guildId && o.Id == channelId && o.UserId == userId);
+                .FirstOrDefaultAsync(o => o.GuildId == guildId && o.ChannelId == channelId && o.UserId == userId);
 
             if (channel == null)
             {
@@ -52,7 +52,7 @@ namespace GrillBot.App.Services
                 {
                     UserId = userId,
                     GuildId = guildId,
-                    Id = channelId,
+                    ChannelId = channelId,
                     FirstMessageAt = DateTime.Now,
                     Count = 0
                 };
@@ -77,7 +77,7 @@ namespace GrillBot.App.Services
             using var dbContext = DbFactory.Create();
 
             var dbChannel = await dbContext.UserChannels.AsQueryable()
-                .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId && o.Id == channelId);
+                .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId && o.ChannelId == channelId);
 
             if (dbChannel == null) return;
 
@@ -92,7 +92,7 @@ namespace GrillBot.App.Services
 
             using var dbContext = DbFactory.Create();
 
-            var channelsQuery = dbContext.UserChannels.AsQueryable().Where(o => o.Id == channelId && o.GuildId == guildId);
+            var channelsQuery = dbContext.UserChannels.AsQueryable().Where(o => o.ChannelId == channelId && o.GuildId == guildId);
             var channels = await channelsQuery.ToListAsync();
 
             dbContext.RemoveRange(channels);
@@ -106,7 +106,7 @@ namespace GrillBot.App.Services
             var channelIdQuery = dbContext.UserChannels.AsNoTracking()
                 .OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt)
                 .Where(o => o.Channel.ChannelType == ChannelType.Text && o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString())
-                .Select(o => o.Id);
+                .Select(o => o.ChannelId);
             var channelId = await channelIdQuery.FirstOrDefaultAsync();
 
             // User not have any active channel.

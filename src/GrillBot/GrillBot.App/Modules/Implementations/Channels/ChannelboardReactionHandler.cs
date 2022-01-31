@@ -28,11 +28,11 @@ public class ChannelboardReactionHandler : ReactionEventHandler
         using var dbContext = DbFactory.Create();
 
         var query = dbContext.UserChannels.AsQueryable()
-            .Where(o => o.GuildId == guild.Id.ToString() && availableChannels.Contains(o.Id) && o.Count > 0);
+            .Where(o => o.GuildId == guild.Id.ToString() && availableChannels.Contains(o.ChannelId) && o.Count > 0);
 
-        var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.Id }).Select(o => new
+        var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.ChannelId }).Select(o => new
         {
-            ChannelId = o.Key.Id,
+            o.Key.ChannelId,
             Count = o.Sum(x => x.Count)
         }).OrderByDescending(o => o.Count).Select(o => new KeyValuePair<string, long>(o.ChannelId, o.Count));
 

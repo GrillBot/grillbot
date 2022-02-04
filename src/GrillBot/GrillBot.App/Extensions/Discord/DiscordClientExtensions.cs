@@ -22,7 +22,7 @@
             return user;
         }
 
-        static public async Task<IUser> FindUserAsync(this BaseSocketClient client, ulong id)
+        static public async Task<IUser> FindUserAsync(this BaseSocketClient client, ulong id, CancellationToken cancellationToken = default)
         {
             var user = client.GetUser(id);
 
@@ -42,7 +42,7 @@
             if (client.LoginState != LoginState.LoggedIn)
                 return null;
 
-            return await client.Rest.GetUserAsync(id);
+            return await client.Rest.GetUserAsync(id, new RequestOptions() { CancelToken = cancellationToken });
         }
 
         static public async Task<IGuildUser> TryFindGuildUserAsync(this BaseSocketClient client, ulong guildId, ulong userId)

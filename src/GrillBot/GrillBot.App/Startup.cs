@@ -76,7 +76,7 @@ public class Startup
             .AddSingleton<RandomizationService>()
             .AddDatabase(connectionString)
             .AddMemoryCache()
-            .AddControllers()
+            .AddControllers(c => c.Filters.Add<OperationCancelledExceptionFilterAttribute>())
             .AddNewtonsoftJson();
 
         services

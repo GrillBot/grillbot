@@ -49,9 +49,9 @@ namespace GrillBot.App.Controllers
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<UserListItem>.CreateAsync(query, parameters, async (entity, _) =>
+            var result = await PaginatedResponse<UserListItem>.CreateAsync(query, parameters, async (entity, cancellationToken) =>
             {
-                var discordUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(entity.Id));
+                var discordUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(entity.Id), cancellationToken);
                 return new UserListItem(entity, DiscordClient, discordUser);
             }, cancellationToken);
             return Ok(result);
@@ -82,7 +82,7 @@ namespace GrillBot.App.Controllers
             if (entity == null)
                 return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
 
-            var user = await DiscordClient.FindUserAsync(id);
+            var user = await DiscordClient.FindUserAsync(id, cancellationToken);
             var detail = new UserDetail(entity, user, DiscordClient);
             return Ok(detail);
         }
@@ -169,9 +169,8 @@ namespace GrillBot.App.Controllers
                 user.Flags &= ~(int)UserFlags.PublicAdministrationBlocked;
 
             var userId = User.GetUserId();
-            var discordUser = await DiscordClient.FindUserAsync(userId);
-
-            await DbContext.InitUserAsync(discordUser, CancellationToken.None);
+            var discordUser = await DiscordClient.FindUserAsync(userId, cancellationToken);
+            await DbContext.InitUserAsync(discordUser, cancellationToken);
 
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, discordUser,
                 $"Uživatel {user.Username}#{user.Discriminator} byl aktualizován (Flags:{user.Flags},Note:{user.Note})");

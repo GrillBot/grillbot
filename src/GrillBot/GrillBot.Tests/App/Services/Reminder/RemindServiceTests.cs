@@ -1,226 +1,280 @@
-﻿using Discord;
-using GrillBot.App.Services.Reminder;
+﻿using GrillBot.App.Services.Reminder;
 using GrillBot.Database.Services;
-using GrillBot.Tests.TestHelper;
-using Microsoft.Extensions.DependencyInjection;
+using GrillBot.Tests.TestHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace GrillBot.Tests.App.Services.Reminder
+namespace GrillBot.Tests.App.Services.Reminder;
+
+[TestClass]
+public class RemindServiceTests : ServiceTest<RemindService>
 {
-    [TestClass]
-    public class RemindServiceTests
+    protected override RemindService CreateService()
     {
-        private ServiceProvider CreateService(out RemindService service, int minimalTimeMinutes = 0)
+        var discordClient = DiscordHelper.CreateClient();
+        var dbFactory = new DbContextBuilder();
+        DbContext = dbFactory.Create();
+        var configuration = ConfigurationHelper.CreateConfiguration();
+
+        return new RemindService(discordClient, dbFactory, configuration);
+    }
+
+    public override void Cleanup()
+    {
+        DbContext.Reminders.RemoveRange(DbContext.Reminders.AsEnumerable());
+        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
+        DbContext.SaveChanges();
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
+    public async Task CreateRemindAsync_NotInFuture()
+    {
+        await Service.CreateRemindAsync(null, null, DateTime.MinValue, null, null);
+        await Service.CreateRemindAsync(null, null, DateTime.MinValue, null, null);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
+    public async Task CreateRemindAsync_MinimalTime()
+    {
+        var at = DateTime.Now.AddSeconds(10);
+        await Service.CreateRemindAsync(null, null, at, null, null);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
+    public async Task CreateRemindAsync_EmptyMessage()
+    {
+        var at = DateTime.Now.AddHours(12);
+        await Service.CreateRemindAsync(null, null, at, null, null);
+    }
+
+    [TestMethod]
+    public async Task CreateRemindAsync_SameUser()
+    {
+        var user = DataHelper.CreateDiscordUser();
+        var at = DateTime.Now.AddDays(1);
+        var msg = DataHelper.CreateMessage();
+
+        await Service.CreateRemindAsync(user, user, at, "msg", msg);
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public async Task CreateRemindAsync_AnotherUser()
+    {
+        var from = DataHelper.CreateDiscordUser();
+        var to = DataHelper.CreateDiscordUser("Username", 123456, "1235");
+        var at = DateTime.Now.AddDays(1);
+        var msg = DataHelper.CreateMessage();
+
+        await Service.CreateRemindAsync(from, to, at, "msg", msg);
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public async Task GetRemindersCountAsync()
+    {
+        var user = DataHelper.CreateDiscordUser();
+        var result = await Service.GetRemindersCountAsync(user);
+
+        Assert.AreEqual(0, result);
+    }
+
+    [TestMethod]
+    public async Task GetRemindersAsync()
+    {
+        var user = DataHelper.CreateDiscordUser();
+        var result = await Service.GetRemindersAsync(user, 0);
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public async Task CopyAsync_NotFound()
+    {
+        var user = DataHelper.CreateDiscordUser();
+        var msg = DataHelper.CreateMessage();
+
+        await Service.CopyAsync(msg, user);
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public async Task CopyAsync_SameUser()
+    {
+        var user = DataHelper.CreateDiscordUser();
+        var msg = DataHelper.CreateMessage();
+
+        var at = DateTime.Now.AddDays(1);
+        await Service.CreateRemindAsync(user, user, at, "msg", msg);
+        await Service.CopyAsync(msg, user);
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public async Task CopyAsync_Finished()
+    {
+        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
+        await DbContext.InitUserAsync(toUser, CancellationToken.None);
+        await DbContext.InitUserAsync(DataHelper.CreateDiscordUser(), CancellationToken.None);
+        await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
-            service = null;
-            var container = DIHelpers.CreateContainer();
+            At = DateTime.MinValue,
+            FromUserId = "12345",
+            ToUserId = "12345",
+            Message = "Message",
+            OriginalMessageId = "12345"
+        });
+        await DbContext.SaveChangesAsync();
+        var msg = DataHelper.CreateMessage();
 
-            if (container.GetService<GrillBotContextFactory>() is not TestingGrillBotContextFactory dbFactory)
-            {
-                Assert.Fail("DbFactory není TestingGrillBotContextFactory.");
-                return null;
-            }
+        await Service.CopyAsync(msg, toUser);
+        Assert.IsTrue(true);
+    }
 
-            var configuration = ConfigHelpers.CreateConfiguration(minimalTimeMinutes);
-            service = new RemindService(null, dbFactory, configuration);
-            return container;
-        }
+    [TestMethod]
+    public async Task CopyAsync_Success()
+    {
+        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
+        var fromUser = DataHelper.CreateDiscordUser();
 
-        [TestMethod]
-        [ExpectedException(typeof(ValidationException))]
-        public void CreateRemind_BeforeNow()
+        await DbContext.InitUserAsync(toUser, CancellationToken.None);
+        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
-            using var _ = CreateService(out var service);
+            At = DateTime.Now.AddDays(3),
+            FromUserId = "12345",
+            ToUserId = "12345",
+            Message = "Message",
+            OriginalMessageId = "12345"
+        });
+        await DbContext.SaveChangesAsync();
+        var msg = DataHelper.CreateMessage(fromUser);
 
-            try
-            {
-                service.CreateRemindAsync(null, null, DateTime.MinValue, "", null).Wait();
-            }
-            catch (AggregateException ex)
-            {
-                if (ex.InnerException is ValidationException vEx)
-                {
-                    Assert.AreEqual("Datum a čas upozornění musí být v budoucnosti.", vEx.Message);
-                    throw vEx;
-                }
+        await Service.CopyAsync(msg, toUser);
+        Assert.IsTrue(true);
+    }
 
-                throw;
-            }
-        }
+    [TestMethod]
+    [ExcludeFromCodeCoverage]
+    [ExpectedException(typeof(ValidationException))]
+    public async Task CancelRemindAsync_NotFound()
+    {
+        await Service.CancelRemindAsync(1, null, false);
+    }
 
-        [TestMethod]
-        [ExpectedException(typeof(ValidationException))]
-        public void CreateRemind_MinimalTime()
+    [TestMethod]
+    [ExcludeFromCodeCoverage]
+    [ExpectedException(typeof(ValidationException))]
+    public async Task CancelRemindAsync_Finished()
+    {
+        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
+        var fromUser = DataHelper.CreateDiscordUser();
+        var canceller = DataHelper.CreateDiscordUser("C", 1234567, "1596");
+
+        await DbContext.InitUserAsync(toUser, CancellationToken.None);
+        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
-            using var _ = CreateService(out var service, 1);
+            At = DateTime.MinValue,
+            FromUserId = "12345",
+            ToUserId = "12345",
+            Message = "Message",
+            OriginalMessageId = "12345",
+            Id = 1
+        });
+        await DbContext.SaveChangesAsync();
 
-            try
-            {
-                var at = DateTime.Now.AddSeconds(10);
+        await Service.CancelRemindAsync(1, canceller, false);
+    }
 
-                service.CreateRemindAsync(null, null, at, null, null).Wait();
-            }
-            catch (AggregateException ex)
-            {
-                if (ex.InnerException is ValidationException vEx)
-                {
-                    Assert.AreEqual("Datum a čas upozornění musí být později, než 1 minuta", vEx.Message);
-                    throw vEx;
-                }
+    [TestMethod]
+    [ExcludeFromCodeCoverage]
+    [ExpectedException(typeof(ValidationException))]
+    public async Task CancelRemindAsync_Finished2()
+    {
+        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
+        var fromUser = DataHelper.CreateDiscordUser();
+        var canceller = DataHelper.CreateDiscordUser("C", 1234567, "1596");
 
-                throw;
-            }
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ValidationException))]
-        public void CreateRemind_MinimalTime2()
+        await DbContext.InitUserAsync(toUser, CancellationToken.None);
+        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
-            using var _ = CreateService(out var service, 6);
+            At = DateTime.Now.AddDays(3),
+            FromUserId = "12345",
+            ToUserId = "12345",
+            Message = "Message",
+            OriginalMessageId = "12345",
+            Id = 1,
+            RemindMessageId = "12345"
+        });
+        await DbContext.SaveChangesAsync();
 
-            try
-            {
-                var at = DateTime.Now.AddSeconds(10);
+        await Service.CancelRemindAsync(1, canceller, false);
+    }
 
-                service.CreateRemindAsync(null, null, at, null, null).Wait();
-            }
-            catch (AggregateException ex)
-            {
-                if (ex.InnerException is ValidationException vEx)
-                {
-                    Assert.AreEqual("Datum a čas upozornění musí být později, než 6 minut", vEx.Message);
-                    throw vEx;
-                }
+    [TestMethod]
+    [ExcludeFromCodeCoverage]
+    [ExpectedException(typeof(ValidationException))]
+    public async Task CancelRemindAsync_NoPerms()
+    {
+        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
+        var fromUser = DataHelper.CreateDiscordUser();
+        var canceller = DataHelper.CreateDiscordUser("C", 1234567, "1596");
 
-                throw;
-            }
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ValidationException))]
-        public void CreateRemind_MinimalTime3()
+        await DbContext.InitUserAsync(toUser, CancellationToken.None);
+        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
-            using var _ = CreateService(out var service, 2);
+            At = DateTime.Now.AddDays(3),
+            FromUserId = "12345",
+            ToUserId = "12345",
+            Message = "Message",
+            OriginalMessageId = "12345",
+            Id = 1
+        });
+        await DbContext.SaveChangesAsync();
 
-            try
-            {
-                var at = DateTime.Now.AddSeconds(10);
+        await Service.CancelRemindAsync(1, canceller, false);
+    }
 
-                service.CreateRemindAsync(null, null, at, null, null).Wait();
-            }
-            catch (AggregateException ex)
-            {
-                if (ex.InnerException is ValidationException vEx)
-                {
-                    Assert.AreEqual("Datum a čas upozornění musí být později, než 2 minuty", vEx.Message);
-                    throw vEx;
-                }
+    [TestMethod]
+    public async Task CancelRemindAsync_Success()
+    {
+        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
+        var fromUser = DataHelper.CreateDiscordUser();
 
-                throw;
-            }
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ValidationException))]
-        public void CreateRemind_RequiredMessage()
+        await DbContext.InitUserAsync(toUser, CancellationToken.None);
+        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
-            using var _ = CreateService(out var service, 10);
+            At = DateTime.Now.AddDays(3),
+            FromUserId = "12345",
+            ToUserId = "12345",
+            Message = "Message",
+            OriginalMessageId = "12345",
+            Id = 1
+        });
+        await DbContext.SaveChangesAsync();
+        await Service.CancelRemindAsync(1, fromUser, false);
+        Assert.IsTrue(true);
+    }
 
-            try
-            {
-                var at = DateTime.MaxValue;
-                service.CreateRemindAsync(null, null, at, null, null).Wait();
-            }
-            catch (AggregateException ex)
-            {
-                if (ex.InnerException is ValidationException vEx)
-                {
-                    Assert.AreEqual("Text upozornění je povinný.", vEx.Message);
-                    throw vEx;
-                }
-
-                throw;
-            }
-        }
-
-        [TestMethod]
-        public void CreateRemind_Success_SamePerson()
-        {
-            using var _ = CreateService(out var service, 10);
-
-            var fromTo = new Mock<IUser>();
-            fromTo.Setup(o => o.Id).Returns(12345);
-            fromTo.Setup(o => o.Username).Returns("Username");
-            fromTo.Setup(o => o.IsBot).Returns(false);
-            fromTo.Setup(o => o.Discriminator).Returns("9999");
-
-            var message = new Mock<IMessage>();
-            message.Setup(o => o.Id).Returns(123456);
-
-            service.CreateRemindAsync(fromTo.Object, fromTo.Object, DateTime.MaxValue, "Zpráva", message.Object).Wait();
-        }
-
-        [TestMethod]
-        public void CreateRemind_Success_AnotherPerson()
-        {
-            using var _ = CreateService(out var service, 10);
-
-            var from = new Mock<IUser>();
-            from.Setup(o => o.Id).Returns(12345);
-            from.Setup(o => o.Username).Returns("Username");
-            from.Setup(o => o.IsBot).Returns(false);
-            from.Setup(o => o.Discriminator).Returns("9999");
-
-            var to = new Mock<IUser>();
-            to.Setup(o => o.Id).Returns(123425);
-            to.Setup(o => o.Username).Returns("Username2");
-            to.Setup(o => o.IsBot).Returns(false);
-            to.Setup(o => o.Discriminator).Returns("9999");
-
-            var message = new Mock<IMessage>();
-            message.Setup(o => o.Id).Returns(222123456);
-
-            service.CreateRemindAsync(from.Object, to.Object, DateTime.MaxValue, "Zpráva", message.Object).Wait();
-        }
-
-        [TestMethod]
-        public void GetRemindersCount()
-        {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(123245);
-
-            using var _ = CreateService(out var service);
-            var result = service.GetRemindersCountAsync(user.Object).Result;
-
-            Assert.AreEqual(0, result);
-        }
-
-        [TestMethod]
-        public void GetReminders()
-        {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345111);
-
-            using var _ = CreateService(out var service);
-            var reminds = service.GetRemindersAsync(user.Object, 0).Result;
-
-            Assert.AreEqual(0, reminds.Count);
-        }
-
-        [TestMethod]
-        public void Copy_NotFound()
-        {
-            var user = new Mock<IUser>();
-            user.Setup(o => o.Id).Returns(12345111);
-
-            var message = new Mock<IMessage>();
-            message.Setup(o => o.Id).Returns(2221123456);
-
-            using var _ = CreateService(out var service);
-            service.CopyAsync(message.Object, user.Object).Wait();
-        }
+    [TestMethod]
+    public async Task GetProcessableReminderIdsAsync()
+    {
+        var result = await Service.GetProcessableReminderIdsAsync();
+        Assert.AreEqual(0, result.Count);
     }
 }

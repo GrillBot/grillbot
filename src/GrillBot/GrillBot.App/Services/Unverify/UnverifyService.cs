@@ -328,7 +328,7 @@ namespace GrillBot.App.Services.Unverify
             return profiles;
         }
 
-        public async Task<List<ulong>> GetUserIdsWithUnverify(IGuild guild)
+        public async Task<List<ulong>> GetUserIdsWithUnverifyAsync(IGuild guild)
         {
             using var context = DbFactory.Create();
 

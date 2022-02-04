@@ -5,7 +5,6 @@ using GrillBot.App.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
@@ -16,7 +15,7 @@ namespace GrillBot.App.Controllers
     [ApiController]
     [Route("api/data")]
     [OpenApiTag("Data", Description = "Support for form fields, ...")]
-    public class DataController : ControllerBase
+    public class DataController : Controller
     {
         private DiscordSocketClient DiscordClient { get; }
         private GrillBotContext DbContext { get; }

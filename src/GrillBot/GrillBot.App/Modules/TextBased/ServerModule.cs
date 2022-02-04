@@ -571,7 +571,7 @@ public class ServerModule : Infrastructure.ModuleBase
                 {
                     await Context.Guild.DownloadUsersAsync();
                     var permissions = new List<UselessPermission>();
-                    var unverifies = await UnverifyService.GetUserIdsWithUnverify(Context.Guild);
+                    var unverifies = await UnverifyService.GetUserIdsWithUnverifyAsync(Context.Guild);
                     var channelsQuery = Context.Guild.Channels
                         .Where(o => o is not SocketThreadChannel && (o is SocketTextChannel || o is SocketVoiceChannel))
                         .ToList();

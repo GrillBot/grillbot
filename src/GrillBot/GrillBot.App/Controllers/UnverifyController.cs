@@ -16,7 +16,7 @@ namespace GrillBot.App.Controllers
     [ApiController]
     [Route("api/unverify")]
     [OpenApiTag("Unverify", Description = "Unverify management.")]
-    public class UnverifyController : ControllerBase
+    public class UnverifyController : Controller
     {
         private UnverifyService UnverifyService { get; }
         private DiscordSocketClient DiscordClient { get; }

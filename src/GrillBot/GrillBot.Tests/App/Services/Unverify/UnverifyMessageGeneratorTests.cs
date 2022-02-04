@@ -1,122 +1,151 @@
-﻿using Discord;
-using GrillBot.App.Services.Unverify;
+﻿using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.Unverify;
-using GrillBot.Tests.TestHelper;
+using GrillBot.Tests.TestHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace GrillBot.Tests.App.Services.Unverify
+namespace GrillBot.Tests.App.Services.Unverify;
+
+[TestClass]
+public class UnverifyMessageGeneratorTests
 {
-    [TestClass]
-    public class UnverifyMessageGeneratorTests
+    [TestMethod]
+    public void CreateUnverifyMessageToChannel_Selfunverify()
     {
-        [TestMethod]
-        public void CreateUnverifyMessageToChannel()
-        {
-            const string expected = "Dočasné odebrání přístupu pro uživatele **User** bylo dokončeno. Přístup bude navrácen **02. 07. 2021 15:30:25**. Důvod: Test";
+        var toUser = DataHelper.CreateGuildUser();
+        var end = new DateTime(2022, 02, 04);
+        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
+        var result = UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
 
-            var destination = DiscordHelpers.CreateGuildUserMock(0, null, "User");
-            var end = new DateTime(2021, 07, 02, 15, 30, 25);
-            var profile = new UnverifyUserProfile(destination.Object, DateTime.MinValue, end, false) { Reason = "Test" };
+        Assert.AreEqual(
+            "Dočasné odebrání přístupu pro uživatele **User#1111** bylo dokončeno. Přístup bude navrácen **04. 02. 2022 00:00:00**. ",
+            result
+        );
+    }
 
-            var result = UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
-            Assert.AreEqual(expected, result);
-        }
+    [TestMethod]
+    public void CreateUnverifyMessageToChannel_Unverify()
+    {
+        var toUser = DataHelper.CreateGuildUser();
+        var end = new DateTime(2022, 02, 04);
+        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
+        var result = UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
 
-        [TestMethod]
-        public void CreateUnverifyPMMessage()
-        {
-            var guild = new Mock<IGuild>();
-            guild.Setup(o => o.Name).Returns("Guild");
+        Assert.AreEqual(
+            "Dočasné odebrání přístupu pro uživatele **User#1111** bylo dokončeno. Přístup bude navrácen **04. 02. 2022 00:00:00**. Důvod: Duvod",
+            result
+        );
+    }
 
-            const string expected = "Byly ti dočasně odebrány všechny práva na serveru **Guild**. Přístup ti bude navrácen **02. 07. 2021 15:30:25**. Důvod: Test";
+    [TestMethod]
+    public void CreateUnverifyPMMessage_Selfunverify()
+    {
+        var toUser = DataHelper.CreateGuildUser();
+        var end = new DateTime(2022, 02, 04);
+        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
+        var guild = DataHelper.CreateGuild();
+        var result = UnverifyMessageGenerator.CreateUnverifyPMMessage(profile, guild);
 
-            var destination = DiscordHelpers.CreateGuildUserMock(0, null, "User");
+        Assert.AreEqual(
+            "Byly ti dočasně odebrány všechny práva na serveru **Guild**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. ",
+            result
+        );
+    }
 
-            var end = new DateTime(2021, 07, 02, 15, 30, 25);
-            var profile = new UnverifyUserProfile(destination.Object, DateTime.MinValue, end, false) { Reason = "Test" };
+    [TestMethod]
+    public void CreateUnverifyPMMessage_Unverify()
+    {
+        var toUser = DataHelper.CreateGuildUser();
+        var end = new DateTime(2022, 02, 04);
+        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
+        var guild = DataHelper.CreateGuild();
+        var result = UnverifyMessageGenerator.CreateUnverifyPMMessage(profile, guild);
 
-            var result = UnverifyMessageGenerator.CreateUnverifyPMMessage(profile, guild.Object);
-            Assert.AreEqual(expected, result);
-        }
+        Assert.AreEqual(
+            "Byly ti dočasně odebrány všechny práva na serveru **Guild**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. Důvod: Duvod",
+            result
+        );
+    }
 
-        [TestMethod]
-        public void CreateUpdatePMMessage()
-        {
-            var guild = new Mock<IGuild>();
-            guild.Setup(o => o.Name).Returns("Guild");
+    [TestMethod]
+    public void CreateUpdatePMMessage()
+    {
+        var guild = DataHelper.CreateGuild();
+        var end = new DateTime(2022, 02, 04);
+        var result = UnverifyMessageGenerator.CreateUpdatePMMessage(guild, end);
 
-            const string expected = "Byl ti aktualizován čas pro odebrání práv na serveru **Guild**. Přístup ti bude navrácen **02. 07. 2021 15:30:25**.";
+        Assert.AreEqual(
+            "Byl ti aktualizován čas pro odebrání práv na serveru **Guild**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**.",
+            result
+        );
+    }
 
-            var end = new DateTime(2021, 07, 02, 15, 30, 25);
-            var result = UnverifyMessageGenerator.CreateUpdatePMMessage(guild.Object, end);
-            Assert.AreEqual(expected, result);
-        }
+    [TestMethod]
+    public void CreateUpdateChannelMessage()
+    {
+        var guildUser = DataHelper.CreateGuildUser();
+        var end = new DateTime(2022, 02, 04);
+        var result = UnverifyMessageGenerator.CreateUpdateChannelMessage(guildUser, end);
 
-        [TestMethod]
-        public void CreateUpdateChannelMessage()
-        {
-            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
+        Assert.AreEqual(
+            "Reset konce odebrání přístupu pro uživatele **User#1111** byl aktualizován.\nPřístup bude navrácen **04. 02. 2022 00:00:00**",
+            result
+        );
+    }
 
-            const string expected = "Reset konce odebrání přístupu pro uživatele **User** byl aktualizován.\nPřístup bude navrácen **02. 07. 2021 15:30:25**";
+    [TestMethod]
+    public void CreateRemoveAccessManuallyPMMessage()
+    {
+        var guild = DataHelper.CreateGuild();
+        var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyPMMessage(guild);
 
-            var end = new DateTime(2021, 07, 02, 15, 30, 25);
-            var result = UnverifyMessageGenerator.CreateUpdateChannelMessage(user.Object, end);
-            Assert.AreEqual(expected, result);
-        }
+        Assert.AreEqual(
+           "Byl ti předčasně vrácen přístup na serveru **Guild**",
+           result
+        );
+    }
 
-        [TestMethod]
-        public void CreateRemoveAccessManuallyPMMessage()
-        {
-            var guild = new Mock<IGuild>();
-            guild.Setup(o => o.Name).Returns("Guild");
+    [TestMethod]
+    public void CreateRemoveAccessManuallyToChannel()
+    {
+        var guildUser = DataHelper.CreateGuildUser();
+        var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyToChannel(guildUser);
 
-            const string expected = "Byl ti předčasně vrácen přístup na serveru **Guild**";
-            var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyPMMessage(guild.Object);
-            Assert.AreEqual(expected, result);
-        }
+        Assert.AreEqual(
+           "Předčasné vrácení přístupu pro uživatele **User#1111** bylo dokončeno.",
+           result
+        );
+    }
 
-        [TestMethod]
-        public void CreateRemoveAccessManuallyToChannel()
-        {
-            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
+    [TestMethod]
+    public void CreateRemoveAccessManuallyFailed()
+    {
+        var guildUser = DataHelper.CreateGuildUser();
+        var exception = new Exception("Test");
+        var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyFailed(guildUser, exception);
 
-            const string expected = "Předčasné vrácení přístupu pro uživatele **User** bylo dokončeno.";
-            var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyToChannel(user.Object);
-            Assert.AreEqual(expected, result);
-        }
+        Assert.AreEqual("Předčasné vrácení přístupu pro uživatele **User#1111** selhalo. (Test)", result);
+    }
 
-        [TestMethod]
-        public void CreateRemoveAccessManuallyFailed()
-        {
-            var user = DiscordHelpers.CreateGuildUserMock(0, "U", "User");
-            user.Setup(o => o.Discriminator).Returns("1234");
-            var exception = new Exception("Test");
+    [TestMethod]
+    public void CreateRemoveAccessUnverifyNotFound()
+    {
+        var guildUser = DataHelper.CreateGuildUser();
+        var result = UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(guildUser);
 
-            const string expected = "Předčasné vrácení přístupu pro uživatele **User (U#1234)** selhalo. (Test)";
-            var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyFailed(user.Object, exception);
-            Assert.AreEqual(expected, result);
-        }
+        Assert.AreEqual("Předčasné vrácení přístupu pro uživatele **User#1111** nelze provést. Unverify nebylo nalezeno.", result);
+    }
 
-        [TestMethod]
-        public void CreateRemoveAccessUnverifyNotFound()
-        {
-            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
+    [TestMethod]
+    public void CreateUnverifyFailedToChannel()
+    {
+        var guildUser = DataHelper.CreateGuildUser();
+        var result = UnverifyMessageGenerator.CreateUnverifyFailedToChannel(guildUser);
 
-            const string expected = "Předčasné vrácení přístupu pro uživatele **User** nelze provést. Unverify nebylo nalezeno.";
-            var result = UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(user.Object);
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        public void CreateUnverifyFailedToChannel()
-        {
-            var user = DiscordHelpers.CreateGuildUserMock(0, null, "User");
-
-            const string expected = "Dočasné odebrání přístupu pro uživatele **User** se nezdařilo. Uživatel byl obnoven do původního stavu.";
-            var result = UnverifyMessageGenerator.CreateUnverifyFailedToChannel(user.Object);
-            Assert.AreEqual(expected, result);
-        }
+        Assert.AreEqual("Dočasné odebrání přístupu pro uživatele **User#1111** se nezdařilo. Uživatel byl obnoven do původního stavu.", result);
     }
 }

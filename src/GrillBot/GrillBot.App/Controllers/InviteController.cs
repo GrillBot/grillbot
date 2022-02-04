@@ -1,10 +1,8 @@
-﻿using GrillBot.App.Services;
-using GrillBot.Data.Models.API.Common;
+﻿using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers
@@ -16,12 +14,10 @@ namespace GrillBot.App.Controllers
     public class InviteController : Controller
     {
         private GrillBotContext DbContext { get; }
-        private InviteService InviteService { get; }
 
-        public InviteController(GrillBotContext dbContext, InviteService inviteService)
+        public InviteController(GrillBotContext dbContext)
         {
             DbContext = dbContext;
-            InviteService = inviteService;
         }
 
         /// <summary>

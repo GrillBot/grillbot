@@ -1,31 +1,46 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services;
+using GrillBot.App.Services.Logging;
+using GrillBot.Data.Models.API.OAuth2;
+using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
-namespace GrillBot.Tests.App.Controllers
+namespace GrillBot.Tests.App.Controllers;
+
+[TestClass]
+public class AuthControllerTests : ControllerTest<AuthController>
 {
-    [TestClass]
-    public class AuthControllerTests
+    protected override AuthController CreateController()
     {
-        [TestMethod]
-        public void GetRedirectLink()
-        {
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>()
-                {
-                    { "OAuth2:ClientId", "12345" },
-                    { "OAuth2:RedirectUrl", "http://localhost" }
-                }).Build();
+        // Deps
+        var configuration = ConfigurationHelper.CreateConfiguration();
+        var dbFactory = new DbContextBuilder();
+        var discordClient = DiscordHelper.CreateClient();
+        var commandsService = DiscordHelper.CreateCommandsService();
+        var loggerFactory = LoggingHelper.CreateLoggerFactory();
+        var interactions = DiscordHelper.CreateInteractionService(discordClient);
+        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, dbFactory, interactions);
+        var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"access_token\": \"12345\"}") });
+        var service = new OAuth2Service(configuration, dbFactory, loggingService, httpClientFactory);
 
-            var service = new OAuth2Service(configuration, null, null);
-            var controller = new AuthController(service);
+        return new AuthController(service);
+    }
 
-            var result = controller.GetRedirectLink(false);
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-        }
+    [TestMethod]
+    public void GetRedirectLink()
+    {
+        var link = Controller.GetRedirectLink(true);
+        CheckResult<OkObjectResult, OAuth2GetLink>(link);
+    }
+
+    [TestMethod]
+    public async Task OnOAuth2CallBackAsync()
+    {
+        var result = await Controller.OnOAuth2CallbackAsync("code", true);
+        CheckResult<RedirectResult>(result);
     }
 }

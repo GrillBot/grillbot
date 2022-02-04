@@ -1,167 +1,132 @@
-﻿using Discord.WebSocket;
-using GrillBot.App.Controllers;
+﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services;
+using GrillBot.App.Services.Discord;
 using GrillBot.Data.Models.API.AutoReply;
-using GrillBot.Database.Services;
-using GrillBot.Tests.TestHelper;
+using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace GrillBot.Tests.App.Controllers
+namespace GrillBot.Tests.App.Controllers;
+
+[TestClass]
+public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
 {
-    [TestClass]
-    public class AutoReplyControllerTests
+    protected override AutoReplyController CreateController()
     {
-        private static ServiceProvider CreateService(out AutoReplyService service)
+        var configuration = ConfigurationHelper.CreateConfiguration();
+        var discordClient = DiscordHelper.CreateClient();
+        var dbFactory = new DbContextBuilder();
+        var logger = LoggingHelper.CreateLogger<DiscordInitializationService>();
+        var initializationService = new DiscordInitializationService(logger);
+        var service = new AutoReplyService(configuration, discordClient, dbFactory, initializationService);
+
+        DbContext = dbFactory.Create();
+        return new AutoReplyController(service, DbContext);
+    }
+
+    public override void Cleanup()
+    {
+        DbContext.AutoReplies.RemoveRange(DbContext.AutoReplies.AsEnumerable());
+        DbContext.SaveChanges();
+    }
+
+    [TestMethod]
+    public async Task CreateAndGetAutoReplyListAsync()
+    {
+        var createResult = await Controller.CreateItemAsync(new AutoReplyItemParams()
         {
-            service = null;
-            var container = DIHelpers.CreateContainer();
+            Flags = 2,
+            Reply = "Reply",
+            Template = "Template"
+        });
 
-            if (container.GetService<GrillBotContextFactory>() is not TestingGrillBotContextFactory dbFactory)
-            {
-                Assert.Fail("DbFactory není TestingGrillBotContextFactory.");
-                return null;
-            }
+        var listResult = await Controller.GetAutoReplyListAsync();
 
-            var configuration = ConfigHelpers.CreateConfiguration();
-            service = new AutoReplyService(configuration, new DiscordSocketClient(), dbFactory, null);
-            return container;
-        }
+        CheckResult<OkObjectResult, AutoReplyItem>(createResult);
+        CheckResult<OkObjectResult, List<AutoReplyItem>>(listResult);
+    }
 
-        private static ServiceProvider CreateController(out AutoReplyController controller)
+    [TestMethod]
+    public async Task GetItemAsync_Found()
+    {
+        await DbContext.AddAsync(new Database.Entity.AutoReplyItem()
         {
-            var container = CreateService(out var service);
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
+            Id = 1,
+            Flags = 2,
+            Reply = "Reply",
+            Template = "Template"
+        });
+        await DbContext.SaveChangesAsync();
 
-            controller = new AutoReplyController(service, dbContext);
-            return container;
-        }
+        var result = await Controller.GetItemAsync(1);
+        CheckResult<OkObjectResult, AutoReplyItem>(result);
+    }
 
-        [TestMethod]
-        public void GetAutoReplyList()
+    [TestMethod]
+    public async Task GetItemAsync_NotFound()
+    {
+        var result = await Controller.GetItemAsync(1);
+        CheckResult<NotFoundObjectResult, AutoReplyItem>(result);
+    }
+
+    [TestMethod]
+    public async Task UpdateItemAsync_Found()
+    {
+        await DbContext.AddAsync(new Database.Entity.AutoReplyItem()
         {
-            using var container = CreateController(out var controller);
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Reply = "Reply", Template = "Template" });
-            dbContext.SaveChanges();
+            Id = 1,
+            Flags = 2,
+            Reply = "Reply",
+            Template = "Template"
+        });
+        await DbContext.SaveChangesAsync();
 
-            var list = controller.GetAutoReplyListAsync().Result;
-            Assert.IsNotNull(list);
-            Assert.IsNotNull(list.Result);
-            Assert.IsInstanceOfType(list.Result, typeof(OkObjectResult));
-        }
-
-        [TestMethod]
-        public void GetItem_NotFound()
+        var result = await Controller.UpdateItemAsync(1, new AutoReplyItemParams()
         {
-            using var container = CreateController(out var controller);
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.SaveChanges();
+            Flags = 2,
+            Reply = "Reply",
+            Template = "Template"
+        });
 
-            var result = controller.GetItemAsync(1).Result;
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.Result);
-            Assert.IsInstanceOfType(result.Result, typeof(NotFoundObjectResult));
-        }
+        CheckResult<OkObjectResult, AutoReplyItem>(result);
+    }
 
-        [TestMethod]
-        public void GetItem_Found()
+    [TestMethod]
+    public async Task UpdateItemAsync_NotFound()
+    {
+        var result = await Controller.UpdateItemAsync(1, new AutoReplyItemParams()
         {
-            using var container = CreateController(out var controller);
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1, Template = "Template", Reply = "Reply" });
-            dbContext.SaveChanges();
+            Flags = 2,
+            Reply = "Reply",
+            Template = "Template"
+        });
 
-            var result = controller.GetItemAsync(1).Result;
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.Result);
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-        }
+        CheckResult<NotFoundObjectResult, AutoReplyItem>(result);
+    }
 
-        [TestMethod]
-        public void CreateItem()
+    [TestMethod]
+    public async Task RemoveItemAsync_Found()
+    {
+        await DbContext.AddAsync(new Database.Entity.AutoReplyItem()
         {
-            using var _ = CreateController(out var controller);
+            Id = 1,
+            Flags = 2,
+            Reply = "Reply",
+            Template = "Template"
+        });
+        await DbContext.SaveChangesAsync();
 
-            var parameters = new AutoReplyItemParams()
-            {
-                Flags = 1,
-                Reply = "Reply",
-                Template = "Template"
-            };
+        var result = await Controller.RemoveItemAsync(1);
+        CheckResult<OkResult>(result);
+    }
 
-            var result = controller.CreateItemAsync(parameters).Result;
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.Result);
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-        }
-
-        [TestMethod]
-        public void UpdateItem_NotFound()
-        {
-            using var container = CreateController(out var controller);
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.SaveChanges();
-
-            var result = controller.UpdateItemAsync(1, null).Result;
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.Result);
-            Assert.IsInstanceOfType(result.Result, typeof(NotFoundObjectResult));
-        }
-
-        [TestMethod]
-        public void UpdateItem_Found()
-        {
-            using var container = CreateController(out var controller);
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1, Template = "Template", Reply = "Reply" });
-            dbContext.SaveChanges();
-
-            var parameters = new AutoReplyItemParams()
-            {
-                Flags = 1,
-                Reply = "Reply",
-                Template = "Template"
-            };
-
-            var result = controller.UpdateItemAsync(1, parameters).Result;
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.Result);
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-        }
-
-        [TestMethod]
-        public void RemoveItem_NotFound()
-        {
-            using var container = CreateController(out var controller);
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.SaveChanges();
-
-            var result = controller.RemoveItemAsync(1).Result;
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
-        }
-
-        [TestMethod]
-        public void RemoveItem_Found()
-        {
-            using var container = CreateController(out var controller);
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AutoReplies.RemoveRange(dbContext.AutoReplies.ToList());
-            dbContext.AutoReplies.Add(new GrillBot.Database.Entity.AutoReplyItem() { Id = 1, Template = "Template", Reply = "Reply" });
-            dbContext.SaveChanges();
-
-            var result = controller.RemoveItemAsync(1).Result;
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(OkResult));
-        }
+    [TestMethod]
+    public async Task RemoveItemAsync_NotFound()
+    {
+        var result = await Controller.RemoveItemAsync(1);
+        CheckResult<NotFoundObjectResult>(result);
     }
 }

@@ -15,12 +15,15 @@ namespace GrillBot.App.Services
         private IConfiguration Configuration { get; }
         private GrillBotContextFactory DbFactory { get; }
         private LoggingService LoggingService { get; }
+        private HttpClient HttpClient { get; }
 
-        public OAuth2Service(IConfiguration configuration, GrillBotContextFactory dbFactory, LoggingService loggingService)
+        public OAuth2Service(IConfiguration configuration, GrillBotContextFactory dbFactory, LoggingService loggingService,
+            IHttpClientFactory httpClientFactory)
         {
             Configuration = configuration.GetSection("OAuth2");
             DbFactory = dbFactory;
             LoggingService = loggingService;
+            HttpClient = httpClientFactory.CreateClient();
         }
 
         public OAuth2GetLink GetRedirectLink(bool isPublic)
@@ -72,8 +75,7 @@ namespace GrillBot.App.Services
                 })
             };
 
-            using var httpClient = new HttpClient();
-            using var response = await httpClient.SendAsync(message);
+            using var response = await HttpClient.SendAsync(message);
             var json = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)

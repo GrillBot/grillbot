@@ -2,7 +2,6 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.Data.Extensions;
 using GrillBot.Database.Entity;
-using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.App.Services.Birthday
 {

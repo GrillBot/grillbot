@@ -6,7 +6,6 @@ using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers
@@ -118,7 +117,10 @@ namespace GrillBot.App.Controllers
             if (rolePermissions.Any())
             {
                 result.AddRange(rolePermissions.Select(o =>
-                    new Data.Models.API.Permissions.ExplicitPermission(o, null, new Role(DiscordClient.FindRole(Convert.ToUInt64(o.TargetId))))));
+                {
+                    var role = DiscordClient.FindRole(Convert.ToUInt64(o.TargetId));
+                    return new Data.Models.API.Permissions.ExplicitPermission(o, null, role != null ? new Role(role) : null);
+                }));
             }
 
             result = result.OrderBy(o => o.Command).ToList();
@@ -134,7 +136,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(PermissionsController) + "_" + nameof(GetExplicitPermissionsListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> SetExplicitPermissionState([Required] string command, [Required] string targetId, ExplicitPermissionState state)
+        public async Task<ActionResult> SetExplicitPermissionStateAsync([Required] string command, [Required] string targetId, ExplicitPermissionState state)
         {
             var permission = await DbContext.ExplicitPermissions.AsQueryable()
                 .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);

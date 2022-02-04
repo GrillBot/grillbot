@@ -1,191 +1,137 @@
-﻿using Discord.WebSocket;
-using GrillBot.App.Controllers;
+﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.FileStorage;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.MessageCache;
+using GrillBot.Data.Models.API.AuditLog;
+using GrillBot.Data.Models.API.Common;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Services;
+using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using System.IO;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
-namespace GrillBot.Tests.App.Controllers
+namespace GrillBot.Tests.App.Controllers;
+
+[TestClass]
+public class AuditLogControllerTests : ControllerTest<AuditLogController>
 {
-    [TestClass]
-    public class AuditLogControllerTests
+    protected override AuditLogController CreateController()
     {
-        [TestMethod]
-        public void RemoveItem_Success()
+        var discordClient = DiscordHelper.CreateClient();
+        var dbFactory = new DbContextBuilder();
+        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
+        var cache = new MessageCache(discordClient, initializationService);
+        var fileStorage = FileStorageHelper.Create();
+        var auditLogService = new AuditLogService(discordClient, dbFactory, cache, fileStorage, initializationService);
+        DbContext = dbFactory.Create();
+
+        return new AuditLogController(auditLogService, DbContext, fileStorage);
+    }
+
+    public override void Cleanup()
+    {
+        DbContext.AuditLogs.RemoveRange(DbContext.AuditLogs.AsEnumerable());
+        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
+        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
+        DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
+        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
+        DbContext.SaveChanges();
+    }
+
+    [TestMethod]
+    public async Task RemoveItemAsync_Found()
+    {
+        await DbContext.AddAsync(new AuditLogItem()
         {
-            var discord = new DiscordSocketClient();
-            var auditLogService = new Mock<AuditLogService>(new object[] { discord, null, null, null, null });
-            auditLogService.Setup(o => o.RemoveItemAsync(It.IsAny<long>())).Returns(Task.FromResult(true));
+            Id = 12345,
+            CreatedAt = DateTime.UtcNow,
+            Type = Database.Enums.AuditLogItemType.Command
+        });
+        await DbContext.SaveChangesAsync();
 
-            var controller = new AuditLogController(auditLogService.Object, null, null);
-            var removeResult = controller.RemoveItemAsync(0).Result;
+        var result = await Controller.RemoveItemAsync(12345);
+        CheckResult<OkResult>(result);
+    }
 
-            Assert.IsInstanceOfType(removeResult, typeof(OkResult));
-        }
+    [TestMethod]
+    public async Task RemoveItemAsync_NotFound()
+    {
+        var result = await Controller.RemoveItemAsync(12345);
+        CheckResult<NotFoundObjectResult>(result);
+    }
 
-        [TestMethod]
-        public void RemoveItem_NotFound()
+    [TestMethod]
+    public async Task GetAuditLogListAsync_WithoutFilter_WithoutData()
+    {
+        var result = await Controller.GetAuditLogListAsync(new AuditLogListParams());
+        CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetAuditLogListAsync_WithFilter_WithData()
+    {
+        var filter = new AuditLogListParams()
         {
-            var discord = new DiscordSocketClient();
-            var auditLogService = new Mock<AuditLogService>(new object[] { discord, null, null, null, null });
-            auditLogService.Setup(o => o.RemoveItemAsync(It.IsAny<long>())).Returns(Task.FromResult(false));
+            ChannelId = "12345",
+            CreatedFrom = DateTime.MinValue,
+            CreatedTo = DateTime.MaxValue,
+            GuildId = "12345",
+            IgnoreBots = true,
+            ProcessedUserIds = new List<string>() { "12345" },
+            Types = new List<Database.Enums.AuditLogItemType>() { Database.Enums.AuditLogItemType.Command }
+        };
 
-            var controller = new AuditLogController(auditLogService.Object, null, null);
-            var removeResult = controller.RemoveItemAsync(0).Result;
-
-            Assert.IsInstanceOfType(removeResult, typeof(NotFoundObjectResult));
-        }
-
-        [TestMethod]
-        public void GetAuditLogList()
+        await DbContext.AddAsync(new AuditLogItem()
         {
-            using var container = TestHelper.DIHelpers.CreateContainer();
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
+            ChannelId = "12345",
+            CreatedAt = DateTime.UtcNow,
+            Data = "{}",
+            GuildId = "12345",
+            ProcessedUserId = "12345",
+            Type = Database.Enums.AuditLogItemType.Command
+        });
 
-            var controller = new AuditLogController(null, dbContext, null);
-            var result = controller.GetAuditLogListAsync(new()).Result;
+        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
+        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
+        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345" });
+        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.SaveChangesAsync();
 
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-        }
+        var result = await Controller.GetAuditLogListAsync(filter);
+        CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
+    }
 
-        [TestMethod]
-        public void GetFileContent_NotFound()
+    [TestMethod]
+    public async Task GetFileContentAsync_ItemNotFound()
+    {
+        var result = await Controller.GetFileContentAsync(1, 1);
+        CheckResult<NotFoundObjectResult>(result);
+    }
+
+    [TestMethod]
+    public async Task GetFileContent_FileItemNotFound()
+    {
+        await DbContext.AddAsync(new AuditLogItem()
         {
-            using var container = TestHelper.DIHelpers.CreateContainer();
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
-            dbContext.SaveChanges();
+            ChannelId = "12345",
+            CreatedAt = DateTime.UtcNow,
+            Data = "{}",
+            GuildId = "12345",
+            ProcessedUserId = "12345",
+            Type = Database.Enums.AuditLogItemType.Command,
+            Id = 12345
+        });
 
-            var controller = new AuditLogController(null, dbContext, null);
-            var result = controller.GetFileContentAsync(0, 0).Result;
-            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
-        }
+        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
+        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
+        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345" });
+        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.SaveChangesAsync();
 
-        [TestMethod]
-        public void GetFileContent_NoFile()
-        {
-            using var container = TestHelper.DIHelpers.CreateContainer();
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
-            dbContext.AuditLogs.Add(new AuditLogItem()
-            {
-                Id = 1,
-            });
-            dbContext.SaveChanges();
-
-            var controller = new AuditLogController(null, dbContext, null);
-            var result = controller.GetFileContentAsync(1, 0).Result;
-            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
-        }
-
-        [TestMethod]
-        public void GetFileContent_FileNotExists()
-        {
-            using var container = TestHelper.DIHelpers.CreateContainer();
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
-            dbContext.AuditLogFiles.RemoveRange(dbContext.AuditLogFiles.ToList());
-            var item = new AuditLogItem() { Id = 1 };
-            var currentLocation = Assembly.GetExecutingAssembly().Location;
-            item.Files.Add(new AuditLogFileMeta()
-            {
-                Id = 1,
-                Filename = Path.GetFileName(currentLocation)
-            });
-            dbContext.AuditLogs.Add(item);
-            dbContext.SaveChanges();
-
-            var configuration = TestHelper.ConfigHelpers.CreateConfiguration(0, new System.Collections.Generic.Dictionary<string, string>()
-            {
-                { "FileStorage:Audit:Location", Path.GetDirectoryName(currentLocation) }
-            });
-
-            var fileStorageFactory = new FileStorageFactory(configuration);
-
-            var controller = new AuditLogController(null, dbContext, fileStorageFactory);
-            var result = controller.GetFileContentAsync(1, 1).Result;
-            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
-        }
-
-        [TestMethod]
-        public void GetFileContent_Success()
-        {
-            using var container = TestHelper.DIHelpers.CreateContainer();
-            var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-            dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
-            dbContext.AuditLogFiles.RemoveRange(dbContext.AuditLogFiles.ToList());
-            var item = new AuditLogItem() { Id = 1 };
-            var currentLocation = Assembly.GetExecutingAssembly().Location;
-            item.Files.Add(new AuditLogFileMeta()
-            {
-                Id = 1,
-                Filename = Path.GetFileName(currentLocation)
-            });
-            dbContext.AuditLogs.Add(item);
-            dbContext.SaveChanges();
-
-            var currentDirectory = Path.GetDirectoryName(currentLocation);
-            File.Copy(currentLocation, Path.Combine(currentDirectory, "DeletedAttachments", Path.GetFileName(currentLocation)), true);
-            var configuration = TestHelper.ConfigHelpers.CreateConfiguration(0, new System.Collections.Generic.Dictionary<string, string>()
-            {
-                { "FileStorage:Audit:Location", currentDirectory }
-            });
-
-            var fileStorageFactory = new FileStorageFactory(configuration);
-
-            var controller = new AuditLogController(null, dbContext, fileStorageFactory);
-            var result = controller.GetFileContentAsync(1, 1).Result;
-            Assert.IsInstanceOfType(result, typeof(FileContentResult));
-            File.Delete(Path.Combine(currentDirectory, "DeletedAttachments", Path.GetFileName(currentLocation)));
-        }
-
-        [TestMethod]
-        public void GetFileContent_RandomContentType()
-        {
-            var currentLocation = Assembly.GetExecutingAssembly().Location;
-            var currentDirectory = Path.GetDirectoryName(currentLocation);
-            var filename = Path.Combine(Path.Combine(currentDirectory, "DeletedAttachments"), "randomfile.jpg");
-
-            try
-            {
-                File.WriteAllBytes(filename, new byte[] { 0, 0, 0, 0, 0, 0, 0 });
-
-                using var container = TestHelper.DIHelpers.CreateContainer();
-                var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-                dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
-                dbContext.AuditLogFiles.RemoveRange(dbContext.AuditLogFiles.ToList());
-                var item = new AuditLogItem() { Id = 1 };
-                item.Files.Add(new AuditLogFileMeta()
-                {
-                    Id = 1,
-                    Filename = Path.GetFileName(filename)
-                });
-                dbContext.AuditLogs.Add(item);
-                dbContext.SaveChanges();
-
-                var configuration = TestHelper.ConfigHelpers.CreateConfiguration(0, new System.Collections.Generic.Dictionary<string, string>()
-                {
-                    { "FileStorage:Audit:Location", currentDirectory }
-                });
-
-                var fileStorageFactory = new FileStorageFactory(configuration);
-
-                var controller = new AuditLogController(null, dbContext, fileStorageFactory);
-                var result = controller.GetFileContentAsync(1, 1).Result;
-                Assert.IsInstanceOfType(result, typeof(FileContentResult));
-            }
-            finally
-            {
-                File.Delete(filename);
-            }
-        }
+        var result = await Controller.GetFileContentAsync(12345, 123);
+        CheckResult<NotFoundObjectResult>(result);
     }
 }

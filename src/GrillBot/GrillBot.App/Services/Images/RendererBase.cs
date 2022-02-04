@@ -9,7 +9,7 @@ namespace GrillBot.App.Services.Images
     public abstract class RendererBase
     {
         protected FileStorageFactory FileStorageFactory { get; }
-        protected FileStorage.FileStorage Cache { get; }
+        protected IFileStorage Cache { get; }
 
         protected RendererBase(FileStorageFactory fileStorageFactory)
         {

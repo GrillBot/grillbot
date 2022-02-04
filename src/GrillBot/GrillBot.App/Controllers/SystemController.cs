@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers
@@ -93,7 +92,7 @@ namespace GrillBot.App.Controllers
             var dbData = await statistics.ToDictionaryAsync(o => o.Type, o => o.Count);
             var data = Enum.GetValues<AuditLogItemType>()
                 .Where(o => o > AuditLogItemType.None)
-                .ToDictionary(o => o, o => dbData.TryGetValue(o, out int val) ? val : 0);
+                .ToDictionary(o => o.ToString(), o => dbData.TryGetValue(o, out int val) ? val : 0);
             return Ok(data);
         }
 

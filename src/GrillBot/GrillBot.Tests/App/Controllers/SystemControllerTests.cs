@@ -1,146 +1,132 @@
-﻿using Discord.WebSocket;
-using GrillBot.App.Controllers;
-using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.Discord;
+using GrillBot.Data.Models.API.Statistics;
+using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Services;
-using GrillBot.Tests.TestHelper;
-using Microsoft.AspNetCore.Hosting;
+using GrillBot.Database.Entity;
+using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
-public class SystemControllerTests
+public class SystemControllerTests : ControllerTest<SystemController>
 {
-    private static ServiceProvider CreateController(out SystemController controller)
+    protected override SystemController CreateController()
     {
-        var container = DIHelpers.CreateContainer();
-        var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-        var client = new DiscordSocketClient();
-        var initializationService = new DiscordInitializationService(NullLogger<DiscordInitializationService>.Instance);
+        var environment = EnvironmentHelper.CreateEnv("Production");
+        var client = DiscordHelper.CreateClient();
+        var dbFactory = new DbContextBuilder();
+        DbContext = dbFactory.Create();
+        var logger = LoggingHelper.CreateLogger<DiscordInitializationService>();
+        var initialization = new DiscordInitializationService(logger);
 
-        var envMock = new Mock<IWebHostEnvironment>();
-        envMock.Setup(o => o.EnvironmentName).Returns("Test");
+        return new SystemController(environment, client, DbContext, initialization);
+    }
 
-        controller = new SystemController(envMock.Object, client, dbContext, initializationService);
-        return container;
+    public override void Cleanup()
+    {
+        DbContext.AuditLogs.RemoveRange(DbContext.AuditLogs.AsEnumerable());
+        DbContext.SaveChanges();
     }
 
     [TestMethod]
     public void GetDiagnostics()
     {
-        using var _ = CreateController(out var controller);
-
-        var result = controller.GetDiagnostics();
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Result);
-        Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        var result = Controller.GetDiagnostics();
+        CheckResult<OkObjectResult, DiagnosticsInfo>(result);
     }
 
     [TestMethod]
-    public void GetDbStatus()
+    public async Task GetDbStatusAsync()
     {
-        using var _ = CreateController(out var controller);
-
-        var result = controller.GetDbStatusAsync().Result;
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Result);
-        Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        var result = await Controller.GetDbStatusAsync();
+        CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
     [TestMethod]
-    public void GetAuditLogsStatistics()
+    public async Task GetAuditLogsStatisticsAsync()
     {
-        using var container = CreateController(out var controller);
-        var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-        dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
-        dbContext.AuditLogs.Add(new GrillBot.Database.Entity.AuditLogItem()
+        await DbContext.AddAsync(new AuditLogItem()
         {
-            Type = GrillBot.Database.Enums.AuditLogItemType.Command,
-            Data = JsonConvert.SerializeObject(new CommandExecution(), AuditLogService.JsonSerializerSettings)
+            Type = Database.Enums.AuditLogItemType.Command,
+            Id = 1
         });
-        dbContext.SaveChanges();
+        await DbContext.SaveChangesAsync();
+        var result = await Controller.GetAuditLogsStatisticsAsync();
 
-        var result = controller.GetAuditLogsStatisticsAsync().Result;
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Result);
-        Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
     [TestMethod]
-    public void GetCommandStatus_WithSearch()
+    public async Task GetCommandStatusAsync_WithSearch()
     {
-        using var container = CreateController(out var controller);
-        var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-        dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
-        dbContext.AuditLogs.Add(new GrillBot.Database.Entity.AuditLogItem()
+        await DbContext.AddAsync(new AuditLogItem()
         {
-            Type = GrillBot.Database.Enums.AuditLogItemType.Command,
-            Data = JsonConvert.SerializeObject(new CommandExecution() { Command = "Cmd" }, AuditLogService.JsonSerializerSettings)
+            Data = JsonConvert.SerializeObject(new CommandExecution() { Command = "CMD" }),
+            Type = Database.Enums.AuditLogItemType.Command,
+            Id = 1
         });
-        dbContext.SaveChanges();
+        await DbContext.SaveChangesAsync();
 
-        var result = controller.GetCommandStatusAsync("Test").Result;
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Result);
-        Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        var result = await Controller.GetCommandStatusAsync("asdf");
+        CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
     }
 
     [TestMethod]
-    public void GetCommandStatus_WithoutSearch()
+    public async Task GetCommandStatusAsync_WithoutSearch()
     {
-        using var container = CreateController(out var controller);
-
-        var result = controller.GetCommandStatusAsync().Result;
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Result);
-        Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-    }
-
-    [TestMethod]
-    public void GetInteractionsStatus_WithSearch()
-    {
-        using var container = CreateController(out var controller);
-        var dbContext = (GrillBotContext)container.GetService(typeof(TestingGrillBotContext));
-        dbContext.AuditLogs.RemoveRange(dbContext.AuditLogs.ToList());
-        dbContext.AuditLogs.Add(new GrillBot.Database.Entity.AuditLogItem()
+        await DbContext.AddAsync(new AuditLogItem()
         {
-            Type = GrillBot.Database.Enums.AuditLogItemType.InteractionCommand,
-            Data = JsonConvert.SerializeObject(new InteractionCommandExecuted() { Name = "Name", ModuleName = "Module", MethodName = "Method" }, AuditLogService.JsonSerializerSettings)
+            Data = JsonConvert.SerializeObject(new CommandExecution() { Command = "CMD" }),
+            Type = Database.Enums.AuditLogItemType.Command,
+            Id = 2
         });
-        dbContext.SaveChanges();
+        await DbContext.SaveChangesAsync();
 
-        var result = controller.GetInteractionsStatusAsync("Test").Result;
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Result);
-        Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        var result = await Controller.GetCommandStatusAsync();
+        CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
     }
 
     [TestMethod]
-    public void GetInteractionsStatus_WithoutSearch()
+    public async Task GetInteractionsStatusAsync_WithSearch()
     {
-        using var container = CreateController(out var controller);
+        await DbContext.AddAsync(new AuditLogItem()
+        {
+            Data = JsonConvert.SerializeObject(new InteractionCommandExecuted()),
+            Type = Database.Enums.AuditLogItemType.InteractionCommand,
+            Id = 3
+        });
+        await DbContext.SaveChangesAsync();
 
-        var result = controller.GetInteractionsStatusAsync().Result;
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Result);
-        Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+        var result = await Controller.GetInteractionsStatusAsync("asdf");
+        CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetInteractionsStatusAsync_WithoutSearch()
+    {
+        await DbContext.AddAsync(new AuditLogItem()
+        {
+            Data = JsonConvert.SerializeObject(new InteractionCommandExecuted()),
+            Type = Database.Enums.AuditLogItemType.InteractionCommand,
+            Id = 4
+        });
+        await DbContext.SaveChangesAsync();
+
+        var result = await Controller.GetInteractionsStatusAsync();
+        CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
     }
 
     [TestMethod]
     public void ChangeBotStatus()
     {
-        using var container = CreateController(out var controller);
-
-        var result = controller.ChangeBotStatus(true);
-        Assert.IsNotNull(result);
-        Assert.IsInstanceOfType(result, typeof(OkResult));
+        var result = Controller.ChangeBotStatus(true);
+        CheckResult<OkResult>(result);
     }
 }

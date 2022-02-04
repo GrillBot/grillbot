@@ -18,6 +18,7 @@ namespace GrillBot.Database.Services
 
         static public async Task InitUserAsync(this GrillBotContext context, IUser user, CancellationToken cancellationToken)
         {
+            if (user == null) return;
             var userId = user.Id.ToString();
 
             if (!await context.Users.AnyAsync(o => o.Id == userId, cancellationToken))

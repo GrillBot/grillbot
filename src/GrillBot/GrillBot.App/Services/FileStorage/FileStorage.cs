@@ -1,6 +1,6 @@
 ﻿namespace GrillBot.App.Services.FileStorage
 {
-    public class FileStorage
+    public class FileStorage : IFileStorage
     {
         private DirectoryInfo StorageInfo { get; }
 

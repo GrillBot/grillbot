@@ -4,7 +4,6 @@ using GrillBot.Data.Models.API.Searching;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers

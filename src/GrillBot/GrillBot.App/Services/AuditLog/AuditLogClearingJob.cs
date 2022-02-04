@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Logging;
-using Microsoft.EntityFrameworkCore;
 using Quartz;
 using System.IO.Compression;
 using System.Xml.Linq;
@@ -118,7 +117,7 @@ namespace GrillBot.App.Services.AuditLog
                     if (item.GuildChannel != null)
                         element.Add(new XAttribute("ChannelId", item.ChannelId));
 
-                    if (item.Files?.Count > 0)
+                    if (item.Files.Count > 0)
                     {
                         var files = new XElement("Files", new XAttribute("Count", item.Files.Count));
 

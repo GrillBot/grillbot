@@ -63,8 +63,7 @@
         static public IRole FindRole(this BaseSocketClient client, ulong id)
         {
             return client.Guilds.SelectMany(o => o.Roles)
-                .Where(o => !o.IsEveryone)
-                .FirstOrDefault(o => o.Id == id);
+                .FirstOrDefault(o => !o.IsEveryone && o.Id == id);
         }
 
         static public IEnumerable<SocketGuild> FindMutualGuilds(this BaseSocketClient client, ulong userId)

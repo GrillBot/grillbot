@@ -9,7 +9,7 @@
             Configuration = configuration.GetSection("FileStorage");
         }
 
-        public FileStorage Create(string categoryName)
+        public virtual IFileStorage Create(string categoryName)
         {
             if (string.IsNullOrEmpty(categoryName))
                 throw new ArgumentNullException(nameof(categoryName));

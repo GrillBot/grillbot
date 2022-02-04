@@ -5,6 +5,7 @@ using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -38,7 +39,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
         await DbContext.Users.AddAsync(new Database.Entity.User() { Username = "Username", Discriminator = "1234", Id = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetInviteListAsync(new GetInviteListParams());
+        var result = await Controller.GetInviteListAsync(new GetInviteListParams(), CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
     }
 
@@ -54,7 +55,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
             GuildId = "12345"
         };
 
-        var result = await Controller.GetInviteListAsync(filter);
+        var result = await Controller.GetInviteListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
     }
 }

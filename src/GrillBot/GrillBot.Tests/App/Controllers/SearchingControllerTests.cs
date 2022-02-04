@@ -8,6 +8,7 @@ using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -48,7 +49,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
             SortDesc = true
         };
 
-        var result = await Controller.GetSearchListAsync(filter);
+        var result = await Controller.GetSearchListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
     }
 
@@ -62,14 +63,14 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         await DbContext.SaveChangesAsync();
 
         var filter = new GetSearchingListParams();
-        var result = await Controller.GetSearchListAsync(filter);
+        var result = await Controller.GetSearchListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
     }
 
     [TestMethod]
     public async Task RemoveSearchesAsync()
     {
-        var result = await Controller.RemoveSearchesAsync(new[] { 1L });
+        var result = await Controller.RemoveSearchesAsync(new[] { 1L }, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 }

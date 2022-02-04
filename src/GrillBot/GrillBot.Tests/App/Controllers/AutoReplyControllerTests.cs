@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -41,9 +42,9 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
-        });
+        }, CancellationToken.None);
 
-        var listResult = await Controller.GetAutoReplyListAsync();
+        var listResult = await Controller.GetAutoReplyListAsync(CancellationToken.None);
 
         CheckResult<OkObjectResult, AutoReplyItem>(createResult);
         CheckResult<OkObjectResult, List<AutoReplyItem>>(listResult);
@@ -61,14 +62,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetItemAsync(1);
+        var result = await Controller.GetItemAsync(1, CancellationToken.None);
         CheckResult<OkObjectResult, AutoReplyItem>(result);
     }
 
     [TestMethod]
     public async Task GetItemAsync_NotFound()
     {
-        var result = await Controller.GetItemAsync(1);
+        var result = await Controller.GetItemAsync(1, CancellationToken.None);
         CheckResult<NotFoundObjectResult, AutoReplyItem>(result);
     }
 
@@ -89,7 +90,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
-        });
+        }, CancellationToken.None);
 
         CheckResult<OkObjectResult, AutoReplyItem>(result);
     }
@@ -102,7 +103,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
-        });
+        }, CancellationToken.None);
 
         CheckResult<NotFoundObjectResult, AutoReplyItem>(result);
     }
@@ -119,14 +120,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.RemoveItemAsync(1);
+        var result = await Controller.RemoveItemAsync(1, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task RemoveItemAsync_NotFound()
     {
-        var result = await Controller.RemoveItemAsync(1);
+        var result = await Controller.RemoveItemAsync(1, CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -48,7 +49,7 @@ public class DataControllerAdminTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableGuildsAsync()
     {
-        var result = await Controller.GetAvailableGuildsAsync();
+        var result = await Controller.GetAvailableGuildsAsync(CancellationToken.None);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 

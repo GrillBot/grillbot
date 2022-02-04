@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -39,7 +40,7 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
             TargetId = "12345"
         };
 
-        var result = await Controller.CreateExplicitPermissionAsync(parameters);
+        var result = await Controller.CreateExplicitPermissionAsync(parameters, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 
@@ -54,14 +55,14 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
             TargetId = "12345"
         };
 
-        CheckResult<OkResult>(await Controller.CreateExplicitPermissionAsync(parameters));
-        CheckResult<ConflictObjectResult>(await Controller.CreateExplicitPermissionAsync(parameters));
+        CheckResult<OkResult>(await Controller.CreateExplicitPermissionAsync(parameters, CancellationToken.None));
+        CheckResult<ConflictObjectResult>(await Controller.CreateExplicitPermissionAsync(parameters, CancellationToken.None));
     }
 
     [TestMethod]
     public async Task RemoveExplicitPermissionAsync_NotFound()
     {
-        var result = await Controller.RemoveExplicitPermissionAsync("unverify", "12345");
+        var result = await Controller.RemoveExplicitPermissionAsync("unverify", "12345", CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -76,8 +77,8 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
             TargetId = "12345"
         };
 
-        CheckResult<OkResult>(await Controller.CreateExplicitPermissionAsync(parameters));
-        CheckResult<OkResult>(await Controller.RemoveExplicitPermissionAsync("unverify", "12345"));
+        CheckResult<OkResult>(await Controller.CreateExplicitPermissionAsync(parameters, CancellationToken.None));
+        CheckResult<OkResult>(await Controller.RemoveExplicitPermissionAsync("unverify", "12345", CancellationToken.None));
     }
 
     [TestMethod]
@@ -91,14 +92,14 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
         await DbContext.AddAsync(new Database.Entity.User() { Username = "User", Discriminator = "1234", Id = "123456" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetExplicitPermissionsListAsync(null);
+        var result = await Controller.GetExplicitPermissionsListAsync(null, CancellationToken.None);
         CheckResult<OkObjectResult, List<ExplicitPermission>>(result);
     }
 
     [TestMethod]
     public async Task GetExplicitPermissionsListAsync_WithFilter()
     {
-        var result = await Controller.GetExplicitPermissionsListAsync("selfunverify");
+        var result = await Controller.GetExplicitPermissionsListAsync("selfunverify", CancellationToken.None);
         CheckResult<OkObjectResult, List<ExplicitPermission>>(result);
     }
 
@@ -108,14 +109,14 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
         await DbContext.AddAsync(new Database.Entity.ExplicitPermission() { Command = "unverify", IsRole = false, State = Database.Enums.ExplicitPermissionState.Banned, TargetId = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.SetExplicitPermissionStateAsync("unverify", "12345", Database.Enums.ExplicitPermissionState.Allowed);
+        var result = await Controller.SetExplicitPermissionStateAsync("unverify", "12345", Database.Enums.ExplicitPermissionState.Allowed, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task SetExplicitPermissionState_NotFound()
     {
-        var result = await Controller.SetExplicitPermissionStateAsync("unverify", "12345", Database.Enums.ExplicitPermissionState.Allowed);
+        var result = await Controller.SetExplicitPermissionStateAsync("unverify", "12345", Database.Enums.ExplicitPermissionState.Allowed, CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 }

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -61,7 +62,7 @@ public class UnverifyControllerUserTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task GetCurrentUnverifiesAsync_NotFound()
     {
-        var result = await Controller.GetCurrentUnverifiesAsync();
+        var result = await Controller.GetCurrentUnverifiesAsync(CancellationToken.None);
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
@@ -83,7 +84,7 @@ public class UnverifyControllerUserTests : ControllerTest<UnverifyController>
         await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify() { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetCurrentUnverifiesAsync();
+        var result = await Controller.GetCurrentUnverifiesAsync(CancellationToken.None);
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
@@ -101,7 +102,7 @@ public class UnverifyControllerUserTests : ControllerTest<UnverifyController>
             ToUserId = "1"
         };
 
-        var result = await Controller.GetUnverifyLogsAsync(filter);
+        var result = await Controller.GetUnverifyLogsAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 
@@ -124,7 +125,7 @@ public class UnverifyControllerUserTests : ControllerTest<UnverifyController>
         await DbContext.SaveChangesAsync();
 
         var filter = new UnverifyLogParams();
-        var result = await Controller.GetUnverifyLogsAsync(filter);
+        var result = await Controller.GetUnverifyLogsAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 }

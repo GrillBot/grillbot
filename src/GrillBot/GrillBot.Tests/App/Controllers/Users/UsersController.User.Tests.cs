@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -59,7 +60,7 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task GetCurrentUserDetailAsync_NotFound()
     {
-        var result = await Controller.GetCurrentUserDetailAsync();
+        var result = await Controller.GetCurrentUserDetailAsync(CancellationToken.None);
         CheckResult<NotFoundObjectResult, UserDetail>(result);
     }
 
@@ -72,7 +73,7 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem() { EmoteId = "<:PepeLa:751183558126731274>", UserId = "0" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetCurrentUserDetailAsync();
+        var result = await Controller.GetCurrentUserDetailAsync(CancellationToken.None);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
@@ -82,7 +83,7 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
         await DbContext.SaveChangesAsync();
 
-        CheckResult<OkResult>(await Controller.HearthbeatAsync());
+        CheckResult<OkResult>(await Controller.HearthbeatAsync(CancellationToken.None));
     }
 
     [TestMethod]
@@ -91,13 +92,13 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
         await DbContext.SaveChangesAsync();
 
-        CheckResult<OkResult>(await Controller.HearthbeatOffAsync());
+        CheckResult<OkResult>(await Controller.HearthbeatOffAsync(CancellationToken.None));
     }
 
     [TestMethod]
     public async Task GetAvailableCommandsAsync()
     {
-        var result = await Controller.GetAvailableCommandsAsync();
+        var result = await Controller.GetAvailableCommandsAsync(CancellationToken.None);
         CheckResult<OkObjectResult, List<CommandGroup>>(result);
     }
 }

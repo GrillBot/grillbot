@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -67,7 +68,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
             Username = "User"
         };
 
-        var result = await Controller.GetUsersListAsync(filter);
+        var result = await Controller.GetUsersListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<UserListItem>>(result);
     }
 
@@ -81,14 +82,14 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         await DbContext.SaveChangesAsync();
 
         var filter = new GetUserListParams();
-        var result = await Controller.GetUsersListAsync(filter);
+        var result = await Controller.GetUsersListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<UserListItem>>(result);
     }
 
     [TestMethod]
     public async Task GetUserDetailAsync_NotFound()
     {
-        var result = await Controller.GetUserDetailAsync(1);
+        var result = await Controller.GetUserDetailAsync(1, CancellationToken.None);
         CheckResult<NotFoundObjectResult, UserDetail>(result);
     }
 
@@ -101,14 +102,14 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem() { EmoteId = "<:PepeLa:751183558126731274>", UserId = "2" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetUserDetailAsync(2);
+        var result = await Controller.GetUserDetailAsync(2, CancellationToken.None);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
     [TestMethod]
     public async Task UpdateUserAsync_NotFound()
     {
-        var result = await Controller.UpdateUserAsync(1, new UpdateUserParams());
+        var result = await Controller.UpdateUserAsync(1, new UpdateUserParams(), CancellationToken.None);
         CheckResult<NotFoundObjectResult, UserDetail>(result);
     }
 
@@ -124,7 +125,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
             PublicAdminBlocked = true,
             WebAdminAllowed = true
         };
-        var result = await Controller.UpdateUserAsync(2, parameters);
+        var result = await Controller.UpdateUserAsync(2, parameters, CancellationToken.None);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
@@ -140,7 +141,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
             PublicAdminBlocked = false,
             WebAdminAllowed = false
         };
-        var result = await Controller.UpdateUserAsync(2, parameters);
+        var result = await Controller.UpdateUserAsync(2, parameters, CancellationToken.None);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
@@ -150,7 +151,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
         await DbContext.SaveChangesAsync();
 
-        CheckResult<OkResult>(await Controller.HearthbeatAsync());
+        CheckResult<OkResult>(await Controller.HearthbeatAsync(CancellationToken.None));
     }
 
     [TestMethod]
@@ -159,6 +160,6 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
         await DbContext.SaveChangesAsync();
 
-        CheckResult<OkResult>(await Controller.HearthbeatOffAsync());
+        CheckResult<OkResult>(await Controller.HearthbeatOffAsync(CancellationToken.None));
     }
 }

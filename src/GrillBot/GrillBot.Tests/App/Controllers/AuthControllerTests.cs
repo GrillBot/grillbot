@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -40,7 +41,7 @@ public class AuthControllerTests : ControllerTest<AuthController>
     [TestMethod]
     public async Task OnOAuth2CallBackAsync()
     {
-        var result = await Controller.OnOAuth2CallbackAsync("code", true);
+        var result = await Controller.OnOAuth2CallbackAsync("code", true, CancellationToken.None);
         CheckResult<RedirectResult>(result);
     }
 }

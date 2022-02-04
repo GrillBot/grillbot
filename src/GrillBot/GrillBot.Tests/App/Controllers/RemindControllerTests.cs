@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -40,7 +41,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetRemindMessagesListAsync(new GetReminderListParams());
+        var result = await Controller.GetRemindMessagesListAsync(new GetReminderListParams(), CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 
@@ -58,7 +59,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
             ToUserId = "12345"
         };
 
-        var result = await Controller.GetRemindMessagesListAsync(filter);
+        var result = await Controller.GetRemindMessagesListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 

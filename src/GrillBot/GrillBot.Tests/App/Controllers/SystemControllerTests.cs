@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -45,7 +46,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
     [TestMethod]
     public async Task GetDbStatusAsync()
     {
-        var result = await Controller.GetDbStatusAsync();
+        var result = await Controller.GetDbStatusAsync(CancellationToken.None);
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
@@ -58,7 +59,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
             Id = 1
         });
         await DbContext.SaveChangesAsync();
-        var result = await Controller.GetAuditLogsStatisticsAsync();
+        var result = await Controller.GetAuditLogsStatisticsAsync(CancellationToken.None);
 
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }

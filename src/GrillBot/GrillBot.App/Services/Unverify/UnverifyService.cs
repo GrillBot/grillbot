@@ -182,11 +182,12 @@ namespace GrillBot.App.Services.Unverify
                 await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto, cancellationToken);
 
                 var muteRole = await GetMutedRoleAsync(guild);
+                var requestOptions = new RequestOptions() { CancelToken = cancellationToken };
                 if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id))
-                    await profile.Destination.RemoveRoleAsync(muteRole);
+                    await profile.Destination.RemoveRoleAsync(muteRole, requestOptions);
 
-                await profile.ReturnChannelsAsync(guild);
-                await profile.ReturnRolesAsync();
+                await profile.ReturnChannelsAsync(guild, requestOptions);
+                await profile.ReturnRolesAsync(requestOptions);
 
                 dbUser.Unverify = null;
                 await context.SaveChangesAsync(cancellationToken);
@@ -196,7 +197,7 @@ namespace GrillBot.App.Services.Unverify
                     try
                     {
                         var dmMessage = UnverifyMessageGenerator.CreateRemoveAccessManuallyPMMessage(guild);
-                        await toUser.SendMessageAsync(dmMessage);
+                        await toUser.SendMessageAsync(dmMessage, options: requestOptions);
                     }
                     catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
                     {
@@ -387,19 +388,20 @@ namespace GrillBot.App.Services.Unverify
             var fromUser = guild.GetUser(fromUserId);
             await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.Obj), guild, fromUser, user, cancellationToken);
 
+            var requestOptions = new RequestOptions() { CancelToken = cancellationToken };
             if (rolesToReturn.Count > 0)
-                await user.AddRolesAsync(rolesToReturn);
+                await user.AddRolesAsync(rolesToReturn, requestOptions);
 
             if (channelsToReturn.Count > 0)
             {
                 foreach (var channel in channelsToReturn)
                 {
-                    await channel.Channel.AddPermissionOverwriteAsync(user, channel.Perms);
+                    await channel.Channel.AddPermissionOverwriteAsync(user, channel.Perms, requestOptions);
                 }
             }
 
             if (mutedRole != null)
-                await user.RemoveRoleAsync(mutedRole);
+                await user.RemoveRoleAsync(mutedRole, requestOptions);
         }
 
         public async Task<List<Tuple<ulong, ulong>>> GetPendingUnverifiesForRemoveAsync(CancellationToken cancellationToken)

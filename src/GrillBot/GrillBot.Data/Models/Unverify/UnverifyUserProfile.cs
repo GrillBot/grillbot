@@ -32,9 +32,9 @@ namespace GrillBot.Data.Models.Unverify
             ChannelsToRemove = new List<ChannelOverride>();
         }
 
-        public Task ReturnRolesAsync() => Destination.AddRolesAsync(RolesToRemove);
+        public Task ReturnRolesAsync(RequestOptions options = null) => Destination.AddRolesAsync(RolesToRemove, options);
 
-        public async Task ReturnChannelsAsync(SocketGuild guild)
+        public async Task ReturnChannelsAsync(SocketGuild guild, RequestOptions options = null)
         {
             var channels = ChannelsToRemove
                 .Select(o => new { Channel = guild.GetChannel(o.ChannelId), Perms = o.Permissions })
@@ -42,13 +42,13 @@ namespace GrillBot.Data.Models.Unverify
 
             foreach (var channel in channels)
             {
-                await channel.Channel.AddPermissionOverwriteAsync(Destination, channel.Perms);
+                await channel.Channel.AddPermissionOverwriteAsync(Destination, channel.Perms, options);
             }
         }
 
-        public Task RemoveRolesAsync() => Destination.RemoveRolesAsync(RolesToRemove);
+        public Task RemoveRolesAsync(RequestOptions options = null) => Destination.RemoveRolesAsync(RolesToRemove, options);
 
-        public async Task RemoveChannelsAsync(SocketGuild guild)
+        public async Task RemoveChannelsAsync(SocketGuild guild, RequestOptions options = null)
         {
             var channels = ChannelsToRemove
                 .Select(o => new { Channel = guild.GetChannel(o.ChannelId), Perms = o.Permissions })
@@ -56,7 +56,7 @@ namespace GrillBot.Data.Models.Unverify
 
             foreach (var channel in channels)
             {
-                await channel.Channel.RemovePermissionOverwriteAsync(Destination);
+                await channel.Channel.RemovePermissionOverwriteAsync(Destination, options);
             }
         }
     }

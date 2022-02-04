@@ -32,12 +32,12 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(GuildController) + "_" + nameof(GetGuildListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromQuery] GetGuildListParams parameters)
+        public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromQuery] GetGuildListParams parameters, CancellationToken cancellationToken)
         {
             var query = parameters.CreateQuery(
                 DbContext.Guilds.AsNoTracking().OrderBy(o => o.Name)
             );
-            var result = await PaginatedResponse<Guild>.CreateAsync(query, parameters, entity => new Guild(entity));
+            var result = await PaginatedResponse<Guild>.CreateAsync(query, parameters, entity => new Guild(entity), cancellationToken);
 
             foreach (var guildData in result.Data)
             {
@@ -55,14 +55,15 @@ namespace GrillBot.App.Controllers
         /// Gets detailed information about guild.
         /// </summary>
         /// <param name="id">Guild ID</param>
+        /// <param name="cancellationToken"></param>
         [HttpGet("{id}")]
         [OpenApiOperation(nameof(GuildController) + "_" + nameof(GetGuildDetailAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id)
+        public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id, CancellationToken cancellationToken)
         {
             var dbGuild = await DbContext.Guilds.AsNoTracking()
-                .FirstOrDefaultAsync(o => o.Id == id.ToString());
+                .FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
 
             if (dbGuild == null)
                 return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
@@ -82,7 +83,7 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams updateGuildParams)
+        public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams updateGuildParams, CancellationToken cancellationToken)
         {
             var guild = DiscordClient.GetGuild(id);
 
@@ -90,7 +91,7 @@ namespace GrillBot.App.Controllers
                 return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
 
             var dbGuild = await DbContext.Guilds.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Id == id.ToString());
+                .FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
 
             if (updateGuildParams.AdminChannelId != null && guild.GetTextChannel(Convert.ToUInt64(updateGuildParams.AdminChannelId)) == null)
             {
@@ -120,7 +121,7 @@ namespace GrillBot.App.Controllers
                 dbGuild.MuteRoleId = updateGuildParams.MuteRoleId;
             }
 
-            await DbContext.SaveChangesAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
             return Ok(new GuildDetail(guild, dbGuild));
         }
     }

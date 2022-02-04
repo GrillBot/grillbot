@@ -83,7 +83,7 @@ namespace GrillBot.App.Services
                 SortBy = "Id"
             };
 
-            var data = await GetPaginatedListAsync(parameters);
+            var data = await GetPaginatedListAsync(parameters, CancellationToken.None);
 
             return data.Data.ConvertAll(o => new SearchingItem()
             {
@@ -94,7 +94,7 @@ namespace GrillBot.App.Services
             });
         }
 
-        public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters)
+        public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters, CancellationToken cancellationToken)
         {
             using var context = DbFactory.Create();
 
@@ -105,7 +105,7 @@ namespace GrillBot.App.Services
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var data = await query.ToListAsync();
+            var data = await query.ToListAsync(cancellationToken);
 
             var results = new List<SearchingListItem>();
             var synchronizedGuilds = new List<ulong>();
@@ -164,7 +164,7 @@ namespace GrillBot.App.Services
                 results.Add(new SearchingListItem(item));
             }
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(cancellationToken);
             return PaginatedResponse<SearchingListItem>.Create(results, parameters);
         }
 

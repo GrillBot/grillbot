@@ -37,6 +37,7 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <param name="code">Authorization code</param>
         /// <param name="state">Public or private administration</param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="400">Validation failed</response>
         [HttpGet("callback")]
@@ -44,9 +45,9 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(AuthController) + "_" + nameof(OnOAuth2CallbackAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult> OnOAuth2CallbackAsync([FromQuery, Required] string code, [Required, FromQuery] bool state)
+        public async Task<ActionResult> OnOAuth2CallbackAsync([FromQuery, Required] string code, [Required, FromQuery] bool state, CancellationToken cancellationToken)
         {
-            var redirectUrl = await Service.CreateRedirectUrlAsync(code, state);
+            var redirectUrl = await Service.CreateRedirectUrlAsync(code, state, cancellationToken);
             return Redirect(redirectUrl);
         }
 
@@ -55,6 +56,7 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <param name="sessionId">SessionId</param>
         /// <param name="isPublic">Public or private administration</param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="400">Validation failed</response>
         [HttpGet("token")]
@@ -62,9 +64,10 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(AuthController) + "_" + nameof(CreateLoginTokenAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<OAuth2LoginToken>> CreateLoginTokenAsync([FromQuery, Required] string sessionId, [FromQuery, Required] bool isPublic)
+        public async Task<ActionResult<OAuth2LoginToken>> CreateLoginTokenAsync([FromQuery, Required] string sessionId, [FromQuery, Required] bool isPublic,
+            CancellationToken cancellationToken)
         {
-            var token = await Service.CreateTokenAsync(sessionId, isPublic);
+            var token = await Service.CreateTokenAsync(sessionId, isPublic, cancellationToken);
             return Ok(token);
         }
     }

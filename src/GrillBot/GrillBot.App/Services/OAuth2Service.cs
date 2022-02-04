@@ -43,9 +43,9 @@ namespace GrillBot.App.Services
             return new OAuth2GetLink(builder.ToString());
         }
 
-        public async Task<string> CreateRedirectUrlAsync(string code, bool isPublic)
+        public async Task<string> CreateRedirectUrlAsync(string code, bool isPublic, CancellationToken cancellationToken)
         {
-            var accessToken = await CreateAccessTokenAsync(code);
+            var accessToken = await CreateAccessTokenAsync(code, cancellationToken);
 
             var redirectUrl = Configuration[isPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"];
             var uriBuilder = new UriBuilder(redirectUrl)
@@ -60,7 +60,7 @@ namespace GrillBot.App.Services
             return uriBuilder.ToString();
         }
 
-        private async Task<string> CreateAccessTokenAsync(string code)
+        private async Task<string> CreateAccessTokenAsync(string code, CancellationToken cancellationToken)
         {
             using var message = new HttpRequestMessage(HttpMethod.Post, "https://discord.com/api/oauth2/token")
             {
@@ -75,8 +75,8 @@ namespace GrillBot.App.Services
                 })
             };
 
-            using var response = await HttpClient.SendAsync(message);
-            var json = await response.Content.ReadAsStringAsync();
+            using var response = await HttpClient.SendAsync(message, cancellationToken);
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (!response.IsSuccessStatusCode)
                 throw new WebException(json);
@@ -93,13 +93,13 @@ namespace GrillBot.App.Services
             return client.CurrentUser;
         }
 
-        public async Task<OAuth2LoginToken> CreateTokenAsync(string sessionId, bool isPublic)
+        public async Task<OAuth2LoginToken> CreateTokenAsync(string sessionId, bool isPublic, CancellationToken cancellationToken)
         {
             var user = await GetUserAsync(sessionId);
 
             using var context = DbFactory.Create();
             var dbUser = await context.Users.AsNoTracking()
-                .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
+                .FirstOrDefaultAsync(o => o.Id == user.Id.ToString(), cancellationToken);
 
             if (dbUser == null)
                 return new OAuth2LoginToken($"Uživatel {user.Username} nebyl nalezen.");

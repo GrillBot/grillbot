@@ -112,7 +112,7 @@ public class UnverifyModule : Infrastructure.ModuleBase
         try
         {
             var fromUser = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
-            var message = await UnverifyService.UpdateUnverifyAsync(user, Context.Guild, end, fromUser);
+            var message = await UnverifyService.UpdateUnverifyAsync(user, Context.Guild, end, fromUser, CancellationToken.None);
             await ReplyAsync(message);
         }
         catch (Exception ex)

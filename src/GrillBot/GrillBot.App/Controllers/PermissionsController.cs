@@ -36,10 +36,10 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Conflict)]
-        public async Task<ActionResult> CreateExplicitPermissionAsync([FromBody] CreateExplicitPermissionParams parameters)
+        public async Task<ActionResult> CreateExplicitPermissionAsync([FromBody] CreateExplicitPermissionParams parameters, CancellationToken cancellationToken)
         {
             var exists = await DbContext.ExplicitPermissions.AsNoTracking()
-                .AnyAsync(o => o.Command == parameters.Command && o.TargetId == parameters.TargetId);
+                .AnyAsync(o => o.Command == parameters.Command && o.TargetId == parameters.TargetId, cancellationToken);
 
             if (exists)
                 return Conflict(new MessageResponse($"Explicitní oprávnění pro příkaz {parameters.Command} ({parameters.TargetId}) již existuje."));
@@ -52,8 +52,8 @@ namespace GrillBot.App.Controllers
                 State = parameters.State
             };
 
-            await DbContext.AddAsync(permission);
-            await DbContext.SaveChangesAsync();
+            await DbContext.AddAsync(permission, cancellationToken);
+            await DbContext.SaveChangesAsync(cancellationToken);
             return Ok();
         }
 
@@ -68,16 +68,16 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> RemoveExplicitPermissionAsync([Required] string command, [Required] string targetId)
+        public async Task<ActionResult> RemoveExplicitPermissionAsync([Required] string command, [Required] string targetId, CancellationToken cancellationToken)
         {
             var permission = await DbContext.ExplicitPermissions.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
+                .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId, cancellationToken);
 
             if (permission == null)
                 return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
 
             DbContext.Remove(permission);
-            await DbContext.SaveChangesAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
             return Ok();
         }
 
@@ -88,14 +88,15 @@ namespace GrillBot.App.Controllers
         [HttpGet("explicit")]
         [OpenApiOperation(nameof(PermissionsController) + "_" + nameof(GetExplicitPermissionsListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<List<Data.Models.API.Permissions.ExplicitPermission>>> GetExplicitPermissionsListAsync([FromQuery] string searchQuery)
+        public async Task<ActionResult<List<Data.Models.API.Permissions.ExplicitPermission>>> GetExplicitPermissionsListAsync([FromQuery] string searchQuery,
+            CancellationToken cancellationToken)
         {
             var query = DbContext.ExplicitPermissions.AsNoTracking();
 
             if (!string.IsNullOrEmpty(searchQuery))
                 query = query.Where(o => o.Command.Contains(searchQuery));
 
-            var items = await query.ToListAsync();
+            var items = await query.ToListAsync(cancellationToken);
             var result = new List<Data.Models.API.Permissions.ExplicitPermission>();
 
             var userPermissions = items.Where(o => !o.IsRole);
@@ -104,7 +105,7 @@ namespace GrillBot.App.Controllers
                 var users = await DbContext.Users.AsNoTracking()
                     .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
                     .Select(o => new User() { Flags = o.Flags, Id = o.Id, Username = o.Username, Discriminator = o.Discriminator })
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
 
                 result.AddRange(userPermissions.Select(o =>
                 {
@@ -136,16 +137,17 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(PermissionsController) + "_" + nameof(GetExplicitPermissionsListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> SetExplicitPermissionStateAsync([Required] string command, [Required] string targetId, ExplicitPermissionState state)
+        public async Task<ActionResult> SetExplicitPermissionStateAsync([Required] string command, [Required] string targetId, ExplicitPermissionState state,
+            CancellationToken cancellationToken)
         {
             var permission = await DbContext.ExplicitPermissions.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
+                .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId, cancellationToken);
 
             if (permission == null)
                 return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
 
             permission.State = state;
-            await DbContext.SaveChangesAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
             return Ok();
         }
     }

@@ -29,7 +29,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(InviteController) + "_" + nameof(GetInviteListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromQuery] GetInviteListParams parameters)
+        public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromQuery] GetInviteListParams parameters, CancellationToken cancellationToken)
         {
             var query = DbContext.Invites.AsNoTracking()
                 .Include(o => o.Creator).ThenInclude(o => o.User)
@@ -38,7 +38,7 @@ namespace GrillBot.App.Controllers
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<GuildInvite>.CreateAsync(query, parameters, entity => new(entity));
+            var result = await PaginatedResponse<GuildInvite>.CreateAsync(query, parameters, entity => new(entity), cancellationToken);
             return Ok(result);
         }
     }

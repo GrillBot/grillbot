@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using GrillBot.App.Extensions;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace GrillBot.App.Controllers
 {
@@ -84,7 +85,8 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelsListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<GuildChannel>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters)
+        public async Task<ActionResult<PaginatedResponse<GuildChannel>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters,
+            CancellationToken cancellationToken)
         {
             var query = DbContext.Channels.AsNoTracking().AsSplitQuery()
                 .Include(o => o.Guild)
@@ -96,7 +98,7 @@ namespace GrillBot.App.Controllers
             {
                 var cachedMessagesCount = MessageCache.GetMessagesFromChannel(Convert.ToUInt64(entity.ChannelId)).Count();
                 return new(entity, cachedMessagesCount);
-            });
+            }, cancellationToken);
             return Ok(result);
         }
 
@@ -107,26 +109,26 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(ClearChannelCacheAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> ClearChannelCacheAsync(ulong guildId, ulong channelId)
+        public async Task<ActionResult> ClearChannelCacheAsync(ulong guildId, ulong channelId, CancellationToken cancellationToken)
         {
             var clearedCount = MessageCache.ClearChannel(channelId);
             var guild = DiscordClient.GetGuild(guildId);
             var channel = guild?.GetTextChannel(channelId);
 
             if (guild != null)
-                await DbContext.InitGuildAsync(guild, CancellationToken.None);
+                await DbContext.InitGuildAsync(guild, cancellationToken);
             if (channel != null)
-                await DbContext.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value, CancellationToken.None);
+                await DbContext.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value, cancellationToken);
 
             var userId = User.GetUserId();
             var user = await DiscordClient.FindUserAsync(userId);
             if (user != null)
-                await DbContext.InitUserAsync(user, CancellationToken.None);
+                await DbContext.InitUserAsync(user, cancellationToken);
 
             var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, channel, user,
                 $"Uživatel vyčistil memory cache kanálu. Počet smazaných zpráv z cache je {clearedCount}");
-            await DbContext.AddAsync(logItem);
-            await DbContext.SaveChangesAsync();
+            await DbContext.AddAsync(logItem, cancellationToken);
+            await DbContext.SaveChangesAsync(cancellationToken);
 
             return Ok();
         }
@@ -135,6 +137,7 @@ namespace GrillBot.App.Controllers
         /// Gets detail of channel.
         /// </summary>
         /// <param name="id">ID</param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="404">Channel not found.</response>
         [HttpGet("{id}")]
@@ -142,13 +145,13 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelDetailAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id)
+        public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id, CancellationToken cancellationToken)
         {
             var channel = await DbContext.Channels.AsNoTracking()
                 .Include(o => o.Guild)
                 .Include(o => o.Users)
                 .Include(o => o.ParentChannel)
-                .FirstOrDefaultAsync(o => o.ChannelId == id.ToString());
+                .FirstOrDefaultAsync(o => o.ChannelId == id.ToString(), cancellationToken);
 
             if (channel == null)
                 return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
@@ -157,10 +160,10 @@ namespace GrillBot.App.Controllers
                 .Where(o => o.ChannelId == id.ToString());
 
             var mostActiveUser = await userChannelsQuery.OrderByDescending(o => o.Count)
-                .Select(o => o.User.User).FirstOrDefaultAsync();
+                .Select(o => o.User.User).FirstOrDefaultAsync(cancellationToken);
 
             var lastMessageFrom = await userChannelsQuery.OrderByDescending(o => o.LastMessageAt)
-                .Select(o => o.User.User).FirstOrDefaultAsync();
+                .Select(o => o.User.User).FirstOrDefaultAsync(cancellationToken);
 
             var channelDetail = new ChannelDetail(channel)
             {
@@ -184,16 +187,16 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> UpdateChannelAsync(ulong id, [FromBody] UpdateChannelParams parameters)
+        public async Task<ActionResult> UpdateChannelAsync(ulong id, [FromBody] UpdateChannelParams parameters, CancellationToken cancellationToken)
         {
             var channel = await DbContext.Channels
-                .FirstOrDefaultAsync(o => o.ChannelId == id.ToString());
+                .FirstOrDefaultAsync(o => o.ChannelId == id.ToString(), cancellationToken);
 
             if (channel == null)
                 return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
 
             channel.Flags = parameters.Flags;
-            await DbContext.SaveChangesAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
             return Ok();
         }
 
@@ -207,7 +210,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelUsersAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromQuery] PaginatedParams pagination)
+        public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromQuery] PaginatedParams pagination, CancellationToken cancellationToken)
         {
             var query = DbContext.UserChannels.AsNoTracking()
                 .Include(o => o.User).ThenInclude(o => o.User)
@@ -222,7 +225,7 @@ namespace GrillBot.App.Controllers
                 Nickname = entity.User.Nickname,
                 UserId = entity.UserId,
                 Username = entity.User.User.Username
-            });
+            }, cancellationToken);
 
             for (int i = 0; i < result.Data.Count; i++) result.Data[i].Position = pagination.Skip + i + 1;
             return Ok(result);
@@ -236,7 +239,7 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelboardAsync))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync()
+        public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync(CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
             var mutualGuilds = DiscordClient.FindMutualGuilds(userId).ToList();
@@ -262,7 +265,7 @@ namespace GrillBot.App.Controllers
                     FirstMessageAt = o.Min(x => x.FirstMessageAt)
                 });
 
-                var groupedChannels = await groupedChannelsQuery.ToListAsync();
+                var groupedChannels = await groupedChannelsQuery.ToListAsync(cancellationToken);
                 if (groupedChannels.Count == 0) continue;
 
                 var channelsQuery = DbContext.Channels.AsNoTracking()
@@ -272,7 +275,7 @@ namespace GrillBot.App.Controllers
 
                 foreach (var channelData in groupedChannels.Where(o => availableChannels.Contains(o.ChannelId)))
                 {
-                    var channel = await channelsQuery.FirstOrDefaultAsync(o => o.ChannelId == channelData.ChannelId);
+                    var channel = await channelsQuery.FirstOrDefaultAsync(o => o.ChannelId == channelData.ChannelId, cancellationToken);
                     if (channel == null) continue;
 
                     channelboard.Add(new ChannelboardItem(channel, channelData.Count, channelData.LastMessageAt, channelData.FirstMessageAt));

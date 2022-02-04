@@ -132,12 +132,13 @@ namespace GrillBot.App.Services.Unverify
             return Logger.LogUnverifyAsync(profile, guild, from, cancellationToken);
         }
 
-        public async Task<string> UpdateUnverifyAsync(IGuildUser user, SocketGuild guild, DateTime newEnd, IGuildUser fromUser)
+        public async Task<string> UpdateUnverifyAsync(IGuildUser user, SocketGuild guild, DateTime newEnd, IGuildUser fromUser,
+            CancellationToken cancellationToken)
         {
             using var context = DbFactory.Create();
 
             var dbUser = await context.GuildUsers.Include(o => o.Unverify)
-                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
+                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString(), cancellationToken);
 
             if (dbUser?.Unverify == null)
                 throw new NotFoundException("Aktualizace času nelze pro hledaného uživatele provést. Unverify nenalezeno.");
@@ -145,11 +146,11 @@ namespace GrillBot.App.Services.Unverify
             if ((dbUser.Unverify.EndAt - DateTime.Now).TotalSeconds <= 30.0)
                 throw new ValidationException("Aktualizace data a času již není možná. Vypršel čas, nebo zbývá méně, než půl minuty.");
 
-            await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user, CancellationToken.None);
+            await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user, cancellationToken);
 
             dbUser.Unverify.EndAt = newEnd;
             dbUser.Unverify.StartAt = DateTime.Now;
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(cancellationToken);
 
             try
             {
@@ -300,7 +301,7 @@ namespace GrillBot.App.Services.Unverify
             return ProfileGenerator.Reconstruct(unverify, user, guild);
         }
 
-        public async Task<List<Tuple<UnverifyUserProfile, IGuild>>> GetAllUnverifiesAsync(ulong? userId = null)
+        public async Task<List<Tuple<UnverifyUserProfile, IGuild>>> GetAllUnverifiesAsync(ulong? userId = null, CancellationToken cancellationToken = default)
         {
             using var context = DbFactory.Create();
 
@@ -311,7 +312,7 @@ namespace GrillBot.App.Services.Unverify
             if (userId != null)
                 unverifyQuery = unverifyQuery.Where(o => o.UserId == userId.Value.ToString());
 
-            var unverifies = await unverifyQuery.ToListAsync();
+            var unverifies = await unverifyQuery.ToListAsync(cancellationToken);
             var profiles = new List<Tuple<UnverifyUserProfile, IGuild>>();
             foreach (var unverify in unverifies)
             {
@@ -340,7 +341,7 @@ namespace GrillBot.App.Services.Unverify
             return data.ConvertAll(o => Convert.ToUInt64(o));
         }
 
-        public async Task RecoverUnverifyState(long id, ulong fromUserId)
+        public async Task RecoverUnverifyState(long id, ulong fromUserId, CancellationToken cancellationToken)
         {
             using var context = DbFactory.Create();
 
@@ -348,7 +349,7 @@ namespace GrillBot.App.Services.Unverify
                 .Include(o => o.Guild)
                 .Include(o => o.ToUser)
                 .ThenInclude(o => o.Unverify)
-                .FirstOrDefaultAsync(o => o.Id == id && (o.Operation == UnverifyOperation.Selfunverify || o.Operation == UnverifyOperation.Unverify));
+                .FirstOrDefaultAsync(o => o.Id == id && (o.Operation == UnverifyOperation.Selfunverify || o.Operation == UnverifyOperation.Unverify), cancellationToken);
 
             if (logItem == null)
                 throw new NotFoundException("Záznam o provedeném odebrání přístupu nebyl nalezen.");
@@ -384,7 +385,7 @@ namespace GrillBot.App.Services.Unverify
                 .ToList();
 
             var fromUser = guild.GetUser(fromUserId);
-            await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.Obj), guild, fromUser, user, CancellationToken.None);
+            await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.Obj), guild, fromUser, user, cancellationToken);
 
             if (rolesToReturn.Count > 0)
                 await user.AddRolesAsync(rolesToReturn);

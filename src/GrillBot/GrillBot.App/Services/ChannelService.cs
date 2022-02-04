@@ -99,7 +99,7 @@ namespace GrillBot.App.Services
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<SocketTextChannel> GetMostActiveChannelOfUserAsync(IUser user, IGuild guild)
+        public async Task<SocketTextChannel> GetMostActiveChannelOfUserAsync(IUser user, IGuild guild, CancellationToken cancellationToken)
         {
             using var dbContext = DbFactory.Create();
 
@@ -107,18 +107,18 @@ namespace GrillBot.App.Services
                 .OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt)
                 .Where(o => o.Channel.ChannelType == ChannelType.Text && o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString())
                 .Select(o => o.ChannelId);
-            var channelId = await channelIdQuery.FirstOrDefaultAsync();
+            var channelId = await channelIdQuery.FirstOrDefaultAsync(cancellationToken);
 
             // User not have any active channel.
             if (string.IsNullOrEmpty(channelId)) return null;
             return (await guild.GetTextChannelAsync(Convert.ToUInt64(channelId))) as SocketTextChannel;
         }
 
-        public async Task<IUserMessage> GetLastMsgFromMostActiveChannelAsync(SocketGuild guild, IUser loggedUser)
+        public async Task<IUserMessage> GetLastMsgFromMostActiveChannelAsync(SocketGuild guild, IUser loggedUser, CancellationToken cancellationToken)
         {
             // Using statistics and finding most active channel will help find channel where logged user have any message.
             // This eliminates the need to browser channels and finds some activity.
-            var mostActiveChannel = await GetMostActiveChannelOfUserAsync(loggedUser, guild);
+            var mostActiveChannel = await GetMostActiveChannelOfUserAsync(loggedUser, guild, cancellationToken);
             if (mostActiveChannel == null) return null;
 
             return await TryFindLastMessageFromUserAsync(mostActiveChannel, loggedUser, true);

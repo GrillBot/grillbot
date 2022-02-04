@@ -26,21 +26,21 @@ public class HelpService
         Prefix = configuration.GetValue<string>("Discord:Commands:Prefix");
     }
 
-    public async Task<List<CommandGroup>> GetHelpAsync(ulong loggedUserId)
+    public async Task<List<CommandGroup>> GetHelpAsync(ulong loggedUserId, CancellationToken cancellationToken)
     {
         var loggedUser = await DiscordClient.FindUserAsync(loggedUserId);
         var result = new List<CommandGroup>();
 
         foreach (var module in CommandService.Modules.Where(o => o.Commands.Count > 0))
         {
-            var group = await GetTextBasedGroupAsync(loggedUser, module);
+            var group = await GetTextBasedGroupAsync(loggedUser, module, cancellationToken);
             if (group != null) result.Add(group);
         }
 
         return result;
     }
 
-    private async Task<CommandGroup> GetTextBasedGroupAsync(IUser loggedUser, global::Discord.Commands.ModuleInfo module)
+    private async Task<CommandGroup> GetTextBasedGroupAsync(IUser loggedUser, ModuleInfo module, CancellationToken cancellationToken)
     {
         var group = new CommandGroup()
         {
@@ -50,7 +50,7 @@ public class HelpService
 
         foreach (var guild in DiscordClient.FindMutualGuilds(loggedUser.Id))
         {
-            var lastMessage = await ChannelService.GetLastMsgFromMostActiveChannelAsync(guild, loggedUser);
+            var lastMessage = await ChannelService.GetLastMsgFromMostActiveChannelAsync(guild, loggedUser, cancellationToken);
             if (lastMessage == null) continue;
             var context = new CommandContext(DiscordClient, lastMessage);
 

@@ -41,18 +41,19 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetUsersListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters)
+        public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters,
+            CancellationToken cancellationToken)
         {
             var query = DbContext.Users.AsNoTracking().AsSplitQuery()
                 .Include(o => o.Guilds).ThenInclude(o => o.Guild)
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<UserListItem>.CreateAsync(query, parameters, async entity =>
+            var result = await PaginatedResponse<UserListItem>.CreateAsync(query, parameters, async (entity, _) =>
             {
                 var discordUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(entity.Id));
-                return new(entity, DiscordClient, discordUser);
-            });
+                return new UserListItem(entity, DiscordClient, discordUser);
+            }, cancellationToken);
             return Ok(result);
         }
 
@@ -66,7 +67,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetUserDetailAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id)
+        public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id, CancellationToken cancellationToken)
         {
             var query = DbContext.Users.AsNoTracking()
                 .Include(o => o.Guilds).ThenInclude(o => o.Guild)
@@ -76,7 +77,7 @@ namespace GrillBot.App.Controllers
                 .Include(o => o.UsedEmotes)
                 .AsSplitQuery();
 
-            var entity = await query.FirstOrDefaultAsync(o => o.Id == id.ToString());
+            var entity = await query.FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
 
             if (entity == null)
                 return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
@@ -97,10 +98,10 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetCurrentUserDetailAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
+        public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync(CancellationToken cancellationToken)
         {
             var currentUserId = User.GetUserId();
-            var user = await GetUserDetailAsync(currentUserId);
+            var user = await GetUserDetailAsync(currentUserId, cancellationToken);
 
             if (user.Result is NotFoundObjectResult)
                 return user;
@@ -122,10 +123,10 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetAvailableCommandsAsync))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync()
+        public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync(CancellationToken cancellationToken)
         {
             var currentUserId = User.GetUserId();
-            var result = await HelpService.GetHelpAsync(currentUserId);
+            var result = await HelpService.GetHelpAsync(currentUserId, cancellationToken);
             return Ok(result);
         }
 
@@ -141,10 +142,10 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<UserDetail>> UpdateUserAsync(ulong id, UpdateUserParams parameters)
+        public async Task<ActionResult<UserDetail>> UpdateUserAsync(ulong id, UpdateUserParams parameters, CancellationToken cancellationToken)
         {
             var user = await DbContext.Users.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Id == id.ToString());
+                .FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
 
             if (user == null)
                 return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
@@ -175,9 +176,9 @@ namespace GrillBot.App.Controllers
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, discordUser,
                 $"Uživatel {user.Username}#{user.Discriminator} byl aktualizován (Flags:{user.Flags},Note:{user.Note})");
 
-            await DbContext.AddAsync(logItem);
-            await DbContext.SaveChangesAsync();
-            return await GetUserDetailAsync(id);
+            await DbContext.AddAsync(logItem, cancellationToken);
+            await DbContext.SaveChangesAsync(cancellationToken);
+            return await GetUserDetailAsync(id, cancellationToken);
         }
 
         /// <summary>
@@ -188,9 +189,9 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> HearthbeatAsync()
+        public async Task<ActionResult> HearthbeatAsync(CancellationToken cancellationToken)
         {
-            await SetWebAdminStatusAsync(true);
+            await SetWebAdminStatusAsync(true, cancellationToken);
             return Ok();
         }
 
@@ -201,26 +202,26 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
         [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatOffAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> HearthbeatOffAsync()
+        public async Task<ActionResult> HearthbeatOffAsync(CancellationToken cancellationToken)
         {
-            await SetWebAdminStatusAsync(false);
+            await SetWebAdminStatusAsync(false, cancellationToken);
             return Ok();
         }
 
-        private async Task SetWebAdminStatusAsync(bool isOnline)
+        private async Task SetWebAdminStatusAsync(bool isOnline, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId().ToString();
             var isPublic = User.HaveUserPermission();
 
             var user = await DbContext.Users.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Id == userId);
+                .FirstOrDefaultAsync(o => o.Id == userId, cancellationToken);
 
             if (isOnline)
                 user.Flags |= (int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
             else
                 user.Flags &= ~(int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
 
-            await DbContext.SaveChangesAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

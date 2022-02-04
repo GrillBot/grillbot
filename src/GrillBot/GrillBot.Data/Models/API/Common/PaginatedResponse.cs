@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrillBot.Data.Models.API.Common
@@ -38,10 +39,10 @@ namespace GrillBot.Data.Models.API.Common
         public bool CanPrev { get; set; }
 
         public static async Task<PaginatedResponse<TModel>> CreateAsync<TEntity>(IQueryable<TEntity> query, PaginatedParams @params,
-            Converter<TEntity, TModel> itemConverter)
+            Converter<TEntity, TModel> itemConverter, CancellationToken cancellationToken)
         {
             var result = CreateEmpty(@params);
-            result.TotalItemsCount = await query.CountAsync();
+            result.TotalItemsCount = await query.CountAsync(cancellationToken);
 
             result.SetFlags(@params.Skip, @params.PageSize);
 
@@ -52,25 +53,25 @@ namespace GrillBot.Data.Models.API.Common
             }
 
             query = query.Skip(@params.Skip).Take(@params.PageSize);
-            result.Data = (await query.ToListAsync()).ConvertAll(itemConverter);
+            result.Data = (await query.ToListAsync(cancellationToken)).ConvertAll(itemConverter);
 
             return result;
         }
 
         public static async Task<PaginatedResponse<TModel>> CreateAsync<TEntity>(IQueryable<TEntity> query, PaginatedParams @params,
-            Func<TEntity, Task<TModel>> asyncConverter)
+            Func<TEntity, CancellationToken, Task<TModel>> asyncConverter, CancellationToken cancellationToken)
         {
             var result = CreateEmpty(@params);
-            result.TotalItemsCount = await query.CountAsync();
+            result.TotalItemsCount = await query.CountAsync(cancellationToken);
             result.SetFlags(@params.Skip, @params.PageSize);
             result.Data = new List<TModel>();
 
             if (result.TotalItemsCount == 0) return result;
 
             query = query.Skip(@params.Skip).Take(@params.PageSize);
-            foreach (var item in await query.ToListAsync())
+            foreach (var item in await query.ToListAsync(cancellationToken))
             {
-                result.Data.Add(await asyncConverter(item));
+                result.Data.Add(await asyncConverter(item, cancellationToken));
             }
 
             return result;

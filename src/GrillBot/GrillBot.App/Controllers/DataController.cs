@@ -40,7 +40,7 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableGuildsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync()
+        public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync(CancellationToken cancellationToken)
         {
             var guildsQuery = DbContext.Guilds.AsNoTracking();
 
@@ -56,7 +56,7 @@ namespace GrillBot.App.Controllers
             var guilds = await guildsQuery
                 .Select(o => new { o.Id, o.Name })
                 .OrderBy(o => o.Name)
-                .ToDictionaryAsync(o => o.Id, o => o.Name);
+                .ToDictionaryAsync(o => o.Id, o => o.Name, cancellationToken);
 
             return Ok(guilds);
         }
@@ -66,11 +66,12 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <param name="guildId">Optional guild ID</param>
         /// <param name="ignoreThreads">Flag that removes threads from list.</param>
+        /// <param name="cancellationToken"></param>
         [HttpGet("channels")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetChannelsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
+        public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false, CancellationToken cancellationToken = default)
         {
             var currentUserId = User.GetUserId();
             IEnumerable<SocketGuild> guilds;
@@ -107,7 +108,7 @@ namespace GrillBot.App.Controllers
                 Name = o.Name
             });
 
-            var dbChannels = (await query.ToListAsync())
+            var dbChannels = (await query.ToListAsync(cancellationToken))
                 .Where(o => !channels.Any(x => x.Id == o.Id));
 
             channels.AddRange(dbChannels);
@@ -176,7 +177,7 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableUsersAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null)
+        public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null, CancellationToken cancellationToken = default)
         {
             var query = DbContext.Users.AsNoTracking().AsQueryable();
 
@@ -202,7 +203,7 @@ namespace GrillBot.App.Controllers
                 .OrderBy(o => o.Username)
                 .ThenBy(o => o.Discriminator);
 
-            var dict = await query.ToDictionaryAsync(o => o.Id, o => $"{o.Username}#{o.Discriminator}");
+            var dict = await query.ToDictionaryAsync(o => o.Id, o => $"{o.Username}#{o.Discriminator}", cancellationToken);
             return Ok(dict);
         }
     }

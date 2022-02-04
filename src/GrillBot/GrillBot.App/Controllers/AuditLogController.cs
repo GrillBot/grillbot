@@ -32,15 +32,16 @@ namespace GrillBot.App.Controllers
         /// Removes item from log.
         /// </summary>
         /// <param name="id">Log item ID</param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="404">Item not found.</response>
         [HttpDelete("{id}")]
         [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(RemoveItemAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> RemoveItemAsync(long id)
+        public async Task<ActionResult> RemoveItemAsync(long id, CancellationToken cancellationToken)
         {
-            var result = await AuditLogService.RemoveItemAsync(id);
+            var result = await AuditLogService.RemoveItemAsync(id, cancellationToken);
 
             if (!result)
                 return NotFound(new MessageResponse("Požadovaný záznam v logu nebyl nalezen nebo nemáš oprávnění přistoupit k tomuto záznamu."));
@@ -57,7 +58,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetAuditLogListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters)
+        public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters, CancellationToken cancellationToken)
         {
             var query = DbContext.AuditLogs.AsNoTracking()
                 .Include(o => o.Files)
@@ -68,7 +69,7 @@ namespace GrillBot.App.Controllers
                 .AsSplitQuery().AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<AuditLogListItem>.CreateAsync(query, parameters, entity => new(entity, AuditLogService.JsonSerializerSettings));
+            var result = await PaginatedResponse<AuditLogListItem>.CreateAsync(query, parameters, entity => new(entity, AuditLogService.JsonSerializerSettings), cancellationToken);
             return Ok(result);
         }
 
@@ -81,7 +82,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetFileContentAsync))]
         [ProducesResponseType(typeof(FileContentResult), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetFileContentAsync(long id, long fileId)
+        public async Task<IActionResult> GetFileContentAsync(long id, long fileId, CancellationToken cancellationToken)
         {
             var logItem = await DbContext.AuditLogs.AsNoTracking()
                 .Select(o => new
@@ -89,7 +90,7 @@ namespace GrillBot.App.Controllers
                     o.Id,
                     File = o.Files.FirstOrDefault(x => x.Id == fileId)
                 })
-                .FirstOrDefaultAsync(o => o.Id == id);
+                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
             if (logItem == null)
                 return NotFound(new MessageResponse("Požadovaný záznam v logu nebyl nalezen nebo nemáš oprávnění přistoupit k tomuto záznamu."));
@@ -106,7 +107,7 @@ namespace GrillBot.App.Controllers
             var contentType = new FileExtensionContentTypeProvider()
                 .TryGetContentType(file.FullName, out var _contentType) ? _contentType : "application/octet-stream";
 
-            var bytes = System.IO.File.ReadAllBytes(file.FullName);
+            var bytes = await System.IO.File.ReadAllBytesAsync(file.FullName, cancellationToken);
             return File(bytes, contentType);
         }
     }

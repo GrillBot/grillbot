@@ -31,12 +31,12 @@ namespace GrillBot.App.Controllers
         [HttpGet]
         [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(GetAutoReplyListAsync))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync()
+        public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync(CancellationToken cancellationToken)
         {
             var query = DbContext.AutoReplies.AsQueryable()
                 .OrderBy(o => o.Id).AsNoTracking();
 
-            var data = await query.ToListAsync();
+            var data = await query.ToListAsync(cancellationToken);
             var result = data.ConvertAll(o => new AutoReplyItem(o));
             return Ok(result);
         }
@@ -45,16 +45,17 @@ namespace GrillBot.App.Controllers
         /// Gets reply item
         /// </summary>
         /// <param name="id">Reply ID</param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="404">Reply not found</response>
         [HttpGet("{id}")]
         [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(GetItemAsync))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id)
+        public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id, CancellationToken cancellationToken)
         {
             var entity = await DbContext.AutoReplies.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Id == id);
+                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
             if (entity == null)
                 return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
@@ -71,7 +72,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(CreateItemAsync))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<AutoReplyItem>> CreateItemAsync(AutoReplyItemParams parameters)
+        public async Task<ActionResult<AutoReplyItem>> CreateItemAsync(AutoReplyItemParams parameters, CancellationToken cancellationToken)
         {
             var entity = new Database.Entity.AutoReplyItem()
             {
@@ -80,9 +81,9 @@ namespace GrillBot.App.Controllers
                 Template = parameters.Template
             };
 
-            await DbContext.AddAsync(entity);
-            await DbContext.SaveChangesAsync();
-            await AutoReplyService.InitAsync();
+            await DbContext.AddAsync(entity, cancellationToken);
+            await DbContext.SaveChangesAsync(cancellationToken);
+            await AutoReplyService.InitAsync(cancellationToken);
             return Ok(new AutoReplyItem(entity));
         }
 
@@ -91,6 +92,7 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <param name="id">Reply ID</param>
         /// <param name="parameters"></param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="400">Validation failed</response>
         /// <response code="404">Item not found</response>
@@ -99,10 +101,10 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<AutoReplyItem>> UpdateItemAsync(long id, [FromBody] AutoReplyItemParams parameters)
+        public async Task<ActionResult<AutoReplyItem>> UpdateItemAsync(long id, [FromBody] AutoReplyItemParams parameters, CancellationToken cancellationToken)
         {
             var entity = await DbContext.AutoReplies.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Id == id);
+                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
             if (entity == null)
                 return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
@@ -111,8 +113,8 @@ namespace GrillBot.App.Controllers
             entity.Flags = parameters.Flags;
             entity.Reply = parameters.Reply;
 
-            await DbContext.SaveChangesAsync();
-            await AutoReplyService.InitAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
+            await AutoReplyService.InitAsync(cancellationToken);
             return Ok(new AutoReplyItem(entity));
         }
 
@@ -120,23 +122,24 @@ namespace GrillBot.App.Controllers
         /// Removes reply item
         /// </summary>
         /// <param name="id">Reply ID</param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="404">Item not found</response>
         [HttpDelete("{id}")]
         [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(RemoveItemAsync))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> RemoveItemAsync(long id)
+        public async Task<ActionResult> RemoveItemAsync(long id, CancellationToken cancellationToken)
         {
             var entity = await DbContext.AutoReplies.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Id == id);
+                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
             if (entity == null)
                 return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
 
             DbContext.Remove(entity);
-            await DbContext.SaveChangesAsync();
-            await AutoReplyService.InitAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
+            await AutoReplyService.InitAsync(cancellationToken);
             return Ok();
         }
     }

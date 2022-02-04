@@ -7,7 +7,6 @@ using NSwag.Annotations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
-using Microsoft.EntityFrameworkCore;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.Data.Exceptions;
 
@@ -38,11 +37,11 @@ namespace GrillBot.App.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetCurrentUnverifiesAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync()
+        public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync(CancellationToken cancellationToken)
         {
             var userId = User.HaveUserPermission() ? User.GetUserId() : (ulong?)null;
 
-            var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId);
+            var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId, cancellationToken);
             var result = unverifies.ConvertAll(o => new UnverifyUserProfile(o.Item1, o.Item2));
             return Ok(result);
         }
@@ -52,6 +51,7 @@ namespace GrillBot.App.Controllers
         /// </summary>
         /// <param name="guildId">Guild ID</param>
         /// <param name="userId">User Id</param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="404">Unverify or guild not found.</response>
         [HttpDelete("{guildId}/{userId}")]
@@ -59,7 +59,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RemoveUnverifyAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId)
+        public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId, CancellationToken cancellationToken)
         {
             var guild = DiscordClient.GetGuild(guildId);
 
@@ -73,7 +73,7 @@ namespace GrillBot.App.Controllers
 
             var fromUserId = User.GetUserId();
             var fromUser = guild.GetUser(fromUserId);
-            var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, false);
+            var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, false, cancellationToken);
             return Ok(new MessageResponse(result));
         }
 
@@ -83,13 +83,15 @@ namespace GrillBot.App.Controllers
         /// <param name="guildId">Guild Id</param>
         /// <param name="userId">User Id</param>
         /// <param name="endTime">New unverify end.</param>
+        /// <param name="cancellationToken"></param>
         [HttpPut("{guildId}/{userId}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(UpdateUnverifyTimeAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<MessageResponse>> UpdateUnverifyTimeAsync(ulong guildId, ulong userId, [FromQuery, Required] DateTime endTime)
+        public async Task<ActionResult<MessageResponse>> UpdateUnverifyTimeAsync(ulong guildId, ulong userId, [FromQuery, Required] DateTime endTime,
+            CancellationToken cancellationToken)
         {
             var guild = DiscordClient.GetGuild(guildId);
 
@@ -102,7 +104,7 @@ namespace GrillBot.App.Controllers
                 return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
             var fromUser = guild.GetUser(User.GetUserId());
-            var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser);
+            var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser, cancellationToken);
             return Ok(new MessageResponse(result));
         }
 
@@ -116,7 +118,8 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifyLogsAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters)
+        public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters,
+            CancellationToken cancellationToken)
         {
             var query = DbContext.UnverifyLogs.AsNoTracking()
                 .Include(o => o.FromUser).ThenInclude(o => o.User)
@@ -145,7 +148,7 @@ namespace GrillBot.App.Controllers
             {
                 var guild = DiscordClient.GetGuild(Convert.ToUInt64(entity.GuildId));
                 return new UnverifyLogItem(entity, guild);
-            });
+            }, cancellationToken);
             return Ok(result);
         }
 
@@ -153,6 +156,7 @@ namespace GrillBot.App.Controllers
         /// Recovers state before specific unverify.
         /// </summary>
         /// <param name="logId">ID of log.</param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="400">Validation failed.</response>
         /// <response code="404">Unverify, guild or users not found.</response>
@@ -162,12 +166,12 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult> RecoverUnverifyAsync(long logId)
+        public async Task<ActionResult> RecoverUnverifyAsync(long logId, CancellationToken cancellationToken)
         {
             try
             {
                 var processedUserId = User.GetUserId();
-                await UnverifyService.RecoverUnverifyState(logId, processedUserId);
+                await UnverifyService.RecoverUnverifyState(logId, processedUserId, cancellationToken);
             }
             catch (NotFoundException ex)
             {

@@ -22,7 +22,7 @@ namespace GrillBot.App.Services
             Prefix = configuration["Discord:Commands:Prefix"];
             Messages = new ConcurrentBag<AutoReplyItem>();
 
-            DiscordClient.Ready += InitAsync;
+            DiscordClient.Ready += () => InitAsync();
             DiscordClient.MessageReceived += (message) =>
             {
                 if (!InitializationService.Get()) return Task.CompletedTask;
@@ -34,11 +34,11 @@ namespace GrillBot.App.Services
             };
         }
 
-        public async Task InitAsync()
+        public async Task InitAsync(CancellationToken cancellationToken = default)
         {
             using var dbContext = DbFactory.Create();
             var messages = await dbContext.AutoReplies
-                .AsNoTracking().ToListAsync();
+                .AsNoTracking().ToListAsync(cancellationToken);
 
             Messages.Clear();
             foreach (var message in messages)

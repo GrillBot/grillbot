@@ -32,9 +32,10 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters)
+        public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters,
+            CancellationToken cancellationToken)
         {
-            var data = await Service.GetPaginatedListAsync(parameters);
+            var data = await Service.GetPaginatedListAsync(parameters, cancellationToken);
             return Ok(data);
         }
 
@@ -45,14 +46,14 @@ namespace GrillBot.App.Controllers
         [HttpDelete]
         [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids)
+        public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids, CancellationToken cancellationToken)
         {
             var searches = await DbContext.SearchItems.AsQueryable()
                 .Where(o => ids.Contains(o.Id))
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             DbContext.RemoveRange(searches);
-            await DbContext.SaveChangesAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
             return Ok();
         }
     }

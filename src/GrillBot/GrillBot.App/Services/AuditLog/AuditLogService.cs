@@ -159,13 +159,13 @@ public partial class AuditLogService : ServiceBase
     public Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result)
         => HandleEventAsync(new ExecutedInteractionCommandEvent(this, command, context, result));
 
-    public virtual async Task<bool> RemoveItemAsync(long id)
+    public async Task<bool> RemoveItemAsync(long id, CancellationToken cancellationToken)
     {
         using var context = DbFactory.Create();
 
         var item = await context.AuditLogs
             .Include(o => o.Files)
-            .FirstOrDefaultAsync(o => o.Id == id);
+            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
         if (item == null) return false;
         if (item.Files.Count > 0)
@@ -184,7 +184,7 @@ public partial class AuditLogService : ServiceBase
         }
 
         context.Remove(item);
-        return (await context.SaveChangesAsync()) > 0;
+        return (await context.SaveChangesAsync(cancellationToken)) > 0;
     }
 
     /// <summary>

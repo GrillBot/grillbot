@@ -1,8 +1,9 @@
-﻿using Discord.Commands;
+﻿#pragma warning disable IDE0060 // Remove unused parameter
+using Discord.Commands;
+using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Images;
 using GrillBot.Data.Enums;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Duck;
 using System.Net.Http;
 
@@ -201,19 +202,8 @@ public class MemeModule : Infrastructure.ModuleBase
 
     [Command("hi")]
     [Summary("Pozdraví uživatele")]
-    public async Task HiAsync(int? @base = null)
-    {
-        var supportedBase = new[] { 2, 8, 16, (int?)null };
-        if (!supportedBase.Contains(@base)) return;
-
-        var emote = Configuration.GetValue<string>("Discord:Emotes:FeelsWowMan");
-        var msg = $"Ahoj {Context.User.GetDisplayName()} {emote}";
-
-        if (@base == null)
-            await ReplyAsync(msg);
-        else
-            await ReplyAsync(string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));
-    }
+    [TextCommandDeprecated(AlternativeCommand = "/hi")]
+    public Task HiAsync(int? @base = null) => Task.CompletedTask; // Command was reimplemented to Slash command.
 
     #endregion
 

@@ -34,7 +34,8 @@ public class MessageEditedEvent : AuditEventBase
             TextChannel != null &&
             oldMessage?.Author.IsUser() == true &&
             !string.IsNullOrEmpty(After?.Content) &&
-            oldMessage.Content != After.Content
+            oldMessage.Content != After.Content &&
+            oldMessage.Type != MessageType.ApplicationCommand
         );
     }
 

@@ -8,8 +8,12 @@ namespace GrillBot.App.Infrastructure.Preconditions
 
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var message = "Tento příkaz již není v textové formě podporován." + (!string.IsNullOrEmpty(AlternativeCommand) ? $" Příkaz byl nahrazen příkazem `{AlternativeCommand}`" : "");
-            return Task.FromResult(PreconditionResult.FromError(message));
+            var msgBuilder = new StringBuilder("Tento příkaz již není v textové formě podporován.");
+
+            if (!string.IsNullOrEmpty(AlternativeCommand))
+                msgBuilder.AppendFormat(" Příkaz byl nahrazen příkazem `{0}`", AlternativeCommand);
+
+            return Task.FromResult(PreconditionResult.FromError(msgBuilder.ToString()));
         }
     }
 }

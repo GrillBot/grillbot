@@ -133,12 +133,11 @@ namespace GrillBot.App.Services
             lastIncrementReset(user);
         }
 
-        public async Task<TemporaryFile> GetPointsOfUserImageAsync(SocketGuild guild, IUser user)
+        public async Task<TemporaryFile> GetPointsOfUserImageAsync(IGuild guild, IUser user)
         {
             using var dbContext = DbFactory.Create();
 
-            var guildUser = await dbContext.GuildUsers.AsQueryable()
-                .AsNoTracking()
+            var guildUser = await dbContext.GuildUsers.AsNoTracking()
                 .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
 
             if (guildUser == null)
@@ -148,12 +147,14 @@ namespace GrillBot.App.Services
             const int width = 1000;
             const int border = 25;
             const double nicknameFontSize = 80;
+            const int profilePictureSize = 250;
+            const string fontName = "Open Sans";
 
             var position = await CalculatePointsPositionAsync(dbContext, guild, user);
             var nickname = user.GetDisplayName(false);
 
             using var profilePicture = await GetProfilePictureAsync(user);
-            var cuttedNickname = nickname.CutToImageWidth(width - (border * 4) - profilePicture.Width, "Open Sans", nicknameFontSize);
+            var cuttedNickname = nickname.CutToImageWidth(width - (border * 4) - profilePictureSize, fontName, nicknameFontSize);
 
             var dominantColor = profilePicture.GetDominantColor();
             var textBackground = dominantColor.CreateDarkerBackgroundColor();
@@ -166,13 +167,13 @@ namespace GrillBot.App.Services
                 .FillColor(textBackground)
                 .RoundRectangle(border, border, width - border, height - border, 20, 20)
                 .TextAlignment(TextAlignment.Left)
-                .Font("Open Sans")
+                .Font(fontName)
                 .FontPointSize(nicknameFontSize)
                 .FillColor(MagickColors.White)
                 .Text(320, 130, cuttedNickname);
 
             // Profile picture operations
-            profilePicture.Resize(250, 250);
+            profilePicture.Resize(profilePictureSize, profilePictureSize);
             profilePicture.RoundImage();
             drawable.Composite(border * 2, border * 2, CompositeOperator.Over, profilePicture);
 
@@ -196,7 +197,7 @@ namespace GrillBot.App.Services
             return tmpFile;
         }
 
-        private static async Task<int> CalculatePointsPositionAsync(GrillBotContext context, SocketGuild guild, IUser user)
+        private static async Task<int> CalculatePointsPositionAsync(GrillBotContext context, IGuild guild, IUser user)
         {
             var guildId = guild.Id.ToString();
 

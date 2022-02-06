@@ -4,23 +4,28 @@ namespace GrillBot.App.Extensions
 {
     static public class ImageExtensions
     {
-        // Credits to https://github.com/janch32
         static public void RoundImage(this IMagickImage<byte> image)
         {
-            using var mask = new MagickImage(MagickColors.Transparent, image.Width, image.Height);
-
-            new Drawables()
-                .FillColor(MagickColors.White)
-                .Circle(image.Width / (double)2, image.Height / (double)2, image.Width / (double)2, 0)
-                .Draw(mask);
-
+            image.Format = MagickFormat.Png;
             image.Alpha(AlphaOption.On);
-            image.Composite(mask, CompositeOperator.Multiply);
+
+            using var copy = image.Clone();
+
+            copy.Distort(DistortMethod.DePolar, 0);
+            copy.VirtualPixelMethod = VirtualPixelMethod.HorizontalTile;
+            copy.BackgroundColor = MagickColors.None;
+            copy.Distort(DistortMethod.Polar, 0);
+
+            image.Compose = CompositeOperator.DstIn;
+            image.Composite(copy, CompositeOperator.CopyAlpha);
         }
 
         static public MagickColor GetDominantColor(this MagickImage image)
         {
-            var histogram = image.Histogram();
+            using var clone = image.Clone();
+            clone.HasAlpha = false;
+
+            var histogram = clone.Histogram();
             return new(histogram.Aggregate((x, y) => x.Value > y.Value ? x : y).Key);
         }
 
@@ -44,7 +49,7 @@ namespace GrillBot.App.Extensions
             var builder = new StringBuilder();
             foreach (var character in str)
             {
-                var metrics = drawables.FontTypeMetrics($"{builder}{character}");
+                var metrics = drawables.FontTypeMetrics(builder.ToString() + character);
                 if (metrics.TextWidth >= width) break;
                 builder.Append(character);
             }

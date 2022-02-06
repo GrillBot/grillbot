@@ -1,6 +1,8 @@
-﻿using Discord.Commands;
+﻿#pragma warning disable IDE0060 // Remove unused parameter
+using Discord.Commands;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure.Preconditions;
 using GrillBot.App.Services.Unverify;
 using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
 
@@ -22,43 +24,8 @@ public class SelfUnverifyModule : Infrastructure.ModuleBase
     }
 
     [Command("")]
-    [Summary("Dočasné odebrání přístupu sobě sama na serveru.\n" +
-        "Datum konce se dá zapsat přímo jako datum, nebo jako časový posun. Např.: `30m`, nebo `2021-07-02T15:30:25`. Koncovky časového posunu jsou: **m**inuty, **h**odiny, **d**ny, **M**ěsíce, **r**oky.\n" +
-        "Dále je seznam rolí a kanálů, které si přeje uživatel ponechat. Maximálně si jich lze ponechat 10. Seznam se zadává slovně. **Pouze názvy.**\n" +
-        "Celý příkaz pak vypadá např.: `{prefix}selfunverify 2h ROLE`"
-    )]
-    [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
-    [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
-    public async Task SelfunverifyAsync([Name("datum konce")] DateTime end, [Name("seznam ponechatelnych")] params string[] keeps)
-    {
-        bool success = true;
-
-        try
-        {
-            await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-            end = end.AddMinutes(1); // Because checks are strict.
-            var tokeep = keeps.Distinct().Select(o => o.ToLower()).ToList();
-            var message = await SelfunverifyService.ProcessSelfUnverifyAsync(Context.User, end, Context.Guild, tokeep);
-            await ReplyAsync(message);
-        }
-        catch (Exception ex)
-        {
-            success = false;
-
-            if (ex is ValidationException)
-                await ReplyAsync(ex.Message);
-            else
-                throw;
-        }
-        finally
-        {
-            await Context.Message.RemoveAllReactionsAsync();
-
-            if (success)
-                await Context.Message.AddReactionAsync(Emojis.Ok);
-        }
-    }
+    [TextCommandDeprecated(AlternativeCommand = "/selfunverify")]
+    public Task SelfunverifyAsync([Name("datum konce")] DateTime end, [Name("seznam ponechatelnych")] params string[] keeps) => Task.CompletedTask;
 
     [Group("keep")]
     [Name("Ponechatelné přístupy pro selfunverify")]

@@ -124,7 +124,7 @@ namespace GrillBot.App.Services.Unverify
         private static void CheckDefinition(Dictionary<string, List<string>> definitions, string item)
         {
             if (!ExistsInKeepDefinition(definitions, item))
-                throw new ValidationException($"{item.ToLower()} není ponechatelné.");
+                throw new ValidationException($"{item.ToUpper()} není ponechatelné.");
         }
     }
 }

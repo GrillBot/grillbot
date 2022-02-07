@@ -140,8 +140,12 @@ public class UserModule : Infrastructure.ModuleBase
         }
 
         var messagesCount = await dbContext.UserChannels.AsNoTracking()
-            .Where(o => o.Count > 0 && o.GuildId == context.Guild.Id.ToString() && o.UserId == user.Id.ToString() && (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0)
-            .SumAsync(o => o.Count);
+            .Where(o =>
+                o.Count > 0 &&
+                o.GuildId == context.Guild.Id.ToString() &&
+                o.UserId == user.Id.ToString() &&
+                (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0
+            ).SumAsync(o => o.Count);
         embed.AddField("Počet zpráv", messagesCount, true);
 
         var unverifyStatsQuery = dbContext.UnverifyLogs.AsQueryable().AsNoTracking()
@@ -172,12 +176,20 @@ public class UserModule : Infrastructure.ModuleBase
         var channelActivityQuery = userStateQueryBase.Select(o => new
         {
             MostActive = o.User.Channels
-                .Where(x => x.GuildId == o.GuildId && (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0)
+                .Where(x =>
+                    x.GuildId == o.GuildId &&
+                    (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
+                    x.Channel.ChannelType != ChannelType.PrivateThread &&
+                    x.Channel.ChannelType != ChannelType.PublicThread
+                )
                 .OrderByDescending(o => o.Count)
                 .Select(o => new { o.ChannelId, o.Count })
                 .FirstOrDefault(),
             LastMessage = o.User.Channels
-                .Where(x => x.GuildId == o.GuildId && (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0)
+                .Where(x =>
+                    x.GuildId == o.GuildId &&
+                    (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0
+                )
                 .OrderByDescending(o => o.LastMessageAt)
                 .Select(o => new { o.ChannelId, o.LastMessageAt })
                 .FirstOrDefault()

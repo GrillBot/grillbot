@@ -15,10 +15,5 @@ namespace GrillBot.App.Services.Permissions
         public override IMessageChannel Channel => CommandContext.Channel;
         public override IDiscordClient DiscordClient => CommandContext.Client;
         public override string CommandName => CommandInfo.Aliases[0];
-
-        protected override bool AnySet()
-        {
-            return base.AnySet() || Context != null;
-        }
     }
 }

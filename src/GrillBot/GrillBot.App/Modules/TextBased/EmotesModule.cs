@@ -2,19 +2,19 @@
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models;
 using GrillBot.Database.Entity;
-using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Group("emote")]
 [Name("Emotes")]
 [Summary("Správa emotů")]
-[Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
+[RequireUserPerms(ContextType.Guild)]
 public class EmotesModule : Infrastructure.ModuleBase
 {
     private GrillBotContextFactory DbFactory { get; }

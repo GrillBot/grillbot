@@ -10,5 +10,10 @@ public enum ChannelFlags
     /// <summary>
     /// Channel is hidden from statistics.
     /// </summary>
-    StatsHidden = 1
+    StatsHidden = 1,
+
+    /// <summary>
+    /// Commands execution is disabled in this channel.
+    /// </summary>
+    CommandsDisabled = 2,
 }

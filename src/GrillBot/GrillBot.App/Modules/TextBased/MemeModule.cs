@@ -1,6 +1,6 @@
 ﻿#pragma warning disable IDE0060 // Remove unused parameter
 using Discord.Commands;
-using GrillBot.App.Infrastructure.Preconditions;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Images;
 using GrillBot.Data.Enums;
@@ -10,7 +10,7 @@ using System.Net.Http;
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Náhodné věci")]
-[Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
+[RequireUserPerms]
 public class MemeModule : Infrastructure.ModuleBase
 {
     private FileStorageFactory FileStorageFactory { get; }

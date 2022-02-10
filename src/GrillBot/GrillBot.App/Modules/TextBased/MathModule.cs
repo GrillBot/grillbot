@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Extensions;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.MathJS;
 using System.Net.Http;
@@ -7,7 +8,7 @@ using System.Net.Http;
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Matematické výpočty")]
-[Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
+[RequireUserPerms]
 public class MathModule : Infrastructure.ModuleBase
 {
     private IHttpClientFactory HttpClientFactory { get; }

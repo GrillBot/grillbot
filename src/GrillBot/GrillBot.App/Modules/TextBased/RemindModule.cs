@@ -7,7 +7,7 @@ namespace GrillBot.App.Modules.TextBased;
 
 [Group("remind")]
 [Name("Připomínání")]
-[Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
+[Infrastructure.Preconditions.TextBased.RequireUserPerms]
 public class RemindModule : Infrastructure.ModuleBase
 {
     private RemindService RemindService { get; }

@@ -1,11 +1,13 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Extensions.Discord;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.Data.Extensions.Discord;
 using System.Diagnostics;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Obecné informace o botovi")]
+[RequireUserPerms]
 public class BotInfoModule : Infrastructure.ModuleBase
 {
     [Command("bot")]

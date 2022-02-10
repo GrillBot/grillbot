@@ -2,9 +2,10 @@
 using Discord.Commands;
 using GrillBot.App.Extensions;
 using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.Preconditions;
+using GrillBot.App.Infrastructure.Preconditions.Interactions;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Unverify;
-using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.Unverify;
 
@@ -14,15 +15,6 @@ namespace GrillBot.App.Modules.TextBased.Unverify;
 [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]
 public class SelfUnverifyModule : Infrastructure.ModuleBase
 {
-    private SelfunverifyService SelfunverifyService { get; }
-    private IConfiguration Configuration { get; }
-
-    public SelfUnverifyModule(SelfunverifyService service, IConfiguration configuration)
-    {
-        SelfunverifyService = service;
-        Configuration = configuration;
-    }
-
     [Command("")]
     [TextCommandDeprecated(AlternativeCommand = "/selfunverify")]
     public Task SelfunverifyAsync([Name("datum konce")] DateTime end, [Name("seznam ponechatelnych")] params string[] keeps) => Task.CompletedTask;
@@ -30,7 +22,7 @@ public class SelfUnverifyModule : Infrastructure.ModuleBase
     [Group("keep")]
     [Name("Ponechatelné přístupy pro selfunverify")]
     [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
-    [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
+    [RequireUserPerms(GuildPermission.ManageRoles)]
     public class SelfunverifyKeepableSubModule : Infrastructure.ModuleBase
     {
         private SelfunverifyService SelfunverifyService { get; }

@@ -5,7 +5,7 @@ using GrillBot.App.Services;
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Mockování zpráv")]
-[Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
+[Infrastructure.Preconditions.TextBased.RequireUserPerms]
 public class MockingModule : Infrastructure.ModuleBase
 {
     private MockingService MockingService { get; }

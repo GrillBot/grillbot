@@ -1,9 +1,10 @@
 ﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 
 namespace GrillBot.App.Modules.TextBased.User;
 
 [Name("Správa uživatelů")]
-[RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]
+[RequireUserPerms(ContextType.Guild)]
 public class UserMeModule : Infrastructure.ModuleBase
 {
     private GrillBotContextFactory DbFactory { get; }

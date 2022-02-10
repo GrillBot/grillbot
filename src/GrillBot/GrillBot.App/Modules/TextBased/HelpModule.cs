@@ -1,10 +1,12 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Extensions;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Help;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Nápověda")]
+[RequireUserPerms]
 public class HelpModule : Infrastructure.ModuleBase
 {
     private CommandService CommandService { get; }

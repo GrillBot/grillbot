@@ -1,8 +1,10 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.Unverify;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;
 
+[RequireUserPerms]
 public class SelfUnverifyModule : Infrastructure.InteractionsModuleBase
 {
     private SelfunverifyService SelfunverifyService { get; }

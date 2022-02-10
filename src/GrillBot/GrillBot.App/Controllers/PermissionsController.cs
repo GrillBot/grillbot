@@ -44,6 +44,9 @@ namespace GrillBot.App.Controllers
             if (exists)
                 return Conflict(new MessageResponse($"Explicitní oprávnění pro příkaz {parameters.Command} ({parameters.TargetId}) již existuje."));
 
+            if (!char.IsLetter(parameters.Command[0]))
+                parameters.Command = parameters.Command[1..];
+
             var permission = new Database.Entity.ExplicitPermission()
             {
                 IsRole = parameters.IsRole,
@@ -107,24 +110,33 @@ namespace GrillBot.App.Controllers
                     .Select(o => new User() { Flags = o.Flags, Id = o.Id, Username = o.Username, Discriminator = o.Discriminator })
                     .ToListAsync(cancellationToken);
 
-                result.AddRange(userPermissions.Select(o =>
-                {
-                    var user = users.Find(x => x.Id == o.TargetId);
-                    return new Data.Models.API.Permissions.ExplicitPermission(o, user, null);
-                }));
+                var userPerms = userPermissions
+                    .Select(o =>
+                    {
+                        var user = users.Find(x => x.Id == o.TargetId);
+                        return new Data.Models.API.Permissions.ExplicitPermission(o, user, null);
+                    })
+                    .OrderBy(o => o.User?.Username)
+                    .ThenBy(o => o.Command);
+
+                result.AddRange(userPerms);
             }
 
             var rolePermissions = items.Where(o => o.IsRole);
             if (rolePermissions.Any())
             {
-                result.AddRange(rolePermissions.Select(o =>
-                {
-                    var role = DiscordClient.FindRole(Convert.ToUInt64(o.TargetId));
-                    return new Data.Models.API.Permissions.ExplicitPermission(o, null, role != null ? new Role(role) : null);
-                }));
+                var rolePerms = rolePermissions
+                    .Select(o =>
+                    {
+                        var role = DiscordClient.FindRole(Convert.ToUInt64(o.TargetId));
+                        return new Data.Models.API.Permissions.ExplicitPermission(o, null, role != null ? new Role(role) : null);
+                    })
+                    .OrderBy(o => o.Role?.Name)
+                    .ThenBy(o => o.Command);
+
+                result.AddRange(rolePerms);
             }
 
-            result = result.OrderBy(o => o.Command).ToList();
             return Ok(result);
         }
 

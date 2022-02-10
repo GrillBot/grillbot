@@ -1,9 +1,11 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
 using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
 
+[RequireUserPerms]
 public class PointsModule : Infrastructure.InteractionsModuleBase
 {
     private PointsService PointsService { get; }

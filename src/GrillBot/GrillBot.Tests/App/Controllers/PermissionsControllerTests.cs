@@ -34,7 +34,7 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
     {
         var parameters = new CreateExplicitPermissionParams()
         {
-            Command = "unverify",
+            Command = "$unverify",
             IsRole = false,
             State = Database.Enums.ExplicitPermissionState.Allowed,
             TargetId = "12345"

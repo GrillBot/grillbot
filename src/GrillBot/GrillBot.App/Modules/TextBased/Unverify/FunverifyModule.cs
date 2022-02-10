@@ -1,12 +1,11 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Services.Unverify;
-using Microsoft.Extensions.Configuration;
-using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.Unverify;
 
 [Name("Falešné odebrání přístupu")]
-[RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]
+[RequireUserPerms(GuildPermission.ManageRoles)]
 public class FunverifyModule : Infrastructure.ModuleBase
 {
     private UnverifyService UnverifyService { get; }
@@ -22,7 +21,6 @@ public class FunverifyModule : Infrastructure.ModuleBase
     [Summary("Falešné odebrání přístupu uživateli.")]
     [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
     [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
-    [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
     public async Task FunverifyAsync([Name("datum konce")] DateTime end, [Remainder][Name("duvod a tagy")] string data)
     {
         bool success = true;

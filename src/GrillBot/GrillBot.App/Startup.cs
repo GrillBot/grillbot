@@ -12,6 +12,7 @@ using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Unverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -98,7 +99,8 @@ public class Startup
             .AddSingleton<DiscordInitializationService>()
             .AddSingleton<MockingService>()
             .AddSingleton<InteractionHandler>()
-            .AddSingleton<HelpService>();
+            .AddSingleton<HelpService>()
+            .AddSingleton<PermissionsService>();
 
         ReflectionHelper.GetAllReactionEventHandlers().ToList()
             .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

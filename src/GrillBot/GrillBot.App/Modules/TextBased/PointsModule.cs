@@ -8,7 +8,6 @@ namespace GrillBot.App.Modules.TextBased;
 [Group("points")]
 [Alias("body")]
 [Name("Body")]
-[RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]
 public class PointsModule : Infrastructure.ModuleBase
 {
     private PointsService PointsService { get; }
@@ -23,7 +22,7 @@ public class PointsModule : Infrastructure.ModuleBase
     [Command("where")]
     [Alias("kde", "gde")]
     [Summary("Získání aktuálního stavu bodů uživatele.")]
-    [Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
+    [Infrastructure.Preconditions.TextBased.RequireUserPerms(ContextType.Guild)]
     public async Task GetPointsStateAsync([Name("id/tag/jmeno_uzivatele")] SocketUser user = null)
     {
         if (user == null) user = Context.User;
@@ -42,7 +41,7 @@ public class PointsModule : Infrastructure.ModuleBase
     [Command("give")]
     [Alias("dej")]
     [Summary("Přidá uživateli zadané množství bodů.")]
-    [Infrastructure.Preconditions.RequireUserPermission(new[] { GuildPermission.Administrator }, false)]
+    [Infrastructure.Preconditions.TextBased.RequireUserPerms(GuildPermission.Administrator)]
     public async Task GivePointsAsync([Name("mnozstvi")] int amount, [Name("uzivatel")] SocketGuildUser user)
     {
         await PointsService.IncrementPointsAsync(Context.Guild, user, amount);
@@ -52,7 +51,7 @@ public class PointsModule : Infrastructure.ModuleBase
     [Command("transfer")]
     [Alias("preved")]
     [Summary("Převede určité množství bodů od jednoho uživatele druhému.")]
-    [Infrastructure.Preconditions.RequireUserPermission(new[] { GuildPermission.Administrator }, false)]
+    [Infrastructure.Preconditions.TextBased.RequireUserPerms(GuildPermission.Administrator)]
     public async Task TransferPointsAsync([Name("id/tag/jmeno_uzivatele (Od koho)")] SocketUser from, [Name("id/tag/jmeno_uzivatele (Komu)")] SocketGuildUser to, [Name("mnozstvi")] int amount)
     {
         try
@@ -68,7 +67,7 @@ public class PointsModule : Infrastructure.ModuleBase
 
     [Command("board")]
     [Summary("Získání TOP 10 statistik v počtu bodů.")]
-    [Infrastructure.Preconditions.RequireUserPermission(new[] { GuildPermission.SendMessages }, false)]
+    [Infrastructure.Preconditions.TextBased.RequireUserPerms(ContextType.Guild)]
     public async Task GetPointsLeaderboardAsync()
     {
         using var dbContext = DbFactory.Create();

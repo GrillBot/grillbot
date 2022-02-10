@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Birthday;
 
 namespace GrillBot.App.Modules.TextBased;
@@ -6,7 +7,7 @@ namespace GrillBot.App.Modules.TextBased;
 [Group("birthday")]
 [Alias("narozeniny")]
 [Name("Narozeniny")]
-[Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
+[RequireUserPerms]
 public class BirthdayModule : Infrastructure.ModuleBase
 {
     private BirthdayService BirthdayService { get; }

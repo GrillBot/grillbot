@@ -5,7 +5,7 @@ using GrillBot.App.Modules.Implementations.User;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Enums;
-using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.RequireUserPermissionAttribute;
+using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.User;
 
@@ -27,7 +27,7 @@ public class UserModule : Infrastructure.ModuleBase
 
     [Command("info")]
     [Summary("Získání informací o uživateli.")]
-    [RequireUserPerms(new[] { GuildPermission.ViewAuditLog }, true)]
+    [RequireUserPerms(GuildPermission.ViewAuditLog)]
     public async Task GetUserInfoAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
     {
         if (user == null) user = Context.User;
@@ -40,7 +40,7 @@ public class UserModule : Infrastructure.ModuleBase
     [Command("access")]
     [Summary("Získání seznamu přístupů uživatelů.")]
     [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění v kanálech.")]
-    [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
+    [RequireUserPerms(GuildPermission.ManageRoles)]
     public async Task GetUsersAccessListAsync([Name("id/tagy/jmena_uzivatelu")] params IUser[] users)
     {
         if (users == null || users.Length == 0) users = new[] { Context.User };
@@ -84,7 +84,7 @@ public class UserModule : Infrastructure.ModuleBase
     [Command("access")]
     [Summary("Získání seznamu přístupů uživatelů na základě role.")]
     [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění v kanálech.")]
-    [RequireUserPerms(new[] { GuildPermission.ManageRoles }, false)]
+    [RequireUserPerms(GuildPermission.ManageRoles)]
     public async Task GetUsersAccessListAsync([Name("id/tag/jmeno_role")] SocketRole role)
     {
         if (role.IsEveryone)

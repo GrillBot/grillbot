@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Channels;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
@@ -10,7 +11,7 @@ namespace GrillBot.App.Modules.TextBased;
 
 [Group("channel")]
 [Name("Správa kanálů")]
-[RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze provést pouze na serveru.")]
+[RequireUserPerms(ContextType.Guild)]
 public class ChannelModule : Infrastructure.ModuleBase
 {
     private GrillBotContextFactory DbFactory { get; }

@@ -3,6 +3,7 @@ using GrillBot.App.Services.Reminder;
 
 namespace GrillBot.App.Modules.Interactions;
 
+[Infrastructure.Preconditions.Interactions.RequireUserPerms]
 public class RemindModule : Infrastructure.InteractionsModuleBase
 {
     private RemindService RemindService { get; }

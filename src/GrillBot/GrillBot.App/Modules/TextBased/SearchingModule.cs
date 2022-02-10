@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
 using GrillBot.Data.Extensions.Discord;
@@ -7,8 +8,7 @@ namespace GrillBot.App.Modules.TextBased;
 
 [Group("hledam")]
 [Name("Hledání (něčeho, třeba týmu)")]
-[RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze provést pouze na serveru.")]
-[Infrastructure.Preconditions.RequireUserPermission(new[] { ChannelPermission.SendMessages }, false)]
+[RequireUserPerms(ContextType.Guild)]
 public class SearchingModule : Infrastructure.ModuleBase
 {
     private SearchingService Service { get; }

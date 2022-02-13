@@ -126,7 +126,7 @@ namespace GrillBot.App.Services.Discord
             var botOwner = await context.Users.AsQueryable().FirstOrDefaultAsync(o => o.Id == application.Owner.Id.ToString());
             if (botOwner == null)
             {
-                botOwner = User.FromDiscord(application.Owner);
+                botOwner = Database.Entity.User.FromDiscord(application.Owner);
                 await context.AddAsync(botOwner);
             }
             botOwner.Flags |= (int)UserFlags.BotAdmin;

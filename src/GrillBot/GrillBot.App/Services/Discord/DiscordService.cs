@@ -7,6 +7,7 @@ using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Reminder;
+using GrillBot.App.Services.User;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Hosting;

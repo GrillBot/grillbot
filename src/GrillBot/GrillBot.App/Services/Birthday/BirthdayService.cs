@@ -20,7 +20,7 @@ namespace GrillBot.App.Services.Birthday
 
             if (dbUser == null)
             {
-                dbUser = User.FromDiscord(user);
+                dbUser = Database.Entity.User.FromDiscord(user);
                 await context.AddAsync(dbUser);
             }
 
@@ -56,7 +56,7 @@ namespace GrillBot.App.Services.Birthday
             var today = DateTime.Today.Date;
             var users = await context.Users.AsQueryable()
                 .Where(o => o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
-                .Select(o => new User { Id = o.Id, Birthday = o.Birthday })
+                .Select(o => new Database.Entity.User { Id = o.Id, Birthday = o.Birthday })
                 .ToListAsync(cancellationToken);
 
             var result = new List<Tuple<IUser, int?>>();

@@ -119,7 +119,7 @@ namespace GrillBot.App.Services
             return new OAuth2LoginToken(jwt, expiresAt);
         }
 
-        private string CreateJwtAccessToken(User user, bool isPublic, out DateTimeOffset expiresAt)
+        private string CreateJwtAccessToken(Database.Entity.User user, bool isPublic, out DateTimeOffset expiresAt)
         {
             expiresAt = DateTimeOffset.UtcNow.AddHours(3); // Token will be valid for 3 hours.
 

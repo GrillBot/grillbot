@@ -46,7 +46,7 @@ namespace GrillBot.App.Services.Unverify
             var dbUser = await context.GuildUsers
                 .Include(o => o.Unverify)
                 .Include(o => o.User)
-                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString()) ?? new GuildUser() { User = new User() };
+                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString()) ?? new GuildUser() { User = new Database.Entity.User() };
 
             ValidateUnverifyDate(end, dbUser.User.SelfUnverifyMinimalTime, selfunverify);
             if (dbUser?.Unverify != null)

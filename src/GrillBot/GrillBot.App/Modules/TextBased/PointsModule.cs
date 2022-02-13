@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Modules.Implementations.Points;
-using GrillBot.App.Services;
+using GrillBot.App.Services.User;
 using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.TextBased;

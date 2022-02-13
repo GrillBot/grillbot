@@ -15,6 +15,7 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Unverify;
+using GrillBot.App.Services.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -100,7 +101,8 @@ public class Startup
             .AddSingleton<MockingService>()
             .AddSingleton<InteractionHandler>()
             .AddSingleton<HelpService>()
-            .AddSingleton<PermissionsService>();
+            .AddSingleton<PermissionsService>()
+            .AddSingleton<UserService>();
 
         ReflectionHelper.GetAllReactionEventHandlers().ToList()
             .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

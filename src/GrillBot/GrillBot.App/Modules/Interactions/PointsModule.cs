@@ -1,6 +1,6 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.App.Services;
+using GrillBot.App.Services.User;
 using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;

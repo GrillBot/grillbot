@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
+using GrillBot.App.Services.User;
 using GrillBot.Data.Extensions.Discord;
 
 namespace GrillBot.App.Modules.TextBased;
@@ -12,10 +13,12 @@ namespace GrillBot.App.Modules.TextBased;
 public class SearchingModule : Infrastructure.ModuleBase
 {
     private SearchingService Service { get; }
+    private UserService UserService { get; }
 
-    public SearchingModule(SearchingService service)
+    public SearchingModule(SearchingService service, UserService userService)
     {
         Service = service;
+        UserService = userService;
     }
 
     [Command("")]
@@ -39,6 +42,7 @@ public class SearchingModule : Infrastructure.ModuleBase
     public async Task RemoveSearchAsync(long id)
     {
         var isAdmin = Context.User is IGuildUser guildUser && (guildUser.GuildPermissions.Administrator || guildUser.GuildPermissions.ManageMessages);
+        isAdmin = isAdmin || await UserService.IsUserBotAdminAsync(Context.User);
 
         try
         {

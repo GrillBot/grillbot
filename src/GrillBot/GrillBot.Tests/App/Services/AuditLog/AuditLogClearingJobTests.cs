@@ -68,7 +68,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
         await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
         await DbContext.AddAsync(new Invite() { Code = "ABCD" });
         await DbContext.SaveChangesAsync();
 
@@ -106,7 +106,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
         await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
         await DbContext.AddAsync(new Invite() { Code = "ABCD" });
         await DbContext.SaveChangesAsync();
 
@@ -139,7 +139,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
         await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345", Nickname = "Test" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
         await DbContext.SaveChangesAsync();
 
         var context = CreateContext();

@@ -130,8 +130,11 @@ namespace GrillBot.App.Services
                 {
                     var creatorUser = guild.GetUser(usedInvite.CreatorId.Value);
 
-                    await dbContext.InitUserAsync(creatorUser, CancellationToken.None);
-                    await dbContext.InitGuildUserAsync(guild, creatorUser, CancellationToken.None);
+                    if (creatorUser != null)
+                    {
+                        await dbContext.InitUserAsync(creatorUser, CancellationToken.None);
+                        await dbContext.InitGuildUserAsync(guild, creatorUser, CancellationToken.None);
+                    }
                 }
 
                 var invite = await dbContext.Invites.AsQueryable()

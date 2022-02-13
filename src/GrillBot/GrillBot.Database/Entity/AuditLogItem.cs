@@ -47,12 +47,12 @@ namespace GrillBot.Database.Entity
             Files = new HashSet<AuditLogFileMeta>();
         }
 
-        public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, string discordAuditLogItemId)
+        public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, string discordAuditLogItemId, DateTime? createdAt)
         {
             return new AuditLogItem()
             {
                 ChannelId = guild != null ? channel?.Id.ToString() : null,
-                CreatedAt = DateTime.Now,
+                CreatedAt = createdAt ?? DateTime.Now,
                 Data = data,
                 DiscordAuditLogItemId = discordAuditLogItemId,
                 GuildId = guild?.Id.ToString(),
@@ -61,14 +61,14 @@ namespace GrillBot.Database.Entity
             };
         }
 
-        public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, ulong? discordAuditLogItemId)
+        public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, ulong? discordAuditLogItemId, DateTime? createdAt)
         {
-            return Create(type, guild, channel, processedUser, data, discordAuditLogItemId?.ToString());
+            return Create(type, guild, channel, processedUser, data, discordAuditLogItemId?.ToString(), createdAt);
         }
 
-        public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data)
+        public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, DateTime? createdAt)
         {
-            return Create(type, guild, channel, processedUser, data, null as string);
+            return Create(type, guild, channel, processedUser, data, null as string, createdAt);
         }
     }
 }

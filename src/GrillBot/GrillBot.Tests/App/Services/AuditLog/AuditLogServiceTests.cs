@@ -50,10 +50,10 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         var guildUser = DataHelper.CreateGuildUser();
 
         await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, user, "{}", (ulong)12345);
-        await Service.StoreItemAsync(AuditLogItemType.Warning, null, null, user, "{}", null, CancellationToken.None, new() { new() { Filename = "File", Size = 1 } });
+        await Service.StoreItemAsync(AuditLogItemType.Warning, null, null, user, "{}", null, null, CancellationToken.None, new() { new() { Filename = "File", Size = 1 } });
         await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, null, "{}", "12345");
-        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, null, "{}", "12345", CancellationToken.None);
-        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, guildUser, "{}", "12345", CancellationToken.None);
+        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, null, "{}", "12345", DateTime.Now, CancellationToken.None);
+        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, guildUser, "{}", "12345", DateTime.MinValue, CancellationToken.None);
         await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, guildUser, "{}", "12345");
         Assert.IsTrue(true);
     }
@@ -75,7 +75,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
             Data = "{}",
             GuildId = "12345",
             ProcessedUserId = "12345",
-            Type = Database.Enums.AuditLogItemType.Command,
+            Type = AuditLogItemType.Command,
             Id = 12345,
             DiscordAuditLogItemId = "12345",
 

@@ -107,7 +107,7 @@ namespace GrillBot.App.Services.Discord
             if (message.Source != "Gateway" || message.Exception == null || Environment.IsDevelopment()) return;
             if (message.Exception is GatewayReconnectException && message.Exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase))
             {
-                var auditLogItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, DiscordSocketClient.CurrentUser, "Restart aplikace po odpojení.");
+                var auditLogItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, DiscordSocketClient.CurrentUser, "Restart aplikace po odpojení.", null);
                 var dbFactory = Provider.GetRequiredService<GrillBotContextFactory>();
                 using var dbContext = dbFactory.Create();
                 await dbContext.InitUserAsync(DiscordSocketClient.CurrentUser, CancellationToken.None);

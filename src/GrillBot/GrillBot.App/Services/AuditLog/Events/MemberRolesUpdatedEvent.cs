@@ -60,7 +60,8 @@ public class MemberRolesUpdatedEvent : AuditEventBase
             var json = JsonConvert.SerializeObject(logItem.Value.Item2, AuditLogService.JsonSerializerSettings);
             var processedUser = Guild.GetUser(logItem.Key);
             var discordAuditLogId = string.Join(",", logItem.Value.Item1);
-            var entity = AuditLogItem.Create(AuditLogItemType.MemberRoleUpdated, Guild, null, processedUser, json, discordAuditLogId);
+            var createdAt = logs.Min(o => o.CreatedAt.LocalDateTime);
+            var entity = AuditLogItem.Create(AuditLogItemType.MemberRoleUpdated, Guild, null, processedUser, json, discordAuditLogId, createdAt);
 
             await context.InitUserAsync(processedUser, CancellationToken.None);
             await context.InitGuildUserAsync(Guild, processedUser, CancellationToken.None);

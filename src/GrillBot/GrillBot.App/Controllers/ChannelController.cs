@@ -121,12 +121,12 @@ namespace GrillBot.App.Controllers
                 await DbContext.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value, cancellationToken);
 
             var userId = User.GetUserId();
-            var user = await DiscordClient.FindUserAsync(userId);
+            var user = await DiscordClient.FindUserAsync(userId, cancellationToken);
             if (user != null)
                 await DbContext.InitUserAsync(user, cancellationToken);
 
             var logItem = Database.Entity.AuditLogItem.Create(AuditLogItemType.Info, guild, channel, user,
-                $"Uživatel vyčistil memory cache kanálu. Počet smazaných zpráv z cache je {clearedCount}");
+                $"Uživatel vyčistil memory cache kanálu. Počet smazaných zpráv z cache je {clearedCount}", null);
             await DbContext.AddAsync(logItem, cancellationToken);
             await DbContext.SaveChangesAsync(cancellationToken);
 

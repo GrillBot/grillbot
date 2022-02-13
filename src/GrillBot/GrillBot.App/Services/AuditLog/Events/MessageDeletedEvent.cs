@@ -44,7 +44,7 @@ public class MessageDeletedEvent : AuditEventBase
         var removedBy = auditLog?.User ?? deletedMessage.Author;
 
         var attachments = await GetAndStoreAttachmentsAsync(deletedMessage);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.MessageDeleted, textChannel.Guild, textChannel, removedBy, jsonData, auditLog?.Id, null, attachments);
+        await AuditLogService.StoreItemAsync(AuditLogItemType.MessageDeleted, textChannel.Guild, textChannel, removedBy, jsonData, auditLog?.Id, null, null, attachments);
     }
 
     private async Task<List<AuditLogFileMeta>> GetAndStoreAttachmentsAsync(IUserMessage message)

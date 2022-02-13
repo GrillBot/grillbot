@@ -147,10 +147,10 @@ namespace GrillBot.App.Services.Reminder
                 messageId = await SendNotificationMessageAsync(remind, true);
 
             var loggedUserId = loggedUser.GetUserId();
-            var loggedUserEntity = await DiscordClient.FindUserAsync(loggedUserId);
+            var loggedUserEntity = await DiscordClient.FindUserAsync(loggedUserId, cancellationToken);
             await context.InitUserAsync(loggedUserEntity, cancellationToken);
             var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, loggedUserEntity,
-                $"{loggedUserEntity.GetDisplayName()} stornoval upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim());
+                $"{loggedUserEntity.GetDisplayName()} stornoval upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim(), null);
             await context.AddAsync(logItem, cancellationToken);
 
             remind.RemindMessageId = messageId.ToString();

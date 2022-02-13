@@ -173,7 +173,7 @@ public class UsersController : Controller
         await DbContext.InitUserAsync(discordUser, cancellationToken);
 
         var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, discordUser,
-            $"Uživatel {user.Username}#{user.Discriminator} byl aktualizován (Flags:{user.Flags},Note:{user.Note})");
+            $"Uživatel {user.Username}#{user.Discriminator} byl aktualizován (Flags:{user.Flags},Note:{user.Note})", null);
 
         await DbContext.AddAsync(logItem, cancellationToken);
         await DbContext.SaveChangesAsync(cancellationToken);

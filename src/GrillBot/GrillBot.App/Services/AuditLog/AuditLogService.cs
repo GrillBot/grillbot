@@ -94,18 +94,19 @@ public partial class AuditLogService : ServiceBase
     /// <param name="processedUser"></param>
     /// <param name="data"></param>
     /// <param name="auditLogItemId">ID of discord audit log record. Allowed types are ulong?, string or null. Otherwise method throws <see cref="NotSupportedException"/></param>
+    /// <param name="createdAt"></param>
     /// <param name="cancellationToken"></param>
     /// <param name="attachments"></param>
     public async Task StoreItemAsync(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, object auditLogItemId = null,
-        CancellationToken? cancellationToken = null, List<AuditLogFileMeta> attachments = null)
+        DateTime? createdAt = null, CancellationToken? cancellationToken = null, List<AuditLogFileMeta> attachments = null)
     {
         AuditLogItem entity;
         if (auditLogItemId is null)
-            entity = AuditLogItem.Create(type, guild, channel, processedUser, data);
+            entity = AuditLogItem.Create(type, guild, channel, processedUser, data, createdAt);
         else if (auditLogItemId is string _auditLogItemId)
-            entity = AuditLogItem.Create(type, guild, channel, processedUser, data, _auditLogItemId);
+            entity = AuditLogItem.Create(type, guild, channel, processedUser, data, _auditLogItemId, createdAt);
         else if (auditLogItemId is ulong __auditLogItemId)
-            entity = AuditLogItem.Create(type, guild, channel, processedUser, data, __auditLogItemId);
+            entity = AuditLogItem.Create(type, guild, channel, processedUser, data, __auditLogItemId, createdAt);
         else
             throw new NotSupportedException("Unsupported type Discord audit log item ID.");
 

@@ -240,7 +240,12 @@ public class UsersController : Controller
         var guildUsersQuery = DbContext.GuildUsers.AsNoTracking()
             .Include(o => o.Guild)
             .Include(o => o.User)
-            .Where(o => o.Points > 0 && (o.User.Flags & (long)UserFlags.NotUser) == 0 && mutualGuildIds.Contains(o.GuildId))
+            .Where(o =>
+                o.Points > 0 &&
+                (o.User.Flags & (long)UserFlags.NotUser) == 0 &&
+                mutualGuildIds.Contains(o.GuildId) &&
+                !o.User.Username.StartsWith("Imported")
+            )
             .OrderByDescending(o => o.Points)
             .ThenBy(o => o.User.Username);
 

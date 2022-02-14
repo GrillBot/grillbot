@@ -149,5 +149,13 @@ namespace GrillBot.App.Services.MessageCache
                 .OrderByDescending(o => o.Id)
                 .FirstOrDefault();
         }
+
+        public IMessage GetLastCachedMessageFromUser(IUser user)
+        {
+            return Cache.Values
+                .Where(o => !o.IsDeleted && o.Message.Author.Id == user.Id)
+                .Select(o => o.Message)
+                .FirstOrDefault();
+        }
     }
 }

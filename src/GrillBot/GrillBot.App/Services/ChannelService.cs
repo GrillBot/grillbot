@@ -124,7 +124,7 @@ namespace GrillBot.App.Services
             return await TryFindLastMessageFromUserAsync(mostActiveChannel, loggedUser, true);
         }
 
-        private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryRepeat)
+        private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryDownload)
         {
             var lastMessage = new[]
             {
@@ -132,10 +132,19 @@ namespace GrillBot.App.Services
                 MessageCache.GetLastMessageFromUserInChannel(channel, loggedUser)
             }.Where(o => o != null).OrderByDescending(o => o.Id).FirstOrDefault();
 
-            if (lastMessage == null && canTryRepeat)
+            if (lastMessage == null)
             {
-                await MessageCache.DownloadLatestFromChannelAsync(channel);
-                return await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
+                if (canTryDownload)
+                {
+                    // Try reload cache and try find message.
+                    await MessageCache.DownloadLatestFromChannelAsync(channel);
+                    lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
+                }
+                else
+                {
+                    // Give last change in another cached channel. If download wasn't success.
+                    lastMessage = MessageCache.GetLastCachedMessageFromUser(loggedUser);
+                }
             }
 
             return lastMessage as IUserMessage;

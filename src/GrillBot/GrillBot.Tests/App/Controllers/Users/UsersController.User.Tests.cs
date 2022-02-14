@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services;
+using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Tests.TestHelpers;
@@ -31,9 +31,11 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
         var messageCache = new MessageCache(discordClient, initializationService);
         var channelsService = new ChannelService(discordClient, dbFactory, configuration, messageCache);
         var provider = DIHelper.CreateEmptyProvider();
-        var helpService = new HelpService(discordClient, commandsService, channelsService, provider, configuration);
+        var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);
+        var memoryCache = CacheHelper.CreateMemoryCache();
+        var externalHelpService = new ExternalCommandsHelpService(discordClient, configuration, memoryCache, initializationService, provider);
 
-        return new UsersController(DbContext, discordClient, helpService)
+        return new UsersController(DbContext, discordClient, helpService, externalHelpService)
         {
             ControllerContext = new ControllerContext()
             {

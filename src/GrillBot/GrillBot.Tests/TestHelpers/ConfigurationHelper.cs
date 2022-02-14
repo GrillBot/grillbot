@@ -24,7 +24,9 @@ public static class ConfigurationHelper
                 { "Discord:Emotes:Sadge", ":sadge:" },
                 { "Discord:Emotes:Hypers", ":hypers:" },
                 { "Discord:Emotes:Mocking", "<a:mocking:853755944429289482>" },
-                { "Reminder:MinimalTimeMinutes", "15" }
+                { "Reminder:MinimalTimeMinutes", "15" },
+                { "Services:Rubbergod:Id", "123456789" },
+                { "Services:Rubbergod:AuthorizedChannelId", "987654321" }
             });
 
         if (externalConfiguration != null)

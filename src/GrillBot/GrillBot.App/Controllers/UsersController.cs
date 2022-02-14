@@ -11,7 +11,8 @@ using GrillBot.Database.Enums;
 using GrillBot.Database.Entity;
 using GrillBot.Data.Models.API.Help;
 using Microsoft.AspNetCore.Http;
-using GrillBot.App.Services;
+using GrillBot.App.Services.CommandsHelp;
+using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Controllers;
 
@@ -22,13 +23,16 @@ public class UsersController : Controller
 {
     private GrillBotContext DbContext { get; }
     private DiscordSocketClient DiscordClient { get; }
-    private HelpService HelpService { get; }
+    private CommandsHelpService HelpService { get; }
+    private ExternalCommandsHelpService ExternalCommandsHelpService { get; }
 
-    public UsersController(GrillBotContext dbContext, DiscordSocketClient discordClient, HelpService helpService)
+    public UsersController(GrillBotContext dbContext, DiscordSocketClient discordClient, CommandsHelpService helpService,
+        ExternalCommandsHelpService externalCommandsHelpService)
     {
         DbContext = dbContext;
         DiscordClient = discordClient;
         HelpService = helpService;
+        ExternalCommandsHelpService = externalCommandsHelpService;
     }
 
     /// <summary>
@@ -128,6 +132,31 @@ public class UsersController : Controller
         var currentUserId = User.GetUserId();
         var result = await HelpService.GetHelpAsync(currentUserId, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Get non paginated list of available commands from external service.
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <response code="500">Something is wrong</response>
+    [HttpGet("me/commands/{service}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+    [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetAvailableExternalCommandsAsync))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var currentUserId = User.GetUserId();
+            service = char.ToUpper(service[0]).ToString() + service[1..].ToLower();
+            var result = await ExternalCommandsHelpService.GetHelpAsync(service, currentUserId, cancellationToken);
+            return Ok(result);
+        }
+        catch (GrillBotException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new MessageResponse(ex.Message));
+        }
     }
 
     /// <summary>

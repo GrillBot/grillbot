@@ -4,6 +4,7 @@ using Discord.Net;
 using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Reminder;
@@ -84,13 +85,14 @@ namespace GrillBot.App.Services.Discord
 
         private void InitServices()
         {
+            // TODO: Create attribute for automatic initialization
             var services = new[]
             {
                 typeof(DiscordSyncService), typeof(AutoReplyService), typeof(InviteService), typeof(AuditLogService),
                 typeof(PointsService), typeof(EmoteChainService),
                 typeof(BoosterService), typeof(RemindService), typeof(MessageCache.MessageCache),
                 typeof(ChannelService), typeof(CommandHandler), typeof(EmoteService), typeof(SearchingService),
-                typeof(ReactionHandler), typeof(InteractionHandler)
+                typeof(ReactionHandler), typeof(InteractionHandler), typeof(ExternalCommandsHelpService)
             };
 
             foreach (var service in services) Provider.GetRequiredService(service);

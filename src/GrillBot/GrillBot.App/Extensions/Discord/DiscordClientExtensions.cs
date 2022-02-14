@@ -71,5 +71,11 @@
             return client.Guilds
                 .Where(o => o.GetUser(userId) != null);
         }
+
+        static public ITextChannel FindTextChannel(this BaseSocketClient client, ulong channelId)
+        {
+            return client.Guilds.SelectMany(o => o.TextChannels)
+                .FirstOrDefault(o => o.Id == channelId);
+        }
     }
 }

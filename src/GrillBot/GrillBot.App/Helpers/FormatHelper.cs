@@ -20,7 +20,9 @@ namespace GrillBot.App.Helpers
         static public string FormatCommandDescription(string description, string prefix, bool toHtml = false)
         {
             if (string.IsNullOrEmpty(description)) return null;
+
             description = description.Trim().Replace("{prefix}", prefix);
+            description = description.Replace("<", "&lt;").Replace(">", "&gt;");
 
             return toHtml ? Markdown.ToHtml(description).Replace("\n", " ") : description;
         }

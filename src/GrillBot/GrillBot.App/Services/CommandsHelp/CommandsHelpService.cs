@@ -4,9 +4,12 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Extensions;
 
-namespace GrillBot.App.Services;
+namespace GrillBot.App.Services.CommandsHelp;
 
-public class HelpService
+/// <summary>
+/// Service for generating commands for GrillBot commands.
+/// </summary>
+public class CommandsHelpService
 {
     private DiscordSocketClient DiscordClient { get; }
     private CommandService CommandService { get; }
@@ -15,7 +18,7 @@ public class HelpService
 
     private string Prefix { get; }
 
-    public HelpService(DiscordSocketClient discordClient, CommandService commandService, ChannelService channelService,
+    public CommandsHelpService(DiscordSocketClient discordClient, CommandService commandService, ChannelService channelService,
         IServiceProvider provider, IConfiguration configuration)
     {
         DiscordClient = discordClient;
@@ -28,7 +31,7 @@ public class HelpService
 
     public async Task<List<CommandGroup>> GetHelpAsync(ulong loggedUserId, CancellationToken cancellationToken)
     {
-        var loggedUser = await DiscordClient.FindUserAsync(loggedUserId);
+        var loggedUser = await DiscordClient.FindUserAsync(loggedUserId, cancellationToken);
         var result = new List<CommandGroup>();
 
         foreach (var module in CommandService.Modules.Where(o => o.Commands.Count > 0))

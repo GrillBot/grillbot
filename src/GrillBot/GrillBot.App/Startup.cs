@@ -10,6 +10,7 @@ using GrillBot.App.Services.Birthday;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Permissions;
@@ -100,7 +101,7 @@ public class Startup
             .AddSingleton<DiscordInitializationService>()
             .AddSingleton<MockingService>()
             .AddSingleton<InteractionHandler>()
-            .AddSingleton<HelpService>()
+            .AddCommandsHelp()
             .AddSingleton<PermissionsService>()
             .AddSingleton<UserService>();
 
@@ -109,14 +110,14 @@ public class Startup
 
         services.AddHttpClient("MathJS", c =>
         {
-            c.BaseAddress = new Uri(Configuration["Math:Api"]);
-            c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Math:Timeout"]));
+            c.BaseAddress = new Uri(Configuration["Services:Math:Api"]);
+            c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Services:Math:Timeout"]));
         });
 
         services.AddHttpClient("KachnaOnline", c =>
         {
-            c.BaseAddress = new Uri(Configuration["KachnaOnline:Api"]);
-            c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["KachnaOnline:Timeout"]));
+            c.BaseAddress = new Uri(Configuration["Services:KachnaOnline:Api"]);
+            c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Services:KachnaOnline:Timeout"]));
         });
 
         services.AddHostedService<DiscordService>();

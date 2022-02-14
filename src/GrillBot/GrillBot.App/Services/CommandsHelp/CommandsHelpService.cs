@@ -53,7 +53,7 @@ public class CommandsHelpService
 
         foreach (var guild in DiscordClient.FindMutualGuilds(loggedUser.Id))
         {
-            var lastMessage = await ChannelService.GetLastMsgFromMostActiveChannelAsync(guild, loggedUser, cancellationToken);
+            var lastMessage = await ChannelService.GetLastMsgFromUserAsync(guild, loggedUser, cancellationToken);
             if (lastMessage == null) continue;
             var context = new CommandContext(DiscordClient, lastMessage);
 

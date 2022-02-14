@@ -99,38 +99,51 @@ namespace GrillBot.App.Services
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<SocketTextChannel> GetMostActiveChannelOfUserAsync(IUser user, IGuild guild, CancellationToken cancellationToken)
+        public async Task<List<SocketTextChannel>> GetTopMostActiveChannelsOfUserAsync(IUser user, IGuild guild, int take, CancellationToken cancellationToken)
         {
             using var dbContext = DbFactory.Create();
 
             var channelIdQuery = dbContext.UserChannels.AsNoTracking()
-                .OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt)
                 .Where(o => o.Channel.ChannelType == ChannelType.Text && o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString())
-                .Select(o => o.ChannelId);
-            var channelId = await channelIdQuery.FirstOrDefaultAsync(cancellationToken);
+                .OrderByDescending(o => o.Count)
+                .Select(o => o.ChannelId)
+                .Take(take);
+
+            var channelIds = await channelIdQuery.ToListAsync(cancellationToken);
 
             // User not have any active channel.
-            if (string.IsNullOrEmpty(channelId)) return null;
-            return (await guild.GetTextChannelAsync(Convert.ToUInt64(channelId))) as SocketTextChannel;
-        }
+            if (channelIds.Count == 0) return new();
 
-        public async Task<IUserMessage> GetLastMsgFromMostActiveChannelAsync(SocketGuild guild, IUser loggedUser, CancellationToken cancellationToken)
-        {
-            // Using statistics and finding most active channel will help find channel where logged user have any message.
-            // This eliminates the need to browser channels and finds some activity.
-            var mostActiveChannel = await GetMostActiveChannelOfUserAsync(loggedUser, guild, cancellationToken);
-            if (mostActiveChannel == null) return null;
-
-            var lastMessage = await TryFindLastMessageFromUserAsync(mostActiveChannel, loggedUser, true);
-            if (lastMessage == null)
+            var channels = new List<SocketTextChannel>();
+            foreach (var channelId in channelIds)
             {
-                lastMessage = guild.TextChannels.SelectMany(o => o.CachedMessages)
-                    .Where(o => o.Author.Id == loggedUser.Id)
-                    .OrderByDescending(o => o.Id)
-                    .FirstOrDefault() as IUserMessage;
+                if ((await guild.GetTextChannelAsync(Convert.ToUInt64(channelId))) is SocketTextChannel channel) channels.Add(channel);
             }
 
-            return lastMessage;
+            return channels;
+        }
+
+        /// <summary>
+        /// Finds last message from user in cache. If message wasn't found bot will use statistics and refresh cache and tries find message.
+        /// </summary>
+        public async Task<IUserMessage> GetLastMsgFromUserAsync(SocketGuild guild, IUser loggedUser, CancellationToken cancellationToken)
+        {
+            if (MessageCache.GetLastCachedMessageFromUser(loggedUser) is IUserMessage lastMessage) return lastMessage;
+
+            // Using statistics and finding most active channel will help find channel where logged user have any message.
+            // This eliminates the need to browser channels and finds some activity.
+            var mostActiveChannels = await GetTopMostActiveChannelsOfUserAsync(loggedUser, guild, 10, cancellationToken);
+            foreach (var channel in mostActiveChannels)
+            {
+                lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, true);
+                if (lastMessage != null) return lastMessage;
+            }
+
+            return guild.TextChannels
+                .SelectMany(o => o.CachedMessages)
+                .Where(o => o.Author.Id == loggedUser.Id)
+                .OrderByDescending(o => o.Id)
+                .FirstOrDefault() as IUserMessage;
         }
 
         private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryDownload)
@@ -141,19 +154,11 @@ namespace GrillBot.App.Services
                 MessageCache.GetLastMessageFromUserInChannel(channel, loggedUser)
             }.Where(o => o != null).OrderByDescending(o => o.Id).FirstOrDefault();
 
-            if (lastMessage == null)
+            if (lastMessage == null && canTryDownload)
             {
-                if (canTryDownload)
-                {
-                    // Try reload cache and try find message.
-                    await MessageCache.DownloadLatestFromChannelAsync(channel);
-                    lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
-                }
-                else
-                {
-                    // Give last change in another cached channel. If download wasn't success.
-                    lastMessage = MessageCache.GetLastCachedMessageFromUser(loggedUser);
-                }
+                // Try reload cache and try find message.
+                await MessageCache.DownloadLatestFromChannelAsync(channel);
+                return await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
             }
 
             return lastMessage as IUserMessage;

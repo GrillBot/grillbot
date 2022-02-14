@@ -121,7 +121,16 @@ namespace GrillBot.App.Services
             var mostActiveChannel = await GetMostActiveChannelOfUserAsync(loggedUser, guild, cancellationToken);
             if (mostActiveChannel == null) return null;
 
-            return await TryFindLastMessageFromUserAsync(mostActiveChannel, loggedUser, true);
+            var lastMessage = await TryFindLastMessageFromUserAsync(mostActiveChannel, loggedUser, true);
+            if (lastMessage == null)
+            {
+                lastMessage = guild.TextChannels.SelectMany(o => o.CachedMessages)
+                    .Where(o => o.Author.Id == loggedUser.Id)
+                    .OrderByDescending(o => o.Id)
+                    .FirstOrDefault() as IUserMessage;
+            }
+
+            return lastMessage;
         }
 
         private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryDownload)

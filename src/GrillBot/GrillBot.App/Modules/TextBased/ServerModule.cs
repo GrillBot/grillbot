@@ -438,8 +438,14 @@ public class ServerModule : Infrastructure.ModuleBase
 
             [Command("remove user")]
             [Summary("Smaže oprávnění uživatele v kanálech.")]
-            public async Task RemoveUserFromChannelsAsync([Name("id/tag/jmeno_uzivatele")] IGuildUser user, [Name("kanaly")] params IGuildChannel[] channels)
+            public async Task RemoveUserFromChannelsAsync([Name("id/tag/jmeno_uzivatele")] IGuildUser user, [Name("kanaly")] params IGuildChannel[] guildChannels)
             {
+                var channels = guildChannels
+                    .Select(o => o is SocketCategoryChannel category ? category.Channels.OfType<IGuildChannel>() : (new[] { o }))
+                    .SelectMany(o => o)
+                    .Distinct()
+                    .ToArray();
+
                 if (channels.Length == 0) return;
                 await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
 

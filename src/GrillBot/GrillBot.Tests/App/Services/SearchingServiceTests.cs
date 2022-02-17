@@ -3,12 +3,8 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Tests.TestHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services;
@@ -20,8 +16,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService);
         var dbFactory = new DbContextBuilder();
+        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
         DbContext = dbFactory.Create();
 
         return new SearchingService(discordClient, dbFactory, messageCache);

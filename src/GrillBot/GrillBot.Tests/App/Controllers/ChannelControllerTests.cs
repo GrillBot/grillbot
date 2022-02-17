@@ -23,7 +23,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var dbFactory = new DbContextBuilder();
         DbContext = dbFactory.Create();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService);
+        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
 
         return new ChannelController(discordClient, DbContext, messageCache);
     }
@@ -35,6 +35,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
         DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
         DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
+        DbContext.MessageCacheIndexes.RemoveRange(DbContext.MessageCacheIndexes.AsEnumerable());
         DbContext.SaveChanges();
     }
 

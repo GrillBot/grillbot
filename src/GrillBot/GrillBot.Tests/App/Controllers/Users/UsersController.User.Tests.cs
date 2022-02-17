@@ -28,7 +28,7 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
         var commandsService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService);
+        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
         var channelsService = new ChannelService(discordClient, dbFactory, configuration, messageCache);
         var provider = DIHelper.CreateEmptyProvider();
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);

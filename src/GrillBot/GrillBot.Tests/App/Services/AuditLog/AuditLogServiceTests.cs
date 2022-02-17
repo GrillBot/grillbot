@@ -1,17 +1,13 @@
-﻿using Discord;
-using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.TestHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,7 +21,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         var discordClient = DiscordHelper.CreateClient();
         var dbFactory = new DbContextBuilder();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService);
+        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
         var storage = FileStorageHelper.Create();
         DbContext = dbFactory.Create();
 

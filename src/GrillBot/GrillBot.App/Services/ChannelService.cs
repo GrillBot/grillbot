@@ -128,14 +128,15 @@ namespace GrillBot.App.Services
         /// </summary>
         public async Task<IUserMessage> GetLastMsgFromUserAsync(SocketGuild guild, IUser loggedUser, CancellationToken cancellationToken)
         {
-            if (MessageCache.GetLastCachedMessageFromUser(loggedUser) is IUserMessage lastMessage) return lastMessage;
+            var lastCachedMsgFromAuthor = await MessageCache.GetLastCachedMessageFromUserAsync(loggedUser, cancellationToken);
+            if (lastCachedMsgFromAuthor is IUserMessage lastMessage) return lastMessage;
 
             // Using statistics and finding most active channel will help find channel where logged user have any message.
             // This eliminates the need to browser channels and finds some activity.
             var mostActiveChannels = await GetTopMostActiveChannelsOfUserAsync(loggedUser, guild, 10, cancellationToken);
             foreach (var channel in mostActiveChannels)
             {
-                lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, true);
+                lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, true, cancellationToken);
                 if (lastMessage != null) return lastMessage;
             }
 
@@ -146,19 +147,19 @@ namespace GrillBot.App.Services
                 .FirstOrDefault() as IUserMessage;
         }
 
-        private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryDownload)
+        private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryDownload, CancellationToken cancellationToken = default)
         {
             var lastMessage = new[]
             {
                 channel.CachedMessages.Where(o => o.Author.Id == loggedUser.Id).OrderByDescending(o => o.Id).FirstOrDefault(),
-                MessageCache.GetLastMessageFromUserInChannel(channel, loggedUser)
+                await MessageCache.GetLastMessageFromUserInChannelAsync(channel, loggedUser, cancellationToken)
             }.Where(o => o != null).OrderByDescending(o => o.Id).FirstOrDefault();
 
             if (lastMessage == null && canTryDownload)
             {
                 // Try reload cache and try find message.
-                await MessageCache.DownloadLatestFromChannelAsync(channel);
-                return await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
+                await MessageCache.DownloadLatestFromChannelAsync(channel, cancellationToken);
+                return await TryFindLastMessageFromUserAsync(channel, loggedUser, false, cancellationToken);
             }
 
             return lastMessage as IUserMessage;

@@ -20,7 +20,7 @@ namespace GrillBot.App.Services.MessageCache
             try
             {
                 await LoggingService.InfoAsync("MessageCacheCron", $"Triggered job at {DateTime.Now}");
-                await MessageCache.RunCheckAsync();
+                await MessageCache.RunCheckAsync(context.CancellationToken);
             }
             catch (Exception ex)
             {

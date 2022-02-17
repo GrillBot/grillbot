@@ -94,9 +94,9 @@ namespace GrillBot.App.Controllers
                 .AsQueryable();
 
             query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<GuildChannel>.CreateAsync(query, parameters, entity =>
+            var result = await PaginatedResponse<GuildChannel>.CreateAsync(query, parameters, async (entity, cancellationToken) =>
             {
-                var cachedMessagesCount = MessageCache.GetMessagesFromChannel(Convert.ToUInt64(entity.ChannelId)).Count();
+                var cachedMessagesCount = (await MessageCache.GetMessagesFromChannelAsync(Convert.ToUInt64(entity.ChannelId), cancellationToken)).Count;
                 return new(entity, cachedMessagesCount);
             }, cancellationToken);
             return Ok(result);
@@ -147,7 +147,7 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id, CancellationToken cancellationToken)
         {
-            var channel = await DbContext.Channels.AsNoTracking()
+            var channel = await DbContext.Channels.AsNoTracking().AsSplitQuery()
                 .Include(o => o.Guild)
                 .Include(o => o.Users)
                 .Include(o => o.ParentChannel)
@@ -169,7 +169,7 @@ namespace GrillBot.App.Controllers
             {
                 LastMessageFrom = lastMessageFrom == null ? null : new(lastMessageFrom),
                 MostActiveUser = mostActiveUser == null ? null : new(mostActiveUser),
-                CachedMessagesCount = MessageCache.GetMessagesFromChannel(Convert.ToUInt64(channel.ChannelId)).Count()
+                CachedMessagesCount = (await MessageCache.GetMessagesFromChannelAsync(Convert.ToUInt64(channel.ChannelId), cancellationToken)).Count
             };
 
             return Ok(channelDetail);

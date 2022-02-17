@@ -118,5 +118,6 @@ namespace GrillBot.Database.Services
         public DbSet<SelfunverifyKeepable> SelfunverifyKeepables { get; set; }
         public DbSet<ExplicitPermission> ExplicitPermissions { get; set; }
         public DbSet<AutoReplyItem> AutoReplies { get; set; }
+        public DbSet<MessageCacheIndex> MessageCacheIndexes { get; set; }
     }
 }

@@ -24,7 +24,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         var discordClient = DiscordHelper.CreateClient();
         var dbFactory = new DbContextBuilder();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var cache = new MessageCache(discordClient, initializationService);
+        var cache = new MessageCache(discordClient, initializationService, dbFactory);
         var fileStorage = FileStorageHelper.Create();
         var auditLogService = new AuditLogService(discordClient, dbFactory, cache, fileStorage, initializationService);
         DbContext = dbFactory.Create();
@@ -39,6 +39,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
         DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
         DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
+        DbContext.MessageCacheIndexes.RemoveRange(DbContext.MessageCacheIndexes.AsEnumerable());
         DbContext.SaveChanges();
     }
 

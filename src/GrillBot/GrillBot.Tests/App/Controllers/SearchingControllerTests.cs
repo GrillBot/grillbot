@@ -21,7 +21,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         var discordClient = DiscordHelper.CreateClient();
         var dbFactory = new DbContextBuilder();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService);
+        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
         var searchingService = new SearchingService(discordClient, dbFactory, messageCache);
         DbContext = dbFactory.Create();
 

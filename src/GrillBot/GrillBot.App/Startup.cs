@@ -193,10 +193,12 @@ public class Startup
             .AddNpgSql(connectionString);
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, GrillBotContext db, MessageCache messageCache)
     {
         if (db.Database.GetPendingMigrations().Any())
             db.Database.Migrate();
+
+        messageCache.ClearIndexes();
 
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();

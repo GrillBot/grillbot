@@ -1,4 +1,5 @@
-﻿using GrillBot.Data.Models.MessageCache;
+﻿using Discord.Net;
+using GrillBot.Data.Models.MessageCache;
 
 namespace GrillBot.App.Services.MessageCache;
 
@@ -8,13 +9,20 @@ public partial class MessageCache
     {
         if (channel is IDMChannel) return;
 
-        var apiMessages = await channel.GetMessagesAsync(id, Direction.Around, options: new RequestOptions() { CancelToken = cancellationToken }).FlattenAsync();
-        var messages = apiMessages
-            .Where(m => !Cache.ContainsKey(m.Id))
-            .ToList();
+        try
+        {
+            var apiMessages = await channel.GetMessagesAsync(id, Direction.Around, options: new RequestOptions() { CancelToken = cancellationToken }).FlattenAsync();
+            var messages = apiMessages
+                .Where(m => !Cache.ContainsKey(m.Id))
+                .ToList();
 
-        messages.ForEach(m => Cache.TryAdd(m.Id, new CachedMessage(m)));
-        await CreateIndexesAsync(messages, cancellationToken);
+            messages.ForEach(m => Cache.TryAdd(m.Id, new CachedMessage(m)));
+            await CreateIndexesAsync(messages, cancellationToken);
+        }
+        catch (HttpException httpEx) when (httpEx.HttpCode == HttpStatusCode.InternalServerError)
+        {
+            // Catches errors from discord API. Internal server error are expected.
+        }
     }
 
     public async Task<IMessage> GetMessageAsync(IMessageChannel channel, ulong id, CancellationToken cancellationToken = default)
@@ -34,11 +42,18 @@ public partial class MessageCache
 
     public async Task DownloadLatestFromChannelAsync(ISocketMessageChannel channel, CancellationToken cancellationToken = default)
     {
-        var messages = (await channel.GetMessagesAsync(options: new() { CancelToken = cancellationToken }).FlattenAsync())
+        try
+        {
+            var messages = (await channel.GetMessagesAsync(options: new() { CancelToken = cancellationToken }).FlattenAsync())
             .Where(o => !Cache.ContainsKey(o.Id))
             .ToList();
 
-        messages.ForEach(o => Cache.TryAdd(o.Id, new CachedMessage(o)));
-        await CreateIndexesAsync(messages, cancellationToken);
+            messages.ForEach(o => Cache.TryAdd(o.Id, new CachedMessage(o)));
+            await CreateIndexesAsync(messages, cancellationToken);
+        }
+        catch (HttpException httpEx) when (httpEx.HttpCode == HttpStatusCode.InternalServerError)
+        {
+            // Catches errors from discord API. Internal server error are expected.
+        }
     }
 }

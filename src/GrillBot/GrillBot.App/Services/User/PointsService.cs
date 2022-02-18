@@ -18,16 +18,18 @@ public class PointsService : ServiceBase
     private IConfiguration Configuration { get; }
     private Random Random { get; }
     private FileStorageFactory FileStorageFactory { get; }
+    private MessageCache.MessageCache MessageCache { get; }
 
     private MagickImage TrophyImage { get; }
 
     public PointsService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
-        FileStorageFactory fileStorageFactory) : base(client, dbFactory)
+        FileStorageFactory fileStorageFactory, MessageCache.MessageCache messageCache, RandomizationService randomizationService) : base(client, dbFactory)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         Configuration = configuration.GetSection("Points");
-        Random = new Random();
+        Random = randomizationService.GetOrCreateGenerator("Points");
         FileStorageFactory = fileStorageFactory;
+        MessageCache = messageCache;
 
         DiscordClient.MessageReceived += (message) => message.TryLoadMessage(out SocketUserMessage msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
         DiscordClient.ReactionAdded += OnReactionAddedAsync;
@@ -90,7 +92,7 @@ public class PointsService : ServiceBase
         if (user?.IsUser() != true) return;
 
         int argPos = 0;
-        var msg = await message.GetOrDownloadAsync();
+        var msg = message.HasValue ? message.Value : (await MessageCache.GetMessageAsync(textChannel, message.Id)) as IUserMessage;
         if (!CanIncrement(msg)) return;
         if (msg.ReferencedMessage?.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix) == true) return;
 

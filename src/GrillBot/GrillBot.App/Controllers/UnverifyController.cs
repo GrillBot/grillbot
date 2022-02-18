@@ -122,10 +122,10 @@ namespace GrillBot.App.Controllers
             CancellationToken cancellationToken)
         {
             var query = DbContext.UnverifyLogs.AsNoTracking()
-                .Include(o => o.FromUser).ThenInclude(o => o.User)
+                .Include(o => o.FromUser.User)
                 .Include(o => o.Guild)
-                .Include(o => o.ToUser).ThenInclude(o => o.User)
-                .AsQueryable();
+                .Include(o => o.ToUser.User)
+                .AsSplitQuery();
 
             if (User.HaveUserPermission())
             {

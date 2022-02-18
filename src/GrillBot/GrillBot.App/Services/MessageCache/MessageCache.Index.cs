@@ -29,6 +29,13 @@ public partial class MessageCache
         return ids.ConvertAll(o => Convert.ToUInt64(o.MessageId));
     }
 
+    public async Task<int> GetMessagesCountInChannelAsync(ulong channelId, CancellationToken cancellationToken = default)
+    {
+        using var context = DbFactory.Create();
+
+        return await context.MessageCacheIndexes.CountAsync(o => o.ChannelId == channelId.ToString(), cancellationToken);
+    }
+
     private Task<List<ulong>> GetMessageIdsInChannelFromUserAsync(IUser author, IChannel channel, CancellationToken cancellationToken = default)
         => GetMessageIdsInChannelFromUserAsync(author.Id, channel.Id, cancellationToken);
 

@@ -75,10 +75,10 @@ public class UsersController : Controller
     {
         var query = DbContext.Users.AsNoTracking()
             .Include(o => o.Guilds).ThenInclude(o => o.Guild)
-            .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite).ThenInclude(o => o.Creator).ThenInclude(o => o.User)
-            .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites)
-            .Include(o => o.Guilds).ThenInclude(o => o.Channels).ThenInclude(o => o.Channel)
-            .Include(o => o.UsedEmotes)
+            .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite.Creator.User)
+            .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(o => o.UsedUsers.Count > 0))
+            .Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(o => o.Count > 0)).ThenInclude(o => o.Channel)
+            .Include(o => o.UsedEmotes.Where(o => o.UseCount > 0))
             .AsSplitQuery();
 
         var entity = await query.FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
@@ -87,8 +87,7 @@ public class UsersController : Controller
             return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
 
         var user = await DiscordClient.FindUserAsync(id, cancellationToken);
-        var detail = new UserDetail(entity, user, DiscordClient);
-        return Ok(detail);
+        return Ok(new UserDetail(entity, user, DiscordClient));
     }
 
     /// <summary>

@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using GrillBot.App.Extensions;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace GrillBot.App.Controllers
 {
@@ -39,6 +38,7 @@ namespace GrillBot.App.Controllers
         /// <param name="guildId">Guild ID</param>
         /// <param name="channelId">Channel ID</param>
         /// <param name="parameters"></param>
+        /// <param name="cancellationToken"></param>
         /// <response code="200">Success</response>
         /// <response code="404">Guild or channel not exists</response>
         [HttpPost("{guildId}/{channelId}")]
@@ -46,7 +46,7 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(SendMessageToChannelAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> SendMessageToChannelAsync(ulong guildId, ulong channelId, [FromBody] SendMessageToChannelParams parameters)
+        public async Task<ActionResult> SendMessageToChannelAsync(ulong guildId, ulong channelId, [FromBody] SendMessageToChannelParams parameters, CancellationToken cancellationToken)
         {
             var guild = DiscordClient.GetGuild(guildId);
 
@@ -73,7 +73,7 @@ namespace GrillBot.App.Controllers
                 }
             }
 
-            await channel.SendMessageAsync(parameters.Content, messageReference: reference);
+            await channel.SendMessageAsync(parameters.Content, messageReference: reference, options: new() { CancelToken = cancellationToken });
             return Ok();
         }
 
@@ -147,32 +147,19 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id, CancellationToken cancellationToken)
         {
-            var channel = await DbContext.Channels.AsNoTracking().AsSplitQuery()
+            var channelQuery = DbContext.Channels.AsNoTracking().AsSplitQuery()
                 .Include(o => o.Guild)
-                .Include(o => o.Users)
-                .Include(o => o.ParentChannel)
-                .FirstOrDefaultAsync(o => o.ChannelId == id.ToString(), cancellationToken);
+                .Include(o => o.Users.Where(o => o.Count > 0))
+                .ThenInclude(o => o.User.User)
+                .Include(o => o.ParentChannel);
+
+            var channel = await channelQuery.FirstOrDefaultAsync(o => o.ChannelId == id.ToString(), cancellationToken);
 
             if (channel == null)
                 return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
 
-            var userChannelsQuery = DbContext.UserChannels.AsNoTracking()
-                .Where(o => o.ChannelId == id.ToString());
-
-            var mostActiveUser = await userChannelsQuery.OrderByDescending(o => o.Count)
-                .Select(o => o.User.User).FirstOrDefaultAsync(cancellationToken);
-
-            var lastMessageFrom = await userChannelsQuery.OrderByDescending(o => o.LastMessageAt)
-                .Select(o => o.User.User).FirstOrDefaultAsync(cancellationToken);
-
-            var channelDetail = new ChannelDetail(channel)
-            {
-                LastMessageFrom = lastMessageFrom == null ? null : new(lastMessageFrom),
-                MostActiveUser = mostActiveUser == null ? null : new(mostActiveUser),
-                CachedMessagesCount = (await MessageCache.GetMessagesFromChannelAsync(Convert.ToUInt64(channel.ChannelId), cancellationToken)).Count
-            };
-
-            return Ok(channelDetail);
+            var cachedMessagesCount = await MessageCache.GetMessagesCountInChannelAsync(id, cancellationToken);
+            return Ok(new ChannelDetail(channel, cachedMessagesCount));
         }
 
         /// <summary>
@@ -213,9 +200,9 @@ namespace GrillBot.App.Controllers
         public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromQuery] PaginatedParams pagination, CancellationToken cancellationToken)
         {
             var query = DbContext.UserChannels.AsNoTracking()
-                .Include(o => o.User).ThenInclude(o => o.User)
+                .Include(o => o.User.User)
                 .OrderByDescending(o => o.Count)
-                .Where(o => o.ChannelId == id.ToString());
+                .Where(o => o.ChannelId == id.ToString() && o.Count > 0);
 
             var result = await PaginatedResponse<ChannelUserStatItem>.CreateAsync(query, pagination, entity => new()
             {

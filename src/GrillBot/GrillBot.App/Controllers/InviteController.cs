@@ -32,10 +32,10 @@ namespace GrillBot.App.Controllers
         public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromQuery] GetInviteListParams parameters, CancellationToken cancellationToken)
         {
             var query = DbContext.Invites.AsNoTracking()
-                .Include(o => o.Creator).ThenInclude(o => o.User)
+                .Include(o => o.Creator.User)
                 .Include(o => o.UsedUsers)
                 .Include(o => o.Guild)
-                .AsQueryable();
+                .Where(o => o.UsedUsers.Count > 0);
 
             query = parameters.CreateQuery(query);
             var result = await PaginatedResponse<GuildInvite>.CreateAsync(query, parameters, entity => new(entity), cancellationToken);

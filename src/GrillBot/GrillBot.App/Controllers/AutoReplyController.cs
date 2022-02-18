@@ -33,8 +33,8 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync(CancellationToken cancellationToken)
         {
-            var query = DbContext.AutoReplies.AsQueryable()
-                .OrderBy(o => o.Id).AsNoTracking();
+            var query = DbContext.AutoReplies.AsNoTracking()
+                .OrderBy(o => o.Id);
 
             var data = await query.ToListAsync(cancellationToken);
             var result = data.ConvertAll(o => new AutoReplyItem(o));
@@ -54,7 +54,7 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id, CancellationToken cancellationToken)
         {
-            var entity = await DbContext.AutoReplies.AsQueryable()
+            var entity = await DbContext.AutoReplies.AsNoTracking()
                 .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
             if (entity == null)

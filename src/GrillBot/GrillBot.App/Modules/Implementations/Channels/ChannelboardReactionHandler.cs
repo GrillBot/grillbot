@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions.Discord;
 
 namespace GrillBot.App.Modules.Implementations.Channels;
 

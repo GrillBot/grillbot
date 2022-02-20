@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using GrillBot.App.Extensions;
+using GrillBot.Data.Extensions.Discord;
 
 namespace GrillBot.App.Controllers
 {

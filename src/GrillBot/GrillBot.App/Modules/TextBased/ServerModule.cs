@@ -323,23 +323,6 @@ public class ServerModule : Infrastructure.ModuleBase
 
                 await ReplyAsync(embed: embed.Build());
             }
-
-            [Command("limits")]
-            [Summary("Zjistí limitní hranice serveru")]
-            public async Task LimitsAsync()
-            {
-                var guild = Context.Guild;
-
-                var builder = new StringBuilder()
-                    .Append("Server: **").Append(guild.Name).AppendLine("**")
-                    .Append("Maximum uživatelů: **").Append(guild.MaxMembers?.ToString() ?? "Není známo").AppendLine("**")
-                    .Append("Maximum online uživatelů: **").Append(guild.MaxPresences?.ToString() ?? "Není známo").AppendLine("**")
-                    .Append("Maximum uživatelů s webkamerou: **").Append(guild.MaxVideoChannelUsers?.ToString() ?? "Není známo").AppendLine("**")
-                    .Append("Maximální bitrate: **").Append(guild.MaxBitrate / 1000).AppendLine(" kbps**")
-                    .Append("Maximální upload: **").Append(guild.CalculateFileUploadLimit()).AppendLine(" MB**");
-
-                await ReplyAsync(builder.ToString());
-            }
         }
 
         [Group("perms")]

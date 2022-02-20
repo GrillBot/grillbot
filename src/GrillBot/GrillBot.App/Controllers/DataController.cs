@@ -9,6 +9,7 @@ using NSwag.Annotations;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Entity;
+using GrillBot.Data.Extensions.Discord;
 
 namespace GrillBot.App.Controllers
 {

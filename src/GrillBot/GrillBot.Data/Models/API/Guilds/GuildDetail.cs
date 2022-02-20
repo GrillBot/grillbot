@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Users;
 using System;
@@ -51,6 +52,31 @@ namespace GrillBot.Data.Models.API.Guilds
         /// </summary>
         public Channel AdminChannel { get; set; }
 
+        /// <summary>
+        /// Maximum count of members.
+        /// </summary>
+        public int? MaxMembers { get; set; }
+
+        /// <summary>
+        /// Maximum online members.
+        /// </summary>
+        public int? MaxPresences { get; set; }
+
+        /// <summary>
+        /// Maximum members with webcam
+        /// </summary>
+        public int? MaxVideoChannelUsers { get; set; }
+
+        /// <summary>
+        /// Maximum bitrate
+        /// </summary>
+        public int MaxBitrate { get; set; }
+
+        /// <summary>
+        /// Maximum upload limit.
+        /// </summary>
+        public int MaxUploadLimit { get; set; }
+
         public GuildDetail() { }
 
         public GuildDetail(SocketGuild guild, Database.Entity.Guild dbGuild) : base(guild)
@@ -67,6 +93,11 @@ namespace GrillBot.Data.Models.API.Guilds
             Owner = new User(guild.Owner);
             PremiumTier = guild.PremiumTier;
             VanityUrl = !string.IsNullOrEmpty(guild.VanityURLCode) ? DiscordConfig.InviteUrl + guild.VanityURLCode : null;
+            MaxMembers = guild.MaxMembers;
+            MaxPresences = guild.MaxPresences;
+            MaxVideoChannelUsers = guild.MaxVideoChannelUsers;
+            MaxBitrate = guild.MaxBitrate / 1000;
+            MaxUploadLimit = guild.CalculateFileUploadLimit();
 
             if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
             {

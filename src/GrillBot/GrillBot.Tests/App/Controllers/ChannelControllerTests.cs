@@ -42,7 +42,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task SendMessageToChannelAsync_GuildNotFound()
     {
-        var result = await Controller.SendMessageToChannelAsync(12345, 12345, new SendMessageToChannelParams());
+        var result = await Controller.SendMessageToChannelAsync(12345, 12345, new SendMessageToChannelParams(), CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 

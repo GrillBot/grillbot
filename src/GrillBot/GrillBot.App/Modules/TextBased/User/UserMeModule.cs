@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
+using GrillBot.App.Services.User;
 
 namespace GrillBot.App.Modules.TextBased.User;
 
@@ -7,13 +8,11 @@ namespace GrillBot.App.Modules.TextBased.User;
 [RequireUserPerms(ContextType.Guild)]
 public class UserMeModule : Infrastructure.ModuleBase
 {
-    private GrillBotContextFactory DbFactory { get; }
-    private IConfiguration Configuration { get; }
+    private UserService UserService { get; }
 
-    public UserMeModule(GrillBotContextFactory dbFactory, IConfiguration configuration)
+    public UserMeModule(UserService userService)
     {
-        Configuration = configuration;
-        DbFactory = dbFactory;
+        UserService = userService;
     }
 
     [Command("me")]
@@ -21,7 +20,7 @@ public class UserMeModule : Infrastructure.ModuleBase
     public async Task GetMeInfoAsync()
     {
         var user = Context.User is SocketGuildUser guildUser ? guildUser : Context.Guild.GetUser(Context.User.Id);
-        var embed = await UserModule.GetUserInfoEmbedAsync(Context, DbFactory, Configuration, user);
+        var embed = await UserService.CreateInfoEmbed(Context, user);
 
         await ReplyAsync(embed: embed);
     }

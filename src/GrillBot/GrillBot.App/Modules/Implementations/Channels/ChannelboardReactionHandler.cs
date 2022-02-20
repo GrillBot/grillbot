@@ -27,7 +27,7 @@ public class ChannelboardReactionHandler : ReactionEventHandler
 
         using var dbContext = DbFactory.Create();
 
-        var query = dbContext.UserChannels.AsQueryable()
+        var query = dbContext.UserChannels.AsNoTracking()
             .Where(o => o.GuildId == guild.Id.ToString() && availableChannels.Contains(o.ChannelId) && o.Count > 0);
 
         var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.ChannelId }).Select(o => new

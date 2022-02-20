@@ -1,12 +1,13 @@
-﻿using GrillBot.App.Services.User;
+﻿using Discord;
+using Discord.Commands;
+using GrillBot.App.Services.User;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
 using GrillBot.Tests.TestHelpers;
+using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
+using Moq;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,10 +18,11 @@ public class UserServiteTests : ServiceTest<UserService>
 {
     protected override UserService CreateService()
     {
+        var configuration = ConfigurationHelper.CreateConfiguration();
         var dbFactory = new DbContextBuilder();
         DbContext = dbFactory.Create();
 
-        return new UserService(dbFactory);
+        return new UserService(dbFactory, configuration);
     }
 
     public override void Cleanup()
@@ -61,5 +63,67 @@ public class UserServiteTests : ServiceTest<UserService>
 
         var result = await Service.IsUserBotAdminAsync(dcUser);
         Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task CreateWebAdminLink_NotAdmin()
+    {
+        var user = DataHelper.CreateDiscordUser();
+        var context = new Mock<ICommandContext>();
+        context.Setup(o => o.User).Returns(user);
+
+        var result = await Service.CreateWebAdminLink(context.Object, user);
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public async Task CreateWebAdminLink_Admin()
+    {
+        var dcUser = DataHelper.CreateDiscordUser(id: 12345566);
+        var userEntity = Database.Entity.User.FromDiscord(dcUser);
+        userEntity.Flags |= (int)UserFlags.WebAdmin;
+
+        await DbContext.Users.AddAsync(userEntity);
+        await DbContext.SaveChangesAsync();
+
+        var user = DataHelper.CreateDiscordUser();
+        var context = new Mock<ICommandContext>();
+        context.Setup(o => o.User).Returns(dcUser);
+
+        var result = await Service.CreateWebAdminLink(context.Object, user);
+        Assert.AreEqual("http://grillbot/12345", result);
+    }
+
+    [TestMethod]
+    public void GetUserStateEmote_Offline()
+        => GetUserStateEmote_Test(UserStatus.Offline, Emote.Parse("<:Offline:856875666842583040>"), "Offline");
+
+    [TestMethod]
+    public void GetUserStateEmote_Online()
+        => GetUserStateEmote_Test(UserStatus.Online, Emote.Parse("<:Online:856875667379585034>"), "Online");
+
+    [TestMethod]
+    public void GetUserStateEmote_Idle()
+        => GetUserStateEmote_Test(UserStatus.Idle, Emote.Parse("<:Idle:856879314997346344>"), "Nepřítomen");
+
+    [TestMethod]
+    public void GetUserStateEmote_AFK()
+        => GetUserStateEmote_Test(UserStatus.AFK, Emote.Parse("<:Idle:856879314997346344>"), "Nepřítomen");
+
+    [TestMethod]
+    public void GetUserStateEmote_DoNotDisturb()
+        => GetUserStateEmote_Test(UserStatus.DoNotDisturb, Emote.Parse("<:DoNotDisturb:856879762282774538>"), "Nerušit");
+
+    [TestMethod]
+    public void GetUserStateEmote_Invisible()
+        => GetUserStateEmote_Test(UserStatus.Invisible, Emote.Parse("<:Offline:856875666842583040>"), "Offline");
+
+    private void GetUserStateEmote_Test(UserStatus status, Emote expectedEmote, string expectedStatus)
+    {
+        var user = DataHelper.CreateDiscordUser(userStatus: status);
+        var result = Service.GetUserStateEmote(user, out var userStatus);
+
+        Assert.AreEqual(expectedEmote, result);
+        Assert.AreEqual(expectedStatus, userStatus);
     }
 }

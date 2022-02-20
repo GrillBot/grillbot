@@ -33,7 +33,7 @@ public class ChannelModule : Infrastructure.ModuleBase
 
         using var dbContext = DbFactory.Create();
 
-        var query = dbContext.UserChannels.AsQueryable()
+        var query = dbContext.UserChannels.AsNoTracking()
             .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.Count > 0 && (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 && availableChannels.Contains(o.ChannelId));
 
         var groupedDataQuery = query.GroupBy(o => new { o.GuildId, o.ChannelId }).Select(o => new
@@ -70,7 +70,7 @@ public class ChannelModule : Infrastructure.ModuleBase
 
         using var dbContext = DbFactory.Create();
 
-        var channelDataQuery = dbContext.UserChannels.AsQueryable()
+        var channelDataQuery = dbContext.UserChannels.AsNoTracking()
             .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.ChannelId == channel.Id.ToString() && o.Count > 0);
 
         var groupedDataQuery = channelDataQuery.GroupBy(o => new { o.GuildId, o.ChannelId }).Select(o => new

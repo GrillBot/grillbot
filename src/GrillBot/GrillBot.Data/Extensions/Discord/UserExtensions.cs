@@ -4,59 +4,63 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace GrillBot.Data.Extensions.Discord
+namespace GrillBot.Data.Extensions.Discord;
+
+static public class UserExtensions
 {
-    static public class UserExtensions
+    static public string GetDisplayName(this IUser user, bool withDiscriminator = true)
     {
-        static public string GetDisplayName(this IUser user, bool withDiscriminator = true)
-        {
-            if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
-                return sgu.Nickname;
+        if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
+            return sgu.Nickname;
 
-            return withDiscriminator ? $"{user.Username}#{user.Discriminator}" : user.Username;
-        }
+        return withDiscriminator ? $"{user.Username}#{user.Discriminator}" : user.Username;
+    }
 
-        static public string GetAvatarUri(this IUser user, ImageFormat format = ImageFormat.Auto, ushort size = 128)
-        {
-            return user.GetAvatarUrl(format, size) ?? user.GetDefaultAvatarUrl();
-        }
+    static public string GetAvatarUri(this IUser user, ImageFormat format = ImageFormat.Auto, ushort size = 128)
+    {
+        return user.GetAvatarUrl(format, size) ?? user.GetDefaultAvatarUrl();
+    }
 
-        static public bool IsUser(this IUser user) => !(user.IsBot || user.IsWebhook);
+    static public bool IsUser(this IUser user) => !(user.IsBot || user.IsWebhook);
 
-        static public string GetFullName(this IUser user)
-        {
-            if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
-                return $"{sgu.Nickname} ({sgu.Username}#{sgu.Discriminator})";
+    static public string GetFullName(this IUser user)
+    {
+        if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
+            return $"{sgu.Nickname} ({sgu.Username}#{sgu.Discriminator})";
 
-            return $"{user.Username}#{user.Discriminator}";
-        }
+        return $"{user.Username}#{user.Discriminator}";
+    }
 
-        static public async Task<byte[]> DownloadAvatarAsync(this IUser user, ImageFormat format = ImageFormat.Auto, ushort size = 128)
-        {
-            var url = user.GetAvatarUri(format, size);
+    static public async Task<byte[]> DownloadAvatarAsync(this IUser user, ImageFormat format = ImageFormat.Auto, ushort size = 128)
+    {
+        var url = user.GetAvatarUri(format, size);
 
-            using var client = new HttpClient();
-            return await client.GetByteArrayAsync(url);
-        }
+        using var client = new HttpClient();
+        return await client.GetByteArrayAsync(url);
+    }
 
-        static public bool HaveAnimatedAvatar(this IUser user) => user.AvatarId?.StartsWith("a_") ?? false;
-        static public string CreateProfilePicFilename(this IUser user, int size) => $"{user.Id}_{user.AvatarId ?? user.Discriminator}_{size}.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
+    static public bool HaveAnimatedAvatar(this IUser user) => user.AvatarId?.StartsWith("a_") ?? false;
+    static public string CreateProfilePicFilename(this IUser user, int size) => $"{user.Id}_{user.AvatarId ?? user.Discriminator}_{size}.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
 
-        static public IRole GetHighestRole(this SocketGuildUser user, bool requireColor = false)
-        {
-            var roles = requireColor ? user.Roles.Where(o => o.Color != Color.Default) : user.Roles.AsEnumerable();
+    static public IRole GetHighestRole(this SocketGuildUser user, bool requireColor = false)
+    {
+        var roles = requireColor ? user.Roles.Where(o => o.Color != Color.Default) : user.Roles.AsEnumerable();
 
-            return roles.OrderByDescending(o => o.Position).FirstOrDefault();
-        }
+        return roles.OrderByDescending(o => o.Position).FirstOrDefault();
+    }
 
-        public static Task TryAddRoleAsync(this IGuildUser user, IRole role)
-        {
-            return user.RoleIds.Any(o => o == role.Id) ? Task.CompletedTask : user.AddRoleAsync(role);
-        }
+    public static Task TryAddRoleAsync(this IGuildUser user, IRole role)
+    {
+        return user.RoleIds.Any(o => o == role.Id) ? Task.CompletedTask : user.AddRoleAsync(role);
+    }
 
-        public static Task TryRemoveRoleAsync(this IGuildUser user, IRole role)
-        {
-            return !user.RoleIds.Any(o => o == role.Id) ? Task.CompletedTask : user.RemoveRoleAsync(role);
-        }
+    public static Task TryRemoveRoleAsync(this IGuildUser user, IRole role)
+    {
+        return !user.RoleIds.Any(o => o == role.Id) ? Task.CompletedTask : user.RemoveRoleAsync(role);
+    }
+
+    public static int CalculateJoinPosition(this SocketGuildUser user)
+    {
+        return user.Guild.Users.Count(o => o.JoinedAt <= user.JoinedAt);
     }
 }

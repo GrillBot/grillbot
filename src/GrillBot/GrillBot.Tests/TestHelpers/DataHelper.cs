@@ -14,12 +14,13 @@ public static class DataHelper
 {
     private const ulong Id = 12345;
 
-    public static IUser CreateDiscordUser(string username = "User", ulong id = Id, string discriminator = "1111")
+    public static IUser CreateDiscordUser(string username = "User", ulong id = Id, string discriminator = "1111", UserStatus userStatus = UserStatus.Online)
     {
         var mock = new Mock<IUser>();
         mock.Setup(o => o.Username).Returns(username);
         mock.Setup(o => o.Id).Returns(id);
         mock.Setup(o => o.Discriminator).Returns(discriminator);
+        mock.Setup(o => o.Status).Returns(userStatus);
 
         return mock.Object;
     }

@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services;
 
 namespace GrillBot.App.Modules.TextBased;
@@ -47,7 +48,7 @@ public class MockingModule : Infrastructure.ModuleBase
 
     [Command("mock")]
     [Summary("Mockuje zadanou zprávu.")]
-    public Task MockAsync([Remainder][Name("zpráva")] string message) =>
-            ReplyAsync(MockingService.CreateMockingString(message));
+    [TextCommandDeprecated(AlternativeCommand = "/mock")]
+    public Task MockAsync([Remainder][Name("zpráva")] string _) => Task.CompletedTask;
 
 }

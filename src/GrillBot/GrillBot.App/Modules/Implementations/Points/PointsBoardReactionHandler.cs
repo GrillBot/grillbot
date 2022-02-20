@@ -23,7 +23,7 @@ public class PointsBoardReactionHandler : ReactionEventHandler
 
         var dbContext = DbFactory.Create();
 
-        var query = dbContext.GuildUsers.AsQueryable()
+        var query = dbContext.GuildUsers.AsNoTracking()
             .Where(o => o.GuildId == guild.Id.ToString() && o.Points > 0)
             .OrderByDescending(o => o.Points)
             .Select(o => new KeyValuePair<string, long>(o.UserId, o.Points));

@@ -26,7 +26,12 @@ public static class ConfigurationHelper
                 { "Discord:Emotes:Mocking", "<a:mocking:853755944429289482>" },
                 { "Reminder:MinimalTimeMinutes", "15" },
                 { "Services:Rubbergod:Id", "123456789" },
-                { "Services:Rubbergod:AuthorizedChannelId", "987654321" }
+                { "Services:Rubbergod:AuthorizedChannelId", "987654321" },
+                { "WebAdmin:UserDetailLink", "http://grillbot/{0}" },
+                { "Discord:Emotes:Online", "<:Online:856875667379585034>" },
+                { "Discord:Emotes:Offline", "<:Offline:856875666842583040>" },
+                { "Discord:Emotes:DoNotDisturb", "<:DoNotDisturb:856879762282774538>" },
+                { "Discord:Emotes:Idle", "<:Idle:856879314997346344>" }
             });
 
         if (externalConfiguration != null)

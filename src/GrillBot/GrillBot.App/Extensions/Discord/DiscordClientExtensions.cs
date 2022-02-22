@@ -31,8 +31,6 @@
 
             foreach (var guild in client.Guilds)
             {
-                await guild.DownloadUsersAsync();
-
                 user = guild.GetUser(id);
 
                 if (user != null)

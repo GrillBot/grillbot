@@ -17,8 +17,8 @@ namespace GrillBot.App.Services.Reminder
 
         public async Task Execute(IJobExecutionContext context)
         {
-            await LoggingService.InfoAsync("RemindCron", $"Trigged remind processing job at {DateTime.Now}");
             var reminders = await RemindService.GetProcessableReminderIdsAsync();
+            await LoggingService.InfoAsync("RemindCron", $"Triggered remind processing job at {DateTime.Now}. Reminders to process {reminders.Count}");
 
             foreach (var id in reminders)
             {

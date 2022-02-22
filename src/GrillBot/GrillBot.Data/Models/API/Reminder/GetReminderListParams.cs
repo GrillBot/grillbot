@@ -42,7 +42,7 @@ namespace GrillBot.Data.Models.API.Reminder
                 query = query.Where(o => o.At <= CreatedTo.Value);
 
             if (OnlyWaiting)
-                query = query.Where(o => o.At >= DateTime.Now && o.RemindMessageId == null);
+                query = query.Where(o => o.RemindMessageId == null);
 
             return SortBy.ToLower() switch
             {

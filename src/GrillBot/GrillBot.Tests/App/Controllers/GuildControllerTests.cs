@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Controllers;
+using GrillBot.App.Services;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Tests.TestHelpers;
@@ -18,8 +19,9 @@ public class GuildControllerTests : ControllerTest<GuildController>
         var dbFactory = new DbContextBuilder();
         DbContext = dbFactory.Create();
         var discordClient = DiscordHelper.CreateClient();
+        var guildService = new GuildService(discordClient, dbFactory);
 
-        return new GuildController(DbContext, discordClient);
+        return new GuildController(DbContext, discordClient, guildService);
     }
 
     public override void Cleanup()

@@ -4,6 +4,8 @@ using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Users;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GrillBot.Data.Models.API.Guilds
 {
@@ -77,10 +79,16 @@ namespace GrillBot.Data.Models.API.Guilds
         /// </summary>
         public int MaxUploadLimit { get; set; }
 
+        public Dictionary<UserStatus, int> UserStatusReport { get; set; }
+        public Dictionary<ClientType, int> ClientTypeReport { get; set; }
+        public GuildDatabaseReport DatabaseReport { get; set; }
+
         public GuildDetail() { }
 
-        public GuildDetail(SocketGuild guild, Database.Entity.Guild dbGuild) : base(guild)
+        public GuildDetail(SocketGuild guild, Database.Entity.Guild dbGuild, GuildDatabaseReport databaseReport) : base(guild)
         {
+            DatabaseReport = databaseReport;
+
             if (guild == null)
             {
                 Name = dbGuild.Name;
@@ -116,6 +124,19 @@ namespace GrillBot.Data.Models.API.Guilds
                 var mutedRole = guild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId));
                 MutedRole = mutedRole == null ? null : new Role(mutedRole);
             }
+
+            UserStatusReport = guild.Users.GroupBy(o =>
+            {
+                if (o.Status == UserStatus.AFK) return UserStatus.Idle;
+                else if (o.Status == UserStatus.Invisible) return UserStatus.Offline;
+                return o.Status;
+            }).ToDictionary(o => o.Key, o => o.Count());
+
+            ClientTypeReport = guild.Users
+                .Where(o => o.Status != UserStatus.Offline && o.Status != UserStatus.Invisible)
+                .SelectMany(o => o.ActiveClients)
+                .GroupBy(o => o)
+                .ToDictionary(o => o.Key, o => o.Count());
         }
     }
 }

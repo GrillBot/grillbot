@@ -103,7 +103,8 @@ public class Startup
             .AddSingleton<InteractionHandler>()
             .AddCommandsHelp()
             .AddSingleton<PermissionsService>()
-            .AddSingleton<UserService>();
+            .AddSingleton<UserService>()
+            .AddSingleton<GuildService>();
 
         ReflectionHelper.GetAllReactionEventHandlers().ToList()
             .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

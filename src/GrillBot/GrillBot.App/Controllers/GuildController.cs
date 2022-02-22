@@ -1,4 +1,5 @@
-﻿using GrillBot.Data.Models.API;
+﻿using GrillBot.App.Services;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,11 +17,13 @@ namespace GrillBot.App.Controllers
     {
         private GrillBotContext DbContext { get; }
         private DiscordSocketClient DiscordClient { get; }
+        private GuildService GuildService { get; }
 
-        public GuildController(GrillBotContext dbContext, DiscordSocketClient discordClient)
+        public GuildController(GrillBotContext dbContext, DiscordSocketClient discordClient, GuildService guildService)
         {
             DbContext = dbContext;
             DiscordClient = discordClient;
+            GuildService = guildService;
         }
 
         /// <summary>
@@ -62,14 +65,11 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id, CancellationToken cancellationToken)
         {
-            var dbGuild = await DbContext.Guilds.AsNoTracking()
-                .FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
-
-            if (dbGuild == null)
+            var guildDetail = await GuildService.GetGuildDetailAsync(id, cancellationToken);
+            if (guildDetail == null)
                 return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
 
-            var guild = DiscordClient.GetGuild(id);
-            return Ok(new GuildDetail(guild, dbGuild));
+            return Ok(guildDetail);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace GrillBot.App.Controllers
             }
 
             await DbContext.SaveChangesAsync(cancellationToken);
-            return Ok(new GuildDetail(guild, dbGuild));
+            return Ok(await GuildService.GetGuildDetailAsync(id, cancellationToken));
         }
     }
 }

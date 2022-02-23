@@ -267,61 +267,6 @@ public class ServerModule : Infrastructure.ModuleBase
                 Configuration = configuration;
             }
 
-            [Command("calc")]
-            [Summary("Spočítá oprávnění na serveru")]
-            public async Task CalcPermissionsAsync([Name("vse")] bool verbose = false)
-            {
-                var guild = Context.Guild;
-
-                var channels = guild.Channels
-                    .Where(o => o is not SocketThreadChannel && o.PermissionOverwrites is ImmutableArray<Overwrite> overwriteArray && !overwriteArray.IsDefault)
-                    .OrderBy(o => o.Position).Select(o => new
-                    {
-                        o.Position,
-                        o.Name,
-                        Type = o.GetType().Name.Replace("Rest", "").Replace("Socket", "").Replace("Channel", ""),
-                        RolePermissions = o.PermissionOverwrites.AsEnumerable().Count(o => o.TargetId != guild.EveryoneRole.Id && o.TargetType == PermissionTarget.Role),
-                        UserPermissions = o.PermissionOverwrites.AsEnumerable().Count(o => o.TargetId != guild.EveryoneRole.Id && o.TargetType == PermissionTarget.User)
-                    }).Where(o => o.RolePermissions + o.UserPermissions > 0);
-
-                if (verbose)
-                {
-                    var table = new DataTable();
-                    table.Columns.AddRange(new[]
-                    {
-                            new DataColumn("Pozice", typeof(int)),
-                            new DataColumn("Název", typeof(string)),
-                            new DataColumn("Typ", typeof(string)),
-                            new DataColumn("Počet práv rolí", typeof(int)),
-                            new DataColumn("Počet uživatelských práv", typeof(int))
-                        });
-
-                    foreach (var channel in channels)
-                    {
-                        table.Rows.Add(channel.Position, channel.Name, channel.Type, channel.RolePermissions, channel.UserPermissions);
-                    }
-
-                    var formatedTable = ConsoleTableBuilder.From(table).Export().ToString();
-                    var bytes = Encoding.UTF8.GetBytes(formatedTable);
-
-                    using var ms = new MemoryStream(bytes);
-                    await ReplyStreamAsync(ms, $"{guild.Name}_Report.txt", false);
-                }
-                else
-                {
-                    var channelsData = channels.ToList();
-
-                    var builder = new StringBuilder()
-                        .Append("Počet kategorií: **").Append(channelsData.Count(o => o.Type == "Category")).AppendLine("**")
-                        .Append("Počet textových kanálů: **").Append(channelsData.Count(o => o.Type == "Text")).AppendLine("**")
-                        .Append("Počet hlasových kanálů: **").Append(channelsData.Count(o => o.Type == "Voice")).AppendLine("**").AppendLine()
-                        .Append("Počet oprávnění (rolí): **").Append(channelsData.Sum(o => o.RolePermissions)).AppendLine("**")
-                        .Append("Počet oprávnění (uživatelská): **").Append(channelsData.Sum(o => o.UserPermissions)).AppendLine("**");
-
-                    await ReplyAsync(builder.ToString());
-                }
-            }
-
             [Command("clear")]
             [Summary("Smaže všechna uživatelská oprávnění z kanálu.")]
             public async Task ClearPermissionsInChannelAsync([Name("kanal")] IGuildChannel channel, [Name("vynechani_uzivatele")] params IUser[] excludedUsers)

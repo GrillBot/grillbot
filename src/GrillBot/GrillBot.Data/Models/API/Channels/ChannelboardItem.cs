@@ -5,7 +5,7 @@ namespace GrillBot.Data.Models.API.Channels
 {
     public class ChannelboardItem
     {
-        public GuildChannel Channel { get; set; }
+        public GuildChannelListItem Channel { get; set; }
         public long Count { get; set; }
         public DateTime LastMessageAt { get; set; }
         public DateTime FirstMessageAt { get; set; }
@@ -15,7 +15,7 @@ namespace GrillBot.Data.Models.API.Channels
         public ChannelboardItem(Database.Entity.GuildChannel channel, long count,
             DateTime lastMessageAt, DateTime firstMessageAt)
         {
-            Channel = new GuildChannel(channel);
+            Channel = new GuildChannelListItem(channel);
             Count = count;
             LastMessageAt = lastMessageAt;
             FirstMessageAt = firstMessageAt;

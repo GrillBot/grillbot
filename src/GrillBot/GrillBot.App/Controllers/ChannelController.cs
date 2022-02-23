@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using GrillBot.App.Extensions;
 using GrillBot.Data.Extensions.Discord;
+using GrillBot.App.Services;
 
 namespace GrillBot.App.Controllers
 {
@@ -25,12 +26,15 @@ namespace GrillBot.App.Controllers
         private DiscordSocketClient DiscordClient { get; }
         private GrillBotContext DbContext { get; }
         private MessageCache MessageCache { get; }
+        private ChannelService ChannelService { get; }
 
-        public ChannelController(DiscordSocketClient discordClient, GrillBotContext dbContext, MessageCache messageCache)
+        public ChannelController(DiscordSocketClient discordClient, GrillBotContext dbContext, MessageCache messageCache,
+            ChannelService channelService)
         {
             DiscordClient = discordClient;
             DbContext = dbContext;
             MessageCache = messageCache;
+            ChannelService = channelService;
         }
 
         /// <summary>
@@ -86,20 +90,10 @@ namespace GrillBot.App.Controllers
         [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelsListAsync))]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<GuildChannel>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters,
+        public async Task<ActionResult<PaginatedResponse<GuildChannelListItem>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters,
             CancellationToken cancellationToken)
         {
-            var query = DbContext.Channels.AsNoTracking().AsSplitQuery()
-                .Include(o => o.Guild)
-                .Include(o => o.Users)
-                .AsQueryable();
-
-            query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<GuildChannel>.CreateAsync(query, parameters, async (entity, cancellationToken) =>
-            {
-                var cachedMessagesCount = (await MessageCache.GetMessagesFromChannelAsync(Convert.ToUInt64(entity.ChannelId), cancellationToken)).Count;
-                return new(entity, cachedMessagesCount);
-            }, cancellationToken);
+            var result = await ChannelService.GetChannelListAsync(parameters, cancellationToken);
             return Ok(result);
         }
 
@@ -148,19 +142,12 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id, CancellationToken cancellationToken)
         {
-            var channelQuery = DbContext.Channels.AsNoTracking().AsSplitQuery()
-                .Include(o => o.Guild)
-                .Include(o => o.Users.Where(o => o.Count > 0))
-                .ThenInclude(o => o.User.User)
-                .Include(o => o.ParentChannel);
+            var result = await ChannelService.GetChannelDetailAsync(id, cancellationToken);
 
-            var channel = await channelQuery.FirstOrDefaultAsync(o => o.ChannelId == id.ToString(), cancellationToken);
-
-            if (channel == null)
+            if (result == null)
                 return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
 
-            var cachedMessagesCount = await MessageCache.GetMessagesCountInChannelAsync(id, cancellationToken);
-            return Ok(new ChannelDetail(channel, cachedMessagesCount));
+            return Ok(result);
         }
 
         /// <summary>

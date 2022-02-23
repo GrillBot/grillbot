@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Controllers;
+using GrillBot.App.Services;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Channels;
@@ -24,8 +25,10 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         DbContext = dbFactory.Create();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
         var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
+        var configuration = ConfigurationHelper.CreateConfiguration();
+        var channelService = new ChannelService(discordClient, dbFactory, configuration, messageCache);
 
-        return new ChannelController(discordClient, DbContext, messageCache);
+        return new ChannelController(discordClient, DbContext, messageCache, channelService);
     }
 
     public override void Cleanup()
@@ -57,7 +60,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         };
 
         var result = await Controller.GetChannelsListAsync(filter, CancellationToken.None);
-        CheckResult<OkObjectResult, PaginatedResponse<GuildChannel>>(result);
+        CheckResult<OkObjectResult, PaginatedResponse<GuildChannelListItem>>(result);
     }
 
     [TestMethod]
@@ -71,7 +74,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
 
         var filter = new GetChannelListParams();
         var result = await Controller.GetChannelsListAsync(filter, CancellationToken.None);
-        CheckResult<OkObjectResult, PaginatedResponse<GuildChannel>>(result);
+        CheckResult<OkObjectResult, PaginatedResponse<GuildChannelListItem>>(result);
     }
 
     [TestMethod]

@@ -2,8 +2,6 @@
 using Discord.WebSocket;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Helpers;
-using System;
-using System.Linq;
 
 namespace GrillBot.Data.Models.API.Channels
 {
@@ -12,11 +10,6 @@ namespace GrillBot.Data.Models.API.Channels
         public string Id { get; set; }
         public string Name { get; set; }
         public ChannelType? Type { get; set; }
-        public int CachedMessagesCount { get; set; }
-
-        public DateTime? FirstMessageAt { get; set; }
-        public DateTime? LastMessageAt { get; set; }
-        public long MessagesCount { get; set; }
 
         public Channel() { }
 
@@ -29,27 +22,13 @@ namespace GrillBot.Data.Models.API.Channels
             var category = channel.GetCategory();
             if (category != null)
                 Name += $" ({category.Name})";
-
-            if (channel is SocketTextChannel textChannel)
-                CachedMessagesCount = textChannel.CachedMessages.Count;
         }
 
-        public Channel(Database.Entity.GuildChannel entity, int cachedMessagesCount = 0)
+        public Channel(Database.Entity.GuildChannel entity)
         {
             Id = entity.ChannelId;
             Name = entity.Name;
             Type = entity.ChannelType;
-            CachedMessagesCount = cachedMessagesCount;
-
-            if (entity.Users.Count > 0)
-            {
-                FirstMessageAt = entity.Users.Min(o => o.FirstMessageAt);
-                LastMessageAt = entity.Users.Max(o => o.LastMessageAt);
-                MessagesCount = entity.Users.Sum(o => o.Count);
-
-                if (FirstMessageAt == DateTime.MinValue) FirstMessageAt = null;
-                if (LastMessageAt == DateTime.MinValue) LastMessageAt = null;
-            }
         }
     }
 }

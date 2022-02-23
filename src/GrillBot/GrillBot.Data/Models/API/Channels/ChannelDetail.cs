@@ -1,9 +1,10 @@
-﻿using GrillBot.Data.Models.API.Users;
+﻿using Discord.WebSocket;
+using GrillBot.Data.Models.API.Users;
 using System.Linq;
 
 namespace GrillBot.Data.Models.API.Channels
 {
-    public class ChannelDetail : GuildChannel
+    public class ChannelDetail : GuildChannelListItem
     {
         public User LastMessageFrom { get; set; }
         public User MostActiveUser { get; set; }
@@ -12,7 +13,8 @@ namespace GrillBot.Data.Models.API.Channels
 
         public ChannelDetail() { }
 
-        public ChannelDetail(Database.Entity.GuildChannel channel, int cachedMessagesCount) : base(channel, cachedMessagesCount)
+        public ChannelDetail(Database.Entity.GuildChannel channel, int cachedMessagesCount, SocketGuildChannel guildChannel = null)
+            : base(channel, cachedMessagesCount, guildChannel)
         {
             ParentChannel = channel.ParentChannel != null ? new Channel(channel.ParentChannel) : null;
             Flags = channel.Flags;

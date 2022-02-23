@@ -3,8 +3,6 @@ using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Images;
-using GrillBot.Data.Enums;
-using GrillBot.Data.Models.Duck;
 using System.Net.Http;
 
 namespace GrillBot.App.Modules.TextBased;
@@ -14,16 +12,10 @@ namespace GrillBot.App.Modules.TextBased;
 public class MemeModule : Infrastructure.ModuleBase
 {
     private FileStorageFactory FileStorageFactory { get; }
-    private IHttpClientFactory HttpClientFactory { get; }
-    private CultureInfo Culture { get; }
-    private IConfiguration Configuration { get; }
 
     public MemeModule(FileStorageFactory fileStorage, IHttpClientFactory httpClientFactory, IConfiguration configuration)
     {
         FileStorageFactory = fileStorage;
-        HttpClientFactory = httpClientFactory;
-        Culture = new CultureInfo("cs-CZ");
-        Configuration = configuration;
     }
 
     #region Peepolove
@@ -57,146 +49,10 @@ public class MemeModule : Infrastructure.ModuleBase
 
     #endregion
 
-    #region Duck
-
     [Command("kachna")]
     [Alias("duck")]
-    [Summary("Zjistí stav kachny.")]
-    public async Task GetDuckInfoAsync()
-    {
-        var client = HttpClientFactory.CreateClient("KachnaOnline");
-        var response = await client.GetAsync("states/current/legacy");
-
-        if (!response.IsSuccessStatusCode)
-        {
-            await ReplyAsync("Nepodařilo se zjistit stav kachny. Zkus to prosím později.");
-            return;
-        }
-
-        var json = await response.Content.ReadAsStringAsync();
-        var data = JsonConvert.DeserializeObject<CurrentState>(json);
-
-        var embed = new EmbedBuilder()
-            .WithAuthor("U Kachničky")
-            .WithColor(Color.Gold)
-            .WithCurrentTimestamp();
-
-        var titleBuilder = new StringBuilder();
-
-        switch (data.State)
-        {
-            case DuckState.Private:
-            case DuckState.Closed:
-                ProcessPrivateOrClosed(titleBuilder, data, embed);
-                break;
-            case DuckState.OpenBar:
-                ProcessOpenBar(titleBuilder, data, embed);
-                break;
-            case DuckState.OpenChillzone:
-                ProcessChillzone(titleBuilder, data, embed);
-                break;
-            case DuckState.OpenEvent:
-                ProcessOpenEvent(titleBuilder, data);
-                break;
-        }
-
-        await ReplyAsync(embed: embed.WithTitle(titleBuilder.ToString()).Build());
-    }
-
-    private void ProcessPrivateOrClosed(StringBuilder titleBuilder, CurrentState currentState, EmbedBuilder embedBuilder)
-    {
-        titleBuilder.AppendLine("Kachna je zavřená.");
-
-        if (currentState.NextOpeningDateTime.HasValue)
-        {
-            FormatWithNextOpening(titleBuilder, currentState, embedBuilder);
-            return;
-        }
-
-        if (currentState.NextOpeningDateTime.HasValue && currentState.State != DuckState.Private)
-        {
-            FormatWithNextOpeningNoPrivate(currentState, embedBuilder);
-            return;
-        }
-
-        titleBuilder.Append("Další otvíračka není naplánovaná.");
-        AddNoteToEmbed(embedBuilder, currentState.Note);
-    }
-
-    private void FormatWithNextOpening(StringBuilder titleBuilder, CurrentState currentState, EmbedBuilder embedBuilder)
-    {
-        var left = currentState.NextOpeningDateTime.Value - DateTime.Now;
-
-        titleBuilder
-            .Append("Další otvíračka bude za ")
-            .Append(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute))
-            .Append('.');
-
-        AddNoteToEmbed(embedBuilder, currentState.Note);
-    }
-
-    static private void FormatWithNextOpeningNoPrivate(CurrentState currentState, EmbedBuilder embed)
-    {
-        if (string.IsNullOrEmpty(currentState.Note))
-        {
-            embed.AddField("A co dál?",
-                            $"Další otvíračka není naplánovaná, ale tento stav má skončit {currentState.NextStateDateTime:dd. MM. v HH:mm}. Co bude pak, to nikdo neví.",
-                            false);
-
-            return;
-        }
-
-        AddNoteToEmbed(embed, currentState.Note, "A co dál?");
-    }
-
-    private void ProcessOpenBar(StringBuilder titleBuilder, CurrentState currentState, EmbedBuilder embedBuilder)
-    {
-        titleBuilder.Append("Kachna je otevřená!");
-        embedBuilder.AddField("Otevřeno", currentState.LastChange.ToString("HH:mm"), true);
-
-        if (currentState.ExpectedEnd.HasValue)
-        {
-            var left = currentState.ExpectedEnd.Value - DateTime.Now;
-
-            titleBuilder.Append(" Do konce zbývá ").Append(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)).Append('.');
-            embedBuilder.AddField("Zavíráme", currentState.ExpectedEnd.Value.ToString("HH:mm"), true);
-        }
-
-        var enableBeers = Configuration.GetValue<bool>("IsKachnaOpen:EnableBeersOnTap");
-        if (enableBeers && currentState.BeersOnTap?.Length > 0)
-        {
-            var beers = string.Join(Environment.NewLine, currentState.BeersOnTap);
-            embedBuilder.AddField("Aktuálně na čepu", beers, false);
-        }
-
-        AddNoteToEmbed(embedBuilder, currentState.Note);
-    }
-
-    static private void ProcessChillzone(StringBuilder titleBuilder, CurrentState currentState, EmbedBuilder embedBuilder)
-    {
-        titleBuilder
-            .Append("Kachna je otevřená v režimu chillzóna až do ")
-            .AppendFormat("{0:HH:mm}", currentState.ExpectedEnd.Value)
-            .Append('!');
-
-        AddNoteToEmbed(embedBuilder, currentState.Note);
-    }
-
-    static private void ProcessOpenEvent(StringBuilder titleBuilder, CurrentState currentState)
-    {
-        titleBuilder
-            .Append("V Kachně právě probíhá akce „")
-            .Append(currentState.EventName)
-            .Append("“.");
-    }
-
-    static private void AddNoteToEmbed(EmbedBuilder embed, string note, string title = "Poznámka")
-    {
-        if (!string.IsNullOrEmpty(note))
-            embed.AddField(title, note, false);
-    }
-
-    #endregion
+    [TextCommandDeprecated(AlternativeCommand = "/kachna")]
+    public Task GetDuckInfoAsync() => Task.CompletedTask;
 
     #region Hi
 

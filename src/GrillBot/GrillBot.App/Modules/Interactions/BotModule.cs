@@ -1,18 +1,16 @@
-﻿using Discord.Commands;
+﻿using Discord.Interactions;
 using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.Preconditions.TextBased;
+using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Data.Extensions.Discord;
 using System.Diagnostics;
 
-namespace GrillBot.App.Modules.TextBased;
+namespace GrillBot.App.Modules.Interactions;
 
-[Name("Obecné informace o botovi")]
 [RequireUserPerms]
-public class BotInfoModule : Infrastructure.ModuleBase
+public class BotModule : Infrastructure.InteractionsModuleBase
 {
-    [Command("bot")]
-    [Alias("about", "o")]
-    public Task BotInfoAsync()
+    [SlashCommand("about", "Informace o botovi")]
+    public async Task BotInfoAsync()
     {
         var culture = new CultureInfo("cs-CZ");
         var process = Process.GetCurrentProcess();
@@ -36,6 +34,6 @@ public class BotInfoModule : Infrastructure.ModuleBase
             .WithFooter(Context.User)
             .Build();
 
-        return ReplyAsync(embed: embed);
+        await SetResponseAsync(embed: embed);
     }
 }

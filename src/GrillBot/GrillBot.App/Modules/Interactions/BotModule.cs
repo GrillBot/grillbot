@@ -7,9 +7,10 @@ using System.Diagnostics;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
+[Group("bot", "Příkazy k informacím a konfiguraci bota")]
 public class BotModule : Infrastructure.InteractionsModuleBase
 {
-    [SlashCommand("about", "Informace o botovi")]
+    [SlashCommand("info", "Informace o botovi")]
     public async Task BotInfoAsync()
     {
         var culture = new CultureInfo("cs-CZ");

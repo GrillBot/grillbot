@@ -7,6 +7,6 @@ public class BotModule : Infrastructure.ModuleBase
 {
     [Command("bot")]
     [Alias("about", "o")]
-    [TextCommandDeprecated(AlternativeCommand = "/about")]
+    [TextCommandDeprecated(AlternativeCommand = "/bot info")]
     public Task BotInfoAsync() => Task.CompletedTask;
 }

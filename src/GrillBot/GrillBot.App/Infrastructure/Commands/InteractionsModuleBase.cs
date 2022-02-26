@@ -11,11 +11,16 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             await response.DeleteAsync(options);
     }
 
-    protected Task<RestInteractionMessage> SetResponseAsync(string content = null, Embed embed = default, Embed[] embeds = default,
+    protected async Task<IUserMessage> SetResponseAsync(string content = null, Embed embed = default, Embed[] embeds = default,
         MessageComponent components = default, MessageFlags? flags = default, IEnumerable<FileAttachment> attachments = default,
-        RequestOptions requestOptions = null)
+        RequestOptions requestOptions = null, bool secret = false)
     {
-        return Context.Interaction.ModifyOriginalResponseAsync(msg =>
+        if (Context.Interaction.IsValidToken)
+        {
+            return await FollowupAsync(content, embeds, false, secret, null, requestOptions, components, embed);
+        }
+
+        return await Context.Interaction.ModifyOriginalResponseAsync(msg =>
         {
             msg.Components = components;
             msg.Flags = flags;
@@ -32,5 +37,4 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         var reference = !noReply ? new MessageReference(originalMessage.Id, Context.Channel.Id, Context.Guild.Id) : null;
         return await Context.Channel.SendFileAsync(filepath, text, false, embed, null, spoiler, new(AllowedMentionTypes.Users), reference);
     }
-
 }

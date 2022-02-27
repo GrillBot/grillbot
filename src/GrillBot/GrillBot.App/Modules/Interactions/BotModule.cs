@@ -1,13 +1,12 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.Data.Extensions.Discord;
+using GrillBot.App.Services.Unverify;
 using System.Diagnostics;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-[Group("bot", "Příkazy k informacím a konfiguraci bota")]
+[Group("bot", "Příkazy k informacím a konfiguraci bota.")]
 public class BotModule : Infrastructure.InteractionsModuleBase
 {
     [SlashCommand("info", "Informace o botovi")]
@@ -36,5 +35,63 @@ public class BotModule : Infrastructure.InteractionsModuleBase
             .Build();
 
         await SetResponseAsync(embed: embed);
+    }
+
+    [Group("selfunverify", "Konfigurace selfunverify.")]
+    public class SelfUnverifyConfig : Infrastructure.InteractionsModuleBase
+    {
+        private SelfunverifyService Service { get; }
+
+        public SelfUnverifyConfig(SelfunverifyService service)
+        {
+            Service = service;
+        }
+
+        [SlashCommand("list-keepables", "Seznam ponechatelných přístpů při selfunverify")]
+        public async Task ListAsync(string group = null)
+        {
+            var data = await Service.GetKeepablesAsync(group);
+
+            if (data.Count == 0)
+            {
+                await SetResponseAsync("Nebyly nalezeny žádné ponechatelné přístupy.");
+                return;
+            }
+
+            var embed = new EmbedBuilder()
+                .WithColor(Color.Blue)
+                .WithCurrentTimestamp()
+                .WithFooter(Context.User)
+                .WithTitle("Ponechatelné role a kanály");
+
+            foreach (var grp in data.GroupBy(o => string.Join("|", o.Value)))
+            {
+                var keys = string.Join(", ", grp.Select(o => o.Key == "_" ? "Ostatní" : o.Key));
+
+                var fieldGroupBuilder = new StringBuilder();
+                foreach (var item in grp.First().Value)
+                {
+                    if (fieldGroupBuilder.Length + item.Length >= EmbedFieldBuilder.MaxFieldValueLength)
+                    {
+                        var fieldGroupResult = fieldGroupBuilder.ToString().Trim();
+                        embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[0..^1] : fieldGroupResult, false);
+                        fieldGroupBuilder.Clear();
+                    }
+                    else
+                    {
+                        fieldGroupBuilder.Append(item).Append(", ");
+                    }
+                }
+
+                if (fieldGroupBuilder.Length > 0)
+                {
+                    var fieldGroupResult = fieldGroupBuilder.ToString().Trim();
+                    embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[0..^1] : fieldGroupResult, false);
+                    fieldGroupBuilder.Clear();
+                }
+            }
+
+            await SetResponseAsync(embed: embed.Build());
+        }
     }
 }

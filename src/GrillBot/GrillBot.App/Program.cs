@@ -22,6 +22,9 @@ global using Humanizer;
 global using Humanizer.Localisation;
 global using Microsoft.EntityFrameworkCore;
 global using System.Collections.Concurrent;
+global using GrillBot.App.Extensions;
+global using GrillBot.App.Extensions.Discord;
+global using GrillBot.Data.Extensions.Discord;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;

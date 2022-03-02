@@ -44,7 +44,7 @@ public class RemindReactionHandler : ReactionEventHandler
         if (remindsCount == 0) return false;
         var pagesCount = (int)Math.Ceiling(remindsCount / (double)EmbedBuilder.MaxFieldCount);
 
-        var newPage = GetPageNumber(metadata.Page, pagesCount, emote);
+        var newPage = GetNextPageNumber(metadata.Page, pagesCount, emote);
         if (newPage == metadata.Page) return false;
 
         var reminders = await RemindService.GetRemindersAsync(user, newPage);

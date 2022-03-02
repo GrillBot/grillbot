@@ -32,7 +32,7 @@ public class PointsBoardReactionHandler : ReactionEventHandler
         if (pointsCount == 0) return false;
         var pagesCount = (int)Math.Ceiling(pointsCount / 10.0);
 
-        int newPage = GetPageNumber(metadata.Page, pagesCount, emote);
+        int newPage = GetNextPageNumber(metadata.Page, pagesCount, emote);
         if (newPage == metadata.Page) return false;
 
         var skip = (newPage == 0 ? 0 : newPage) * 10;

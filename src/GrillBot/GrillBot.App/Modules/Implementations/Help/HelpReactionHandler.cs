@@ -29,7 +29,7 @@ public class HelpReactionHandler : ReactionEventHandler
             .FindAllAsync(async mod => (await mod.GetExecutableCommandsAsync(context, Provider)).Count > 0);
 
         int maxPages = Math.Min(metadata.PagesCount, availableModules.Count);
-        int newPage = GetPageNumber(metadata.Page, maxPages, emote);
+        int newPage = GetNextPageNumber(metadata.Page, maxPages, emote);
         if (newPage == metadata.Page) return false;
 
         var module = availableModules[newPage];

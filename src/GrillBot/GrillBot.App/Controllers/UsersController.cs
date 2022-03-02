@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Extensions;
-using GrillBot.Data.Models.API;
+﻿using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -76,9 +74,9 @@ public class UsersController : Controller
         var query = DbContext.Users.AsNoTracking()
             .Include(o => o.Guilds).ThenInclude(o => o.Guild)
             .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite.Creator.User)
-            .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(o => o.UsedUsers.Count > 0))
-            .Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(o => o.Count > 0)).ThenInclude(o => o.Channel)
-            .Include(o => o.UsedEmotes.Where(o => o.UseCount > 0))
+            .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(x => x.UsedUsers.Count > 0))
+            .Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(x => x.Count > 0)).ThenInclude(o => o.Channel)
+            .Include(o => o.Guilds).ThenInclude(o => o.EmoteStatistics.Where(x => x.UseCount > 0))
             .AsSplitQuery();
 
         var entity = await query.FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);

@@ -6,16 +6,14 @@ public class EmoteListMetadata : PaginatedMetadataBase
 {
     public override string EmbedKind => "EmoteList";
 
-    public bool IsPrivate { get; set; }
-    public bool Desc { get; set; }
-    public string SortBy { get; set; }
+    public ulong GuildId { get; set; }
+    public string SortQuery { get; set; }
     public ulong? OfUserId { get; set; }
 
     public override void Save(IDictionary<string, string> destination)
     {
-        destination[nameof(IsPrivate)] = IsPrivate.ToString();
-        destination[nameof(Desc)] = Desc.ToString();
-        destination[nameof(SortBy)] = SortBy;
+        destination[nameof(SortQuery)] = SortQuery;
+        destination[nameof(GuildId)] = GuildId.ToString();
 
         if (OfUserId != null)
             destination[nameof(OfUserId)] = OfUserId.Value.ToString();
@@ -23,20 +21,17 @@ public class EmoteListMetadata : PaginatedMetadataBase
 
     public override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
-        bool isPrivate = false;
-        bool desc = false;
+        ulong guildId = 0;
         ulong ofUserId = 0;
 
-        var success = values.TryGetValue(nameof(IsPrivate), out var _isPrivate) && bool.TryParse(_isPrivate, out isPrivate);
-        success &= values.TryGetValue(nameof(Desc), out var _desc) && bool.TryParse(_desc, out desc);
-        success &= values.TryGetValue(nameof(SortBy), out string sortBy);
+        var success = values.TryGetValue(nameof(SortQuery), out string sortQuery);
+        success &= values.TryGetValue(nameof(GuildId), out var _guildId) && ulong.TryParse(_guildId, out guildId);
         success &= !values.TryGetValue(nameof(OfUserId), out var _ofUserId) || ulong.TryParse(_ofUserId, out ofUserId);
 
         if (success)
         {
-            IsPrivate = isPrivate;
-            Desc = desc;
-            SortBy = sortBy;
+            GuildId = guildId;
+            SortQuery = sortQuery;
             OfUserId = ofUserId == 0 ? null : ofUserId;
             return true;
         }
@@ -46,9 +41,8 @@ public class EmoteListMetadata : PaginatedMetadataBase
 
     public override void Reset()
     {
-        IsPrivate = default;
-        Desc = default;
-        SortBy = default;
+        SortQuery = default;
+        GuildId = default;
         OfUserId = default;
     }
 }

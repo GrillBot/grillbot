@@ -1,18 +1,16 @@
-﻿using GrillBot.App.Controllers;
+﻿using Discord;
+using GrillBot.App.Controllers;
 using GrillBot.App.Services;
 using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -50,6 +48,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
 
     public override void Cleanup()
     {
+        DbContext.ChangeTracker.Clear();
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
         DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
         DbContext.Emotes.RemoveRange(DbContext.Emotes.AsEnumerable());
@@ -78,10 +77,21 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task GetUsersListAsync_WithoutFilter()
     {
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "1", Username = "User", Discriminator = "" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "2", Username = "User", Discriminator = "1" });
-        await DbContext.AddAsync(new Database.Entity.Guild() { Id = "3", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "3", UserId = "1" });
+        var guild = DataHelper.CreateGuild();
+        var user = DataHelper.CreateDiscordUser();
+
+        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
+        await DbContext.GuildUsers.AddAsync(Database.Entity.GuildUser.FromDiscord(guild, DataHelper.CreateGuildUser()));
+        await DbContext.Guilds.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        await DbContext.Emotes.AddAsync(new Database.Entity.EmoteStatisticItem()
+        {
+            EmoteId = Emote.Parse("<:LP_FeelsHighMan:895331837822500866>").ToString(),
+            FirstOccurence = DateTime.MinValue,
+            GuildId = guild.Id.ToString(),
+            LastOccurence = DateTime.MaxValue,
+            UseCount = 50,
+            UserId = user.Id.ToString()
+        });
         await DbContext.SaveChangesAsync();
 
         var filter = new GetUserListParams();
@@ -99,13 +109,24 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task GetUserDetailAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "2", Username = "User", Discriminator = "1" });
-        await DbContext.AddAsync(new Database.Entity.Guild() { Id = "3", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "3", UserId = "2" });
-        await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem() { EmoteId = "<:PepeLa:751183558126731274>", UserId = "2" });
+        var guild = DataHelper.CreateGuild();
+        var user = DataHelper.CreateDiscordUser();
+
+        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
+        await DbContext.GuildUsers.AddAsync(Database.Entity.GuildUser.FromDiscord(guild, DataHelper.CreateGuildUser()));
+        await DbContext.Guilds.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        await DbContext.Emotes.AddAsync(new Database.Entity.EmoteStatisticItem()
+        {
+            EmoteId = Emote.Parse("<:LP_FeelsHighMan:895331837822500866>").ToString(),
+            FirstOccurence = DateTime.MinValue,
+            GuildId = guild.Id.ToString(),
+            LastOccurence = DateTime.MaxValue,
+            UseCount = 50,
+            UserId = user.Id.ToString()
+        });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetUserDetailAsync(2, CancellationToken.None);
+        var result = await Controller.GetUserDetailAsync(12345, CancellationToken.None);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 

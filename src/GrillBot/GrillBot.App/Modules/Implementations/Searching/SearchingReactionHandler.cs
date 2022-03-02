@@ -24,7 +24,7 @@ public class SearchingReactionHandler : ReactionEventHandler
         var channel = guild.GetTextChannel(metadata.ChannelId);
         if (channel == null) return false;
 
-        int newPage = GetPageNumber(metadata.Page, int.MaxValue, emote);
+        int newPage = GetNextPageNumber(metadata.Page, int.MaxValue, emote);
         if (newPage == metadata.Page) return false;
 
         var data = await SearchingService.GetSearchListAsync(guild, channel, newPage);

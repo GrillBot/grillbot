@@ -15,5 +15,15 @@ namespace GrillBot.App.Infrastructure
 
         protected Task<RestUserMessage> ReplyFileAsync(string filepath, bool spoiler, string text = null, Embed embed = null) =>
             Context.Channel.SendFileAsync(filepath, text, false, embed, null, spoiler, AllowedMentions, ReplyReference);
+
+        protected async Task<IUserMessage> ReplyPaginatedAsync(Embed embed)
+        {
+            var message = await ReplyAsync(embed: embed);
+
+            if (message != null)
+                await message.AddReactionsAsync(Emojis.PaginationEmojis);
+
+            return message;
+        }
     }
 }

@@ -38,7 +38,6 @@ namespace GrillBot.Database.Entity
         public TimeSpan? SelfUnverifyMinimalTime { get; set; }
 
         public ISet<GuildUser> Guilds { get; set; }
-        public ISet<EmoteStatisticItem> UsedEmotes { get; set; }
         public ISet<RemindMessage> IncomingReminders { get; set; }
         public ISet<RemindMessage> OutgoingReminders { get; set; }
         public ISet<GuildUserChannel> Channels { get; set; }
@@ -47,7 +46,6 @@ namespace GrillBot.Database.Entity
         public User()
         {
             Guilds = new HashSet<GuildUser>();
-            UsedEmotes = new HashSet<EmoteStatisticItem>();
             IncomingReminders = new HashSet<RemindMessage>();
             OutgoingReminders = new HashSet<RemindMessage>();
             Channels = new HashSet<GuildUserChannel>();

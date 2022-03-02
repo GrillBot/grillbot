@@ -39,7 +39,7 @@ public class ChannelboardReactionHandler : ReactionEventHandler
         var channelsCount = await groupedDataQuery.CountAsync();
         if (channelsCount == 0) return false;
 
-        int newPage = GetPageNumber(metadata.Page, channelsCount, emote);
+        int newPage = GetNextPageNumber(metadata.Page, channelsCount, emote);
         if (newPage == metadata.Page) return false;
 
         var skip = (newPage == 0 ? 0 : newPage) * 10;

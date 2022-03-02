@@ -50,11 +50,13 @@ namespace GrillBot.Database.Entity
         public string Nickname { get; set; }
 
         public ISet<GuildUserChannel> Channels { get; set; }
+        public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
 
         public GuildUser()
         {
             CreatedInvites = new HashSet<Invite>();
             Channels = new HashSet<GuildUserChannel>();
+            EmoteStatistics = new HashSet<EmoteStatisticItem>();
         }
 
         public static GuildUser FromDiscord(IGuild guild, IGuildUser user)

@@ -36,6 +36,7 @@ namespace GrillBot.Database.Entity
         public ISet<Unverify> Unverifies { get; set; }
         public ISet<UnverifyLog> UnverifyLogs { get; set; }
         public ISet<AuditLogItem> AuditLogs { get; set; }
+        public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
 
         public Guild()
         {
@@ -46,6 +47,7 @@ namespace GrillBot.Database.Entity
             UnverifyLogs = new HashSet<UnverifyLog>();
             Searches = new HashSet<SearchItem>();
             AuditLogs = new HashSet<AuditLogItem>();
+            EmoteStatistics = new HashSet<EmoteStatisticItem>();
         }
 
         public static Guild FromDiscord(IGuild guild)

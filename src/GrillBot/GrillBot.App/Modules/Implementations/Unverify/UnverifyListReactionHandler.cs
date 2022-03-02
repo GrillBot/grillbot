@@ -22,7 +22,7 @@ public class UnverifyListReactionHandler : ReactionEventHandler
         if (guild == null) return false;
 
         var maxPages = await UnverifyService.GetUnverifyCountsOfGuildAsync(guild);
-        var nextPage = GetPageNumber(metadata.Page, maxPages, emote);
+        var nextPage = GetNextPageNumber(metadata.Page, maxPages, emote);
         if (nextPage == metadata.Page) return false;
 
         var unverify = await UnverifyService.GetCurrentUnverifyAsync(guild, nextPage);

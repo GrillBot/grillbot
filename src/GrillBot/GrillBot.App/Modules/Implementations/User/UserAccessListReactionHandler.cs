@@ -23,7 +23,7 @@ public class UserAccessListReactionHandler : ReactionEventHandler
         var forUser = guild.GetUser(metadata.ForUserId);
         if (forUser == null) return false;
 
-        var newPage = GetPageNumber(metadata.Page, int.MaxValue, emote);
+        var newPage = GetNextPageNumber(metadata.Page, int.MaxValue, emote);
         if (newPage == metadata.Page) return false;
 
         var channels = UserModule.GetUserVisibleChannels(guild, forUser)

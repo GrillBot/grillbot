@@ -51,6 +51,7 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
 
     public override void Cleanup()
     {
+        DbContext.ChangeTracker.Clear();
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
         DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
         DbContext.Emotes.RemoveRange(DbContext.Emotes.AsEnumerable());
@@ -72,7 +73,7 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
         await DbContext.AddAsync(new Database.Entity.Guild() { Id = "3", Name = "Guild" });
         await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "3", UserId = "0" });
-        await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem() { EmoteId = "<:PepeLa:751183558126731274>", UserId = "0" });
+        await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem() { EmoteId = "<:PepeLa:751183558126731274>", UserId = "0", GuildId = "3" });
         await DbContext.SaveChangesAsync();
 
         var result = await Controller.GetCurrentUserDetailAsync(CancellationToken.None);

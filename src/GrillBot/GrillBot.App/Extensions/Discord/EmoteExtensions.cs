@@ -18,7 +18,7 @@ namespace GrillBot.App.Extensions.Discord
             }
 
             // In a case of standard emotes.
-            return emote.Equals(another);
+            return emote.Equals(another) && emote.Name == another.Name;
         }
     }
 }

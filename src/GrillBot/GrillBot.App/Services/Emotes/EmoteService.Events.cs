@@ -8,31 +8,6 @@ public partial class EmoteService
     private async Task OnReadyAsync()
     {
         SyncSupportedEmotes();
-
-        // TODO: Remove after production deployment.
-        using var dbContext = DbFactory.Create();
-        var emotes = await dbContext.Emotes.Where(o => string.IsNullOrEmpty(o.GuildId)).ToListAsync();
-        if (emotes.Count > 0)
-        {
-            foreach (var emoteEntity in emotes)
-            {
-                foreach (var guild in DiscordClient.Guilds)
-                {
-                    var parsedEmote = Emote.Parse(emoteEntity.EmoteId);
-
-                    if (guild.Emotes.Any(o => o.Id == parsedEmote.Id))
-                    {
-                        // Fix guild id to known emotes.
-                        emoteEntity.GuildId = guild.Id.ToString();
-                        break;
-                    }
-                }
-            }
-
-            // Remove not known emotes.
-            dbContext.RemoveRange(emotes.Where(o => string.IsNullOrEmpty(o.GuildId)));
-            await dbContext.SaveChangesAsync();
-        }
     }
 
     private Task OnGuildAvailableAsync(SocketGuild _)

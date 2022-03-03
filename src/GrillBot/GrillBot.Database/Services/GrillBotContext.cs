@@ -40,7 +40,7 @@ namespace GrillBot.Database.Services
 
             modelBuilder.Entity<EmoteStatisticItem>(builder =>
             {
-                builder.HasKey(o => new { o.EmoteId, o.UserId });
+                builder.HasKey(o => new { o.EmoteId, o.UserId, o.GuildId });
                 builder.HasOne(o => o.User).WithMany(o => o.EmoteStatistics).HasForeignKey(o => new { o.GuildId, o.UserId });
                 builder.HasOne(o => o.Guild).WithMany(o => o.EmoteStatistics);
             });

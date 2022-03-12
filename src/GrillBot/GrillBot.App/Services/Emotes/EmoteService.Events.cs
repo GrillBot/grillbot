@@ -5,9 +5,10 @@ namespace GrillBot.App.Services.Emotes;
 
 public partial class EmoteService
 {
-    private async Task OnReadyAsync()
+    private Task OnReadyAsync()
     {
         SyncSupportedEmotes();
+        return Task.CompletedTask;
     }
 
     private Task OnGuildAvailableAsync(SocketGuild _)

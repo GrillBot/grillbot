@@ -1,9 +1,6 @@
 ﻿#pragma warning disable S1075 // URIs should not be hardcoded
 using Discord.Commands;
-using GrillBot.App.Extensions;
 using GrillBot.App.Infrastructure.Embeds;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 
 namespace GrillBot.App.Modules.Implementations.Help;
@@ -21,7 +18,7 @@ static public class HelpExtensions
             .WithFooter($"{page + 1}/{pagesCount}")
             .WithMetadata(new HelpMetadata() { Page = page, PagesCount = pagesCount });
 
-        const string summaryTitle = "Kompletní seznam lze také najít ve veřejné administraci bota (https://public.grillbot.cloud)";
+        const string summaryTitle = "Kompletní seznam lze také najít ve veřejné administraci bota (https://public.grillbot.cloud). Pokud některé příkazy nevidíte, tak je zkuste hledat jako příkaz s prefixem `/`";
         if (!string.IsNullOrEmpty(module.Summary))
             embed.WithDescription(summaryTitle + "\n" + module.Summary);
         else

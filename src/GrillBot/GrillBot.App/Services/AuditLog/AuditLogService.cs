@@ -33,6 +33,7 @@ public partial class AuditLogService : ServiceBase
         FileStorageFactory storageFactory, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
     {
         MessageCache = cache;
+        FileStorageFactory = storageFactory;
 
         DiscordClient.UserLeft += (guild, user) => HandleEventAsync(new UserLeftEvent(this, guild, user));
         DiscordClient.UserJoined += user => HandleEventAsync(new UserJoinedEvent(this, user));
@@ -59,10 +60,6 @@ public partial class AuditLogService : ServiceBase
             if (@event.Finished) NextAllowedRoleUpdateEvent = DateTime.Now.AddSeconds(30);
         };
         DiscordClient.ThreadDeleted += thread => HandleEventAsync(new ThreadDeletedEvent(this, thread));
-
-        // TODO: Impelement audit log download after restart.
-
-        FileStorageFactory = storageFactory;
     }
 
     /// <summary>

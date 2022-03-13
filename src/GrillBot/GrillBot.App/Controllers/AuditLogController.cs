@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.FileStorage;
+using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;
@@ -9,106 +9,81 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using NSwag.Annotations;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.App.Controllers;
+
+[ApiController]
+[Route("api/auditlog")]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+[OpenApiTag("Audit log", Description = "Logging")]
+public class AuditLogController : Controller
 {
-    [ApiController]
-    [Route("api/auditlog")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiTag("Audit log", Description = "Logging")]
-    public class AuditLogController : Controller
+    private AuditLogService AuditLogService { get; }
+
+    public AuditLogController(AuditLogService auditLogService)
     {
-        private AuditLogService AuditLogService { get; }
-        private GrillBotContext DbContext { get; }
-        private FileStorageFactory FileStorageFactory { get; }
+        AuditLogService = auditLogService;
+    }
 
-        public AuditLogController(AuditLogService auditLogService, GrillBotContext dbContext, FileStorageFactory fileStorageFactory)
+    /// <summary>
+    /// Removes item from log.
+    /// </summary>
+    /// <param name="id">Log item ID</param>
+    /// <param name="cancellationToken"></param>
+    /// <response code="200">Success</response>
+    /// <response code="404">Item not found.</response>
+    [HttpDelete("{id}")]
+    [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(RemoveItemAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    public async Task<ActionResult> RemoveItemAsync(long id, CancellationToken cancellationToken)
+    {
+        var result = await AuditLogService.RemoveItemAsync(id, cancellationToken);
+
+        if (!result)
+            return NotFound(new MessageResponse("Požadovaný záznam v logu nebyl nalezen nebo nemáš oprávnění přistoupit k tomuto záznamu."));
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// Gets paginated list of audit logs.
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <response code="400">Validation failed.</response>
+    [HttpGet]
+    [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetAuditLogListAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters, CancellationToken cancellationToken)
+    {
+        var result = await AuditLogService.GetPaginatedListAsync(parameters, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Gets file that stored in log.
+    /// </summary>
+    /// <response code="200">Success.</response>
+    /// <response code="404">Item not found or file not exists.</response>
+    [HttpGet("{id}/{fileId}")]
+    [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetFileContentAsync))]
+    [ProducesResponseType(typeof(FileContentResult), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    public async Task<IActionResult> GetFileContentAsync(long id, long fileId, CancellationToken cancellationToken)
+    {
+        try
         {
-            AuditLogService = auditLogService;
-            DbContext = dbContext;
-            FileStorageFactory = fileStorageFactory;
-        }
-
-        /// <summary>
-        /// Removes item from log.
-        /// </summary>
-        /// <param name="id">Log item ID</param>
-        /// <param name="cancellationToken"></param>
-        /// <response code="200">Success</response>
-        /// <response code="404">Item not found.</response>
-        [HttpDelete("{id}")]
-        [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(RemoveItemAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> RemoveItemAsync(long id, CancellationToken cancellationToken)
-        {
-            var result = await AuditLogService.RemoveItemAsync(id, cancellationToken);
-
-            if (!result)
-                return NotFound(new MessageResponse("Požadovaný záznam v logu nebyl nalezen nebo nemáš oprávnění přistoupit k tomuto záznamu."));
-
-            return Ok();
-        }
-
-        /// <summary>
-        /// Gets paginated list of audit logs.
-        /// </summary>
-        /// <response code="200">Success</response>
-        /// <response code="400">Validation failed.</response>
-        [HttpGet]
-        [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetAuditLogListAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters, CancellationToken cancellationToken)
-        {
-            var query = DbContext.AuditLogs.AsNoTracking()
-                .Include(o => o.Files)
-                .Include(o => o.Guild)
-                .Include(o => o.GuildChannel)
-                .Include(o => o.ProcessedGuildUser).ThenInclude(o => o.User)
-                .Include(o => o.ProcessedUser)
-                .AsSplitQuery().AsQueryable();
-
-            query = parameters.CreateQuery(query);
-            var result = await PaginatedResponse<AuditLogListItem>.CreateAsync(query, parameters, entity => new(entity, AuditLogService.JsonSerializerSettings), cancellationToken);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Gets file that stored in log.
-        /// </summary>
-        /// <response code="200">Success.</response>
-        /// <response code="404">Item not found or file not exists.</response>
-        [HttpGet("{id}/{fileId}")]
-        [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetFileContentAsync))]
-        [ProducesResponseType(typeof(FileContentResult), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetFileContentAsync(long id, long fileId, CancellationToken cancellationToken)
-        {
-            var logItem = await DbContext.AuditLogs.AsNoTracking()
-                .Select(o => new
-                {
-                    o.Id,
-                    File = o.Files.FirstOrDefault(x => x.Id == fileId)
-                })
-                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
-
-            if (logItem == null)
-                return NotFound(new MessageResponse("Požadovaný záznam v logu nebyl nalezen nebo nemáš oprávnění přistoupit k tomuto záznamu."));
-
-            if (logItem.File == null)
-                return NotFound(new MessageResponse("K tomuto záznamu neexistuje žádný záznam o existenci souboru."));
-
-            var storage = FileStorageFactory.Create("Audit");
-            var file = await storage.GetFileInfoAsync("DeletedAttachments", logItem.File.Filename);
-
-            if (!file.Exists)
-                return NotFound(new MessageResponse("Hledaný soubor neexistuje na disku."));
+            var fileInfo = await AuditLogService.GetLogItemFileAsync(id, fileId, cancellationToken);
 
             var contentType = new FileExtensionContentTypeProvider()
-                .TryGetContentType(file.FullName, out var _contentType) ? _contentType : "application/octet-stream";
+                .TryGetContentType(fileInfo.FullName, out var _contentType) ? _contentType : "application/octet-stream";
 
-            var bytes = await System.IO.File.ReadAllBytesAsync(file.FullName, cancellationToken);
-            return File(bytes, contentType);
+            var content = await System.IO.File.ReadAllBytesAsync(fileInfo.FullName, cancellationToken);
+            return File(content, contentType);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new MessageResponse(ex.Message));
         }
     }
 }

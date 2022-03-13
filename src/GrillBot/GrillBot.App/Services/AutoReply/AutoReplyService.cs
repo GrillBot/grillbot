@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace GrillBot.App.Services.AutoReply;
 
+[Initializable]
 public partial class AutoReplyService : ServiceBase
 {
     private string Prefix { get; }

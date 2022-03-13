@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Services.FileStorage;
+﻿using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;

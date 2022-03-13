@@ -1,11 +1,11 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
 
 namespace GrillBot.App.Services;
 
+[Initializable]
 public class ChannelService : ServiceBase
 {
     private string CommandPrefix { get; }

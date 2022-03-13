@@ -5,6 +5,7 @@ using GrillBot.App.Services.Discord;
 
 namespace GrillBot.App.Handlers;
 
+[Initializable]
 public class InteractionHandler : ServiceBase
 {
     private InteractionService InteractionService { get; }

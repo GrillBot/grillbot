@@ -10,6 +10,7 @@ using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.AuditLog;
 
+[Initializable]
 public partial class AuditLogService : ServiceBase
 {
     public static JsonSerializerSettings JsonSerializerSettings { get; }

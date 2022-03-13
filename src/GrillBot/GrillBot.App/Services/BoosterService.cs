@@ -1,68 +1,67 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
-using GrillBot.Data.Extensions.Discord;
 
-namespace GrillBot.App.Services
+namespace GrillBot.App.Services;
+
+[Initializable]
+public class BoosterService : ServiceBase
 {
-    public class BoosterService : ServiceBase
+    private IConfiguration Configuration { get; }
+
+    public BoosterService(DiscordSocketClient client, GrillBotContextFactory dbFactory,
+        IConfiguration configuration, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
     {
-        private IConfiguration Configuration { get; }
+        Configuration = configuration;
 
-        public BoosterService(DiscordSocketClient client, GrillBotContextFactory dbFactory,
-            IConfiguration configuration, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
+        DiscordClient.GuildMemberUpdated += (before, after) =>
         {
-            Configuration = configuration;
+            if (!before.HasValue) return Task.CompletedTask;
+            if (!InitializationService.Get()) return Task.CompletedTask;
 
-            DiscordClient.GuildMemberUpdated += (before, after) =>
-            {
-                if (!before.HasValue) return Task.CompletedTask;
-                if (!InitializationService.Get()) return Task.CompletedTask;
+            if (!before.Value.Roles.SequenceEqual(after.Roles))
+                return OnGuildMemberUpdatedAsync(before.Value, after);
 
-                if (!before.Value.Roles.SequenceEqual(after.Roles))
-                    return OnGuildMemberUpdatedAsync(before.Value, after);
+            return Task.CompletedTask;
+        };
+    }
 
-                return Task.CompletedTask;
-            };
-        }
+    private async Task OnGuildMemberUpdatedAsync(SocketGuildUser before, SocketGuildUser after)
+    {
+        using var context = DbFactory.Create();
 
-        private async Task OnGuildMemberUpdatedAsync(SocketGuildUser before, SocketGuildUser after)
-        {
-            using var context = DbFactory.Create();
+        var guild = await context.Guilds.AsQueryable()
+            .FirstOrDefaultAsync(o => o.Id == before.Guild.Id.ToString());
+        if (guild?.BoosterRoleId == null || guild?.AdminChannelId == null) return;
 
-            var guild = await context.Guilds.AsQueryable()
-                .FirstOrDefaultAsync(o => o.Id == before.Guild.Id.ToString());
-            if (guild?.BoosterRoleId == null || guild?.AdminChannelId == null) return;
+        var boostRole = before.Guild.GetRole(Convert.ToUInt64(guild.BoosterRoleId));
+        if (boostRole == null) return;
 
-            var boostRole = before.Guild.GetRole(Convert.ToUInt64(guild.BoosterRoleId));
-            if (boostRole == null) return;
+        var adminChannel = before.Guild.GetTextChannel(Convert.ToUInt64(guild.AdminChannelId));
+        if (adminChannel == null) return;
 
-            var adminChannel = before.Guild.GetTextChannel(Convert.ToUInt64(guild.AdminChannelId));
-            if (adminChannel == null) return;
+        var boostBefore = before.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
+        var boostAfter = after.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
+        if (!IsBoostReallyChanged(boostBefore, boostAfter)) return;
 
-            var boostBefore = before.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
-            var boostAfter = after.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);
-            if (!IsBoostReallyChanged(boostBefore, boostAfter)) return;
+        var embed = new EmbedBuilder()
+            .WithColor(boostRole.Color)
+            .WithCurrentTimestamp()
+            .AddField("Uživatel", after.GetFullName(), false)
+            .WithThumbnailUrl(after.GetAvatarUri());
 
-            var embed = new EmbedBuilder()
-                .WithColor(boostRole.Color)
-                .WithCurrentTimestamp()
-                .AddField("Uživatel", after.GetFullName(), false)
-                .WithThumbnailUrl(after.GetAvatarUri());
+        if (!boostBefore && boostAfter)
+            embed.WithTitle($"Uživatel je nyní Server Booster {Configuration["Discord:Emotes:Hypers"]}");
+        else if (boostBefore && !boostAfter)
+            embed.WithTitle($"Uživatel již není Server Booster {Configuration["Discord:Emotes:Sadge"]}");
 
-            if (!boostBefore && boostAfter)
-                embed.WithTitle($"Uživatel je nyní Server Booster {Configuration["Discord:Emotes:Hypers"]}");
-            else if (boostBefore && !boostAfter)
-                embed.WithTitle($"Uživatel již není Server Booster {Configuration["Discord:Emotes:Sadge"]}");
+        await adminChannel.SendMessageAsync(embed: embed.Build());
+    }
 
-            await adminChannel.SendMessageAsync(embed: embed.Build());
-        }
+    private static bool IsBoostReallyChanged(bool before, bool after)
+    {
+        if (before && after) return false;
+        if (!before && !after) return false;
 
-        private static bool IsBoostReallyChanged(bool before, bool after)
-        {
-            if (before && after) return false;
-            if (!before && !after) return false;
-
-            return true;
-        }
+        return true;
     }
 }

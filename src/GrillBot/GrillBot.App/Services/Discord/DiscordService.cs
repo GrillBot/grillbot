@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.Net;
 using GrillBot.App.Handlers;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.AutoReply;
@@ -86,17 +87,14 @@ namespace GrillBot.App.Services.Discord
 
         private void InitServices()
         {
-            // TODO: Create attribute for automatic initialization
-            var services = new[]
-            {
-                typeof(DiscordSyncService), typeof(AutoReplyService), typeof(InviteService), typeof(AuditLogService),
-                typeof(PointsService), typeof(EmoteChainService),
-                typeof(BoosterService), typeof(RemindService), typeof(MessageCache.MessageCache),
-                typeof(ChannelService), typeof(CommandHandler), typeof(EmoteService), typeof(SearchingService),
-                typeof(ReactionHandler), typeof(InteractionHandler), typeof(ExternalCommandsHelpService)
-            };
+            var currentAssembly = Assembly.GetExecutingAssembly();
 
-            foreach (var service in services) Provider.GetRequiredService(service);
+            currentAssembly
+                .GetTypes()
+                .Where(o => o.Assembly == currentAssembly && o.IsClass && !o.IsAbstract && o.GetCustomAttribute<InitializableAttribute>() != null)
+                .OrderBy(o => o.Name)
+                .ToList()
+                .ForEach(service => Provider.GetRequiredService(service));
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

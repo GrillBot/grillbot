@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Extensions.Discord;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.CommandsHelp.Parsers;
 using GrillBot.App.Services.Discord;
 using GrillBot.Data.Exceptions;
@@ -12,6 +12,7 @@ namespace GrillBot.App.Services.CommandsHelp;
 /// <summary>
 /// Service for generating commands help for external bots.
 /// </summary>
+[Initializable]
 public class ExternalCommandsHelpService
 {
     private DiscordSocketClient DiscordClient { get; }

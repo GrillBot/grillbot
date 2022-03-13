@@ -5,6 +5,7 @@ using GrillBot.Data.Models.MessageCache;
 
 namespace GrillBot.App.Services.MessageCache;
 
+[Initializable]
 public partial class MessageCache : ServiceBase
 {
     private ConcurrentDictionary<ulong, CachedMessage> Cache { get; }

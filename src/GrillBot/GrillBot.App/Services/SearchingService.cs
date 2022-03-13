@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace GrillBot.App.Services;
 
+[Initializable]
 public class SearchingService : ServiceBase
 {
     private MessageCache.MessageCache MessageCache { get; }

@@ -6,6 +6,7 @@ using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Services.Emotes;
 
+[Initializable]
 public partial class EmoteService : ServiceBase
 {
     private string CommandPrefix { get; }

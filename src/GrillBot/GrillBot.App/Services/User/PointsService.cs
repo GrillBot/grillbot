@@ -1,17 +1,15 @@
-﻿using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
 using ImageMagick;
 
 namespace GrillBot.App.Services.User;
 
+[Initializable]
 public class PointsService : ServiceBase
 {
     private string CommandPrefix { get; }

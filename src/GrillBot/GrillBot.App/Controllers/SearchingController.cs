@@ -6,55 +6,47 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.App.Controllers;
+
+[ApiController]
+[Route("api/search")]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+[OpenApiTag("Searching", Description = "Searching for team, service, ...")]
+public class SearchingController : Controller
 {
-    [ApiController]
-    [Route("api/search")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiTag("Searching", Description = "Searching for team, service, ...")]
-    public class SearchingController : Controller
+    private SearchingService Service { get; }
+
+    public SearchingController(SearchingService searchingService)
     {
-        private SearchingService Service { get; }
-        private GrillBotContext DbContext { get; }
+        Service = searchingService;
+    }
 
-        public SearchingController(SearchingService searchingService, GrillBotContext dbContext)
-        {
-            Service = searchingService;
-            DbContext = dbContext;
-        }
+    /// <summary>
+    /// Gets paginated list o searches.
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <response code="400">Validation failed</response>
+    [HttpGet]
+    [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters,
+        CancellationToken cancellationToken)
+    {
+        var data = await Service.GetPaginatedListAsync(parameters, cancellationToken);
+        return Ok(data);
+    }
 
-        /// <summary>
-        /// Gets paginated list o searches.
-        /// </summary>
-        /// <response code="200">Success</response>
-        /// <response code="400">Validation failed</response>
-        [HttpGet]
-        [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters,
-            CancellationToken cancellationToken)
-        {
-            var data = await Service.GetPaginatedListAsync(parameters, cancellationToken);
-            return Ok(data);
-        }
-
-        /// <summary>
-        /// Remove searches.
-        /// </summary>
-        /// <response code="200">Success</response>
-        [HttpDelete]
-        [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids, CancellationToken cancellationToken)
-        {
-            var searches = await DbContext.SearchItems.AsQueryable()
-                .Where(o => ids.Contains(o.Id))
-                .ToListAsync(cancellationToken);
-
-            DbContext.RemoveRange(searches);
-            await DbContext.SaveChangesAsync(cancellationToken);
-            return Ok();
-        }
+    /// <summary>
+    /// Remove searches.
+    /// </summary>
+    /// <response code="200">Success</response>
+    [HttpDelete]
+    [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids, CancellationToken cancellationToken)
+    {
+        await Service.RemoveSearchesAsync(ids, cancellationToken);
+        return Ok();
     }
 }

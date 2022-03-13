@@ -105,7 +105,7 @@ public class ChannelService : ServiceBase
         using var dbContext = DbFactory.Create();
 
         var channelIdQuery = dbContext.UserChannels.AsNoTracking()
-            .Where(o => o.Channel.ChannelType == ChannelType.Text && o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString())
+            .Where(o => o.Channel.ChannelType == ChannelType.Text && o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString() && o.Count > 0)
             .OrderByDescending(o => o.Count)
             .Select(o => o.ChannelId)
             .Take(take);
@@ -129,7 +129,7 @@ public class ChannelService : ServiceBase
     /// </summary>
     public async Task<IUserMessage> GetLastMsgFromUserAsync(SocketGuild guild, IUser loggedUser, CancellationToken cancellationToken)
     {
-        var lastCachedMsgFromAuthor = await MessageCache.GetLastCachedMessageFromUserAsync(loggedUser, cancellationToken);
+        var lastCachedMsgFromAuthor = await MessageCache.GetLastMessageAsync(guild: guild, author: loggedUser, cancellationToken: cancellationToken);
         if (lastCachedMsgFromAuthor is IUserMessage lastMessage) return lastMessage;
 
         // Using statistics and finding most active channel will help find channel where logged user have any message.
@@ -153,7 +153,7 @@ public class ChannelService : ServiceBase
         var lastMessage = new[]
         {
                 channel.CachedMessages.Where(o => o.Author.Id == loggedUser.Id).OrderByDescending(o => o.Id).FirstOrDefault(),
-                await MessageCache.GetLastMessageFromUserInChannelAsync(channel, loggedUser, cancellationToken)
+                await MessageCache.GetLastMessageAsync(channel: channel, author: loggedUser, cancellationToken: cancellationToken)
             }.Where(o => o != null).OrderByDescending(o => o.Id).FirstOrDefault();
 
         if (lastMessage == null && canTryDownload)
@@ -183,7 +183,7 @@ public class ChannelService : ServiceBase
 
     private async Task<GuildChannelListItem> ConvertChannelDbEntityAsync(Database.Entity.GuildChannel entity, CancellationToken cancellationToken)
     {
-        var cachedMessagesCount = await MessageCache.GetMessagesCountInChannelAsync(Convert.ToUInt64(entity.ChannelId), cancellationToken);
+        var cachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: Convert.ToUInt64(entity.ChannelId), cancellationToken: cancellationToken);
         var guildChannel = GetChannelFromEntity(entity);
 
         return new GuildChannelListItem(entity, cachedMessagesCount, guildChannel);
@@ -202,7 +202,7 @@ public class ChannelService : ServiceBase
         var channel = await query.FirstOrDefaultAsync(o => o.ChannelId == id.ToString(), cancellationToken);
         if (channel == null) return null;
 
-        var cachedMessagesCount = await MessageCache.GetMessagesCountInChannelAsync(Convert.ToUInt64(channel.ChannelId), cancellationToken);
+        var cachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: Convert.ToUInt64(channel.ChannelId), cancellationToken: cancellationToken);
         var guildChannel = GetChannelFromEntity(channel);
         return new ChannelDetail(channel, cachedMessagesCount, guildChannel);
     }

@@ -7,7 +7,8 @@ public class RubbergodHelpParser : IHelpParser
 {
     public List<CommandGroup> Parse(JArray json)
     {
-        return json.Select(o => o as JObject)
+        return json
+            .Select(o => o as JObject)
             .Where(o => o != null)
             .Select(o => ProcessGroup(o))
             .ToList();
@@ -84,7 +85,7 @@ public class RubbergodHelpParser : IHelpParser
                     paramBuilder.Append(field).Append(' ');
                 }
             }
-            else if ((field.EndsWith("]") && paramType == '[') || field.EndsWith(">") && paramType == '<')
+            else if ((field.EndsWith("]") && paramType == '[') || (field.EndsWith(">") && paramType == '<'))
             {
                 paramBuilder.Append(field[..^1]);
                 paramType = ' ';

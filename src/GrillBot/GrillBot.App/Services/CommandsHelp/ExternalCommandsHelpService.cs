@@ -58,12 +58,15 @@ public class ExternalCommandsHelpService
             message.Reference == null ||
             message.Attachments.Count != 1 ||
             !AuthorizedChannels.Contains(message.Channel.Id)
-        ) return;
+        )
+        {
+            return;
+        }
 
         var attachmentData = await message.Attachments.First().DownloadAsync();
         var json = Encoding.UTF8.GetString(attachmentData);
 
-        MemoryCache.Set($"{nameof(ExternalCommandsHelpService)}_{message.Reference.MessageId}", json, DateTimeOffset.UtcNow.AddMinutes(10));
+        MemoryCache.Set(GetCacheKey(message.Reference.MessageId.Value), json, DateTimeOffset.UtcNow.AddMinutes(10));
     }
 
     public async Task<List<CommandGroup>> GetHelpAsync(string service, ulong loggedUserId, CancellationToken cancellationToken)
@@ -137,8 +140,10 @@ public class ExternalCommandsHelpService
 
         if (!string.IsNullOrEmpty(parserName))
         {
-            var parserType = Assembly.GetExecutingAssembly().GetTypes()
-            .FirstOrDefault(o => o.GetInterface(ParserInterfaceType.Name) != null && o.Name == parserName);
+            var parserType = Array.Find(
+                Assembly.GetExecutingAssembly().GetTypes(),
+                o => o.GetInterface(ParserInterfaceType.Name) != null && o.Name == parserName
+            );
 
             if (parserType != null)
             {
@@ -147,7 +152,7 @@ public class ExternalCommandsHelpService
                 {
                     var constructor = parserType.GetConstructor(Type.EmptyTypes);
 
-                    if (constructor != null && constructor.IsPublic && constructor.GetParameters().Length == 0)
+                    if (constructor?.IsPublic == true && constructor.GetParameters().Length == 0)
                         parserInstance = Activator.CreateInstance(parserType) as IHelpParser;
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using GrillBot.Database.Entity;
+using GrillBot.Database.Entity.Cache;
 using Microsoft.EntityFrameworkCore;
 using System;
 

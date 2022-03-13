@@ -107,9 +107,9 @@ public partial class MessageCache : ServiceBase
         return toClear.Count;
     }
 
-    public async Task<List<IMessage>> GetMessagesFromChannelAsync(ulong channelId, CancellationToken cancellationToken = default)
+    public async Task<List<IMessage>> GetMessagesAsync(IChannel channel, IUser author = null, IGuild guild = null, CancellationToken cancellationToken = default)
     {
-        var messageIds = await GetMessageIdsFromChannelAsync(channelId, cancellationToken);
+        var messageIds = await GetMessageIdsAsync(author, channel, guild, cancellationToken);
         if (messageIds.Count == 0) return new();
 
         return messageIds
@@ -119,32 +119,16 @@ public partial class MessageCache : ServiceBase
             .ToList();
     }
 
-    public Task<List<IMessage>> GetMessagesFromChannelAsync(IChannel channel, CancellationToken cancellationToken = default)
-        => GetMessagesFromChannelAsync(channel.Id, cancellationToken);
-
-    public async Task<IMessage> GetLastMessageFromUserInChannelAsync(IChannel channel, IUser user, CancellationToken cancellationToken = default)
+    public async Task<IMessage> GetLastMessageAsync(IChannel channel = null, IUser author = null, IGuild guild = null, CancellationToken cancellationToken = default)
     {
-        var messageIds = await GetMessageIdsInChannelFromUserAsync(user, channel, cancellationToken);
+        var messageIds = await GetMessageIdsAsync(author, channel, guild, cancellationToken);
         if (messageIds.Count == 0) return null;
 
         return messageIds
             .Select(messageId => Cache[messageId])
             .Where(o => !o.IsDeleted)
             .Select(o => o.Message)
-            .OrderBy(o => o.Id)
-            .FirstOrDefault();
-    }
-
-    public async Task<IMessage> GetLastCachedMessageFromUserAsync(IUser user, CancellationToken cancellationToken = default)
-    {
-        var messageIds = await GetMessageIdsFromAuthorAsync(user, cancellationToken);
-        if (messageIds.Count == 0) return null;
-
-        return messageIds
-            .Select(messageId => Cache[messageId])
-            .Where(o => !o.IsDeleted)
-            .Select(o => o.Message)
-            .OrderBy(o => o.Id)
+            .OrderByDescending(o => o.Id)
             .FirstOrDefault();
     }
 }

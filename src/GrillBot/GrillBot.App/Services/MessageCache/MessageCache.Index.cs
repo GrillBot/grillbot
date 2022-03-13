@@ -1,53 +1,38 @@
-﻿using GrillBot.Database.Entity;
+﻿using GrillBot.Database.Entity.Cache;
 
 namespace GrillBot.App.Services.MessageCache;
 
 public partial class MessageCache
 {
-    private Task<List<ulong>> GetMessageIdsFromAuthorAsync(IUser user, CancellationToken cancellationToken = default)
-        => GetMessageIdsFromAuthorAsync(user.Id, cancellationToken);
+    private Task<List<ulong>> GetMessageIdsAsync(IUser author = null, IChannel channel = null, IGuild guild = null, CancellationToken cancellationToken = default)
+        => GetMessageIdsAsync(author?.Id ?? 0, channel?.Id ?? 0, guild?.Id ?? 0, cancellationToken);
 
-    private async Task<List<ulong>> GetMessageIdsFromAuthorAsync(ulong authorId, CancellationToken cancellationToken = default)
+    private async Task<List<ulong>> GetMessageIdsAsync(ulong authorId = 0, ulong channelId = 0, ulong guildId = 0, CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
-        var ids = await context.MessageCacheIndexes.AsNoTracking()
-            .Where(o => o.AuthorId == authorId.ToString())
-            .ToListAsync(cancellationToken);
+        var query = context.MessageCacheIndexes.AsNoTracking();
+        if (authorId > 0) query = query.Where(o => o.AuthorId == authorId.ToString());
+        if (channelId > 0) query = query.Where(o => o.ChannelId == channelId.ToString());
+        if (guildId > 0) query = query.Where(o => o.GuildId == guildId.ToString());
 
-        return ids.ConvertAll(o => Convert.ToUInt64(o.MessageId));
+        var ids = await query.Select(o => o.MessageId).ToListAsync(cancellationToken);
+        return ids.ConvertAll(id => Convert.ToUInt64(id));
     }
 
-    private async Task<List<ulong>> GetMessageIdsFromChannelAsync(ulong channelId, CancellationToken cancellationToken = default)
+    public Task<int> GetMessagesCountAsync(IUser author = null, IChannel channel = null, IGuild guild = null, CancellationToken cancellationToken = default)
+        => GetMessagesCountAsync(author?.Id ?? 0, channel?.Id ?? 0, guild?.Id ?? 0, cancellationToken);
+
+    public async Task<int> GetMessagesCountAsync(ulong authorId = 0, ulong channelId = 0, ulong guildId = 0, CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
-        var ids = await context.MessageCacheIndexes.AsNoTracking()
-            .Where(o => o.ChannelId == channelId.ToString())
-            .ToListAsync(cancellationToken);
+        var query = context.MessageCacheIndexes.AsNoTracking();
+        if (authorId > 0) query = query.Where(o => o.AuthorId == authorId.ToString());
+        if (channelId > 0) query = query.Where(o => o.ChannelId == channelId.ToString());
+        if (guildId > 0) query = query.Where(o => o.GuildId == guildId.ToString());
 
-        return ids.ConvertAll(o => Convert.ToUInt64(o.MessageId));
-    }
-
-    public async Task<int> GetMessagesCountInChannelAsync(ulong channelId, CancellationToken cancellationToken = default)
-    {
-        using var context = DbFactory.Create();
-
-        return await context.MessageCacheIndexes.CountAsync(o => o.ChannelId == channelId.ToString(), cancellationToken);
-    }
-
-    private Task<List<ulong>> GetMessageIdsInChannelFromUserAsync(IUser author, IChannel channel, CancellationToken cancellationToken = default)
-        => GetMessageIdsInChannelFromUserAsync(author.Id, channel.Id, cancellationToken);
-
-    private async Task<List<ulong>> GetMessageIdsInChannelFromUserAsync(ulong authorId, ulong channelId, CancellationToken cancellationToken = default)
-    {
-        using var context = DbFactory.Create();
-
-        var ids = await context.MessageCacheIndexes.AsNoTracking()
-            .Where(o => o.ChannelId == channelId.ToString() && o.AuthorId == authorId.ToString())
-            .ToListAsync(cancellationToken);
-
-        return ids.ConvertAll(o => Convert.ToUInt64(o.MessageId));
+        return await query.CountAsync(cancellationToken);
     }
 
     public void ClearIndexes()
@@ -73,15 +58,16 @@ public partial class MessageCache
     }
 
     private Task CreateIndexAsync(IMessage message, CancellationToken cancellationToken = default)
-        => CreateIndexAsync(message.Id, message.Channel.Id, message.Author.Id, cancellationToken);
+        => CreateIndexAsync(message.Id, message.Channel.Id, message.Author.Id, (message.Channel as IGuildChannel)?.GuildId ?? 0, cancellationToken);
 
-    private async Task CreateIndexAsync(ulong messageId, ulong channelId, ulong authorId, CancellationToken cancellationToken = default)
+    private async Task CreateIndexAsync(ulong messageId, ulong channelId, ulong authorId, ulong guildId, CancellationToken cancellationToken = default)
     {
         var entity = new MessageCacheIndex()
         {
             AuthorId = authorId.ToString(),
             MessageId = messageId.ToString(),
             ChannelId = channelId.ToString(),
+            GuildId = guildId.ToString(),
         };
 
         using var context = DbFactory.Create();
@@ -96,7 +82,8 @@ public partial class MessageCache
         {
             AuthorId = o.Author.Id.ToString(),
             ChannelId = o.Channel.Id.ToString(),
-            MessageId = o.Id.ToString()
+            MessageId = o.Id.ToString(),
+            GuildId = ((o.Channel as IGuildChannel)?.GuildId ?? 0).ToString()
         }).ToList();
 
         using var context = DbFactory.Create();
@@ -111,7 +98,8 @@ public partial class MessageCache
         {
             AuthorId = o.Message.Author.Id.ToString(),
             ChannelId = o.Message.Channel.Id.ToString(),
-            MessageId = o.Message.Id.ToString()
+            MessageId = o.Message.Id.ToString(),
+            GuildId = ((o.Message.Channel as IGuildChannel)?.GuildId ?? 0).ToString()
         }).ToList();
 
         if (entities.Count == 0)

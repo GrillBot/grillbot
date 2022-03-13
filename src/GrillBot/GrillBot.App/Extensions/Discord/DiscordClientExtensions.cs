@@ -72,7 +72,8 @@
 
         static public ITextChannel FindTextChannel(this BaseSocketClient client, ulong channelId)
         {
-            return client.Guilds.SelectMany(o => o.TextChannels)
+            return client.Guilds
+                .SelectMany(o => o.TextChannels)
                 .FirstOrDefault(o => o.Id == channelId);
         }
     }

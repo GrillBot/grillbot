@@ -1,5 +1,5 @@
 ﻿using Discord.Commands;
-using GrillBot.App.Extensions;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.App.Services.Reminder;
 
@@ -18,38 +18,8 @@ public class RemindModule : Infrastructure.ModuleBase
     }
 
     [Command("")]
-    [Summary("Vytvoří připomenutí k určitému datu. Připomenutí pro sebe lze klíčovým slovem `me`. Datum a čas musí být v budoucnosti a musí být později, než 5 minut od doby, založení připomenutí.")]
-    [RequireBotPermission(ChannelPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám v tomto kanálu oprávnění přidávat reakce.")]
-    public async Task CreateAsync([Name("komu")] IUser who, [Name("kdy")] DateTime at, [Remainder][Name("zprava")] string message)
-    {
-        var time = message.ParseTime();
-        if (time != null)
-        {
-            at = at.Date.Add(time.Value);
-
-            var parts = message.Split(' ');
-            message = parts.Length == 1 ? null : string.Join(" ", parts[1..]);
-        }
-
-        try
-        {
-            await RemindService.CreateRemindAsync(Context.User, who, at, message, Context.Message);
-
-            if (!Context.IsPrivate)
-            {
-                await ReplyAsync($"Upozornění vytvořeno. Pokud si někdo přeje dostat toto upozornění také, tak ať dá na zprávu s příkazem reakci {Emojis.PersonRisingHand}");
-                await Context.Message.AddReactionAsync(Emojis.PersonRisingHand);
-            }
-            else
-            {
-                await ReplyAsync("Upozornění vytvořeno.");
-            }
-        }
-        catch (ValidationException ex)
-        {
-            await ReplyAsync(ex.Message);
-        }
-    }
+    [TextCommandDeprecated(AlternativeCommand = "/remind")]
+    public Task CreateAsync([Name("komu")] IUser _, [Name("kdy")] DateTime __, [Remainder][Name("zprava")] string ___) => Task.CompletedTask;
 
     [Command("")]
     [Summary("Získá seznam čekajících upozornění pro daného uživatele.")]

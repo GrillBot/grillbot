@@ -4,12 +4,8 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -25,7 +21,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         var searchingService = new SearchingService(discordClient, dbFactory, messageCache);
         DbContext = dbFactory.Create();
 
-        return new SearchingController(searchingService, DbContext);
+        return new SearchingController(searchingService);
     }
 
     public override void Cleanup()

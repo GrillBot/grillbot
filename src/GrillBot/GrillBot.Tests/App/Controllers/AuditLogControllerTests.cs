@@ -5,14 +5,9 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -29,7 +24,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         var auditLogService = new AuditLogService(discordClient, dbFactory, cache, fileStorage, initializationService);
         DbContext = dbFactory.Create();
 
-        return new AuditLogController(auditLogService, DbContext, fileStorage);
+        return new AuditLogController(auditLogService);
     }
 
     public override void Cleanup()

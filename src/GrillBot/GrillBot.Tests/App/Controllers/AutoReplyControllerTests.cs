@@ -1,14 +1,9 @@
 ﻿using GrillBot.App.Controllers;
-using GrillBot.App.Services;
+using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Discord;
 using GrillBot.Data.Models.API.AutoReply;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -25,7 +20,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         var service = new AutoReplyService(configuration, discordClient, dbFactory, initializationService);
 
         DbContext = dbFactory.Create();
-        return new AutoReplyController(service, DbContext);
+        return new AutoReplyController(service);
     }
 
     public override void Cleanup()

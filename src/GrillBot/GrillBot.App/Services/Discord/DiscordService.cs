@@ -4,6 +4,7 @@ using Discord.Net;
 using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.Logging;

@@ -26,6 +26,7 @@ using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using Quartz;
+using GrillBot.App.Services.AutoReply;
 
 namespace GrillBot.App;
 

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace GrillBot.App.Controllers
 {
@@ -57,23 +56,23 @@ namespace GrillBot.App.Controllers
         {
             var data = new Dictionary<string, int>()
             {
-                { nameof(DbContext.Users), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Users, cancellationToken) },
-                { nameof(DbContext.Guilds), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Guilds, cancellationToken) },
-                { nameof(DbContext.GuildUsers), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.GuildUsers, cancellationToken) },
-                { nameof(DbContext.Channels), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Channels, cancellationToken) },
-                { nameof(DbContext.UserChannels), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.UserChannels, cancellationToken) },
-                { nameof(DbContext.Invites), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Invites, cancellationToken) },
-                { nameof(DbContext.SearchItems), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.SearchItems, cancellationToken) },
-                { nameof(DbContext.Unverifies), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Unverifies, cancellationToken) },
-                { nameof(DbContext.UnverifyLogs), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.UnverifyLogs, cancellationToken) },
-                { nameof(DbContext.AuditLogs), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.AuditLogs, cancellationToken) },
-                { nameof(DbContext.AuditLogFiles), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.AuditLogFiles, cancellationToken) },
-                { nameof(DbContext.Emotes), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Emotes, cancellationToken) },
-                { nameof(DbContext.Reminders), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.Reminders, cancellationToken) },
-                { nameof(DbContext.SelfunverifyKeepables), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.SelfunverifyKeepables, cancellationToken) },
-                { nameof(DbContext.ExplicitPermissions), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.ExplicitPermissions, cancellationToken) },
-                { nameof(DbContext.AutoReplies), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.AutoReplies, cancellationToken) },
-                { nameof(DbContext.MessageCacheIndexes), await EntityFrameworkQueryableExtensions.CountAsync(DbContext.MessageCacheIndexes, cancellationToken) }
+                { nameof(DbContext.Users), await DbContext.Users.CountAsync(cancellationToken) },
+                { nameof(DbContext.Guilds), await DbContext.Guilds.CountAsync(cancellationToken) },
+                { nameof(DbContext.GuildUsers), await DbContext.GuildUsers.CountAsync(cancellationToken) },
+                { nameof(DbContext.Channels), await DbContext.Channels.CountAsync(cancellationToken) },
+                { nameof(DbContext.UserChannels), await DbContext.UserChannels.CountAsync(cancellationToken) },
+                { nameof(DbContext.Invites), await DbContext.Invites.CountAsync(cancellationToken) },
+                { nameof(DbContext.SearchItems), await DbContext.SearchItems.CountAsync(cancellationToken) },
+                { nameof(DbContext.Unverifies), await DbContext.Unverifies.CountAsync(cancellationToken) },
+                { nameof(DbContext.UnverifyLogs), await DbContext.UnverifyLogs.CountAsync(cancellationToken) },
+                { nameof(DbContext.AuditLogs), await DbContext.AuditLogs.CountAsync(cancellationToken) },
+                { nameof(DbContext.AuditLogFiles), await DbContext.AuditLogFiles.CountAsync(cancellationToken) },
+                { nameof(DbContext.Emotes), await DbContext.Emotes.CountAsync(cancellationToken) },
+                { nameof(DbContext.Reminders), await DbContext.Reminders.CountAsync(cancellationToken) },
+                { nameof(DbContext.SelfunverifyKeepables), await DbContext.SelfunverifyKeepables.CountAsync(cancellationToken) },
+                { nameof(DbContext.ExplicitPermissions), await DbContext.ExplicitPermissions.CountAsync(cancellationToken) },
+                { nameof(DbContext.AutoReplies), await DbContext.AutoReplies.CountAsync(cancellationToken) },
+                { nameof(DbContext.MessageCacheIndexes), await DbContext.MessageCacheIndexes.CountAsync(cancellationToken) }
             };
 
             return Ok(data);
@@ -172,7 +171,6 @@ namespace GrillBot.App.Controllers
                 .ToList();
 
             return Ok(groupedData);
-
         }
 
         /// <summary>

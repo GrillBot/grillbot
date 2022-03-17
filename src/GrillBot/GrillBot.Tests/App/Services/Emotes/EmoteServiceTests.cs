@@ -13,7 +13,7 @@ namespace GrillBot.Tests.App.Services.Emotes;
 [TestClass]
 public class EmoteServiceTests : ServiceTest<EmoteService>
 {
-    private Emote Emote => Emote.Parse("<:LP_FeelsHighMan:895331837822500866>");
+    private static Emote Emote => Emote.Parse("<:LP_FeelsHighMan:895331837822500866>");
 
     protected override EmoteService CreateService()
     {

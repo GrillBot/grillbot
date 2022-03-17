@@ -91,7 +91,6 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
             Type = Database.Enums.AuditLogItemType.Command,
             Id = 12345,
             DiscordAuditLogItemId = "12345",
-
         };
 
         File.WriteAllText("Temp.txt", "asdf");
@@ -131,7 +130,6 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
             Type = Database.Enums.AuditLogItemType.Command,
             Id = 12345,
             DiscordAuditLogItemId = "12345",
-
         };
         item.Files.Add(new AuditLogFileMeta() { Filename = "ddddd.txt" });
 

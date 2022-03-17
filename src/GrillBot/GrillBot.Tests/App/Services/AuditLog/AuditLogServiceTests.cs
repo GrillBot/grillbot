@@ -74,7 +74,6 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
             Type = AuditLogItemType.Command,
             Id = 12345,
             DiscordAuditLogItemId = "12345",
-
         };
 
         await DbContext.AddAsync(item);
@@ -94,7 +93,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         var guild = DataHelper.CreateGuild();
         var types = new[] { AuditLogItemType.InteractionCommand };
 
-        var result = await Service.GetDiscordAuditLogIdsAsync(DbContext, guild, channel, types, DateTime.MinValue);
+        var result = await Service.GetDiscordAuditLogIdsAsync(guild, channel, types, DateTime.MinValue);
         Assert.AreEqual(0, result.Count);
     }
 
@@ -103,7 +102,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     {
         await FillDataAsync();
 
-        var result = await Service.GetDiscordAuditLogIdsAsync(DbContext, null, null, null, DateTime.MinValue);
+        var result = await Service.GetDiscordAuditLogIdsAsync(null, null, null, DateTime.MinValue);
         Assert.AreEqual(1, result.Count);
     }
 }

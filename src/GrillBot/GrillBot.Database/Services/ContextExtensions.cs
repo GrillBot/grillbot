@@ -16,7 +16,7 @@ namespace GrillBot.Database.Services
                 await context.AddAsync(Guild.FromDiscord(guild), cancellationToken);
         }
 
-        static public async Task InitUserAsync(this GrillBotContext context, IUser user, CancellationToken cancellationToken)
+        static public async Task InitUserAsync(this GrillBotContext context, IUser user, CancellationToken cancellationToken = default)
         {
             if (user == null) return;
             var userId = user.Id.ToString();
@@ -25,7 +25,7 @@ namespace GrillBot.Database.Services
                 await context.AddAsync(User.FromDiscord(user), cancellationToken);
         }
 
-        static public async Task InitGuildUserAsync(this GrillBotContext context, IGuild guild, IGuildUser user, CancellationToken cancellationToken)
+        static public async Task InitGuildUserAsync(this GrillBotContext context, IGuild guild, IGuildUser user, CancellationToken cancellationToken = default)
         {
             var userId = user.Id.ToString();
             var guildId = guild.Id.ToString();

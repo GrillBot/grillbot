@@ -189,13 +189,10 @@ public partial class AuditLogService : ServiceBase
     /// <summary>
     /// Gets IDs of audit log in discord.
     /// </summary>
-    /// <param name="dbContext"></param>
-    /// <param name="guild"></param>
-    /// <param name="channel"></param>
-    /// <param name="types"></param>
-    /// <param name="after"></param>
-    public async Task<List<ulong>> GetDiscordAuditLogIdsAsync(GrillBotContext dbContext, IGuild guild, IChannel channel, AuditLogItemType[] types, DateTime after)
+    public async Task<List<ulong>> GetDiscordAuditLogIdsAsync(IGuild guild, IChannel channel, AuditLogItemType[] types, DateTime after)
     {
+        using var dbContext = DbFactory.Create();
+
         var baseQuery = dbContext.AuditLogs.AsNoTracking()
             .Where(o => o.DiscordAuditLogItemId != null && o.CreatedAt >= after);
 

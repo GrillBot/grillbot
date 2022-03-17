@@ -12,7 +12,7 @@ public class OverwriteChangedEvent : AuditEventBase
     private DateTime NextEventAt { get; }
     private GrillBotContextFactory DbFactory { get; }
 
-    private SocketGuild Guild => (Channel as SocketGuildChannel)?.Guild;
+    private SocketGuild Guild => ((SocketGuildChannel)Channel).Guild;
 
     public OverwriteChangedEvent(AuditLogService auditLogService, SocketChannel channel, DateTime nextEventAt,
         GrillBotContextFactory dbFactory) : base(auditLogService)
@@ -32,21 +32,23 @@ public class OverwriteChangedEvent : AuditEventBase
 
     public override async Task ProcessAsync()
     {
-        var guild = Guild;
-
-        using var context = DbFactory.Create();
-        await context.InitGuildAsync(guild, CancellationToken.None);
-        await context.InitGuildChannelAsync(guild, Channel, DiscordHelper.GetChannelType(Channel).Value, CancellationToken.None);
-
-        var timeLimit = DateTime.Now.AddDays(-5);
-        var auditLogIds = await AuditLogService.GetDiscordAuditLogIdsAsync(context, Guild, Channel,
+        var timeLimit = DateTime.Now.AddDays(-7);
+        var auditLogIds = await AuditLogService.GetDiscordAuditLogIdsAsync(Guild, Channel,
             new[] { AuditLogItemType.OverwriteCreated, AuditLogItemType.OverwriteDeleted, AuditLogItemType.OverwriteUpdated }, timeLimit);
 
+        var guild = Guild;
         var auditLogs = new List<RestAuditLogEntry>();
         auditLogs.AddRange(await guild.GetAuditLogsAsync(100, actionType: ActionType.OverwriteCreated).FlattenAsync());
         auditLogs.AddRange(await guild.GetAuditLogsAsync(100, actionType: ActionType.OverwriteDeleted).FlattenAsync());
         auditLogs.AddRange(await guild.GetAuditLogsAsync(100, actionType: ActionType.OverwriteUpdated).FlattenAsync());
         auditLogs = auditLogs.FindAll(o => !auditLogIds.Contains(o.Id));
+
+        if (auditLogs.Count == 0)
+            return;
+
+        using var context = DbFactory.Create();
+        await context.InitGuildAsync(guild, CancellationToken.None);
+        await context.InitGuildChannelAsync(guild, Channel, DiscordHelper.GetChannelType(Channel).Value, CancellationToken.None);
 
         var created = auditLogs.FindAll(o => o.Action == ActionType.OverwriteCreated && ((OverwriteCreateAuditLogData)o.Data).ChannelId == Channel.Id);
         var removed = auditLogs.FindAll(o => o.Action == ActionType.OverwriteDeleted && ((OverwriteDeleteAuditLogData)o.Data).ChannelId == Channel.Id);
@@ -58,8 +60,8 @@ public class OverwriteChangedEvent : AuditEventBase
             var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
             var entity = AuditLogItem.Create(AuditLogItemType.OverwriteCreated, guild, Channel, log.User, json, log.Id, log.CreatedAt.LocalDateTime);
 
-            await context.InitUserAsync(log.User, CancellationToken.None);
-            await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id), CancellationToken.None);
+            await context.InitUserAsync(log.User);
+            await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
             await context.AddAsync(entity);
         }
 
@@ -69,8 +71,8 @@ public class OverwriteChangedEvent : AuditEventBase
             var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
             var entity = AuditLogItem.Create(AuditLogItemType.OverwriteDeleted, guild, Channel, log.User, json, log.Id, log.CreatedAt.LocalDateTime);
 
-            await context.InitUserAsync(log.User, CancellationToken.None);
-            await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id), CancellationToken.None);
+            await context.InitUserAsync(log.User);
+            await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
             await context.AddAsync(entity);
         }
 
@@ -83,8 +85,8 @@ public class OverwriteChangedEvent : AuditEventBase
             var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
             var entity = AuditLogItem.Create(AuditLogItemType.OverwriteUpdated, guild, Channel, log.User, json, log.Id, log.CreatedAt.LocalDateTime);
 
-            await context.InitUserAsync(log.User, CancellationToken.None);
-            await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id), CancellationToken.None);
+            await context.InitUserAsync(log.User);
+            await context.InitGuildUserAsync(guild, log.User as IGuildUser ?? guild.GetUser(log.User.Id));
             await context.AddAsync(entity);
         }
 

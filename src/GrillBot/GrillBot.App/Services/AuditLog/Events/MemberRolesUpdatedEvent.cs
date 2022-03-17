@@ -34,37 +34,41 @@ public class MemberRolesUpdatedEvent : AuditEventBase
 
     public override async Task ProcessAsync()
     {
-        using var context = DbFactory.Create();
-        await context.InitGuildAsync(Guild, CancellationToken.None);
-        await context.InitUserAsync(After, CancellationToken.None);
-        await context.InitGuildUserAsync(Guild, After, CancellationToken.None);
-
         var timeLimit = DateTime.Now.AddDays(-7);
-        var auditLogIds = await AuditLogService.GetDiscordAuditLogIdsAsync(context, Guild, null, new[] { AuditLogItemType.MemberRoleUpdated }, timeLimit);
+        var auditLogIds = await AuditLogService.GetDiscordAuditLogIdsAsync(Guild, null, new[] { AuditLogItemType.MemberRoleUpdated }, timeLimit);
         var logs = (await Guild.GetAuditLogsAsync(100, actionType: ActionType.MemberRoleUpdated).FlattenAsync())
-            .Where(o => !auditLogIds.Contains(o.Id) && ((MemberRoleAuditLogData)o.Data).Target.Id == After.Id);
+            .Where(o => !auditLogIds.Contains(o.Id) && ((MemberRoleAuditLogData)o.Data).Target.Id == After.Id)
+            .ToList();
 
-        var logData = new Dictionary<ulong, Tuple<List<ulong>, MemberUpdatedData>>();
-        foreach (var item in logs)
+        if (logs.Count == 0)
         {
-            if (!logData.ContainsKey(item.User.Id))
-                logData.Add(item.User.Id, new Tuple<List<ulong>, MemberUpdatedData>(new List<ulong>(), new MemberUpdatedData(new AuditUserInfo(After))));
-
-            var logItem = logData[item.User.Id];
-            logItem.Item1.Add(item.Id);
-            logItem.Item2.Merge(item.Data as MemberRoleAuditLogData, Guild);
+            Finished = true;
+            return;
         }
 
-        foreach (var logItem in logData)
-        {
-            var json = JsonConvert.SerializeObject(logItem.Value.Item2, AuditLogService.JsonSerializerSettings);
-            var processedUser = Guild.GetUser(logItem.Key);
-            var discordAuditLogId = string.Join(",", logItem.Value.Item1);
-            var createdAt = logs.Min(o => o.CreatedAt.LocalDateTime);
-            var entity = AuditLogItem.Create(AuditLogItemType.MemberRoleUpdated, Guild, null, processedUser, json, discordAuditLogId, createdAt);
+        using var context = DbFactory.Create();
 
-            await context.InitUserAsync(processedUser, CancellationToken.None);
-            await context.InitGuildUserAsync(Guild, processedUser, CancellationToken.None);
+        await context.InitGuildAsync(Guild, CancellationToken.None);
+        await context.InitUserAsync(After);
+        await context.InitGuildUserAsync(Guild, After);
+
+        foreach (var log in logs)
+        {
+            var roles = (log.Data as MemberRoleAuditLogData).Roles.Select(o =>
+            {
+                var role = Guild.GetRole(o.RoleId);
+                return role != null ? new AuditRoleUpdateInfo(role, o.Added) : null;
+            });
+
+            var logData = new MemberUpdatedData(new AuditUserInfo(After));
+            logData.Roles.AddRange(roles);
+
+            var processedUser = Guild.GetUser(log.User.Id);
+            var json = JsonConvert.SerializeObject(logData, AuditLogService.JsonSerializerSettings);
+            var entity = AuditLogItem.Create(AuditLogItemType.MemberRoleUpdated, Guild, null, processedUser, json, log.CreatedAt.LocalDateTime);
+
+            await context.InitUserAsync(log.User);
+            await context.InitGuildUserAsync(Guild, processedUser);
             await context.AddAsync(entity);
         }
 

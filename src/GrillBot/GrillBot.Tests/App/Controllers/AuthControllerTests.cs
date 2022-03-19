@@ -1,14 +1,11 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services;
 using GrillBot.App.Services.Logging;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -34,14 +31,16 @@ public class AuthControllerTests : ControllerTest<AuthController>
     [TestMethod]
     public void GetRedirectLink()
     {
-        var link = Controller.GetRedirectLink(true);
+        var state = new AuthState();
+        var link = Controller.GetRedirectLink(state);
         CheckResult<OkObjectResult, OAuth2GetLink>(link);
     }
 
     [TestMethod]
     public async Task OnOAuth2CallBackAsync()
     {
-        var result = await Controller.OnOAuth2CallbackAsync("code", true, CancellationToken.None);
+        var encodedState = new AuthState().Encode();
+        var result = await Controller.OnOAuth2CallbackAsync("code", encodedState, CancellationToken.None);
         CheckResult<RedirectResult>(result);
     }
 }

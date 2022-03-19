@@ -3,13 +3,8 @@ using Discord.Commands;
 using GrillBot.App.Services.User;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualBasic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.User;
 
@@ -20,9 +15,10 @@ public class UserServiteTests : ServiceTest<UserService>
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var dbFactory = new DbContextBuilder();
+        var discordClient = DiscordHelper.CreateClient();
         DbContext = dbFactory.Create();
 
-        return new UserService(dbFactory, configuration);
+        return new UserService(dbFactory, configuration, discordClient);
     }
 
     public override void Cleanup()
@@ -69,10 +65,8 @@ public class UserServiteTests : ServiceTest<UserService>
     public async Task CreateWebAdminLink_NotAdmin()
     {
         var user = DataHelper.CreateDiscordUser();
-        var context = new Mock<ICommandContext>();
-        context.Setup(o => o.User).Returns(user);
 
-        var result = await Service.CreateWebAdminLink(context.Object, user);
+        var result = await Service.CreateWebAdminLink(user, user);
         Assert.IsNull(result);
     }
 
@@ -87,10 +81,8 @@ public class UserServiteTests : ServiceTest<UserService>
         await DbContext.SaveChangesAsync();
 
         var user = DataHelper.CreateDiscordUser();
-        var context = new Mock<ICommandContext>();
-        context.Setup(o => o.User).Returns(dcUser);
 
-        var result = await Service.CreateWebAdminLink(context.Object, user);
+        var result = await Service.CreateWebAdminLink(dcUser, user);
         Assert.AreEqual("http://grillbot/12345", result);
     }
 

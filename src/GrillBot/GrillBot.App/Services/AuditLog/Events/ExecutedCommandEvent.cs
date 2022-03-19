@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -19,7 +20,13 @@ public class ExecutedCommandEvent : AuditEventBase
     }
 
     public override Task<bool> CanProcessAsync()
-        => Task.FromResult(true);
+    {
+        // Do not log deprecated text commands.
+        if (Result?.IsSuccess == false && Result.Error == CommandError.UnmetPrecondition && Result.ErrorReason.StartsWith(TextCommandDeprecatedAttribute.Prefix))
+            return Task.FromResult(false);
+
+        return Task.FromResult(true);
+    }
 
     public override async Task ProcessAsync()
     {

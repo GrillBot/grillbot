@@ -4,12 +4,14 @@ namespace GrillBot.App.Infrastructure.Preconditions.TextBased;
 
 public class TextCommandDeprecatedAttribute : PreconditionAttribute
 {
+    public const string Prefix = "Tento příkaz již není v textové formě podporován.";
+
     public string AlternativeCommand { get; set; }
     public string AdditionalMessage { get; set; }
 
     public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
     {
-        var msgBuilder = new StringBuilder("Tento příkaz již není v textové formě podporován.");
+        var msgBuilder = new StringBuilder(Prefix);
 
         if (!string.IsNullOrEmpty(AlternativeCommand))
             msgBuilder.AppendFormat(" Příkaz byl nahrazen příkazem `{0}`", AlternativeCommand);

@@ -18,7 +18,7 @@ static public class HelpExtensions
             .WithFooter($"{page + 1}/{pagesCount}")
             .WithMetadata(new HelpMetadata() { Page = page, PagesCount = pagesCount });
 
-        const string summaryTitle = "Kompletní seznam lze také najít ve veřejné administraci bota (https://public.grillbot.cloud). Pokud některé příkazy nevidíte, tak je zkuste hledat jako příkaz s prefixem `/`";
+        const string summaryTitle = "Kompletní seznam lze také najít ve veřejné administraci bota (https://public.grillbot.cloud). **Pokud některé příkazy nevidíte, tak je zkuste hledat jako příkaz s prefixem `/`**";
         if (!string.IsNullOrEmpty(module.Summary))
             embed.WithDescription(summaryTitle + "\n" + module.Summary);
         else

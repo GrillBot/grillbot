@@ -1,9 +1,6 @@
 ﻿using Discord.Commands;
-using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Modules.Implementations.User;
 using GrillBot.App.Services.User;
-using GrillBot.Data.Extensions.Discord;
 using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.User;
@@ -30,7 +27,7 @@ public class UserModule : Infrastructure.ModuleBase
         if (user == null) user = Context.User;
         if (user is not SocketGuildUser guildUser) return;
 
-        var embed = await UserService.CreateInfoEmbed(Context, guildUser);
+        var embed = await UserService.CreateInfoEmbed(Context.User, Context.Guild, guildUser);
         await ReplyAsync(embed: embed);
     }
 

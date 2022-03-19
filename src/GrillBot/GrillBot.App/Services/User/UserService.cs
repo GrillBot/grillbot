@@ -1,19 +1,15 @@
-﻿using Discord.Commands;
-using GrillBot.Database.Enums;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.App.Extensions.Discord;
+﻿using GrillBot.Database.Enums;
 using GrillBot.Data.Extensions;
+using GrillBot.App.Infrastructure;
 
 namespace GrillBot.App.Services.User;
 
-public class UserService
+public class UserService : ServiceBase
 {
-    private GrillBotContextFactory DbFactory { get; }
     private IConfiguration Configuration { get; }
 
-    public UserService(GrillBotContextFactory dbFactory, IConfiguration configuration)
+    public UserService(GrillBotContextFactory dbFactory, IConfiguration configuration, DiscordSocketClient discordClient) : base(discordClient, dbFactory)
     {
-        DbFactory = dbFactory;
         Configuration = configuration;
     }
 
@@ -29,15 +25,21 @@ public class UserService
     {
         using var context = DbFactory.Create();
 
-        var dbUser = await context.Users.FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
+        var dbUser = await context.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
         return dbUser?.HaveFlags(UserFlags.WebAdmin) ?? false;
     }
 
-    public async Task<Embed> CreateInfoEmbed(SocketCommandContext context, SocketGuildUser user)
+    /// <summary>
+    /// Creates embed with user informations.
+    /// </summary>
+    /// <param name="executor">User who called command.</param>
+    /// <param name="guild">Guild where user calling command.</param>
+    /// <param name="user">The user we want to get information about.</param>
+    public async Task<Embed> CreateInfoEmbed(IUser executor, IGuild guild, SocketGuildUser user)
     {
         using var dbContext = DbFactory.Create();
 
-        var userDetailUrl = await CreateWebAdminLink(context, user);
+        var userDetailUrl = await CreateWebAdminLink(executor, user);
         var highestRoleWithColor = user.GetHighestRole(true);
         var state = GetUserStateEmote(user, out var userStatus);
         var joinPosition = user.CalculateJoinPosition();
@@ -47,7 +49,7 @@ public class UserService
         var embed = new EmbedBuilder()
             .WithAuthor(user.GetFullName(), user.GetAvatarUri(), userDetailUrl)
             .WithCurrentTimestamp()
-            .WithFooter(context.User)
+            .WithFooter(executor)
             .WithTitle("Informace o uživateli")
             .WithColor(highestRoleWithColor?.Color ?? Color.Default)
             .AddField("Stav", $"{state} {userStatus}", false)
@@ -62,7 +64,7 @@ public class UserService
             embed.AddField("Aktivní zařízení", string.Join(", ", clients), false);
 
         var userStateQueryBase = dbContext.GuildUsers.AsNoTracking()
-            .Where(o => o.GuildId == context.Guild.Id.ToString() && o.UserId == user.Id.ToString());
+            .Where(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
 
         var baseData = await userStateQueryBase.Include(o => o.UsedInvite)
             .Select(o => new { o.Points, o.GivenReactions, o.ObtainedReactions, o.UsedInvite }).FirstOrDefaultAsync();
@@ -76,14 +78,14 @@ public class UserService
         var messagesCount = await dbContext.UserChannels.AsNoTracking()
             .Where(o =>
                 o.Count > 0 &&
-                o.GuildId == context.Guild.Id.ToString() &&
+                o.GuildId == guild.Id.ToString() &&
                 o.UserId == user.Id.ToString() &&
                 (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0
             ).SumAsync(o => o.Count);
         embed.AddField("Počet zpráv", messagesCount, true);
 
         var unverifyStatsQuery = dbContext.UnverifyLogs.AsQueryable().AsNoTracking()
-            .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == context.Guild.Id.ToString());
+            .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == guild.Id.ToString());
 
         var unverifyCount = await unverifyStatsQuery.CountAsync(o => o.Operation == UnverifyOperation.Unverify);
         var selfUnverifyCount = await unverifyStatsQuery.CountAsync(o => o.Operation == UnverifyOperation.Selfunverify);
@@ -97,8 +99,8 @@ public class UserService
         if (baseData?.UsedInvite != null)
         {
             var invite = baseData.UsedInvite;
-            bool isVanity = invite.Code == context.Guild.VanityURLCode;
-            var creator = isVanity ? null : await context.Client.FindUserAsync(Convert.ToUInt64(invite.CreatorId));
+            bool isVanity = invite.Code == guild.VanityURLCode;
+            var creator = isVanity ? null : await DiscordClient.FindUserAsync(Convert.ToUInt64(invite.CreatorId));
 
             embed.AddField(
                 "Použitá pozvánka",
@@ -144,9 +146,9 @@ public class UserService
         return embed.Build();
     }
 
-    public async Task<string> CreateWebAdminLink(ICommandContext context, IUser user)
+    public async Task<string> CreateWebAdminLink(IUser executor, IUser user)
     {
-        var isBotAdmin = await WebAdminAllowedAsync(context.User);
+        var isBotAdmin = await WebAdminAllowedAsync(executor);
         if (!isBotAdmin) return null;
 
         var value = Configuration.GetValue<string>("WebAdmin:UserDetailLink");

@@ -14,12 +14,10 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
         var logger = LoggingHelper.CreateLogger<DiscordInitializationService>();
         var initializationService = new DiscordInitializationService(logger);
-        var service = new AutoReplyService(configuration, discordClient, dbFactory, initializationService);
+        var service = new AutoReplyService(configuration, discordClient, DbFactory, initializationService);
 
-        DbContext = dbFactory.Create();
         return new AutoReplyController(service);
     }
 

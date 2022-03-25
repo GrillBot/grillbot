@@ -4,14 +4,9 @@ using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -22,8 +17,6 @@ public class SystemControllerTests : ControllerTest<SystemController>
     {
         var environment = EnvironmentHelper.CreateEnv("Production");
         var client = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var logger = LoggingHelper.CreateLogger<DiscordInitializationService>();
         var initialization = new DiscordInitializationService(logger);
 

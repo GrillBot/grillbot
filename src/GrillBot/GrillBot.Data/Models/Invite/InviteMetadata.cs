@@ -1,43 +1,42 @@
 ﻿using Discord;
 using System;
 
-namespace GrillBot.Data.Models.Invite
+namespace GrillBot.Data.Models.Invite;
+
+public class InviteMetadata
 {
-    public class InviteMetadata
+    public ulong GuildId { get; set; }
+    public string Code { get; set; }
+    public int Uses { get; set; }
+    public bool IsVanity { get; set; }
+    public ulong? CreatorId { get; set; }
+    public DateTime? CreatedAt { get; set; }
+
+    public InviteMetadata(string code, int? uses, IGuild guild)
     {
-        public ulong GuildId { get; internal set; }
-        public string Code { get; internal set; }
-        public int Uses { get; internal set; }
-        public bool IsVanity { get; internal set; }
-        public ulong? CreatorId { get; internal set; }
-        public DateTime? CreatedAt { get; internal set; }
+        Code = code;
+        Uses = uses ?? 0;
+        GuildId = guild.Id;
+    }
 
-        internal InviteMetadata(string code, int? uses, IGuild guild)
+    static public InviteMetadata FromDiscord(IInviteMetadata metadata)
+    {
+        return new InviteMetadata(metadata.Code, metadata.Uses, metadata.Guild)
         {
-            Code = code;
-            Uses = uses ?? 0;
-            GuildId = guild.Id;
-        }
+            CreatorId = metadata.Inviter?.Id,
+            IsVanity = metadata.Guild.VanityURLCode == metadata.Code,
+            CreatedAt = metadata.CreatedAt?.LocalDateTime
+        };
+    }
 
-        static public InviteMetadata FromDiscord(IInviteMetadata metadata)
+    public Database.Entity.Invite ToEntity()
+    {
+        return new Database.Entity.Invite()
         {
-            return new InviteMetadata(metadata.Code, metadata.Uses, metadata.Guild)
-            {
-                CreatorId = metadata.Inviter?.Id,
-                IsVanity = metadata.Guild.VanityURLCode == metadata.Code,
-                CreatedAt = metadata.CreatedAt?.LocalDateTime
-            };
-        }
-
-        public Database.Entity.Invite ToEntity()
-        {
-            return new Database.Entity.Invite()
-            {
-                CreatedAt = CreatedAt,
-                Code = Code,
-                CreatorId = CreatorId?.ToString(),
-                GuildId = GuildId.ToString()
-            };
-        }
+            CreatedAt = CreatedAt,
+            Code = Code,
+            CreatorId = CreatorId?.ToString(),
+            GuildId = GuildId.ToString()
+        };
     }
 }

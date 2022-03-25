@@ -1,14 +1,9 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -18,8 +13,6 @@ public class DataControllerAdminTests : ControllerTest<DataController>
     protected override DataController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var commandsService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);

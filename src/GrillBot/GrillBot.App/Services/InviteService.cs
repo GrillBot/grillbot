@@ -1,5 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.Data.Exceptions;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.Data.Models.API.Common;
+using GrillBot.Data.Models.API.Invites;
 using GrillBot.Data.Models.Invite;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -9,11 +11,15 @@ namespace GrillBot.App.Services;
 [Initializable]
 public class InviteService : ServiceBase
 {
-    public ConcurrentBag<InviteMetadata> MetadataCache { get; }
+    private ConcurrentBag<InviteMetadata> MetadataCache { get; }
+    private readonly object MetadataLock = new();
+    private AuditLogService AuditLogService { get; }
 
-    public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory) : base(discordClient, dbFactory)
+    public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory,
+        AuditLogService auditLogService) : base(discordClient, dbFactory)
     {
         MetadataCache = new ConcurrentBag<InviteMetadata>();
+        AuditLogService = auditLogService;
 
         DiscordClient.Ready += () => InitAsync();
         DiscordClient.UserJoined += (user) => user.IsUser() ? OnUserJoinedAsync(user) : Task.CompletedTask;
@@ -22,56 +28,64 @@ public class InviteService : ServiceBase
 
     public async Task InitAsync()
     {
-        using var dbContext = DbFactory.Create();
-
-        var botId = DiscordClient.CurrentUser.Id.ToString();
-        await dbContext.InitUserAsync(DiscordClient.CurrentUser, CancellationToken.None);
-
         var invites = new List<InviteMetadata>();
         foreach (var guild in DiscordClient.Guilds)
         {
             var guildInvites = await GetLatestMetadataOfGuildAsync(guild);
             if (guildInvites == null) continue;
 
-            await dbContext.InitGuildAsync(guild, CancellationToken.None);
-            await dbContext.InitGuildUserAsync(guild, guild.CurrentUser, CancellationToken.None);
+            await AuditLogService.StoreItemAsync(AuditLogItemType.Info, guild, null, DiscordClient.CurrentUser,
+                $"Invites for guild {guild.Name} ({guild.Id}) loaded. Loaded invites: {guildInvites.Count}", null, DateTime.Now);
 
-            var logItem = new AuditLogItem()
-            {
-                CreatedAt = DateTime.Now,
-                Data = $"Invites for guild {guild.Name} ({guild.Id}) loaded. Loaded invites: {guildInvites.Count}",
-                GuildId = guild.Id.ToString(),
-                Type = AuditLogItemType.Info,
-                ProcessedUserId = botId
-            };
-
-            await dbContext.AddAsync(logItem);
             invites.AddRange(guildInvites);
         }
 
-        MetadataCache.Clear();
-        invites.ForEach(invite => MetadataCache.Add(invite));
-        await dbContext.SaveChangesAsync();
+        lock (MetadataLock)
+        {
+            MetadataCache.Clear();
+            invites.ForEach(invite => MetadataCache.Add(invite));
+        }
     }
 
     public async Task<int> RefreshMetadataOfGuildAsync(SocketGuild guild)
     {
         var latestMetadata = await GetLatestMetadataOfGuildAsync(guild);
+        if (latestMetadata == null) return 0;
         UpdateInvitesCache(latestMetadata, guild);
 
-        return latestMetadata.Count;
+        return latestMetadata.Count(o => o.GuildId == guild.Id);
+    }
+
+    public async Task<Dictionary<string, int>> RefreshMetadataAsync()
+    {
+        var result = new Dictionary<string, int>();
+
+        foreach (var guild in DiscordClient.Guilds)
+        {
+            var updatedCount = await RefreshMetadataOfGuildAsync(guild);
+            result.Add(guild.Name, updatedCount);
+        }
+
+        return result;
+    }
+
+    public int GetMetadataCount()
+    {
+        lock (MetadataLock)
+        {
+            return MetadataCache.Count;
+        }
     }
 
     static private async Task<List<InviteMetadata>> GetLatestMetadataOfGuildAsync(SocketGuild guild)
     {
-        if (!guild.CurrentUser.GuildPermissions.CreateInstantInvite && guild.CurrentUser.GuildPermissions.ManageGuild)
+        if (!guild.CurrentUser.GuildPermissions.CreateInstantInvite || !guild.CurrentUser.GuildPermissions.ManageGuild)
             return null;
 
         var invites = new List<InviteMetadata>();
 
         if (!string.IsNullOrEmpty(guild.VanityURLCode))
         {
-            // Vanity invite not returns uses, but in library github is merged fix (PR #1832). TODO: Update library
             var vanityInvite = await guild.GetVanityInviteAsync();
             if (vanityInvite != null)
                 invites.Add(InviteMetadata.FromDiscord(vanityInvite));
@@ -111,16 +125,8 @@ public class InviteService : ServiceBase
 
         if (usedInvite == null)
         {
-            var logItem = new AuditLogItem()
-            {
-                CreatedAt = DateTime.Now,
-                Data = $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
-                GuildId = guildId,
-                ProcessedUserId = userId,
-                Type = AuditLogItemType.Warning
-            };
-
-            await dbContext.AddAsync(logItem);
+            await AuditLogService.StoreItemAsync(AuditLogItemType.Warning, guild, null, user, $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
+                null, DateTime.Now);
         }
         else
         {
@@ -153,44 +159,56 @@ public class InviteService : ServiceBase
 
     private void UpdateInvitesCache(List<InviteMetadata> invites, SocketGuild guild)
     {
-        invites.AddRange(MetadataCache.Where(o => o.GuildId != guild.Id));
+        lock (MetadataLock)
+        {
+            invites.AddRange(MetadataCache.Where(o => o.GuildId != guild.Id));
 
-        MetadataCache.Clear();
-        invites.ForEach(invite => MetadataCache.Add(invite));
+            MetadataCache.Clear();
+            invites.ForEach(invite => MetadataCache.Add(invite));
+        }
     }
 
     private InviteMetadata FindUsedInvite(SocketGuild guild, List<InviteMetadata> latestData)
     {
-        var missingInvite = MetadataCache.FirstOrDefault(o => !latestData.Any(x => x.Code == o.Code));
-        if (missingInvite != null) return missingInvite; // User joined via invite with max use limit.
+        lock (MetadataLock)
+        {
+            var missingInvite = MetadataCache.FirstOrDefault(o => !latestData.Any(x => x.Code == o.Code));
+            if (missingInvite != null) return missingInvite; // User joined via invite with max use limit.
 
-        var result = MetadataCache
-            .Where(o => o.GuildId == guild.Id)
-            .FirstOrDefault(inv =>
-            {
-                var fromLatest = latestData.Find(x => x.Code == inv.Code);
-                return fromLatest != null && fromLatest.Uses > inv.Uses;
-            });
+            var result = MetadataCache
+                .Where(o => o.GuildId == guild.Id)
+                .FirstOrDefault(inv =>
+                {
+                    var fromLatest = latestData.Find(x => x.Code == inv.Code);
+                    return fromLatest != null && fromLatest.Uses > inv.Uses;
+                });
 
-        return result ?? latestData.Find(inv => !MetadataCache.Any(o => o.Code == inv.Code));
-    }
-
-    public async Task AssignInviteToUserAsync(SocketGuildUser user, SocketGuild guild, string code)
-    {
-        var latestInvites = await GetLatestMetadataOfGuildAsync(guild);
-        var usedInvite = latestInvites.Find(o => o.Code == code);
-
-        if (usedInvite == null)
-            throw new NotFoundException($"Pozvánka s kódem `{code}` neexistuje.");
-
-        await SetInviteToUserAsync(user, guild, usedInvite, latestInvites);
+            return result ?? latestData.Find(inv => !MetadataCache.Any(o => o.Code == inv.Code));
+        }
     }
 
     private Task OnInviteCreated(SocketInvite invite)
     {
-        var metadata = InviteMetadata.FromDiscord(invite);
-        MetadataCache.Add(metadata);
+        lock (MetadataLock)
+        {
+            var metadata = InviteMetadata.FromDiscord(invite);
+            MetadataCache.Add(metadata);
+        }
+
         return Task.CompletedTask;
     }
 
+    public async Task<PaginatedResponse<GuildInvite>> GetInviteListAsync(GetInviteListParams parameters, CancellationToken cancellationToken)
+    {
+        using var dbContext = DbFactory.Create();
+
+        var query = dbContext.Invites.AsNoTracking()
+            .Include(o => o.Creator.User)
+            .Include(o => o.UsedUsers)
+            .Include(o => o.Guild)
+            .Where(o => o.UsedUsers.Count > 0);
+
+        query = parameters.CreateQuery(query);
+        return await PaginatedResponse<GuildInvite>.CreateAsync(query, parameters, entity => new(entity), cancellationToken);
+    }
 }

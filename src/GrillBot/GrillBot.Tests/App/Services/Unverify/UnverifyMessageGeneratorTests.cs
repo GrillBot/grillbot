@@ -1,12 +1,6 @@
 ﻿using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.Unverify;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.Unverify;
 

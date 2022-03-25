@@ -1,12 +1,12 @@
 ﻿using GrillBot.App.Controllers;
+using GrillBot.App.Services;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -15,14 +15,20 @@ public class InviteControllerTests : ControllerTest<InviteController>
 {
     protected override InviteController CreateController()
     {
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
+        var discordClient = DiscordHelper.CreateClient();
+        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var configuration = ConfigurationHelper.CreateConfiguration();
+        var fileStorage = FileStorageHelper.Create(configuration);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
+        var service = new InviteService(discordClient, DbFactory, auditLogService);
 
-        return new InviteController(DbContext);
+        return new InviteController(service);
     }
 
     public override void Cleanup()
     {
+        DbContext.ChangeTracker.Clear();
         DbContext.Invites.RemoveRange(DbContext.Invites.AsEnumerable());
         DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
@@ -33,10 +39,21 @@ public class InviteControllerTests : ControllerTest<InviteController>
     [TestMethod]
     public async Task GetInviteListAsync_WithoutFilter()
     {
-        await DbContext.Invites.AddAsync(new Database.Entity.Invite() { Code = "Code", CreatorId = "12345", GuildId = "12345" });
         await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Name = "Guild", Id = "12345" });
-        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Username = "Username", Discriminator = "1234", Id = "12345" });
+        await DbContext.Invites.AddAsync(new Database.Entity.Invite() { Code = "Code", CreatorId = "12345", GuildId = "12345" });
+
+        await DbContext.GuildUsers.AddRangeAsync(new[]
+        {
+            new Database.Entity.GuildUser() { GuildId = "12345", UserId = "12345" },
+            new Database.Entity.GuildUser() { GuildId = "12345", UserId = "123456", UsedInviteCode = "Code" }
+        });
+
+        await DbContext.Users.AddRangeAsync(new[]
+        {
+            new Database.Entity.User() { Username = "Username", Discriminator = "1234", Id = "12345" },
+            new Database.Entity.User() { Username = "Username", Discriminator = "1234", Id = "123456" }
+        });
+
         await DbContext.SaveChangesAsync();
 
         var result = await Controller.GetInviteListAsync(new GetInviteListParams(), CancellationToken.None);
@@ -57,5 +74,21 @@ public class InviteControllerTests : ControllerTest<InviteController>
 
         var result = await Controller.GetInviteListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
+    }
+
+    [TestMethod]
+    public async Task RefreshMetadataAsync()
+    {
+        var result = await Controller.RefreshMetadataCacheAsync();
+        CheckResult<OkObjectResult, Dictionary<string, int>>(result);
+    }
+
+    [TestMethod]
+    public void GetCurrentMetadataCount()
+    {
+        var result = Controller.GetCurrentMetadataCount();
+        CheckResult<OkObjectResult, int>(result);
+
+        Assert.AreEqual(0, ((OkObjectResult)result.Result).Value);
     }
 }

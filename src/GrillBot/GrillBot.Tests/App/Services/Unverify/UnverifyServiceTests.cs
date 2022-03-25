@@ -1,9 +1,5 @@
 ﻿using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Unverify;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.Unverify;
 
@@ -13,18 +9,17 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
     protected override UnverifyService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var environment = EnvironmentHelper.CreateEnv("Production");
-        var checker = new UnverifyChecker(dbFactory, configuration, environment);
-        var profileGenerator = new UnverifyProfileGenerator(dbFactory);
-        var logger = new UnverifyLogger(discordClient, dbFactory);
+        var checker = new UnverifyChecker(DbFactory, configuration, environment);
+        var profileGenerator = new UnverifyProfileGenerator(DbFactory);
+        var logger = new UnverifyLogger(discordClient, DbFactory);
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, dbFactory, interactionService);
+        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
 
-        return new UnverifyService(discordClient, checker, profileGenerator, logger, dbFactory, loggingService);
+        return new UnverifyService(discordClient, checker, profileGenerator, logger, DbFactory, loggingService);
     }
 
     [TestMethod]

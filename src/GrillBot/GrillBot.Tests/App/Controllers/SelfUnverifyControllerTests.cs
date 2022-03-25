@@ -10,10 +10,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
 {
     protected override SelfUnverifyController CreateController()
     {
-        var dbFactory = new DbContextBuilder();
-        var service = new SelfunverifyService(null, dbFactory);
-        DbContext = dbFactory.Create();
-
+        var service = new SelfunverifyService(null, DbFactory);
         return new SelfUnverifyController(service);
     }
 

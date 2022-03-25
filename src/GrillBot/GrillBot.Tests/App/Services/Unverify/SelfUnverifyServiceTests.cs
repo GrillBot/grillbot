@@ -7,10 +7,7 @@ public class SelfUnverifyServiceTests : ServiceTest<SelfunverifyService>
 {
     protected override SelfunverifyService CreateService()
     {
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
-
-        return new SelfunverifyService(null, dbFactory);
+        return new SelfunverifyService(null, DbFactory);
     }
 
     public override void Cleanup()

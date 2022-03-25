@@ -1,13 +1,9 @@
 ﻿using GrillBot.App.Services.Reminder;
 using GrillBot.Database.Services;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.Reminder;
 
@@ -17,11 +13,9 @@ public class RemindServiceTests : ServiceTest<RemindService>
     protected override RemindService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var configuration = ConfigurationHelper.CreateConfiguration();
 
-        return new RemindService(discordClient, dbFactory, configuration);
+        return new RemindService(discordClient, DbFactory, configuration);
     }
 
     public override void Cleanup()

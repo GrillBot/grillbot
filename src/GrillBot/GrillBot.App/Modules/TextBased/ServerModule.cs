@@ -1,10 +1,6 @@
 ﻿using Discord.Commands;
 using System.Net.Http;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Extensions;
 using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
-using System.Collections.Immutable;
 using System.Data;
 using ConsoleTableExt;
 using Microsoft.Extensions.Caching.Memory;
@@ -12,8 +8,6 @@ using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.Guilds;
 using GrillBot.Data.Enums;
 using GrillBot.App.Helpers;
-using GrillBot.App.Services;
-using GrillBot.Data.Exceptions;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 
 namespace GrillBot.App.Modules.TextBased;
@@ -609,49 +603,6 @@ public class ServerModule : Infrastructure.ModuleBase
                         .WithFields(fields)
                         .WithTitle("Seznam rolí");
                 }
-            }
-        }
-
-        [Group("invite")]
-        [Summary("Správa pozvánek")]
-        [Name("Pozvánky")]
-        [RequireBotPermission(GuildPermission.CreateInstantInvite, ErrorMessage = "Nemohu pracovat s pozvánkami, protože nemám oprávnění pro vytvoření pozvánek.")]
-        [RequireBotPermission(GuildPermission.ManageGuild, ErrorMessage = "Nemohu pracovat s pozvánkami, protože nemám oprávnění pracovat se serverem.")]
-        [RequireUserPerms(GuildPermission.ManageGuild)]
-        public class GuildInvitesSubModule : Infrastructure.ModuleBase
-        {
-            private InviteService InviteService { get; }
-
-            public GuildInvitesSubModule(InviteService inviteService)
-            {
-                InviteService = inviteService;
-            }
-
-            [Command("assign")]
-            [Summary("Přiřazení pozvánky k uživateli.")]
-            public async Task AssignCodeToUserAsync([Name("id/tag/jmeno_uzivatele")] SocketGuildUser user, [Name("kod_pozvanky")] string code)
-            {
-                if (string.Equals(code, "vanity", StringComparison.InvariantCultureIgnoreCase))
-                    code = Context.Guild.VanityURLCode;
-
-                try
-                {
-                    await InviteService.AssignInviteToUserAsync(user, Context.Guild, code);
-                    await ReplyAsync("Pozvánka byla úspěšně přiřazena.");
-                }
-                catch (NotFoundException ex)
-                {
-                    await ReplyAsync(ex.Message);
-                }
-            }
-
-            [Command("refresh")]
-            [Alias("update")]
-            [Summary("Obnovení pozvánek v paměti.")]
-            public async Task RefreshCacheAsync()
-            {
-                var updatedCount = await InviteService.RefreshMetadataOfGuildAsync(Context.Guild);
-                await ReplyAsync($"Pozvánky pro server **{Context.Guild.Name}** byly staženy. Celkový počet pozvánek je **{updatedCount}**.");
             }
         }
     }

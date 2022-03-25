@@ -4,16 +4,11 @@ using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -23,18 +18,16 @@ public class UnverifyControllerAdminTests : ControllerTest<UnverifyController>
     protected override UnverifyController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var webHostEnv = EnvironmentHelper.CreateEnv("Production");
-        var unverifyChecker = new UnverifyChecker(dbFactory, configuration, webHostEnv);
-        var unverifyProfileGenerator = new UnverifyProfileGenerator(dbFactory);
-        var logger = new UnverifyLogger(discordClient, dbFactory);
+        var unverifyChecker = new UnverifyChecker(DbFactory, configuration, webHostEnv);
+        var unverifyProfileGenerator = new UnverifyProfileGenerator(DbFactory);
+        var logger = new UnverifyLogger(discordClient, DbFactory);
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, dbFactory, interactionService);
-        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, dbFactory, loggingService);
-        DbContext = dbFactory.Create();
+        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
+        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DbFactory, loggingService);
 
         return new UnverifyController(unverifyService, discordClient, DbContext)
         {

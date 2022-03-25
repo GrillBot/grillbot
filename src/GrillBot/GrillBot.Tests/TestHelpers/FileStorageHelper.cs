@@ -1,17 +1,14 @@
 ﻿using GrillBot.App.Services.FileStorage;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions;
 using Moq;
 using System.IO;
-using System.Reflection;
 
 namespace GrillBot.Tests.TestHelpers;
 
 public static class FileStorageHelper
 {
-    public static FileStorageFactory Create(IConfiguration configuration = null)
+    public static FileStorageFactory Create(IConfiguration configuration)
     {
-        configuration ??= ConfigurationHelper.CreateConfiguration();
         var mock = new Mock<FileStorageFactory>(new object[] { configuration });
         mock.Setup(o => o.Create(It.IsAny<string>())).Returns(CreateStorage());
 

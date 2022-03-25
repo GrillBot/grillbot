@@ -1,13 +1,7 @@
 ﻿using GrillBot.App.Services.Birthday;
 using GrillBot.Database.Services;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.Birthday;
 
@@ -17,15 +11,11 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     protected override BirthdayService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
-
-        return new BirthdayService(discordClient, dbFactory);
+        return new BirthdayService(discordClient, DbFactory);
     }
 
     public override void Cleanup()
     {
-        DbContext.ChangeTracker.Clear();
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
         DbContext.SaveChanges();
     }

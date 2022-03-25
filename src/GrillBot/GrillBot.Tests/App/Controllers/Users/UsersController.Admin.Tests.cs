@@ -19,14 +19,12 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
 {
     protected override UsersController CreateController()
     {
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
-        var channelsService = new ChannelService(discordClient, dbFactory, configuration, messageCache);
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var channelsService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
         var provider = DIHelper.CreateEmptyProvider();
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);
         var memoryCache = CacheHelper.CreateMemoryCache();
@@ -48,7 +46,6 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
 
     public override void Cleanup()
     {
-        DbContext.ChangeTracker.Clear();
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
         DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
         DbContext.Emotes.RemoveRange(DbContext.Emotes.AsEnumerable());

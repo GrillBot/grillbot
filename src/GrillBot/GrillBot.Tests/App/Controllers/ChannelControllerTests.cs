@@ -5,13 +5,8 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Params;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -21,12 +16,10 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     protected override ChannelController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var channelService = new ChannelService(discordClient, dbFactory, configuration, messageCache);
+        var channelService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
 
         return new ChannelController(discordClient, DbContext, messageCache, channelService);
     }

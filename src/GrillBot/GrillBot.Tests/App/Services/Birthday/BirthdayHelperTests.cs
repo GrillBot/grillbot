@@ -1,9 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Services.Birthday;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 
 namespace GrillBot.Tests.App.Services.Birthday;
 

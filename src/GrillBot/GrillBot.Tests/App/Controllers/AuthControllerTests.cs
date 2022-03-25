@@ -14,16 +14,14 @@ public class AuthControllerTests : ControllerTest<AuthController>
 {
     protected override AuthController CreateController()
     {
-        // Deps
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var dbFactory = new DbContextBuilder();
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, dbFactory, interactions);
+        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactions);
         var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"access_token\": \"12345\"}") });
-        var service = new OAuth2Service(configuration, dbFactory, loggingService, httpClientFactory);
+        var service = new OAuth2Service(configuration, DbFactory, loggingService, httpClientFactory);
 
         return new AuthController(service);
     }

@@ -2,14 +2,10 @@
 using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -18,11 +14,9 @@ public class RemindControllerTests : ControllerTest<ReminderController>
 {
     protected override ReminderController CreateController()
     {
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var remindService = new RemindService(discordClient, dbFactory, configuration);
+        var remindService = new RemindService(discordClient, DbFactory, configuration);
 
         return new ReminderController(DbContext, remindService, discordClient);
     }

@@ -1,6 +1,4 @@
 ﻿using GrillBot.App.Services;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GrillBot.Tests.App.Services;
 

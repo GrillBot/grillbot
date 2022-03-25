@@ -1,9 +1,7 @@
 ﻿using Discord;
-using Discord.Commands;
 using GrillBot.App.Services.User;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
-using Moq;
 using System.Linq;
 
 namespace GrillBot.Tests.App.Services.User;
@@ -14,11 +12,9 @@ public class UserServiteTests : ServiceTest<UserService>
     protected override UserService CreateService()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var dbFactory = new DbContextBuilder();
         var discordClient = DiscordHelper.CreateClient();
-        DbContext = dbFactory.Create();
 
-        return new UserService(dbFactory, configuration, discordClient);
+        return new UserService(DbFactory, configuration, discordClient);
     }
 
     public override void Cleanup()

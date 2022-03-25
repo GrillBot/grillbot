@@ -1,7 +1,6 @@
 ﻿using GrillBot.Data.Models.API;
 using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -11,12 +10,16 @@ public abstract class ControllerTest<TController> where TController : Controller
 {
     protected TController Controller { get; set; }
     protected GrillBotContext DbContext { get; set; }
+    protected GrillBotContextFactory DbFactory { get; set; }
 
     protected abstract TController CreateController();
 
     [TestInitialize]
     public void Initialize()
     {
+        DbFactory = new DbContextBuilder();
+        DbContext = DbFactory.Create();
+
         Controller = CreateController();
     }
 
@@ -25,8 +28,11 @@ public abstract class ControllerTest<TController> where TController : Controller
     [TestCleanup]
     public void TestClean()
     {
+        DbContext.ChangeTracker.Clear();
+
         Cleanup();
-        DbContext?.Dispose();
+
+        DbContext.Dispose();
         Controller.Dispose();
     }
 

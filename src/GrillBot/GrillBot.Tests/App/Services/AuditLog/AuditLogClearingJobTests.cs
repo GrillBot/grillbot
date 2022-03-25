@@ -1,13 +1,10 @@
 ﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Logging;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
 
@@ -17,21 +14,18 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
     protected override AuditLogClearingJob CreateJob()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var dbFactory = new DbContextBuilder();
         var fileStorage = FileStorageHelper.Create(configuration);
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, dbFactory, interactionService);
-        DbContext = dbFactory.Create();
+        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
 
-        return new AuditLogClearingJob(configuration, dbFactory, fileStorage, loggingService);
+        return new AuditLogClearingJob(configuration, DbFactory, fileStorage, loggingService);
     }
 
     public override void Cleanup()
     {
-        DbContext.ChangeTracker.Clear();
         DbContext.AuditLogs.RemoveRange(DbContext.AuditLogs.AsEnumerable());
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
         DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());

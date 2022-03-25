@@ -17,12 +17,11 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     protected override AuditLogController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var cache = new MessageCache(discordClient, initializationService, dbFactory);
-        var fileStorage = FileStorageHelper.Create();
-        var auditLogService = new AuditLogService(discordClient, dbFactory, cache, fileStorage, initializationService);
-        DbContext = dbFactory.Create();
+        var cache = new MessageCache(discordClient, initializationService, DbFactory);
+        var configuration = ConfigurationHelper.CreateConfiguration();
+        var fileStorage = FileStorageHelper.Create(configuration);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, cache, fileStorage, initializationService);
 
         return new AuditLogController(auditLogService);
     }

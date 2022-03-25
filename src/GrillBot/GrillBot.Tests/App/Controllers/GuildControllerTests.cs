@@ -2,12 +2,8 @@
 using GrillBot.App.Services;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -16,10 +12,8 @@ public class GuildControllerTests : ControllerTest<GuildController>
 {
     protected override GuildController CreateController()
     {
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var discordClient = DiscordHelper.CreateClient();
-        var guildService = new GuildService(discordClient, dbFactory);
+        var guildService = new GuildService(discordClient, DbFactory);
 
         return new GuildController(DbContext, discordClient, guildService);
     }

@@ -3,13 +3,9 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Tests.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
 
@@ -19,13 +15,12 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     protected override AuditLogService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
-        var storage = FileStorageHelper.Create();
-        DbContext = dbFactory.Create();
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var configuration = ConfigurationHelper.CreateConfiguration();
+        var storage = FileStorageHelper.Create(configuration);
 
-        return new AuditLogService(discordClient, dbFactory, messageCache, storage, initializationService);
+        return new AuditLogService(discordClient, DbFactory, messageCache, storage, initializationService);
     }
 
     public override void Cleanup()

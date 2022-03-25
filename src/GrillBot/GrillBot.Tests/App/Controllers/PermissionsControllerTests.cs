@@ -1,12 +1,7 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.Data.Models.API.Permissions;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -15,10 +10,7 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
 {
     protected override PermissionsController CreateController()
     {
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var discordClient = DiscordHelper.CreateClient();
-
         return new PermissionsController(DbContext, discordClient);
     }
 

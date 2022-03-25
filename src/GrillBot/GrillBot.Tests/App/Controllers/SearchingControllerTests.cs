@@ -15,18 +15,15 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     protected override SearchingController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
-        var searchingService = new SearchingService(discordClient, dbFactory, messageCache);
-        DbContext = dbFactory.Create();
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var searchingService = new SearchingService(discordClient, DbFactory, messageCache);
 
         return new SearchingController(searchingService);
     }
 
     public override void Cleanup()
     {
-        DbContext.ChangeTracker.Clear();
         DbContext.SearchItems.RemoveRange(DbContext.SearchItems.AsEnumerable());
         DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());

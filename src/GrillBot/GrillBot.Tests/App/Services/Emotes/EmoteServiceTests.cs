@@ -18,18 +18,15 @@ public class EmoteServiceTests : ServiceTest<EmoteService>
     protected override EmoteService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
 
-        return new EmoteService(discordClient, dbFactory, configuration, messageCache);
+        return new EmoteService(discordClient, DbFactory, configuration, messageCache);
     }
 
     public override void Cleanup()
     {
-        DbContext.ChangeTracker.Clear();
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
         DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
         DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());

@@ -5,15 +5,10 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Tests.TestHelpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -22,14 +17,12 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
 {
     protected override UsersController CreateController()
     {
-        var dbFactory = new DbContextBuilder();
-        DbContext = dbFactory.Create();
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, dbFactory);
-        var channelsService = new ChannelService(discordClient, dbFactory, configuration, messageCache);
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var channelsService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
         var provider = DIHelper.CreateEmptyProvider();
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);
         var memoryCache = CacheHelper.CreateMemoryCache();
@@ -51,7 +44,6 @@ public class UsersControllerUserTests : ControllerTest<UsersController>
 
     public override void Cleanup()
     {
-        DbContext.ChangeTracker.Clear();
         DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
         DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
         DbContext.Emotes.RemoveRange(DbContext.Emotes.AsEnumerable());

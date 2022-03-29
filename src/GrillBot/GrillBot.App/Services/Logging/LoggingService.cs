@@ -52,23 +52,23 @@ namespace GrillBot.App.Services.Logging
                 switch (message.Severity)
                 {
                     case LogSeverity.Critical:
-                        logger.LogCritical(message.Exception, message.Message);
+                        logger.LogCritical(message.Exception, "{Message}", message.Message);
                         break;
                     case LogSeverity.Debug:
-                        logger.LogDebug(message.Message);
+                        logger.LogDebug("{Message}", message.Message);
                         break;
                     case LogSeverity.Error:
-                        logger.LogError(message.Exception, message.Message);
+                        logger.LogError(message.Exception, "{Message}", message.Message);
                         break;
                     case LogSeverity.Warning when message.Exception != null:
-                        logger.LogWarning(message.Exception, message.Message);
+                        logger.LogWarning(message.Exception, "{Message}", message.Message);
                         break;
                     case LogSeverity.Warning when message.Exception == null:
-                        logger.LogWarning(message.Message);
+                        logger.LogWarning("{Message}", message.Message);
                         break;
                     case LogSeverity.Info:
                     case LogSeverity.Verbose:
-                        logger.LogInformation(message.Message);
+                        logger.LogInformation("{Message}", message.Message);
                         break;
                 }
             }

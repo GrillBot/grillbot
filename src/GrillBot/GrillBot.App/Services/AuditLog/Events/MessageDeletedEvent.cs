@@ -28,6 +28,7 @@ public class MessageDeletedEvent : AuditEventBase
     {
         var textChannel = Channel.Value as SocketTextChannel;
         if ((Message.HasValue ? Message.Value : MessageCache.GetMessage(Message.Id, true)) is not IUserMessage deletedMessage) return;
+
         var timeLimit = DateTime.UtcNow.AddMinutes(-1);
         var auditLog = (await textChannel.Guild.GetAuditLogsAsync(5, actionType: ActionType.MessageDeleted).FlattenAsync())
             .Where(o => o.CreatedAt.DateTime >= timeLimit)
@@ -38,11 +39,11 @@ public class MessageDeletedEvent : AuditEventBase
             });
 
         var data = new MessageDeletedData(deletedMessage);
-        var jsonData = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
         var removedBy = auditLog?.User ?? deletedMessage.Author;
 
         var attachments = await GetAndStoreAttachmentsAsync(deletedMessage);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.MessageDeleted, textChannel.Guild, textChannel, removedBy, jsonData, auditLog?.Id, null, null, attachments);
+        var item = new AuditLogDataWrapper(AuditLogItemType.MessageDeleted, data, textChannel.Guild, textChannel, removedBy, auditLog.Id.ToString(), files: attachments);
+        await AuditLogService.StoreItemAsync(item);
     }
 
     private async Task<List<AuditLogFileMeta>> GetAndStoreAttachmentsAsync(IUserMessage message)

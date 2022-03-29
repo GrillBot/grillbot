@@ -2,9 +2,11 @@
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Data.Models.Invite;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using YamlDotNet.Serialization;
 
 namespace GrillBot.App.Services;
 
@@ -34,8 +36,9 @@ public class InviteService : ServiceBase
             var guildInvites = await GetLatestMetadataOfGuildAsync(guild);
             if (guildInvites == null) continue;
 
-            await AuditLogService.StoreItemAsync(AuditLogItemType.Info, guild, null, DiscordClient.CurrentUser,
-                $"Invites for guild {guild.Name} ({guild.Id}) loaded. Loaded invites: {guildInvites.Count}", null, DateTime.Now);
+            var item = new AuditLogDataWrapper(AuditLogItemType.Info, $"Invites for guild {guild.Name} ({guild.Id}) loaded. Loaded invites: {guildInvites.Count}",
+                guild, processedUser: DiscordClient.CurrentUser);
+            await AuditLogService.StoreItemAsync(item);
 
             invites.AddRange(guildInvites);
         }
@@ -125,8 +128,8 @@ public class InviteService : ServiceBase
 
         if (usedInvite == null)
         {
-            await AuditLogService.StoreItemAsync(AuditLogItemType.Warning, guild, null, user, $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
-                null, DateTime.Now);
+            var item = new AuditLogDataWrapper(AuditLogItemType.Warning, $"User {user.GetFullName()} ({user.Id}) used unknown invite.", guild, processedUser: user);
+            await AuditLogService.StoreItemAsync(item);
         }
         else
         {

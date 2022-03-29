@@ -1,11 +1,12 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using Discord;
+using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Tests.Common;
+using Moq;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
@@ -35,27 +36,34 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     }
 
     [TestMethod]
-    public async Task StoreItemAsync_Success()
+    public async Task StoreItemsAsync_Success()
     {
         var user = DataHelper.CreateDiscordUser();
         var guild = DataHelper.CreateGuild();
         var guildUser = DataHelper.CreateGuildUser();
 
-        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, user, "{}", (ulong)12345);
-        await Service.StoreItemAsync(AuditLogItemType.Warning, null, null, user, "{}", null, null, CancellationToken.None, new() { new() { Filename = "File", Size = 1 } });
-        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, null, "{}", "12345");
-        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, null, "{}", "12345", DateTime.Now, CancellationToken.None);
-        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, guildUser, "{}", "12345", DateTime.MinValue, CancellationToken.None);
-        await Service.StoreItemAsync(AuditLogItemType.Warning, guild, null, guildUser, "{}", "12345");
+        var items = new List<AuditLogDataWrapper>()
+        {
+            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: user, discordAuditLogItemId: "12345"),
+            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", files: new List<AuditLogFileMeta>() { new() { Filename = "File", Size = 1 } }),
+            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, discordAuditLogItemId: "12345"),
+            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, discordAuditLogItemId: "12345", createdAt: DateTime.Now),
+            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: guildUser, discordAuditLogItemId: "12345", createdAt: DateTime.MinValue),
+            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: guildUser, discordAuditLogItemId: "12345")
+        };
+
+        await Service.StoreItemsAsync(items);
         Assert.IsTrue(true);
     }
 
     [TestMethod]
-    [ExcludeFromCodeCoverage]
-    [ExpectedException(typeof(NotSupportedException))]
-    public async Task StoreItemAsync_NotSupportedId()
+    public async Task StoreItemAsync_Success()
     {
-        await Service.StoreItemAsync(AuditLogItemType.Warning, null, null, null, "{}", new object());
+        var user = DataHelper.CreateDiscordUser();
+        var guild = DataHelper.CreateGuild();
+
+        await Service.StoreItemAsync(new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: user, discordAuditLogItemId: "12345"));
+        Assert.IsTrue(true);
     }
 
     private async Task FillDataAsync()
@@ -100,5 +108,38 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
 
         var result = await Service.GetDiscordAuditLogIdsAsync(null, null, null, DateTime.MinValue);
         Assert.AreEqual(1, result.Count);
+    }
+
+    [TestMethod]
+    public async Task GetGuildFromChannelAsync_DMs()
+    {
+        var channel = new Mock<IDMChannel>();
+
+        var guild = await Service.GetGuildFromChannelAsync(channel.Object, 0);
+        Assert.IsNull(guild);
+    }
+
+    [TestMethod]
+    public async Task GetGuildFromChannelAsync_GuildChannel()
+    {
+        var channel = new Mock<IGuildChannel>();
+        channel.Setup(o => o.Guild).Returns(DataHelper.CreateGuild());
+
+        var guild = await Service.GetGuildFromChannelAsync(channel.Object, 0);
+        Assert.IsNotNull(guild);
+    }
+
+    [TestMethod]
+    public async Task GetGuildFromChannelAsync_Unknown()
+    {
+        var guild = await Service.GetGuildFromChannelAsync(null, default);
+        Assert.IsNull(guild);
+    }
+
+    [TestMethod]
+    public async Task GetGuildFromChannelAsync_FromDB_Unknown()
+    {
+        var guild = await Service.GetGuildFromChannelAsync(null, 42);
+        Assert.IsNull(guild);
     }
 }

@@ -1,9 +1,8 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using Microsoft.EntityFrameworkCore;
 using Quartz;
 
 namespace GrillBot.App.Services.Emotes;
@@ -59,7 +58,8 @@ public class EmoteStatsCleaningJob : IJob
             if (clearedRecords > 0)
                 await dbContext.SaveChangesAsync(context.CancellationToken);
             var report = $"{nameof(EmoteStatsCleaningJob)} completed (duration {DateTime.Now - startAt}, loaded records {emotes.Count}, cleared records {clearedRecords}).";
-            await AuditLogService.StoreItemAsync(AuditLogItemType.Info, null, null, DiscordClient.CurrentUser, report, null, null, context.CancellationToken);
+            var item = new AuditLogDataWrapper(AuditLogItemType.Info, report, processedUser: DiscordClient.CurrentUser);
+            await AuditLogService.StoreItemAsync(item, context.CancellationToken);
         }
         catch (Exception ex)
         {

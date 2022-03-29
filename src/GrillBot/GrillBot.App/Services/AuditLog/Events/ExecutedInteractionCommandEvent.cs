@@ -24,7 +24,7 @@ public class ExecutedInteractionCommandEvent : AuditEventBase
     public override async Task ProcessAsync()
     {
         var data = InteractionCommandExecuted.Create(Context.Interaction, Command, Result);
-        var jsonData = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.InteractionCommand, Context.Guild, Context.Channel, Context.User, jsonData, null, null, null);
+        var item = new AuditLogDataWrapper(AuditLogItemType.InteractionCommand, data, Context.Guild, Context.Channel, Context.User);
+        await AuditLogService.StoreItemAsync(item);
     }
 }

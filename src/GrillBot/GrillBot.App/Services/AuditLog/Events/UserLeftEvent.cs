@@ -40,7 +40,7 @@ public class UserLeftEvent : AuditEventBase
         }
 
         var data = new UserLeftGuildData(Guild, User, ban != null, ban?.Reason);
-        var jsonData = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.UserLeft, Guild, null, auditLog?.User ?? User, jsonData, auditLog?.Id);
+        var item = new AuditLogDataWrapper(AuditLogItemType.UserLeft, data, Guild, processedUser: auditLog?.User ?? User, discordAuditLogItemId: auditLog?.Id.ToString());
+        await AuditLogService.StoreItemAsync(item);
     }
 }

@@ -4,8 +4,7 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
-using GrillBot.Data.Helpers;
-using GrillBot.Database.Entity;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.AuditLog;
@@ -46,7 +45,7 @@ public partial class AuditLogService : ServiceBase
         DiscordClient.ChannelUpdated += (before, after) => HandleEventAsync(new ChannelUpdatedEvent(this, before, after));
         DiscordClient.ChannelUpdated += async (_, after) =>
         {
-            await HandleEventAsync(new OverwriteChangedEvent(this, after, NextAllowedChannelUpdateEvent, DbFactory));
+            await HandleEventAsync(new OverwriteChangedEvent(this, after, NextAllowedChannelUpdateEvent));
             NextAllowedChannelUpdateEvent = DateTime.Now.AddMinutes(1);
         };
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new EmotesUpdatedEvent(this, before, after));
@@ -56,7 +55,7 @@ public partial class AuditLogService : ServiceBase
         DiscordClient.GuildMemberUpdated += (before, after) => HandleEventAsync(new MemberUpdatedEvent(this, before, after));
         DiscordClient.GuildMemberUpdated += async (before, after) =>
         {
-            var @event = new MemberRolesUpdatedEvent(this, before, after, NextAllowedRoleUpdateEvent, DbFactory);
+            var @event = new MemberRolesUpdatedEvent(this, before, after, NextAllowedRoleUpdateEvent);
             await HandleEventAsync(@event);
             if (@event.Finished) NextAllowedRoleUpdateEvent = DateTime.Now.AddSeconds(30);
         };
@@ -83,59 +82,32 @@ public partial class AuditLogService : ServiceBase
         return string.IsNullOrEmpty(guildId) ? null : DiscordClient.GetGuild(Convert.ToUInt64(guildId));
     }
 
-    /// <summary>
-    /// Stores new item in log. Method will check relationships in database and create if some will be required.
-    /// </summary>
-    /// <param name="type"></param>
-    /// <param name="guild"></param>
-    /// <param name="channel"></param>
-    /// <param name="processedUser"></param>
-    /// <param name="data"></param>
-    /// <param name="auditLogItemId">ID of discord audit log record. Allowed types are ulong?, string or null. Otherwise method throws <see cref="NotSupportedException"/></param>
-    /// <param name="createdAt"></param>
-    /// <param name="cancellationToken"></param>
-    /// <param name="attachments"></param>
-    public async Task StoreItemAsync(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, object auditLogItemId = null,
-        DateTime? createdAt = null, CancellationToken? cancellationToken = null, List<AuditLogFileMeta> attachments = null)
-    {
-        AuditLogItem entity;
-        if (auditLogItemId is null)
-            entity = AuditLogItem.Create(type, guild, channel, processedUser, data, createdAt);
-        else if (auditLogItemId is string _auditLogItemId)
-            entity = AuditLogItem.Create(type, guild, channel, processedUser, data, _auditLogItemId, createdAt);
-        else if (auditLogItemId is ulong __auditLogItemId)
-            entity = AuditLogItem.Create(type, guild, channel, processedUser, data, __auditLogItemId, createdAt);
-        else
-            throw new NotSupportedException("Unsupported type Discord audit log item ID.");
+    public Task StoreItemAsync(AuditLogDataWrapper item, CancellationToken cancellationToken = default)
+        => StoreItemsAsync(new() { item }, cancellationToken);
 
-        attachments?.ForEach(a => entity.Files.Add(a));
+    public async Task StoreItemsAsync(List<AuditLogDataWrapper> items, CancellationToken cancellationToken = default)
+    {
         using var dbContext = DbFactory.Create();
 
-        if (processedUser != null)
-            await dbContext.InitUserAsync(processedUser, cancellationToken ?? CancellationToken.None);
+        foreach (var item in items.Where(o => o.Guild != null).DistinctBy(o => o.Guild.Id))
+            await dbContext.InitGuildAsync(item.Guild, cancellationToken);
 
-        if (guild != null)
+        foreach (var item in items.Where(o => o.ProcessedUser != null).DistinctBy(o => o.ProcessedUser.Id))
+            await dbContext.InitUserAsync(item.ProcessedUser, cancellationToken);
+
+        foreach (var item in items.Where(o => o.Guild != null && o.Channel != null).DistinctBy(o => o.Channel.Id))
+            await dbContext.InitGuildChannelAsync(item.Guild, item.Channel, item.ChannelType.Value, cancellationToken);
+
+        foreach (var item in items.Where(o => o.Guild != null && o.ProcessedUser != null).DistinctBy(o => o.ProcessedUser.Id))
         {
-            await dbContext.InitGuildAsync(guild, cancellationToken ?? CancellationToken.None);
+            var guildUser = item.ProcessedUser is not IGuildUser _guildUser ? await item.Guild.GetUserAsync(item.ProcessedUser.Id) : _guildUser;
 
-            if (processedUser != null)
-            {
-                if (processedUser is not IGuildUser guildUser)
-                    guildUser = await guild.GetUserAsync(processedUser.Id);
-
-                if (guildUser != null)
-                    await dbContext.InitGuildUserAsync(guild, guildUser, cancellationToken ?? CancellationToken.None);
-            }
-
-            if (channel != null)
-            {
-                var channelType = DiscordHelper.GetChannelType(channel);
-                await dbContext.InitGuildChannelAsync(guild, channel, channelType.Value, cancellationToken ?? CancellationToken.None);
-            }
+            if (guildUser != null)
+                await dbContext.InitGuildUserAsync(item.Guild, guildUser, cancellationToken);
         }
 
-        await dbContext.AddAsync(entity, cancellationToken ?? CancellationToken.None);
-        await dbContext.SaveChangesAsync(cancellationToken ?? CancellationToken.None);
+        await dbContext.AddRangeAsync(items.Select(o => o.ToEntity(JsonSerializerSettings)), cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<bool> CanExecuteEvent(Func<Task<bool>> eventSpecificCheck = null)

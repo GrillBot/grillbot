@@ -32,7 +32,8 @@ public class EmotesUpdatedEvent : AuditEventBase
             .FirstOrDefault(o => removed.Any(x => x.Id == ((EmoteDeleteAuditLogData)o.Data).EmoteId));
 
         var data = new AuditEmoteInfo(auditLog.Data as EmoteDeleteAuditLogData);
-        var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.EmojiDeleted, Before, null, auditLog.User, json, auditLog.Id, null, null);
+
+        var item = new AuditLogDataWrapper(AuditLogItemType.EmojiDeleted, data, Before, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
+        await AuditLogService.StoreItemAsync(item);
     }
 }

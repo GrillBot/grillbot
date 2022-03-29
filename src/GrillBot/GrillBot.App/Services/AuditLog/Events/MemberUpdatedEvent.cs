@@ -36,7 +36,7 @@ public class MemberUpdatedEvent : AuditEventBase
         if (auditLog == null) return;
 
         var data = new MemberUpdatedData(Before.Value, After);
-        var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.MemberUpdated, Guild, null, auditLog.User, json, auditLog.Id, null, null);
+        var item = new AuditLogDataWrapper(AuditLogItemType.MemberUpdated, data, Guild, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
+        await AuditLogService.StoreItemAsync(item);
     }
 }

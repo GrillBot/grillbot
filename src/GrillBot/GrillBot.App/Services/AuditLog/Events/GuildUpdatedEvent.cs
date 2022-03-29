@@ -43,9 +43,10 @@ public class GuildUpdatedEvent : AuditEventBase
             .Where(o => o.CreatedAt.DateTime >= timeLimit)
             .OrderByDescending(o => o.CreatedAt.DateTime)
             .FirstOrDefault();
+        if (auditLog == null) return;
 
         var data = new GuildUpdatedData(Before, After);
-        var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.GuildUpdated, After, null, auditLog.User, json, auditLog.Id, null, null);
+        var item = new AuditLogDataWrapper(AuditLogItemType.GuildUpdated, data, After, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
+        await AuditLogService.StoreItemAsync(item);
     }
 }

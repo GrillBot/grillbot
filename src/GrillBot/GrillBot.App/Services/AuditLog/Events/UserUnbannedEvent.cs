@@ -24,7 +24,7 @@ public class UserUnbannedEvent : AuditEventBase
         if (auditLog == null) return;
 
         var data = new AuditUserInfo(User);
-        var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.Unban, Guild, null, auditLog.User, json, auditLog.Id, null, null);
+        var item = new AuditLogDataWrapper(AuditLogItemType.Unban, data, Guild, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
+        await AuditLogService.StoreItemAsync(item);
     }
 }

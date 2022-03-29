@@ -19,13 +19,13 @@ public class ChannelCreatedEvent : AuditEventBase
     public override async Task ProcessAsync()
     {
         var channel = GuildChannel;
-        var auditLog = (await channel.Guild.GetAuditLogsAsync(10, actionType: ActionType.ChannelCreated).FlattenAsync())
+        var auditLog = (await channel.Guild.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.ChannelCreated).FlattenAsync())
             .FirstOrDefault(o => ((ChannelCreateAuditLogData)o.Data).ChannelId == channel.Id);
 
         if (auditLog == null) return;
 
         var data = new AuditChannelInfo(auditLog.Data as ChannelCreateAuditLogData);
-        var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.ChannelCreated, channel.Guild, channel, auditLog.User, json, auditLog.Id);
+        var item = new AuditLogDataWrapper(AuditLogItemType.ChannelCreated, data, channel.Guild, channel, auditLog.User, auditLog.Id.ToString());
+        await AuditLogService.StoreItemAsync(item);
     }
 }

@@ -1,5 +1,4 @@
-﻿using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Models.AuditLog;
+﻿using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.AuditLog.Events;
@@ -19,7 +18,8 @@ public class UserJoinedEvent : AuditEventBase
     public override async Task ProcessAsync()
     {
         var data = new UserJoinedAuditData(User.Guild);
-        var jsonData = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.UserJoined, User.Guild, null, User, jsonData);
+        var item = new AuditLogDataWrapper(AuditLogItemType.UserJoined, data, User.Guild, processedUser: User);
+
+        await AuditLogService.StoreItemAsync(item);
     }
 }

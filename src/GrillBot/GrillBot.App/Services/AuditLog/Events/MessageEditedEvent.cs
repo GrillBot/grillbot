@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Models.AuditLog;
+﻿using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.AuditLog.Events;
@@ -47,7 +45,7 @@ public class MessageEditedEvent : AuditEventBase
         if (author == null) return;
 
         var data = new MessageEditedData(oldMessage, After);
-        var jsonData = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.MessageEdited, textChannel.Guild, textChannel, author, jsonData);
+        var item = new AuditLogDataWrapper(AuditLogItemType.MessageEdited, data, textChannel.Guild, textChannel, author);
+        await AuditLogService.StoreItemAsync(item);
     }
 }

@@ -26,7 +26,7 @@ public class ThreadDeletedEvent : AuditEventBase
         if (auditLog == null) return;
 
         var data = new AuditThreadInfo(auditLog.Data as ThreadDeleteAuditLogData);
-        var json = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings);
-        await AuditLogService.StoreItemAsync(AuditLogItemType.ThreadDeleted, guild, thread, auditLog.User, json, auditLog.Id);
+        var item = new AuditLogDataWrapper(AuditLogItemType.ThreadDeleted, data, guild, thread, auditLog.User, auditLog.Id.ToString());
+        await AuditLogService.StoreItemAsync(item);
     }
 }

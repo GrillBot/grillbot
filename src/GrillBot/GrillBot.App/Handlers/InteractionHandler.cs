@@ -22,6 +22,9 @@ public class InteractionHandler : ServiceBase
         DiscordClient.InteractionCreated += HandleInteractionAsync;
         InteractionService.SlashCommandExecuted += OnCommandExecutedAsync;
         InteractionService.ContextCommandExecuted += OnCommandExecutedAsync;
+        InteractionService.AutocompleteCommandExecuted += OnCommandExecutedAsync;
+        InteractionService.ComponentCommandExecuted += OnCommandExecutedAsync;
+        InteractionService.ModalCommandExecuted += OnCommandExecutedAsync;
     }
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)
@@ -30,7 +33,9 @@ public class InteractionHandler : ServiceBase
 
         var context = new SocketInteractionContext(DiscordClient, interaction);
 
-        await context.Interaction.DeferAsync();
+        if (interaction is SocketSlashCommand || interaction is SocketMessageCommand || interaction is SocketUserCommand)
+            await context.Interaction.DeferAsync();
+
         await InteractionService.ExecuteCommandAsync(context, Provider);
     }
 
@@ -52,11 +57,12 @@ public class InteractionHandler : ServiceBase
                     break;
                 case InteractionCommandError.Exception:
                     var originalMessage = await context.Interaction.GetOriginalResponseAsync();
-                    await originalMessage.AddReactionAsync(Emojis.Nok);
+                    if (originalMessage != null)
+                        await originalMessage.AddReactionAsync(Emojis.Nok);
                     break;
             }
 
-            if (!string.IsNullOrEmpty(reply))
+            if (!string.IsNullOrEmpty(reply) && context.Interaction is not SocketMessageComponent)
             {
                 await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = "Command failed");
                 var originalMessage = await context.Interaction.GetOriginalResponseAsync();

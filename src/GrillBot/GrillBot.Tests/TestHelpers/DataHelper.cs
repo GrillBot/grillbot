@@ -76,4 +76,15 @@ public static class DataHelper
 
         return msg.Object;
     }
+
+    public static ISelfUser CreateSelfUser()
+    {
+        var mock = new Mock<ISelfUser>();
+
+        mock.Setup(o => o.IsBot).Returns(true);
+        mock.Setup(o => o.Username).Returns("Bot");
+        mock.Setup(o => o.Discriminator).Returns("1111");
+
+        return mock.Object;
+    }
 }

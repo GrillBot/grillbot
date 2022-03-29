@@ -1,8 +1,8 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Moq;
-using Moq.Protected;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.TestHelpers;
@@ -13,6 +13,15 @@ public static class DiscordHelper
     public static DiscordSocketClient CreateClient()
     {
         return new DiscordSocketClient();
+    }
+
+    public static IDiscordClient CreateDiscordClient()
+    {
+        var mock = new Mock<IDiscordClient>();
+
+        mock.Setup(o => o.CurrentUser).Returns(DataHelper.CreateSelfUser());
+
+        return mock.Object;
     }
 
     public static CommandService CreateCommandsService()

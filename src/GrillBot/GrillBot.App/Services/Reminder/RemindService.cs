@@ -1,6 +1,7 @@
 ﻿using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
@@ -18,7 +19,7 @@ public class RemindService : ServiceBase
         Configuration = configuration;
     }
 
-    public async Task CreateRemindAsync(IUser from, IUser to, DateTime at, string message, IMessage originalMessage)
+    public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
     {
         if (DateTime.Now > at)
             throw new ValidationException("Datum a čas upozornění musí být v budoucnosti.");
@@ -48,12 +49,13 @@ public class RemindService : ServiceBase
             At = at,
             FromUserId = from.Id.ToString(),
             Message = message,
-            OriginalMessageId = originalMessage.Id.ToString(),
+            OriginalMessageId = originalMessageId.ToString(),
             ToUserId = to.Id.ToString(),
         };
 
         await context.AddAsync(remind);
         await context.SaveChangesAsync();
+        return remind.Id;
     }
 
     public async Task<int> GetRemindersCountAsync(IUser forUser)
@@ -86,18 +88,24 @@ public class RemindService : ServiceBase
         return await remindersQuery.ToListAsync();
     }
 
-    public async Task CopyAsync(IMessage message, IUser toUser)
+    public async Task CopyAsync(long originalRemindId, IUser toUser)
     {
         using var context = DbFactory.Create();
 
-        var original = await context.Reminders.AsQueryable()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.OriginalMessageId == message.Id.ToString());
+        var original = await context.Reminders.AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == originalRemindId);
+
         if (original == null) return;
         if (original.FromUserId == toUser.Id.ToString()) return;
         if (original.At < DateTime.Now) return;
 
-        await CreateRemindAsync(message.Author, toUser, original.At, original.Message, message);
+        var exists = await context.Reminders.AnyAsync(o => o.OriginalMessageId == original.OriginalMessageId && o.ToUserId == toUser.Id.ToString());
+        if (exists) return;
+
+        var fromUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(original.FromUserId));
+        if (fromUser == null) return;
+
+        await CreateRemindAsync(fromUser, toUser, original.At, original.Message, Convert.ToUInt64(original.OriginalMessageId));
     }
 
     /// <summary>
@@ -113,7 +121,7 @@ public class RemindService : ServiceBase
         var remind = await context.Reminders.AsQueryable()
             .FirstOrDefaultAsync(o => o.Id == id);
 
-        if (remind == null || remind.At <= DateTime.Now || !string.IsNullOrEmpty(remind.RemindMessageId))
+        if (remind == null || !string.IsNullOrEmpty(remind.RemindMessageId))
             throw new ValidationException("Upozornění nebylo nalezeno, uplynula doba upozornění, nebo již proběhlo upozornění.");
 
         if (remind.FromUserId != user.Id.ToString() && remind.ToUserId != user.Id.ToString())
@@ -138,7 +146,7 @@ public class RemindService : ServiceBase
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
         if (remind == null) throw new NotFoundException("Požadované upozornění neexistuje.");
-        if (remind.At <= DateTime.Now || !string.IsNullOrEmpty(remind.RemindMessageId)) throw new InvalidOperationException("Nelze zrušit již zrušené oznámení.");
+        if (!string.IsNullOrEmpty(remind.RemindMessageId)) throw new InvalidOperationException("Nelze zrušit již zrušené oznámení.");
 
         ulong messageId = 0;
         if (notify)
@@ -253,5 +261,33 @@ public class RemindService : ServiceBase
 
         remind.RemindMessageId = messageId.ToString();
         await context.SaveChangesAsync();
+    }
+
+    public async Task<Dictionary<long, string>> GetRemindSuggestionsAsync(IUser user)
+    {
+        using var context = DbFactory.Create();
+
+        var query = context.Users
+            .Where(o => o.Id == user.Id.ToString())
+            .Select(o => new
+            {
+                Incoming = o.IncomingReminders
+                    .Where(o => o.RemindMessageId == null)
+                    .Select(x => new { x.Id, x.At, x.FromUser }),
+                Outgoing = o.OutgoingReminders
+                    .Where(o => o.RemindMessageId == null)
+                    .Select(x => new { x.Id, x.At, x.ToUser })
+            });
+
+        var data = await query.FirstOrDefaultAsync();
+
+        var incoming = data.Incoming.ToDictionary(o => o.Id, o => $"Příchozí #{o.Id} ({o.At.ToCzechFormat()}) od uživatele {o.FromUser.Username}#{o.FromUser.Discriminator}");
+        var outgoing = data.Outgoing.ToDictionary(o => o.Id, o => $"Odchozí #{o.Id} ({o.At.ToCzechFormat()}) pro uživatele {o.ToUser.Username}#{o.ToUser.Discriminator}");
+
+        return incoming
+            .Concat(outgoing)
+            .DistinctBy(o => o.Key)
+            .OrderBy(o => o.Key)
+            .ToDictionary(o => o.Key, o => o.Value);
     }
 }

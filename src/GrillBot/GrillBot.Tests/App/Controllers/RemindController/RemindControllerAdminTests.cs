@@ -2,15 +2,17 @@
 using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Security.Claims;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
-public class RemindControllerTests : ControllerTest<ReminderController>
+public class RemindControllerAdminTests : ControllerTest<ReminderController>
 {
     protected override ReminderController CreateController()
     {
@@ -18,7 +20,18 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         var configuration = ConfigurationHelper.CreateConfiguration();
         var remindService = new RemindService(discordClient, DbFactory, configuration);
 
-        return new ReminderController(DbContext, remindService, discordClient);
+        return new ReminderController(DbContext, remindService)
+        {
+            ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new[] {
+                        new Claim(ClaimTypes.Role, "Admin")
+                    }))
+                }
+            }
+        };
     }
 
     public override void Cleanup()
@@ -50,7 +63,9 @@ public class RemindControllerTests : ControllerTest<ReminderController>
             MessageContains = "Test",
             OnlyWaiting = true,
             OriginalMessageId = "12345",
-            ToUserId = "12345"
+            ToUserId = "12345",
+            SortBy = "touser",
+            SortDesc = true
         };
 
         var result = await Controller.GetRemindMessagesListAsync(filter, CancellationToken.None);
@@ -62,17 +77,6 @@ public class RemindControllerTests : ControllerTest<ReminderController>
     {
         var result = await Controller.CancelRemindAsync(1, false);
         CheckResult<NotFoundObjectResult>(result);
-    }
-
-    [TestMethod]
-    public async Task CancelRemindAsync_WasCancelled_Time()
-    {
-        await DbContext.AddAsync(new Database.Entity.RemindMessage() { At = DateTime.MinValue, FromUserId = "12345", ToUserId = "12345", Message = "Test", Id = 1 });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
-        await DbContext.SaveChangesAsync();
-
-        var result = await Controller.CancelRemindAsync(1, false);
-        CheckResult<ObjectResult>(result);
     }
 
     [TestMethod]

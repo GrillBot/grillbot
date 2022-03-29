@@ -4,7 +4,7 @@ using Quartz;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace GrillBot.Tests.App.Services;
+namespace GrillBot.Tests.Common;
 
 [ExcludeFromCodeCoverage]
 public abstract class JobTest<TJob> where TJob : IJob

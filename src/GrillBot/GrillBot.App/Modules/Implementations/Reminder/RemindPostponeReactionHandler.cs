@@ -1,15 +1,13 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+﻿using GrillBot.App.Infrastructure;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public class RemindPostponeReactionHandler : ReactionEventHandler
 {
     private GrillBotContextFactory DbFactory { get; }
-    private DiscordSocketClient DiscordClient { get; }
+    private IDiscordClient DiscordClient { get; }
 
-    public RemindPostponeReactionHandler(GrillBotContextFactory dbFactory, DiscordSocketClient discordClient)
+    public RemindPostponeReactionHandler(GrillBotContextFactory dbFactory, IDiscordClient discordClient)
     {
         DbFactory = dbFactory;
         DiscordClient = discordClient;
@@ -17,7 +15,7 @@ public class RemindPostponeReactionHandler : ReactionEventHandler
 
     public override async Task<bool> OnReactionAddedAsync(IUserMessage message, IEmote emote, IUser user)
     {
-        if (message.Channel is not IPrivateChannel) return false; // In DM
+        if (message.Channel is not IDMChannel) return false; // In DM
         if (message.Embeds.Count != 1) return false; // Contains embed
         if (emote is not Emoji emoji) return false; // Is Emoji
 

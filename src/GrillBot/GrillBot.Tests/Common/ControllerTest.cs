@@ -3,7 +3,7 @@ using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
 
-namespace GrillBot.Tests.App.Controllers;
+namespace GrillBot.Tests.Common;
 
 [ExcludeFromCodeCoverage]
 public abstract class ControllerTest<TController> where TController : Controller

@@ -4,6 +4,7 @@ using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Common;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;

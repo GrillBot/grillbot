@@ -1,18 +1,18 @@
-﻿using GrillBot.Database.Services;
+﻿using GrillBot.App.Infrastructure;
+using GrillBot.Database.Services;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace GrillBot.Tests.App.Services;
+namespace GrillBot.Tests.Common;
 
 [ExcludeFromCodeCoverage]
-public abstract class ServiceTest<TService> where TService : class
+public abstract class ReactionEventHandlerTest<THandler> where THandler : ReactionEventHandler
 {
-    protected TService Service { get; set; }
+    protected THandler Handler { get; set; }
     protected GrillBotContext DbContext { get; set; }
     protected GrillBotContextFactory DbFactory { get; set; }
 
-    protected abstract TService CreateService();
-    internal TService BuildService() => CreateService();
+    protected abstract THandler CreateHandler();
 
     [TestInitialize]
     public void Initialize()
@@ -20,7 +20,7 @@ public abstract class ServiceTest<TService> where TService : class
         DbFactory = new DbContextBuilder();
         DbContext = DbFactory.Create();
 
-        Service = CreateService();
+        Handler = CreateHandler();
     }
 
     public virtual void Cleanup() { }
@@ -34,10 +34,10 @@ public abstract class ServiceTest<TService> where TService : class
 
         DbContext.Dispose();
 
-        if (Service is IDisposable disposable)
+        if (Handler is IDisposable disposable)
             disposable.Dispose();
 
-        if (Service is IAsyncDisposable asyncDisposable)
+        if (Handler is IAsyncDisposable asyncDisposable)
             asyncDisposable.DisposeAsync().AsTask().Wait();
     }
 }

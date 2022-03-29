@@ -3,6 +3,7 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Common;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;

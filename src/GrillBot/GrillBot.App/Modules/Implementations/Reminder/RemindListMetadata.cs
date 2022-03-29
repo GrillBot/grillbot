@@ -4,7 +4,7 @@ namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public class RemindListMetadata : PaginatedMetadataBase
 {
-    public override string EmbedKind => "Reminder";
+    public override string EmbedKind => "Remind";
 
     public ulong OfUser { get; set; }
 

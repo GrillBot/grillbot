@@ -30,8 +30,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CreateRemindAsync_NotInFuture()
     {
-        await Service.CreateRemindAsync(null, null, DateTime.MinValue, null, null);
-        await Service.CreateRemindAsync(null, null, DateTime.MinValue, null, null);
+        await Service.CreateRemindAsync(null, null, DateTime.MinValue, null, 0);
     }
 
     [TestMethod]
@@ -40,7 +39,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     public async Task CreateRemindAsync_MinimalTime()
     {
         var at = DateTime.Now.AddSeconds(10);
-        await Service.CreateRemindAsync(null, null, at, null, null);
+        await Service.CreateRemindAsync(null, null, at, null, 0);
     }
 
     [TestMethod]
@@ -49,7 +48,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     public async Task CreateRemindAsync_EmptyMessage()
     {
         var at = DateTime.Now.AddHours(12);
-        await Service.CreateRemindAsync(null, null, at, null, null);
+        await Service.CreateRemindAsync(null, null, at, null, 0);
     }
 
     [TestMethod]
@@ -59,7 +58,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var at = DateTime.Now.AddDays(1);
         var msg = DataHelper.CreateMessage();
 
-        await Service.CreateRemindAsync(user, user, at, "msg", msg);
+        await Service.CreateRemindAsync(user, user, at, "msg", msg.Id);
         Assert.IsTrue(true);
     }
 
@@ -71,7 +70,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var at = DateTime.Now.AddDays(1);
         var msg = DataHelper.CreateMessage();
 
-        await Service.CreateRemindAsync(from, to, at, "msg", msg);
+        await Service.CreateRemindAsync(from, to, at, "msg", msg.Id);
         Assert.IsTrue(true);
     }
 
@@ -97,9 +96,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
     public async Task CopyAsync_NotFound()
     {
         var user = DataHelper.CreateDiscordUser();
-        var msg = DataHelper.CreateMessage();
 
-        await Service.CopyAsync(msg, user);
+        await Service.CopyAsync(42, user);
         Assert.IsTrue(true);
     }
 
@@ -110,8 +108,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var msg = DataHelper.CreateMessage();
 
         var at = DateTime.Now.AddDays(1);
-        await Service.CreateRemindAsync(user, user, at, "msg", msg);
-        await Service.CopyAsync(msg, user);
+        var id = await Service.CreateRemindAsync(user, user, at, "msg", msg.Id);
+        await Service.CopyAsync(id, user);
         Assert.IsTrue(true);
     }
 
@@ -127,35 +125,59 @@ public class RemindServiceTests : ServiceTest<RemindService>
             FromUserId = "12345",
             ToUserId = "12345",
             Message = "Message",
-            OriginalMessageId = "12345"
+            OriginalMessageId = "12345",
+            Id = 5
         });
         await DbContext.SaveChangesAsync();
-        var msg = DataHelper.CreateMessage();
 
-        await Service.CopyAsync(msg, toUser);
+        await Service.CopyAsync(5, toUser);
         Assert.IsTrue(true);
     }
 
     [TestMethod]
-    public async Task CopyAsync_Success()
+    public async Task CopyAsync_UserNotFound()
     {
         var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
         var fromUser = DataHelper.CreateDiscordUser();
 
-        await DbContext.InitUserAsync(toUser, CancellationToken.None);
-        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.InitUserAsync(toUser);
+        await DbContext.InitUserAsync(fromUser);
+        await DbContext.InitUserAsync(DataHelper.CreateDiscordUser("Username", 1234567, "1236"));
         await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
             At = DateTime.Now.AddDays(3),
             FromUserId = "12345",
-            ToUserId = "12345",
+            ToUserId = "1234567",
             Message = "Message",
-            OriginalMessageId = "12345"
+            OriginalMessageId = "12345",
+            Id = 6
         });
         await DbContext.SaveChangesAsync();
-        var msg = DataHelper.CreateMessage(fromUser);
 
-        await Service.CopyAsync(msg, toUser);
+        await Service.CopyAsync(6, toUser);
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public async Task CopyAsync_MultipleSame()
+    {
+        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
+        var fromUser = DataHelper.CreateDiscordUser();
+
+        await DbContext.InitUserAsync(toUser);
+        await DbContext.InitUserAsync(fromUser);
+        await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
+        {
+            At = DateTime.Now.AddDays(3),
+            FromUserId = "12345",
+            ToUserId = "123456",
+            Message = "Message",
+            OriginalMessageId = "12345",
+            Id = 6
+        });
+        await DbContext.SaveChangesAsync();
+
+        await Service.CopyAsync(6, toUser);
         Assert.IsTrue(true);
     }
 
@@ -270,5 +292,28 @@ public class RemindServiceTests : ServiceTest<RemindService>
     {
         var result = await Service.GetProcessableReminderIdsAsync();
         Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public async Task GetRemindSuggestionsAsync()
+    {
+        var user = DataHelper.CreateDiscordUser(id: 48286286392);
+
+        var remind = new Database.Entity.RemindMessage()
+        {
+            At = DateTime.Now,
+            FromUser = Database.Entity.User.FromDiscord(user),
+            FromUserId = user.Id.ToString(),
+            Id = 12536358627,
+            Message = "Message",
+            OriginalMessageId = "12345",
+            ToUser = Database.Entity.User.FromDiscord(user),
+            ToUserId = user.Id.ToString()
+        };
+        await DbContext.AddAsync(remind);
+        await DbContext.SaveChangesAsync();
+
+        var suggestions = await Service.GetRemindSuggestionsAsync(user);
+        Assert.AreEqual(1, suggestions.Count);
     }
 }

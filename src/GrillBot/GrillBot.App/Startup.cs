@@ -69,8 +69,11 @@ public class Startup
             UseCompiledLambda = true
         };
 
+        var discordClient = new DiscordSocketClient(discordConfig);
+
         services
-            .AddSingleton(new DiscordSocketClient(discordConfig))
+            .AddSingleton(discordClient)
+            .AddSingleton<IDiscordClient>(discordClient)
             .AddSingleton(new CommandService(commandsConfig))
             .AddSingleton(container => new InteractionService(container.GetRequiredService<DiscordSocketClient>(), interactionsConfig))
             .AddSingleton<DiscordSyncService>()

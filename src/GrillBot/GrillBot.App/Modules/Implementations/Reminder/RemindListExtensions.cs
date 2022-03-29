@@ -1,7 +1,5 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Infrastructure.Embeds;
+﻿using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;
@@ -28,7 +26,7 @@ public static class RemindListExtensions
                 var from = await client.FindUserAsync(Convert.ToUInt64(remind.FromUserId));
 
                 var title = $"#{remind.Id} - Od {from.GetDisplayName()} v {remind.At.ToCzechFormat()} (za {(remind.At - DateTime.Now).Humanize(culture: new CultureInfo("cs-CZ"))})";
-                embed.AddField(title, remind.Message.Substring(0, Math.Min(remind.Message.Length, EmbedFieldBuilder.MaxFieldValueLength)));
+                embed.AddField(title, remind.Message[..Math.Min(remind.Message.Length, EmbedFieldBuilder.MaxFieldValueLength)]);
             }
         }
 

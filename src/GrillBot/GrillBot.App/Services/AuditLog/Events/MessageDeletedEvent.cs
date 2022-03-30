@@ -42,7 +42,7 @@ public class MessageDeletedEvent : AuditEventBase
         var removedBy = auditLog?.User ?? deletedMessage.Author;
 
         var attachments = await GetAndStoreAttachmentsAsync(deletedMessage);
-        var item = new AuditLogDataWrapper(AuditLogItemType.MessageDeleted, data, textChannel.Guild, textChannel, removedBy, auditLog.Id.ToString(), files: attachments);
+        var item = new AuditLogDataWrapper(AuditLogItemType.MessageDeleted, data, textChannel.Guild, textChannel, removedBy, auditLog?.Id.ToString(), files: attachments);
         await AuditLogService.StoreItemAsync(item);
     }
 

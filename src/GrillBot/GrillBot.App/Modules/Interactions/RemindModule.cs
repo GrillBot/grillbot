@@ -35,7 +35,7 @@ public class RemindModule : Infrastructure.InteractionsModuleBase
 
             await SetResponseAsync(
                 $"Připomenutí vytvořeno. Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {Emojis.PersonRisingHand}",
-                components: new ComponentBuilder().WithButton(customId: $"remind:copy:{remindId}", emote: Emojis.PersonRisingHand).Build()
+                components: new ComponentBuilder().WithButton(customId: $"remind_copy:{remindId}", emote: Emojis.PersonRisingHand).Build()
             );
         }
         catch (ValidationException ex)
@@ -88,7 +88,7 @@ public class RemindModule : Infrastructure.InteractionsModuleBase
         await handler.ProcessAsync(Context);
     }
 
-    [ComponentInteraction("remind:copy:*", ignoreGroupNames: true)]
+    [ComponentInteraction("remind_copy:*", ignoreGroupNames: true)]
     public async Task HandleRemindCopyAsync(long remindId)
     {
         try

@@ -3,7 +3,6 @@ using GrillBot.App.Services;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -16,12 +15,6 @@ public class GuildControllerTests : ControllerTest<GuildController>
         var guildService = new GuildService(discordClient, DbFactory);
 
         return new GuildController(DbContext, discordClient, guildService);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

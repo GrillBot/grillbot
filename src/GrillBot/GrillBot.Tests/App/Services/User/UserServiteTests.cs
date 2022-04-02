@@ -2,7 +2,6 @@
 using GrillBot.App.Services.User;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Services.User;
 
@@ -15,12 +14,6 @@ public class UserServiteTests : ServiceTest<UserService>
         var discordClient = DiscordHelper.CreateClient();
 
         return new UserService(DbFactory, configuration, discordClient);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

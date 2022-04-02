@@ -29,6 +29,7 @@ public abstract class ServiceTest<TService> where TService : class
     public void TestClean()
     {
         DbContext.ChangeTracker.Clear();
+        DatabaseHelper.ClearDatabase(DbContext);
 
         Cleanup();
 

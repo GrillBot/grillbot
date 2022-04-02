@@ -6,7 +6,6 @@ using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Params;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -22,17 +21,6 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var channelService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
 
         return new ChannelController(discordClient, DbContext, messageCache, channelService);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
-        DbContext.UserChannels.RemoveRange(DbContext.UserChannels.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.MessageCacheIndexes.RemoveRange(DbContext.MessageCacheIndexes.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

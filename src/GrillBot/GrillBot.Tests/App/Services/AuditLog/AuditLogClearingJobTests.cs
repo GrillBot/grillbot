@@ -4,7 +4,6 @@ using GrillBot.Database.Entity;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
 
@@ -22,18 +21,6 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
 
         return new AuditLogClearingJob(configuration, DbFactory, fileStorage, loggingService);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.AuditLogs.RemoveRange(DbContext.AuditLogs.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.AuditLogFiles.RemoveRange(DbContext.AuditLogFiles.AsEnumerable());
-        DbContext.Invites.RemoveRange(DbContext.Invites.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

@@ -4,7 +4,6 @@ using GrillBot.App.Services.User;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -19,15 +18,6 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         var searchingService = new SearchingService(discordClient, DbFactory, userService);
 
         return new SearchingController(searchingService);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.SearchItems.RemoveRange(DbContext.SearchItems.AsEnumerable());
-        DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

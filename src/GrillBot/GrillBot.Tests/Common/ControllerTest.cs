@@ -37,6 +37,7 @@ public abstract class ControllerTest<TController> where TController : Controller
     public void TestClean()
     {
         DbContext.ChangeTracker.Clear();
+        DatabaseHelper.ClearDatabase(DbContext);
 
         Cleanup();
 

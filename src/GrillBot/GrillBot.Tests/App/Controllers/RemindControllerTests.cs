@@ -5,7 +5,6 @@ using GrillBot.Data.Models.API.Reminder;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -19,13 +18,6 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         var remindService = new RemindService(discordClient, DbFactory, configuration);
 
         return new ReminderController(DbContext, remindService);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.RemoveRange(DbContext.Reminders.AsEnumerable());
-        DbContext.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

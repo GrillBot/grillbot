@@ -3,7 +3,6 @@ using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Services.Unverify;
 
@@ -14,16 +13,6 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
     {
         var discordClient = DiscordHelper.CreateClient();
         return new UnverifyLogger(discordClient, DbFactory);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.Unverifies.RemoveRange(DbContext.Unverifies.AsEnumerable());
-        DbContext.UnverifyLogs.RemoveRange(DbContext.UnverifyLogs.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

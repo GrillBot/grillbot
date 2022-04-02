@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.Data.Models.API.Permissions;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -12,13 +11,6 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
     {
         var discordClient = DiscordHelper.CreateClient();
         return new PermissionsController(DbContext, discordClient);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.ExplicitPermissions.RemoveRange(DbContext.ExplicitPermissions.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

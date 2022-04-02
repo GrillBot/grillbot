@@ -9,7 +9,6 @@ using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -30,16 +29,6 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var externalHelpService = new ExternalCommandsHelpService(discordClient, configuration, memoryCache, initializationService, provider);
 
         return new UsersController(DbContext, discordClient, helpService, externalHelpService);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.Emotes.RemoveRange(DbContext.Emotes.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.AuditLogs.RemoveRange(DbContext.AuditLogs.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

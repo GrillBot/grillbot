@@ -3,7 +3,6 @@ using GrillBot.Database.Services;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Services.Reminder;
 
@@ -16,13 +15,6 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var configuration = ConfigurationHelper.CreateConfiguration();
 
         return new RemindService(discordClient, DbFactory, configuration);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Reminders.RemoveRange(DbContext.Reminders.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

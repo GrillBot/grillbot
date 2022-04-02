@@ -6,7 +6,6 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -28,16 +27,6 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DbFactory, loggingService);
 
         return new UnverifyController(unverifyService, discordClient, DbContext);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Unverifies.RemoveRange(DbContext.Unverifies.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.UnverifyLogs.RemoveRange(DbContext.UnverifyLogs.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

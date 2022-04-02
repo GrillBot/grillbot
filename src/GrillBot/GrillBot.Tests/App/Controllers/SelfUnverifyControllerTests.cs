@@ -14,12 +14,6 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
         return new SelfUnverifyController(service);
     }
 
-    public override void Cleanup()
-    {
-        DbContext.SelfunverifyKeepables.RemoveRange(DbContext.SelfunverifyKeepables.AsQueryable());
-        DbContext.SaveChanges();
-    }
-
     [TestMethod]
     public async Task AddKeepablesAsync_NotExists()
     {

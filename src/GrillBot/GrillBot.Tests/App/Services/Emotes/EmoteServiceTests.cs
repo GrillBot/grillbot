@@ -4,10 +4,8 @@ using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.Common;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Services.Emotes;
 
@@ -24,15 +22,6 @@ public class EmoteServiceTests : ServiceTest<EmoteService>
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
 
         return new EmoteService(discordClient, DbFactory, configuration, messageCache);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.Emotes.RemoveRange(DbContext.Emotes.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     private async Task FillDataAsync()

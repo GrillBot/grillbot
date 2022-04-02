@@ -30,6 +30,7 @@ public abstract class JobTest<TJob> where TJob : IJob
     public void TestClean()
     {
         DbContext.ChangeTracker.Clear();
+        DatabaseHelper.ClearDatabase(DbContext);
 
         Cleanup();
 

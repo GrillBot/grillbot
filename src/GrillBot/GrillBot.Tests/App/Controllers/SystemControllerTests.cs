@@ -6,7 +6,6 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -21,12 +20,6 @@ public class SystemControllerTests : ControllerTest<SystemController>
         var initialization = new DiscordInitializationService(logger);
 
         return new SystemController(environment, client, DbContext, initialization);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.AuditLogs.RemoveRange(DbContext.AuditLogs.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

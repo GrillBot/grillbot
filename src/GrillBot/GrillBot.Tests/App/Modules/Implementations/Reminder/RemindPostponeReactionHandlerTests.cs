@@ -2,13 +2,9 @@
 using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.Data;
 using GrillBot.Database.Entity;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Modules.Implementations.Reminder;
 

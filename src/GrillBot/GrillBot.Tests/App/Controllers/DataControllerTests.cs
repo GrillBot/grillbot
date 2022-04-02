@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.Database.Entity;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -16,14 +15,6 @@ public class DataControllerTests : ControllerTest<DataController>
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
 
         return new DataController(discordClient, DbContext, commandsService, configuration, interactions);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

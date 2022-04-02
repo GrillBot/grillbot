@@ -29,6 +29,7 @@ public abstract class ReactionEventHandlerTest<THandler> where THandler : Reacti
     public void TestClean()
     {
         DbContext.ChangeTracker.Clear();
+        DatabaseHelper.ClearDatabase(DbContext);
 
         Cleanup();
 

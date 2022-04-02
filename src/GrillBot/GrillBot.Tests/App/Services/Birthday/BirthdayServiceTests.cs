@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Services.Birthday;
 using GrillBot.Database.Services;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Services.Birthday;
 
@@ -12,12 +11,6 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     {
         var discordClient = DiscordHelper.CreateClient();
         return new BirthdayService(discordClient, DbFactory);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

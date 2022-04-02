@@ -10,12 +10,6 @@ public class SelfUnverifyServiceTests : ServiceTest<SelfunverifyService>
         return new SelfunverifyService(null, DbFactory);
     }
 
-    public override void Cleanup()
-    {
-        DbContext.SelfunverifyKeepables.RemoveRange(DbContext.SelfunverifyKeepables);
-        DbContext.SaveChanges();
-    }
-
     [TestMethod]
     public async Task GetKeepablesAsync_WithSearch()
     {

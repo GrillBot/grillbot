@@ -6,7 +6,6 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -24,16 +23,6 @@ public class InviteControllerTests : ControllerTest<InviteController>
         var service = new InviteService(discordClient, DbFactory, auditLogService);
 
         return new InviteController(service);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.ChangeTracker.Clear();
-        DbContext.Invites.RemoveRange(DbContext.Invites.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

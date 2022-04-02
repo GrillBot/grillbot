@@ -20,16 +20,6 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
         return new SearchingService(discordClient, DbFactory, userService);
     }
 
-    public override void Cleanup()
-    {
-        DbContext.Users.RemoveRange(DbContext.Users);
-        DbContext.Guilds.RemoveRange(DbContext.Guilds);
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers);
-        DbContext.SearchItems.RemoveRange(DbContext.SearchItems);
-        DbContext.Channels.RemoveRange(DbContext.Channels);
-        DbContext.SaveChanges();
-    }
-
     [TestMethod]
     [ExcludeFromCodeCoverage]
     [ExpectedException(typeof(ValidationException))]

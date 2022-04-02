@@ -7,7 +7,6 @@ using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Moq;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
 
@@ -23,16 +22,6 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         var storage = FileStorageHelper.Create(configuration);
 
         return new AuditLogService(discordClient, DbFactory, messageCache, storage, initializationService);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.AuditLogs.RemoveRange(DbContext.AuditLogs.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

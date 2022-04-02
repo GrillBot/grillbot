@@ -3,7 +3,6 @@ using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Discord;
 using GrillBot.Data.Models.API.AutoReply;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -19,12 +18,6 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         var service = new AutoReplyService(configuration, discordClient, DbFactory, initializationService);
 
         return new AutoReplyController(service);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.AutoReplies.RemoveRange(DbContext.AutoReplies.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

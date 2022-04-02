@@ -7,7 +7,6 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Database.Entity;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -24,17 +23,6 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         var auditLogService = new AuditLogService(discordClient, DbFactory, cache, fileStorage, initializationService);
 
         return new AuditLogController(auditLogService);
-    }
-
-    public override void Cleanup()
-    {
-        DbContext.AuditLogs.RemoveRange(DbContext.AuditLogs.AsEnumerable());
-        DbContext.Users.RemoveRange(DbContext.Users.AsEnumerable());
-        DbContext.Guilds.RemoveRange(DbContext.Guilds.AsEnumerable());
-        DbContext.Channels.RemoveRange(DbContext.Channels.AsEnumerable());
-        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers.AsEnumerable());
-        DbContext.MessageCacheIndexes.RemoveRange(DbContext.MessageCacheIndexes.AsEnumerable());
-        DbContext.SaveChanges();
     }
 
     [TestMethod]

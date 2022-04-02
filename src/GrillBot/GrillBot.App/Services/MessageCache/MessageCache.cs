@@ -10,6 +10,12 @@ public partial class MessageCache : ServiceBase
 {
     private ConcurrentDictionary<ulong, CachedMessage> Cache { get; }
     private ConcurrentBag<ulong> InitializedChannels { get; }
+    private static SemaphoreSlim IndexLock { get; }
+
+    static MessageCache()
+    {
+        IndexLock = new SemaphoreSlim(1);
+    }
 
     public MessageCache(DiscordSocketClient client, DiscordInitializationService initializationService,
         GrillBotContextFactory dbFactory) : base(client, dbFactory, initializationService)

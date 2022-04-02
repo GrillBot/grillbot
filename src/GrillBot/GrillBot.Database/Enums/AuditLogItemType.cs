@@ -79,7 +79,7 @@ namespace GrillBot.Database.Enums
         Unban = 12,
 
         /// <summary>
-        /// Guild user updated.
+        /// User updated.
         /// </summary>
         [Display(Name = "Upraven uživatel")]
         MemberUpdated = 13,

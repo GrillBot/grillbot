@@ -18,6 +18,13 @@ namespace GrillBot.Data.Models.AuditLog
             Discriminator = user.Discriminator;
         }
 
+        public AuditUserInfo(Database.Entity.User user)
+        {
+            Id = Convert.ToUInt64(user.Id);
+            Username = user.Username;
+            Discriminator = user.Discriminator;
+        }
+
         public override string ToString() => string.IsNullOrEmpty(Discriminator) ? Username : $"{Username}#{Discriminator}";
 
         public int CompareTo(object obj)

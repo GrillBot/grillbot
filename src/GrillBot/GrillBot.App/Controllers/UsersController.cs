@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Entity;
 using GrillBot.Data.Models.API.Help;
 using Microsoft.AspNetCore.Http;
 using GrillBot.App.Services.CommandsHelp;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.AuditLog;
+using GrillBot.App.Services.AuditLog;
 
 namespace GrillBot.App.Controllers;
 
@@ -23,14 +24,16 @@ public class UsersController : Controller
     private DiscordSocketClient DiscordClient { get; }
     private CommandsHelpService HelpService { get; }
     private ExternalCommandsHelpService ExternalCommandsHelpService { get; }
+    private AuditLogService AuditLogService { get; }
 
     public UsersController(GrillBotContext dbContext, DiscordSocketClient discordClient, CommandsHelpService helpService,
-        ExternalCommandsHelpService externalCommandsHelpService)
+        ExternalCommandsHelpService externalCommandsHelpService, AuditLogService auditLogService)
     {
         DbContext = dbContext;
         DiscordClient = discordClient;
         HelpService = helpService;
         ExternalCommandsHelpService = externalCommandsHelpService;
+        AuditLogService = auditLogService;
     }
 
     /// <summary>
@@ -176,6 +179,8 @@ public class UsersController : Controller
         if (user == null)
             return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
 
+        var before = user.Clone();
+
         user.Note = parameters.Note;
         user.SelfUnverifyMinimalTime = parameters.SelfUnverifyMinimalTime;
 
@@ -196,13 +201,16 @@ public class UsersController : Controller
 
         var userId = User.GetUserId();
         var discordUser = await DiscordClient.FindUserAsync(userId, cancellationToken);
-        await DbContext.InitUserAsync(discordUser, cancellationToken);
 
-        var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, discordUser,
-            $"Uživatel {user.Username}#{user.Discriminator} byl aktualizován (Flags:{user.Flags},Note:{user.Note})", null);
+        var auditLogItem = new AuditLogDataWrapper(
+            AuditLogItemType.MemberUpdated,
+            new MemberUpdatedData(before, user),
+            processedUser: discordUser
+        );
 
-        await DbContext.AddAsync(logItem, cancellationToken);
+        await AuditLogService.StoreItemAsync(auditLogItem, cancellationToken);
         await DbContext.SaveChangesAsync(cancellationToken);
+
         return await GetUserDetailAsync(id, cancellationToken);
     }
 

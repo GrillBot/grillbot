@@ -46,6 +46,21 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     }
 
     [TestMethod]
+    public async Task GetSearchListAsync_WithFilter_AsUser()
+    {
+        var filter = new GetSearchingListParams()
+        {
+            ChannelId = "12345",
+            GuildId = "12345",
+            UserId = "12345",
+            SortDesc = true
+        };
+
+        var result = await UserController.GetSearchListAsync(filter, CancellationToken.None);
+        CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
+    }
+
+    [TestMethod]
     public async Task GetSearchListAsync_WithoutFilter()
     {
         await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Name = "Guild", Id = "1" });

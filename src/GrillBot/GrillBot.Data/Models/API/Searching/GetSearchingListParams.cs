@@ -22,6 +22,11 @@ namespace GrillBot.Data.Models.API.Searching
         public string ChannelId { get; set; }
 
         /// <summary>
+        /// Substring contained in message.
+        /// </summary>
+        public string MessageQuery { get; set; }
+
+        /// <summary>
         /// Sorting (Id, User, Guild, Channel)
         /// </summary>
         public string SortBy { get; set; } = "Id";
@@ -41,6 +46,9 @@ namespace GrillBot.Data.Models.API.Searching
 
             if (!string.IsNullOrEmpty(ChannelId))
                 query = query.Where(o => o.ChannelId == ChannelId);
+
+            if (!string.IsNullOrEmpty(MessageQuery))
+                query = query.Where(o => o.MessageContent.Contains(MessageQuery));
 
             return SortBy.ToLower() switch
             {

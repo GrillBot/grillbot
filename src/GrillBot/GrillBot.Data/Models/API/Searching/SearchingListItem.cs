@@ -32,11 +32,6 @@ namespace GrillBot.Data.Models.API.Searching
         /// </summary>
         public string Message { get; set; }
 
-        /// <summary>
-        /// Jump link to message.
-        /// </summary>
-        public string JumpLink { get; set; }
-
         public SearchingListItem() { }
 
         public SearchingListItem(Entities.SearchItem entity)
@@ -46,7 +41,6 @@ namespace GrillBot.Data.Models.API.Searching
             Guild = new Guild(entity.Guild);
             Channel = new Channel(entity.Channel);
             Message = entity.MessageContent;
-            JumpLink = entity.JumpUrl;
         }
     }
 }

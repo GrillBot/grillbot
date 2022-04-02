@@ -1,71 +1,71 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.User;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
-using System.Text.RegularExpressions;
+using System.Security.Claims;
 
 namespace GrillBot.App.Services;
 
 [Initializable]
 public class SearchingService : ServiceBase
 {
-    private MessageCache.MessageCache MessageCache { get; }
-    private Regex EmptyMessageRegex { get; }
+    private UserService UserService { get; }
 
-    public SearchingService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache messageCache) : base(client, dbFactory)
+    public SearchingService(DiscordSocketClient client, GrillBotContextFactory dbFactory, UserService userService) : base(client, dbFactory)
     {
-        MessageCache = messageCache;
-
-        EmptyMessageRegex = new Regex(@"(^.)hledam(\s*add)?$");
+        UserService = userService;
     }
 
-    public async Task CreateAsync(IGuild guild, IUser user, IChannel channel, IUserMessage message)
+    public async Task CreateAsync(IGuild guild, IUser user, IChannel channel, string message)
     {
-        var messageContent = ParseAndCheckMessage(message);
+        var content = CheckMessage(message);
 
         using var context = DbFactory.Create();
 
-        await context.InitUserAsync(user, CancellationToken.None);
-        await context.InitGuildAsync(guild, CancellationToken.None);
-        await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel).Value, CancellationToken.None);
+        await context.InitUserAsync(user);
+        await context.InitGuildAsync(guild);
+        await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel) ?? ChannelType.DM);
+        await context.InitGuildUserAsync(guild, user as IGuildUser);
 
         var entity = new SearchItem()
         {
             ChannelId = channel.Id.ToString(),
             GuildId = guild.Id.ToString(),
             UserId = user.Id.ToString(),
-            JumpUrl = message.GetJumpUrl(),
-            MessageContent = messageContent
+            MessageContent = content
         };
 
         await context.AddAsync(entity);
         await context.SaveChangesAsync();
     }
 
-    private string ParseAndCheckMessage(IUserMessage message)
+    private static string CheckMessage(string message)
     {
-        var messageContent = GetMessageContent(message);
-        if (string.IsNullOrEmpty(messageContent))
+        if (string.IsNullOrEmpty(message))
             throw new ValidationException("Obsah zprávy nesmí být prázdný.");
 
-        if (messageContent.Length > EmbedFieldBuilder.MaxFieldValueLength)
+        message = message.Trim();
+        if (message.Length > EmbedFieldBuilder.MaxFieldValueLength)
             throw new ValidationException($"Zpráva nesmí být delší, než {EmbedFieldBuilder.MaxFieldValueLength} znaků.");
 
-        return messageContent;
+        return message;
     }
 
-    public async Task RemoveSearchAsync(long id, IUser executor, bool admin)
+    public async Task RemoveSearchAsync(long id, IGuildUser executor)
     {
+        var isAdmin = (await UserService.IsUserBotAdminAsync(executor)) || executor.GuildPermissions.Administrator || executor.GuildPermissions.ManageMessages;
+
         using var context = DbFactory.Create();
 
         var search = await context.SearchItems.AsQueryable().FirstOrDefaultAsync(o => o.Id == id);
         if (search == null) return;
 
-        if (!admin && executor.Id != Convert.ToUInt64(search.UserId))
-            throw new UnauthorizedAccessException("Na provedení tohoto příkazu nemáš oprávnění.");
+        if (!isAdmin && executor.Id != Convert.ToUInt64(search.UserId))
+            throw new UnauthorizedAccessException("Toto hledání jsi nezaložil ty a současně nemáš vyšší oprávnění hledání smazat.");
 
         context.Remove(search);
         await context.SaveChangesAsync();
@@ -83,40 +83,66 @@ public class SearchingService : ServiceBase
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<List<SearchingItem>> GetSearchListAsync(SocketGuild guild, ISocketMessageChannel channel, int page)
+    public async Task<List<SearchingItem>> GetSearchListAsync(IGuild guild, ITextChannel channel, string messageQuery, int page)
     {
         var parameters = new GetSearchingListParams()
         {
             ChannelId = channel.Id.ToString(),
             GuildId = guild.Id.ToString(),
-            Page = page,
+            Page = page + 1,
             PageSize = EmbedBuilder.MaxFieldCount,
             SortDesc = false,
-            SortBy = "Id"
+            SortBy = "Id",
+            MessageQuery = messageQuery
         };
 
-        var data = await GetPaginatedListAsync(parameters, CancellationToken.None);
+        var data = await GetPaginatedListAsync(parameters, null, CancellationToken.None);
 
         return data.Data.ConvertAll(o => new SearchingItem()
         {
-            JumpLink = o.JumpLink,
             DisplayName = o.User.Username,
             Id = o.Id,
             Message = o.Message
         });
     }
 
-    public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters, CancellationToken cancellationToken)
+    public async Task<List<SearchingListItem>> GetListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser,
+        CancellationToken cancellationToken)
     {
         using var context = DbFactory.Create();
 
-        var query = context.SearchItems.AsSplitQuery()
+        var query = context.SearchItems
             .Include(o => o.Channel)
             .Include(o => o.Guild)
             .Include(o => o.User)
+            .Where(o => o.Channel.ChannelType != ChannelType.DM)
             .AsQueryable();
 
-        query = parameters.CreateQuery(query);
+        if (loggedUser?.HaveUserPermission() == true)
+        {
+            var loggedUserId = loggedUser.GetUserId();
+            var mutualGuilds = DiscordClient.FindMutualGuilds(loggedUserId).ToList();
+
+            if (!string.IsNullOrEmpty(parameters.GuildId) && !mutualGuilds.Any(o => o.Id.ToString() == parameters.GuildId))
+                parameters.GuildId = null;
+
+            parameters.UserId = loggedUserId.ToString();
+
+            if (!string.IsNullOrEmpty(parameters.GuildId))
+            {
+                query = parameters.CreateQuery(query);
+            }
+            else
+            {
+                var mutualGuildIds = mutualGuilds.ConvertAll(o => o.Id.ToString());
+                query = parameters.CreateQuery(query).Where(o => mutualGuildIds.Contains(o.GuildId));
+            }
+        }
+        else
+        {
+            query = parameters.CreateQuery(query);
+        }
+
         var data = await query.ToListAsync(cancellationToken);
 
         var results = new List<SearchingListItem>();
@@ -151,45 +177,60 @@ public class SearchingService : ServiceBase
                 continue;
             }
 
-            if (string.IsNullOrEmpty(item.MessageContent))
-            {
-                // Old version. Download message, store to entity/db and return object. Next load will take from DB.
-                var message = await MessageCache.GetMessageAsync(channel, Convert.ToUInt64(item.MessageId));
-                if (message == null)
-                {
-                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
-                    continue;
-                }
-
-                var messageContent = GetMessageContent(message);
-                if (string.IsNullOrEmpty(messageContent))
-                {
-                    CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
-                    continue;
-                }
-
-                item.MessageContent = messageContent.Cut(EmbedFieldBuilder.MaxFieldValueLength);
-                item.JumpUrl = message.GetJumpUrl();
-                item.MessageId = null;
-            }
-
             results.Add(new SearchingListItem(item));
         }
 
         await context.SaveChangesAsync(cancellationToken);
+        return results;
+    }
+
+    public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser,
+        CancellationToken cancellationToken)
+    {
+        var results = await GetListAsync(parameters, loggedUser, cancellationToken);
         return PaginatedResponse<SearchingListItem>.Create(results, parameters);
     }
 
-    private string GetMessageContent(IMessage message)
+    public async Task<int> GetItemsCountAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser,
+        CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(message?.Content) || EmptyMessageRegex.IsMatch(message.Content)) return null;
+        var results = await GetListAsync(parameters, loggedUser, cancellationToken);
+        return results.Count;
+    }
 
-        if (message.Content[1..].StartsWith("hledam add"))
-            return message.Content[("hledam add".Length + 1)..].Trim();
+    public async Task<int> GetItemsCountAsync(IGuild guild, ITextChannel channel, string messageQuery)
+    {
+        var parameters = new GetSearchingListParams()
+        {
+            ChannelId = channel.Id.ToString(),
+            GuildId = guild.Id.ToString(),
+            Page = 1,
+            PageSize = EmbedBuilder.MaxFieldCount,
+            SortDesc = false,
+            SortBy = "Id",
+            MessageQuery = messageQuery
+        };
 
-        if (message.Content[1..].StartsWith("hledam"))
-            return message.Content[("hledam".Length + 1)..].Trim();
+        return await GetItemsCountAsync(parameters, null, CancellationToken.None);
+    }
 
-        return message.Content.Trim();
+    public async Task<Dictionary<long, string>> GenerateSuggestionsAsync(IGuildUser user, IGuild guild, IChannel channel)
+    {
+        var isBotAdmin = await UserService.IsUserBotAdminAsync(user);
+        var isAdmin = isBotAdmin || user.GuildPermissions.Administrator || user.GuildPermissions.ManageMessages;
+
+        var parameters = new GetSearchingListParams()
+        {
+            GuildId = guild.Id.ToString(),
+            ChannelId = channel.Id.ToString(),
+            UserId = isAdmin ? null : user.Id.ToString()
+        };
+
+        var items = await GetListAsync(parameters, null, CancellationToken.None);
+
+        return items.Take(25).ToDictionary(
+            o => o.Id,
+            o => $"#{o.Id} - " + (isAdmin ? $"{o.User.Username}#{o.User.Discriminator} - " : "") + $"({o.Message.Cut(20)})"
+        );
     }
 }

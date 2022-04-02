@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services;
-using GrillBot.App.Services.Discord;
-using GrillBot.App.Services.MessageCache;
+using GrillBot.App.Services.User;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
 using Microsoft.AspNetCore.Mvc;
@@ -15,9 +14,9 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     protected override SearchingController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
-        var searchingService = new SearchingService(discordClient, DbFactory, messageCache);
+        var configuration = ConfigurationHelper.CreateConfiguration();
+        var userService = new UserService(DbFactory, configuration, discordClient);
+        var searchingService = new SearchingService(discordClient, DbFactory, userService);
 
         return new SearchingController(searchingService);
     }

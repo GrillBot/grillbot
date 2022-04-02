@@ -1,6 +1,8 @@
 ﻿using GrillBot.App.Services;
-using GrillBot.App.Services.Discord;
-using GrillBot.App.Services.MessageCache;
+using GrillBot.App.Services.User;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
@@ -12,10 +14,20 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     protected override SearchingService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var configuration = ConfigurationHelper.CreateConfiguration();
+        var userService = new UserService(DbFactory, configuration, discordClient);
 
-        return new SearchingService(discordClient, DbFactory, messageCache);
+        return new SearchingService(discordClient, DbFactory, userService);
+    }
+
+    public override void Cleanup()
+    {
+        DbContext.Users.RemoveRange(DbContext.Users);
+        DbContext.Guilds.RemoveRange(DbContext.Guilds);
+        DbContext.GuildUsers.RemoveRange(DbContext.GuildUsers);
+        DbContext.SearchItems.RemoveRange(DbContext.SearchItems);
+        DbContext.Channels.RemoveRange(DbContext.Channels);
+        DbContext.SaveChanges();
     }
 
     [TestMethod]
@@ -31,17 +43,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CreateAsync_EmptyMessage()
     {
-        var message = DataHelper.CreateMessage(content: "");
-        await Service.CreateAsync(null, null, null, message);
-    }
-
-    [TestMethod]
-    [ExcludeFromCodeCoverage]
-    [ExpectedException(typeof(ValidationException))]
-    public async Task CreateAsync_EmptyRegexMessage()
-    {
-        var message = DataHelper.CreateMessage(content: "$hledam");
-        await Service.CreateAsync(null, null, null, message);
+        await Service.CreateAsync(null, null, null, "");
     }
 
     [TestMethod]
@@ -50,6 +52,127 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     public async Task CreateAsync_LongMessage()
     {
         var message = DataHelper.CreateMessage(content: new string('c', 5000));
-        await Service.CreateAsync(null, null, null, message);
+        await Service.CreateAsync(null, null, null, message.Content);
+    }
+
+    [TestMethod]
+    public async Task CreateAsync_Success()
+    {
+        var guild = DataHelper.CreateGuild();
+        var user = DataHelper.CreateGuildUser();
+        var channel = DataHelper.CreateChannel();
+
+        await Service.CreateAsync(guild, user, channel, "ahoj");
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    [ExcludeFromCodeCoverage]
+    [ExpectedException(typeof(UnauthorizedAccessException))]
+    public async Task RemoveSearchAsync_NotValidUser()
+    {
+        var guild = DataHelper.CreateGuild();
+        var channel = DataHelper.CreateChannel();
+        var user = DataHelper.CreateGuildUser(id: 654321);
+        var anotherUser = DataHelper.CreateGuildUser(id: 123456);
+
+        await DbContext.AddAsync(new SearchItem()
+        {
+            Channel = GuildChannel.FromDiscord(guild, channel, Discord.ChannelType.Text),
+            ChannelId = channel.Id.ToString(),
+            Guild = Guild.FromDiscord(guild),
+            GuildId = guild.Id.ToString(),
+            Id = 42,
+            MessageContent = "Ahoj",
+            User = Database.Entity.User.FromDiscord(user),
+            UserId = user.Id.ToString()
+        });
+
+        await DbContext.SaveChangesAsync();
+        await Service.RemoveSearchAsync(42, anotherUser);
+    }
+
+    [TestMethod]
+    public async Task RemoveSearchAsync_Admin()
+    {
+        var guild = DataHelper.CreateGuild();
+        var channel = DataHelper.CreateChannel();
+        var user = DataHelper.CreateGuildUser(id: 654321);
+        var anotherUser = DataHelper.CreateGuildUser(id: 123456);
+
+        await DbContext.AddAsync(new SearchItem()
+        {
+            Channel = GuildChannel.FromDiscord(guild, channel, Discord.ChannelType.Text),
+            ChannelId = channel.Id.ToString(),
+            Guild = Guild.FromDiscord(guild),
+            GuildId = guild.Id.ToString(),
+            Id = 42,
+            MessageContent = "Ahoj",
+            User = Database.Entity.User.FromDiscord(user),
+            UserId = user.Id.ToString()
+        });
+
+        var userEntity = Database.Entity.User.FromDiscord(anotherUser);
+        userEntity.Flags |= (int)UserFlags.BotAdmin;
+        await DbContext.AddAsync(userEntity);
+
+        await DbContext.SaveChangesAsync();
+        await Service.RemoveSearchAsync(42, anotherUser);
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public async Task RemoveSearchAsync_NotFound()
+    {
+        var anotherUser = DataHelper.CreateGuildUser(id: 123456);
+        await Service.RemoveSearchAsync(42, anotherUser);
+
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public async Task GetSearchListAsync()
+    {
+        var guild = DataHelper.CreateGuild();
+        var channel = DataHelper.CreateTextChannel();
+
+        var result = await Service.GetSearchListAsync(guild, channel, "asdf", 1);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public async Task GetItemsCountAsync()
+    {
+        var guild = DataHelper.CreateGuild();
+        var channel = DataHelper.CreateTextChannel();
+
+        var result = await Service.GetItemsCountAsync(guild, channel, "asdf");
+        Assert.AreEqual(0, result);
+    }
+
+    [TestMethod]
+    public async Task GenerateSuggestionsAsync()
+    {
+        var guild = DataHelper.CreateGuild();
+        var channel = DataHelper.CreateChannel();
+        var user = DataHelper.CreateGuildUser(id: 654321);
+
+        var suggestions = await Service.GenerateSuggestionsAsync(user, guild, channel);
+        Assert.AreEqual(0, suggestions.Count);
+    }
+
+    [TestMethod]
+    public async Task GenerateSuggestionsAsync_Admin()
+    {
+        var guild = DataHelper.CreateGuild();
+        var channel = DataHelper.CreateChannel();
+        var user = DataHelper.CreateGuildUser(id: 654321);
+
+        var userEntity = Database.Entity.User.FromDiscord(user);
+        userEntity.Flags |= (int)UserFlags.BotAdmin;
+        await DbContext.AddAsync(userEntity);
+
+        var suggestions = await Service.GenerateSuggestionsAsync(user, guild, channel);
+        Assert.AreEqual(0, suggestions.Count);
     }
 }

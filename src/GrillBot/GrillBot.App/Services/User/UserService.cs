@@ -17,7 +17,9 @@ public class UserService : ServiceBase
     {
         using var context = DbFactory.Create();
 
-        var dbUser = await context.Users.FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
+        var dbUser = await context.Users.AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
+
         return dbUser?.HaveFlags(UserFlags.BotAdmin) ?? false;
     }
 

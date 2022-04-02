@@ -10,7 +10,6 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/search")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [OpenApiTag("Searching", Description = "Searching for team, service, ...")]
 public class SearchingController : Controller
 {
@@ -27,13 +26,14 @@ public class SearchingController : Controller
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
     [HttpGet]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, User")]
     [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters,
         CancellationToken cancellationToken)
     {
-        var data = await Service.GetPaginatedListAsync(parameters, cancellationToken);
+        var data = await Service.GetPaginatedListAsync(parameters, User, cancellationToken);
         return Ok(data);
     }
 
@@ -42,6 +42,7 @@ public class SearchingController : Controller
     /// </summary>
     /// <response code="200">Success</response>
     [HttpDelete]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids, CancellationToken cancellationToken)

@@ -30,14 +30,8 @@ namespace GrillBot.Database.Entity
         [ForeignKey(nameof(ChannelId))]
         public GuildChannel Channel { get; set; }
 
-        [StringLength(30)]
-        public string MessageId { get; set; }
-
         [Required]
         [StringLength(1024)]
         public string MessageContent { get; set; }
-
-        [StringLength(256)]
-        public string JumpUrl { get; set; }
     }
 }

@@ -49,6 +49,15 @@ public static class DataHelper
         return mock.Object;
     }
 
+    public static ITextChannel CreateTextChannel()
+    {
+        var mock = new Mock<ITextChannel>();
+        mock.Setup(o => o.Id).Returns(Id);
+        mock.Setup(o => o.Name).Returns("TextChannel");
+
+        return mock.Object;
+    }
+
     public static IGuild CreateGuild()
     {
         var mock = new Mock<IGuild>();

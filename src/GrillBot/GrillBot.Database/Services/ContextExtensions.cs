@@ -8,7 +8,7 @@ namespace GrillBot.Database.Services
 {
     static public class ContextExtensions
     {
-        static public async Task InitGuildAsync(this GrillBotContext context, IGuild guild, CancellationToken cancellationToken)
+        static public async Task InitGuildAsync(this GrillBotContext context, IGuild guild, CancellationToken cancellationToken = default)
         {
             var guildId = guild.Id.ToString();
 
@@ -44,7 +44,7 @@ namespace GrillBot.Database.Services
         }
 
         static public async Task InitGuildChannelAsync(this GrillBotContext context, IGuild guild, IChannel channel, ChannelType channelType,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             var channelId = channel.Id.ToString();
             var guildId = guild.Id.ToString();

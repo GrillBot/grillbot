@@ -16,7 +16,7 @@ public static class ComponentsHelper
             .WithButton(customId: $"{customIdPrefix}:{currentPage + 1}", emote: Emojis.MoveToNext);
 
         if (maxPages > 2)
-            builder.WithButton(customId: $"{customIdPrefix}:{int.MaxValue}", emote: Emojis.MoveToLast);
+            builder = builder.WithButton(customId: $"{customIdPrefix}:{int.MaxValue}", emote: Emojis.MoveToLast);
 
         return builder.Build();
     }

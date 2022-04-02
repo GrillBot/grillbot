@@ -30,7 +30,7 @@ public class AuthControllerTests : ControllerTest<AuthController>
     public void GetRedirectLink()
     {
         var state = new AuthState();
-        var link = Controller.GetRedirectLink(state);
+        var link = AdminController.GetRedirectLink(state);
         CheckResult<OkObjectResult, OAuth2GetLink>(link);
     }
 
@@ -38,7 +38,7 @@ public class AuthControllerTests : ControllerTest<AuthController>
     public async Task OnOAuth2CallBackAsync()
     {
         var encodedState = new AuthState().Encode();
-        var result = await Controller.OnOAuth2CallbackAsync("code", encodedState, CancellationToken.None);
+        var result = await AdminController.OnOAuth2CallbackAsync("code", encodedState, CancellationToken.None);
         CheckResult<RedirectResult>(result);
     }
 }

@@ -38,7 +38,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task SendMessageToChannelAsync_GuildNotFound()
     {
-        var result = await Controller.SendMessageToChannelAsync(12345, 12345, new SendMessageToChannelParams(), CancellationToken.None);
+        var result = await AdminController.SendMessageToChannelAsync(12345, 12345, new SendMessageToChannelParams(), CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -52,7 +52,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
             NameContains = "Channel"
         };
 
-        var result = await Controller.GetChannelsListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetChannelsListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<GuildChannelListItem>>(result);
     }
 
@@ -66,14 +66,14 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await DbContext.SaveChangesAsync();
 
         var filter = new GetChannelListParams();
-        var result = await Controller.GetChannelsListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetChannelsListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<GuildChannelListItem>>(result);
     }
 
     [TestMethod]
     public async Task ClearChannelCacheAsync()
     {
-        var result = await Controller.ClearChannelCacheAsync(1, 1, CancellationToken.None);
+        var result = await AdminController.ClearChannelCacheAsync(1, 1, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 
@@ -87,7 +87,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await DbContext.AddAsync(new Database.Entity.GuildUserChannel() { ChannelId = "12345", GuildId = "12345", UserId = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetChannelDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetChannelDetailAsync(12345, CancellationToken.None);
         CheckResult<OkObjectResult, ChannelDetail>(result);
     }
 
@@ -100,21 +100,21 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetChannelDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetChannelDetailAsync(12345, CancellationToken.None);
         CheckResult<OkObjectResult, ChannelDetail>(result);
     }
 
     [TestMethod]
     public async Task GetChannelDetailAsync_NotFound()
     {
-        var result = await Controller.GetChannelDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetChannelDetailAsync(12345, CancellationToken.None);
         CheckResult<NotFoundObjectResult, ChannelDetail>(result);
     }
 
     [TestMethod]
     public async Task UpdateChannelAsync_NotFound()
     {
-        var result = await Controller.UpdateChannelAsync(12345, new UpdateChannelParams(), CancellationToken.None);
+        var result = await AdminController.UpdateChannelAsync(12345, new UpdateChannelParams(), CancellationToken.None);
         CheckResult<NotFoundObjectResult, ChannelDetail>(result);
     }
 
@@ -127,7 +127,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.UpdateChannelAsync(12345, new UpdateChannelParams(), CancellationToken.None);
+        var result = await AdminController.UpdateChannelAsync(12345, new UpdateChannelParams(), CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 
@@ -141,14 +141,14 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await DbContext.AddAsync(new Database.Entity.GuildUserChannel() { ChannelId = "12345", GuildId = "12345", UserId = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetChannelUsersAsync(12345, new PaginatedParams(), CancellationToken.None);
+        var result = await AdminController.GetChannelUsersAsync(12345, new PaginatedParams(), CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<ChannelUserStatItem>>(result);
     }
 
     [TestMethod]
     public async Task GetChannelboardAsync()
     {
-        var result = await Controller.GetChannelboardAsync(CancellationToken.None);
+        var result = await AdminController.GetChannelboardAsync(CancellationToken.None);
         CheckResult<OkObjectResult, List<ChannelboardItem>>(result);
     }
 }

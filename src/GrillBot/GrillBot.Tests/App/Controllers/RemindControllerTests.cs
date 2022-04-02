@@ -2,17 +2,15 @@
 using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Security.Claims;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
-public class RemindControllerAdminTests : ControllerTest<ReminderController>
+public class RemindControllerTests : ControllerTest<ReminderController>
 {
     protected override ReminderController CreateController()
     {
@@ -20,18 +18,7 @@ public class RemindControllerAdminTests : ControllerTest<ReminderController>
         var configuration = ConfigurationHelper.CreateConfiguration();
         var remindService = new RemindService(discordClient, DbFactory, configuration);
 
-        return new ReminderController(DbContext, remindService)
-        {
-            ControllerContext = new ControllerContext()
-            {
-                HttpContext = new DefaultHttpContext()
-                {
-                    User = new ClaimsPrincipal(new ClaimsIdentity(new[] {
-                        new Claim(ClaimTypes.Role, "Admin")
-                    }))
-                }
-            }
-        };
+        return new ReminderController(DbContext, remindService);
     }
 
     public override void Cleanup()
@@ -48,7 +35,7 @@ public class RemindControllerAdminTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetRemindMessagesListAsync(new GetReminderListParams(), CancellationToken.None);
+        var result = await AdminController.GetRemindMessagesListAsync(new GetReminderListParams(), CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 
@@ -68,14 +55,14 @@ public class RemindControllerAdminTests : ControllerTest<ReminderController>
             SortDesc = true
         };
 
-        var result = await Controller.GetRemindMessagesListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetRemindMessagesListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 
     [TestMethod]
     public async Task CancelRemindAsync_NotFound()
     {
-        var result = await Controller.CancelRemindAsync(1, false);
+        var result = await AdminController.CancelRemindAsync(1, false);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -86,7 +73,7 @@ public class RemindControllerAdminTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.CancelRemindAsync(1, false);
+        var result = await AdminController.CancelRemindAsync(1, false);
         CheckResult<ObjectResult>(result);
     }
 
@@ -99,6 +86,28 @@ public class RemindControllerAdminTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
         await DbContext.SaveChangesAsync();
 
-        await Controller.CancelRemindAsync(1, false);
+        await AdminController.CancelRemindAsync(1, false);
+    }
+
+    [TestMethod]
+    public async Task GetRemindMessagesListAsync_WithoutFilter_AsUser()
+    {
+        await DbContext.AddAsync(new Database.Entity.RemindMessage() { At = DateTime.Now, FromUserId = "12345", ToUserId = "12345", Message = "Test" });
+        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
+        await DbContext.SaveChangesAsync();
+
+        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { SortDesc = true, SortBy = "at" }, CancellationToken.None);
+        CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetRemindMessagesListAsync_InvalidSort_AsUser()
+    {
+        await DbContext.AddAsync(new Database.Entity.RemindMessage() { At = DateTime.Now, FromUserId = "12345", ToUserId = "12345", Message = "Test" });
+        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
+        await DbContext.SaveChangesAsync();
+
+        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { SortDesc = true, SortBy = "ToUser" }, CancellationToken.None);
+        CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 }

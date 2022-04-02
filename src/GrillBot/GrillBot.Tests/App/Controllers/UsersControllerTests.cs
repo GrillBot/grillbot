@@ -5,17 +5,16 @@ using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Common;
+using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
-using System.Security.Claims;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
-public class UsersControllerAdminTests : ControllerTest<UsersController>
+public class UsersControllerTests : ControllerTest<UsersController>
 {
     protected override UsersController CreateController()
     {
@@ -30,18 +29,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         var memoryCache = CacheHelper.CreateMemoryCache();
         var externalHelpService = new ExternalCommandsHelpService(discordClient, configuration, memoryCache, initializationService, provider);
 
-        return new UsersController(DbContext, discordClient, helpService, externalHelpService)
-        {
-            ControllerContext = new ControllerContext()
-            {
-                HttpContext = new DefaultHttpContext()
-                {
-                    User = new ClaimsPrincipal(new ClaimsIdentity(new[] {
-                        new Claim(ClaimTypes.Role, "Admin")
-                    }))
-                }
-            }
-        };
+        return new UsersController(DbContext, discordClient, helpService, externalHelpService);
     }
 
     public override void Cleanup()
@@ -67,7 +55,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
             Username = "User"
         };
 
-        var result = await Controller.GetUsersListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetUsersListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<UserListItem>>(result);
     }
 
@@ -92,14 +80,14 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         await DbContext.SaveChangesAsync();
 
         var filter = new GetUserListParams();
-        var result = await Controller.GetUsersListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetUsersListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<UserListItem>>(result);
     }
 
     [TestMethod]
     public async Task GetUserDetailAsync_NotFound()
     {
-        var result = await Controller.GetUserDetailAsync(1, CancellationToken.None);
+        var result = await AdminController.GetUserDetailAsync(1, CancellationToken.None);
         CheckResult<NotFoundObjectResult, UserDetail>(result);
     }
 
@@ -123,14 +111,14 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetUserDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetUserDetailAsync(12345, CancellationToken.None);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
     [TestMethod]
     public async Task UpdateUserAsync_NotFound()
     {
-        var result = await Controller.UpdateUserAsync(1, new UpdateUserParams(), CancellationToken.None);
+        var result = await AdminController.UpdateUserAsync(1, new UpdateUserParams(), CancellationToken.None);
         CheckResult<NotFoundObjectResult, UserDetail>(result);
     }
 
@@ -146,7 +134,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
             PublicAdminBlocked = true,
             WebAdminAllowed = true
         };
-        var result = await Controller.UpdateUserAsync(2, parameters, CancellationToken.None);
+        var result = await AdminController.UpdateUserAsync(2, parameters, CancellationToken.None);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
@@ -162,7 +150,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
             PublicAdminBlocked = false,
             WebAdminAllowed = false
         };
-        var result = await Controller.UpdateUserAsync(2, parameters, CancellationToken.None);
+        var result = await AdminController.UpdateUserAsync(2, parameters, CancellationToken.None);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
@@ -172,7 +160,7 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
         await DbContext.SaveChangesAsync();
 
-        CheckResult<OkResult>(await Controller.HearthbeatAsync(CancellationToken.None));
+        CheckResult<OkResult>(await AdminController.HearthbeatAsync(CancellationToken.None));
     }
 
     [TestMethod]
@@ -181,6 +169,51 @@ public class UsersControllerAdminTests : ControllerTest<UsersController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
         await DbContext.SaveChangesAsync();
 
-        CheckResult<OkResult>(await Controller.HearthbeatOffAsync(CancellationToken.None));
+        CheckResult<OkResult>(await AdminController.HearthbeatOffAsync(CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task GetCurrentUserDetailAsync_NotFound()
+    {
+        var result = await UserController.GetCurrentUserDetailAsync(CancellationToken.None);
+        CheckResult<NotFoundObjectResult, UserDetail>(result);
+    }
+
+    [TestMethod]
+    public async Task GetCurrentUserDetailAsync_Found()
+    {
+        await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
+        await DbContext.AddAsync(new Database.Entity.Guild() { Id = "3", Name = "Guild" });
+        await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "3", UserId = "0" });
+        await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem() { EmoteId = "<:PepeLa:751183558126731274>", UserId = "0", GuildId = "3" });
+        await DbContext.SaveChangesAsync();
+
+        var result = await UserController.GetCurrentUserDetailAsync(CancellationToken.None);
+        CheckResult<OkObjectResult, UserDetail>(result);
+    }
+
+    [TestMethod]
+    public async Task HearthbeatAsync_AsUser()
+    {
+        await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
+        await DbContext.SaveChangesAsync();
+
+        CheckResult<OkResult>(await UserController.HearthbeatAsync(CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task HearthbeatOffAsync_AsUser()
+    {
+        await DbContext.AddAsync(new Database.Entity.User() { Id = "0", Username = "User", Discriminator = "1" });
+        await DbContext.SaveChangesAsync();
+
+        CheckResult<OkResult>(await UserController.HearthbeatOffAsync(CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task GetAvailableCommandsAsync()
+    {
+        var result = await UserController.GetAvailableCommandsAsync(CancellationToken.None);
+        CheckResult<OkObjectResult, List<CommandGroup>>(result);
     }
 }

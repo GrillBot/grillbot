@@ -14,7 +14,7 @@ public class DocsControllerTests : ControllerTest<DocsController>
     [TestMethod]
     public void GetNamespaceGraph()
     {
-        var result = Controller.GetNamespaceGraph();
+        var result = AdminController.GetNamespaceGraph();
         CheckResult<OkObjectResult, string>(result);
     }
 }

@@ -56,7 +56,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
 
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetInviteListAsync(new GetInviteListParams(), CancellationToken.None);
+        var result = await AdminController.GetInviteListAsync(new GetInviteListParams(), CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
     }
 
@@ -72,21 +72,21 @@ public class InviteControllerTests : ControllerTest<InviteController>
             GuildId = "12345"
         };
 
-        var result = await Controller.GetInviteListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetInviteListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
     }
 
     [TestMethod]
     public async Task RefreshMetadataAsync()
     {
-        var result = await Controller.RefreshMetadataCacheAsync();
+        var result = await AdminController.RefreshMetadataCacheAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
     [TestMethod]
     public void GetCurrentMetadataCount()
     {
-        var result = Controller.GetCurrentMetadataCount();
+        var result = AdminController.GetCurrentMetadataCount();
         CheckResult<OkObjectResult, int>(result);
 
         Assert.AreEqual(0, ((OkObjectResult)result.Result).Value);

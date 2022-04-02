@@ -30,14 +30,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task CreateAndGetAutoReplyListAsync()
     {
-        var createResult = await Controller.CreateItemAsync(new AutoReplyItemParams()
+        var createResult = await AdminController.CreateItemAsync(new AutoReplyItemParams()
         {
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
         }, CancellationToken.None);
 
-        var listResult = await Controller.GetAutoReplyListAsync(CancellationToken.None);
+        var listResult = await AdminController.GetAutoReplyListAsync(CancellationToken.None);
 
         CheckResult<OkObjectResult, AutoReplyItem>(createResult);
         CheckResult<OkObjectResult, List<AutoReplyItem>>(listResult);
@@ -55,14 +55,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetItemAsync(1, CancellationToken.None);
+        var result = await AdminController.GetItemAsync(1, CancellationToken.None);
         CheckResult<OkObjectResult, AutoReplyItem>(result);
     }
 
     [TestMethod]
     public async Task GetItemAsync_NotFound()
     {
-        var result = await Controller.GetItemAsync(1, CancellationToken.None);
+        var result = await AdminController.GetItemAsync(1, CancellationToken.None);
         CheckResult<NotFoundObjectResult, AutoReplyItem>(result);
     }
 
@@ -78,7 +78,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.UpdateItemAsync(1, new AutoReplyItemParams()
+        var result = await AdminController.UpdateItemAsync(1, new AutoReplyItemParams()
         {
             Flags = 2,
             Reply = "Reply",
@@ -91,7 +91,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task UpdateItemAsync_NotFound()
     {
-        var result = await Controller.UpdateItemAsync(1, new AutoReplyItemParams()
+        var result = await AdminController.UpdateItemAsync(1, new AutoReplyItemParams()
         {
             Flags = 2,
             Reply = "Reply",
@@ -113,14 +113,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.RemoveItemAsync(1, CancellationToken.None);
+        var result = await AdminController.RemoveItemAsync(1, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task RemoveItemAsync_NotFound()
     {
-        var result = await Controller.RemoveItemAsync(1, CancellationToken.None);
+        var result = await AdminController.RemoveItemAsync(1, CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 }

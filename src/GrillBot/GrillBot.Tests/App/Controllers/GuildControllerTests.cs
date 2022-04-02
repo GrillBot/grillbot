@@ -28,7 +28,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
     public async Task GetGuildListAsync_WithFilter()
     {
         var filter = new GetGuildListParams() { NameQuery = "Guild" };
-        var result = await Controller.GetGuildListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetGuildListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<Guild>>(result);
     }
 
@@ -38,7 +38,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
         await DbContext.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Name" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetGuildListAsync(new GetGuildListParams(), CancellationToken.None);
+        var result = await AdminController.GetGuildListAsync(new GetGuildListParams(), CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<Guild>>(result);
     }
 
@@ -48,14 +48,14 @@ public class GuildControllerTests : ControllerTest<GuildController>
         await DbContext.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Name" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetGuildDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetGuildDetailAsync(12345, CancellationToken.None);
         CheckResult<OkObjectResult, GuildDetail>(result);
     }
 
     [TestMethod]
     public async Task GetGuildDetailAsync_NotFound()
     {
-        var result = await Controller.GetGuildDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetGuildDetailAsync(12345, CancellationToken.None);
         CheckResult<NotFoundObjectResult, GuildDetail>(result);
     }
 
@@ -68,7 +68,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
             MuteRoleId = "12345",
         };
 
-        var result = await Controller.UpdateGuildAsync(12345, parameters, CancellationToken.None);
+        var result = await AdminController.UpdateGuildAsync(12345, parameters, CancellationToken.None);
         CheckResult<NotFoundObjectResult, GuildDetail>(result);
     }
 }

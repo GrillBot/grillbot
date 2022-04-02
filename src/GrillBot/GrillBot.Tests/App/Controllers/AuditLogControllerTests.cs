@@ -48,21 +48,21 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.RemoveItemAsync(12345, CancellationToken.None);
+        var result = await AdminController.RemoveItemAsync(12345, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task RemoveItemAsync_NotFound()
     {
-        var result = await Controller.RemoveItemAsync(12345, CancellationToken.None);
+        var result = await AdminController.RemoveItemAsync(12345, CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 
     [TestMethod]
     public async Task GetAuditLogListAsync_WithoutFilter_WithoutData()
     {
-        var result = await Controller.GetAuditLogListAsync(new AuditLogListParams(), CancellationToken.None);
+        var result = await AdminController.GetAuditLogListAsync(new AuditLogListParams(), CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
@@ -96,14 +96,14 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetAuditLogListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetAuditLogListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
     [TestMethod]
     public async Task GetFileContentAsync_ItemNotFound()
     {
-        var result = await Controller.GetFileContentAsync(1, 1, CancellationToken.None);
+        var result = await AdminController.GetFileContentAsync(1, 1, CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -127,7 +127,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetFileContentAsync(12345, 123, CancellationToken.None);
+        var result = await AdminController.GetFileContentAsync(12345, 123, CancellationToken.None);
         CheckResult<NotFoundObjectResult>(result);
     }
 }

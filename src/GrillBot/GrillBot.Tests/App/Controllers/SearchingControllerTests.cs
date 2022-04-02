@@ -41,7 +41,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
             SortDesc = true
         };
 
-        var result = await Controller.GetSearchListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetSearchListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
     }
 
@@ -55,14 +55,14 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         await DbContext.SaveChangesAsync();
 
         var filter = new GetSearchingListParams();
-        var result = await Controller.GetSearchListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetSearchListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
     }
 
     [TestMethod]
     public async Task RemoveSearchesAsync()
     {
-        var result = await Controller.RemoveSearchesAsync(new[] { 1L }, CancellationToken.None);
+        var result = await AdminController.RemoveSearchesAsync(new[] { 1L }, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 }

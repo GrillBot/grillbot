@@ -32,14 +32,14 @@ public class SystemControllerTests : ControllerTest<SystemController>
     [TestMethod]
     public void GetDiagnostics()
     {
-        var result = Controller.GetDiagnostics();
+        var result = AdminController.GetDiagnostics();
         CheckResult<OkObjectResult, DiagnosticsInfo>(result);
     }
 
     [TestMethod]
     public async Task GetDbStatusAsync()
     {
-        var result = await Controller.GetDbStatusAsync(CancellationToken.None);
+        var result = await AdminController.GetDbStatusAsync(CancellationToken.None);
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
@@ -52,7 +52,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
             Id = 1
         });
         await DbContext.SaveChangesAsync();
-        var result = await Controller.GetAuditLogsStatisticsAsync(CancellationToken.None);
+        var result = await AdminController.GetAuditLogsStatisticsAsync(CancellationToken.None);
 
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
@@ -68,7 +68,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetCommandStatusAsync("asdf");
+        var result = await AdminController.GetCommandStatusAsync("asdf");
         CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
     }
 
@@ -83,7 +83,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetCommandStatusAsync();
+        var result = await AdminController.GetCommandStatusAsync();
         CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
     }
 
@@ -98,7 +98,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetInteractionsStatusAsync("asdf");
+        var result = await AdminController.GetInteractionsStatusAsync("asdf");
         CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
     }
 
@@ -113,14 +113,14 @@ public class SystemControllerTests : ControllerTest<SystemController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetInteractionsStatusAsync();
+        var result = await AdminController.GetInteractionsStatusAsync();
         CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
     }
 
     [TestMethod]
     public void ChangeBotStatus()
     {
-        var result = Controller.ChangeBotStatus(true);
+        var result = AdminController.ChangeBotStatus(true);
         CheckResult<OkResult>(result);
     }
 }

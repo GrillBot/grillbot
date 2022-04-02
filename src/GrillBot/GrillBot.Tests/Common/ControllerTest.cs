@@ -1,14 +1,18 @@
 ﻿using GrillBot.Data.Models.API;
 using GrillBot.Database.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 
 namespace GrillBot.Tests.Common;
 
 [ExcludeFromCodeCoverage]
 public abstract class ControllerTest<TController> where TController : Controller
 {
-    protected TController Controller { get; set; }
+    protected TController AdminController { get; private set; }
+    protected TController UserController { get; private set; }
+
     protected GrillBotContext DbContext { get; set; }
     protected GrillBotContextFactory DbFactory { get; set; }
 
@@ -20,7 +24,11 @@ public abstract class ControllerTest<TController> where TController : Controller
         DbFactory = new DbContextBuilder();
         DbContext = DbFactory.Create();
 
-        Controller = CreateController();
+        AdminController = CreateController();
+        AdminController.ControllerContext = CreateContext("Admin");
+
+        UserController = CreateController();
+        UserController.ControllerContext = CreateContext("User");
     }
 
     public virtual void Cleanup() { }
@@ -33,7 +41,21 @@ public abstract class ControllerTest<TController> where TController : Controller
         Cleanup();
 
         DbContext.Dispose();
-        Controller.Dispose();
+        AdminController.Dispose();
+        UserController.Dispose();
+    }
+
+    private static ControllerContext CreateContext(string role)
+    {
+        return new ControllerContext()
+        {
+            HttpContext = new DefaultHttpContext()
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(new[] {
+                new Claim(ClaimTypes.Role, role)
+            }))
+            }
+        };
     }
 
     protected void CheckResult<TResult>(IActionResult result) where TResult : IActionResult

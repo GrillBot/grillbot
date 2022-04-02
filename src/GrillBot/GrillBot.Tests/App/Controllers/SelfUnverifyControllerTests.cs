@@ -29,7 +29,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
             new KeepableParams() { Group = "2BIT", Name = "IAL" }
         };
 
-        var result = await Controller.AddKeepableAsync(parameters, CancellationToken.None);
+        var result = await AdminController.AddKeepableAsync(parameters, CancellationToken.None);
         CheckResult<OkResult>(result);
     }
 
@@ -44,7 +44,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
         await DbContext.SelfunverifyKeepables.AddAsync(new Database.Entity.SelfunverifyKeepable() { GroupName = "1bit", Name = "izp" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.AddKeepableAsync(parameters, CancellationToken.None);
+        var result = await AdminController.AddKeepableAsync(parameters, CancellationToken.None);
         CheckResult<BadRequestObjectResult>(result);
     }
 
@@ -52,7 +52,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
     public async Task KeepableExistsAsync()
     {
         var parameter = new KeepableParams() { Group = "1BIT", Name = "IZP" };
-        var result = await Controller.KeepableExistsAsync(parameter, CancellationToken.None);
+        var result = await AdminController.KeepableExistsAsync(parameter, CancellationToken.None);
 
         CheckResult<OkObjectResult, bool>(result);
     }
@@ -60,7 +60,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
     [TestMethod]
     public async Task KeepableRemoveAsync_NotExists()
     {
-        var result = await Controller.KeepableRemoveAsync("1bit", "izp");
+        var result = await AdminController.KeepableRemoveAsync("1bit", "izp");
         CheckResult<BadRequestObjectResult>(result);
     }
 
@@ -70,7 +70,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
         await DbContext.SelfunverifyKeepables.AddAsync(new Database.Entity.SelfunverifyKeepable() { GroupName = "1bit", Name = "izp" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.KeepableRemoveAsync("1bit", "izp");
+        var result = await AdminController.KeepableRemoveAsync("1bit", "izp");
         CheckResult<OkResult>(result);
     }
 
@@ -80,14 +80,14 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
         await DbContext.SelfunverifyKeepables.AddAsync(new Database.Entity.SelfunverifyKeepable() { GroupName = "1bit", Name = "izp" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.KeepableRemoveAsync("1bit");
+        var result = await AdminController.KeepableRemoveAsync("1bit");
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task KeepableRemoveAsync_NotExists_Group()
     {
-        var result = await Controller.KeepableRemoveAsync("1bit");
+        var result = await AdminController.KeepableRemoveAsync("1bit");
         CheckResult<BadRequestObjectResult>(result);
     }
 
@@ -97,7 +97,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
         await DbContext.SelfunverifyKeepables.AddAsync(new Database.Entity.SelfunverifyKeepable() { GroupName = "1bit", Name = "izp" });
         await DbContext.SaveChangesAsync();
 
-        var result = await Controller.GetKeepablesListAsync(CancellationToken.None);
+        var result = await AdminController.GetKeepablesListAsync(CancellationToken.None);
         CheckResult<OkObjectResult, Dictionary<string, List<string>>>(result);
     }
 }

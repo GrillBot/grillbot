@@ -51,7 +51,8 @@ public class Startup
             AlwaysDownloadDefaultStickers = true,
             AlwaysDownloadUsers = true,
             AlwaysResolveStickers = true,
-            LogGatewayIntentWarnings = false
+            LogGatewayIntentWarnings = false,
+            DefaultRetryMode = RetryMode.RetryRatelimit
         };
 
         var commandsConfig = new CommandServiceConfig()

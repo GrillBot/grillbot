@@ -130,6 +130,12 @@ namespace GrillBot.Database.Enums
         /// Thread was deleted.
         /// </summary>
         [Display(Name = "Smazáno vlákno")]
-        ThreadDeleted = 21
+        ThreadDeleted = 21,
+
+        /// <summary>
+        /// Quartz job finished.
+        /// </summary>
+        [Display(Name = "Skončila naplánována úloha")]
+        JobCompleted = 22
     }
 }

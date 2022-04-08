@@ -1,48 +1,49 @@
-﻿using GrillBot.App.Services.Logging;
+﻿using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Logging;
 using Quartz;
 
-namespace GrillBot.App.Services.Birthday
+namespace GrillBot.App.Services.Birthday;
+
+[DisallowConcurrentExecution]
+public class BirthdayCronJob : Job
 {
-    [DisallowConcurrentExecution]
-    public class BirthdayCronJob : IJob
+    private BirthdayService BirthdayService { get; }
+    private IConfiguration Configuration { get; }
+
+    public BirthdayCronJob(IConfiguration configuration, BirthdayService service, LoggingService logging,
+        AuditLogService auditLogService, IDiscordClient discordClient) : base(logging, auditLogService, discordClient)
     {
-        private BirthdayService BirthdayService { get; }
-        private IConfiguration Configuration { get; }
-        private DiscordSocketClient DiscordClient { get; }
-        private LoggingService Logging { get; }
+        BirthdayService = service;
+        Configuration = configuration;
+    }
 
-        public BirthdayCronJob(IConfiguration configuration, DiscordSocketClient discordClient, BirthdayService service,
-            LoggingService logging)
+    public override async Task RunAsync(IJobExecutionContext context)
+    {
+        var birthdays = await BirthdayService.GetTodayBirthdaysAsync(context.CancellationToken);
+        if (birthdays.Count == 0)
         {
-            BirthdayService = service;
-            Configuration = configuration;
-            DiscordClient = discordClient;
-            Logging = logging;
+            context.Result = "NoBirthdays";
+            return;
         }
 
-        public async Task Execute(IJobExecutionContext context)
+        var birthdayNotificationSection = Configuration.GetSection("Birthday:Notifications");
+        var guild = await DiscordClient.GetGuildAsync(birthdayNotificationSection.GetValue<ulong>("GuildId"));
+        if (guild == null)
         {
-            try
-            {
-                await Logging.InfoAsync("BirthdayCron", $"Triggered birthday processing job at {DateTime.Now}");
-
-                var birthdays = await BirthdayService.GetTodayBirthdaysAsync(context.CancellationToken);
-                if (birthdays.Count == 0) return;
-
-                var birthdayNotificationSection = Configuration.GetSection("Birthday:Notifications");
-                var guild = DiscordClient.GetGuild(birthdayNotificationSection.GetValue<ulong>("GuildId"));
-                if (guild == null) return;
-
-                var channel = guild.GetTextChannel(birthdayNotificationSection.GetValue<ulong>("ChannelId"));
-                if (channel == null) return;
-
-                var formatted = BirthdayHelper.Format(birthdays, Configuration);
-                await channel.SendMessageAsync(formatted);
-            }
-            catch (Exception ex)
-            {
-                await Logging.ErrorAsync("BirthdayCron", "An error occured when birthday processing.", ex);
-            }
+            context.Result = "MissingGuild";
+            return;
         }
+
+        var channel = await guild.GetTextChannelAsync(birthdayNotificationSection.GetValue<ulong>("ChannelId"));
+        if (channel == null)
+        {
+            context.Result = "MissingChannel";
+            return;
+        }
+
+        var formatted = BirthdayHelper.Format(birthdays, Configuration);
+        await channel.SendMessageAsync(formatted);
+        context.Result = $"Finished (Birthdays: {birthdays.Count})";
     }
 }

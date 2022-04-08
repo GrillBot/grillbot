@@ -1,18 +1,21 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
 using Quartz;
 
 namespace GrillBot.App.Services.Birthday;
 
 [DisallowConcurrentExecution]
+[DisallowUninitialized]
 public class BirthdayCronJob : Job
 {
     private BirthdayService BirthdayService { get; }
     private IConfiguration Configuration { get; }
 
     public BirthdayCronJob(IConfiguration configuration, BirthdayService service, LoggingService logging,
-        AuditLogService auditLogService, IDiscordClient discordClient) : base(logging, auditLogService, discordClient)
+        AuditLogService auditLogService, IDiscordClient discordClient, DiscordInitializationService initializationService)
+        : base(logging, auditLogService, discordClient, initializationService)
     {
         BirthdayService = service;
         Configuration = configuration;

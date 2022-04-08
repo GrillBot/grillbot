@@ -1,50 +1,34 @@
-﻿using GrillBot.App.Services.Discord;
+﻿using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
 using Quartz;
 
-namespace GrillBot.App.Services.Unverify
+namespace GrillBot.App.Services.Unverify;
+
+[DisallowConcurrentExecution]
+[DisallowUninitialized]
+public class UnverifyCronJob : Job
 {
-    [DisallowConcurrentExecution]
-    public class UnverifyCronJob : IJob
+    private UnverifyService UnverifyService { get; }
+
+    public UnverifyCronJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
+        UnverifyService unverifyService, DiscordInitializationService initializationService)
+        : base(loggingService, auditLogService, discordClient, initializationService)
     {
-        private UnverifyService Service { get; }
-        private LoggingService Logging { get; }
-        private DiscordSocketClient DiscordClient { get; }
-        private DiscordInitializationService InitializationService { get; }
+        UnverifyService = unverifyService;
+    }
 
-        public UnverifyCronJob(UnverifyService service, LoggingService logging, DiscordSocketClient discordClient,
-            DiscordInitializationService initializationService)
+    public override async Task RunAsync(IJobExecutionContext context)
+    {
+        var pending = await UnverifyService.GetPendingUnverifiesForRemoveAsync(context.CancellationToken);
+
+        foreach ((var guildId, var userId) in pending)
         {
-            Service = service;
-            Logging = logging;
-            DiscordClient = discordClient;
-            InitializationService = initializationService;
+            await UnverifyService.UnverifyAutoremoveAsync(guildId, userId);
         }
 
-        public async Task Execute(IJobExecutionContext context)
-        {
-            try
-            {
-                if (!InitializationService.Get()) return;
-                await Logging.InfoAsync(nameof(UnverifyCronJob), $"Triggered job at {DateTime.Now}");
-                var pending = await Service.GetPendingUnverifiesForRemoveAsync(context.CancellationToken);
-
-                foreach (var user in pending)
-                {
-                    try
-                    {
-                        await Service.UnverifyAutoremoveAsync(user.Item1, user.Item2, context.CancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        await Logging.ErrorAsync(nameof(UnverifyCronJob), $"An error occured when unverify processing for user ({user.Item1}/{user.Item2})", ex);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await Logging.ErrorAsync(nameof(UnverifyCronJob), "An error occured when unverify processing.", ex);
-            }
-        }
+        if (pending.Count > 0)
+            context.Result = $"Processed: {string.Join(", ", pending.Select(o => $"{o.Item1}/{o.Item2}"))}";
     }
 }

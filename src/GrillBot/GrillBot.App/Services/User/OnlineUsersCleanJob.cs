@@ -1,44 +1,45 @@
-﻿using GrillBot.App.Services.Logging;
+﻿using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.Logging;
 using GrillBot.Database.Enums;
 using Quartz;
 
 namespace GrillBot.App.Services.User;
 
 [DisallowConcurrentExecution]
-public class OnlineUsersCleanJob : IJob
+public class OnlineUsersCleanJob : Job
 {
     private GrillBotContextFactory DbFactory { get; }
-    private LoggingService Logging { get; }
 
-    public OnlineUsersCleanJob(GrillBotContextFactory dbFactory, LoggingService logging)
+    public OnlineUsersCleanJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
+        GrillBotContextFactory dbFactory, DiscordInitializationService initializationService)
+        : base(loggingService, auditLogService, discordClient, initializationService)
     {
         DbFactory = dbFactory;
-        Logging = logging;
     }
 
-    public async Task Execute(IJobExecutionContext context)
+    public override async Task RunAsync(IJobExecutionContext context)
     {
-        try
+        using var dbContext = DbFactory.Create();
+
+        var usersQuery = dbContext.Users.AsQueryable()
+            .Where(o => (o.Flags & (int)UserFlags.WebAdminOnline) != 0 || (o.Flags & (int)UserFlags.PublicAdminOnline) != 0);
+        var users = await usersQuery.ToListAsync(context.CancellationToken);
+
+        if (users.Count == 0)
         {
-            await Logging.InfoAsync("OnlineUsersCleanJob", $"Triggered online users clearing job at {DateTime.Now}");
-            using var dbContext = DbFactory.Create();
-
-            var usersQuery = dbContext.Users.AsQueryable()
-                .Where(o => (o.Flags & (int)UserFlags.WebAdminOnline) != 0 || (o.Flags & (int)UserFlags.PublicAdminOnline) != 0);
-            var users = await usersQuery.ToListAsync(context.CancellationToken);
-            if (users.Count == 0) return;
-
-            foreach (var user in users)
-            {
-                user.Flags &= ~(int)UserFlags.WebAdminOnline;
-                user.Flags &= ~(int)UserFlags.PublicAdminOnline;
-            }
-
-            await dbContext.SaveChangesAsync();
+            context.Result = "NoLoggedUsers";
+            return;
         }
-        catch (Exception ex)
+
+        foreach (var user in users)
         {
-            await Logging.ErrorAsync(nameof(OnlineUsersCleanJob), "An error occured at online users clearing.", ex);
+            user.Flags &= ~(int)UserFlags.WebAdminOnline;
+            user.Flags &= ~(int)UserFlags.PublicAdminOnline;
         }
+
+        context.Result = $"Users: {users.Count}";
+        await dbContext.SaveChangesAsync();
     }
 }

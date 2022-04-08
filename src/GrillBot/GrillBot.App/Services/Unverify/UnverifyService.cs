@@ -2,7 +2,6 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Logging;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
@@ -57,7 +56,7 @@ namespace GrillBot.App.Services.Unverify
             if (dry)
                 return UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
 
-            var unverifyLog = await LogUnverifyAsync(profile, guild, from, selfunverify, CancellationToken.None);
+            var unverifyLog = await LogUnverifyAsync(profile, guild, from, selfunverify);
             try
             {
                 await profile.Destination.TryAddRoleAsync(muteRole);
@@ -123,22 +122,20 @@ namespace GrillBot.App.Services.Unverify
             return string.IsNullOrEmpty(dbGuild?.MuteRoleId) ? null : guild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId));
         }
 
-        private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, SocketGuild guild, IGuildUser from, bool selfunverify,
-            CancellationToken cancellationToken)
+        private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, SocketGuild guild, IGuildUser from, bool selfunverify)
         {
             if (selfunverify)
-                return Logger.LogSelfunverifyAsync(profile, guild, cancellationToken);
+                return Logger.LogSelfunverifyAsync(profile, guild);
 
-            return Logger.LogUnverifyAsync(profile, guild, from, cancellationToken);
+            return Logger.LogUnverifyAsync(profile, guild, from);
         }
 
-        public async Task<string> UpdateUnverifyAsync(IGuildUser user, SocketGuild guild, DateTime newEnd, IGuildUser fromUser,
-            CancellationToken cancellationToken)
+        public async Task<string> UpdateUnverifyAsync(IGuildUser user, SocketGuild guild, DateTime newEnd, IGuildUser fromUser)
         {
             using var context = DbFactory.Create();
 
             var dbUser = await context.GuildUsers.Include(o => o.Unverify)
-                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString(), cancellationToken);
+                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
 
             if (dbUser?.Unverify == null)
                 throw new NotFoundException("Aktualizace času nelze pro hledaného uživatele provést. Unverify nenalezeno.");
@@ -146,11 +143,11 @@ namespace GrillBot.App.Services.Unverify
             if ((dbUser.Unverify.EndAt - DateTime.Now).TotalSeconds <= 30.0)
                 throw new ValidationException("Aktualizace data a času již není možná. Vypršel čas, nebo zbývá méně, než půl minuty.");
 
-            await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user, cancellationToken);
+            await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user);
 
             dbUser.Unverify.EndAt = newEnd;
             dbUser.Unverify.StartAt = DateTime.Now;
-            await context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync();
 
             try
             {
@@ -165,7 +162,7 @@ namespace GrillBot.App.Services.Unverify
             return UnverifyMessageGenerator.CreateUpdateChannelMessage(user, newEnd);
         }
 
-        public async Task<string> RemoveUnverifyAsync(SocketGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false, CancellationToken cancellationToken = default)
+        public async Task<string> RemoveUnverifyAsync(SocketGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false)
         {
             try
             {
@@ -173,31 +170,30 @@ namespace GrillBot.App.Services.Unverify
 
                 var dbUser = await context.GuildUsers
                     .Include(o => o.Unverify).ThenInclude(o => o.UnverifyLog)
-                    .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == toUser.Id.ToString(), cancellationToken);
+                    .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == toUser.Id.ToString());
 
                 if (dbUser?.Unverify == null)
                     return UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser);
 
                 var profile = ProfileGenerator.Reconstruct(dbUser.Unverify, toUser, guild);
-                await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto, cancellationToken);
+                await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto);
 
                 var muteRole = await GetMutedRoleAsync(guild);
-                var requestOptions = new RequestOptions() { CancelToken = cancellationToken };
                 if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id))
-                    await profile.Destination.RemoveRoleAsync(muteRole, requestOptions);
+                    await profile.Destination.RemoveRoleAsync(muteRole);
 
-                await profile.ReturnChannelsAsync(guild, requestOptions);
-                await profile.ReturnRolesAsync(requestOptions);
+                await profile.ReturnChannelsAsync(guild);
+                await profile.ReturnRolesAsync();
 
                 dbUser.Unverify = null;
-                await context.SaveChangesAsync(cancellationToken);
+                await context.SaveChangesAsync();
 
                 if (!isAuto)
                 {
                     try
                     {
                         var dmMessage = UnverifyMessageGenerator.CreateRemoveAccessManuallyPMMessage(guild);
-                        await toUser.SendMessageAsync(dmMessage, options: requestOptions);
+                        await toUser.SendMessageAsync(dmMessage);
                     }
                     catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
                     {
@@ -215,22 +211,22 @@ namespace GrillBot.App.Services.Unverify
         }
 
         private Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> channels, IGuildUser user, IGuild guild,
-            IGuildUser fromUser, bool isAuto, CancellationToken cancellationToken)
+            IGuildUser fromUser, bool isAuto)
         {
             if (isAuto)
-                return Logger.LogAutoremoveAsync(returnedRoles, channels, user, guild, cancellationToken);
+                return Logger.LogAutoremoveAsync(returnedRoles, channels, user, guild);
 
-            return Logger.LogRemoveAsync(returnedRoles, channels, guild, fromUser, user, cancellationToken);
+            return Logger.LogRemoveAsync(returnedRoles, channels, guild, fromUser, user);
         }
 
-        public async Task UnverifyAutoremoveAsync(ulong guildId, ulong userId, CancellationToken cancellationToken)
+        public async Task UnverifyAutoremoveAsync(ulong guildId, ulong userId)
         {
             using var context = DbFactory.Create();
 
             try
             {
                 var unverify = await context.Unverifies.AsQueryable()
-                    .FirstOrDefaultAsync(o => o.UserId == userId.ToString() && o.GuildId == guildId.ToString(), cancellationToken);
+                    .FirstOrDefaultAsync(o => o.UserId == userId.ToString() && o.GuildId == guildId.ToString());
 
                 if (unverify == null) return;
                 var guild = DiscordClient.GetGuild(guildId);
@@ -250,7 +246,7 @@ namespace GrillBot.App.Services.Unverify
                     return;
                 }
 
-                await RemoveUnverifyAsync(guild, guild.CurrentUser, user, true, cancellationToken);
+                await RemoveUnverifyAsync(guild, guild.CurrentUser, user, true);
             }
             catch (Exception ex)
             {
@@ -258,7 +254,7 @@ namespace GrillBot.App.Services.Unverify
             }
             finally
             {
-                await context.SaveChangesAsync(cancellationToken);
+                await context.SaveChangesAsync();
             }
         }
 
@@ -342,7 +338,7 @@ namespace GrillBot.App.Services.Unverify
             return data.ConvertAll(o => Convert.ToUInt64(o));
         }
 
-        public async Task RecoverUnverifyState(long id, ulong fromUserId, CancellationToken cancellationToken)
+        public async Task RecoverUnverifyState(long id, ulong fromUserId)
         {
             using var context = DbFactory.Create();
 
@@ -350,7 +346,7 @@ namespace GrillBot.App.Services.Unverify
                 .Include(o => o.Guild)
                 .Include(o => o.ToUser)
                 .ThenInclude(o => o.Unverify)
-                .FirstOrDefaultAsync(o => o.Id == id && (o.Operation == UnverifyOperation.Selfunverify || o.Operation == UnverifyOperation.Unverify), cancellationToken);
+                .FirstOrDefaultAsync(o => o.Id == id && (o.Operation == UnverifyOperation.Selfunverify || o.Operation == UnverifyOperation.Unverify));
 
             if (logItem == null)
                 throw new NotFoundException("Záznam o provedeném odebrání přístupu nebyl nalezen.");
@@ -386,22 +382,21 @@ namespace GrillBot.App.Services.Unverify
                 .ToList();
 
             var fromUser = guild.GetUser(fromUserId);
-            await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.Obj), guild, fromUser, user, cancellationToken);
+            await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.Obj), guild, fromUser, user);
 
-            var requestOptions = new RequestOptions() { CancelToken = cancellationToken };
             if (rolesToReturn.Count > 0)
-                await user.AddRolesAsync(rolesToReturn, requestOptions);
+                await user.AddRolesAsync(rolesToReturn);
 
             if (channelsToReturn.Count > 0)
             {
                 foreach (var channel in channelsToReturn)
                 {
-                    await channel.Channel.AddPermissionOverwriteAsync(user, channel.Perms, requestOptions);
+                    await channel.Channel.AddPermissionOverwriteAsync(user, channel.Perms);
                 }
             }
 
             if (mutedRole != null)
-                await user.RemoveRoleAsync(mutedRole, requestOptions);
+                await user.RemoveRoleAsync(mutedRole);
         }
 
         public async Task<List<Tuple<ulong, ulong>>> GetPendingUnverifiesForRemoveAsync(CancellationToken cancellationToken)

@@ -1,10 +1,12 @@
 ﻿using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using Quartz;
+using System.Reflection;
 
-namespace GrillBot.App.Infrastructure;
+namespace GrillBot.App.Infrastructure.Jobs;
 
 public abstract class Job : IJob
 {
@@ -12,21 +14,32 @@ public abstract class Job : IJob
     protected AuditLogService AuditLogService { get; }
     protected IDiscordClient DiscordClient { get; }
 
+    private DiscordInitializationService InitializationService { get; }
+
     private string JobName => GetType().Name;
 
-    protected Job(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient)
+    private bool RequireInitialization
+        => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
+
+    private bool CanRun
+        => !RequireInitialization || InitializationService.Get();
+
+    protected Job(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
+        DiscordInitializationService initializationService)
     {
         LoggingService = loggingService;
         AuditLogService = auditLogService;
         DiscordClient = discordClient;
+        InitializationService = initializationService;
     }
 
     public abstract Task RunAsync(IJobExecutionContext context);
 
     public async Task Execute(IJobExecutionContext context)
     {
-        await LoggingService.InfoAsync(JobName, $"Triggered processing at {DateTime.Now}");
+        if (!CanRun) return;
 
+        await LoggingService.InfoAsync(JobName, $"Triggered processing at {DateTime.Now}");
         var data = new JobExecutionData()
         {
             JobName = JobName,

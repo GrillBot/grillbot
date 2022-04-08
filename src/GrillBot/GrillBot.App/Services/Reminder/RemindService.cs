@@ -221,7 +221,7 @@ public class RemindService : ServiceBase
         return embed;
     }
 
-    public async Task<List<long>> GetProcessableReminderIdsAsync()
+    public async Task<List<long>> GetProcessableReminderIdsAsync(CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
@@ -229,7 +229,7 @@ public class RemindService : ServiceBase
             .Where(o => o.RemindMessageId == null && o.At <= DateTime.Now)
             .Select(o => o.Id);
 
-        return await query.ToListAsync();
+        return await query.ToListAsync(cancellationToken);
     }
 
     public async Task ProcessRemindFromJobAsync(long id)

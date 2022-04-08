@@ -12,20 +12,19 @@ namespace GrillBot.App.Services.Unverify
         {
         }
 
-        public Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, IGuild guild, IGuildUser from, CancellationToken cancellationToken)
+        public Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, IGuild guild, IGuildUser from)
         {
             var data = UnverifyLogSet.FromProfile(profile);
-            return SaveAsync(UnverifyOperation.Unverify, data, from, guild, profile.Destination, cancellationToken);
+            return SaveAsync(UnverifyOperation.Unverify, data, from, guild, profile.Destination);
         }
 
-        public Task<UnverifyLog> LogSelfunverifyAsync(UnverifyUserProfile profile, IGuild guild, CancellationToken cancellationToken)
+        public Task<UnverifyLog> LogSelfunverifyAsync(UnverifyUserProfile profile, IGuild guild)
         {
             var data = UnverifyLogSet.FromProfile(profile);
-            return SaveAsync(UnverifyOperation.Selfunverify, data, profile.Destination, guild, profile.Destination, cancellationToken);
+            return SaveAsync(UnverifyOperation.Selfunverify, data, profile.Destination, guild, profile.Destination);
         }
 
-        public async Task LogAutoremoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuildUser toUser, IGuild guild,
-            CancellationToken cancellationToken)
+        public async Task LogAutoremoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuildUser toUser, IGuild guild)
         {
             var data = new UnverifyLogRemove()
             {
@@ -34,11 +33,10 @@ namespace GrillBot.App.Services.Unverify
             };
 
             var currentUser = await guild.GetUserAsync(DiscordClient.CurrentUser.Id);
-            await SaveAsync(UnverifyOperation.Autoremove, data, currentUser, guild, toUser, cancellationToken);
+            await SaveAsync(UnverifyOperation.Autoremove, data, currentUser, guild, toUser);
         }
 
-        public Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to,
-            CancellationToken cancellationToken)
+        public Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to)
         {
             var data = new UnverifyLogRemove()
             {
@@ -46,10 +44,10 @@ namespace GrillBot.App.Services.Unverify
                 ReturnedRoles = returnedRoles.ConvertAll(o => o.Id)
             };
 
-            return SaveAsync(UnverifyOperation.Remove, data, from, guild, to, cancellationToken);
+            return SaveAsync(UnverifyOperation.Remove, data, from, guild, to);
         }
 
-        public Task LogUpdateAsync(DateTime start, DateTime end, IGuild guild, IGuildUser from, IGuildUser to, CancellationToken cancellationToken)
+        public Task LogUpdateAsync(DateTime start, DateTime end, IGuild guild, IGuildUser from, IGuildUser to)
         {
             var data = new UnverifyLogUpdate()
             {
@@ -57,11 +55,10 @@ namespace GrillBot.App.Services.Unverify
                 Start = start
             };
 
-            return SaveAsync(UnverifyOperation.Update, data, from, guild, to, cancellationToken);
+            return SaveAsync(UnverifyOperation.Update, data, from, guild, to);
         }
 
-        public Task LogRecoverAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to,
-            CancellationToken cancellationToken)
+        public Task LogRecoverAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to)
         {
             var data = new UnverifyLogRemove()
             {
@@ -69,11 +66,10 @@ namespace GrillBot.App.Services.Unverify
                 ReturnedRoles = returnedRoles.ConvertAll(o => o.Id)
             };
 
-            return SaveAsync(UnverifyOperation.Recover, data, from, guild, to, cancellationToken);
+            return SaveAsync(UnverifyOperation.Recover, data, from, guild, to);
         }
 
-        private async Task<UnverifyLog> SaveAsync(UnverifyOperation operation, object data, IGuildUser from, IGuild guild, IGuildUser toUser,
-            CancellationToken cancellationToken)
+        private async Task<UnverifyLog> SaveAsync(UnverifyOperation operation, object data, IGuildUser from, IGuild guild, IGuildUser toUser)
         {
             var entity = new UnverifyLog()
             {
@@ -87,18 +83,19 @@ namespace GrillBot.App.Services.Unverify
 
             using var context = DbFactory.Create();
 
-            await context.InitGuildAsync(guild, cancellationToken);
-            await context.InitUserAsync(from, cancellationToken);
-            await context.InitGuildUserAsync(guild, from, cancellationToken);
+            await context.InitGuildAsync(guild);
+            await context.InitUserAsync(from);
+            await context.InitGuildUserAsync(guild, from);
 
             if (from != toUser)
             {
-                await context.InitUserAsync(toUser, cancellationToken);
-                await context.InitGuildUserAsync(guild, toUser, cancellationToken);
+                await context.InitUserAsync(toUser);
+                await context.InitGuildUserAsync(guild, toUser);
             }
 
-            await context.AddAsync(entity, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
+            await context.AddAsync(entity);
+            await context.SaveChangesAsync();
+
             return entity;
         }
     }

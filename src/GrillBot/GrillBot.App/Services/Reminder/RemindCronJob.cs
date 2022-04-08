@@ -1,36 +1,33 @@
-﻿using GrillBot.App.Services.Logging;
+﻿using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.Logging;
 using Quartz;
 
-namespace GrillBot.App.Services.Reminder
+namespace GrillBot.App.Services.Reminder;
+
+[DisallowConcurrentExecution]
+[DisallowUninitialized]
+public class RemindCronJob : Job
 {
-    [DisallowConcurrentExecution]
-    public class RemindCronJob : IJob
+    private RemindService RemindService { get; }
+
+    public RemindCronJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
+        RemindService remindService, DiscordInitializationService initializationService)
+        : base(loggingService, auditLogService, discordClient, initializationService)
     {
-        private RemindService RemindService { get; }
-        private LoggingService LoggingService { get; }
+        RemindService = remindService;
+    }
 
-        public RemindCronJob(RemindService remindService, LoggingService logging)
+    public override async Task RunAsync(IJobExecutionContext context)
+    {
+        var reminders = await RemindService.GetProcessableReminderIdsAsync(context.CancellationToken);
+
+        foreach (var id in reminders)
         {
-            RemindService = remindService;
-            LoggingService = logging;
+            await RemindService.ProcessRemindFromJobAsync(id);
         }
 
-        public async Task Execute(IJobExecutionContext context)
-        {
-            var reminders = await RemindService.GetProcessableReminderIdsAsync();
-            await LoggingService.InfoAsync("RemindCron", $"Triggered remind processing job at {DateTime.Now}. Reminders to process {reminders.Count}");
-
-            foreach (var id in reminders)
-            {
-                try
-                {
-                    await RemindService.ProcessRemindFromJobAsync(id);
-                }
-                catch (Exception ex)
-                {
-                    await LoggingService.ErrorAsync("RemindCron", $"An error occured in remind processing {id}", ex);
-                }
-            }
-        }
+        context.Result = $"Reminders: {reminders.Count} ({string.Join(", ", reminders)})";
     }
 }

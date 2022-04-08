@@ -169,7 +169,6 @@ public class Startup
             q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron", true);
             q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
             q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
-            q.AddTriggeredJob<EmoteStatsCleaningJob>(Configuration, "Emotes:CleaningInterval");
         });
 
         services.AddQuartzHostedService();

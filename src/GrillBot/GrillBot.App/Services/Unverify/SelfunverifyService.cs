@@ -20,7 +20,7 @@ namespace GrillBot.App.Services.Unverify
             return UnverifyService.SetUnverifyAsync(guildUser, end, null, guild, guildUser, true, toKeep, null, false);
         }
 
-        public async Task AddKeepablesAsync(List<KeepableParams> parameters, CancellationToken cancellationToken = default)
+        public async Task AddKeepablesAsync(List<KeepableParams> parameters)
         {
             foreach (var param in parameters)
             {
@@ -32,16 +32,16 @@ namespace GrillBot.App.Services.Unverify
 
             foreach (var param in parameters)
             {
-                if (await context.SelfunverifyKeepables.AsNoTracking().AnyAsync(o => o.GroupName == param.Group && o.Name == param.Name, cancellationToken))
+                if (await context.SelfunverifyKeepables.AsNoTracking().AnyAsync(o => o.GroupName == param.Group && o.Name == param.Name))
                     throw new ValidationException($"Ponechatelná role, nebo kanál {param.Group}/{param.Name} již existuje.");
             }
 
             var entities = parameters.ConvertAll(o => new SelfunverifyKeepable() { Name = o.Name, GroupName = o.Group });
-            await context.AddRangeAsync(entities, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
+            await context.AddRangeAsync(entities);
+            await context.SaveChangesAsync();
         }
 
-        public async Task RemoveKeepableAsync(string group, string name = null, CancellationToken cancellationToken = default)
+        public async Task RemoveKeepableAsync(string group, string name = null)
         {
             var groupName = group.ToLower();
             var itemName = name?.ToLower();
@@ -51,22 +51,22 @@ namespace GrillBot.App.Services.Unverify
 
             if (string.IsNullOrEmpty(itemName))
             {
-                if (!await itemsQuery.AnyAsync(cancellationToken))
+                if (!await itemsQuery.AnyAsync())
                     throw new ValidationException($"Skupina ponechatelných rolí, nebo kanálů {group} neexistuje.");
 
-                var items = await itemsQuery.ToListAsync(cancellationToken);
+                var items = await itemsQuery.ToListAsync();
                 context.RemoveRange(items);
             }
             else
             {
-                if (!await itemsQuery.AnyAsync(o => o.Name == itemName, cancellationToken))
+                if (!await itemsQuery.AnyAsync(o => o.Name == itemName))
                     throw new ValidationException($"Ponechatelná role, nebo kanál {group}/{name} neexistuje.");
 
-                var item = await itemsQuery.FirstOrDefaultAsync(o => o.Name == itemName, cancellationToken);
+                var item = await itemsQuery.FirstOrDefaultAsync(o => o.Name == itemName);
                 context.Remove(item);
             }
 
-            await context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync();
         }
 
         public async Task<Dictionary<string, List<string>>> GetKeepablesAsync(string group, CancellationToken cancellationToken = default)

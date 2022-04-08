@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Logging;
 using Quartz;
@@ -18,8 +19,8 @@ public class AuditLogClearingJob : Job
         => Configuration.GetValue<int>("CleanupIntervalMonths");
 
     public AuditLogClearingJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        GrillBotContextFactory dbFactory, IConfiguration configuration, FileStorageFactory fileStorage)
-        : base(loggingService, auditLogService, discordClient)
+        GrillBotContextFactory dbFactory, IConfiguration configuration, FileStorageFactory fileStorage, DiscordInitializationService initializationService)
+        : base(loggingService, auditLogService, discordClient, initializationService)
     {
         Configuration = configuration.GetSection("AuditLog");
         FileStorage = fileStorage;

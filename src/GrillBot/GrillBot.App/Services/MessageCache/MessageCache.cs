@@ -71,13 +71,16 @@ public partial class MessageCache : ServiceBase
         return true;
     }
 
-    public async Task RunCheckAsync(CancellationToken cancellationToken = default)
+    public async Task<string> RunCheckAsync(CancellationToken cancellationToken = default)
     {
+        var report = new List<string>();
+
         foreach (var (id, msg) in Cache.Where(o => o.Value.Metadata.State != CachedMessageState.None).ToDictionary(o => o.Key, o => o.Value))
         {
             if (msg.Metadata.State == CachedMessageState.ToBeDeleted)
             {
                 await RemoveIndexAsync(msg.Message, cancellationToken);
+                report.Add($"Removed {id} (Author: {msg.Message.Author.GetFullName()}, CreatedAt: {msg.Message.CreatedAt.LocalDateTime})");
                 Cache.Remove(id, out var _);
             }
             else if (msg.Metadata.State == CachedMessageState.NeedsUpdate)
@@ -91,11 +94,15 @@ public partial class MessageCache : ServiceBase
                     continue;
                 }
 
+                report.Add($"Refreshed {id} (Author: {msg.Message.Author.GetFullName()}, CreatedAt: {msg.Message.CreatedAt.LocalDateTime})");
                 Cache[id] = new CachedMessage(newMessage);
             }
         }
 
         await RebuildAsync(cancellationToken);
+        report.Add($"Rebuilded indexes: {Cache.Count}");
+
+        return String.Join("\n", report);
     }
 
     public void MarkUpdated(ulong messageId)

@@ -1,7 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure;
 
-namespace GrillBot.App.Services;
+namespace GrillBot.App.Services.Emotes;
 
 [Initializable]
 public class EmoteChainService : ServiceBase

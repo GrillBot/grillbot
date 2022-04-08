@@ -1,7 +1,5 @@
 ﻿using Discord.Commands;
 using Discord.Interactions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +7,7 @@ using NSwag.Annotations;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Entity;
-using GrillBot.Data.Extensions.Discord;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 
 namespace GrillBot.App.Controllers
 {
@@ -156,8 +154,10 @@ namespace GrillBot.App.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public ActionResult<List<string>> GetCommandsList()
         {
-            var commands = CommandService.Commands
-                .Select(o => Configuration.GetValue<string>("Discord:Commands:Prefix") + (o.Aliases[0]?.Trim()))
+            var commands = CommandService.Modules
+                .Where(o => o.Commands.Count > 0 && !o.Preconditions.OfType<TextCommandDeprecatedAttribute>().Any())
+                .Select(o => o.Commands.Where(x => !x.Preconditions.OfType<TextCommandDeprecatedAttribute>().Any()))
+                .SelectMany(o => o.Select(x => Configuration.GetValue<string>("Discord:Commands:Prefix") + (x.Aliases[0]?.Trim())).Distinct())
                 .Distinct();
 
             var slashCommands = InteractionService.SlashCommands

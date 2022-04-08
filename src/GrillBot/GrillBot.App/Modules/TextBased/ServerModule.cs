@@ -210,7 +210,7 @@ public class ServerModule : Infrastructure.ModuleBase
 
                 var basicEmotesCount = guild.Emotes.Count(o => !o.Animated);
                 var animatedCount = guild.Emotes.Count - basicEmotesCount;
-                var banCount = (await guild.GetBansAsync()).Count;
+                var banCount = (await guild.GetBansAsync().FlattenAsync()).Count();
                 var tier = guild.PremiumTier.ToString().ToLower().Replace("tier", "").Replace("none", "0");
 
                 var color = guild.GetHighestRole(true)?.Color ?? Color.Default;

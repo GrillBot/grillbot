@@ -61,14 +61,14 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task RemoveUnverifyAsync_GuildNotFound()
     {
-        var result = await AdminController.RemoveUnverifyAsync(1, 1, CancellationToken.None);
+        var result = await AdminController.RemoveUnverifyAsync(1, 1);
         CheckResult<NotFoundObjectResult, MessageResponse>(result);
     }
 
     [TestMethod]
     public async Task UpdateUnverifyTimeAsync_GuildNotFound()
     {
-        var result = await AdminController.UpdateUnverifyTimeAsync(1, 1, DateTime.MaxValue, CancellationToken.None);
+        var result = await AdminController.UpdateUnverifyTimeAsync(1, 1, DateTime.MaxValue);
         CheckResult<NotFoundObjectResult, MessageResponse>(result);
     }
 
@@ -116,7 +116,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task RecoverUnverifyAsync_ItemNotFound()
     {
-        var result = await AdminController.RecoverUnverifyAsync(1, CancellationToken.None);
+        var result = await AdminController.RecoverUnverifyAsync(1);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -137,7 +137,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         });
         await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify() { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await DbContext.SaveChangesAsync();
-        var result = await AdminController.RecoverUnverifyAsync(1, CancellationToken.None);
+        var result = await AdminController.RecoverUnverifyAsync(1);
         CheckResult<BadRequestObjectResult>(result);
     }
 
@@ -158,7 +158,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.RecoverUnverifyAsync(1, CancellationToken.None);
+        var result = await AdminController.RecoverUnverifyAsync(1);
         CheckResult<NotFoundObjectResult>(result);
     }
 

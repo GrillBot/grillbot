@@ -11,7 +11,7 @@ public partial class EmoteService : ServiceBase
 {
     private string CommandPrefix { get; }
     public ConcurrentBag<GuildEmote> SupportedEmotes { get; }
-    private readonly object SupportedEmotesLock = new object();
+    private readonly object SupportedEmotesLock = new();
     private MessageCache.MessageCache MessageCache { get; }
 
     public EmoteService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,

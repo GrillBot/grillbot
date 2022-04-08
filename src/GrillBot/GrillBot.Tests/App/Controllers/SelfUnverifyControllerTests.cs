@@ -23,7 +23,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
             new KeepableParams() { Group = "2BIT", Name = "IAL" }
         };
 
-        var result = await AdminController.AddKeepableAsync(parameters, CancellationToken.None);
+        var result = await AdminController.AddKeepableAsync(parameters);
         CheckResult<OkResult>(result);
     }
 
@@ -38,7 +38,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
         await DbContext.SelfunverifyKeepables.AddAsync(new Database.Entity.SelfunverifyKeepable() { GroupName = "1bit", Name = "izp" });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.AddKeepableAsync(parameters, CancellationToken.None);
+        var result = await AdminController.AddKeepableAsync(parameters);
         CheckResult<BadRequestObjectResult>(result);
     }
 

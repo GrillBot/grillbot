@@ -23,7 +23,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var guild = DataHelper.CreateGuild();
 
         var profile = new UnverifyUserProfile(guildUser, DateTime.MinValue, DateTime.MaxValue, false);
-        var logItem = await Service.LogUnverifyAsync(profile, guild, fromUser, CancellationToken.None);
+        var logItem = await Service.LogUnverifyAsync(profile, guild, fromUser);
 
         Assert.IsNotNull(logItem);
         Assert.IsTrue(logItem.Id > 0);
@@ -36,7 +36,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var guild = DataHelper.CreateGuild();
 
         var profile = new UnverifyUserProfile(guildUser, DateTime.MinValue, DateTime.MaxValue, false);
-        var logItem = await Service.LogSelfunverifyAsync(profile, guild, CancellationToken.None);
+        var logItem = await Service.LogSelfunverifyAsync(profile, guild);
 
         Assert.IsNotNull(logItem);
         Assert.IsTrue(logItem.Id > 0);
@@ -51,7 +51,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var guild = DataHelper.CreateGuild();
         var fromUser = DataHelper.CreateGuildUser("User2", 123456, "9513", "Test");
 
-        await Service.LogRemoveAsync(returnedRoles, returnedChannels, guild, fromUser, toUser, CancellationToken.None);
+        await Service.LogRemoveAsync(returnedRoles, returnedChannels, guild, fromUser, toUser);
         Assert.IsTrue(true);
     }
 
@@ -62,7 +62,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var guild = DataHelper.CreateGuild();
         var fromUser = DataHelper.CreateGuildUser("User2", 123456, "9513", "Test");
 
-        await Service.LogUpdateAsync(DateTime.MinValue, DateTime.MaxValue, guild, fromUser, toUser, CancellationToken.None);
+        await Service.LogUpdateAsync(DateTime.MinValue, DateTime.MaxValue, guild, fromUser, toUser);
         Assert.IsTrue(true);
     }
 
@@ -75,7 +75,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var guild = DataHelper.CreateGuild();
         var fromUser = DataHelper.CreateGuildUser("User2", 123456, "9513", "Test");
 
-        await Service.LogRecoverAsync(returnedRoles, returnedChannels, guild, fromUser, toUser, CancellationToken.None);
+        await Service.LogRecoverAsync(returnedRoles, returnedChannels, guild, fromUser, toUser);
         Assert.IsTrue(true);
     }
 }

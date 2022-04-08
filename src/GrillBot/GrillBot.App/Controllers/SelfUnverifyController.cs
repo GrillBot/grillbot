@@ -41,11 +41,11 @@ public class SelfUnverifyController : Controller
     [HttpPost("keep")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> AddKeepableAsync([FromBody] List<KeepableParams> parameters, CancellationToken cancellationToken)
+    public async Task<ActionResult> AddKeepableAsync([FromBody] List<KeepableParams> parameters)
     {
         try
         {
-            await SelfunverifyService.AddKeepablesAsync(parameters, cancellationToken);
+            await SelfunverifyService.AddKeepablesAsync(parameters);
             return Ok();
         }
         catch (ValidationException ex)
@@ -76,11 +76,11 @@ public class SelfUnverifyController : Controller
     [HttpDelete("keep")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> KeepableRemoveAsync(string group, string name = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> KeepableRemoveAsync(string group, string name = null)
     {
         try
         {
-            await SelfunverifyService.RemoveKeepableAsync(group, name, cancellationToken);
+            await SelfunverifyService.RemoveKeepableAsync(group, name);
             return Ok();
         }
         catch (ValidationException ex)

@@ -41,6 +41,7 @@ public abstract class Job : IJob
         catch (Exception ex)
         {
             data.Result = ex.ToString();
+            data.WasError = true;
             await LoggingService.ErrorAsync(JobName, "An error occured while job task processing.", ex);
         }
         finally

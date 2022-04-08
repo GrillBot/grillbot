@@ -8,6 +8,7 @@ public class JobExecutionData
     public string Result { get; set; }
     public DateTime StartAt { get; set; }
     public DateTime EndAt { get; set; }
+    public bool WasError { get; set; }
 
     public void MarkFinished()
     {

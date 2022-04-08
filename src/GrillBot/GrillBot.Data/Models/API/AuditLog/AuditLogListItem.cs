@@ -97,6 +97,7 @@ namespace GrillBot.Data.Models.API.AuditLog
                     AuditLogItemType.UserLeft => JsonConvert.DeserializeObject<UserLeftGuildData>(entity.Data, jsonSerializerSettings),
                     AuditLogItemType.InteractionCommand => JsonConvert.DeserializeObject<InteractionCommandExecuted>(entity.Data, jsonSerializerSettings),
                     AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, jsonSerializerSettings),
+                    AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, jsonSerializerSettings),
                     _ => null
                 };
             }

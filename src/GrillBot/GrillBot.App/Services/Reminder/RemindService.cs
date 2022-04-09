@@ -99,14 +99,14 @@ public class RemindService : ServiceBase
             throw new InvalidOperationException("Připomenutí nebylo nalezeno.");
 
         if (original.FromUserId == toUser.Id.ToString())
-            throw new ValidationException("Toto připomenutí jsi založil, nemůžeš dostat ten stejný.");
+            throw new ValidationException("Toto připomenutí jsi založil, nemůžeš dostat to stejné.");
 
         if (!string.IsNullOrEmpty(original.RemindMessageId))
             throw new InvalidOperationException("Toto připomenutí již bylo odesláno.");
 
         var exists = await context.Reminders.AnyAsync(o => o.OriginalMessageId == original.OriginalMessageId && o.ToUserId == toUser.Id.ToString());
         if (exists)
-            throw new ValidationException("Toto připomenutí jsi již jednou z tlačítka vytvořil. Nelze vytvořit další.");
+            throw new ValidationException("Toto připomenutí jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další.");
 
         var fromUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(original.FromUserId));
         if (fromUser == null)

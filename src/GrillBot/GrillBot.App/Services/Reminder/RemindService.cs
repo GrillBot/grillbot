@@ -95,15 +95,22 @@ public class RemindService : ServiceBase
         var original = await context.Reminders.AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == originalRemindId);
 
-        if (original == null) return;
-        if (original.FromUserId == toUser.Id.ToString()) return;
-        if (original.At < DateTime.Now) return;
+        if (original == null)
+            throw new InvalidOperationException("Připomenutí nebylo nalezeno.");
+
+        if (original.FromUserId == toUser.Id.ToString())
+            throw new ValidationException("Toto připomenutí jsi založil, nemůžeš dostat ten stejný.");
+
+        if (!string.IsNullOrEmpty(original.RemindMessageId))
+            throw new InvalidOperationException("Toto připomenutí již bylo odesláno.");
 
         var exists = await context.Reminders.AnyAsync(o => o.OriginalMessageId == original.OriginalMessageId && o.ToUserId == toUser.Id.ToString());
-        if (exists) return;
+        if (exists)
+            throw new ValidationException("Toto připomenutí jsi již jednou z tlačítka vytvořil. Nelze vytvořit další.");
 
         var fromUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(original.FromUserId));
-        if (fromUser == null) return;
+        if (fromUser == null)
+            throw new ValidationException("Uživatel, který založil toto připomenutí se nepodařilo dohledat");
 
         await CreateRemindAsync(fromUser, toUser, original.At, original.Message, Convert.ToUInt64(original.OriginalMessageId));
     }

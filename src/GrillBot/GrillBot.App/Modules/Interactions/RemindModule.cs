@@ -90,6 +90,8 @@ public class RemindModule : Infrastructure.InteractionsModuleBase
     [ComponentInteraction("remind_copy:*", ignoreGroupNames: true)]
     public async Task HandleRemindCopyAsync(long remindId)
     {
+        bool canDefer = true;
+
         try
         {
             await RemindService.CopyAsync(remindId, Context.User);
@@ -98,7 +100,14 @@ public class RemindModule : Infrastructure.InteractionsModuleBase
         {
             await Context.Channel.SendMessageAsync($"{Context.User.Mention} {ex.Message}");
         }
+        catch (InvalidOperationException ex)
+        {
+            await Context.Channel.SendMessageAsync($"{Context.User.Mention} {ex.Message}");
+            await ((SocketMessageComponent)Context.Interaction).UpdateAsync(o => o.Components = null);
+            canDefer = false;
+        }
 
-        await DeferAsync();
+        if (canDefer)
+            await DeferAsync();
     }
 }

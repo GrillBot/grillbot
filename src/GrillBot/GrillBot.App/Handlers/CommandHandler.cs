@@ -30,7 +30,9 @@ public class CommandHandler : ServiceBase
     {
         if (!InitializationService.Get()) return;
         if (!message.TryLoadMessage(out SocketUserMessage userMessage)) return;
+
         var context = new SocketCommandContext(DiscordClient, userMessage);
+        CommandsPerformanceCounter.StartTask(context);
 
         int argumentPosition = 0;
         var prefix = Configuration.GetValue<string>("Discord:Commands:Prefix");
@@ -79,6 +81,13 @@ public class CommandHandler : ServiceBase
         }
 
         if (result.Error != CommandError.UnknownCommand)
-            await AuditLogService.LogExecutedCommandAsync(command.Value, context, result);
+        {
+            var duration = CommandsPerformanceCounter.TaskFinished(context);
+            await AuditLogService.LogExecutedCommandAsync(command.Value, context, result, duration);
+        }
+        else
+        {
+            CommandsPerformanceCounter.TaskFinished(context);
+        }
     }
 }

@@ -32,6 +32,7 @@ public class InteractionHandler : ServiceBase
         if (!InitializationService.Get()) return;
 
         var context = new SocketInteractionContext(DiscordClient, interaction);
+        CommandsPerformanceCounter.StartTask(context);
 
         if (interaction is SocketSlashCommand || interaction is SocketMessageCommand || interaction is SocketUserCommand)
             await context.Interaction.DeferAsync();
@@ -72,6 +73,13 @@ public class InteractionHandler : ServiceBase
         }
 
         if (result.Error != InteractionCommandError.UnknownCommand)
-            await AuditLogService.LogExecutedInteractionCommandAsync(command, context, result);
+        {
+            var duration = CommandsPerformanceCounter.TaskFinished(context);
+            await AuditLogService.LogExecutedInteractionCommandAsync(command, context, result, duration);
+        }
+        else
+        {
+            CommandsPerformanceCounter.TaskFinished(context);
+        }
     }
 }

@@ -21,17 +21,19 @@ public class InteractionCommandExecuted
     public bool IsSuccess { get; set; }
     public InteractionCommandError? CommandError { get; set; }
     public string ErrorReason { get; set; }
+    public int Duration { get; set; }
 
     [JsonIgnore]
     public string FullName => $"{Name} ({ModuleName}/{MethodName})";
 
     public InteractionCommandExecuted() { }
 
-    public InteractionCommandExecuted(ICommandInfo commandInfo, IResult result)
+    public InteractionCommandExecuted(ICommandInfo commandInfo, IResult result, int duration)
     {
         Name = commandInfo.Name;
         ModuleName = commandInfo.Module.Name;
         MethodName = commandInfo.MethodName.Replace("Async", "", StringComparison.InvariantCultureIgnoreCase);
+        Duration = duration;
 
         if (result != null)
         {
@@ -41,8 +43,8 @@ public class InteractionCommandExecuted
         }
     }
 
-    public InteractionCommandExecuted(SlashCommandInfo commandInfo, SocketSlashCommand interaction, IResult result)
-        : this(commandInfo, result)
+    public InteractionCommandExecuted(SlashCommandInfo commandInfo, SocketSlashCommand interaction, IResult result, int duration)
+        : this(commandInfo, result, duration)
     {
         HasResponded = interaction.HasResponded;
         IsValidToken = interaction.IsValidToken;
@@ -53,24 +55,24 @@ public class InteractionCommandExecuted
             .ToList();
     }
 
-    public InteractionCommandExecuted(MessageCommandInfo commandInfo, SocketMessageCommand interaction, IResult result)
-        : this(commandInfo, result)
+    public InteractionCommandExecuted(MessageCommandInfo commandInfo, SocketMessageCommand interaction, IResult result, int duration)
+        : this(commandInfo, result, duration)
     {
         HasResponded = interaction.HasResponded;
         IsValidToken = interaction.IsValidToken;
         Parameters = new() { new(interaction.Data) };
     }
 
-    public InteractionCommandExecuted(UserCommandInfo commandInfo, SocketUserCommand interaction, IResult result)
-        : this(commandInfo, result)
+    public InteractionCommandExecuted(UserCommandInfo commandInfo, SocketUserCommand interaction, IResult result, int duration)
+        : this(commandInfo, result, duration)
     {
         HasResponded = interaction.HasResponded;
         IsValidToken = interaction.IsValidToken;
         Parameters = new() { new(interaction.Data) };
     }
 
-    public InteractionCommandExecuted(ComponentCommandInfo commandInfo, SocketMessageComponent component, IResult result)
-        : this(commandInfo, result)
+    public InteractionCommandExecuted(ComponentCommandInfo commandInfo, SocketMessageComponent component, IResult result, int duration)
+        : this(commandInfo, result, duration)
     {
         HasResponded = component.HasResponded;
         IsValidToken = component.IsValidToken;
@@ -82,8 +84,8 @@ public class InteractionCommandExecuted
         };
     }
 
-    public InteractionCommandExecuted(ModalCommandInfo commandInfo, SocketModal modal, IResult result)
-        : this(commandInfo, result)
+    public InteractionCommandExecuted(ModalCommandInfo commandInfo, SocketModal modal, IResult result, int duration)
+        : this(commandInfo, result, duration)
     {
         HasResponded = modal.HasResponded;
         IsValidToken = modal.IsValidToken;
@@ -110,18 +112,18 @@ public class InteractionCommandExecuted
         if (Parameters?.Count == 0) Parameters = null;
     }
 
-    public static InteractionCommandExecuted Create(IDiscordInteraction interaction, ICommandInfo commandInfo, IResult result)
+    public static InteractionCommandExecuted Create(IDiscordInteraction interaction, ICommandInfo commandInfo, IResult result, int duration)
     {
         if (interaction is SocketSlashCommand slashCommand)
-            return new InteractionCommandExecuted(commandInfo as SlashCommandInfo, slashCommand, result);
+            return new InteractionCommandExecuted(commandInfo as SlashCommandInfo, slashCommand, result, duration);
         else if (interaction is SocketMessageCommand messageCommand)
-            return new InteractionCommandExecuted(commandInfo as MessageCommandInfo, messageCommand, result);
+            return new InteractionCommandExecuted(commandInfo as MessageCommandInfo, messageCommand, result, duration);
         else if (interaction is SocketUserCommand userCommand)
-            return new InteractionCommandExecuted(commandInfo as UserCommandInfo, userCommand, result);
+            return new InteractionCommandExecuted(commandInfo as UserCommandInfo, userCommand, result, duration);
         else if (interaction is SocketMessageComponent component)
-            return new InteractionCommandExecuted(commandInfo as ComponentCommandInfo, component, result);
+            return new InteractionCommandExecuted(commandInfo as ComponentCommandInfo, component, result, duration);
         else if (interaction is SocketModal modal)
-            return new InteractionCommandExecuted(commandInfo as ModalCommandInfo, modal, result);
+            return new InteractionCommandExecuted(commandInfo as ModalCommandInfo, modal, result, duration);
 
         throw new NotSupportedException("Unsupported interaction type");
     }

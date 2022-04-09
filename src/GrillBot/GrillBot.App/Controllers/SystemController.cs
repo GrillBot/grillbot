@@ -128,7 +128,10 @@ namespace GrillBot.App.Controllers
                     Command = o.Key,
                     FailedCount = o.Count(x => !x.Data.IsSuccess),
                     LastCall = o.Max(x => x.CreatedAt),
-                    SuccessCount = o.Count(x => x.Data.IsSuccess)
+                    SuccessCount = o.Count(x => x.Data.IsSuccess),
+                    MinDuration = o.Min(x => x.Data.Duration),
+                    MaxDuration = o.Max(x => x.Data.Duration),
+                    TotalDuration = o.Sum(x => x.Data.Duration)
                 })
                 .OrderBy(o => o.Command)
                 .ToList();
@@ -166,7 +169,10 @@ namespace GrillBot.App.Controllers
                     Command = o.Key,
                     FailedCount = o.Count(x => !x.Data.IsSuccess),
                     LastCall = o.Max(x => x.CreatedAt),
-                    SuccessCount = o.Count(x => x.Data.IsSuccess)
+                    SuccessCount = o.Count(x => x.Data.IsSuccess),
+                    MinDuration = o.Min(x => x.Data.Duration),
+                    MaxDuration = o.Max(x => x.Data.Duration),
+                    TotalDuration = o.Sum(x => x.Data.Duration)
                 }).OrderBy(o => o.Command)
                 .ToList();
 

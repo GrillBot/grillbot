@@ -10,13 +10,15 @@ public class ExecutedCommandEvent : AuditEventBase
     private CommandInfo Command { get; }
     private ICommandContext Context { get; }
     private IResult Result { get; }
+    private int Duration { get; }
 
     public ExecutedCommandEvent(AuditLogService auditLogService, CommandInfo command, ICommandContext context,
-        IResult result) : base(auditLogService)
+        IResult result, int duration) : base(auditLogService)
     {
         Command = command;
         Context = context;
         Result = result;
+        Duration = duration;
     }
 
     public override Task<bool> CanProcessAsync()
@@ -30,7 +32,7 @@ public class ExecutedCommandEvent : AuditEventBase
 
     public override async Task ProcessAsync()
     {
-        var data = new CommandExecution(Command, Context.Message, Result);
+        var data = new CommandExecution(Command, Context.Message, Result, Duration);
         var item = new AuditLogDataWrapper(AuditLogItemType.Command, data, Context.Guild, Context.Channel, Context.User);
         await AuditLogService.StoreItemAsync(item);
     }

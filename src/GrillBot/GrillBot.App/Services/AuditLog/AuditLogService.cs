@@ -124,11 +124,14 @@ public partial class AuditLogService : ServiceBase
             await @event.ProcessAsync();
     }
 
-    public Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result)
-        => HandleEventAsync(new ExecutedCommandEvent(this, command, context, result));
+    public Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result, int duration)
+        => HandleEventAsync(new ExecutedCommandEvent(this, command, context, result, duration));
 
-    public Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result)
-        => HandleEventAsync(new ExecutedInteractionCommandEvent(this, command, context, result));
+    public Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result,
+        int duration)
+    {
+        return HandleEventAsync(new ExecutedInteractionCommandEvent(this, command, context, result, duration));
+    }
 
     public async Task<bool> RemoveItemAsync(long id, CancellationToken cancellationToken)
     {

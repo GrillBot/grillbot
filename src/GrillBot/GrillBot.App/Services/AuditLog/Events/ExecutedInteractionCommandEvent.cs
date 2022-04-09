@@ -9,13 +9,15 @@ public class ExecutedInteractionCommandEvent : AuditEventBase
     private ICommandInfo Command { get; }
     private IInteractionContext Context { get; }
     private IResult Result { get; }
+    private int Duration { get; }
 
     public ExecutedInteractionCommandEvent(AuditLogService auditLogService, ICommandInfo command, IInteractionContext context,
-        IResult result) : base(auditLogService)
+        IResult result, int duration) : base(auditLogService)
     {
         Command = command;
         Context = context;
         Result = result;
+        Duration = duration;
     }
 
     public override Task<bool> CanProcessAsync()
@@ -23,7 +25,7 @@ public class ExecutedInteractionCommandEvent : AuditEventBase
 
     public override async Task ProcessAsync()
     {
-        var data = InteractionCommandExecuted.Create(Context.Interaction, Command, Result);
+        var data = InteractionCommandExecuted.Create(Context.Interaction, Command, Result, Duration);
         var item = new AuditLogDataWrapper(AuditLogItemType.InteractionCommand, data, Context.Guild, Context.Channel, Context.User);
         await AuditLogService.StoreItemAsync(item);
     }

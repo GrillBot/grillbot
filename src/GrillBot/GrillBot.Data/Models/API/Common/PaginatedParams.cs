@@ -2,26 +2,25 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace GrillBot.Data.Models.API.Params
+namespace GrillBot.Data.Models.API.Common;
+
+/// <summary>
+/// Parameters for pagination.
+/// </summary>
+public class PaginatedParams
 {
     /// <summary>
-    /// Parameters for pagination.
+    /// Page.
     /// </summary>
-    public class PaginatedParams
-    {
-        /// <summary>
-        /// Page.
-        /// </summary>
-        [Range(0, int.MaxValue, ErrorMessage = "Číslo stránky je v neplatném rozsahu.")]
-        public int Page { get; set; } = 1;
+    [Range(0, int.MaxValue, ErrorMessage = "Číslo stránky je v neplatném rozsahu.")]
+    public int Page { get; set; } = 1;
 
-        /// <summary>
-        /// Page size.
-        /// </summary>
-        [Range(0, int.MaxValue, ErrorMessage = "Velikost stránky je v neplatném rozsahu.")]
-        public int PageSize { get; set; } = 25;
+    /// <summary>
+    /// Page size.
+    /// </summary>
+    [Range(0, int.MaxValue, ErrorMessage = "Velikost stránky je v neplatném rozsahu.")]
+    public int PageSize { get; set; } = 25;
 
-        [OpenApiIgnore]
-        public int Skip => (Page == 0 ? 0 : Page - 1) * PageSize;
-    }
+    [OpenApiIgnore]
+    public int Skip => (Page == 0 ? 0 : Page - 1) * PageSize;
 }

@@ -7,12 +7,14 @@ public class EmoteListMetadata : PaginatedMetadataBase
     public override string EmbedKind => "EmoteList";
 
     public ulong GuildId { get; set; }
-    public string SortQuery { get; set; }
+    public string OrderBy { get; set; }
+    public bool Descending { get; set; }
     public ulong? OfUserId { get; set; }
 
     public override void Save(IDictionary<string, string> destination)
     {
-        destination[nameof(SortQuery)] = SortQuery;
+        destination[nameof(OrderBy)] = OrderBy;
+        destination[nameof(Descending)] = Descending.ToString();
         destination[nameof(GuildId)] = GuildId.ToString();
 
         if (OfUserId != null)
@@ -23,15 +25,18 @@ public class EmoteListMetadata : PaginatedMetadataBase
     {
         ulong guildId = 0;
         ulong ofUserId = 0;
+        bool descending = false;
 
-        var success = values.TryGetValue(nameof(SortQuery), out string sortQuery);
+        var success = values.TryGetValue(nameof(OrderBy), out string orderBy);
+        success &= values.TryGetValue(nameof(Descending), out string _descending) && bool.TryParse(_descending, out descending);
         success &= values.TryGetValue(nameof(GuildId), out var _guildId) && ulong.TryParse(_guildId, out guildId);
         success &= !values.TryGetValue(nameof(OfUserId), out var _ofUserId) || ulong.TryParse(_ofUserId, out ofUserId);
 
         if (success)
         {
             GuildId = guildId;
-            SortQuery = sortQuery;
+            OrderBy = orderBy;
+            Descending = descending;
             OfUserId = ofUserId == 0 ? null : ofUserId;
             return true;
         }
@@ -41,7 +46,8 @@ public class EmoteListMetadata : PaginatedMetadataBase
 
     public override void Reset()
     {
-        SortQuery = default;
+        Descending = default;
+        OrderBy = default;
         GuildId = default;
         OfUserId = default;
     }

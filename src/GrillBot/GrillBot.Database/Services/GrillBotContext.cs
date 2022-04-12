@@ -2,6 +2,7 @@
 using GrillBot.Database.Entity.Cache;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 
 namespace GrillBot.Database.Services
 {
@@ -121,5 +122,24 @@ namespace GrillBot.Database.Services
         public DbSet<ExplicitPermission> ExplicitPermissions { get; set; }
         public DbSet<AutoReplyItem> AutoReplies { get; set; }
         public DbSet<MessageCacheIndex> MessageCacheIndexes { get; set; }
+
+        public IQueryable<TEntity> CreateQuery<TEntity>(IQueryableModel<TEntity> parameters, bool noTracking = false, bool splitQuery = false) where TEntity : class
+        {
+            var query = Set<TEntity>().AsQueryable();
+
+            if (noTracking)
+                query = query.AsNoTracking();
+            if (splitQuery)
+                query = query.AsSplitQuery();
+
+            if (parameters != null)
+            {
+                query = parameters.SetIncludes(query);
+                query = parameters.SetQuery(query);
+                query = parameters.SetSort(query);
+            }
+
+            return query;
+        }
     }
 }

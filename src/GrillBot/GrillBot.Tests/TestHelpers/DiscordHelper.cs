@@ -20,6 +20,8 @@ public static class DiscordHelper
         var mock = new Mock<IDiscordClient>();
 
         mock.Setup(o => o.CurrentUser).Returns(DataHelper.CreateSelfUser());
+        mock.Setup(o => o.GetGuildsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
+            .Returns(Task.FromResult(new List<IGuild>() { DataHelper.CreateGuild() }.AsReadOnly() as IReadOnlyCollection<IGuild>));
 
         return mock.Object;
     }

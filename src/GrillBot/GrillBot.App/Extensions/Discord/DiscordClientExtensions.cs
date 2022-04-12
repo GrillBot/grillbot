@@ -43,6 +43,24 @@
             return await client.Rest.GetUserAsync(id, new RequestOptions() { CancelToken = cancellationToken });
         }
 
+        static public async Task<IUser> FindUserAsync(this IDiscordClient client, ulong id)
+        {
+            var user = await client.GetUserAsync(id);
+
+            if (user != null)
+                return user;
+
+            foreach (var guild in await client.GetGuildsAsync())
+            {
+                user = await guild.GetUserAsync(id);
+
+                if (user != null)
+                    return user;
+            }
+
+            return user;
+        }
+
         static public async Task<IGuildUser> TryFindGuildUserAsync(this BaseSocketClient client, ulong guildId, ulong userId)
         {
             var guild = client.GetGuild(guildId);

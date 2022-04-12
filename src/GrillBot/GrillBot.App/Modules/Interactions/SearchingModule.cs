@@ -40,7 +40,7 @@ public class SearchingModule : Infrastructure.InteractionsModuleBase
 
     [RequireSameUserAsAuthor]
     [ComponentInteraction("search:*", ignoreGroupNames: true)]
-    public async Task HandleRemindListPaginationAsync(int page)
+    public async Task HandleSearchingListPaginationAsync(int page)
     {
         var handler = new SearchingPaginationHandler(SearchingService, Context.Client, page);
         await handler.ProcessAsync(Context);

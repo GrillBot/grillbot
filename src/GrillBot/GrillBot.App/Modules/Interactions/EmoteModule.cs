@@ -1,5 +1,7 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
+using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.App.Services.Emotes;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -8,11 +10,11 @@ namespace GrillBot.App.Modules.Interactions;
 [RequireUserPerms]
 public class EmoteModule : Infrastructure.InteractionsModuleBase
 {
-    private EmoteService EmoteService { get; }
+    private EmotesCommandService EmotesCommandService { get; }
 
-    public EmoteModule(EmoteService emoteService)
+    public EmoteModule(EmotesCommandService emotesCommandService)
     {
-        EmoteService = emoteService;
+        EmotesCommandService = emotesCommandService;
     }
 
     [SlashCommand("get", "Informace o emote")]
@@ -22,7 +24,7 @@ public class EmoteModule : Infrastructure.InteractionsModuleBase
     {
         try
         {
-            var result = await EmoteService.GetEmoteInfoAsync(emote, Context.User);
+            var result = await EmotesCommandService.GetInfoAsync(emote, Context.User);
             if (result == null)
                 await SetResponseAsync("U tohoto emote ještě nebyla zaznamenána žádná aktivita.");
             else
@@ -32,5 +34,34 @@ public class EmoteModule : Infrastructure.InteractionsModuleBase
         {
             await SetResponseAsync(ex.Message);
         }
+    }
+
+    [SlashCommand("list", "Seznam statistik emotů")]
+    public async Task GetEmoteStatsListAsync(
+        [Summary("order", "Seřadit podle")]
+        [Choice("Počtu použití", "UseCount")]
+        [Choice("Data a času posledního použití", "LastOccurence")]
+        string orderBy,
+        [Summary("direction", "Vzestupně/Sestupně")]
+        [Choice("Sestupně", "true")]
+        [Choice("Vzestupně", "false")]
+        bool descending,
+        [Summary("user", "Zobrazit statistiku pouze jednoho uživatele")]
+        IUser ofUser = null
+    )
+    {
+        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(Context, ofUser, orderBy, descending);
+        var pagesCount = (int)Math.Ceiling(result.Item2 / ((double)EmbedBuilder.MaxFieldCount - 1));
+
+        var components = ComponentsHelper.CreatePaginationComponents(1, pagesCount, "emote");
+        await SetResponseAsync(embed: result.Item1, components: components);
+    }
+
+    [RequireSameUserAsAuthor]
+    [ComponentInteraction("emote:*", ignoreGroupNames: true)]
+    public async Task HandleEmoteListPaginationAsync(int page)
+    {
+        var handler = new EmotesListPaginationHandler(EmotesCommandService, Context.Client, page);
+        await handler.ProcessAsync(Context);
     }
 }

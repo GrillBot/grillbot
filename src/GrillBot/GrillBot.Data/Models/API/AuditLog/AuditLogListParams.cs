@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Models.API.Params;
+﻿using GrillBot.Data.Models.API.Common;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System;

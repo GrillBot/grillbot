@@ -77,5 +77,7 @@ public abstract class ControllerTest<TController> where TController : Controller
             Assert.IsInstanceOfType(ok.Value, typeof(TOkModel));
         else if (result.Result is NotFoundObjectResult notFound)
             Assert.IsInstanceOfType(notFound.Value, typeof(MessageResponse));
+        else if (result.Result is BadRequestObjectResult badRequest)
+            Assert.IsInstanceOfType(badRequest.Value, typeof(ValidationProblemDetails));
     }
 }

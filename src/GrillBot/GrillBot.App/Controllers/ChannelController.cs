@@ -5,7 +5,6 @@ using GrillBot.Data.Helpers;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
-using GrillBot.Data.Models.API.Params;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

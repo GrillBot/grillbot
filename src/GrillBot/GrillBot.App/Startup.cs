@@ -109,7 +109,11 @@ public class Startup
             .AddCommandsHelp()
             .AddSingleton<PermissionsService>()
             .AddSingleton<UserService>()
-            .AddSingleton<GuildService>();
+            .AddSingleton<GuildService>()
+            .AddServices();
+
+        services
+            .AddAutoMapper(typeof(Startup).Assembly, typeof(Emojis).Assembly, typeof(GrillBotContext).Assembly);
 
         ReflectionHelper.GetAllReactionEventHandlers().ToList()
             .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

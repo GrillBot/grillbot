@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.Data.Models.API.Params;
+using GrillBot.Data.Models.API.Common;
 using System.Linq;
 
 namespace GrillBot.Data.Models.API.Channels

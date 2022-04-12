@@ -1,10 +1,12 @@
 ﻿using GrillBot.App.Services.FileStorage;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace GrillBot.Tests.TestHelpers;
 
+[ExcludeFromCodeCoverage]
 public static class FileStorageHelper
 {
     public static FileStorageFactory Create(IConfiguration configuration)

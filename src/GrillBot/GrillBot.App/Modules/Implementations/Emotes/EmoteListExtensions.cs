@@ -1,15 +1,16 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
-using GrillBot.Data.Models;
+using GrillBot.Data.Extensions;
+using GrillBot.Data.Models.API.Emotes;
 
 namespace GrillBot.App.Modules.Implementations.Emotes;
 
 public static class EmoteListExtensions
 {
     public static EmbedBuilder WithEmoteList(this EmbedBuilder embed, List<EmoteStatItem> data, IUser user, IUser ofUser, IGuild guild,
-        string sortQuery, int page = 0)
+        string orderBy, bool descending, int page = 0)
     {
         embed.WithFooter(user);
-        embed.WithMetadata(new EmoteListMetadata() { Page = page, GuildId = guild.Id, SortQuery = sortQuery, OfUserId = ofUser?.Id });
+        embed.WithMetadata(new EmoteListMetadata() { Page = page, GuildId = guild.Id, OfUserId = ofUser?.Id, OrderBy = orderBy, Descending = descending });
 
         embed.WithAuthor("Statistika použivání emotů");
         embed.WithColor(Color.Blue);
@@ -24,7 +25,18 @@ public static class EmoteListExtensions
         }
         else
         {
-            data.ForEach(o => embed.AddField(o.Id, o.ToString(), true));
+            foreach (var item in data)
+            {
+                var formatted = string.Join("\n", new[]
+                {
+                    $"Počet použití: **{item.UseCount}**",
+                    $"Použilo uživatelů: **{item.UsedUsersCount}**",
+                    $"První použití: **{item.FirstOccurence.ToCzechFormat()}**",
+                    $"Poslední použití: **{item.LastOccurence.ToCzechFormat()}**"
+                });
+
+                embed.AddField(item.Emote.FullId, formatted, true);
+            }
         }
 
         return embed;

@@ -1,5 +1,4 @@
 ﻿using GrillBot.Database.Services;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.TestHelpers;

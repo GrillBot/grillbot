@@ -1,27 +1,44 @@
 ﻿using Discord;
 using System;
 
-namespace GrillBot.Data.Models.API.Emotes
+namespace GrillBot.Data.Models.API.Emotes;
+
+public class EmoteStatItem
 {
-    public class EmoteStatItem
+    public EmoteItem Emote { get; set; }
+    public long UseCount { get; set; }
+    public DateTime FirstOccurence { get; set; }
+    public DateTime LastOccurence { get; set; }
+    public int UsedUsersCount { get; set; }
+
+    public EmoteStatItem() { }
+
+    public EmoteStatItem(Database.Entity.EmoteStatisticItem item)
     {
-        public string Name { get; set; }
-        public long UseCount { get; set; }
-        public string ImageUrl { get; set; }
-        public DateTime FirstOccurence { get; set; }
-        public DateTime LastOccurence { get; set; }
+        var emote = Discord.Emote.Parse(item.EmoteId);
 
-        public EmoteStatItem() { }
-
-        public EmoteStatItem(Database.Entity.EmoteStatisticItem item)
+        Emote = new EmoteItem()
         {
-            var emote = Emote.Parse(item.EmoteId);
+            Id = emote.Id.ToString(),
+            ImageUrl = emote.Url,
+            Name = emote.Name
+        };
 
-            Name = emote.Name;
-            UseCount = item.UseCount;
-            ImageUrl = emote.Url;
-            FirstOccurence = item.FirstOccurence;
-            LastOccurence = item.LastOccurence;
-        }
+        UseCount = item.UseCount;
+        FirstOccurence = item.FirstOccurence;
+        LastOccurence = item.LastOccurence;
+    }
+}
+
+public class EmoteStatItemMappingProfile : AutoMapper.Profile
+{
+    public EmoteStatItemMappingProfile()
+    {
+        CreateMap<Database.Entity.EmoteStatisticItem, EmoteStatItem>()
+            .ForMember(dst => dst.Emote, opt => opt.MapFrom(src => Emote.Parse(src.EmoteId)));
+
+        CreateMap<Models.EmoteStatItem, EmoteStatItem>()
+            .ForMember(dst => dst.Emote, opt => opt.MapFrom(src => Emote.Parse(src.Id)))
+            .ForMember(dst => dst.UsedUsersCount, opt => opt.MapFrom(src => src.UsersCount));
     }
 }

@@ -85,15 +85,18 @@ public class RemindServiceTests : ServiceTest<RemindService>
     }
 
     [TestMethod]
+    [ExpectedException(typeof(InvalidOperationException))]
+    [ExcludeFromCodeCoverage]
     public async Task CopyAsync_NotFound()
     {
         var user = DataHelper.CreateDiscordUser();
 
         await Service.CopyAsync(42, user);
-        Assert.IsTrue(true);
     }
 
     [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
     public async Task CopyAsync_SameUser()
     {
         var user = DataHelper.CreateDiscordUser();
@@ -102,10 +105,11 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var at = DateTime.Now.AddDays(1);
         var id = await Service.CreateRemindAsync(user, user, at, "msg", msg.Id);
         await Service.CopyAsync(id, user);
-        Assert.IsTrue(true);
     }
 
     [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
     public async Task CopyAsync_Finished()
     {
         var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
@@ -120,13 +124,14 @@ public class RemindServiceTests : ServiceTest<RemindService>
             OriginalMessageId = "12345",
             Id = 5
         });
-        await DbContext.SaveChangesAsync();
 
+        await DbContext.SaveChangesAsync();
         await Service.CopyAsync(5, toUser);
-        Assert.IsTrue(true);
     }
 
     [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
     public async Task CopyAsync_UserNotFound()
     {
         var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
@@ -144,13 +149,14 @@ public class RemindServiceTests : ServiceTest<RemindService>
             OriginalMessageId = "12345",
             Id = 6
         });
-        await DbContext.SaveChangesAsync();
 
+        await DbContext.SaveChangesAsync();
         await Service.CopyAsync(6, toUser);
-        Assert.IsTrue(true);
     }
 
     [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
     public async Task CopyAsync_MultipleSame()
     {
         var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
@@ -167,10 +173,9 @@ public class RemindServiceTests : ServiceTest<RemindService>
             OriginalMessageId = "12345",
             Id = 6
         });
-        await DbContext.SaveChangesAsync();
 
+        await DbContext.SaveChangesAsync();
         await Service.CopyAsync(6, toUser);
-        Assert.IsTrue(true);
     }
 
     [TestMethod]

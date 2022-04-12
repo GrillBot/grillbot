@@ -1,4 +1,6 @@
 ﻿using GrillBot.App.Controllers;
+using GrillBot.App.Services.Emotes;
+using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Entity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,8 +15,10 @@ public class DataControllerTests : ControllerTest<DataController>
         var commandsService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var emotesCache = new EmotesCacheService(discordClient);
 
-        return new DataController(discordClient, DbContext, commandsService, configuration, interactions);
+        return new DataController(discordClient, DbContext, commandsService, configuration, interactions, emotesCache, mapper);
     }
 
     [TestMethod]
@@ -150,5 +154,12 @@ public class DataControllerTests : ControllerTest<DataController>
 
         var result = await UserController.GetAvailableUsersAsync(false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
+    }
+
+    [TestMethod]
+    public void GetSupportedEmotes()
+    {
+        var result = AdminController.GetSupportedEmotes();
+        CheckResult<OkObjectResult, List<EmoteItem>>(result);
     }
 }

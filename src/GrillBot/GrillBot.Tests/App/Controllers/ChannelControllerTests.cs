@@ -4,7 +4,6 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
-using GrillBot.Data.Models.API.Params;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;

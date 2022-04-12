@@ -45,7 +45,7 @@ public class GuildUserDetail
             .Select(o => new Emotes.EmoteStatItem(o))
             .OrderByDescending(o => o.UseCount)
             .ThenByDescending(o => o.LastOccurence)
-            .ThenBy(o => o.Name)
+            .ThenBy(o => o.Emote.Name)
             .ToList();
     }
 }

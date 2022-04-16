@@ -34,7 +34,7 @@ public class EmotesListPaginationHandler : ComponentInteractionHandler
 
         var ofUser = metadata.OfUserId == null ? null : await DiscordClient.FindUserAsync(metadata.OfUserId.Value);
 
-        var count = await EmotesCommandService.GetEmoteStatsCountAsync(context, ofUser);
+        var count = await EmotesCommandService.GetEmoteStatsCountAsync(context, ofUser, metadata.FilterAnimated);
         var pagesCount = (int)Math.Ceiling(count / ((double)EmbedBuilder.MaxFieldCount - 1));
         var newPage = CheckNewPageNumber(Page, pagesCount);
         if (newPage + 1 == metadata.Page)
@@ -43,7 +43,8 @@ public class EmotesListPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(context, ofUser, metadata.OrderBy, metadata.Descending, newPage + 1);
+        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(context, ofUser, metadata.OrderBy, metadata.Descending,
+            metadata.FilterAnimated, newPage + 1);
 
         await component.UpdateAsync(msg =>
         {

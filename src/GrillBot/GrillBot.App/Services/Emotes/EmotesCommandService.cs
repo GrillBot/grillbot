@@ -18,12 +18,14 @@ public class EmotesCommandService : ServiceBase
         ServiceProvider = serviceProvider;
     }
 
-    public async Task<Tuple<Embed, long>> GetEmoteStatListEmbedAsync(IInteractionContext context, IUser ofUser, string orderBy, bool descending, int page = 1)
+    public async Task<Tuple<Embed, long>> GetEmoteStatListEmbedAsync(IInteractionContext context, IUser ofUser, string orderBy, bool descending,
+        bool filterAnimated, int page = 1)
     {
         var @params = new EmotesListParams()
         {
             GuildId = context.Guild.Id.ToString(),
             UserId = ofUser?.Id.ToString(),
+            FilterAnimated = filterAnimated,
             Sort = new SortParams()
             {
                 Descending = descending,
@@ -46,12 +48,13 @@ public class EmotesCommandService : ServiceBase
         );
     }
 
-    public async Task<long> GetEmoteStatsCountAsync(IInteractionContext context, IUser ofUser)
+    public async Task<long> GetEmoteStatsCountAsync(IInteractionContext context, IUser ofUser, bool filterAnimated)
     {
         var @params = new EmotesListParams()
         {
             GuildId = context.Guild.Id.ToString(),
-            UserId = ofUser?.Id.ToString()
+            UserId = ofUser?.Id.ToString(),
+            FilterAnimated = filterAnimated
         };
 
         using var scope = ServiceProvider.CreateScope();

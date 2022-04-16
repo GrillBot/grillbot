@@ -41,7 +41,8 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             Sort = new SortParams() { Descending = true, OrderBy = "EmoteId" },
             UseCount = new RangeParams<int?>() { From = 0, To = 50 },
             UserId = DataHelper.CreateDiscordUser().Id.ToString(),
-            Pagination = new PaginatedParams()
+            Pagination = new PaginatedParams(),
+            FilterAnimated = true
         };
 
         var result = await AdminController.GetStatsOfSupportedEmotesAsync(@params, CancellationToken.None);

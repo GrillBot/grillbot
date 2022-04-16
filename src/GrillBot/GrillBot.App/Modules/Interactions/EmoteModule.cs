@@ -47,10 +47,14 @@ public class EmoteModule : Infrastructure.InteractionsModuleBase
         [Choice("Vzestupně", "false")]
         bool descending,
         [Summary("user", "Zobrazit statistiku pouze jednoho uživatele")]
-        IUser ofUser = null
+        IUser ofUser = null,
+        [Summary("animovane", "Chci v seznamu zobrazit i animované emoty?")]
+        [Choice("Zobrazit animované emoty.", "false")]
+        [Choice("Pryč animované emoty.", "true")]
+        bool filterAnimated = false
     )
     {
-        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(Context, ofUser, orderBy, descending);
+        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(Context, ofUser, orderBy, filterAnimated, descending);
         var pagesCount = (int)Math.Ceiling(result.Item2 / ((double)EmbedBuilder.MaxFieldCount - 1));
 
         var components = ComponentsHelper.CreatePaginationComponents(1, pagesCount, "emote");

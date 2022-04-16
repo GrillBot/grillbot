@@ -19,7 +19,8 @@ public class EmotesApiService : ServiceBase
 
     public async Task<PaginatedResponse<EmoteStatItem>> GetStatsOfEmotesAsync(EmotesListParams @params, bool unsupported, CancellationToken cancellationToken)
     {
-        var supportedEmotes = EmotesCacheService.GetSupportedEmotes().ConvertAll(o => o.Item1.ToString());
+        var supportedEmotes = EmotesCacheService.GetSupportedEmotes()
+            .ConvertAll(o => o.Item1.ToString());
 
         using var context = CreateContext();
 

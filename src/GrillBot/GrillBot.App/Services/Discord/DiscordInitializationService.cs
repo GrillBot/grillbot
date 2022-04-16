@@ -30,5 +30,4 @@ namespace GrillBot.App.Services.Discord
             }
         }
     }
-
 }

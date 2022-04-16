@@ -16,7 +16,7 @@ public abstract class Job : IJob
 
     private DiscordInitializationService InitializationService { get; }
 
-    private string JobName => GetType().Name;
+    protected string JobName => GetType().Name;
 
     private bool RequireInitialization
         => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;

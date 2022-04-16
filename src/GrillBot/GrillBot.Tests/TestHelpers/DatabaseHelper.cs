@@ -38,6 +38,7 @@ public static class DatabaseHelper
         context.RemoveRange(context.ExplicitPermissions.AsEnumerable());
         context.RemoveRange(context.AutoReplies.AsEnumerable());
         context.RemoveRange(context.MessageCacheIndexes.AsEnumerable());
+        context.RemoveRange(context.Suggestions.AsEnumerable());
         context.SaveChanges();
     }
 }

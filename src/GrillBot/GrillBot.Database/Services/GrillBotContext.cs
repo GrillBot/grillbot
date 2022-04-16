@@ -122,6 +122,7 @@ namespace GrillBot.Database.Services
         public DbSet<ExplicitPermission> ExplicitPermissions { get; set; }
         public DbSet<AutoReplyItem> AutoReplies { get; set; }
         public DbSet<MessageCacheIndex> MessageCacheIndexes { get; set; }
+        public DbSet<Suggestion> Suggestions { get; set; }
 
         public IQueryable<TEntity> CreateQuery<TEntity>(IQueryableModel<TEntity> parameters, bool noTracking = false, bool splitQuery = false) where TEntity : class
         {

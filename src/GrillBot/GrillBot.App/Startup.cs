@@ -27,6 +27,7 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using Quartz;
 using GrillBot.App.Services.AutoReply;
+using GrillBot.App.Services.Suggestion;
 
 namespace GrillBot.App;
 
@@ -173,6 +174,7 @@ public class Startup
             q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron", true);
             q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
             q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
+            q.AddTriggeredJob<SuggestionJob>(Configuration, "SuggestionsCleaningInterval");
         });
 
         services.AddQuartzHostedService();

@@ -50,6 +50,12 @@ public static class DataHelper
         mock.Setup(o => o.Id).Returns(Id);
         mock.Setup(o => o.Name).Returns("TextChannel");
 
+        mock.Setup(o => o.SendFileAsync(
+            It.IsAny<FileAttachment>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(),
+            It.IsAny<RequestOptions>(), It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+            It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(), It.IsAny<MessageFlags>()
+        )).Returns(Task.FromResult<IUserMessage>(null));
+
         return mock.Object;
     }
 
@@ -59,6 +65,10 @@ public static class DataHelper
         mock.Setup(o => o.Id).Returns(Id);
         mock.Setup(o => o.Name).Returns("Guild");
         mock.Setup(o => o.Roles).Returns(new List<IRole>() { CreateRole() });
+
+        var channel = CreateTextChannel();
+        mock.Setup(o => o.GetTextChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
+            .Returns(Task.FromResult(channel));
 
         return mock.Object;
     }
@@ -88,6 +98,20 @@ public static class DataHelper
         mock.Setup(o => o.IsBot).Returns(true);
         mock.Setup(o => o.Username).Returns("Bot");
         mock.Setup(o => o.Discriminator).Returns("1111");
+
+        return mock.Object;
+    }
+
+    public static IEmote CreateEmote()
+        => Emote.Parse("<:Online:856875667379585034>");
+
+    public static IAttachment CreateAttachment()
+    {
+        var mock = new Mock<IAttachment>();
+
+        mock.Setup(o => o.Filename).Returns("File.png");
+        mock.Setup(o => o.Url).Returns("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png");
+        mock.Setup(o => o.ProxyUrl).Returns("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png");
 
         return mock.Object;
     }

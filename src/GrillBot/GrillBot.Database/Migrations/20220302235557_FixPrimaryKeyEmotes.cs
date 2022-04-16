@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable disable
 
 namespace GrillBot.Database.Migrations
 {
+    [ExcludeFromCodeCoverage]
     public partial class FixPrimaryKeyEmotes : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

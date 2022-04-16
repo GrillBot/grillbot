@@ -94,32 +94,22 @@ namespace GrillBot.App.Controllers
                 .FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
 
             if (updateGuildParams.AdminChannelId != null && guild.GetTextChannel(Convert.ToUInt64(updateGuildParams.AdminChannelId)) == null)
-            {
-                var details = new ValidationProblemDetails(new Dictionary<string, string[]>()
-                {
-                    { nameof(updateGuildParams.AdminChannelId), new[]{ "Nepodařilo se dohledat zadaný administrátorský kanál" } }
-                });
-
-                return BadRequest(details);
-            }
+                ModelState.AddModelError(nameof(updateGuildParams.AdminChannelId), "Nepodařilo se dohledat administrátorský kanál");
             else
-            {
                 dbGuild.AdminChannelId = updateGuildParams.AdminChannelId;
-            }
 
             if (updateGuildParams.MuteRoleId != null && guild.GetRole(Convert.ToUInt64(updateGuildParams.MuteRoleId)) == null)
-            {
-                var details = new ValidationProblemDetails(new Dictionary<string, string[]>()
-                {
-                    { nameof(updateGuildParams.MuteRoleId), new[]{ "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify." } }
-                });
-
-                return BadRequest(details);
-            }
+                ModelState.AddModelError(nameof(updateGuildParams.MuteRoleId), "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.");
             else
-            {
                 dbGuild.MuteRoleId = updateGuildParams.MuteRoleId;
-            }
+
+            if (updateGuildParams.EmoteSuggestionChannelId != null && guild.GetTextChannel(Convert.ToUInt64(updateGuildParams.EmoteSuggestionChannelId)) == null)
+                ModelState.AddModelError(nameof(updateGuildParams.EmoteSuggestionChannelId), "Nepodařilo se dohledat kanál pro návrhy emotů.");
+            else
+                dbGuild.EmoteSuggestionChannelId = updateGuildParams.EmoteSuggestionChannelId;
+
+            if (!ModelState.IsValid)
+                return BadRequest(new ValidationProblemDetails(ModelState));
 
             await DbContext.SaveChangesAsync(cancellationToken);
             return Ok(await GuildService.GetGuildDetailAsync(id, cancellationToken));

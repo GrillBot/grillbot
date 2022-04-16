@@ -1,18 +1,8 @@
-﻿namespace GrillBot.Data.Models.API.Guilds
-{
-    /// <summary>
-    /// Parameters for guild update.
-    /// </summary>
-    public class UpdateGuildParams
-    {
-        /// <summary>
-        /// Mute role ID
-        /// </summary>
-        public string MuteRoleId { get; set; }
+﻿namespace GrillBot.Data.Models.API.Guilds;
 
-        /// <summary>
-        /// AdminChannelId
-        /// </summary>
-        public string AdminChannelId { get; set; }
-    }
+public class UpdateGuildParams
+{
+    public string MuteRoleId { get; set; }
+    public string AdminChannelId { get; set; }
+    public string EmoteSuggestionChannelId { get; set; }
 }

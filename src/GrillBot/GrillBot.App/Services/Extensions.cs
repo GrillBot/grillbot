@@ -11,6 +11,12 @@ public static class Extensions
             .AddScoped<Emotes.EmotesApiService>()
             .AddSingleton<Emotes.EmotesCommandService>();
 
+        services
+            .AddSingleton<Suggestion.SuggestionService>()
+            .AddSingleton<Suggestion.SuggestionSessionService>()
+            .AddSingleton<Suggestion.EmoteSuggestionService>()
+            .AddSingleton<Suggestion.FeatureSuggestionService>();
+
         return services;
     }
 }

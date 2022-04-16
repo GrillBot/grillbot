@@ -29,6 +29,9 @@ namespace GrillBot.Database.Entity
         [StringLength(30)]
         public string BoosterRoleId { get; set; }
 
+        [StringLength(30)]
+        public string EmoteSuggestionChannelId { get; set; }
+
         public ISet<GuildUser> Users { get; set; }
         public ISet<Invite> Invites { get; set; }
         public ISet<GuildChannel> Channels { get; set; }

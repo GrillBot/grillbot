@@ -10,12 +10,17 @@ public class GuildService : ServiceBase
     {
     }
 
+    public async Task<Database.Entity.Guild> GetGuildAsync(ulong id, CancellationToken cancellationToken = default)
+    {
+        using var context = DbFactory.Create();
+
+        return await context.Guilds.AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
+    }
+
     public async Task<GuildDetail> GetGuildDetailAsync(ulong id, CancellationToken cancellationToken = default)
     {
-        using var dbContext = DbFactory.Create();
-
-        var dbGuild = await dbContext.Guilds.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
+        var dbGuild = await GetGuildAsync(id, cancellationToken);
         if (dbGuild == null) return null;
 
         var discordGuild = DiscordClient.GetGuild(id);

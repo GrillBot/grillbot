@@ -72,7 +72,8 @@ namespace GrillBot.App.Controllers
                 { nameof(DbContext.SelfunverifyKeepables), await DbContext.SelfunverifyKeepables.CountAsync(cancellationToken) },
                 { nameof(DbContext.ExplicitPermissions), await DbContext.ExplicitPermissions.CountAsync(cancellationToken) },
                 { nameof(DbContext.AutoReplies), await DbContext.AutoReplies.CountAsync(cancellationToken) },
-                { nameof(DbContext.MessageCacheIndexes), await DbContext.MessageCacheIndexes.CountAsync(cancellationToken) }
+                { nameof(DbContext.MessageCacheIndexes), await DbContext.MessageCacheIndexes.CountAsync(cancellationToken) },
+                { nameof(DbContext.Suggestions), await DbContext.Suggestions.CountAsync(cancellationToken) }
             };
 
             return Ok(data);

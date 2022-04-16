@@ -4,11 +4,21 @@ namespace GrillBot.App.Infrastructure;
 
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
-    protected async Task DeleteOriginalResponseAsync(RequestOptions options = null)
+    protected bool CanDefer { get; set; } = true;
+
+    public override async Task BeforeExecuteAsync(ICommandInfo command)
     {
-        var response = await Context.Interaction.GetOriginalResponseAsync(options);
+        await base.BeforeExecuteAsync(command);
+
+        if (CanDefer)
+            await DeferAsync();
+    }
+
+    protected override async Task DeleteOriginalResponseAsync()
+    {
+        var response = await GetOriginalResponseAsync();
         if (response != null)
-            await response.DeleteAsync(options);
+            await response.DeleteAsync();
     }
 
     protected async Task<IUserMessage> SetResponseAsync(string content = null, Embed embed = default, Embed[] embeds = default,

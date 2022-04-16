@@ -34,9 +34,6 @@ public class InteractionHandler : ServiceBase
         var context = new SocketInteractionContext(DiscordClient, interaction);
         CommandsPerformanceCounter.StartTask(context);
 
-        if (interaction is SocketSlashCommand || interaction is SocketMessageCommand || interaction is SocketUserCommand)
-            await context.Interaction.DeferAsync();
-
         await InteractionService.ExecuteCommandAsync(context, Provider);
     }
 

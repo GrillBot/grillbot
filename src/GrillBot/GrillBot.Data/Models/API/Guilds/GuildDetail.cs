@@ -55,6 +55,11 @@ namespace GrillBot.Data.Models.API.Guilds
         public Channel AdminChannel { get; set; }
 
         /// <summary>
+        /// Channel for emote suggestions.
+        /// </summary>
+        public Channel EmoteSuggestionChannel { get; set; }
+
+        /// <summary>
         /// Maximum count of members.
         /// </summary>
         public int? MaxMembers { get; set; }
@@ -123,6 +128,12 @@ namespace GrillBot.Data.Models.API.Guilds
             {
                 var mutedRole = guild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId));
                 MutedRole = mutedRole == null ? null : new Role(mutedRole);
+            }
+
+            if (!string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
+            {
+                var emoteSuggestionChannel = guild.GetTextChannel(Convert.ToUInt64(dbGuild.EmoteSuggestionChannelId));
+                EmoteSuggestionChannel = emoteSuggestionChannel == null ? null : new Channel(emoteSuggestionChannel);
             }
 
             UserStatusReport = guild.Users.GroupBy(o =>

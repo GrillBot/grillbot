@@ -1,7 +1,7 @@
 ﻿namespace GrillBot.App.Services.Permissions;
 
 /// <summary>
-/// Class that returns 
+/// Class that returns
 /// </summary>
 public class PermsCheckResult
 {

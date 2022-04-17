@@ -17,9 +17,10 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var channelService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var channelService = new ChannelService(discordClient, DbFactory, configuration, messageCache, mapper);
 
-        return new ChannelController(discordClient, DbContext, messageCache, channelService);
+        return new ChannelController(discordClient, DbContext, messageCache, channelService, mapper);
     }
 
     [TestMethod]

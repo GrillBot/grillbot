@@ -15,7 +15,8 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var userService = new UserService(DbFactory, configuration, discordClient);
-        var searchingService = new SearchingService(discordClient, DbFactory, userService);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var searchingService = new SearchingService(discordClient, DbFactory, userService, mapper);
 
         return new SearchingController(searchingService);
     }

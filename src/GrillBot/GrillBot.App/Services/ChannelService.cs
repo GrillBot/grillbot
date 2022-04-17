@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using AutoMapper;
+using GrillBot.App.Infrastructure;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
@@ -12,7 +13,7 @@ public class ChannelService : ServiceBase
     private MessageCache.MessageCache MessageCache { get; }
 
     public ChannelService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
-        MessageCache.MessageCache messageCache) : base(client, dbFactory)
+        MessageCache.MessageCache messageCache, IMapper mapper) : base(client, dbFactory, null, null, mapper)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         MessageCache = messageCache;
@@ -183,10 +184,18 @@ public class ChannelService : ServiceBase
 
     private async Task<GuildChannelListItem> ConvertChannelDbEntityAsync(Database.Entity.GuildChannel entity, CancellationToken cancellationToken)
     {
-        var cachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: Convert.ToUInt64(entity.ChannelId), cancellationToken: cancellationToken);
         var guildChannel = GetChannelFromEntity(entity);
 
-        return new GuildChannelListItem(entity, cachedMessagesCount, guildChannel);
+        var result = Mapper.Map<GuildChannelListItem>(entity);
+
+        if (guildChannel != null)
+            result = Mapper.Map(guildChannel, result);
+
+        result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: Convert.ToUInt64(entity.ChannelId), cancellationToken: cancellationToken);
+        if (result.FirstMessageAt == DateTime.MinValue) result.FirstMessageAt = null;
+        if (result.LastMessageAt == DateTime.MinValue) result.LastMessageAt = null;
+
+        return result;
     }
 
     public async Task<ChannelDetail> GetChannelDetailAsync(ulong id, CancellationToken cancellationToken = default)
@@ -195,16 +204,20 @@ public class ChannelService : ServiceBase
 
         var query = dbContext.Channels.AsNoTracking()
             .Include(o => o.Guild)
-            .Include(o => o.Users.Where(o => o.Count > 0))
-            .ThenInclude(o => o.User.User)
+            .Include(o => o.Users.Where(o => o.Count > 0)).ThenInclude(o => o.User.User)
             .Include(o => o.ParentChannel);
 
         var channel = await query.FirstOrDefaultAsync(o => o.ChannelId == id.ToString(), cancellationToken);
         if (channel == null) return null;
 
-        var cachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: Convert.ToUInt64(channel.ChannelId), cancellationToken: cancellationToken);
+        var result = Mapper.Map<ChannelDetail>(channel);
+        result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: Convert.ToUInt64(channel.ChannelId), cancellationToken: cancellationToken);
+
         var guildChannel = GetChannelFromEntity(channel);
-        return new ChannelDetail(channel, cachedMessagesCount, guildChannel);
+        if (guildChannel != null)
+            result = Mapper.Map(guildChannel, result);
+
+        return result;
     }
 
     private SocketGuildChannel GetChannelFromEntity(Database.Entity.GuildChannel entity)

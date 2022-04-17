@@ -25,8 +25,11 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
         var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DbFactory, loggingService);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var dcClient = DiscordHelper.CreateDiscordClient();
+        var unverifyApiService = new UnverifyApiService(DbFactory, mapper, dcClient);
 
-        return new UnverifyController(unverifyService, discordClient, DbContext);
+        return new UnverifyController(unverifyService, discordClient, DbContext, mapper, unverifyApiService);
     }
 
     [TestMethod]

@@ -12,9 +12,10 @@ public class GuildControllerTests : ControllerTest<GuildController>
     protected override GuildController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var guildService = new GuildService(discordClient, DbFactory);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var guildService = new GuildService(discordClient, DbFactory, mapper);
 
-        return new GuildController(DbContext, discordClient, guildService);
+        return new GuildController(DbContext, discordClient, guildService, mapper);
     }
 
     [TestMethod]

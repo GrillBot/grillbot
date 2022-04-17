@@ -16,8 +16,9 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var userService = new UserService(DbFactory, configuration, discordClient);
+        var mapper = AutoMapperHelper.CreateMapper();
 
-        return new SearchingService(discordClient, DbFactory, userService);
+        return new SearchingService(discordClient, DbFactory, userService, mapper);
     }
 
     [TestMethod]

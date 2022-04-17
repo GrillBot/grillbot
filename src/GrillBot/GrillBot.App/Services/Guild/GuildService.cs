@@ -1,12 +1,15 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using AutoMapper;
+using GrillBot.App.Infrastructure;
+using GrillBot.Data.Models.API;
+using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
 
 namespace GrillBot.App.Services;
 
 public class GuildService : ServiceBase
 {
-    public GuildService(DiscordSocketClient client, GrillBotContextFactory dbFactory)
-        : base(client, dbFactory)
+    public GuildService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IMapper mapper)
+        : base(client, dbFactory, mapper: mapper)
     {
     }
 
@@ -23,9 +26,41 @@ public class GuildService : ServiceBase
         var dbGuild = await GetGuildAsync(id, cancellationToken);
         if (dbGuild == null) return null;
 
+        var detail = Mapper.Map<GuildDetail>(dbGuild);
+        detail.DatabaseReport = await CreateDatabaseReportAsync(id, cancellationToken);
+
         var discordGuild = DiscordClient.GetGuild(id);
-        var databaseReport = await CreateDatabaseReportAsync(id, cancellationToken);
-        return new GuildDetail(discordGuild, dbGuild, databaseReport);
+        if (discordGuild != null)
+        {
+            detail = Mapper.Map(discordGuild, detail);
+
+            if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
+                detail.AdminChannel = Mapper.Map<Channel>(discordGuild.GetChannel(Convert.ToUInt64(dbGuild.AdminChannelId)));
+
+            if (!string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
+                detail.EmoteSuggestionChannel = Mapper.Map<Channel>(discordGuild.GetChannel(Convert.ToUInt64(dbGuild.EmoteSuggestionChannelId)));
+
+            if (!string.IsNullOrEmpty(dbGuild.BoosterRoleId))
+                detail.BoosterRole = Mapper.Map<Role>(discordGuild.GetRole(Convert.ToUInt64(dbGuild.BoosterRoleId)));
+
+            if (!string.IsNullOrEmpty(dbGuild.MuteRoleId))
+                detail.MutedRole = Mapper.Map<Role>(discordGuild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId)));
+
+            detail.UserStatusReport = discordGuild.Users.GroupBy(o =>
+            {
+                if (o.Status == UserStatus.AFK) return UserStatus.Idle;
+                else if (o.Status == UserStatus.Invisible) return UserStatus.Offline;
+                return o.Status;
+            }).ToDictionary(o => o.Key, o => o.Count());
+
+            detail.ClientTypeReport = discordGuild.Users
+                .Where(o => o.Status != UserStatus.Offline && o.Status != UserStatus.Invisible)
+                .SelectMany(o => o.ActiveClients)
+                .GroupBy(o => o)
+                .ToDictionary(o => o.Key, o => o.Count());
+        }
+
+        return detail;
     }
 
     private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId, CancellationToken cancellationToken = default)

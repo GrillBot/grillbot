@@ -1,32 +1,30 @@
-﻿namespace GrillBot.Data.Models.API.AuditLog
+﻿namespace GrillBot.Data.Models.API.AuditLog;
+
+/// <summary>
+/// Metadata for files stored on disk.
+/// </summary>
+public class AuditLogFileMetadata
 {
     /// <summary>
-    /// Metadata for files stored on disk.
+    /// Id
     /// </summary>
-    public class AuditLogFileMetadata
+    public long Id { get; set; }
+
+    /// <summary>
+    /// Filename
+    /// </summary>
+    public string Filename { get; set; }
+
+    /// <summary>
+    /// Size
+    /// </summary>
+    public long Size { get; set; }
+}
+
+public class AuditLogFileMetadataMappingProfile : AutoMapper.Profile
+{
+    public AuditLogFileMetadataMappingProfile()
     {
-        /// <summary>
-        /// Id
-        /// </summary>
-        public long Id { get; set; }
-
-        /// <summary>
-        /// Filename
-        /// </summary>
-        public string Filename { get; set; }
-
-        /// <summary>
-        /// Size
-        /// </summary>
-        public long Size { get; set; }
-
-        public AuditLogFileMetadata() { }
-
-        public AuditLogFileMetadata(Database.Entity.AuditLogFileMeta file)
-        {
-            Id = file.Id;
-            Filename = file.Filename;
-            Size = file.Size;
-        }
+        CreateMap<Database.Entity.AuditLogFileMeta, AuditLogFileMetadata>();
     }
 }

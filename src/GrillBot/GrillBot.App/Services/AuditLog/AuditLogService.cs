@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using AutoMapper;
+using Discord.Commands;
 using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
@@ -30,7 +31,8 @@ public partial class AuditLogService : ServiceBase
     }
 
     public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
-        FileStorageFactory storageFactory, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
+        FileStorageFactory storageFactory, DiscordInitializationService initializationService,
+        IMapper mapper) : base(client, dbFactory, initializationService, mapper: mapper)
     {
         MessageCache = cache;
         FileStorageFactory = storageFactory;

@@ -54,7 +54,7 @@ public class EmoteModule : Infrastructure.InteractionsModuleBase
         bool filterAnimated = false
     )
     {
-        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(Context, ofUser, orderBy, filterAnimated, descending);
+        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(Context, ofUser, orderBy, descending, filterAnimated);
         var pagesCount = (int)Math.Ceiling(result.Item2 / ((double)EmbedBuilder.MaxFieldCount - 1));
 
         var components = ComponentsHelper.CreatePaginationComponents(1, pagesCount, "emote");

@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Helpers;
+﻿using AutoMapper;
+using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.User;
 using GrillBot.Data.Helpers;
@@ -15,7 +16,8 @@ public class SearchingService : ServiceBase
 {
     private UserService UserService { get; }
 
-    public SearchingService(DiscordSocketClient client, GrillBotContextFactory dbFactory, UserService userService) : base(client, dbFactory)
+    public SearchingService(DiscordSocketClient client, GrillBotContextFactory dbFactory, UserService userService,
+        IMapper mapper) : base(client, dbFactory, null, null, mapper)
     {
         UserService = userService;
     }
@@ -177,7 +179,7 @@ public class SearchingService : ServiceBase
                 continue;
             }
 
-            results.Add(new SearchingListItem(item));
+            results.Add(Mapper.Map<SearchingListItem>(item));
         }
 
         await context.SaveChangesAsync(cancellationToken);

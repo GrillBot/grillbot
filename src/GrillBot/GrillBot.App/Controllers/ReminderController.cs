@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Services.Reminder;
+﻿using AutoMapper;
+using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
@@ -17,11 +18,14 @@ public class ReminderController : Controller
 {
     private GrillBotContext DbContext { get; }
     private RemindService RemindService { get; }
+    private IMapper Mapper { get; }
 
-    public ReminderController(GrillBotContext dbContext, RemindService remindService)
+    public ReminderController(GrillBotContext dbContext, RemindService remindService,
+        IMapper mapper)
     {
         DbContext = dbContext;
         RemindService = remindService;
+        Mapper = mapper;
     }
 
     /// <summary>
@@ -52,7 +56,8 @@ public class ReminderController : Controller
         }
 
         query = parameters.CreateQuery(query);
-        var result = await PaginatedResponse<RemindMessage>.CreateAsync(query, parameters, entity => new(entity), cancellationToken);
+        var result = await PaginatedResponse<RemindMessage>
+            .CreateAsync(query, parameters, entity => Mapper.Map<RemindMessage>(entity), cancellationToken);
         return Ok(result);
     }
 

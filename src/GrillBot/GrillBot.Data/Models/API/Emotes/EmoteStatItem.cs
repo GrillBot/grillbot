@@ -10,24 +10,6 @@ public class EmoteStatItem
     public DateTime FirstOccurence { get; set; }
     public DateTime LastOccurence { get; set; }
     public int UsedUsersCount { get; set; }
-
-    public EmoteStatItem() { }
-
-    public EmoteStatItem(Database.Entity.EmoteStatisticItem item)
-    {
-        var emote = Discord.Emote.Parse(item.EmoteId);
-
-        Emote = new EmoteItem()
-        {
-            Id = emote.Id.ToString(),
-            ImageUrl = emote.Url,
-            Name = emote.Name
-        };
-
-        UseCount = item.UseCount;
-        FirstOccurence = item.FirstOccurence;
-        LastOccurence = item.LastOccurence;
-    }
 }
 
 public class EmoteStatItemMappingProfile : AutoMapper.Profile

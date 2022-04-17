@@ -9,14 +9,4 @@ public class UserPointsItem
 
     public string Nickname { get; set; }
     public long Points { get; set; }
-
-    public UserPointsItem() { }
-
-    public UserPointsItem(Database.Entity.GuildUser user)
-    {
-        User = new User(user.User);
-        Guild = new Guild(user.Guild);
-        Nickname = user.Nickname;
-        Points = user.Points;
-    }
 }

@@ -20,7 +20,8 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         var cache = new MessageCache(discordClient, initializationService, DbFactory);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, cache, fileStorage, initializationService);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var auditLogService = new AuditLogService(discordClient, DbFactory, cache, fileStorage, initializationService, mapper);
 
         return new AuditLogController(auditLogService);
     }

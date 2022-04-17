@@ -16,8 +16,9 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var remindService = new RemindService(discordClient, DbFactory, configuration);
+        var mapper = AutoMapperHelper.CreateMapper();
 
-        return new ReminderController(DbContext, remindService);
+        return new ReminderController(DbContext, remindService, mapper);
     }
 
     [TestMethod]

@@ -24,9 +24,10 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
         var fileStorage = FileStorageHelper.Create(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService, mapper);
         SessionService = new SuggestionSessionService();
-        var guildService = new GuildService(discordClient, DbFactory);
+        var guildService = new GuildService(discordClient, DbFactory, mapper);
         var emoteSuggestionService = new EmoteSuggestionService(SessionService, guildService, DbFactory);
         var featureSuggestionService = new FeatureSuggestionService(SessionService, configuration, DbFactory);
         var dcClient = DiscordHelper.CreateDiscordClient();

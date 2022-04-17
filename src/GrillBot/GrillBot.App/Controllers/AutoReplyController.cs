@@ -15,11 +15,11 @@ namespace GrillBot.App.Controllers;
 [OpenApiTag("AutoReply", Description = "Auto response on discord messages")]
 public class AutoReplyController : Controller
 {
-    private AutoReplyService AutoReplyService { get; }
+    private AutoReplyApiService AutoReplyApiService { get; }
 
-    public AutoReplyController(AutoReplyService autoReplyService)
+    public AutoReplyController(AutoReplyApiService autoReplyApiService)
     {
-        AutoReplyService = autoReplyService;
+        AutoReplyApiService = autoReplyApiService;
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public class AutoReplyController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync(CancellationToken cancellationToken)
     {
-        var result = await AutoReplyService.GetListAsync(cancellationToken);
+        var result = await AutoReplyApiService.GetListAsync(cancellationToken);
         return Ok(result);
     }
 
@@ -48,7 +48,7 @@ public class AutoReplyController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id, CancellationToken cancellationToken)
     {
-        var item = await AutoReplyService.GetItemAsync(id, cancellationToken);
+        var item = await AutoReplyApiService.GetItemAsync(id, cancellationToken);
 
         if (item == null)
             return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
@@ -65,9 +65,9 @@ public class AutoReplyController : Controller
     [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(CreateItemAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AutoReplyItem>> CreateItemAsync(AutoReplyItemParams parameters, CancellationToken cancellationToken)
+    public async Task<ActionResult<AutoReplyItem>> CreateItemAsync(AutoReplyItemParams parameters)
     {
-        var item = await AutoReplyService.CreateItemAsync(parameters, cancellationToken);
+        var item = await AutoReplyApiService.CreateItemAsync(parameters);
         return Ok(item);
     }
 
@@ -76,7 +76,6 @@ public class AutoReplyController : Controller
     /// </summary>
     /// <param name="id">Reply ID</param>
     /// <param name="parameters"></param>
-    /// <param name="cancellationToken"></param>
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
     /// <response code="404">Item not found</response>
@@ -85,9 +84,9 @@ public class AutoReplyController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-    public async Task<ActionResult<AutoReplyItem>> UpdateItemAsync(long id, [FromBody] AutoReplyItemParams parameters, CancellationToken cancellationToken)
+    public async Task<ActionResult<AutoReplyItem>> UpdateItemAsync(long id, [FromBody] AutoReplyItemParams parameters)
     {
-        var item = await AutoReplyService.UpdateItemAsync(id, parameters, cancellationToken);
+        var item = await AutoReplyApiService.UpdateItemAsync(id, parameters);
 
         if (item == null)
             return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
@@ -99,16 +98,15 @@ public class AutoReplyController : Controller
     /// Removes reply item
     /// </summary>
     /// <param name="id">Reply ID</param>
-    /// <param name="cancellationToken"></param>
     /// <response code="200">Success</response>
     /// <response code="404">Item not found</response>
     [HttpDelete("{id}")]
     [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(RemoveItemAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> RemoveItemAsync(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult> RemoveItemAsync(long id)
     {
-        var result = await AutoReplyService.RemoveItemAsync(id, cancellationToken);
+        var result = await AutoReplyApiService.RemoveItemAsync(id);
 
         if (!result)
             return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));

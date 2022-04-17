@@ -1,16 +1,25 @@
-﻿using GrillBot.Data.Models.API.AutoReply;
+﻿using AutoMapper;
+using GrillBot.App.Infrastructure;
+using GrillBot.Data.Models.API.AutoReply;
 
 namespace GrillBot.App.Services.AutoReply;
 
-public partial class AutoReplyService
+public class AutoReplyApiService : ServiceBase
 {
+    private AutoReplyService AutoReplyService { get; }
+
+    public AutoReplyApiService(AutoReplyService autoReplyService, GrillBotContextFactory dbFactory, IMapper mapper) : base(null, dbFactory, null, null, mapper)
+    {
+        AutoReplyService = autoReplyService;
+    }
+
     public async Task<List<AutoReplyItem>> GetListAsync(CancellationToken cancellationToken = default)
     {
         using var dbContext = DbFactory.Create();
 
         var query = dbContext.AutoReplies.AsNoTracking().OrderBy(o => o.Id);
         var data = await query.ToListAsync(cancellationToken);
-        return data.ConvertAll(o => new AutoReplyItem(o));
+        return Mapper.Map<List<AutoReplyItem>>(data);
     }
 
     public async Task<AutoReplyItem> GetItemAsync(long id, CancellationToken cancellationToken)
@@ -20,10 +29,10 @@ public partial class AutoReplyService
         var entity = await dbContext.AutoReplies.AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
-        return entity == null ? null : new AutoReplyItem(entity);
+        return Mapper.Map<AutoReplyItem>(entity);
     }
 
-    public async Task<AutoReplyItem> CreateItemAsync(AutoReplyItemParams parameters, CancellationToken cancellationToken)
+    public async Task<AutoReplyItem> CreateItemAsync(AutoReplyItemParams parameters)
     {
         var entity = new Database.Entity.AutoReplyItem()
         {
@@ -34,19 +43,19 @@ public partial class AutoReplyService
 
         using var dbContext = DbFactory.Create();
 
-        await dbContext.AddAsync(entity, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await InitAsync(cancellationToken);
+        await dbContext.AddAsync(entity);
+        await dbContext.SaveChangesAsync();
+        await AutoReplyService.InitAsync();
 
-        return new AutoReplyItem(entity);
+        return Mapper.Map<AutoReplyItem>(entity);
     }
 
-    public async Task<AutoReplyItem> UpdateItemAsync(long id, AutoReplyItemParams parameters, CancellationToken cancellationToken)
+    public async Task<AutoReplyItem> UpdateItemAsync(long id, AutoReplyItemParams parameters)
     {
         using var dbContext = DbFactory.Create();
 
         var entity = await dbContext.AutoReplies.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Id == id);
 
         if (entity == null)
             return null;
@@ -55,24 +64,24 @@ public partial class AutoReplyService
         entity.Flags = parameters.Flags;
         entity.Reply = parameters.Reply;
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await InitAsync(cancellationToken);
+        await dbContext.SaveChangesAsync();
+        await AutoReplyService.InitAsync();
 
-        return new AutoReplyItem(entity);
+        return Mapper.Map<AutoReplyItem>(entity);
     }
 
-    public async Task<bool> RemoveItemAsync(long id, CancellationToken cancellationToken)
+    public async Task<bool> RemoveItemAsync(long id)
     {
         using var dbContext = DbFactory.Create();
 
         var entity = await dbContext.AutoReplies.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Id == id);
 
         if (entity == null) return false;
 
         dbContext.Remove(entity);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await InitAsync(cancellationToken);
+        await dbContext.SaveChangesAsync();
+        await AutoReplyService.InitAsync();
         return true;
     }
 }

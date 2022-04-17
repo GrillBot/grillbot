@@ -7,177 +7,164 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Exceptions;
+using AutoMapper;
+using GrillBot.Database.Enums;
+using GrillBot.App.Modules.Implementations.Suggestion;
+using GrillBot.Data.Models.API.Guilds;
 
-namespace GrillBot.App.Controllers
+namespace GrillBot.App.Controllers;
+
+[ApiController]
+[Route("api/unverify")]
+[OpenApiTag("Unverify", Description = "Unverify management.")]
+public class UnverifyController : Controller
 {
-    [ApiController]
-    [Route("api/unverify")]
-    [OpenApiTag("Unverify", Description = "Unverify management.")]
-    public class UnverifyController : Controller
+    private UnverifyService UnverifyService { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotContext DbContext { get; }
+    private IMapper Mapper { get; }
+    private UnverifyApiService UnverifyApiService { get; }
+
+    public UnverifyController(UnverifyService unverifyService, DiscordSocketClient discordSocketClient,
+        GrillBotContext dbContext, IMapper mapper, UnverifyApiService unverifyApiService)
     {
-        private UnverifyService UnverifyService { get; }
-        private DiscordSocketClient DiscordClient { get; }
-        private GrillBotContext DbContext { get; }
+        UnverifyService = unverifyService;
+        DiscordClient = discordSocketClient;
+        DbContext = dbContext;
+        Mapper = mapper;
+        UnverifyApiService = unverifyApiService;
+    }
 
-        public UnverifyController(UnverifyService unverifyService, DiscordSocketClient discordSocketClient,
-            GrillBotContext dbContext)
+    /// <summary>
+    /// Gets list of current unverifies in guild.
+    /// </summary>
+    /// <response code="200">Success</response>
+    [HttpGet("current")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
+    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetCurrentUnverifiesAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync(CancellationToken cancellationToken)
+    {
+        var userId = User.HaveUserPermission() ? User.GetUserId() : (ulong?)null;
+
+        var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId, cancellationToken);
+
+        var result = Mapper.Map<List<UnverifyUserProfile>>(unverifies);
+        foreach (var profile in result)
         {
-            UnverifyService = unverifyService;
-            DiscordClient = discordSocketClient;
-            DbContext = dbContext;
+            var entity = unverifies.Find(o => o.Item1.Destination.Id == Convert.ToUInt64(profile.User.Id));
+            profile.Guild = Mapper.Map<Guild>(entity.Item2);
         }
 
-        /// <summary>
-        /// Gets list of current unverifies in guild.
-        /// </summary>
-        /// <response code="200">Success</response>
-        [HttpGet("current")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetCurrentUnverifiesAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync(CancellationToken cancellationToken)
-        {
-            var userId = User.HaveUserPermission() ? User.GetUserId() : (ulong?)null;
+        return Ok(result);
+    }
 
-            var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId, cancellationToken);
-            var result = unverifies.ConvertAll(o => new UnverifyUserProfile(o.Item1, o.Item2));
-            return Ok(result);
+    /// <summary>
+    /// Removes unverify
+    /// </summary>
+    /// <param name="guildId">Guild ID</param>
+    /// <param name="userId">User Id</param>
+    /// <response code="200">Success</response>
+    /// <response code="404">Unverify or guild not found.</response>
+    [HttpDelete("{guildId}/{userId}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RemoveUnverifyAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId)
+    {
+        var guild = DiscordClient.GetGuild(guildId);
+
+        if (guild == null)
+            return NotFound(new MessageResponse("Server na kterém by se mělo nacházet unverify nebyl nalezen."));
+
+        await guild.DownloadUsersAsync();
+        var toUser = guild.GetUser(userId);
+        if (toUser == null)
+            return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
+
+        var fromUserId = User.GetUserId();
+        var fromUser = guild.GetUser(fromUserId);
+        var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, false);
+        return Ok(new MessageResponse(result));
+    }
+
+    /// <summary>
+    /// Updates unverify time.
+    /// </summary>
+    /// <param name="guildId">Guild Id</param>
+    /// <param name="userId">User Id</param>
+    /// <param name="endTime">New unverify end.</param>
+    [HttpPut("{guildId}/{userId}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(UpdateUnverifyTimeAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    public async Task<ActionResult<MessageResponse>> UpdateUnverifyTimeAsync(ulong guildId, ulong userId, [FromQuery, Required] DateTime endTime)
+    {
+        var guild = DiscordClient.GetGuild(guildId);
+
+        if (guild == null)
+            return NotFound(new MessageResponse("Server na kterém by se mělo nacházet unverify nebyl nalezen."));
+
+        await guild.DownloadUsersAsync();
+        var toUser = guild.GetUser(userId);
+        if (toUser == null)
+            return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
+
+        var fromUser = guild.GetUser(User.GetUserId());
+        var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser);
+        return Ok(new MessageResponse(result));
+    }
+
+    /// <summary>
+    /// Gets paginated list of unverify logs.
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <response code="400">Validation failed</response>
+    [HttpGet("log")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
+    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifyLogsAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters,
+        CancellationToken cancellationToken)
+    {
+        var result = await UnverifyApiService.GetLogsAsync(parameters, User, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Recovers state before specific unverify.
+    /// </summary>
+    /// <param name="logId">ID of log.</param>
+    /// <response code="200">Success</response>
+    /// <response code="400">Validation failed.</response>
+    /// <response code="404">Unverify, guild or users not found.</response>
+    [HttpPost("log/{logId}/recover")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RecoverUnverifyAsync))]
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    public async Task<ActionResult> RecoverUnverifyAsync(long logId)
+    {
+        try
+        {
+            var processedUserId = User.GetUserId();
+            await UnverifyService.RecoverUnverifyState(logId, processedUserId);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new MessageResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError("Recover", ex.Message);
+            return BadRequest(new ValidationProblemDetails(ModelState));
         }
 
-        /// <summary>
-        /// Removes unverify
-        /// </summary>
-        /// <param name="guildId">Guild ID</param>
-        /// <param name="userId">User Id</param>
-        /// <response code="200">Success</response>
-        /// <response code="404">Unverify or guild not found.</response>
-        [HttpDelete("{guildId}/{userId}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RemoveUnverifyAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId)
-        {
-            var guild = DiscordClient.GetGuild(guildId);
-
-            if (guild == null)
-                return NotFound(new MessageResponse("Server na kterém by se mělo nacházet unverify nebyl nalezen."));
-
-            await guild.DownloadUsersAsync();
-            var toUser = guild.GetUser(userId);
-            if (toUser == null)
-                return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
-
-            var fromUserId = User.GetUserId();
-            var fromUser = guild.GetUser(fromUserId);
-            var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, false);
-            return Ok(new MessageResponse(result));
-        }
-
-        /// <summary>
-        /// Updates unverify time.
-        /// </summary>
-        /// <param name="guildId">Guild Id</param>
-        /// <param name="userId">User Id</param>
-        /// <param name="endTime">New unverify end.</param>
-        [HttpPut("{guildId}/{userId}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(UpdateUnverifyTimeAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<MessageResponse>> UpdateUnverifyTimeAsync(ulong guildId, ulong userId, [FromQuery, Required] DateTime endTime)
-        {
-            var guild = DiscordClient.GetGuild(guildId);
-
-            if (guild == null)
-                return NotFound(new MessageResponse("Server na kterém by se mělo nacházet unverify nebyl nalezen."));
-
-            await guild.DownloadUsersAsync();
-            var toUser = guild.GetUser(userId);
-            if (toUser == null)
-                return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
-
-            var fromUser = guild.GetUser(User.GetUserId());
-            var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser);
-            return Ok(new MessageResponse(result));
-        }
-
-        /// <summary>
-        /// Gets paginated list of unverify logs.
-        /// </summary>
-        /// <response code="200">Success</response>
-        /// <response code="400">Validation failed</response>
-        [HttpGet("log")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifyLogsAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters,
-            CancellationToken cancellationToken)
-        {
-            var query = DbContext.UnverifyLogs.AsNoTracking()
-                .Include(o => o.FromUser.User)
-                .Include(o => o.Guild)
-                .Include(o => o.ToUser.User)
-                .AsSplitQuery();
-
-            if (User.HaveUserPermission())
-            {
-                var loggedUserId = User.GetUserId();
-                parameters.FromUserId = null;
-                parameters.ToUserId = loggedUserId.ToString();
-
-                var mutualGuilds = DiscordClient.FindMutualGuilds(loggedUserId)
-                    .Select(o => o.Id.ToString()).ToList();
-
-                query = parameters.CreateQuery(query)
-                    .Where(o => mutualGuilds.Contains(o.GuildId));
-            }
-            else
-            {
-                query = parameters.CreateQuery(query);
-            }
-
-            var result = await PaginatedResponse<UnverifyLogItem>.CreateAsync(query, parameters, entity =>
-            {
-                var guild = DiscordClient.GetGuild(Convert.ToUInt64(entity.GuildId));
-                return new UnverifyLogItem(entity, guild);
-            }, cancellationToken);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Recovers state before specific unverify.
-        /// </summary>
-        /// <param name="logId">ID of log.</param>
-        /// <response code="200">Success</response>
-        /// <response code="400">Validation failed.</response>
-        /// <response code="404">Unverify, guild or users not found.</response>
-        [HttpPost("log/{logId}/recover")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RecoverUnverifyAsync))]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<ActionResult> RecoverUnverifyAsync(long logId)
-        {
-            try
-            {
-                var processedUserId = User.GetUserId();
-                await UnverifyService.RecoverUnverifyState(logId, processedUserId);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new MessageResponse(ex.Message));
-            }
-            catch (InvalidOperationException ex)
-            {
-                ModelState.AddModelError("Recover", ex.Message);
-                return BadRequest(new ValidationProblemDetails(ModelState));
-            }
-
-            return Ok();
-        }
+        return Ok();
     }
 }

@@ -93,7 +93,7 @@ public class DataController : Controller
             guilds.SelectMany(o => o.GetAvailableChannelsFor(o.GetUser(currentUserId))).ToList() :
             guilds.SelectMany(o => o.Channels);
 
-        var channels = availableChannels.Select(o => new Channel(o))
+        var channels = availableChannels.Select(o => Mapper.Map<Channel>(o))
             .Where(o => o.Type != null && o.Type != ChannelType.Category)
             .ToList();
 

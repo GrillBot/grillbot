@@ -23,15 +23,16 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var configuration = ConfigurationHelper.CreateConfiguration();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
-        var channelsService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var channelsService = new ChannelService(discordClient, DbFactory, configuration, messageCache, mapper);
         var provider = DIHelper.CreateEmptyProvider();
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);
         var memoryCache = CacheHelper.CreateMemoryCache();
         var externalHelpService = new ExternalCommandsHelpService(discordClient, configuration, memoryCache, initializationService, provider);
         var storageFactory = FileStorageHelper.Create(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storageFactory, initializationService);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storageFactory, initializationService, mapper);
 
-        return new UsersController(DbContext, discordClient, helpService, externalHelpService, auditLogService);
+        return new UsersController(DbContext, discordClient, helpService, externalHelpService, auditLogService, mapper);
     }
 
     [TestMethod]

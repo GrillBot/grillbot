@@ -12,6 +12,7 @@ using GrillBot.App.Services.CommandsHelp;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.App.Services.AuditLog;
+using AutoMapper;
 
 namespace GrillBot.App.Controllers;
 
@@ -25,15 +26,17 @@ public class UsersController : Controller
     private CommandsHelpService HelpService { get; }
     private ExternalCommandsHelpService ExternalCommandsHelpService { get; }
     private AuditLogService AuditLogService { get; }
+    private IMapper Mapper { get; }
 
     public UsersController(GrillBotContext dbContext, DiscordSocketClient discordClient, CommandsHelpService helpService,
-        ExternalCommandsHelpService externalCommandsHelpService, AuditLogService auditLogService)
+        ExternalCommandsHelpService externalCommandsHelpService, AuditLogService auditLogService, IMapper mapper)
     {
         DbContext = dbContext;
         DiscordClient = discordClient;
         HelpService = helpService;
         ExternalCommandsHelpService = externalCommandsHelpService;
         AuditLogService = auditLogService;
+        Mapper = mapper;
     }
 
     /// <summary>
@@ -57,7 +60,18 @@ public class UsersController : Controller
         var result = await PaginatedResponse<UserListItem>.CreateAsync(query, parameters, async (entity, cancellationToken) =>
         {
             var discordUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(entity.Id), cancellationToken);
-            return new UserListItem(entity, DiscordClient, discordUser);
+            var result = Mapper.Map<UserListItem>(entity);
+
+            if (discordUser != null)
+                result = Mapper.Map(discordUser, result);
+
+            foreach (var guild in entity.Guilds.OrderBy(o => o.Guild.Name))
+            {
+                var guildUser = DiscordClient.GetGuild(Convert.ToUInt64(guild.GuildId))?.GetUser(Convert.ToUInt64(guild.UserId));
+                result.Guilds.Add(guild.Guild.Name, guildUser != null);
+            }
+
+            return result;
         }, cancellationToken);
         return Ok(result);
     }
@@ -87,8 +101,43 @@ public class UsersController : Controller
         if (entity == null)
             return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
 
+        var result = Mapper.Map<UserDetail>(entity);
         var user = await DiscordClient.FindUserAsync(id, cancellationToken);
-        return Ok(new UserDetail(entity, user, DiscordClient));
+        if (user != null)
+            result = Mapper.Map(user, result);
+
+        foreach (var guildUserEntity in entity.Guilds)
+        {
+            var guildUser = Mapper.Map<GuildUserDetail>(guildUserEntity);
+
+            guildUser.CreatedInvites = guildUser.CreatedInvites
+                .OrderByDescending(o => o.CreatedAt)
+                .ToList();
+
+            guildUser.Channels = guildUser.Channels
+                .OrderByDescending(o => o.Count)
+                .ThenBy(o => o.Channel.Name)
+                .ToList();
+
+            guildUser.Emotes = guildUser.Emotes
+                .OrderByDescending(o => o.UseCount)
+                .ThenByDescending(o => o.LastOccurence)
+                .ThenBy(o => o.Emote.Name)
+                .ToList();
+
+            var guild = DiscordClient.GetGuild(Convert.ToUInt64(guildUser.Guild.Id));
+
+            guildUser.IsGuildKnown = guild != null;
+            guildUser.IsUserInGuild = guildUser.IsGuildKnown && guild.GetUser(Convert.ToUInt64(result.Id)) != null;
+            result.Guilds.Add(guildUser);
+        }
+
+        result.Guilds = result.Guilds
+            .OrderByDescending(o => o.IsUserInGuild)
+            .ThenBy(o => o.Guild.Name)
+            .ToList();
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -285,7 +334,7 @@ public class UsersController : Controller
 
         var guildUsersResult = await guildUsersQuery.ToListAsync(cancellationToken);
         if (guildUsersResult.Count > 0)
-            result.AddRange(guildUsersResult.ConvertAll(o => new UserPointsItem(o)));
+            result.AddRange(Mapper.Map<List<UserPointsItem>>(guildUsersResult));
 
         return Ok(result);
     }

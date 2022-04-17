@@ -76,10 +76,21 @@
             return user;
         }
 
+        static public IRole FindRole(this BaseSocketClient client, string id)
+            => FindRole(client, Convert.ToUInt64(id));
+
         static public IRole FindRole(this BaseSocketClient client, ulong id)
         {
             return client.Guilds.SelectMany(o => o.Roles)
                 .FirstOrDefault(o => !o.IsEveryone && o.Id == id);
+        }
+
+        static public async Task<List<IGuild>> FindMutualGuildsAsync(this IDiscordClient client, ulong userId)
+        {
+            var guilds = (await client.GetGuildsAsync()).ToList();
+
+            return await guilds
+                .FindAllAsync(async g => (await g.GetUserAsync(userId)) != null);
         }
 
         static public IEnumerable<SocketGuild> FindMutualGuilds(this BaseSocketClient client, ulong userId)

@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using AutoMapper;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
@@ -6,7 +7,6 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Data.Models.Invite;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using YamlDotNet.Serialization;
 
 namespace GrillBot.App.Services;
 
@@ -18,7 +18,7 @@ public class InviteService : ServiceBase
     private AuditLogService AuditLogService { get; }
 
     public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory,
-        AuditLogService auditLogService) : base(discordClient, dbFactory)
+        AuditLogService auditLogService, IMapper mapper) : base(discordClient, dbFactory, null, null, mapper)
     {
         MetadataCache = new ConcurrentBag<InviteMetadata>();
         AuditLogService = auditLogService;
@@ -212,6 +212,7 @@ public class InviteService : ServiceBase
             .Where(o => o.UsedUsers.Count > 0);
 
         query = parameters.CreateQuery(query);
-        return await PaginatedResponse<GuildInvite>.CreateAsync(query, parameters, entity => new(entity), cancellationToken);
+        return await PaginatedResponse<GuildInvite>
+            .CreateAsync(query, parameters, entity => Mapper.Map<GuildInvite>(entity), cancellationToken);
     }
 }

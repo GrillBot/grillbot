@@ -3,75 +3,74 @@ using Discord.WebSocket;
 using System;
 using System.Diagnostics;
 
-namespace GrillBot.Data.Models.API.System
+namespace GrillBot.Data.Models.API.System;
+
+/// <summary>
+/// Diagnostics info
+/// </summary>
+public class DiagnosticsInfo
 {
     /// <summary>
-    /// Diagnostics info
+    /// Instance type (Release, Development, ...)
     /// </summary>
-    public class DiagnosticsInfo
+    public string InstanceType { get; set; }
+
+    /// <summary>
+    /// Datetime of start.
+    /// </summary>
+    public DateTime StartAt { get; set; }
+
+    /// <summary>
+    /// Uptime
+    /// </summary>
+    public TimeSpan Uptime { get; set; }
+
+    /// <summary>
+    /// CPU active time
+    /// </summary>
+    public TimeSpan CpuTime { get; set; }
+
+    /// <summary>
+    /// Discord communication latency
+    /// </summary>
+    public TimeSpan Latency { get; set; }
+
+    /// <summary>
+    /// Connection state to discord.
+    /// </summary>
+    public ConnectionState ConnectionState { get; set; }
+
+    /// <summary>
+    /// Used memory in bytes.
+    /// </summary>
+    public long UsedMemory { get; set; }
+
+    /// <summary>
+    /// Bot is initialized and listening.
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
+    /// Current datetime on server.
+    /// </summary>
+    public DateTime CurrentDateTime { get; set; }
+
+    public DiagnosticsInfo()
     {
-        /// <summary>
-        /// Instance type (Release, Development, ...)
-        /// </summary>
-        public string InstanceType { get; set; }
+        var process = Process.GetCurrentProcess();
 
-        /// <summary>
-        /// Datetime of start.
-        /// </summary>
-        public DateTime StartAt { get; set; }
+        StartAt = process.StartTime;
+        Uptime = DateTime.Now - process.StartTime;
+        CpuTime = process.TotalProcessorTime;
+        UsedMemory = process.WorkingSet64;
+        CurrentDateTime = DateTime.Now;
+    }
 
-        /// <summary>
-        /// Uptime
-        /// </summary>
-        public TimeSpan Uptime { get; set; }
-
-        /// <summary>
-        /// CPU active time
-        /// </summary>
-        public TimeSpan CpuTime { get; set; }
-
-        /// <summary>
-        /// Discord communication latency
-        /// </summary>
-        public TimeSpan Latency { get; set; }
-
-        /// <summary>
-        /// Connection state to discord.
-        /// </summary>
-        public ConnectionState ConnectionState { get; set; }
-
-        /// <summary>
-        /// Used memory in bytes.
-        /// </summary>
-        public long UsedMemory { get; set; }
-
-        /// <summary>
-        /// Bot is initialized and listening.
-        /// </summary>
-        public bool IsActive { get; set; }
-
-        /// <summary>
-        /// Current datetime on server.
-        /// </summary>
-        public DateTime CurrentDateTime { get; set; }
-
-        public DiagnosticsInfo()
-        {
-            var process = Process.GetCurrentProcess();
-
-            StartAt = process.StartTime;
-            Uptime = DateTime.Now - process.StartTime;
-            CpuTime = process.TotalProcessorTime;
-            UsedMemory = process.WorkingSet64;
-            CurrentDateTime = DateTime.Now;
-        }
-
-        public DiagnosticsInfo(string environmentName, DiscordSocketClient discord, bool isActive) : this()
-        {
-            InstanceType = environmentName;
-            Latency = TimeSpan.FromMilliseconds(discord.Latency);
-            ConnectionState = discord.ConnectionState;
-            IsActive = isActive;
-        }
+    public DiagnosticsInfo(string environmentName, DiscordSocketClient discord, bool isActive) : this()
+    {
+        InstanceType = environmentName;
+        Latency = TimeSpan.FromMilliseconds(discord.Latency);
+        ConnectionState = discord.ConnectionState;
+        IsActive = isActive;
     }
 }

@@ -16,8 +16,10 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         var logger = LoggingHelper.CreateLogger<DiscordInitializationService>();
         var initializationService = new DiscordInitializationService(logger);
         var service = new AutoReplyService(configuration, discordClient, DbFactory, initializationService);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var apiService = new AutoReplyApiService(service, DbFactory, mapper);
 
-        return new AutoReplyController(service);
+        return new AutoReplyController(apiService);
     }
 
     [TestMethod]
@@ -28,7 +30,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
-        }, CancellationToken.None);
+        });
 
         var listResult = await AdminController.GetAutoReplyListAsync(CancellationToken.None);
 
@@ -76,7 +78,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
-        }, CancellationToken.None);
+        });
 
         CheckResult<OkObjectResult, AutoReplyItem>(result);
     }
@@ -89,7 +91,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
-        }, CancellationToken.None);
+        });
 
         CheckResult<NotFoundObjectResult, AutoReplyItem>(result);
     }
@@ -106,14 +108,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.RemoveItemAsync(1, CancellationToken.None);
+        var result = await AdminController.RemoveItemAsync(1);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task RemoveItemAsync_NotFound()
     {
-        var result = await AdminController.RemoveItemAsync(1, CancellationToken.None);
+        var result = await AdminController.RemoveItemAsync(1);
         CheckResult<NotFoundObjectResult>(result);
     }
 }

@@ -1,16 +1,10 @@
-﻿using Discord;
-using GrillBot.App.Modules.Implementations.Suggestion;
+﻿using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.App.Services;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Exceptions;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.Suggestion;
 
@@ -21,7 +15,8 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     {
         var sesionService = new SuggestionSessionService();
         var discordClient = DiscordHelper.CreateClient();
-        var guildService = new GuildService(discordClient, DbFactory);
+        var mapper = AutoMapperHelper.CreateMapper();
+        var guildService = new GuildService(discordClient, DbFactory, mapper);
 
         return new EmoteSuggestionService(sesionService, guildService, DbFactory);
     }

@@ -8,13 +8,11 @@ namespace GrillBot.App.Services.Emotes;
 public class EmotesApiService : ServiceBase
 {
     private EmotesCacheService EmotesCacheService { get; }
-    private IMapper Mapper { get; }
 
     public EmotesApiService(GrillBotContextFactory dbFactory, EmotesCacheService emotesCacheService,
-        IMapper mapper) : base(null, dbFactory)
+        IMapper mapper) : base(null, dbFactory, mapper: mapper)
     {
         EmotesCacheService = emotesCacheService;
-        Mapper = mapper;
     }
 
     public async Task<PaginatedResponse<EmoteStatItem>> GetStatsOfEmotesAsync(EmotesListParams @params, bool unsupported, CancellationToken cancellationToken)

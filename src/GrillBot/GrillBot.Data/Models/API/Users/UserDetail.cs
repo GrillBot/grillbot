@@ -1,5 +1,4 @@
 ﻿using Discord;
-using GrillBot.Data.Extensions.Discord;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,40 +13,13 @@ public class UserDetail
     public string Note { get; set; }
     public long Flags { get; set; }
     public bool HaveBirthday { get; set; }
-    public List<GuildUserDetail> Guilds { get; set; }
+    public List<GuildUserDetail> Guilds { get; set; } = new();
     public UserStatus Status { get; set; }
-    public List<string> ActiveClients { get; set; }
+    public List<string> ActiveClients { get; set; } = new();
     public bool IsKnown { get; set; }
     public string AvatarUrl { get; set; }
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
     public DateTime? RegisteredAt { get; set; }
-
-    public UserDetail() { }
-
-    public UserDetail(Database.Entity.User entity, IUser user, IDiscordClient discordClient)
-    {
-        Id = entity.Id;
-        Username = entity.Username;
-        Discriminator = entity.Discriminator;
-        Note = entity.Note;
-        Flags = entity.Flags;
-        HaveBirthday = entity.Birthday != null;
-        Guilds = entity.Guilds.Select(o => new GuildUserDetail(o, discordClient.GetGuildAsync(Convert.ToUInt64(o.GuildId)).Result)).OrderBy(o => o.Guild.Name).ToList();
-        IsKnown = user != null;
-        SelfUnverifyMinimalTime = entity.SelfUnverifyMinimalTime;
-
-        if (IsKnown)
-        {
-            ActiveClients = user.ActiveClients.Select(o => o.ToString()).OrderBy(o => o).ToList();
-            Status = user.Status;
-            AvatarUrl = user.GetAvatarUri();
-            RegisteredAt = user.CreatedAt.LocalDateTime;
-        }
-        else
-        {
-            AvatarUrl = CDN.GetDefaultUserAvatarUrl(0);
-        }
-    }
 
     public void RemoveSecretData()
     {

@@ -10,7 +10,8 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
     protected override PermissionsController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        return new PermissionsController(DbContext, discordClient);
+        var mapper = AutoMapperHelper.CreateMapper();
+        return new PermissionsController(DbContext, discordClient, mapper);
     }
 
     [TestMethod]

@@ -1,8 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.Data.Models.API.Help;
-using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
-using GrillBot.App.Extensions;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Services.CommandsHelp;
 

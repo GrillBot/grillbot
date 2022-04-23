@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Controllers;
-using GrillBot.App.Services;
+using GrillBot.App.Services.Guild;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +13,9 @@ public class GuildControllerTests : ControllerTest<GuildController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var mapper = AutoMapperHelper.CreateMapper();
-        var guildService = new GuildService(discordClient, DbFactory, mapper);
+        var apiService = new GuildApiService(DbFactory, discordClient, mapper);
 
-        return new GuildController(DbContext, discordClient, guildService, mapper);
+        return new GuildController(apiService);
     }
 
     [TestMethod]
@@ -62,7 +62,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
             MuteRoleId = "12345",
         };
 
-        var result = await AdminController.UpdateGuildAsync(12345, parameters, CancellationToken.None);
+        var result = await AdminController.UpdateGuildAsync(12345, parameters);
         CheckResult<NotFoundObjectResult, GuildDetail>(result);
     }
 }

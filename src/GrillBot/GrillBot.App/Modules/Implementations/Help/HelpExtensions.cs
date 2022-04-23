@@ -2,6 +2,7 @@
 using Discord.Commands;
 using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.App.Helpers;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Modules.Implementations.Help;
 

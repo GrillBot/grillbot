@@ -17,36 +17,24 @@ public class UnverifyApiService : ServiceBase
     {
     }
 
-    public async Task<PaginatedResponse<UnverifyLogItem>> GetLogsAsync(UnverifyLogParams @params, ClaimsPrincipal loggedUser,
+    public async Task<PaginatedResponse<UnverifyLogItem>> GetLogsAsync(UnverifyLogParams parameters, ClaimsPrincipal loggedUser,
         CancellationToken cancellationToken)
     {
-        using var context = DbFactory.Create();
-
-        var query = context.UnverifyLogs.AsNoTracking()
-            .Include(o => o.FromUser.User)
-            .Include(o => o.Guild)
-            .Include(o => o.ToUser.User)
-            .AsSplitQuery();
-
         if (loggedUser.HaveUserPermission())
         {
             var loggedUserId = loggedUser.GetUserId();
-            @params.FromUserId = null;
-            @params.ToUserId = loggedUserId.ToString();
 
-            var mutualGuilds = (await DcClient.FindMutualGuildsAsync(loggedUserId))
-                .ConvertAll(o => o.Id.ToString());
+            parameters.FromUserId = null;
+            parameters.ToUserId = loggedUserId.ToString();
+            parameters.MutualGuilds = (await DcClient.FindMutualGuildsAsync(loggedUserId)).ConvertAll(o => o.Id.ToString());
+        }
 
-            query = @params.CreateQuery(query)
-                .Where(o => mutualGuilds.Contains(o.GuildId));
-        }
-        else
-        {
-            query = @params.CreateQuery(query);
-        }
+        using var context = DbFactory.Create();
+
+        var query = context.CreateQuery(parameters, true);
 
         return await PaginatedResponse<UnverifyLogItem>
-            .CreateAsync(query, @params, async (entity, cancellationToken) => await MapItemAsync(entity, cancellationToken), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, (entity, cancellationToken) => MapItemAsync(entity, cancellationToken), cancellationToken);
     }
 
     private async Task<UnverifyLogItem> MapItemAsync(UnverifyLog entity, CancellationToken cancellationToken)

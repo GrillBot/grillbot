@@ -1,11 +1,11 @@
-﻿using AutoMapper;
-using GrillBot.App.Services.Reminder;
+﻿using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 
@@ -16,57 +16,46 @@ namespace GrillBot.App.Controllers;
 [OpenApiTag("Reminder", Description = "Reminder management")]
 public class ReminderController : Controller
 {
-    private GrillBotContext DbContext { get; }
     private RemindService RemindService { get; }
-    private IMapper Mapper { get; }
+    private RemindApiService ApiService { get; }
 
-    public ReminderController(GrillBotContext dbContext, RemindService remindService,
-        IMapper mapper)
+    public ReminderController(RemindService remindService, RemindApiService apiService)
     {
-        DbContext = dbContext;
+        ApiService = apiService;
         RemindService = remindService;
-        Mapper = mapper;
     }
 
     /// <summary>
-    /// Gets paginated list of reminders.
+    /// Get paginated list of reminders.
     /// </summary>
-    /// <response code="200">Success</response>
-    /// <response code="400">Validation failed</response>
+    /// <response code="200">Returns paginated list of reminders.</response>
+    /// <response code="400">Validation of parameters failed.</response>
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [OpenApiOperation(nameof(ReminderController) + "_" + nameof(GetRemindMessagesListAsync))]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromQuery] GetReminderListParams parameters,
         CancellationToken cancellationToken)
     {
-        var query = DbContext.Reminders.AsNoTracking()
-            .Include(o => o.FromUser)
-            .Include(o => o.ToUser)
-            .AsQueryable();
-
         if (User.HaveUserPermission())
         {
             parameters.ToUserId = User.GetUserId().ToString();
             parameters.OriginalMessageId = null;
 
-            if (string.Equals(parameters.SortBy, "touser", StringComparison.InvariantCultureIgnoreCase))
-                parameters.SortBy = "Id";
+            if (string.Equals(parameters.Sort.OrderBy, "ToUser", StringComparison.InvariantCultureIgnoreCase))
+                parameters.Sort.OrderBy = "Id";
         }
 
-        query = parameters.CreateQuery(query);
-        var result = await PaginatedResponse<RemindMessage>
-            .CreateAsync(query, parameters, entity => Mapper.Map<RemindMessage>(entity), cancellationToken);
+        var result = await ApiService.GetListAsync(parameters, cancellationToken);
         return Ok(result);
     }
 
     /// <summary>
-    /// Cancels reminder.
+    /// Cancel pending remind.
     /// </summary>
     /// <param name="id">Remind ID</param>
     /// <param name="notify">Send notification before cancel.</param>
-    /// <param name="cancellationToken"></param>
     /// <response code="200">Success</response>
     /// <response code="404">Remind not found.</response>
     /// <response code="410">Remind was notified or cancelled.</response>
@@ -76,11 +65,11 @@ public class ReminderController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Gone)]
-    public async Task<ActionResult> CancelRemindAsync(long id, [FromQuery] bool notify = false, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> CancelRemindAsync(long id, [FromQuery] bool notify = false)
     {
         try
         {
-            await RemindService.ServiceCancellationAsync(id, User, notify, cancellationToken);
+            await RemindService.ServiceCancellationAsync(id, User, notify);
             return Ok();
         }
         catch (NotFoundException ex)

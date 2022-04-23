@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Controllers;
-using GrillBot.App.Services;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Channels;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Channels;
@@ -18,15 +19,18 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var mapper = AutoMapperHelper.CreateMapper();
-        var channelService = new ChannelService(discordClient, DbFactory, configuration, messageCache, mapper);
+        var dcClient = DiscordHelper.CreateDiscordClient();
+        var fileStorage = FileStorageHelper.Create(configuration);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
+        var apiService = new ChannelApiService(DbFactory, mapper, dcClient, messageCache, auditLogService);
 
-        return new ChannelController(discordClient, DbContext, messageCache, channelService, mapper);
+        return new ChannelController(apiService);
     }
 
     [TestMethod]
     public async Task SendMessageToChannelAsync_GuildNotFound()
     {
-        var result = await AdminController.SendMessageToChannelAsync(12345, 12345, new SendMessageToChannelParams(), CancellationToken.None);
+        var result = await AdminController.SendMessageToChannelAsync(122345, 12345, new SendMessageToChannelParams());
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -61,7 +65,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task ClearChannelCacheAsync()
     {
-        var result = await AdminController.ClearChannelCacheAsync(1, 1, CancellationToken.None);
+        var result = await AdminController.ClearChannelCacheAsync(1, 1);
         CheckResult<OkResult>(result);
     }
 
@@ -102,7 +106,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task UpdateChannelAsync_NotFound()
     {
-        var result = await AdminController.UpdateChannelAsync(12345, new UpdateChannelParams(), CancellationToken.None);
+        var result = await AdminController.UpdateChannelAsync(12345, new UpdateChannelParams());
         CheckResult<NotFoundObjectResult, ChannelDetail>(result);
     }
 
@@ -115,7 +119,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.UpdateChannelAsync(12345, new UpdateChannelParams(), CancellationToken.None);
+        var result = await AdminController.UpdateChannelAsync(12345, new UpdateChannelParams() { Flags = 42 });
         CheckResult<OkResult>(result);
     }
 

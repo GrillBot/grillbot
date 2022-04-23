@@ -3,6 +3,7 @@ using GrillBot.Database.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Security.Claims;
 
 namespace GrillBot.Tests.Common;
@@ -53,8 +54,9 @@ public abstract class ControllerTest<TController> where TController : Controller
             HttpContext = new DefaultHttpContext()
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new[] {
-                new Claim(ClaimTypes.Role, role)
-            }))
+                    new Claim(ClaimTypes.Role, role),
+                    new Claim(ClaimTypes.NameIdentifier, "1234567890")
+                }))
             }
         };
     }
@@ -65,7 +67,14 @@ public abstract class ControllerTest<TController> where TController : Controller
         Assert.IsInstanceOfType(result, typeof(TResult));
 
         if (result is NotFoundObjectResult notFound)
+        {
             Assert.IsInstanceOfType(notFound.Value, typeof(MessageResponse));
+        }
+        else if (result is FileContentResult fileContent)
+        {
+            Assert.IsNotNull(fileContent.FileContents);
+            Assert.IsTrue(fileContent.FileContents.Length > 0);
+        }
     }
 
     protected void CheckResult<TResult, TOkModel>(ActionResult<TOkModel> result) where TResult : ObjectResult

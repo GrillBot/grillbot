@@ -1,5 +1,4 @@
 ﻿using Discord;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace GrillBot.Data.Models.API.Channels;

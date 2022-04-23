@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Services;
-using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
@@ -19,16 +18,14 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
         var commandService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
-        var interactionService = DiscordHelper.CreateInteractionService();
+        var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandService, loggerFactory, configuration, DbFactory, interactionService);
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
         var fileStorage = FileStorageHelper.Create(configuration);
-        var mapper = AutoMapperHelper.CreateMapper();
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService, mapper);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
         SessionService = new SuggestionSessionService();
-        var guildService = new GuildService(discordClient, DbFactory, mapper);
-        var emoteSuggestionService = new EmoteSuggestionService(SessionService, guildService, DbFactory);
+        var emoteSuggestionService = new EmoteSuggestionService(SessionService, DbFactory);
         var featureSuggestionService = new FeatureSuggestionService(SessionService, configuration, DbFactory);
         var dcClient = DiscordHelper.CreateDiscordClient();
         var suggestionService = new SuggestionService(emoteSuggestionService, featureSuggestionService, dcClient, SessionService);

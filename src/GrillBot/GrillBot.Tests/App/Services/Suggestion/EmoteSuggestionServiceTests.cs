@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Modules.Implementations.Suggestion;
-using GrillBot.App.Services;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Exceptions;
 using System;
@@ -14,11 +13,8 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     protected override EmoteSuggestionService CreateService()
     {
         var sesionService = new SuggestionSessionService();
-        var discordClient = DiscordHelper.CreateClient();
-        var mapper = AutoMapperHelper.CreateMapper();
-        var guildService = new GuildService(discordClient, DbFactory, mapper);
 
-        return new EmoteSuggestionService(sesionService, guildService, DbFactory);
+        return new EmoteSuggestionService(sesionService, DbFactory);
     }
 
     [TestMethod]

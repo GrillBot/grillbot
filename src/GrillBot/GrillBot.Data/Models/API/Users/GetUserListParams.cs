@@ -1,63 +1,74 @@
-﻿using GrillBot.Data.Models.API.Common;
+﻿using GrillBot.Data.Infrastructure.Validation;
+using GrillBot.Data.Models.API.Common;
+using GrillBot.Database;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
-namespace GrillBot.Data.Models.API.Users
+namespace GrillBot.Data.Models.API.Users;
+
+public class GetUserListParams : IQueryableModel<Database.Entity.User>
 {
-    public class GetUserListParams : PaginatedParams
+    /// <summary>
+    /// Username.
+    /// </summary>
+    public string Username { get; set; }
+
+    /// <summary>
+    /// Selected guild.
+    /// </summary>
+    [DiscordId]
+    public string GuildId { get; set; }
+
+    /// <summary>
+    /// Selected flags from UserFlags enum.
+    /// </summary>
+    public long? Flags { get; set; }
+
+    /// <summary>
+    /// Select users that have stored birthday.
+    /// </summary>
+    public bool HaveBirthday { get; set; }
+
+    /// <summary>
+    /// Used invite code
+    /// </summary>
+    public string UsedInviteCode { get; set; }
+
+    public SortParams Sort { get; set; } = new();
+    public PaginatedParams Pagination { get; set; } = new();
+
+    public IQueryable<Database.Entity.User> SetIncludes(IQueryable<Database.Entity.User> query)
     {
-        /// <summary>
-        /// Username.
-        /// </summary>
-        public string Username { get; set; }
+        return query
+            .Include(o => o.Guilds.OrderBy(o => o.Guild.Name)).ThenInclude(o => o.Guild);
+    }
 
-        /// <summary>
-        /// Selected guild.
-        /// </summary>
-        public string GuildId { get; set; }
+    public IQueryable<Database.Entity.User> SetQuery(IQueryable<Database.Entity.User> query)
+    {
+        if (!string.IsNullOrEmpty(Username))
+            query = query.Where(o => o.Username.Contains(Username));
 
-        /// <summary>
-        /// Selected flags from UserFlags enum.
-        /// </summary>
-        public long? Flags { get; set; }
+        if (!string.IsNullOrEmpty(GuildId))
+            query = query.Where(o => o.Guilds.Any(x => x.GuildId == GuildId));
 
-        /// <summary>
-        /// Select users that have stored birthday.
-        /// </summary>
-        public bool HaveBirthday { get; set; }
+        if (Flags != null)
+            query = query.Where(o => (o.Flags & Flags) == Flags);
 
-        /// <summary>
-        /// Sort direction.
-        /// </summary>
-        public bool SortDesc { get; set; }
+        if (HaveBirthday)
+            query = query.Where(o => o.Birthday != null);
 
-        /// <summary>
-        /// Used invite code
-        /// </summary>
-        public string UsedInviteCode { get; set; }
+        if (!string.IsNullOrEmpty(UsedInviteCode))
+            query = query.Where(o => o.Guilds.Any(x => EF.Functions.ILike(x.UsedInviteCode, $"{UsedInviteCode.ToLower()}%")));
 
-        public IQueryable<Database.Entity.User> CreateQuery(IQueryable<Database.Entity.User> query)
+        return query;
+    }
+
+    public IQueryable<Database.Entity.User> SetSort(IQueryable<Database.Entity.User> query)
+    {
+        return Sort.Descending switch
         {
-            if (!string.IsNullOrEmpty(Username))
-                query = query.Where(o => o.Username.Contains(Username));
-
-            if (!string.IsNullOrEmpty(GuildId))
-                query = query.Where(o => o.Guilds.Any(x => x.GuildId == GuildId));
-
-            if (Flags != null)
-                query = query.Where(o => (o.Flags & Flags) == Flags);
-
-            if (HaveBirthday)
-                query = query.Where(o => o.Birthday != null);
-
-            if (!string.IsNullOrEmpty(UsedInviteCode))
-                query = query.Where(o => o.Guilds.Any(x => EF.Functions.ILike(x.UsedInviteCode, $"{UsedInviteCode.ToLower()}%")));
-
-            return SortDesc switch
-            {
-                true => query.OrderByDescending(o => o.Username).ThenByDescending(o => o.Discriminator),
-                _ => query.OrderBy(o => o.Username).ThenBy(o => o.Discriminator)
-            };
-        }
+            true => query.OrderByDescending(o => o.Username).ThenByDescending(o => o.Discriminator),
+            _ => query.OrderBy(o => o.Username).ThenBy(o => o.Discriminator)
+        };
     }
 }

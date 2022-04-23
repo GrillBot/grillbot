@@ -1,4 +1,7 @@
-﻿using GrillBot.App.Services.Reminder;
+﻿using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.MessageCache;
+using GrillBot.App.Services.Reminder;
 using GrillBot.Database.Services;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -13,8 +16,12 @@ public class RemindServiceTests : ServiceTest<RemindService>
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
+        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var fileStorage = FileStorageHelper.Create(configuration);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
 
-        return new RemindService(discordClient, DbFactory, configuration);
+        return new RemindService(discordClient, DbFactory, configuration, auditLogService);
     }
 
     [TestMethod]

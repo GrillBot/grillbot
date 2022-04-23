@@ -1,10 +1,6 @@
-﻿using AutoMapper;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Models.API.Users;
-using System;
-using System.Linq;
 
 namespace GrillBot.Data.Models.API.Guilds;
 
@@ -33,5 +29,7 @@ public class GuildsMappingProfile : AutoMapper.Profile
             })
             .ForMember(dst => dst.MaxBitrate, opt => opt.MapFrom(src => src.MaxBitrate / 1000))
             .ForMember(dst => dst.MaxUploadLimit, opt => opt.MapFrom(src => src.CalculateFileUploadLimit()));
+
+        CreateMap<SocketGuild, Guild>();
     }
 }

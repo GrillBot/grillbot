@@ -166,7 +166,7 @@ public class DataController : Controller
         var commands = CommandService.Modules
             .Where(o => o.Commands.Count > 0 && !o.Preconditions.OfType<TextCommandDeprecatedAttribute>().Any())
             .Select(o => o.Commands.Where(x => !x.Preconditions.OfType<TextCommandDeprecatedAttribute>().Any()))
-            .SelectMany(o => o.Select(x => Configuration.GetValue<string>("Discord:Commands:Prefix") + (x.Aliases[0]?.Trim())).Distinct())
+            .SelectMany(o => o.Select(x => Configuration.GetValue<string>("Discord:Commands:Prefix") + (x.Aliases[0].Trim())).Distinct())
             .Distinct();
 
         var slashCommands = InteractionService.SlashCommands

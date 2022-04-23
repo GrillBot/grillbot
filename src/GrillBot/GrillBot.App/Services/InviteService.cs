@@ -201,18 +201,12 @@ public class InviteService : ServiceBase
         return Task.CompletedTask;
     }
 
-    public async Task<PaginatedResponse<GuildInvite>> GetInviteListAsync(GetInviteListParams parameters, CancellationToken cancellationToken)
+    public async Task<PaginatedResponse<GuildInvite>> GetInviteListAsync(GetInviteListParams parameters, CancellationToken cancellationToken = default)
     {
-        using var dbContext = DbFactory.Create();
+        using var context = DbFactory.Create();
 
-        var query = dbContext.Invites.AsNoTracking()
-            .Include(o => o.Creator.User)
-            .Include(o => o.UsedUsers)
-            .Include(o => o.Guild)
-            .Where(o => o.UsedUsers.Count > 0);
-
-        query = parameters.CreateQuery(query);
+        var query = context.CreateQuery(parameters, true);
         return await PaginatedResponse<GuildInvite>
-            .CreateAsync(query, parameters, entity => Mapper.Map<GuildInvite>(entity), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<GuildInvite>(entity), cancellationToken);
     }
 }

@@ -1,15 +1,13 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Helper;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.RegularExpressions;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
 public class MessageConverter : ConverterBase<IMessage>
 {
-    public static Regex DiscordUriRegex { get; } = new Regex(@"https:\/\/discord\.com\/channels\/(@me|\d*)\/(\d+)\/(\d+)");
-
     public MessageConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
     {
     }
@@ -32,7 +30,7 @@ public class MessageConverter : ConverterBase<IMessage>
         if (!Uri.IsWellFormedUriString(value, UriKind.Absolute))
             throw new FormatException("Zadaná zpráva není ani identifikátor, ani odkaz.");
 
-        var uriMatch = DiscordUriRegex.Match(value);
+        var uriMatch = MessageHelper.DiscordMessageUriRegex.Match(value);
         if (!uriMatch.Success)
             throw new UriFormatException("Zadaný odkaz není ve správném formátu odkazující na Discord zprávu.");
 

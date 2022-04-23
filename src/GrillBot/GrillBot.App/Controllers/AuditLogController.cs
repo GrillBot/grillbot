@@ -17,27 +17,26 @@ namespace GrillBot.App.Controllers;
 [OpenApiTag("Audit log", Description = "Logging")]
 public class AuditLogController : Controller
 {
-    private AuditLogService AuditLogService { get; }
+    private AuditLogApiService ApiService { get; }
 
-    public AuditLogController(AuditLogService auditLogService)
+    public AuditLogController(AuditLogApiService apiService)
     {
-        AuditLogService = auditLogService;
+        ApiService = apiService;
     }
 
     /// <summary>
     /// Removes item from log.
     /// </summary>
     /// <param name="id">Log item ID</param>
-    /// <param name="cancellationToken"></param>
-    /// <response code="200">Success</response>
+    /// <response code="200"></response>
     /// <response code="404">Item not found.</response>
     [HttpDelete("{id}")]
     [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(RemoveItemAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> RemoveItemAsync(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult> RemoveItemAsync(long id)
     {
-        var result = await AuditLogService.RemoveItemAsync(id, cancellationToken);
+        var result = await ApiService.RemoveItemAsync(id);
 
         if (!result)
             return NotFound(new MessageResponse("Požadovaný záznam v logu nebyl nalezen nebo nemáš oprávnění přistoupit k tomuto záznamu."));
@@ -48,15 +47,15 @@ public class AuditLogController : Controller
     /// <summary>
     /// Gets paginated list of audit logs.
     /// </summary>
-    /// <response code="200">Success</response>
-    /// <response code="400">Validation failed.</response>
+    /// <response code="200">Returns paginated list of audit log items.</response>
+    /// <response code="400">Validation of parameters failed.</response>
     [HttpGet]
     [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetAuditLogListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters, CancellationToken cancellationToken)
     {
-        var result = await AuditLogService.GetPaginatedListAsync(parameters, cancellationToken);
+        var result = await ApiService.GetListAsync(parameters, cancellationToken);
         return Ok(result);
     }
 
@@ -73,7 +72,7 @@ public class AuditLogController : Controller
     {
         try
         {
-            var fileInfo = await AuditLogService.GetLogItemFileAsync(id, fileId, cancellationToken);
+            var fileInfo = await ApiService.GetLogItemFileAsync(id, fileId, cancellationToken);
 
             var contentType = new FileExtensionContentTypeProvider()
                 .TryGetContentType(fileInfo.FullName, out var _contentType) ? _contentType : "application/octet-stream";

@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
-using GrillBot.App.Extensions;
 using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Modules.Implementations.Help;
 

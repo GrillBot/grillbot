@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Modules.Implementations.User;
 using GrillBot.App.Services.User;
+using GrillBot.Data.Extensions;
 using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.User;

@@ -28,9 +28,9 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         {
             ChannelId = "12345",
             GuildId = "12345",
-            UserId = "12345",
-            SortDesc = true
+            UserId = "12345"
         };
+        filter.Sort.Descending = true;
 
         var result = await AdminController.GetSearchListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
@@ -43,9 +43,9 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         {
             ChannelId = "12345",
             GuildId = "12345",
-            UserId = "12345",
-            SortDesc = true
+            UserId = "12345"
         };
+        filter.Sort.Descending = true;
 
         var result = await UserController.GetSearchListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);

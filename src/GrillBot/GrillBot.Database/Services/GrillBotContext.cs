@@ -128,17 +128,17 @@ namespace GrillBot.Database.Services
         {
             var query = Set<TEntity>().AsQueryable();
 
-            if (noTracking)
-                query = query.AsNoTracking();
-            if (splitQuery)
-                query = query.AsSplitQuery();
-
             if (parameters != null)
             {
                 query = parameters.SetIncludes(query);
                 query = parameters.SetQuery(query);
                 query = parameters.SetSort(query);
             }
+
+            if (noTracking)
+                query = query.AsNoTracking();
+            if (splitQuery)
+                query = query.AsSplitQuery();
 
             return query;
         }

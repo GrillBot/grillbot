@@ -31,8 +31,8 @@ public partial class AuditLogService : ServiceBase
     }
 
     public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
-        FileStorageFactory storageFactory, DiscordInitializationService initializationService,
-        IMapper mapper) : base(client, dbFactory, initializationService, mapper: mapper)
+        FileStorageFactory storageFactory, DiscordInitializationService initializationService)
+        : base(client, dbFactory, initializationService)
     {
         MessageCache = cache;
         FileStorageFactory = storageFactory;
@@ -133,34 +133,6 @@ public partial class AuditLogService : ServiceBase
         int duration)
     {
         return HandleEventAsync(new ExecutedInteractionCommandEvent(this, command, context, result, duration));
-    }
-
-    public async Task<bool> RemoveItemAsync(long id, CancellationToken cancellationToken)
-    {
-        using var context = DbFactory.Create();
-
-        var item = await context.AuditLogs
-            .Include(o => o.Files)
-            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
-
-        if (item == null) return false;
-        if (item.Files.Count > 0)
-        {
-            var storage = FileStorageFactory.Create("Audit");
-
-            foreach (var file in item.Files)
-            {
-                var fileInfo = await storage.GetFileInfoAsync("DeletedAttachments", file.Filename);
-                if (!fileInfo.Exists) continue;
-
-                fileInfo.Delete();
-            }
-
-            context.RemoveRange(item.Files);
-        }
-
-        context.Remove(item);
-        return (await context.SaveChangesAsync(cancellationToken)) > 0;
     }
 
     /// <summary>

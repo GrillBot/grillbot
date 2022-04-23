@@ -20,9 +20,8 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var storage = FileStorageHelper.Create(configuration);
-        var mapper = AutoMapperHelper.CreateMapper();
 
-        return new AuditLogService(discordClient, DbFactory, messageCache, storage, initializationService, mapper);
+        return new AuditLogService(discordClient, DbFactory, messageCache, storage, initializationService);
     }
 
     [TestMethod]

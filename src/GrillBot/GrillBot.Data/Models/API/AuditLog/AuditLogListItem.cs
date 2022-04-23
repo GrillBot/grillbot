@@ -69,6 +69,7 @@ public class AuditLogListItemMappingProfile : AutoMapper.Profile
                 opt.PreCondition(o => o.ProcessedUser != null || o.ProcessedGuildUser != null);
                 opt.MapFrom(src => src.ProcessedGuildUser != null ? src.ProcessedGuildUser.User : src.ProcessedUser);
             })
-            .ForMember(dst => dst.Data, opt => opt.Ignore());
+            .ForMember(dst => dst.Data, opt => opt.Ignore())
+            .ForMember(dst => dst.Channel, opt => opt.MapFrom(src => src.GuildChannel));
     }
 }

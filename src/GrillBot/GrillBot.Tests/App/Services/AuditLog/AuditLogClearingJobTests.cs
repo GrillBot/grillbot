@@ -24,8 +24,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
-        var mapper = AutoMapperHelper.CreateMapper();
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService, mapper);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
 
         return new AuditLogClearingJob(loggingService, auditLogService, client, DbFactory, configuration, fileStorage, initializationService);
     }

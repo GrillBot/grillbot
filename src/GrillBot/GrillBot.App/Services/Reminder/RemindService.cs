@@ -1,7 +1,9 @@
 ﻿using Discord.Net;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
@@ -12,11 +14,13 @@ namespace GrillBot.App.Services.Reminder;
 public class RemindService : ServiceBase
 {
     private IConfiguration Configuration { get; }
+    private AuditLogService AuditLogService { get; }
 
     public RemindService(DiscordSocketClient client, GrillBotContextFactory dbFactory,
-        IConfiguration configuration) : base(client, dbFactory)
+        IConfiguration configuration, AuditLogService auditLogService) : base(client, dbFactory)
     {
         Configuration = configuration;
+        AuditLogService = auditLogService;
     }
 
     public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
@@ -145,12 +149,12 @@ public class RemindService : ServiceBase
     /// <summary>
     /// Service cancellation of remind.
     /// </summary>
-    public async Task ServiceCancellationAsync(long id, ClaimsPrincipal loggedUser, bool notify = false, CancellationToken cancellationToken = default)
+    public async Task ServiceCancellationAsync(long id, ClaimsPrincipal loggedUser, bool notify = false)
     {
         using var context = DbFactory.Create();
 
         var remind = await context.Reminders.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Id == id);
 
         if (remind == null) throw new NotFoundException("Požadované upozornění neexistuje.");
         if (!string.IsNullOrEmpty(remind.RemindMessageId)) throw new InvalidOperationException("Nelze zrušit již zrušené oznámení.");
@@ -159,15 +163,15 @@ public class RemindService : ServiceBase
         if (notify)
             messageId = await SendNotificationMessageAsync(remind, true);
 
-        var loggedUserId = loggedUser.GetUserId();
-        var loggedUserEntity = await DiscordClient.FindUserAsync(loggedUserId, cancellationToken);
-        await context.InitUserAsync(loggedUserEntity, cancellationToken);
-        var logItem = AuditLogItem.Create(AuditLogItemType.Info, null, null, loggedUserEntity,
-            $"{loggedUserEntity.GetDisplayName()} stornoval upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim(), null);
-        await context.AddAsync(logItem, cancellationToken);
+        var logItem = new AuditLogDataWrapper(
+            AuditLogItemType.Info,
+            $"Bylo stornováno upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim(),
+            null, null, await DiscordClient.FindUserAsync(loggedUser.GetUserId())
+        );
+        await AuditLogService.StoreItemAsync(logItem);
 
         remind.RemindMessageId = messageId.ToString();
-        await context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync();
     }
 
     private async Task<ulong> SendNotificationMessageAsync(RemindMessage remind, bool force = false)

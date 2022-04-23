@@ -1,4 +1,6 @@
-﻿namespace GrillBot.App.Extensions.Discord
+﻿using GrillBot.Data.Extensions;
+
+namespace GrillBot.App.Extensions.Discord
 {
     static public class DiscordClientExtensions
     {

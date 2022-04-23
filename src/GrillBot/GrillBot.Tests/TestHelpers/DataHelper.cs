@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Moq;
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.TestHelpers;
@@ -59,7 +60,7 @@ public static class DataHelper
         return mock.Object;
     }
 
-    public static IGuild CreateGuild()
+    public static IGuild CreateGuild(Action<Mock<IGuild>> setup = null)
     {
         var mock = new Mock<IGuild>();
         mock.Setup(o => o.Id).Returns(Id);
@@ -67,9 +68,10 @@ public static class DataHelper
         mock.Setup(o => o.Roles).Returns(new List<IRole>() { CreateRole() });
 
         var channel = CreateTextChannel();
-        mock.Setup(o => o.GetTextChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.FromResult(channel));
+        mock.Setup(o => o.GetTextChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(channel));
+        mock.Setup(o => o.GetTextChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(new List<ITextChannel>() { channel }.AsReadOnly() as IReadOnlyCollection<ITextChannel>));
 
+        setup?.Invoke(mock);
         return mock.Object;
     }
 
@@ -95,6 +97,7 @@ public static class DataHelper
     {
         var mock = new Mock<ISelfUser>();
 
+        mock.Setup(o => o.Id).Returns(1234567890);
         mock.Setup(o => o.IsBot).Returns(true);
         mock.Setup(o => o.Username).Returns("Bot");
         mock.Setup(o => o.Discriminator).Returns("1111");

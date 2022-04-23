@@ -13,12 +13,10 @@ namespace GrillBot.App.Services.Suggestion;
 public class EmoteSuggestionService : ServiceBase
 {
     private SuggestionSessionService SessionService { get; }
-    private GuildService GuildService { get; }
 
-    public EmoteSuggestionService(SuggestionSessionService sessionService, GuildService guildService, GrillBotContextFactory dbFactory) : base(null, dbFactory, null, null)
+    public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotContextFactory dbFactory) : base(null, dbFactory, null, null)
     {
         SessionService = sessionService;
-        GuildService = guildService;
     }
 
     public void InitSession(string suggestionId, object data)
@@ -72,7 +70,8 @@ public class EmoteSuggestionService : ServiceBase
 
         try
         {
-            var guildData = await GuildService.GetGuildAsync(guild.Id);
+            using var dbContext = DbFactory.Create();
+            var guildData = await dbContext.Guilds.FirstOrDefaultAsync(o => o.Id == guild.Id.ToString());
 
             if (string.IsNullOrEmpty(guildData.EmoteSuggestionChannelId))
                 throw new ValidationException("Tvůj návrh na emote byl zařazen ke zpracování, ale kvůli technickým důvodům jej nelze nyní zpracovat.");

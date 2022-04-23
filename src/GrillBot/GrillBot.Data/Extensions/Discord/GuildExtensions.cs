@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GrillBot.Data.Extensions.Discord;
 
@@ -79,5 +80,13 @@ static public class GuildExtensions
             .Select(o => o as SocketGuildChannel)
             .Where(o => o != null)
             .Concat(guild.VoiceChannels.Where(o => o.HaveAccess(user)));
+    }
+
+    public static async Task<List<IGuildChannel>> GetAvailableChannelsAsync(this IGuild guild, IGuildUser user, bool onlyText = false)
+    {
+        var allChannels = (onlyText ? (await guild.GetTextChannelsAsync()).OfType<IGuildChannel>().ToList() : (await guild.GetChannelsAsync()).ToList())
+            .Where(o => o is not IThreadChannel);
+
+        return await allChannels.FindAllAsync(o => o.HaveAccessAsync(user));
     }
 }

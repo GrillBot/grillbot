@@ -20,7 +20,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var mapper = AutoMapperHelper.CreateMapper();
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService, mapper);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
         var service = new InviteService(discordClient, DbFactory, auditLogService, mapper);
 
         return new InviteController(service);

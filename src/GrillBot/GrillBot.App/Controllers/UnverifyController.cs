@@ -8,8 +8,6 @@ using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Exceptions;
 using AutoMapper;
-using GrillBot.Database.Enums;
-using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.Data.Models.API.Guilds;
 
 namespace GrillBot.App.Controllers;

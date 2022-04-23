@@ -91,10 +91,16 @@ public class SearchingService : ServiceBase
         {
             ChannelId = channel.Id.ToString(),
             GuildId = guild.Id.ToString(),
-            Page = page + 1,
-            PageSize = EmbedBuilder.MaxFieldCount,
-            SortDesc = false,
-            SortBy = "Id",
+            Pagination = new()
+            {
+                Page = page + 1,
+                PageSize = EmbedBuilder.MaxFieldCount
+            },
+            Sort = new()
+            {
+                OrderBy = "Id",
+                Descending = false
+            },
             MessageQuery = messageQuery
         };
 
@@ -111,40 +117,21 @@ public class SearchingService : ServiceBase
     public async Task<List<SearchingListItem>> GetListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser,
         CancellationToken cancellationToken)
     {
-        using var context = DbFactory.Create();
-
-        var query = context.SearchItems
-            .Include(o => o.Channel)
-            .Include(o => o.Guild)
-            .Include(o => o.User)
-            .Where(o => o.Channel.ChannelType != ChannelType.DM)
-            .AsQueryable();
-
         if (loggedUser?.HaveUserPermission() == true)
         {
             var loggedUserId = loggedUser.GetUserId();
-            var mutualGuilds = DiscordClient.FindMutualGuilds(loggedUserId).ToList();
+            var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
 
             if (!string.IsNullOrEmpty(parameters.GuildId) && !mutualGuilds.Any(o => o.Id.ToString() == parameters.GuildId))
                 parameters.GuildId = null;
 
             parameters.UserId = loggedUserId.ToString();
-
-            if (!string.IsNullOrEmpty(parameters.GuildId))
-            {
-                query = parameters.CreateQuery(query);
-            }
-            else
-            {
-                var mutualGuildIds = mutualGuilds.ConvertAll(o => o.Id.ToString());
-                query = parameters.CreateQuery(query).Where(o => mutualGuildIds.Contains(o.GuildId));
-            }
-        }
-        else
-        {
-            query = parameters.CreateQuery(query);
+            parameters.MutualGuilds = mutualGuilds.ConvertAll(o => o.Id.ToString());
         }
 
+        using var context = DbFactory.Create();
+
+        var query = context.CreateQuery(parameters);
         var data = await query.ToListAsync(cancellationToken);
 
         var results = new List<SearchingListItem>();
@@ -190,7 +177,7 @@ public class SearchingService : ServiceBase
         CancellationToken cancellationToken)
     {
         var results = await GetListAsync(parameters, loggedUser, cancellationToken);
-        return PaginatedResponse<SearchingListItem>.Create(results, parameters);
+        return PaginatedResponse<SearchingListItem>.Create(results, parameters.Pagination);
     }
 
     public async Task<int> GetItemsCountAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser,
@@ -206,10 +193,16 @@ public class SearchingService : ServiceBase
         {
             ChannelId = channel.Id.ToString(),
             GuildId = guild.Id.ToString(),
-            Page = 1,
-            PageSize = EmbedBuilder.MaxFieldCount,
-            SortDesc = false,
-            SortBy = "Id",
+            Pagination = new()
+            {
+                Page = 1,
+                PageSize = EmbedBuilder.MaxFieldCount
+            },
+            Sort = new()
+            {
+                Descending = false,
+                OrderBy = "Id"
+            },
             MessageQuery = messageQuery
         };
 

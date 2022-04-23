@@ -4,6 +4,7 @@ using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -80,14 +81,17 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     {
         var filter = new UnverifyLogParams()
         {
-            CreatedFrom = DateTime.MinValue,
-            CreatedTo = DateTime.MaxValue,
+            Created = new()
+            {
+                From = DateTime.MinValue,
+                To = DateTime.MaxValue
+            },
             FromUserId = "1",
             GuildId = "1",
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
-            SortDesc = true,
             ToUserId = "1"
         };
+        filter.Sort.Descending = true;
 
         var result = await AdminController.GetUnverifyLogsAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
@@ -199,14 +203,17 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     {
         var filter = new UnverifyLogParams()
         {
-            CreatedFrom = DateTime.MinValue,
-            CreatedTo = DateTime.MaxValue,
+            Created = new()
+            {
+                From = DateTime.MinValue,
+                To = DateTime.MaxValue
+            },
             FromUserId = "1",
             GuildId = "1",
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
-            SortDesc = true,
             ToUserId = "1"
         };
+        filter.Sort.Descending = true;
 
         var result = await UserController.GetUnverifyLogsAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);

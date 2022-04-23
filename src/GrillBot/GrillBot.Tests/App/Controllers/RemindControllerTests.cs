@@ -1,8 +1,12 @@
 ﻿using GrillBot.App.Controllers;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Discord;
+using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Frameworks;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -15,10 +19,15 @@ public class RemindControllerTests : ControllerTest<ReminderController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var remindService = new RemindService(discordClient, DbFactory, configuration);
+        var fileStorage = FileStorageHelper.Create(configuration);
+        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
+        var remindService = new RemindService(discordClient, DbFactory, configuration, auditLogService);
         var mapper = AutoMapperHelper.CreateMapper();
+        var apiService = new RemindApiService(DbFactory, mapper);
 
-        return new ReminderController(DbContext, remindService, mapper);
+        return new ReminderController(remindService, apiService);
     }
 
     [TestMethod]
@@ -44,8 +53,11 @@ public class RemindControllerTests : ControllerTest<ReminderController>
             OnlyWaiting = true,
             OriginalMessageId = "12345",
             ToUserId = "12345",
-            SortBy = "touser",
-            SortDesc = true
+            Sort = new()
+            {
+                OrderBy = "ToUser",
+                Descending = true
+            }
         };
 
         var result = await AdminController.GetRemindMessagesListAsync(filter, CancellationToken.None);
@@ -71,8 +83,6 @@ public class RemindControllerTests : ControllerTest<ReminderController>
     }
 
     [TestMethod]
-    [ExpectedException(typeof(NullReferenceException))] // NullReference is here correct, because cannot get discord user without connection.
-    [ExcludeFromCodeCoverage]
     public async Task CancelRemindAsync_Success()
     {
         await DbContext.AddAsync(new Database.Entity.RemindMessage() { At = DateTime.MaxValue, FromUserId = "12345", ToUserId = "12345", Message = "Test", Id = 1 });
@@ -80,6 +90,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         await DbContext.SaveChangesAsync();
 
         await AdminController.CancelRemindAsync(1, false);
+        Assert.IsTrue(true);
     }
 
     [TestMethod]
@@ -89,7 +100,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { SortDesc = true, SortBy = "at" }, CancellationToken.None);
+        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { Sort = new() { Descending = true, OrderBy = "At" } }, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 
@@ -100,7 +111,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "User", Discriminator = "12345" });
         await DbContext.SaveChangesAsync();
 
-        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { SortDesc = true, SortBy = "ToUser" }, CancellationToken.None);
+        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { Sort = new() { Descending = true, OrderBy = "ToUser" } }, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 }

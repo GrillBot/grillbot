@@ -110,7 +110,6 @@ public class Startup
             .AddCommandsHelp()
             .AddSingleton<PermissionsService>()
             .AddSingleton<UserService>()
-            .AddSingleton<GuildService>()
             .AddServices();
 
         services

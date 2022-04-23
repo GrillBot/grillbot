@@ -12,9 +12,9 @@ public class DataControllerTests : ControllerTest<DataController>
     protected override DataController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var commandsService = DiscordHelper.CreateCommandsService();
+        var commandsService = DiscordHelper.CreateCommandsService(true);
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var interactions = DiscordHelper.CreateInteractionService(discordClient);
+        var interactions = DiscordHelper.CreateInteractionService(discordClient, true);
         var mapper = AutoMapperHelper.CreateMapper();
         var emotesCache = new EmotesCacheService(discordClient);
 

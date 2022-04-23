@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using GrillBot.App.Services;
+﻿using GrillBot.App.Services.Guild;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
@@ -16,45 +15,25 @@ namespace GrillBot.App.Controllers;
 [OpenApiTag("Guilds", Description = "Guild management")]
 public class GuildController : Controller
 {
-    private GrillBotContext DbContext { get; }
-    private DiscordSocketClient DiscordClient { get; }
-    private GuildService GuildService { get; }
-    private IMapper Mapper { get; }
+    private GuildApiService ApiService { get; }
 
-    public GuildController(GrillBotContext dbContext, DiscordSocketClient discordClient, GuildService guildService,
-        IMapper mapper)
+    public GuildController(GuildApiService apiService)
     {
-        DbContext = dbContext;
-        DiscordClient = discordClient;
-        GuildService = guildService;
-        Mapper = mapper;
+        ApiService = apiService;
     }
 
     /// <summary>
-    /// Gets paginated list of guilds.
+    /// Get paginated list of guilds.
     /// </summary>
-    /// <response code="200">Success</response>
-    /// <response code="400">Validation failed</response>
+    /// <response code="200">Return paginated list of guilds in DB.</response>
+    /// <response code="400">Validation of parameters failed.</response>
     [HttpGet]
     [OpenApiOperation(nameof(GuildController) + "_" + nameof(GetGuildListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromQuery] GetGuildListParams parameters, CancellationToken cancellationToken)
     {
-        var query = parameters.CreateQuery(
-            DbContext.Guilds.AsNoTracking().OrderBy(o => o.Name)
-        );
-        var result = await PaginatedResponse<Guild>.CreateAsync(query, parameters, entity => Mapper.Map<Guild>(entity), cancellationToken);
-
-        foreach (var guildData in result.Data)
-        {
-            var guild = DiscordClient.GetGuild(Convert.ToUInt64(guildData.Id));
-            if (guild == null) continue;
-
-            guildData.MemberCount = guild.MemberCount;
-            guildData.IsConnected = guild.IsConnected;
-        }
-
+        var result = await ApiService.GetListAsync(parameters, cancellationToken);
         return Ok(result);
     }
 
@@ -69,7 +48,7 @@ public class GuildController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id, CancellationToken cancellationToken)
     {
-        var guildDetail = await GuildService.GetGuildDetailAsync(id, cancellationToken);
+        var guildDetail = await ApiService.GetDetailAsync(id, cancellationToken);
         if (guildDetail == null)
             return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
 
@@ -79,43 +58,27 @@ public class GuildController : Controller
     /// <summary>
     /// Updates guild
     /// </summary>
-    /// <response code="200">Success</response>
-    /// <response code="400">Validation failed.</response>
+    /// <response code="200">Return guild detail.</response>
+    /// <response code="400">Validation of parameters failed.</response>
     /// <response code="404">Guild not found.</response>
     [HttpPut("{id}")]
     [OpenApiOperation(nameof(GuildController) + "_" + nameof(GetGuildDetailAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams updateGuildParams, CancellationToken cancellationToken)
+    public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams parameters)
     {
-        var guild = DiscordClient.GetGuild(id);
+        var result = await ApiService.UpdateGuildAsync(id, parameters, ModelState);
 
-        if (guild == null)
+        if (result == null)
+        {
             return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
-
-        var dbGuild = await DbContext.Guilds.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
-
-        if (updateGuildParams.AdminChannelId != null && guild.GetTextChannel(Convert.ToUInt64(updateGuildParams.AdminChannelId)) == null)
-            ModelState.AddModelError(nameof(updateGuildParams.AdminChannelId), "Nepodařilo se dohledat administrátorský kanál");
-        else
-            dbGuild.AdminChannelId = updateGuildParams.AdminChannelId;
-
-        if (updateGuildParams.MuteRoleId != null && guild.GetRole(Convert.ToUInt64(updateGuildParams.MuteRoleId)) == null)
-            ModelState.AddModelError(nameof(updateGuildParams.MuteRoleId), "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.");
-        else
-            dbGuild.MuteRoleId = updateGuildParams.MuteRoleId;
-
-        if (updateGuildParams.EmoteSuggestionChannelId != null && guild.GetTextChannel(Convert.ToUInt64(updateGuildParams.EmoteSuggestionChannelId)) == null)
-            ModelState.AddModelError(nameof(updateGuildParams.EmoteSuggestionChannelId), "Nepodařilo se dohledat kanál pro návrhy emotů.");
-        else
-            dbGuild.EmoteSuggestionChannelId = updateGuildParams.EmoteSuggestionChannelId;
-
-        if (!ModelState.IsValid)
+        }
+        else if (!ModelState.IsValid)
+        {
             return BadRequest(new ValidationProblemDetails(ModelState));
+        }
 
-        await DbContext.SaveChangesAsync(cancellationToken);
-        return Ok(await GuildService.GetGuildDetailAsync(id, cancellationToken));
+        return Ok(result);
     }
 }

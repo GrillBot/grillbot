@@ -37,15 +37,15 @@ public class ChannelsMappingProfile : AutoMapper.Profile
                 opt.MapFrom(src => src.Users.Sum(o => o.Count));
             });
 
-        CreateMap<SocketGuildChannel, GuildChannelListItem>()
+        CreateMap<IGuildChannel, GuildChannelListItem>()
             .ForMember(dst => dst.RolePermissionCount, opt =>
             {
-                opt.PreCondition(src => src is not SocketThreadChannel && src.PermissionOverwrites != null);
-                opt.MapFrom(src => src.PermissionOverwrites.Where(o => o.TargetId != src.Guild.EveryoneRole.Id).Count(o => o.TargetType == PermissionTarget.Role));
+                opt.PreCondition(src => src is not IThreadChannel && src.PermissionOverwrites != null);
+                opt.MapFrom(src => src.PermissionOverwrites.Count(o => o.TargetId != src.Guild.EveryoneRole.Id && o.TargetType == PermissionTarget.Role));
             })
             .ForMember(dst => dst.UserPermissionCount, opt =>
             {
-                opt.PreCondition(src => src is not SocketThreadChannel && src.PermissionOverwrites != null);
+                opt.PreCondition(src => src is not IThreadChannel && src.PermissionOverwrites != null);
                 opt.MapFrom(src => src.PermissionOverwrites.Count(o => o.TargetType == PermissionTarget.User));
             });
 

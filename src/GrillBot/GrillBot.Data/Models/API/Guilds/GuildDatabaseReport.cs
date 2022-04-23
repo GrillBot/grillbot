@@ -9,4 +9,5 @@ public class GuildDatabaseReport
     public int Unverifies { get; set; }
     public int UnverifyLogs { get; set; }
     public int AuditLogs { get; set; }
+    public int CacheIndexes { get; set; }
 }

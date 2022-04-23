@@ -31,7 +31,14 @@ public static class ConfigurationHelper
                 { "Discord:Emotes:Online", "<:Online:856875667379585034>" },
                 { "Discord:Emotes:Offline", "<:Offline:856875666842583040>" },
                 { "Discord:Emotes:DoNotDisturb", "<:DoNotDisturb:856879762282774538>" },
-                { "Discord:Emotes:Idle", "<:Idle:856879314997346344>" }
+                { "Discord:Emotes:Idle", "<:Idle:856879314997346344>" },
+                { "Discord:MessageCache:Period", "00:00:00" },
+                { "AuditLog:CleaningCron", "00:00:00" },
+                { "Reminder:CronJob", "00:00:00" },
+                { "Birthday:Cron", "0 0 8 * * ?" },
+                { "Unverify:CheckPeriodTime", "00:00:00" },
+                { "OnlineUsersCheckPeriodTime", "00:00:00" },
+                { "SuggestionsCleaningInterval", "00:00:00" },
             });
 
         if (externalConfiguration != null)

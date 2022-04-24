@@ -18,17 +18,15 @@ namespace GrillBot.App.Controllers;
 public class UnverifyController : Controller
 {
     private UnverifyService UnverifyService { get; }
-    private DiscordSocketClient DiscordClient { get; }
-    private GrillBotContext DbContext { get; }
+    private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
     private UnverifyApiService UnverifyApiService { get; }
 
-    public UnverifyController(UnverifyService unverifyService, DiscordSocketClient discordSocketClient,
-        GrillBotContext dbContext, IMapper mapper, UnverifyApiService unverifyApiService)
+    public UnverifyController(UnverifyService unverifyService, IDiscordClient discordClient,
+        IMapper mapper, UnverifyApiService unverifyApiService)
     {
         UnverifyService = unverifyService;
-        DiscordClient = discordSocketClient;
-        DbContext = dbContext;
+        DiscordClient = discordClient;
         Mapper = mapper;
         UnverifyApiService = unverifyApiService;
     }
@@ -71,18 +69,17 @@ public class UnverifyController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId)
     {
-        var guild = DiscordClient.GetGuild(guildId);
+        var guild = await DiscordClient.GetGuildAsync(guildId);
 
         if (guild == null)
             return NotFound(new MessageResponse("Server na kterém by se mělo nacházet unverify nebyl nalezen."));
 
         await guild.DownloadUsersAsync();
-        var toUser = guild.GetUser(userId);
+        var toUser = await guild.GetUserAsync(userId);
         if (toUser == null)
             return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
-        var fromUserId = User.GetUserId();
-        var fromUser = guild.GetUser(fromUserId);
+        var fromUser = await guild.GetUserAsync(User.GetUserId());
         var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, false);
         return Ok(new MessageResponse(result));
     }
@@ -101,17 +98,17 @@ public class UnverifyController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<MessageResponse>> UpdateUnverifyTimeAsync(ulong guildId, ulong userId, [FromQuery, Required] DateTime endTime)
     {
-        var guild = DiscordClient.GetGuild(guildId);
+        var guild = await DiscordClient.GetGuildAsync(guildId);
 
         if (guild == null)
             return NotFound(new MessageResponse("Server na kterém by se mělo nacházet unverify nebyl nalezen."));
 
         await guild.DownloadUsersAsync();
-        var toUser = guild.GetUser(userId);
+        var toUser = await guild.GetUserAsync(userId);
         if (toUser == null)
             return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
-        var fromUser = guild.GetUser(User.GetUserId());
+        var fromUser = await guild.GetUserAsync(User.GetUserId());
         var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser);
         return Ok(new MessageResponse(result));
     }

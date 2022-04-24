@@ -130,11 +130,12 @@ namespace GrillBot.App.Services.Unverify
             return Logger.LogUnverifyAsync(profile, guild, from);
         }
 
-        public async Task<string> UpdateUnverifyAsync(IGuildUser user, SocketGuild guild, DateTime newEnd, IGuildUser fromUser)
+        public async Task<string> UpdateUnverifyAsync(IGuildUser user, IGuild guild, DateTime newEnd, IGuildUser fromUser)
         {
             using var context = DbFactory.Create();
 
-            var dbUser = await context.GuildUsers.Include(o => o.Unverify)
+            var dbUser = await context.GuildUsers
+                .Include(o => o.Unverify)
                 .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
 
             if (dbUser?.Unverify == null)
@@ -162,14 +163,14 @@ namespace GrillBot.App.Services.Unverify
             return UnverifyMessageGenerator.CreateUpdateChannelMessage(user, newEnd);
         }
 
-        public async Task<string> RemoveUnverifyAsync(SocketGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false)
+        public async Task<string> RemoveUnverifyAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false)
         {
             try
             {
                 using var context = DbFactory.Create();
 
                 var dbUser = await context.GuildUsers
-                    .Include(o => o.Unverify).ThenInclude(o => o.UnverifyLog)
+                    .Include(o => o.Unverify.UnverifyLog)
                     .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == toUser.Id.ToString());
 
                 if (dbUser?.Unverify == null)

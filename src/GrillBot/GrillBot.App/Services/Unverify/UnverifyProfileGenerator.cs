@@ -25,7 +25,7 @@ namespace GrillBot.App.Services.Unverify
             return profile;
         }
 
-        public UnverifyUserProfile Reconstruct(GrillBot.Database.Entity.Unverify unverify, IGuildUser toUser, SocketGuild guild)
+        public UnverifyUserProfile Reconstruct(Database.Entity.Unverify unverify, IGuildUser toUser, IGuild guild)
         {
             var logData = JsonConvert.DeserializeObject<UnverifyLogSet>(unverify.UnverifyLog.Data);
 
@@ -34,8 +34,8 @@ namespace GrillBot.App.Services.Unverify
                 ChannelsToKeep = logData.ChannelsToKeep,
                 ChannelsToRemove = logData.ChannelsToRemove,
                 Reason = logData.Reason,
-                RolesToKeep = logData.RolesToKeep.Select(o => guild.GetRole(o) as IRole).Where(o => o != null).ToList(),
-                RolesToRemove = logData.RolesToRemove.Select(o => guild.GetRole(o) as IRole).Where(o => o != null).ToList()
+                RolesToKeep = logData.RolesToKeep.Select(o => guild.GetRole(o)).Where(o => o != null).ToList(),
+                RolesToRemove = logData.RolesToRemove.Select(o => guild.GetRole(o)).Where(o => o != null).ToList()
             };
         }
 

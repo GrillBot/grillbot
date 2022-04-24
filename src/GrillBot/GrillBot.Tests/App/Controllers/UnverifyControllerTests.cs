@@ -4,7 +4,6 @@ using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
-using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -30,7 +29,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var dcClient = DiscordHelper.CreateDiscordClient();
         var unverifyApiService = new UnverifyApiService(DbFactory, mapper, dcClient);
 
-        return new UnverifyController(unverifyService, discordClient, DbContext, mapper, unverifyApiService);
+        return new UnverifyController(unverifyService, dcClient, mapper, unverifyApiService);
     }
 
     [TestMethod]

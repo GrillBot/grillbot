@@ -34,15 +34,14 @@ namespace GrillBot.Data.Models.Unverify
 
         public Task ReturnRolesAsync(RequestOptions options = null) => Destination.AddRolesAsync(RolesToRemove, options);
 
-        public async Task ReturnChannelsAsync(SocketGuild guild, RequestOptions options = null)
+        public async Task ReturnChannelsAsync(IGuild guild, RequestOptions options = null)
         {
-            var channels = ChannelsToRemove
-                .Select(o => new { Channel = guild.GetChannel(o.ChannelId), Perms = o.Permissions })
-                .Where(o => o.Channel != null);
-
-            foreach (var channel in channels)
+            foreach (var channelToRemove in ChannelsToRemove)
             {
-                await channel.Channel.AddPermissionOverwriteAsync(Destination, channel.Perms, options);
+                var channel = await guild.GetChannelAsync(channelToRemove.ChannelId, options: options);
+                if (channel == null) continue;
+
+                await channel.AddPermissionOverwriteAsync(Destination, channelToRemove.Permissions, options);
             }
         }
 

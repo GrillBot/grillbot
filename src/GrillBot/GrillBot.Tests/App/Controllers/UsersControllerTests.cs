@@ -1,7 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Controllers;
-using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Channels;
 using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
@@ -10,8 +10,6 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Mvc;
-using Moq;
-using Namotion.Reflection;
 using System;
 
 namespace GrillBot.Tests.App.Controllers;

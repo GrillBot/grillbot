@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Data.Helpers;
 
-namespace GrillBot.App.Services;
+namespace GrillBot.App.Services.Channels;
 
 [Initializable]
 public class ChannelService : ServiceBase

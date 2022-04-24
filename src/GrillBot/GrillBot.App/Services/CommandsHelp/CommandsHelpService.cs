@@ -2,6 +2,7 @@
 using GrillBot.Data.Models.API.Help;
 using GrillBot.App.Helpers;
 using GrillBot.Data.Extensions;
+using GrillBot.App.Services.Channels;
 
 namespace GrillBot.App.Services.CommandsHelp;
 

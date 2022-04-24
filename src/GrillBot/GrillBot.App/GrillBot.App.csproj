@@ -8,12 +8,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>GrillBot.App.xml</DocumentationFile>
-    <NoWarn>1701;1702;1591;1090</NoWarn>
+    <NoWarn>1701;1702;1591;1090;S1172</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>GrillBot.App.xml</DocumentationFile>
-    <NoWarn>1701;1702;1591;1090</NoWarn>
+    <NoWarn>1701;1702;1591;1090;S1172</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

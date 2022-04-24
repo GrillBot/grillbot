@@ -78,42 +78,17 @@ public class Startup
             .AddSingleton<IDiscordClient>(discordClient)
             .AddSingleton(new CommandService(commandsConfig))
             .AddSingleton(container => new InteractionService(container.GetRequiredService<DiscordSocketClient>(), interactionsConfig))
-            .AddSingleton<DiscordSyncService>()
-            .AddSingleton<LoggingService>()
-            .AddSingleton<MessageCache>()
-            .AddSingleton<FileStorageFactory>()
-            .AddSingleton<RandomizationService>()
             .AddDatabase(connectionString)
             .AddMemoryCache()
+            .AddAutoMapper(typeof(Startup).Assembly, typeof(Emojis).Assembly, typeof(GrillBotContext).Assembly)
             .AddControllers(c => c.Filters.Add<OperationCancelledExceptionFilterAttribute>())
             .AddNewtonsoftJson();
 
         services
-            .AddSingleton<InviteService>()
-            .AddSingleton<AutoReplyService>()
-            .AddSingleton<ChannelService>()
             .AddSingleton<CommandHandler>()
             .AddSingleton<ReactionHandler>()
-            .AddSingleton<AuditLogService>()
-            .AddSingleton<PointsService>()
-            .AddSingleton<EmoteService>()
-            .AddSingleton<EmoteChainService>()
-            .AddSingleton<SearchingService>()
-            .AddSingleton<RemindService>()
-            .AddSingleton<BirthdayService>()
-            .AddUnverify()
-            .AddSingleton<BoosterService>()
-            .AddSingleton<OAuth2Service>()
-            .AddSingleton<DiscordInitializationService>()
-            .AddSingleton<MockingService>()
             .AddSingleton<InteractionHandler>()
-            .AddCommandsHelp()
-            .AddSingleton<PermissionsService>()
-            .AddSingleton<UserService>()
             .AddServices();
-
-        services
-            .AddAutoMapper(typeof(Startup).Assembly, typeof(Emojis).Assembly, typeof(GrillBotContext).Assembly);
 
         ReflectionHelper.GetAllReactionEventHandlers().ToList()
             .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));

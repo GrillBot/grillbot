@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using GrillBot.Data.Extensions;
+using System.Security.Claims;
 
 namespace GrillBot.App.Extensions
 {
@@ -8,7 +9,7 @@ namespace GrillBot.App.Extensions
         {
             if (user?.Identity == null) return default;
             var identifier = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            return string.IsNullOrEmpty(identifier) ? default : Convert.ToUInt64(identifier);
+            return string.IsNullOrEmpty(identifier) ? default : identifier.ToUlong();
         }
 
         public static string GetUserRole(this ClaimsPrincipal user) => user.FindFirstValue(ClaimTypes.Role);

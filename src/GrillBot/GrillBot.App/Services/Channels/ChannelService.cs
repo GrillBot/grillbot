@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Helpers;
 
 namespace GrillBot.App.Services.Channels;
@@ -116,7 +117,7 @@ public class ChannelService : ServiceBase
         var channels = new List<SocketTextChannel>();
         foreach (var channelId in channelIds)
         {
-            if ((await guild.GetTextChannelAsync(Convert.ToUInt64(channelId))) is SocketTextChannel channel) channels.Add(channel);
+            if ((await guild.GetTextChannelAsync(channelId.ToUlong())) is SocketTextChannel channel) channels.Add(channel);
         }
 
         return channels;

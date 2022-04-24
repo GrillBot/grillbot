@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Helper;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
@@ -35,14 +36,14 @@ public class ChannelApiService : ServiceBase
 
     private async Task<GuildChannelListItem> MapChannelAsync(Database.Entity.GuildChannel entity, CancellationToken cancellationToken = default)
     {
-        var guild = await DcClient.GetGuildAsync(Convert.ToUInt64(entity.GuildId));
-        var guildChannel = guild != null ? await guild.GetChannelAsync(Convert.ToUInt64(entity.ChannelId)) : null;
+        var guild = await DcClient.GetGuildAsync(entity.GuildId.ToUlong(), options: new() { CancelToken = cancellationToken });
+        var guildChannel = guild != null ? await guild.GetChannelAsync(entity.ChannelId.ToUlong()) : null;
 
         var result = Mapper.Map<GuildChannelListItem>(entity);
         if (guildChannel != null)
         {
             result = Mapper.Map(guildChannel, result);
-            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: Convert.ToUInt64(entity.ChannelId), cancellationToken: cancellationToken);
+            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: entity.ChannelId.ToUlong(), cancellationToken: cancellationToken);
         }
 
         if (result.FirstMessageAt == DateTime.MinValue) result.FirstMessageAt = null;
@@ -65,12 +66,12 @@ public class ChannelApiService : ServiceBase
 
         var result = Mapper.Map<ChannelDetail>(channel);
 
-        var guild = await DcClient.GetGuildAsync(Convert.ToUInt64(channel.GuildId));
-        var guildChannel = guild != null ? await guild.GetChannelAsync(Convert.ToUInt64(channel.ChannelId)) : null;
+        var guild = await DcClient.GetGuildAsync(channel.GuildId.ToUlong());
+        var guildChannel = guild != null ? await guild.GetChannelAsync(channel.ChannelId.ToUlong()) : null;
         if (guildChannel != null)
         {
             result = Mapper.Map(guildChannel, result);
-            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: Convert.ToUInt64(channel.ChannelId), cancellationToken: cancellationToken);
+            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: channel.ChannelId.ToUlong(), cancellationToken: cancellationToken);
         }
 
         return result;

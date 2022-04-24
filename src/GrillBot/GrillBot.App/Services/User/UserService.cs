@@ -102,7 +102,7 @@ public class UserService : ServiceBase
         {
             var invite = baseData.UsedInvite;
             bool isVanity = invite.Code == guild.VanityURLCode;
-            var creator = isVanity ? null : await DiscordClient.FindUserAsync(Convert.ToUInt64(invite.CreatorId));
+            var creator = isVanity ? null : await DiscordClient.FindUserAsync(invite.CreatorId.ToUlong());
 
             embed.AddField(
                 "Použitá pozvánka",

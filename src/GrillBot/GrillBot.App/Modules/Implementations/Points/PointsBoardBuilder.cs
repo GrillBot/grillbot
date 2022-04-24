@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 
 namespace GrillBot.App.Modules.Implementations.Points;
@@ -19,7 +20,7 @@ public class PointsBoardBuilder : EmbedBuilder
 
         WithDescription(string.Join("\n", data.Select((o, i) =>
         {
-            var user = userFinder(Convert.ToUInt64(o.Key));
+            var user = userFinder(o.Key.ToUlong());
             return $"**{i + skip + 1,2}.** {(user == null ? "*(Neznámý uživatel)*" : user.GetDisplayName())} ({FormatHelper.FormatPointsToCzech(o.Value)})";
         })));
 

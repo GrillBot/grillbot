@@ -28,6 +28,7 @@ using NSwag.Generation.Processors.Security;
 using Quartz;
 using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Suggestion;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App;
 
@@ -96,13 +97,13 @@ public class Startup
         services.AddHttpClient("MathJS", c =>
         {
             c.BaseAddress = new Uri(Configuration["Services:Math:Api"]);
-            c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Services:Math:Timeout"]));
+            c.Timeout = TimeSpan.FromMilliseconds(Configuration["Services:Math:Timeout"].ToInt());
         });
 
         services.AddHttpClient("KachnaOnline", c =>
         {
             c.BaseAddress = new Uri(Configuration["Services:KachnaOnline:Api"]);
-            c.Timeout = TimeSpan.FromMilliseconds(Convert.ToInt32(Configuration["Services:KachnaOnline:Timeout"]));
+            c.Timeout = TimeSpan.FromMilliseconds(Configuration["Services:KachnaOnline:Timeout"].ToInt());
         });
 
         services.AddHostedService<DiscordService>();

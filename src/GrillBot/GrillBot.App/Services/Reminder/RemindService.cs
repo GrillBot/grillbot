@@ -112,11 +112,11 @@ public class RemindService : ServiceBase
         if (exists)
             throw new ValidationException("Toto připomenutí jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další.");
 
-        var fromUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(original.FromUserId));
+        var fromUser = await DiscordClient.FindUserAsync(original.FromUserId.ToUlong());
         if (fromUser == null)
             throw new ValidationException("Uživatel, který založil toto připomenutí se nepodařilo dohledat");
 
-        await CreateRemindAsync(fromUser, toUser, original.At, original.Message, Convert.ToUInt64(original.OriginalMessageId));
+        await CreateRemindAsync(fromUser, toUser, original.At, original.Message, original.OriginalMessageId.ToUlong());
     }
 
     /// <summary>
@@ -180,7 +180,7 @@ public class RemindService : ServiceBase
 
         if (embed != null)
         {
-            var toUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(remind.ToUserId));
+            var toUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
 
             try
             {
@@ -214,7 +214,7 @@ public class RemindService : ServiceBase
 
         if (remind.FromUserId != remind.ToUserId)
         {
-            var fromUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(remind.FromUserId));
+            var fromUser = await DiscordClient.FindUserAsync(remind.FromUserId.ToUlong());
 
             if (fromUser != null)
                 embed.AddField("Od", fromUser.GetFullName(), true);
@@ -251,7 +251,7 @@ public class RemindService : ServiceBase
             .FirstOrDefaultAsync(o => o.Id == id);
 
         var embed = (await CreateRemindEmbedAsync(remind, false)).Build();
-        var toUser = await DiscordClient.FindUserAsync(Convert.ToUInt64(remind.ToUserId));
+        var toUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
 
         ulong messageId = 0;
         try

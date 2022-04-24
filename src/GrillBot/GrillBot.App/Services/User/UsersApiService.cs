@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Data.Models.AuditLog;
@@ -33,15 +34,15 @@ public class UsersApiService : ServiceBase
     private async Task<UserListItem> MapItemAsync(Database.Entity.User entity, CancellationToken cancellationToken = default)
     {
         var result = Mapper.Map<UserListItem>(entity);
-        var discordUser = await DcClient.FindUserAsync(Convert.ToUInt64(entity.Id));
+        var discordUser = await DcClient.FindUserAsync(entity.Id.ToUlong(), cancellationToken);
 
         if (discordUser != null)
             result = Mapper.Map(discordUser, result);
 
         foreach (var guild in entity.Guilds)
         {
-            var discordGuild = await DcClient.GetGuildAsync(Convert.ToUInt64(guild.GuildId), options: new() { CancelToken = cancellationToken });
-            var guildUser = discordGuild != null ? await discordGuild.GetUserAsync(Convert.ToUInt64(guild.UserId), options: new() { CancelToken = cancellationToken }) : null;
+            var discordGuild = await DcClient.GetGuildAsync(guild.GuildId.ToUlong(), options: new() { CancelToken = cancellationToken });
+            var guildUser = discordGuild != null ? await discordGuild.GetUserAsync(guild.UserId.ToUlong(), options: new() { CancelToken = cancellationToken }) : null;
 
             result.Guilds.Add(guild.Guild.Name, guildUser != null);
         }
@@ -91,10 +92,10 @@ public class UsersApiService : ServiceBase
                 .ThenBy(o => o.Emote.Name)
                 .ToList();
 
-            var guild = await DcClient.GetGuildAsync(Convert.ToUInt64(guildUser.Guild.Id), options: new() { CancelToken = cancellationToken });
+            var guild = await DcClient.GetGuildAsync(guildUser.Guild.Id.ToUlong(), options: new() { CancelToken = cancellationToken });
 
             guildUser.IsGuildKnown = guild != null;
-            guildUser.IsUserInGuild = guildUser.IsGuildKnown && (await guild.GetUserAsync(Convert.ToUInt64(result.Id))) != null;
+            guildUser.IsUserInGuild = guildUser.IsGuildKnown && (await guild.GetUserAsync(result.Id.ToUlong())) != null;
             result.Guilds.Add(guildUser);
         }
 

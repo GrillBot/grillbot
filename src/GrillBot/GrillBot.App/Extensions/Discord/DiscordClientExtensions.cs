@@ -80,7 +80,7 @@ namespace GrillBot.App.Extensions.Discord
         }
 
         static public IRole FindRole(this BaseSocketClient client, string id)
-            => FindRole(client, Convert.ToUInt64(id));
+            => FindRole(client, id.ToUlong());
 
         static public IRole FindRole(this BaseSocketClient client, ulong id)
         {

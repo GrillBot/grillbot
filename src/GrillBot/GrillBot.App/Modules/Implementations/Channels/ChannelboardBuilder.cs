@@ -1,6 +1,6 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Modules.Implementations.Channels;
 
@@ -18,7 +18,7 @@ public class ChannelboardBuilder : EmbedBuilder
 
         WithDescription(string.Join("\n", data.Select((o, i) =>
         {
-            var channel = channelFinder(Convert.ToUInt64(o.Key));
+            var channel = channelFinder(o.Key.ToUlong());
             return $"**{i + skip + 1,2}.** #{channel.Name} ({FormatHelper.FormatMessagesToCzech(o.Value)})";
         })));
 

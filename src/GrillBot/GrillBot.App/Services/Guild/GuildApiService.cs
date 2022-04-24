@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
@@ -24,7 +25,7 @@ public class GuildApiService : ServiceBase
 
         for (int i = 0; i < result.Data.Count; i++)
         {
-            var guild = DiscordClient.GetGuild(Convert.ToUInt64(result.Data[i].Id));
+            var guild = DiscordClient.GetGuild(result.Data[i].Id.ToUlong());
             if (guild == null) continue;
 
             result.Data[i] = Mapper.Map(guild, result.Data[i]);
@@ -49,16 +50,16 @@ public class GuildApiService : ServiceBase
             detail = Mapper.Map(discordGuild, detail);
 
             if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
-                detail.AdminChannel = Mapper.Map<Channel>(discordGuild.GetChannel(Convert.ToUInt64(dbGuild.AdminChannelId)));
+                detail.AdminChannel = Mapper.Map<Channel>(discordGuild.GetChannel(dbGuild.AdminChannelId.ToUlong()));
 
             if (!string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
-                detail.EmoteSuggestionChannel = Mapper.Map<Channel>(discordGuild.GetChannel(Convert.ToUInt64(dbGuild.EmoteSuggestionChannelId)));
+                detail.EmoteSuggestionChannel = Mapper.Map<Channel>(discordGuild.GetChannel(dbGuild.EmoteSuggestionChannelId.ToUlong()));
 
             if (!string.IsNullOrEmpty(dbGuild.BoosterRoleId))
-                detail.BoosterRole = Mapper.Map<Role>(discordGuild.GetRole(Convert.ToUInt64(dbGuild.BoosterRoleId)));
+                detail.BoosterRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.BoosterRoleId.ToUlong()));
 
             if (!string.IsNullOrEmpty(dbGuild.MuteRoleId))
-                detail.MutedRole = Mapper.Map<Role>(discordGuild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId)));
+                detail.MutedRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.MuteRoleId.ToUlong()));
 
             detail.UserStatusReport = discordGuild.Users.GroupBy(o =>
             {
@@ -108,17 +109,17 @@ public class GuildApiService : ServiceBase
         var dbGuild = await context.Guilds.AsQueryable()
             .FirstOrDefaultAsync(o => o.Id == id.ToString());
 
-        if (parameters.AdminChannelId != null && guild.GetTextChannel(Convert.ToUInt64(parameters.AdminChannelId)) == null)
+        if (parameters.AdminChannelId != null && guild.GetTextChannel(parameters.AdminChannelId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.AdminChannelId), "Nepodařilo se dohledat administrátorský kanál");
         else
             dbGuild.AdminChannelId = parameters.AdminChannelId;
 
-        if (parameters.MuteRoleId != null && guild.GetRole(Convert.ToUInt64(parameters.MuteRoleId)) == null)
+        if (parameters.MuteRoleId != null && guild.GetRole(parameters.MuteRoleId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.MuteRoleId), "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.");
         else
             dbGuild.MuteRoleId = parameters.MuteRoleId;
 
-        if (parameters.EmoteSuggestionChannelId != null && guild.GetTextChannel(Convert.ToUInt64(parameters.EmoteSuggestionChannelId)) == null)
+        if (parameters.EmoteSuggestionChannelId != null && guild.GetTextChannel(parameters.EmoteSuggestionChannelId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.EmoteSuggestionChannelId), "Nepodařilo se dohledat kanál pro návrhy emotů.");
         else
             dbGuild.EmoteSuggestionChannelId = parameters.EmoteSuggestionChannelId;

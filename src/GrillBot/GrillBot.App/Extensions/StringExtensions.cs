@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using GrillBot.Data.Extensions;
+using System.Text.RegularExpressions;
 
 namespace GrillBot.App.Extensions
 {
@@ -28,9 +29,9 @@ namespace GrillBot.App.Extensions
             var match = Regex.Match(str, regex);
             if (match.Success)
             {
-                var hours = Convert.ToInt32(match.Groups[1].Value);
-                var minutes = Convert.ToInt32(match.Groups[2].Value);
-                var seconds = string.IsNullOrEmpty(match.Groups[3].Value) ? 0 : Convert.ToInt32(match.Groups[3].Value);
+                var hours = match.Groups[1].Value.ToInt();
+                var minutes = match.Groups[2].Value.ToInt();
+                var seconds = string.IsNullOrEmpty(match.Groups[3].Value) ? 0 : match.Groups[3].Value.ToInt();
 
                 return new TimeSpan(hours, minutes, seconds);
             }

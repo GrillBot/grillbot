@@ -23,7 +23,7 @@ public static class RemindListExtensions
         {
             foreach (var remind in data)
             {
-                var from = await client.FindUserAsync(Convert.ToUInt64(remind.FromUserId));
+                var from = await client.FindUserAsync(remind.FromUserId.ToUlong());
 
                 var title = $"#{remind.Id} - Od {from.GetDisplayName()} v {remind.At.ToCzechFormat()} (za {(remind.At - DateTime.Now).Humanize(culture: new CultureInfo("cs-CZ"))})";
                 embed.AddField(title, remind.Message[..Math.Min(remind.Message.Length, EmbedFieldBuilder.MaxFieldValueLength)]);

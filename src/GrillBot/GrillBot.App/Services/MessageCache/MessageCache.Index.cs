@@ -1,4 +1,5 @@
-﻿using GrillBot.Database.Entity.Cache;
+﻿using GrillBot.Data.Extensions;
+using GrillBot.Database.Entity.Cache;
 
 namespace GrillBot.App.Services.MessageCache;
 
@@ -28,7 +29,7 @@ public partial class MessageCache
             var query = GetIndexesQuery(context, authorId, channelId, guildId);
             var ids = await query.ToListAsync(cancellationToken);
 
-            return ids.ConvertAll(id => Convert.ToUInt64(id));
+            return ids.ConvertAll(id => id.ToUlong());
         }
         finally
         {

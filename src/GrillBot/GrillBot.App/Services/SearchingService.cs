@@ -2,6 +2,7 @@
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.User;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Common;
@@ -66,7 +67,7 @@ public class SearchingService : ServiceBase
         var search = await context.SearchItems.AsQueryable().FirstOrDefaultAsync(o => o.Id == id);
         if (search == null) return;
 
-        if (!isAdmin && executor.Id != Convert.ToUInt64(search.UserId))
+        if (!isAdmin && executor.Id != search.UserId.ToUlong())
             throw new UnauthorizedAccessException("Toto hledání jsi nezaložil ty a současně nemáš vyšší oprávnění hledání smazat.");
 
         context.Remove(search);
@@ -139,14 +140,14 @@ public class SearchingService : ServiceBase
 
         foreach (var item in data)
         {
-            var guild = DiscordClient.GetGuild(Convert.ToUInt64(item.GuildId));
+            var guild = DiscordClient.GetGuild(item.GuildId.ToUlong());
             if (guild == null)
             {
                 CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
                 continue;
             }
 
-            var channel = guild.GetTextChannel(Convert.ToUInt64(item.ChannelId));
+            var channel = guild.GetTextChannel(item.ChannelId.ToUlong());
             if (channel == null)
             {
                 CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
@@ -159,7 +160,7 @@ public class SearchingService : ServiceBase
                 synchronizedGuilds.Add(guild.Id);
             }
 
-            var author = guild.GetUser(Convert.ToUInt64(item.UserId));
+            var author = guild.GetUser(item.UserId.ToUlong());
             if (author == null)
             {
                 CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));

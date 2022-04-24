@@ -92,7 +92,7 @@ public class ChannelModule : Infrastructure.ModuleBase
         var topTenData = await topTenQuery.ToListAsync();
         var topTenFormatted = string.Join("\n", topTenData.Select((o, i) =>
         {
-            var user = Context.Guild.GetUser(Convert.ToUInt64(o.UserId));
+            var user = Context.Guild.GetUser(o.UserId.ToUlong());
             return $"**{i + 1,2}.** {(user == null ? "*(Neznámý uživatel)*" : user.GetDisplayName())} ({FormatHelper.FormatMessagesToCzech(o.Count)})";
         }));
 

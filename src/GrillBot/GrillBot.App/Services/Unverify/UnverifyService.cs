@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Logging;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
@@ -119,7 +120,7 @@ namespace GrillBot.App.Services.Unverify
             using var context = DbFactory.Create();
 
             var dbGuild = await context.Guilds.AsNoTracking().FirstOrDefaultAsync(o => o.Id == guild.Id.ToString());
-            return string.IsNullOrEmpty(dbGuild?.MuteRoleId) ? null : guild.GetRole(Convert.ToUInt64(dbGuild.MuteRoleId));
+            return string.IsNullOrEmpty(dbGuild?.MuteRoleId) ? null : guild.GetRole(dbGuild.MuteRoleId.ToUlong());
         }
 
         private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, SocketGuild guild, IGuildUser from, bool selfunverify)
@@ -295,7 +296,7 @@ namespace GrillBot.App.Services.Unverify
             if (unverify == null)
                 return null;
 
-            var user = guild.GetUser(Convert.ToUInt64(unverify.UserId));
+            var user = guild.GetUser(unverify.UserId.ToUlong());
             return ProfileGenerator.Reconstruct(unverify, user, guild);
         }
 
@@ -314,10 +315,10 @@ namespace GrillBot.App.Services.Unverify
             var profiles = new List<Tuple<UnverifyUserProfile, IGuild>>();
             foreach (var unverify in unverifies)
             {
-                var guild = DiscordClient.GetGuild(Convert.ToUInt64(unverify.GuildId));
+                var guild = DiscordClient.GetGuild(unverify.GuildId.ToUlong());
                 if (guild == null) continue;
 
-                var user = guild.GetUser(Convert.ToUInt64(unverify.UserId));
+                var user = guild.GetUser(unverify.UserId.ToUlong());
                 profiles.Add(new Tuple<UnverifyUserProfile, IGuild>(
                     ProfileGenerator.Reconstruct(unverify, user, guild),
                     guild
@@ -336,7 +337,7 @@ namespace GrillBot.App.Services.Unverify
                 .Select(o => o.UserId)
                 .ToListAsync();
 
-            return data.ConvertAll(o => Convert.ToUInt64(o));
+            return data.ConvertAll(o => o.ToUlong());
         }
 
         public async Task RecoverUnverifyState(long id, ulong fromUserId)
@@ -355,16 +356,16 @@ namespace GrillBot.App.Services.Unverify
             if (logItem.ToUser.Unverify != null)
                 throw new InvalidOperationException("Nelze provést obnovení přístupu uživateli, protože má aktuálně platné unverify.");
 
-            var guild = DiscordClient.GetGuild(Convert.ToUInt64(logItem.GuildId));
+            var guild = DiscordClient.GetGuild(logItem.GuildId.ToUlong());
             if (guild == null)
                 throw new NotFoundException("Nelze najít server, na kterém bylo uděleno unverify.");
 
             await guild.DownloadUsersAsync();
-            var user = guild.GetUser(Convert.ToUInt64(logItem.ToUserId));
+            var user = guild.GetUser(logItem.ToUserId.ToUlong());
             if (user == null)
                 throw new NotFoundException($"Nelze vyhledat uživatele na serveru {guild.Name}");
 
-            var mutedRole = !string.IsNullOrEmpty(logItem.Guild.MuteRoleId) ? guild.GetRole(Convert.ToUInt64(logItem.Guild.MuteRoleId)) : null;
+            var mutedRole = !string.IsNullOrEmpty(logItem.Guild.MuteRoleId) ? guild.GetRole(logItem.Guild.MuteRoleId.ToUlong()) : null;
             var data = JsonConvert.DeserializeObject<UnverifyLogSet>(logItem.Data);
 
             var rolesToReturn = data.RolesToRemove.Where(o => !user.Roles.Any(x => x.Id == o))
@@ -409,8 +410,8 @@ namespace GrillBot.App.Services.Unverify
                 .Select(o => new { o.GuildId, o.UserId });
 
             return (await query.ToListAsync(cancellationToken)).ConvertAll(o => new Tuple<ulong, ulong>(
-                Convert.ToUInt64(o.GuildId),
-                Convert.ToUInt64(o.UserId)
+                o.GuildId.ToUlong(),
+                o.UserId.ToUlong()
             ));
         }
     }

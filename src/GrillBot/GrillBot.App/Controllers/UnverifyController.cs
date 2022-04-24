@@ -9,6 +9,7 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Exceptions;
 using AutoMapper;
 using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Controllers;
 
@@ -48,7 +49,7 @@ public class UnverifyController : Controller
         var result = Mapper.Map<List<UnverifyUserProfile>>(unverifies);
         foreach (var profile in result)
         {
-            var entity = unverifies.Find(o => o.Item1.Destination.Id == Convert.ToUInt64(profile.User.Id));
+            var entity = unverifies.Find(o => o.Item1.Destination.Id == profile.User.Id.ToUlong());
             profile.Guild = Mapper.Map<Guild>(entity.Item2);
         }
 

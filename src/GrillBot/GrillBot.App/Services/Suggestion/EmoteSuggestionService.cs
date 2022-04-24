@@ -76,7 +76,7 @@ public class EmoteSuggestionService : ServiceBase
             if (string.IsNullOrEmpty(guildData.EmoteSuggestionChannelId))
                 throw new ValidationException("Tvůj návrh na emote byl zařazen ke zpracování, ale kvůli technickým důvodům jej nelze nyní zpracovat.");
 
-            var channel = await guild.GetTextChannelAsync(Convert.ToUInt64(guildData.EmoteSuggestionChannelId));
+            var channel = await guild.GetTextChannelAsync(guildData.EmoteSuggestionChannelId.ToUlong());
 
             if (channel == null)
                 throw new ValidationException("Tvůj návrh na emote byl zařazen ke zpracování, ale kvůli technickým důvodům jej nelze nyní zpracovat.");

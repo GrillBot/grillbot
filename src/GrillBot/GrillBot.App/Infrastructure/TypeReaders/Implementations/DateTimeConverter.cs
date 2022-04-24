@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using GrillBot.Data.Extensions;
 using System.Text.RegularExpressions;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
@@ -40,7 +41,7 @@ public class DateTimeConverter : ConverterBase<DateTime>
 
         while (timeShift.Success)
         {
-            var timeValue = Convert.ToInt32(timeShift.Groups[1].Value);
+            var timeValue = timeShift.Groups[1].Value.ToInt();
 
             switch (timeShift.Groups[2].Value)
             {

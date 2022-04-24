@@ -61,7 +61,7 @@ public class BirthdayService : ServiceBase
 
         foreach (var entity in users)
         {
-            var user = await DiscordClient.FindUserAsync(Convert.ToUInt64(entity.Id), cancellationToken);
+            var user = await DiscordClient.FindUserAsync(entity.Id.ToUlong(), cancellationToken);
 
             if (user != null)
                 result.Add(new Tuple<IUser, int?>(user, entity.BirthdayAcceptYear ? entity.Birthday.Value.ComputeAge() : null));

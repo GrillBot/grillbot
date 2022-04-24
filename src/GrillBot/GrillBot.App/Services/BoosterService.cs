@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Services;
 
@@ -33,10 +34,10 @@ public class BoosterService : ServiceBase
             .FirstOrDefaultAsync(o => o.Id == before.Guild.Id.ToString());
         if (guild?.BoosterRoleId == null || guild?.AdminChannelId == null) return;
 
-        var boostRole = before.Guild.GetRole(Convert.ToUInt64(guild.BoosterRoleId));
+        var boostRole = before.Guild.GetRole(guild.BoosterRoleId.ToUlong());
         if (boostRole == null) return;
 
-        var adminChannel = before.Guild.GetTextChannel(Convert.ToUInt64(guild.AdminChannelId));
+        var adminChannel = before.Guild.GetTextChannel(guild.AdminChannelId.ToUlong());
         if (adminChannel == null) return;
 
         var boostBefore = before.Roles.Any(o => o.Id.ToString() == guild.BoosterRoleId);

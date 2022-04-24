@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
@@ -39,7 +40,7 @@ public class UnverifyApiService : ServiceBase
 
     private async Task<UnverifyLogItem> MapItemAsync(UnverifyLog entity, CancellationToken cancellationToken)
     {
-        var guild = await DcClient.GetGuildAsync(Convert.ToUInt64(entity.GuildId), options: new() { CancelToken = cancellationToken });
+        var guild = await DcClient.GetGuildAsync(entity.GuildId.ToUlong(), options: new() { CancelToken = cancellationToken });
         var result = Mapper.Map<UnverifyLogItem>(entity);
 
         switch (entity.Operation)

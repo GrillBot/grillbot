@@ -2,6 +2,7 @@
 using GrillBot.App.Services.CommandsHelp.Parsers;
 using GrillBot.App.Services.Discord;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.DirectApi;
 using Microsoft.Extensions.Caching.Memory;
@@ -38,13 +39,13 @@ public class ExternalCommandsHelpService
 
         AllowedExternalServices = Configuration.AsEnumerable()
             .Where(o => o.Key.EndsWith(":Id"))
-            .Select(o => Convert.ToUInt64(o.Value))
+            .Select(o => o.Value.ToUlong())
             .Distinct()
             .ToList();
 
         AuthorizedChannels = Configuration.AsEnumerable()
             .Where(o => o.Key.EndsWith(":AuthorizedChannelId"))
-            .Select(o => Convert.ToUInt64(o.Value))
+            .Select(o => o.Value.ToUlong())
             .Distinct()
             .ToList();
 

@@ -1,4 +1,5 @@
 ﻿using Discord;
+using GrillBot.Data.Extensions;
 using System;
 using System.Text.RegularExpressions;
 
@@ -23,9 +24,9 @@ public static class MessageHelper
             if (uriMatch.Success)
             {
                 return new MessageReference(
-                    Convert.ToUInt64(uriMatch.Groups[3].Value),
-                    channelId ?? Convert.ToUInt64(uriMatch.Groups[2].Value),
-                    guildId ?? Convert.ToUInt64(uriMatch.Groups[1].Value)
+                    uriMatch.Groups[3].Value.ToUlong(),
+                    channelId ?? uriMatch.Groups[2].Value.ToUlong(),
+                    guildId ?? uriMatch.Groups[1].Value.ToUlong()
                 );
             }
         }

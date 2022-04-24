@@ -85,12 +85,12 @@ public class EmotesCommandService : ServiceBase
         if (data == null)
             return null;
 
-        var guild = await DcClient.GetGuildAsync(Convert.ToUInt64(data.GuildId));
+        var guild = await DcClient.GetGuildAsync(data.GuildId.ToUlong());
         var topTenQuery = baseQuery.OrderByDescending(x => x.UseCount).ThenByDescending(x => x.LastOccurence).Take(10);
 
         var topTen = await topTenQuery.AsAsyncEnumerable().SelectAwait(async (o, i) =>
         {
-            var user = await DcClient.FindUserAsync(Convert.ToUInt64(o.UserId));
+            var user = await DcClient.FindUserAsync(o.UserId.ToUlong());
             return $"**{i + 1,2}.** {user?.GetDisplayName() ?? "Neznámý uživatel"} ({o.UseCount})";
         }).ToListAsync();
 

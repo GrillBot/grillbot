@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
+using GrillBot.Data.Extensions;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.Suggestion;
@@ -22,8 +23,7 @@ public class SuggestionService : ServiceBase
         switch (suggestion.Type)
         {
             case SuggestionType.Emote:
-                var guildId = Convert.ToUInt64(suggestion.GuildId);
-                var guild = await DcClient.GetGuildAsync(guildId);
+                var guild = await DcClient.GetGuildAsync(suggestion.GuildId.ToUlong());
                 await Emotes.TrySendSuggestionAsync(guild, suggestion);
                 break;
             case SuggestionType.FeatureRequest:

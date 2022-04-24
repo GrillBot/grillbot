@@ -5,6 +5,7 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -81,7 +82,7 @@ public partial class AuditLogService : ServiceBase
             .Select(o => o.GuildId)
             .FirstOrDefaultAsync();
 
-        return string.IsNullOrEmpty(guildId) ? null : DiscordClient.GetGuild(Convert.ToUInt64(guildId));
+        return string.IsNullOrEmpty(guildId) ? null : DiscordClient.GetGuild(guildId.ToUlong());
     }
 
     public Task StoreItemAsync(AuditLogDataWrapper item, CancellationToken cancellationToken = default)
@@ -158,7 +159,7 @@ public partial class AuditLogService : ServiceBase
         var ids = await idsQuery.ToListAsync();
         return ids
             .SelectMany(o => o.Split(','))
-            .Select(o => Convert.ToUInt64(o))
+            .Select(o => o.ToUlong())
             .Distinct()
             .ToList();
     }

@@ -1,15 +1,16 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Reminder;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public class RemindPaginationHandler : ComponentInteractionHandler
 {
-    private DiscordSocketClient DiscordClient { get; }
+    private IDiscordClient DiscordClient { get; }
     private RemindService RemindService { get; }
     private int Page { get; }
 
-    public RemindPaginationHandler(RemindService remindService, DiscordSocketClient discordClient, int page)
+    public RemindPaginationHandler(RemindService remindService, IDiscordClient discordClient, int page)
     {
         RemindService = remindService;
         Page = page;
@@ -50,6 +51,10 @@ public class RemindPaginationHandler : ComponentInteractionHandler
         var result = await new EmbedBuilder()
             .WithRemindListAsync(reminders, DiscordClient, forUser, context.User, newPage);
 
-        await component.UpdateAsync(msg => msg.Embed = result.Build());
+        await component.UpdateAsync(msg =>
+        {
+            msg.Components = ComponentsHelper.CreatePaginationComponents(newPage, pagesCount, "remind");
+            msg.Embed = result.Build();
+        });
     }
 }

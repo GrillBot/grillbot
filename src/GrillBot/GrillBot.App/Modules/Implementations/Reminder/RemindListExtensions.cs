@@ -6,7 +6,7 @@ namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public static class RemindListExtensions
 {
-    public static async Task<EmbedBuilder> WithRemindListAsync(this EmbedBuilder embed, List<RemindMessage> data, DiscordSocketClient client, IUser forUser, IUser user, int page)
+    public static async Task<EmbedBuilder> WithRemindListAsync(this EmbedBuilder embed, List<RemindMessage> data, IDiscordClient client, IUser forUser, IUser user, int page)
     {
         embed.WithFooter(user);
         embed.WithMetadata(new RemindListMetadata() { OfUser = forUser.Id, Page = page });

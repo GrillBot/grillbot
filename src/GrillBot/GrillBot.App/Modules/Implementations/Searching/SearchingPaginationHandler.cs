@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
 
 namespace GrillBot.App.Modules.Implementations.Searching;
@@ -57,6 +58,10 @@ public class SearchingPaginationHandler : ComponentInteractionHandler
         var result = new EmbedBuilder()
             .WithSearching(searches, channel, guild, newPage, context.User, metadata.MessageQuery);
 
-        await component.UpdateAsync(msg => msg.Embed = result.Build());
+        await component.UpdateAsync(msg =>
+        {
+            msg.Components = ComponentsHelper.CreatePaginationComponents(newPage, pagesCount, "search");
+            msg.Embed = result.Build();
+        });
     }
 }

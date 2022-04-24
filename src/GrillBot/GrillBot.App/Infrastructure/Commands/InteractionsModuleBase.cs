@@ -10,7 +10,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     {
         await base.BeforeExecuteAsync(command);
 
-        if (CanDefer)
+        if (CanDefer && !command.Module.ComponentCommands.Any(c => c.Name == command.Name))
             await DeferAsync();
     }
 

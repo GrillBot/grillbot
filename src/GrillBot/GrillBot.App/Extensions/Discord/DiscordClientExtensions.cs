@@ -45,16 +45,17 @@ namespace GrillBot.App.Extensions.Discord
             return await client.Rest.GetUserAsync(id, new RequestOptions() { CancelToken = cancellationToken });
         }
 
-        static public async Task<IUser> FindUserAsync(this IDiscordClient client, ulong id)
+        static public async Task<IUser> FindUserAsync(this IDiscordClient client, ulong id, CancellationToken cancellationToken = default)
         {
-            var user = await client.GetUserAsync(id);
+            var requestOptions = new RequestOptions() { CancelToken = cancellationToken };
+            var user = await client.GetUserAsync(id, options: requestOptions);
 
             if (user != null)
                 return user;
 
-            foreach (var guild in await client.GetGuildsAsync())
+            foreach (var guild in await client.GetGuildsAsync(options: requestOptions))
             {
-                user = await guild.GetUserAsync(id);
+                user = await guild.GetUserAsync(id, options: requestOptions);
 
                 if (user != null)
                     return user;

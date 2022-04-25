@@ -7,6 +7,7 @@ using Quartz;
 namespace GrillBot.App.Services.MessageCache;
 
 [DisallowConcurrentExecution]
+[DisallowUninitialized]
 public class MessageCacheCheckCron : Job
 {
     private MessageCache MessageCache { get; }

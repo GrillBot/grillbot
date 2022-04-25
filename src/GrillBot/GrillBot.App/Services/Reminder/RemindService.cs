@@ -100,21 +100,26 @@ public class RemindService : ServiceBase
             .FirstOrDefaultAsync(o => o.Id == originalRemindId);
 
         if (original == null)
-            throw new InvalidOperationException("Připomenutí nebylo nalezeno.");
+            throw new InvalidOperationException("Upozornění nebylo nalezeno.");
 
         if (original.FromUserId == toUser.Id.ToString())
-            throw new ValidationException("Toto připomenutí jsi založil, nemůžeš dostat to stejné.");
+            throw new ValidationException("Toto upozornění jsi založil, nemůžeš dostat to stejné.");
 
         if (!string.IsNullOrEmpty(original.RemindMessageId))
-            throw new InvalidOperationException("Toto připomenutí již bylo odesláno.");
+        {
+            if (original.RemindMessageId == "0")
+                throw new InvalidOperationException("Toto upozornění bylo zrušeno.");
+
+            throw new InvalidOperationException("Toto upozornění již bylo odesláno.");
+        }
 
         var exists = await context.Reminders.AnyAsync(o => o.OriginalMessageId == original.OriginalMessageId && o.ToUserId == toUser.Id.ToString());
         if (exists)
-            throw new ValidationException("Toto připomenutí jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další.");
+            throw new ValidationException("Toto upozornění jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další.");
 
         var fromUser = await DiscordClient.FindUserAsync(original.FromUserId.ToUlong());
         if (fromUser == null)
-            throw new ValidationException("Uživatel, který založil toto připomenutí se nepodařilo dohledat");
+            throw new ValidationException("Uživatel, který založil toto upozornění se nepodařilo dohledat");
 
         await CreateRemindAsync(fromUser, toUser, original.At, original.Message, original.OriginalMessageId.ToUlong());
     }
@@ -132,8 +137,16 @@ public class RemindService : ServiceBase
         var remind = await context.Reminders.AsQueryable()
             .FirstOrDefaultAsync(o => o.Id == id);
 
-        if (remind == null || !string.IsNullOrEmpty(remind.RemindMessageId))
-            throw new ValidationException("Upozornění nebylo nalezeno, uplynula doba upozornění, nebo již proběhlo upozornění.");
+        if (remind == null)
+            throw new ValidationException("Upozornění nebylo nalezeno.");
+
+        if (!string.IsNullOrEmpty(remind.RemindMessageId))
+        {
+            if (remind.RemindMessageId == "0")
+                throw new ValidationException("Toto upozornění již bylo dříve zrušeno.");
+
+            throw new ValidationException("Toto upozornění již bylo odesláno.");
+        }
 
         if (remind.FromUserId != user.Id.ToString() && remind.ToUserId != user.Id.ToString())
             throw new ValidationException("Upozornění může zrušit pouze ten, komu je určeno, nebo kdo jej založil.");
@@ -157,7 +170,13 @@ public class RemindService : ServiceBase
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (remind == null) throw new NotFoundException("Požadované upozornění neexistuje.");
-        if (!string.IsNullOrEmpty(remind.RemindMessageId)) throw new InvalidOperationException("Nelze zrušit již zrušené oznámení.");
+        if (!string.IsNullOrEmpty(remind.RemindMessageId))
+        {
+            if (remind.RemindMessageId == "0")
+                throw new InvalidOperationException("Nelze zrušit již zrušené upozornění.");
+
+            throw new InvalidOperationException("Nelze zrušit již proběhlé upozornění.");
+        }
 
         ulong messageId = 0;
         if (notify)
@@ -165,7 +184,7 @@ public class RemindService : ServiceBase
 
         var logItem = new AuditLogDataWrapper(
             AuditLogItemType.Info,
-            $"Bylo stornováno upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno oznámení uživateli." : "")}".Trim(),
+            $"Bylo stornováno upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(),
             null, null, await DiscordClient.FindUserAsync(loggedUser.GetUserId())
         );
         await AuditLogService.StoreItemAsync(logItem);
@@ -299,6 +318,7 @@ public class RemindService : ServiceBase
             .Concat(outgoing)
             .DistinctBy(o => o.Key)
             .OrderBy(o => o.Key)
+            .Take(25)
             .ToDictionary(o => o.Key, o => o.Value);
     }
 }

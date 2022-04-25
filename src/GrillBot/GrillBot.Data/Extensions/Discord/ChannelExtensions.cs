@@ -11,6 +11,9 @@ static public class ChannelExtensions
 
     static public bool HaveAccess(this SocketGuildChannel channel, SocketGuildUser user)
     {
+        if (channel is SocketThreadChannel thread)
+            return HaveAccess(thread.ParentChannel, user);
+
         if (channel.GetUser(user.Id) != null || channel.PermissionOverwrites.Count == 0)
             return true;
 
@@ -43,6 +46,9 @@ static public class ChannelExtensions
 
     public static async Task<bool> HaveAccessAsync(this IGuildChannel channel, IGuildUser user)
     {
+        if (channel is IThreadChannel thread)
+            return await HaveAccessAsync(await thread.GetCategoryAsync(), user);
+
         if ((await channel.GetUserAsync(user.Id)) != null || channel.PermissionOverwrites == null || channel.PermissionOverwrites.Count == 0)
             return true;
 

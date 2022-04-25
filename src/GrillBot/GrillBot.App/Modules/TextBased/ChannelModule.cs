@@ -59,12 +59,14 @@ public class ChannelModule : Infrastructure.ModuleBase
 
     [Command]
     [Summary("Získání statistiky zpráv z jednotlivého kanálu.")]
-    public async Task GetStatisticsOfChannelAsync(SocketGuildChannel channel)
+    public async Task GetStatisticsOfChannelAsync(SocketTextChannel channel)
     {
+        var isThread = channel is IThreadChannel;
+
         await Context.Guild.DownloadUsersAsync();
         if (!channel.HaveAccess(Context.User is SocketGuildUser sgu ? sgu : Context.Guild.GetUser(Context.User.Id)))
         {
-            await ReplyAsync("Promiň, ale do tohoto kanálu nemáš přístup.");
+            await ReplyAsync($"Promiň, ale do tohoto {(isThread ? "vlákna" : "kanálu")} nemáš přístup.");
             return;
         }
 
@@ -84,7 +86,7 @@ public class ChannelModule : Infrastructure.ModuleBase
         var channelData = await groupedDataQuery.FirstOrDefaultAsync();
         if (channelData == null)
         {
-            await ReplyAsync("Promiň, ale zatím nemám informace o aktivitě v tomto kanálu.");
+            await ReplyAsync($"Promiň, ale zatím nemám informace o aktivitě v tomto {(isThread ? "vláknu" : "kanálu")}.");
             return;
         }
 
@@ -98,18 +100,20 @@ public class ChannelModule : Infrastructure.ModuleBase
 
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)
-            .WithAuthor("Statistika aktivity v kanálu")
+            .WithAuthor($"Statistika aktivity {(isThread ? "ve vláknu" : "v kanálu")}.")
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
-            .WithTitle($"#{channel.Name}")
+            .WithTitle((isThread ? "" : "#") + channel.Name)
             .AddField("Vytvořeno", channel.CreatedAt.LocalDateTime.ToCzechFormat(), true)
             .AddField("Počet zpráv", FormatHelper.FormatMessagesToCzech(channelData.Count), true)
             .AddField("První zpráva", channelData.FirstMessageAt == DateTime.MinValue ? "Není známo" : channelData.FirstMessageAt.ToCzechFormat(), true)
             .AddField("Poslední zpráva", channelData.LastMessageAt.ToCzechFormat(), true)
-            .AddField("Počet uživatelů", FormatHelper.FormatMembersToCzech(channel.Users.Count), true)
-            .AddField("Počet oprávnění", FormatHelper.FormatPermissionstoCzech(channel.PermissionOverwrites.Count), true)
-            .AddField("TOP 10 uživatelů", topTenFormatted, false);
+            .AddField("Počet uživatelů", FormatHelper.FormatMembersToCzech(channel.Users.Count), true);
 
+        if (!isThread)
+            embed.AddField("Počet oprávnění", FormatHelper.FormatPermissionstoCzech(channel.PermissionOverwrites.Count), true);
+
+        embed.AddField("TOP 10 uživatelů", topTenFormatted, false);
         await ReplyAsync(embed: embed.Build());
     }
 }

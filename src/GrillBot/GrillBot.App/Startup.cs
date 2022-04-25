@@ -29,6 +29,7 @@ using Quartz;
 using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Extensions;
+using GrillBot.App.Infrastructure.OpenApi;
 
 namespace GrillBot.App;
 
@@ -121,6 +122,7 @@ public class Startup
             });
 
             doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
+            doc.OperationProcessors.Add(new OperationIdProcessor());
 
             doc.PostProcess = document =>
             {

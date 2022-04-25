@@ -37,7 +37,6 @@ public class UsersController : Controller
     /// <response code="400">Validation of parameters failed.</response>
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetUsersListAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters,
@@ -54,7 +53,6 @@ public class UsersController : Controller
     /// <response code="404">User not found in database.</response>
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetUserDetailAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id, CancellationToken cancellationToken = default)
@@ -75,7 +73,6 @@ public class UsersController : Controller
     /// <remarks>Only for users with User permissions.</remarks>
     [HttpGet("me")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetCurrentUserDetailAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync(CancellationToken cancellationToken)
@@ -101,7 +98,6 @@ public class UsersController : Controller
     /// </summary>
     [HttpGet("me/commands")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetAvailableCommandsAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync(CancellationToken cancellationToken)
     {
@@ -117,7 +113,6 @@ public class UsersController : Controller
     /// <response code="500">Something is wrong</response>
     [HttpGet("me/commands/{service}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetAvailableExternalCommandsAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service, CancellationToken cancellationToken)
@@ -143,7 +138,6 @@ public class UsersController : Controller
     /// <response code="404">User not found.</response>
     [HttpPut("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(UpdateUserAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -166,7 +160,6 @@ public class UsersController : Controller
     /// <response code="200">Success</response>
     [HttpPost("hearthbeat")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatAsync()
     {
@@ -179,7 +172,6 @@ public class UsersController : Controller
     /// </summary>
     [HttpDelete("hearthbeat")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(HearthbeatOffAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatOffAsync()
     {
@@ -193,7 +185,6 @@ public class UsersController : Controller
     /// <response code="200">Returns full points board.</response>
     [HttpGet("points/board")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [OpenApiOperation(nameof(UsersController) + "_" + nameof(GetPointsLeaderboardAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<UserPointsItem>>> GetPointsLeaderboardAsync(CancellationToken cancellationToken = default)
     {

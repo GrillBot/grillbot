@@ -34,7 +34,6 @@ public class ChannelController : Controller
     /// <response code="404">Guild or channel not exists.</response>
     [HttpPost("{guildId}/{channelId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(ChannelController) + "_" + nameof(SendMessageToChannelAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
@@ -56,7 +55,6 @@ public class ChannelController : Controller
     /// </summary>
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelsListAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<GuildChannelListItem>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters,
@@ -71,7 +69,6 @@ public class ChannelController : Controller
     /// </summary>
     [HttpDelete("{guildId}/{channelId}/cache")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(ChannelController) + "_" + nameof(ClearChannelCacheAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> ClearChannelCacheAsync(ulong guildId, ulong channelId)
     {
@@ -88,7 +85,6 @@ public class ChannelController : Controller
     /// <response code="404">Channel not found.</response>
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelDetailAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id, CancellationToken cancellationToken = default)
@@ -110,7 +106,6 @@ public class ChannelController : Controller
     /// <response code="500">Something wrong.</response>
     [HttpPut("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(ChannelController) + "_" + nameof(UpdateChannelAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
@@ -139,7 +134,6 @@ public class ChannelController : Controller
     /// <response code="400">Validation failed</response>
     [HttpGet("{id}/userStats")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelUsersAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromQuery] PaginatedParams pagination, CancellationToken cancellationToken = default)
@@ -154,7 +148,6 @@ public class ChannelController : Controller
     /// <response code="200">Success</response>
     [HttpGet("board")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [OpenApiOperation(nameof(ChannelController) + "_" + nameof(GetChannelboardAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync(CancellationToken cancellationToken)
     {

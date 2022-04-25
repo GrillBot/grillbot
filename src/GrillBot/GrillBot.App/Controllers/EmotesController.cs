@@ -29,7 +29,6 @@ public class EmotesController : Controller
     /// <response code="200">Return paginated list with statistics of supported emotes.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpGet("stats/supported")]
-    [OpenApiOperation(nameof(EmotesController) + "_" + nameof(GetStatsOfSupportedEmotesAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfSupportedEmotesAsync([FromQuery] EmotesListParams @params, CancellationToken cancellationToken)
@@ -44,7 +43,6 @@ public class EmotesController : Controller
     /// <response code="200">Return paginated list with statistics of unsupported emotes.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpGet("stats/unsupported")]
-    [OpenApiOperation(nameof(EmotesController) + "_" + nameof(GetStatsOfUnsupportedEmotesAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfUnsupportedEmotesAsync([FromQuery] EmotesListParams @params, CancellationToken cancellationToken)
@@ -59,7 +57,6 @@ public class EmotesController : Controller
     /// <response code="200">Returns count of changed rows in the database.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("stats/merge")]
-    [OpenApiOperation(nameof(EmotesController) + "_" + nameof(MergeStatsToAnotherAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> MergeStatsToAnotherAsync([FromBody] MergeEmoteStatsParams @params)
@@ -84,7 +81,6 @@ public class EmotesController : Controller
     /// <response code="200">Returns count of changed rows in the database.</response>
     /// <response code="400">Validation of EmoteId failed.</response>
     [HttpDelete("stats")]
-    [OpenApiOperation(nameof(EmotesController) + "_" + nameof(RemoveStatisticsAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> RemoveStatisticsAsync(

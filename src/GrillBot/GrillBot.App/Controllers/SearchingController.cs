@@ -27,7 +27,6 @@ public class SearchingController : Controller
     /// <response code="400">Validation failed</response>
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, User")]
-    [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters,
@@ -43,7 +42,6 @@ public class SearchingController : Controller
     /// <response code="200">Success</response>
     [HttpDelete]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(SearchingController) + "_" + nameof(GetSearchListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids, CancellationToken cancellationToken)
     {

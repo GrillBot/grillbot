@@ -34,7 +34,6 @@ public class PermissionsController : Controller
     /// <response code="400">Validation failed.</response>
     /// <response code="409">Permission exists.</response>
     [HttpPost("explicit")]
-    [OpenApiOperation(nameof(PermissionsController) + "_" + nameof(CreateExplicitPermissionAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Conflict)]
@@ -69,7 +68,6 @@ public class PermissionsController : Controller
     /// <response code="400">Validation failed</response>
     /// <response code="404">Permission not found</response>
     [HttpDelete("explicit")]
-    [OpenApiOperation(nameof(PermissionsController) + "_" + nameof(RemoveExplicitPermissionAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -91,7 +89,6 @@ public class PermissionsController : Controller
     /// </summary>
     /// <response code="200">Success</response>
     [HttpGet("explicit")]
-    [OpenApiOperation(nameof(PermissionsController) + "_" + nameof(GetExplicitPermissionsListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<List<ExplicitPermission>>> GetExplicitPermissionsListAsync([FromQuery] string searchQuery,
         CancellationToken cancellationToken)
@@ -140,7 +137,6 @@ public class PermissionsController : Controller
     /// <response code="200">Success</response>
     /// <response code="404">Permission not found.</response>
     [HttpPut("set")]
-    [OpenApiOperation(nameof(PermissionsController) + "_" + nameof(GetExplicitPermissionsListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> SetExplicitPermissionStateAsync([Required] string command, [Required] string targetId, ExplicitPermissionState state,

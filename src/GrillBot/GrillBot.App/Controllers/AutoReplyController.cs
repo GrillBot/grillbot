@@ -27,7 +27,6 @@ public class AutoReplyController : Controller
     /// </summary>
     /// <response code="200">Success</response>
     [HttpGet]
-    [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(GetAutoReplyListAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync(CancellationToken cancellationToken)
     {
@@ -43,7 +42,6 @@ public class AutoReplyController : Controller
     /// <response code="200">Success</response>
     /// <response code="404">Reply not found</response>
     [HttpGet("{id}")]
-    [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(GetItemAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id, CancellationToken cancellationToken)
@@ -62,7 +60,6 @@ public class AutoReplyController : Controller
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
     [HttpPost]
-    [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(CreateItemAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AutoReplyItem>> CreateItemAsync(AutoReplyItemParams parameters)
@@ -80,7 +77,6 @@ public class AutoReplyController : Controller
     /// <response code="400">Validation failed</response>
     /// <response code="404">Item not found</response>
     [HttpPut("{id}")]
-    [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(UpdateItemAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
@@ -101,7 +97,6 @@ public class AutoReplyController : Controller
     /// <response code="200">Success</response>
     /// <response code="404">Item not found</response>
     [HttpDelete("{id}")]
-    [OpenApiOperation(nameof(AutoReplyController) + "_" + nameof(RemoveItemAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> RemoveItemAsync(long id)

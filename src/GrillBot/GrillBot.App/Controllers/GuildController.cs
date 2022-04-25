@@ -28,7 +28,6 @@ public class GuildController : Controller
     /// <response code="200">Return paginated list of guilds in DB.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpGet]
-    [OpenApiOperation(nameof(GuildController) + "_" + nameof(GetGuildListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromQuery] GetGuildListParams parameters, CancellationToken cancellationToken)
@@ -43,7 +42,6 @@ public class GuildController : Controller
     /// <param name="id">Guild ID</param>
     /// <param name="cancellationToken"></param>
     [HttpGet("{id}")]
-    [OpenApiOperation(nameof(GuildController) + "_" + nameof(GetGuildDetailAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id, CancellationToken cancellationToken)
@@ -62,7 +60,6 @@ public class GuildController : Controller
     /// <response code="400">Validation of parameters failed.</response>
     /// <response code="404">Guild not found.</response>
     [HttpPut("{id}")]
-    [OpenApiOperation(nameof(GuildController) + "_" + nameof(GetGuildDetailAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]

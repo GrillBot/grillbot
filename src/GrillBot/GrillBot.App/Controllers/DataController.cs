@@ -46,7 +46,6 @@ public class DataController : Controller
     /// </summary>
     [HttpGet("guilds")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableGuildsAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync(CancellationToken cancellationToken)
     {
@@ -77,7 +76,6 @@ public class DataController : Controller
     /// <param name="cancellationToken"></param>
     [HttpGet("channels")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [OpenApiOperation(nameof(DataController) + "_" + nameof(GetChannelsAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false, CancellationToken cancellationToken = default)
     {
@@ -133,7 +131,6 @@ public class DataController : Controller
     /// </summary>
     [HttpGet("roles")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [OpenApiOperation(nameof(DataController) + "_" + nameof(GetRoles))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult<Dictionary<string, string>> GetRoles(ulong? guildId)
     {
@@ -159,7 +156,6 @@ public class DataController : Controller
     /// <response code="200">Success</response>
     [HttpGet("commands")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(DataController) + "_" + nameof(GetCommandsList))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult<List<string>> GetCommandsList()
     {
@@ -185,7 +181,6 @@ public class DataController : Controller
     /// <response code="200">Success</response>
     [HttpGet("users")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [OpenApiOperation(nameof(DataController) + "_" + nameof(GetAvailableUsersAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null, CancellationToken cancellationToken = default)
     {
@@ -222,7 +217,6 @@ public class DataController : Controller
     /// </summary>
     [HttpGet("emotes")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(DataController) + "_" + nameof(GetSupportedEmotes))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<List<EmoteItem>> GetSupportedEmotes()
     {

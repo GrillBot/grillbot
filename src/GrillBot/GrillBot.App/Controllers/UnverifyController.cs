@@ -38,7 +38,6 @@ public class UnverifyController : Controller
     /// <response code="200">Success</response>
     [HttpGet("current")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetCurrentUnverifiesAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync(CancellationToken cancellationToken)
     {
@@ -65,7 +64,6 @@ public class UnverifyController : Controller
     /// <response code="404">Unverify or guild not found.</response>
     [HttpDelete("{guildId}/{userId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RemoveUnverifyAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId)
@@ -93,7 +91,6 @@ public class UnverifyController : Controller
     /// <param name="endTime">New unverify end.</param>
     [HttpPut("{guildId}/{userId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(UpdateUnverifyTimeAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -121,7 +118,6 @@ public class UnverifyController : Controller
     /// <response code="400">Validation failed</response>
     [HttpGet("log")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(GetUnverifyLogsAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters,
@@ -140,7 +136,6 @@ public class UnverifyController : Controller
     /// <response code="404">Unverify, guild or users not found.</response>
     [HttpPost("log/{logId}/recover")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [OpenApiOperation(nameof(UnverifyController) + "_" + nameof(RecoverUnverifyAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]

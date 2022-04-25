@@ -25,7 +25,6 @@ public class AuthController : Controller
     /// <response code="200">Success</response>
     [HttpGet("link")]
     [AllowAnonymous]
-    [OpenApiOperation(nameof(AuthController) + "_" + nameof(GetRedirectLink))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult<OAuth2GetLink> GetRedirectLink([FromQuery] AuthState state)
     {
@@ -43,7 +42,6 @@ public class AuthController : Controller
     /// <response code="400">Validation failed</response>
     [HttpGet("callback")]
     [AllowAnonymous]
-    [OpenApiOperation(nameof(AuthController) + "_" + nameof(OnOAuth2CallbackAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult> OnOAuth2CallbackAsync([FromQuery, Required] string code, [Required, FromQuery] string state, CancellationToken cancellationToken)
@@ -62,7 +60,6 @@ public class AuthController : Controller
     /// <response code="400">Validation failed</response>
     [HttpGet("token")]
     [AllowAnonymous]
-    [OpenApiOperation(nameof(AuthController) + "_" + nameof(CreateLoginTokenAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<OAuth2LoginToken>> CreateLoginTokenAsync([FromQuery, Required] string sessionId, [FromQuery, Required] bool isPublic,

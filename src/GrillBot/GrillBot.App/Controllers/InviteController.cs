@@ -28,7 +28,6 @@ public class InviteController : Controller
     /// <response code="200">Returns paginated list of created and used invites.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpGet]
-    [OpenApiOperation(nameof(InviteController) + "_" + nameof(GetInviteListAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromQuery] GetInviteListParams parameters, CancellationToken cancellationToken)
@@ -42,7 +41,6 @@ public class InviteController : Controller
     /// </summary>
     /// <response code="200">Returns report per server.</response>
     [HttpPost("metadata/refresh")]
-    [OpenApiOperation(nameof(InviteController) + "_" + nameof(RefreshMetadataCacheAsync))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> RefreshMetadataCacheAsync()
     {
@@ -55,7 +53,6 @@ public class InviteController : Controller
     /// </summary>
     /// <response code="200">Returns count of current items in cache.</response>
     [HttpGet("metadata/count")]
-    [OpenApiOperation(nameof(InviteController) + "_" + nameof(GetCurrentMetadataCount))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<int> GetCurrentMetadataCount()
     {

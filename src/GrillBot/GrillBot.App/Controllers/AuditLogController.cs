@@ -31,7 +31,6 @@ public class AuditLogController : Controller
     /// <response code="200"></response>
     /// <response code="404">Item not found.</response>
     [HttpDelete("{id}")]
-    [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(RemoveItemAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> RemoveItemAsync(long id)
@@ -50,7 +49,6 @@ public class AuditLogController : Controller
     /// <response code="200">Returns paginated list of audit log items.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpGet]
-    [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetAuditLogListAsync))]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters, CancellationToken cancellationToken)
@@ -65,7 +63,6 @@ public class AuditLogController : Controller
     /// <response code="200">Success.</response>
     /// <response code="404">Item not found or file not exists.</response>
     [HttpGet("{id}/{fileId}")]
-    [OpenApiOperation(nameof(AuditLogController) + "_" + nameof(GetFileContentAsync))]
     [ProducesResponseType(typeof(FileContentResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<IActionResult> GetFileContentAsync(long id, long fileId, CancellationToken cancellationToken)

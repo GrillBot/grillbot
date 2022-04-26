@@ -10,8 +10,8 @@ stages:
 cache:
   key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
   paths:
-    - "$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/project.assets.json"
-    - "$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/*.csproj.nuget.*"
+    - "$SOURCE_CODE_PATH/$OBJECTS_DIRECTORY/project.assets.json"
+    - "$SOURCE_CODE_PATH/$OBJECTS_DIRECTORY/*.csproj.nuget.*"
     - "$NUGET_PACKAGES_DIRECTORY"
 
   policy: pull-push

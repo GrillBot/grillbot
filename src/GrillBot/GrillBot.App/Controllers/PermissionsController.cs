@@ -37,10 +37,10 @@ public class PermissionsController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Conflict)]
-    public async Task<ActionResult> CreateExplicitPermissionAsync([FromBody] CreateExplicitPermissionParams parameters, CancellationToken cancellationToken)
+    public async Task<ActionResult> CreateExplicitPermissionAsync([FromBody] CreateExplicitPermissionParams parameters)
     {
         var exists = await DbContext.ExplicitPermissions.AsNoTracking()
-            .AnyAsync(o => o.Command == parameters.Command && o.TargetId == parameters.TargetId, cancellationToken);
+            .AnyAsync(o => o.Command == parameters.Command && o.TargetId == parameters.TargetId);
 
         if (exists)
             return Conflict(new MessageResponse($"Explicitní oprávnění pro příkaz {parameters.Command} ({parameters.TargetId}) již existuje."));
@@ -56,8 +56,8 @@ public class PermissionsController : Controller
             State = parameters.State
         };
 
-        await DbContext.AddAsync(permission, cancellationToken);
-        await DbContext.SaveChangesAsync(cancellationToken);
+        await DbContext.AddAsync(permission);
+        await DbContext.SaveChangesAsync();
         return Ok();
     }
 
@@ -71,16 +71,16 @@ public class PermissionsController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> RemoveExplicitPermissionAsync([Required] string command, [Required] string targetId, CancellationToken cancellationToken)
+    public async Task<ActionResult> RemoveExplicitPermissionAsync([Required] string command, [Required] string targetId)
     {
         var permission = await DbContext.ExplicitPermissions.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
 
         if (permission == null)
             return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
 
         DbContext.Remove(permission);
-        await DbContext.SaveChangesAsync(cancellationToken);
+        await DbContext.SaveChangesAsync();
         return Ok();
     }
 
@@ -139,17 +139,16 @@ public class PermissionsController : Controller
     [HttpPut("set")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> SetExplicitPermissionStateAsync([Required] string command, [Required] string targetId, ExplicitPermissionState state,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> SetExplicitPermissionStateAsync([Required] string command, [Required] string targetId, ExplicitPermissionState state)
     {
         var permission = await DbContext.ExplicitPermissions.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
 
         if (permission == null)
             return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
 
         permission.State = state;
-        await DbContext.SaveChangesAsync(cancellationToken);
+        await DbContext.SaveChangesAsync();
         return Ok();
     }
 }

@@ -43,9 +43,9 @@ public class SearchingController : Controller
     [HttpDelete]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids, CancellationToken cancellationToken)
+    public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids)
     {
-        await Service.RemoveSearchesAsync(ids, cancellationToken);
+        await Service.RemoveSearchesAsync(ids);
         return Ok();
     }
 }

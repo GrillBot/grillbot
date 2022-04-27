@@ -74,16 +74,16 @@ public class SearchingService : ServiceBase
         await context.SaveChangesAsync();
     }
 
-    public async Task RemoveSearchesAsync(long[] ids, CancellationToken cancellationToken = default)
+    public async Task RemoveSearchesAsync(long[] ids)
     {
         using var context = DbFactory.Create();
 
         var searches = await context.SearchItems.AsQueryable()
             .Where(o => ids.Contains(o.Id))
-            .ToListAsync(cancellationToken);
+            .ToListAsync();
 
         context.RemoveRange(searches);
-        await context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync();
     }
 
     public async Task<List<SearchingItem>> GetSearchListAsync(IGuild guild, ITextChannel channel, string messageQuery, int page)

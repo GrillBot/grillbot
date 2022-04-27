@@ -45,7 +45,7 @@ public class UnverifyController : Controller
 
         var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId, cancellationToken);
 
-        var result = Mapper.Map<List<UnverifyUserProfile>>(unverifies);
+        var result = Mapper.Map<List<UnverifyUserProfile>>(unverifies.Select(o => o.Item1));
         foreach (var profile in result)
         {
             var entity = unverifies.Find(o => o.Item1.Destination.Id == profile.User.Id.ToUlong());

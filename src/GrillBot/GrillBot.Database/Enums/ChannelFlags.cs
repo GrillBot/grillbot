@@ -3,7 +3,7 @@
 namespace GrillBot.Database.Enums;
 
 [Flags]
-public enum ChannelFlags
+public enum ChannelFlags : long
 {
     None = 0,
 
@@ -16,4 +16,9 @@ public enum ChannelFlags
     /// Commands execution is disabled in this channel.
     /// </summary>
     CommandsDisabled = 2,
+
+    /// <summary>
+    /// Channel or thread was deleted/archived.
+    /// </summary>
+    Deleted = 4,
 }

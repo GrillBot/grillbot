@@ -3,6 +3,7 @@ using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Database;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
@@ -14,6 +15,8 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>
     public string GuildId { get; set; }
     public string NameContains { get; set; }
     public ChannelType? ChannelType { get; set; }
+
+    public bool HideDeleted { get; set; }
 
     /// <summary>
     /// Available: Name, Type, MessageCount
@@ -38,6 +41,9 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>
 
         if (ChannelType != null)
             query = query.Where(o => o.ChannelType == ChannelType.Value);
+
+        if (HideDeleted)
+            query = query.Where(o => (o.Flags & (long)ChannelFlags.Deleted) == 0);
 
         return query;
     }

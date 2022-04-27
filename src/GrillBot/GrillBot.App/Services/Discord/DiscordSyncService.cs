@@ -17,6 +17,39 @@ public class DiscordSyncService : ServiceBase
         DiscordClient.UserUpdated += OnUserUpdatedAsync;
         DiscordClient.GuildMemberUpdated += OnGuildMemberUpdated;
         DiscordClient.ChannelUpdated += OnChannelUpdatedAsync;
+        DiscordClient.ChannelDestroyed += OnChannelDeletedAsync;
+        DiscordClient.ThreadDeleted += OnThreadDeletedAsync;
+    }
+
+    private async Task OnChannelDeletedAsync(SocketChannel channel)
+    {
+        if (!InitializationService.Get()) return;
+
+        using var context = DbFactory.Create();
+        var dbChannel = await context.Channels.FirstOrDefaultAsync(o => o.ChannelId == channel.Id.ToString());
+        if (dbChannel == null) return;
+
+        dbChannel.Flags |= (long)ChannelFlags.Deleted;
+
+        // All threads from this channels were deleted with channel.
+        var channelThreads = await context.Channels.Where(o => o.ParentChannelId == channel.Id.ToString()).ToListAsync();
+        channelThreads.ForEach(o => o.Flags |= (long)ChannelFlags.Deleted);
+
+        await context.SaveChangesAsync();
+    }
+
+    private async Task OnThreadDeletedAsync(Cacheable<SocketThreadChannel, ulong> thread)
+    {
+        if (!InitializationService.Get()) return;
+
+        using var context = DbFactory.Create();
+
+        var dbThread = await context.Channels
+            .FirstOrDefaultAsync(o => (o.ChannelType == ChannelType.PublicThread || o.ChannelType == ChannelType.PrivateThread) && o.ChannelId == thread.Id.ToString());
+        if (dbThread == null) return;
+
+        dbThread.Flags |= (long)ChannelFlags.Deleted;
+        await context.SaveChangesAsync();
     }
 
     private async Task OnChannelUpdatedAsync(SocketChannel before, SocketChannel after)
@@ -85,6 +118,9 @@ public class DiscordSyncService : ServiceBase
     {
         using var context = DbFactory.Create();
 
+        var dbChannels = await context.Channels.ToListAsync();
+        dbChannels.ForEach(o => o.Flags |= (long)ChannelFlags.Deleted);
+
         foreach (var guild in DiscordClient.Guilds)
         {
             var userIds = guild.Users.Select(o => o.Id.ToString()).ToList();
@@ -106,19 +142,23 @@ public class DiscordSyncService : ServiceBase
                     dbUser.User.Flags |= (int)UserFlags.NotUser;
             }
 
-            var channelsQuery = guild.Channels.Where(o => o is SocketTextChannel || o is SocketVoiceChannel);
-            var channelIds = channelsQuery.Select(o => o.Id.ToString()).ToList();
-            var dbChannels = await context.Channels
-                .AsQueryable()
-                .Where(o => o.GuildId == guild.Id.ToString() && channelIds.Contains(o.ChannelId))
-                .ToListAsync();
-
+            var guildDbChannels = dbChannels.Where(o => o.GuildId == guild.Id.ToString());
             foreach (var channel in guild.TextChannels)
             {
-                var dbChannel = dbChannels.Find(o => o.ChannelId == channel.Id.ToString());
+                var dbChannel = guildDbChannels.FirstOrDefault(o => o.IsText() && o.ChannelId == channel.Id.ToString());
                 if (dbChannel == null) continue;
 
                 dbChannel.Name = channel.Name;
+                dbChannel.Flags &= ~(long)ChannelFlags.Deleted;
+
+                foreach (var thread in channel.Threads)
+                {
+                    var dbThread = guildDbChannels.FirstOrDefault(o => o.IsThread() && o.ChannelId == thread.Id.ToString() && o.ParentChannelId == channel.Id.ToString());
+                    if (dbThread == null) continue;
+
+                    dbThread.Name = thread.Name;
+                    dbThread.Flags &= ~(long)ChannelFlags.Deleted;
+                }
             }
         }
 
@@ -169,7 +209,8 @@ public class DiscordSyncService : ServiceBase
 
     private static async Task SyncChannelAsync(GrillBotContext context, SocketTextChannel channel)
     {
-        var dbChannel = await context.Channels.AsQueryable().FirstOrDefaultAsync(o => o.ChannelId == channel.Id.ToString() && o.GuildId == channel.Guild.Id.ToString());
+        var dbChannel = await context.Channels.AsQueryable()
+            .FirstOrDefaultAsync(o => o.ChannelId == channel.Id.ToString() && o.GuildId == channel.Guild.Id.ToString());
         if (dbChannel == null) return;
 
         dbChannel.Name = channel.Name;

@@ -60,5 +60,11 @@ namespace GrillBot.Database.Entity
         }
 
         public bool HasFlag(ChannelFlags flags) => (Flags & (long)flags) != 0;
+
+        public bool IsThread()
+            => ChannelType == ChannelType.PublicThread || ChannelType == ChannelType.PrivateThread;
+
+        public bool IsText()
+            => ChannelType == ChannelType.Text;
     }
 }

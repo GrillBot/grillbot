@@ -68,7 +68,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     [TestMethod]
     public async Task RemoveSearchesAsync()
     {
-        var result = await AdminController.RemoveSearchesAsync(new[] { 1L }, CancellationToken.None);
+        var result = await AdminController.RemoveSearchesAsync(new[] { 1L });
         CheckResult<OkResult>(result);
     }
 }

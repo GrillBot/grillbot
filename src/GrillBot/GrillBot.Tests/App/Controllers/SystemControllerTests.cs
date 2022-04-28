@@ -62,7 +62,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetCommandStatusAsync("asdf");
-        CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
+        CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
 
     [TestMethod]
@@ -77,7 +77,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetCommandStatusAsync();
-        CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
+        CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
 
     [TestMethod]
@@ -92,7 +92,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetInteractionsStatusAsync("asdf");
-        CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
+        CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
 
     [TestMethod]
@@ -107,7 +107,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetInteractionsStatusAsync();
-        CheckResult<OkObjectResult, List<CommandStatisticItem>>(result);
+        CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
 
     [TestMethod]

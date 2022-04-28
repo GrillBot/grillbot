@@ -27,7 +27,7 @@ public class StatisticsController : Controller
     /// <response code="200">Returns dictionary of database tables and records count. (TableName, Count)</response>
     [HttpGet("db")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetDbStatusAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<Dictionary<string, int>>> GetDbStatusAsync(CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
@@ -62,7 +62,7 @@ public class StatisticsController : Controller
     /// <response code="200">Returns dictionary of audit logs statistics per type. (Type, Count)</response>
     [HttpGet("audit-log/type")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsByTypeAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsByTypeAsync(CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
@@ -83,7 +83,7 @@ public class StatisticsController : Controller
     /// <response code="200">Returns dictionary of audit logs statistics per date (Year-Month, Count)</response>
     [HttpGet("audit-log/date")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsByDateAsync()
+    public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsByDateAsync(CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
@@ -92,7 +92,7 @@ public class StatisticsController : Controller
             .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
             .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month}", Count = o.Count() });
 
-        var data = await query.ToDictionaryAsync(o => o.Date, o => o.Count);
+        var data = await query.ToDictionaryAsync(o => o.Date, o => o.Count, cancellationToken);
         return Ok(data);
     }
 
@@ -101,7 +101,7 @@ public class StatisticsController : Controller
     /// </summary>
     [HttpGet("commands")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CommandStatisticItem>>> GetTextCommandStatisticsAsync(string searchQuery = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<List<StatisticItem>>> GetTextCommandStatisticsAsync(CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
@@ -110,29 +110,25 @@ public class StatisticsController : Controller
             .Select(o => new { o.CreatedAt, o.Data });
 
         var dbData = await query.ToListAsync(cancellationToken);
-        var deserializedData = dbData.ConvertAll(o => new
+        var deserializedData = dbData.Select(o => new
         {
             o.CreatedAt,
             Data = JsonConvert.DeserializeObject<CommandExecution>(o.Data, AuditLogService.JsonSerializerSettings)
         });
 
-        var dataQuery = deserializedData.Where(o => !string.IsNullOrEmpty(o.Data.Command));
-        if (!string.IsNullOrEmpty(searchQuery))
-            dataQuery = dataQuery.Where(o => o.Data.Command.Contains(searchQuery));
-
-        var groupedData = dataQuery
+        var groupedData = deserializedData.Where(o => !string.IsNullOrEmpty(o.Data.Command))
             .GroupBy(o => o.Data.Command)
-            .Select(o => new CommandStatisticItem()
+            .Select(o => new StatisticItem()
             {
-                Command = o.Key,
+                Key = o.Key,
                 FailedCount = o.Count(x => !x.Data.IsSuccess),
-                LastCall = o.Max(x => x.CreatedAt),
+                Last = o.Max(x => x.CreatedAt),
                 SuccessCount = o.Count(x => x.Data.IsSuccess),
                 MinDuration = o.Min(x => x.Data.Duration),
                 MaxDuration = o.Max(x => x.Data.Duration),
                 TotalDuration = o.Sum(x => x.Data.Duration)
             })
-            .OrderBy(o => o.Command)
+            .OrderBy(o => o.Key)
             .ToList();
 
         return Ok(groupedData);
@@ -143,8 +139,7 @@ public class StatisticsController : Controller
     /// </summary>
     [HttpGet("interactions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CommandStatisticItem>>> GetInteractionsStatusAsync(string searchQuery = null,
-        CancellationToken cancellationToken = default)
+    public async Task<ActionResult<List<StatisticItem>>> GetInteractionsStatusAsync(CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
@@ -159,21 +154,17 @@ public class StatisticsController : Controller
             Data = JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogService.JsonSerializerSettings)
         });
 
-        var dataQuery = deserializedData.AsEnumerable();
-        if (!string.IsNullOrEmpty(searchQuery))
-            dataQuery = dataQuery.Where(o => o.Data.FullName.Contains(searchQuery));
-
-        var groupedData = dataQuery.GroupBy(o => o.Data.FullName)
-            .Select(o => new CommandStatisticItem()
+        var groupedData = deserializedData.GroupBy(o => o.Data.FullName)
+            .Select(o => new StatisticItem()
             {
-                Command = o.Key,
+                Key = o.Key,
                 FailedCount = o.Count(x => !x.Data.IsSuccess),
-                LastCall = o.Max(x => x.CreatedAt),
+                Last = o.Max(x => x.CreatedAt),
                 SuccessCount = o.Count(x => x.Data.IsSuccess),
                 MinDuration = o.Min(x => x.Data.Duration),
                 MaxDuration = o.Max(x => x.Data.Duration),
                 TotalDuration = o.Sum(x => x.Data.Duration)
-            }).OrderBy(o => o.Command)
+            }).OrderBy(o => o.Key)
             .ToList();
 
         return Ok(groupedData);
@@ -205,7 +196,7 @@ public class StatisticsController : Controller
     /// <response code="200">Returns dictionary of unverify logs statistics per date (Year-Month, Count)</response>
     [HttpGet("unverify-logs/date")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByDateAsync()
+    public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByDateAsync(CancellationToken cancellationToken = default)
     {
         using var context = DbFactory.Create();
 
@@ -214,7 +205,46 @@ public class StatisticsController : Controller
             .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
             .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month}", Count = o.Count() });
 
-        var data = await query.ToDictionaryAsync(o => o.Date, o => o.Count);
+        var data = await query.ToDictionaryAsync(o => o.Date, o => o.Count, cancellationToken);
+        return Ok(data);
+    }
+
+    /// <summary>
+    /// Get statistics of planned background jobs.
+    /// </summary>
+    /// <response code="200">Returns statistics of planned jobs.</response>
+    [HttpGet("jobs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<StatisticItem>>> GetJobStatisticsAsync(CancellationToken cancellationToken = default)
+    {
+        using var context = DbFactory.Create();
+
+        var query = context.AuditLogs.AsNoTracking()
+            .Where(o => o.Type == AuditLogItemType.JobCompleted)
+            .Select(o => new { o.CreatedAt, o.Data });
+
+        var dbData = await query.ToListAsync(cancellationToken);
+
+        var data = dbData
+            .Select(o => new
+            {
+                o.CreatedAt,
+                Data = JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogService.JsonSerializerSettings)
+            })
+            .GroupBy(o => o.Data.JobName)
+            .Select(o => new StatisticItem()
+            {
+                Key = o.Key,
+                FailedCount = o.Count(x => x.Data.WasError),
+                Last = o.Max(x => x.CreatedAt),
+                MaxDuration = o.Max(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds)),
+                MinDuration = o.Min(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds)),
+                SuccessCount = o.Count(x => !x.Data.WasError),
+                TotalDuration = o.Sum(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds))
+            })
+            .OrderBy(o => o.Key)
+            .ToList();
+
         return Ok(data);
     }
 }

@@ -5,17 +5,17 @@ namespace GrillBot.Data.Models.API.Statistics;
 /// <summary>
 /// Statistics about command.
 /// </summary>
-public class CommandStatisticItem
+public class StatisticItem
 {
     /// <summary>
-    /// Command
+    /// Key
     /// </summary>
-    public string Command { get; set; }
+    public string Key { get; set; }
 
     /// <summary>
     /// Last call of command
     /// </summary>
-    public DateTime LastCall { get; set; }
+    public DateTime Last { get; set; }
 
     /// <summary>
     /// Count of success calls.

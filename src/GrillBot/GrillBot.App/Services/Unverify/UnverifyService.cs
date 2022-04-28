@@ -287,9 +287,10 @@ namespace GrillBot.App.Services.Unverify
             await guild.DownloadUsersAsync();
             using var context = DbFactory.Create();
 
-            var unverify = await context.Unverifies
+            var unverify = await context.Unverifies.AsNoTracking()
                 .Include(o => o.UnverifyLog)
                 .Where(o => o.GuildId == guild.Id.ToString())
+                .OrderBy(o => o.StartAt)
                 .Skip(page)
                 .FirstOrDefaultAsync();
 
@@ -297,7 +298,17 @@ namespace GrillBot.App.Services.Unverify
                 return null;
 
             var user = guild.GetUser(unverify.UserId.ToUlong());
-            return ProfileGenerator.Reconstruct(unverify, user, guild);
+            var profile = ProfileGenerator.Reconstruct(unverify, user, guild);
+
+            var hiddenChannels = await context.Channels.AsNoTracking()
+                .Where(o => o.GuildId == guild.Id.ToString() && (o.Flags & (long)ChannelFlags.StatsHidden) != 0 && (o.Flags & (long)ChannelFlags.Deleted) == 0)
+                .Select(o => o.ChannelId)
+                .ToListAsync();
+
+            profile.ChannelsToKeep = profile.ChannelsToKeep.FindAll(o => !hiddenChannels.Contains(o.ChannelId.ToString()));
+            profile.ChannelsToRemove = profile.ChannelsToRemove.FindAll(o => !hiddenChannels.Contains(o.ChannelId.ToString()));
+
+            return profile;
         }
 
         public async Task<List<Tuple<UnverifyUserProfile, IGuild>>> GetAllUnverifiesAsync(ulong? userId = null, CancellationToken cancellationToken = default)

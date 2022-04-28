@@ -2,6 +2,7 @@
 
 namespace GrillBot.App.Infrastructure;
 
+[DefaultMemberPermissions(GuildPermission.UseApplicationCommands)]
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
     protected bool CanDefer { get; set; } = true;

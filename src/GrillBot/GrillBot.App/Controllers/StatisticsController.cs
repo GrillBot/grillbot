@@ -90,7 +90,7 @@ public class StatisticsController : Controller
         var query = context.AuditLogs.AsNoTracking()
             .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
             .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
-            .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month}", Count = o.Count() });
+            .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() });
 
         var data = await query.ToDictionaryAsync(o => o.Date, o => o.Count, cancellationToken);
         return Ok(data);
@@ -203,7 +203,7 @@ public class StatisticsController : Controller
         var query = context.UnverifyLogs.AsNoTracking()
             .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
             .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
-            .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month}", Count = o.Count() });
+            .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() });
 
         var data = await query.ToDictionaryAsync(o => o.Date, o => o.Count, cancellationToken);
         return Ok(data);

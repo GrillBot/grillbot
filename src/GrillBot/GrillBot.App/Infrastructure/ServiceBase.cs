@@ -27,4 +27,11 @@ public abstract class ServiceBase
 
     protected GrillBotContext CreateContext()
         => DbFactory.Create();
+
+    protected async Task<bool> CheckPendingMigrationsAsync()
+    {
+        using var context = DbFactory.Create();
+
+        return (await context.Database.GetPendingMigrationsAsync()).Any();
+    }
 }

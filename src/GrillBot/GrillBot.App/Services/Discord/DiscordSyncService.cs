@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Discord.Synchronization;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.Discord;
@@ -6,112 +7,68 @@ namespace GrillBot.App.Services.Discord;
 [Initializable]
 public class DiscordSyncService : ServiceBase
 {
+    private ChannelSynchronization Channels { get; }
+    private UserSynchronization Users { get; }
+    private GuildSynchronization Guilds { get; }
+    private GuildUserSynchronization GuildUsers { get; }
+
     public DiscordSyncService(DiscordSocketClient client, GrillBotContextFactory dbFactory, DiscordInitializationService initializationService)
         : base(client, dbFactory, initializationService)
     {
+        Channels = new ChannelSynchronization(DbFactory);
+        Users = new UserSynchronization(DbFactory);
+        Guilds = new GuildSynchronization(DbFactory);
+        GuildUsers = new GuildUserSynchronization(DbFactory);
+
         DiscordClient.Ready += OnReadyAsync;
-        DiscordClient.JoinedGuild += OnGuildAvailableAsync;
-        DiscordClient.GuildAvailable += OnGuildAvailableAsync;
-        DiscordClient.GuildUpdated += GuildUpdatedAsync;
-        DiscordClient.UserJoined += OnUserJoinedAsync;
-        DiscordClient.UserUpdated += OnUserUpdatedAsync;
-        DiscordClient.GuildMemberUpdated += OnGuildMemberUpdated;
-        DiscordClient.ChannelUpdated += OnChannelUpdatedAsync;
-        DiscordClient.ChannelDestroyed += OnChannelDeletedAsync;
-        DiscordClient.ThreadDeleted += OnThreadDeletedAsync;
+        DiscordClient.UserJoined += user => RunAsync(() => GuildUsers.UserJoinedAsync(user));
+
+        DiscordClient.GuildMemberUpdated += (before, after) => RunAsync(
+            () => GuildUsers.GuildMemberUpdatedAsync(before.Value, after),
+            () => before.HasValue && (before.Value.Nickname != after.Nickname || before.Value.Username != after.Username || before.Value.Discriminator != after.Discriminator)
+        );
+
+        DiscordClient.JoinedGuild += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
+        DiscordClient.GuildAvailable += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
+
+        DiscordClient.GuildUpdated += (before, after) => RunAsync(
+            () => Guilds.GuildUpdatedAsync(before, after),
+            () => before.Name != after.Name || !before.Roles.SequenceEqual(after.Roles)
+        );
+
+        DiscordClient.UserUpdated += (before, after) => RunAsync(
+            () => Users.UserUpdatedAsync(before, after),
+            () => before.Username != after.Username || before.Discriminator != after.Discriminator || before.IsUser() != after.IsUser()
+        );
+
+        DiscordClient.ChannelUpdated += (before, after) => RunAsync(
+            () => Channels.ChannelUpdatedAsync(before as ITextChannel, after as ITextChannel),
+            () => before is ITextChannel && after is ITextChannel
+        );
+
+        DiscordClient.ThreadDeleted += thread => RunAsync(
+            () => Channels.ThreadDeletedAsync(thread.Value),
+            () => thread.HasValue
+        );
+
+        DiscordClient.ChannelDestroyed += channel => RunAsync(
+            () => Channels.ChannelDeletedAsync(channel as ITextChannel),
+            () => channel is ITextChannel
+        );
+
+        DiscordClient.ThreadUpdated += (before, after) => RunAsync(
+            () => Channels.ThreadUpdatedAsync(before.Value, after),
+            () => before.HasValue
+        );
     }
 
-    private async Task OnChannelDeletedAsync(SocketChannel channel)
+    private async Task RunAsync(Func<Task> syncFunction, Func<bool> check = null)
     {
         if (!InitializationService.Get()) return;
+        if (check != null && !check()) return;
+        if (await CheckPendingMigrationsAsync()) return;
 
-        using var context = DbFactory.Create();
-        var dbChannel = await context.Channels.FirstOrDefaultAsync(o => o.ChannelId == channel.Id.ToString());
-        if (dbChannel == null) return;
-
-        dbChannel.Flags |= (long)ChannelFlags.Deleted;
-
-        // All threads from this channels were deleted with channel.
-        var channelThreads = await context.Channels.Where(o => o.ParentChannelId == channel.Id.ToString()).ToListAsync();
-        channelThreads.ForEach(o => o.Flags |= (long)ChannelFlags.Deleted);
-
-        await context.SaveChangesAsync();
-    }
-
-    private async Task OnThreadDeletedAsync(Cacheable<SocketThreadChannel, ulong> thread)
-    {
-        if (!InitializationService.Get()) return;
-
-        using var context = DbFactory.Create();
-
-        var dbThread = await context.Channels
-            .FirstOrDefaultAsync(o => (o.ChannelType == ChannelType.PublicThread || o.ChannelType == ChannelType.PrivateThread) && o.ChannelId == thread.Id.ToString());
-        if (dbThread == null) return;
-
-        dbThread.Flags |= (long)ChannelFlags.Deleted;
-        await context.SaveChangesAsync();
-    }
-
-    private async Task OnChannelUpdatedAsync(SocketChannel before, SocketChannel after)
-    {
-        if (!InitializationService.Get()) return;
-        if (after is not SocketTextChannel textChannel || ((SocketTextChannel)before).Name == textChannel.Name) return;
-
-        using var context = DbFactory.Create();
-        await SyncChannelAsync(context, textChannel);
-        await context.SaveChangesAsync();
-    }
-
-    private async Task OnGuildMemberUpdated(Cacheable<SocketGuildUser, ulong> before, SocketGuildUser after)
-    {
-        if (!before.HasValue) return;
-        if (!InitializationService.Get()) return;
-        if (before.Value.Nickname == after.Nickname) return;
-
-        using var context = DbFactory.Create();
-        await SyncGuildUserAsync(context, after);
-        await context.SaveChangesAsync();
-    }
-
-    private async Task OnUserUpdatedAsync(SocketUser before, SocketUser after)
-    {
-        if (!InitializationService.Get()) return;
-        if (before.Username == after.Username) return;
-
-        using var context = DbFactory.Create();
-        await SyncUserAsync(context, after);
-        await context.SaveChangesAsync();
-    }
-
-    private async Task OnUserJoinedAsync(SocketGuildUser user)
-    {
-        if (!InitializationService.Get()) return;
-        using var context = DbFactory.Create();
-
-        await SyncGuildUserAsync(context, user);
-        await context.SaveChangesAsync();
-    }
-
-    private async Task GuildUpdatedAsync(SocketGuild before, SocketGuild after)
-    {
-        if (!InitializationService.Get()) return;
-        if (before.Name == after.Name) return;
-
-        using var context = DbFactory.Create();
-        await SyncGuildAsync(context, after);
-        await context.SaveChangesAsync();
-    }
-
-    private async Task OnGuildAvailableAsync(SocketGuild guild)
-    {
-        if (!InitializationService.Get()) return;
-        using var context = DbFactory.Create();
-
-        if ((await context.Database.GetPendingMigrationsAsync()).Any())
-            return;
-
-        await SyncGuildAsync(context, guild);
-        await context.SaveChangesAsync();
+        await syncFunction();
     }
 
     private async Task OnReadyAsync()
@@ -123,96 +80,11 @@ public class DiscordSyncService : ServiceBase
 
         foreach (var guild in DiscordClient.Guilds)
         {
-            var userIds = guild.Users.Select(o => o.Id.ToString()).ToList();
-            var users = await context.GuildUsers.AsQueryable()
-                .Include(o => o.User)
-                .Where(o => o.GuildId == guild.Id.ToString() && userIds.Contains(o.UserId))
-                .ToListAsync();
-
-            foreach (var user in guild.Users)
-            {
-                var dbUser = users.Find(o => o.UserId == user.Id.ToString());
-                if (dbUser == null) continue;
-
-                dbUser.Nickname = user.Nickname;
-                dbUser.User.Username = user.Username;
-                dbUser.User.Discriminator = user.Discriminator;
-
-                if (user.IsBot)
-                    dbUser.User.Flags |= (int)UserFlags.NotUser;
-            }
-
-            var guildDbChannels = dbChannels.Where(o => o.GuildId == guild.Id.ToString());
-            foreach (var channel in guild.TextChannels)
-            {
-                var dbChannel = guildDbChannels.FirstOrDefault(o => o.IsText() && o.ChannelId == channel.Id.ToString());
-                if (dbChannel == null) continue;
-
-                dbChannel.Name = channel.Name;
-                dbChannel.Flags &= ~(long)ChannelFlags.Deleted;
-
-                foreach (var thread in channel.Threads)
-                {
-                    var dbThread = guildDbChannels.FirstOrDefault(o => o.IsThread() && o.ChannelId == thread.Id.ToString() && o.ParentChannelId == channel.Id.ToString());
-                    if (dbThread == null) continue;
-
-                    dbThread.Name = thread.Name;
-                    dbThread.Flags &= ~(long)ChannelFlags.Deleted;
-                }
-            }
+            await GuildUsers.InitUsersAsync(context, guild);
+            await Channels.InitChannelsAsync(guild, dbChannels);
         }
 
-        var application = await DiscordClient.GetApplicationInfoAsync();
-        var botOwner = await context.Users.AsQueryable().FirstOrDefaultAsync(o => o.Id == application.Owner.Id.ToString());
-        if (botOwner == null)
-        {
-            botOwner = Database.Entity.User.FromDiscord(application.Owner);
-            await context.AddAsync(botOwner);
-        }
-        botOwner.Flags |= (int)UserFlags.BotAdmin;
-
+        await Users.InitBotAdminAsync(context, await DiscordClient.GetApplicationInfoAsync());
         await context.SaveChangesAsync();
-    }
-
-    private static async Task SyncGuildAsync(GrillBotContext context, SocketGuild guild)
-    {
-        var dbGuild = await context.Guilds.AsQueryable().FirstOrDefaultAsync(o => o.Id == guild.Id.ToString());
-        if (dbGuild == null) return;
-
-        dbGuild.Name = guild.Name;
-        dbGuild.BoosterRoleId = guild.Roles.FirstOrDefault(o => o.Tags?.IsPremiumSubscriberRole == true)?.Id.ToString();
-    }
-
-    private static async Task SyncUserAsync(GrillBotContext context, SocketUser user)
-    {
-        var dbUser = await context.Users.AsQueryable().FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
-        if (dbUser == null) return;
-
-        dbUser.Username = user.Username;
-        dbUser.Discriminator = user.Discriminator;
-    }
-
-    private static async Task SyncGuildUserAsync(GrillBotContext context, SocketGuildUser user)
-    {
-        var dbUser = await context.GuildUsers.AsQueryable()
-            .Include(o => o.User)
-            .FirstOrDefaultAsync(o => o.UserId == user.Id.ToString() && o.GuildId == user.Guild.Id.ToString());
-        if (dbUser == null) return;
-
-        dbUser.Nickname = user.Nickname;
-        dbUser.User.Username = user.Username;
-        dbUser.User.Discriminator = user.Discriminator;
-
-        if (user.IsBot)
-            dbUser.User.Flags |= (int)UserFlags.NotUser;
-    }
-
-    private static async Task SyncChannelAsync(GrillBotContext context, SocketTextChannel channel)
-    {
-        var dbChannel = await context.Channels.AsQueryable()
-            .FirstOrDefaultAsync(o => o.ChannelId == channel.Id.ToString() && o.GuildId == channel.Guild.Id.ToString());
-        if (dbChannel == null) return;
-
-        dbChannel.Name = channel.Name;
     }
 }

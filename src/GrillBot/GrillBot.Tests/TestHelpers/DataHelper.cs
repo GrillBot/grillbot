@@ -21,13 +21,14 @@ public static class DataHelper
         return mock.Object;
     }
 
-    public static IGuildUser CreateGuildUser(string username = "User", ulong id = Id, string discriminator = "1111", string nickname = null)
+    public static IGuildUser CreateGuildUser(string username = "User", ulong id = Id, string discriminator = "1111", string nickname = null, bool bot = false)
     {
         var mock = new Mock<IGuildUser>();
         mock.Setup(o => o.Username).Returns(username);
         mock.Setup(o => o.Id).Returns(id);
         mock.Setup(o => o.Discriminator).Returns(discriminator);
         mock.Setup(o => o.Nickname).Returns(nickname);
+        mock.Setup(o => o.IsBot).Returns(bot);
 
         var guild = CreateGuild();
         mock.Setup(o => o.Guild).Returns(guild);
@@ -45,7 +46,7 @@ public static class DataHelper
         return mock.Object;
     }
 
-    public static ITextChannel CreateTextChannel()
+    public static ITextChannel CreateTextChannel(Action<Mock<ITextChannel>> setup = null)
     {
         var mock = new Mock<ITextChannel>();
         mock.Setup(o => o.Id).Returns(Id);
@@ -57,6 +58,7 @@ public static class DataHelper
             It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(), It.IsAny<MessageFlags>()
         )).Returns(Task.FromResult<IUserMessage>(null));
 
+        setup?.Invoke(mock);
         return mock.Object;
     }
 
@@ -116,6 +118,32 @@ public static class DataHelper
         mock.Setup(o => o.Url).Returns("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png");
         mock.Setup(o => o.ProxyUrl).Returns("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png");
 
+        return mock.Object;
+    }
+
+    public static IApplication CreateApplication()
+    {
+        var mock = new Mock<IApplication>();
+
+        mock.Setup(o => o.Owner).Returns(CreateSelfUser());
+
+        return mock.Object;
+    }
+
+    public static IThreadChannel CreateThread(Action<Mock<IThreadChannel>> setup = null)
+    {
+        var mock = new Mock<IThreadChannel>();
+        mock.Setup(o => o.Id).Returns(Id + 1);
+        mock.Setup(o => o.Name).Returns("TextChannel");
+        mock.Setup(o => o.CategoryId).Returns(Id);
+
+        mock.Setup(o => o.SendFileAsync(
+            It.IsAny<FileAttachment>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(),
+            It.IsAny<RequestOptions>(), It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+            It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(), It.IsAny<MessageFlags>()
+        )).Returns(Task.FromResult<IUserMessage>(null));
+
+        setup?.Invoke(mock);
         return mock.Object;
     }
 }

@@ -66,5 +66,19 @@ namespace GrillBot.Database.Entity
 
         public bool IsText()
             => ChannelType == ChannelType.Text;
+
+        public bool IsVoice()
+            => ChannelType == ChannelType.Voice;
+
+        public bool IsStage()
+            => ChannelType == ChannelType.Stage;
+
+        public void MarkDeleted(bool deleted)
+        {
+            if (deleted)
+                Flags |= (long)ChannelFlags.Deleted;
+            else
+                Flags &= ~(long)ChannelFlags.Deleted;
+        }
     }
 }

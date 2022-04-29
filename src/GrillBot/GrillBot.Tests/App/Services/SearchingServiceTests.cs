@@ -69,7 +69,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
 
         await DbContext.AddAsync(new SearchItem()
         {
-            Channel = GuildChannel.FromDiscord(guild, channel, Discord.ChannelType.Text),
+            Channel = GuildChannel.FromDiscord(guild, channel, global::Discord.ChannelType.Text),
             ChannelId = channel.Id.ToString(),
             Guild = Guild.FromDiscord(guild),
             GuildId = guild.Id.ToString(),
@@ -93,7 +93,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
 
         await DbContext.AddAsync(new SearchItem()
         {
-            Channel = GuildChannel.FromDiscord(guild, channel, Discord.ChannelType.Text),
+            Channel = GuildChannel.FromDiscord(guild, channel, global::Discord.ChannelType.Text),
             ChannelId = channel.Id.ToString(),
             Guild = Guild.FromDiscord(guild),
             GuildId = guild.Id.ToString(),

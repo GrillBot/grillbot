@@ -2,6 +2,8 @@
 using GrillBot.App.Services.User;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -42,7 +44,10 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CreateAsync_LongMessage()
     {
-        var message = DataHelper.CreateMessage(content: new string('c', 5000));
+        var message = new UserMessageBuilder()
+            .SetContent(new string('c', 5000))
+            .Build();
+
         await Service.CreateAsync(null, null, null, message.Content);
     }
 
@@ -51,7 +56,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     {
         var guild = DataHelper.CreateGuild();
         var user = DataHelper.CreateGuildUser();
-        var channel = DataHelper.CreateChannel();
+        var channel = new ChannelBuilder()
+            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
 
         await Service.CreateAsync(guild, user, channel, "ahoj");
         Assert.IsTrue(true);
@@ -63,7 +69,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     public async Task RemoveSearchAsync_NotValidUser()
     {
         var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateChannel();
+        var channel = new ChannelBuilder()
+            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
         var user = DataHelper.CreateGuildUser(id: 654321);
         var anotherUser = DataHelper.CreateGuildUser(id: 123456);
 
@@ -87,7 +94,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     public async Task RemoveSearchAsync_Admin()
     {
         var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateChannel();
+        var channel = new ChannelBuilder()
+            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
         var user = DataHelper.CreateGuildUser(id: 654321);
         var anotherUser = DataHelper.CreateGuildUser(id: 123456);
 
@@ -145,7 +153,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     public async Task GenerateSuggestionsAsync()
     {
         var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateChannel();
+        var channel = new ChannelBuilder()
+            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
         var user = DataHelper.CreateGuildUser(id: 654321);
 
         var suggestions = await Service.GenerateSuggestionsAsync(user, guild, channel);
@@ -156,7 +165,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     public async Task GenerateSuggestionsAsync_Admin()
     {
         var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateChannel();
+        var channel = new ChannelBuilder()
+            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
         var user = DataHelper.CreateGuildUser(id: 654321);
 
         var userEntity = Database.Entity.User.FromDiscord(user);

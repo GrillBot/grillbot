@@ -4,6 +4,7 @@ using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Infrastructure;
 
 namespace GrillBot.Tests.App.Services.Suggestion;
 
@@ -71,7 +72,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
         });
 
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
-        guildEntity.EmoteSuggestionChannelId = DataHelper.CreateChannel().Id.ToString();
+        guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
         await DbContext.Guilds.AddAsync(guildEntity);
         await DbContext.SaveChangesAsync();
 

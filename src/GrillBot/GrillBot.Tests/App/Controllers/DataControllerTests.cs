@@ -2,6 +2,8 @@
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -73,12 +75,11 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableUsersAsync_Users()
     {
-        await DbContext.AddAsync(new User()
-        {
-            Id = "012345",
-            Username = "Username",
-            Discriminator = "1234"
-        });
+        var user = new UserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .Build();
+
+        await DbContext.AddAsync(User.FromDiscord(user));
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetAvailableUsersAsync(false);
@@ -144,12 +145,11 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableUsersAsync_Users_AsUser()
     {
-        await DbContext.AddAsync(new User()
-        {
-            Id = "012345",
-            Username = "Username",
-            Discriminator = "1234"
-        });
+        var user = new UserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .Build();
+
+        await DbContext.AddAsync(User.FromDiscord(user));
         await DbContext.SaveChangesAsync();
 
         var result = await UserController.GetAvailableUsersAsync(false);

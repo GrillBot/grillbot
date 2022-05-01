@@ -4,6 +4,7 @@ using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.IO;
@@ -57,11 +58,11 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var item = new AuditLogItem()
         {
-            ChannelId = "12345",
+            ChannelId = Consts.ChannelId.ToString(),
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = "12345",
-            ProcessedUserId = "12345",
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
             Type = AuditLogItemType.MessageDeleted,
             Id = 12345,
         };
@@ -75,10 +76,10 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
         await DbContext.AddAsync(item);
 
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
+        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.RemoveItemAsync(12345);
@@ -90,11 +91,11 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var item = new AuditLogItem()
         {
-            ChannelId = "12345",
+            ChannelId = Consts.ChannelId.ToString(),
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = "12345",
-            ProcessedUserId = "12345",
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
             Type = AuditLogItemType.MessageDeleted,
             Id = 12345,
         };
@@ -109,10 +110,10 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
         await DbContext.AddAsync(item);
 
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
+        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.RemoveItemAsync(12345);
@@ -132,41 +133,30 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var filter = new AuditLogListParams()
         {
-            ChannelId = "12345",
+            ChannelId = Consts.ChannelId.ToString(),
             CreatedFrom = DateTime.MinValue,
             CreatedTo = DateTime.MaxValue,
             GuildId = "12345",
             IgnoreBots = true,
-            ProcessedUserIds = new List<string>() { "12345" },
+            ProcessedUserIds = new List<string>() { Consts.UserId.ToString() },
             Types = Enum.GetValues<AuditLogItemType>().ToList()
         };
 
-        await DbContext.AddRangeAsync(new[]
+        await DbContext.AddAsync(new AuditLogItem() { ChannelId = Consts.ChannelId.ToString(), CreatedAt = DateTime.UtcNow, Data = null, GuildId = Consts.GuildId.ToString(), ProcessedUserId = Consts.UserId.ToString(), Type = AuditLogItemType.Command });
+        await DbContext.AddRangeAsync(Enum.GetValues<AuditLogItemType>().Where(o => o > 0).Select(o => new AuditLogItem()
         {
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = null, GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.Command },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.Command },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "--", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.Info },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.ChannelDeleted },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.ChannelUpdated },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.EmojiDeleted },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.GuildUpdated },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.MemberUpdated },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.MessageDeleted },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.MessageEdited },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.OverwriteCreated },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.OverwriteUpdated },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.Unban },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.UserJoined },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.UserLeft },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.InteractionCommand },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.ThreadDeleted },
-            new AuditLogItem() { ChannelId = "12345", CreatedAt = DateTime.UtcNow, Data = "{}", GuildId = "12345", ProcessedUserId = "12345", Type = AuditLogItemType.JobCompleted }
-        });
+            ChannelId = Consts.ChannelId.ToString(),
+            CreatedAt = DateTime.UtcNow,
+            Data = o == AuditLogItemType.Info ? "--" : "{}",
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
+            Type = o
+        }));
 
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
+        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetAuditLogListAsync(filter, CancellationToken.None);
@@ -185,19 +175,19 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         await DbContext.AddAsync(new AuditLogItem()
         {
-            ChannelId = "12345",
+            ChannelId = Consts.ChannelId.ToString(),
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = "12345",
-            ProcessedUserId = "12345",
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
             Type = AuditLogItemType.Command,
             Id = 12345
         });
 
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
+        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetFileContentAsync(12345, 123, CancellationToken.None);
@@ -209,13 +199,13 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var item = new AuditLogItem()
         {
-            ChannelId = "12345",
+            ChannelId = Consts.ChannelId.ToString(),
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = "12345",
-            ProcessedUserId = "12345",
-            Type = AuditLogItemType.MessageDeleted,
-            Id = 12345,
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
+            Type = AuditLogItemType.Command,
+            Id = 12345
         };
 
         item.Files.Add(new AuditLogFileMeta()
@@ -227,10 +217,10 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
         await DbContext.AddAsync(item);
 
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
+        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetFileContentAsync(12345, 123, CancellationToken.None);
@@ -242,13 +232,13 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var item = new AuditLogItem()
         {
-            ChannelId = "12345",
+            ChannelId = Consts.ChannelId.ToString(),
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = "12345",
-            ProcessedUserId = "12345",
-            Type = AuditLogItemType.MessageDeleted,
-            Id = 12345,
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
+            Type = AuditLogItemType.Command,
+            Id = 12345
         };
 
         await File.WriteAllBytesAsync("Temp.txt", new byte[] { 1, 2, 3, 4, 5, 6 });
@@ -261,10 +251,10 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
         await DbContext.AddAsync(item);
 
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
+        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetFileContentAsync(12345, 123, CancellationToken.None);

@@ -2,6 +2,8 @@
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using System;
 
 namespace GrillBot.Tests.App.Services.Unverify;
@@ -45,7 +47,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
     [TestMethod]
     public async Task LogRemoveAsync()
     {
-        var returnedRoles = new List<IRole>() { DataHelper.CreateRole() };
+        var returnedRoles = new List<IRole>() { new RoleBuilder().SetId(Consts.RoleId).Build() };
         var returnedChannels = new List<ChannelOverride>();
         var toUser = DataHelper.CreateGuildUser();
         var guild = DataHelper.CreateGuild();
@@ -69,7 +71,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
     [TestMethod]
     public async Task LogRecoverAsync()
     {
-        var returnedRoles = new List<IRole>() { DataHelper.CreateRole() };
+        var returnedRoles = new List<IRole>() { new RoleBuilder().SetId(Consts.RoleId).Build() };
         var returnedChannels = new List<ChannelOverride>();
         var toUser = DataHelper.CreateGuildUser();
         var guild = DataHelper.CreateGuild();

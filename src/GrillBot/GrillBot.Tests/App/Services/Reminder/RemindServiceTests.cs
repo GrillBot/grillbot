@@ -3,6 +3,7 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Database.Services;
+using GrillBot.Tests.Infrastructure.Discord;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -55,9 +56,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
     {
         var user = DataHelper.CreateDiscordUser();
         var at = DateTime.Now.AddDays(1);
-        var msg = DataHelper.CreateMessage();
 
-        await Service.CreateRemindAsync(user, user, at, "msg", msg.Id);
+        await Service.CreateRemindAsync(user, user, at, "msg", 970428820521893889);
         Assert.IsTrue(true);
     }
 
@@ -67,9 +67,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var from = DataHelper.CreateDiscordUser();
         var to = DataHelper.CreateDiscordUser("Username", 123456, "1235");
         var at = DateTime.Now.AddDays(1);
-        var msg = DataHelper.CreateMessage();
 
-        await Service.CreateRemindAsync(from, to, at, "msg", msg.Id);
+        await Service.CreateRemindAsync(from, to, at, "msg", 970428820521893889);
         Assert.IsTrue(true);
     }
 
@@ -107,10 +106,9 @@ public class RemindServiceTests : ServiceTest<RemindService>
     public async Task CopyAsync_SameUser()
     {
         var user = DataHelper.CreateDiscordUser();
-        var msg = DataHelper.CreateMessage();
 
         var at = DateTime.Now.AddDays(1);
-        var id = await Service.CreateRemindAsync(user, user, at, "msg", msg.Id);
+        var id = await Service.CreateRemindAsync(user, user, at, "msg", 970428820521893889);
         await Service.CopyAsync(id, user);
     }
 

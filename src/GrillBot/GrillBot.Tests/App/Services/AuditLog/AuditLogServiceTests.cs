@@ -5,6 +5,8 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Moq;
 using System;
 
@@ -82,7 +84,8 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     {
         await FillDataAsync();
 
-        var channel = DataHelper.CreateChannel();
+        var channel = new ChannelBuilder()
+            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
         var guild = DataHelper.CreateGuild();
         var types = new[] { AuditLogItemType.InteractionCommand };
 

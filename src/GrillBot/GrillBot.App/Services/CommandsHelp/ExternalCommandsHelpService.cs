@@ -99,7 +99,7 @@ public class ExternalCommandsHelpService
         if (directApiChannel == null)
             throw new GrillBotException("Cannot find authorized direct API channel.");
 
-        var command = new DirectMessageCommand("help");
+        var command = new DirectMessageCommand("Help");
         command.Parameters.Add("user_id", loggedUserId);
         var json = JsonConvert.SerializeObject(command);
 

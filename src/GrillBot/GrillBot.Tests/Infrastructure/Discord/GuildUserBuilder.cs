@@ -35,6 +35,7 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     public GuildUserBuilder SetGuild(IGuild guild)
     {
         Mock.Setup(o => o.Guild).Returns(guild);
+        Mock.Setup(o => o.GuildId).Returns(guild.Id);
         return this;
     }
 
@@ -53,6 +54,7 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     public GuildUserBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);
+        Mock.Setup(o => o.CreatedAt).Returns(SnowflakeUtils.FromSnowflake(id));
         return this;
     }
 

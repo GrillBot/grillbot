@@ -15,6 +15,7 @@ public class SelfUserBuilder : BuilderBase<ISelfUser>
     public SelfUserBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);
+        Mock.Setup(o => o.CreatedAt).Returns(SnowflakeUtils.FromSnowflake(id));
         return this;
     }
 

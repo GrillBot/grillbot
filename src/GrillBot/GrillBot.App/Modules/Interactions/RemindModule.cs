@@ -98,11 +98,12 @@ public class RemindModule : Infrastructure.InteractionsModuleBase
         }
         catch (ValidationException ex)
         {
-            await Context.Channel.SendMessageAsync($"{Context.User.Mention} {ex.Message}");
+            await RespondAsync(ex.Message, ephemeral: true);
+            canDefer = false;
         }
         catch (InvalidOperationException ex)
         {
-            await Context.Channel.SendMessageAsync($"{Context.User.Mention} {ex.Message}");
+            await RespondAsync(ex.Message, ephemeral: true);
             await ((SocketMessageComponent)Context.Interaction).UpdateAsync(o => o.Components = null);
             canDefer = false;
         }

@@ -1,11 +1,15 @@
-﻿using GrillBot.App.Controllers;
+﻿using Discord;
+using GrillBot.App.Controllers;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using Namotion.Reflection;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -85,8 +89,13 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
     [TestMethod]
     public async Task GetUnverifyLogsStatisticsByOperationAsync()
     {
-        var user = DataHelper.CreateGuildUser();
-        var guild = DataHelper.CreateGuild();
+        var user = new GuildUserBuilder()
+            .SetUsername(Consts.Username).SetId(Consts.UserId).SetDiscriminator(Consts.Discriminator)
+            .Build();
+
+        var guild = new GuildBuilder()
+            .SetId(Consts.GuildId).SetName(Consts.GuildName)
+            .Build();
 
         await DbContext.UnverifyLogs.AddAsync(new UnverifyLog()
         {
@@ -107,8 +116,13 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
     [TestMethod]
     public async Task GetUnverifyLogsStatisticsByDateAsync()
     {
-        var user = DataHelper.CreateGuildUser();
-        var guild = DataHelper.CreateGuild();
+        var user = new GuildUserBuilder()
+            .SetUsername(Consts.Username).SetId(Consts.UserId).SetDiscriminator(Consts.Discriminator)
+            .Build();
+
+        var guild = new GuildBuilder()
+            .SetId(Consts.GuildId).SetName(Consts.GuildName)
+            .Build();
 
         await DbContext.UnverifyLogs.AddAsync(new UnverifyLog()
         {

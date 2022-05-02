@@ -1,5 +1,7 @@
 ﻿using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.Unverify;
 
@@ -25,7 +27,7 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
     [TestMethod]
     public async Task GetUnverifyCountsOfGuildAsync()
     {
-        var guild = DataHelper.CreateGuild();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var result = await Service.GetUnverifyCountsOfGuildAsync(guild);
         Assert.AreEqual(0, result);
     }
@@ -33,7 +35,7 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
     [TestMethod]
     public async Task GetUserIdsWithUnverifyAsync()
     {
-        var guild = DataHelper.CreateGuild();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var result = await Service.GetUserIdsWithUnverifyAsync(guild);
         Assert.AreEqual(0, result.Count);
     }

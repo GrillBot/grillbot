@@ -1,10 +1,13 @@
-﻿using GrillBot.App.Controllers;
+﻿using Discord;
+using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Channels;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -14,12 +17,25 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
 {
     protected override ChannelController CreateController()
     {
+        var guild = new GuildBuilder()
+            .SetId(Consts.GuildId).SetName(Consts.GuildName)
+            .Build();
+
+        var user = new UserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .Build();
+
+        var dcClient = new ClientBuilder()
+            .SetGetGuildAction(guild)
+            .SetGetUserAction(user)
+            .SetGetGuildsAction(new List<IGuild>() { guild })
+            .Build();
+
         var discordClient = DiscordHelper.CreateClient();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var mapper = AutoMapperHelper.CreateMapper();
-        var dcClient = DiscordHelper.CreateDiscordClient();
         var fileStorage = FileStorageHelper.Create(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
         var apiService = new ChannelApiService(DbFactory, mapper, dcClient, messageCache, auditLogService);
@@ -30,7 +46,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task SendMessageToChannelAsync_GuildNotFound()
     {
-        var result = await AdminController.SendMessageToChannelAsync(122345, 12345, new SendMessageToChannelParams());
+        var result = await AdminController.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams());
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -39,9 +55,9 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     {
         var filter = new GetChannelListParams()
         {
-            ChannelType = Discord.ChannelType.Text,
-            GuildId = "12345",
-            NameContains = "Channel"
+            ChannelType = ChannelType.Text,
+            GuildId = Consts.GuildId.ToString(),
+            NameContains = Consts.ChannelName[..5]
         };
 
         var result = await AdminController.GetChannelsListAsync(filter, CancellationToken.None);
@@ -51,10 +67,11 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task GetChannelsListAsync_WithoutFilter()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        var guild = new Database.Entity.Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
+        guild.Users.Add(new Database.Entity.GuildUser() { User = new Database.Entity.User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
+        guild.Channels.Add(new Database.Entity.GuildChannel() { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() });
+
+        await DbContext.AddAsync(guild);
         await DbContext.SaveChangesAsync();
 
         var filter = new GetChannelListParams();
@@ -65,75 +82,83 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task ClearChannelCacheAsync()
     {
-        var result = await AdminController.ClearChannelCacheAsync(1, 1);
+        var result = await AdminController.ClearChannelCacheAsync(Consts.GuildId, Consts.ChannelId);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task GetChannelDetailAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
-        await DbContext.AddAsync(new Database.Entity.GuildUserChannel() { ChannelId = "12345", GuildId = "12345", UserId = "12345" });
+        var guild = new Database.Entity.Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
+        guild.Users.Add(new Database.Entity.GuildUser() { User = new Database.Entity.User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
+
+        var channel = new Database.Entity.GuildChannel() { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() };
+        channel.Users.Add(new Database.Entity.GuildUserChannel() { ChannelId = Consts.ChannelId.ToString(), GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        guild.Channels.Add(channel);
+
+        await DbContext.AddAsync(guild);
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetChannelDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetChannelDetailAsync(Consts.ChannelId, CancellationToken.None);
         CheckResult<OkObjectResult, ChannelDetail>(result);
     }
 
     [TestMethod]
     public async Task GetChannelDetailAsync_Found_WithoutStats()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        var guild = new Database.Entity.Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
+        guild.Users.Add(new Database.Entity.GuildUser() { User = new Database.Entity.User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
+        guild.Channels.Add(new Database.Entity.GuildChannel() { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() });
+
+        await DbContext.AddAsync(guild);
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetChannelDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetChannelDetailAsync(Consts.ChannelId, CancellationToken.None);
         CheckResult<OkObjectResult, ChannelDetail>(result);
     }
 
     [TestMethod]
     public async Task GetChannelDetailAsync_NotFound()
     {
-        var result = await AdminController.GetChannelDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetChannelDetailAsync(Consts.ChannelId, CancellationToken.None);
         CheckResult<NotFoundObjectResult, ChannelDetail>(result);
     }
 
     [TestMethod]
     public async Task UpdateChannelAsync_NotFound()
     {
-        var result = await AdminController.UpdateChannelAsync(12345, new UpdateChannelParams());
+        var result = await AdminController.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
         CheckResult<NotFoundObjectResult, ChannelDetail>(result);
     }
 
     [TestMethod]
     public async Task UpdateChannelAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
+        var guild = new Database.Entity.Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
+        guild.Users.Add(new Database.Entity.GuildUser() { User = new Database.Entity.User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
+        guild.Channels.Add(new Database.Entity.GuildChannel() { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() });
+
+        await DbContext.AddAsync(guild);
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.UpdateChannelAsync(12345, new UpdateChannelParams() { Flags = 42 });
+        var result = await AdminController.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams() { Flags = 42 });
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task GetChannelUsersAsync()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser() { GuildId = "12345", UserId = "12345" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
-        await DbContext.AddAsync(new Database.Entity.GuildUserChannel() { ChannelId = "12345", GuildId = "12345", UserId = "12345" });
+        var guild = new Database.Entity.Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
+        guild.Users.Add(new Database.Entity.GuildUser() { User = new Database.Entity.User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
+
+        var channel = new Database.Entity.GuildChannel() { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() };
+        channel.Users.Add(new Database.Entity.GuildUserChannel() { ChannelId = Consts.ChannelId.ToString(), GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        guild.Channels.Add(channel);
+
+        await DbContext.AddAsync(guild);
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetChannelUsersAsync(12345, new PaginatedParams(), CancellationToken.None);
+        var result = await AdminController.GetChannelUsersAsync(Consts.ChannelId, new PaginatedParams(), CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<ChannelUserStatItem>>(result);
     }
 

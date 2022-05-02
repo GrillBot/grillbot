@@ -1,5 +1,6 @@
 ﻿using GrillBot.Data.Models.API;
 using GrillBot.Database.Services;
+using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
@@ -55,7 +56,7 @@ public abstract class ControllerTest<TController> where TController : Controller
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new[] {
                     new Claim(ClaimTypes.Role, role),
-                    new Claim(ClaimTypes.NameIdentifier, "1234567890")
+                    new Claim(ClaimTypes.NameIdentifier, Consts.UserId.ToString())
                 }))
             }
         };

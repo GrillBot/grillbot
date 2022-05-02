@@ -1,9 +1,12 @@
-﻿using GrillBot.App.Controllers;
+﻿using Discord;
+using GrillBot.App.Controllers;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -14,6 +17,25 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
 {
     protected override UnverifyController CreateController()
     {
+        var guild = new GuildBuilder()
+            .SetName(Consts.GuildName).SetId(Consts.GuildId)
+            .Build();
+
+        var user = new GuildUserBuilder()
+            .SetId(Consts.UserId).SetGuild(guild)
+            .SetUsername(Consts.Username).Build();
+
+        var anotherUser = new GuildUserBuilder()
+            .SetId(Consts.UserId + 1).SetGuild(guild)
+            .SetUsername(Consts.Username + "2").Build();
+
+        var dcClient = new ClientBuilder()
+            .SetGetGuildsAction(new List<IGuild>() { guild })
+            .SetGetGuildAction(guild)
+            .SetGetUserAction(user)
+            .SetGetUserAction(anotherUser)
+            .Build();
+
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var webHostEnv = EnvironmentHelper.CreateEnv("Production");
@@ -26,7 +48,6 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
         var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DbFactory, loggingService);
         var mapper = AutoMapperHelper.CreateMapper();
-        var dcClient = DiscordHelper.CreateDiscordClient();
         var unverifyApiService = new UnverifyApiService(DbFactory, mapper, dcClient);
 
         return new UnverifyController(unverifyService, dcClient, mapper, unverifyApiService);

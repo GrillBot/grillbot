@@ -2,6 +2,8 @@
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -31,7 +33,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads()
     {
-        var result = await AdminController.GetChannelsAsync(12345, false);
+        var result = await AdminController.GetChannelsAsync(Consts.GuildId, false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -45,7 +47,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public void GetRoles_WithGuild()
     {
-        var result = AdminController.GetRoles(12345);
+        var result = AdminController.GetRoles(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -73,12 +75,11 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableUsersAsync_Users()
     {
-        await DbContext.AddAsync(new User()
-        {
-            Id = "012345",
-            Username = "Username",
-            Discriminator = "1234"
-        });
+        var user = new UserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .Build();
+
+        await DbContext.AddAsync(User.FromDiscord(user));
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetAvailableUsersAsync(false);
@@ -95,7 +96,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads_AsUser()
     {
-        var result = await UserController.GetChannelsAsync(12345, false);
+        var result = await UserController.GetChannelsAsync(Consts.GuildId, false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -109,7 +110,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public void GetRoles_WithGuild_AsUser()
     {
-        var result = UserController.GetRoles(12345);
+        var result = UserController.GetRoles(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -144,12 +145,11 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableUsersAsync_Users_AsUser()
     {
-        await DbContext.AddAsync(new User()
-        {
-            Id = "012345",
-            Username = "Username",
-            Discriminator = "1234"
-        });
+        var user = new UserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .Build();
+
+        await DbContext.AddAsync(User.FromDiscord(user));
         await DbContext.SaveChangesAsync();
 
         var result = await UserController.GetAvailableUsersAsync(false);

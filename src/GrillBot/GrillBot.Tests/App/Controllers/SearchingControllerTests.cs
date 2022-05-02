@@ -3,6 +3,8 @@ using GrillBot.App.Services;
 using GrillBot.App.Services.User;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
+using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -26,9 +28,9 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     {
         var filter = new GetSearchingListParams()
         {
-            ChannelId = "12345",
-            GuildId = "12345",
-            UserId = "12345"
+            ChannelId = Consts.ChannelId.ToString(),
+            GuildId = Consts.GuildId.ToString(),
+            UserId = Consts.UserId.ToString()
         };
         filter.Sort.Descending = true;
 
@@ -41,9 +43,9 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     {
         var filter = new GetSearchingListParams()
         {
-            ChannelId = "12345",
-            GuildId = "12345",
-            UserId = "12345"
+            ChannelId = Consts.ChannelId.ToString(),
+            GuildId = Consts.GuildId.ToString(),
+            UserId = Consts.UserId.ToString()
         };
         filter.Sort.Descending = true;
 
@@ -54,10 +56,21 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     [TestMethod]
     public async Task GetSearchListAsync_WithoutFilter()
     {
-        await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Name = "Guild", Id = "1" });
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Username = "User", Id = "1", Discriminator = "1" });
-        await DbContext.Channels.AddAsync(new Database.Entity.GuildChannel() { ChannelId = "1", ChannelType = Discord.ChannelType.Text, GuildId = "1", Name = "Channel" });
-        await DbContext.SearchItems.AddAsync(new Database.Entity.SearchItem() { UserId = "1", GuildId = "1", ChannelId = "1", MessageContent = "Msg" });
+        var search = new SearchItem()
+        {
+            User = new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator },
+            Channel = new GuildChannel()
+            {
+                ChannelId = Consts.ChannelId.ToString(),
+                ChannelType = Discord.ChannelType.Text,
+                GuildId = Consts.GuildId.ToString(),
+                Name = Consts.ChannelName
+            },
+            MessageContent = "Msg",
+            Guild = new Database.Entity.Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName }
+        };
+
+        await DbContext.AddAsync(search);
         await DbContext.SaveChangesAsync();
 
         var filter = new GetSearchingListParams();

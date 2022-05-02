@@ -3,6 +3,8 @@ using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -36,11 +38,11 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
         var @params = new EmotesListParams()
         {
             FirstOccurence = new RangeParams<DateTime?>() { From = DateTime.MinValue, To = DateTime.MaxValue },
-            GuildId = DataHelper.CreateGuild().Id.ToString(),
+            GuildId = Consts.GuildId.ToString(),
             LastOccurence = new RangeParams<DateTime?>() { From = DateTime.MinValue, To = DateTime.MaxValue },
             Sort = new SortParams() { Descending = true, OrderBy = "EmoteId" },
             UseCount = new RangeParams<int?>() { From = 0, To = 50 },
-            UserId = DataHelper.CreateDiscordUser().Id.ToString(),
+            UserId = Consts.UserId.ToString(),
             Pagination = new PaginatedParams(),
             FilterAnimated = true
         };
@@ -64,8 +66,8 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     {
         var @params = new MergeEmoteStatsParams()
         {
-            SourceEmoteId = "<:LP_FeelsHighMan:895331837822500866>",
-            DestinationEmoteId = "<a:PepeJAMJAM:600070651814084629>"
+            SourceEmoteId = Consts.FeelsHighManEmote,
+            DestinationEmoteId = Consts.PepeJamEmote
         };
 
         var result = await AdminController.MergeStatsToAnotherAsync(@params);
@@ -75,29 +77,36 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     [TestMethod]
     public async Task RemoveStatisticsAsync_NoEmotes()
     {
-        var result = await AdminController.RemoveStatisticsAsync("<a:PepeJAMJAM:600070651814084629>");
+        var result = await AdminController.RemoveStatisticsAsync(Consts.PepeJamEmote);
         CheckResult<OkObjectResult, int>(result);
     }
 
     [TestMethod]
     public async Task RemoveStatisticsAsync_WithEmotes()
     {
-        var guild = DataHelper.CreateGuild();
+        var guild = new GuildBuilder()
+            .SetId(Consts.GuildId).SetName(Consts.GuildName)
+            .Build();
+
+        var guildUser = new GuildUserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username)
+            .SetGuild(guild).SetDiscriminator(Consts.Discriminator)
+            .Build();
 
         await DbContext.AddAsync(new EmoteStatisticItem()
         {
-            EmoteId = "<a:PepeJAMJAM:600070651814084629>",
+            EmoteId = Consts.PepeJamEmote,
             FirstOccurence = DateTime.MinValue,
             Guild = Guild.FromDiscord(guild),
             GuildId = guild.Id.ToString(),
             LastOccurence = DateTime.MaxValue,
             UseCount = 1,
-            User = GuildUser.FromDiscord(guild, DataHelper.CreateGuildUser()),
-            UserId = DataHelper.CreateGuildUser().Id.ToString()
+            User = GuildUser.FromDiscord(guild, guildUser),
+            UserId = Consts.UserId.ToString()
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.RemoveStatisticsAsync("<a:PepeJAMJAM:600070651814084629>");
+        var result = await AdminController.RemoveStatisticsAsync(Consts.PepeJamEmote);
         CheckResult<OkObjectResult, int>(result);
     }
 }

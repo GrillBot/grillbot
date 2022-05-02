@@ -2,6 +2,7 @@
 using GrillBot.App.Services.Guild;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -29,7 +30,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
     [TestMethod]
     public async Task GetGuildListAsync_WithoutFilter()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Name" });
+        await DbContext.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetGuildListAsync(new GetGuildListParams(), CancellationToken.None);
@@ -39,17 +40,17 @@ public class GuildControllerTests : ControllerTest<GuildController>
     [TestMethod]
     public async Task GetGuildDetailAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Name" });
+        await DbContext.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetGuildDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetGuildDetailAsync(Consts.GuildId, CancellationToken.None);
         CheckResult<OkObjectResult, GuildDetail>(result);
     }
 
     [TestMethod]
     public async Task GetGuildDetailAsync_NotFound()
     {
-        var result = await AdminController.GetGuildDetailAsync(12345, CancellationToken.None);
+        var result = await AdminController.GetGuildDetailAsync(Consts.GuildId, CancellationToken.None);
         CheckResult<NotFoundObjectResult, GuildDetail>(result);
     }
 
@@ -58,11 +59,11 @@ public class GuildControllerTests : ControllerTest<GuildController>
     {
         var parameters = new UpdateGuildParams()
         {
-            AdminChannelId = "12345",
-            MuteRoleId = "12345",
+            AdminChannelId = Consts.ChannelId.ToString(),
+            MuteRoleId = Consts.RoleId.ToString(),
         };
 
-        var result = await AdminController.UpdateGuildAsync(12345, parameters);
+        var result = await AdminController.UpdateGuildAsync(Consts.GuildId, parameters);
         CheckResult<NotFoundObjectResult, GuildDetail>(result);
     }
 }

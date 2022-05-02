@@ -1,5 +1,7 @@
 ﻿using GrillBot.App.Services.Birthday;
 using GrillBot.Database.Services;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using System;
 
 namespace GrillBot.Tests.App.Services.Birthday;
@@ -16,7 +18,7 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task AddBirthayAsync_WithInit()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         await Service.AddBirthdayAsync(user, new DateTime(2022, 02, 04));
         Assert.IsTrue(true);
     }
@@ -24,7 +26,7 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task AddBirthdayAsync_WithoutInit()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         await DbContext.InitUserAsync(user, CancellationToken.None);
         await DbContext.SaveChangesAsync();
 
@@ -35,7 +37,7 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task RemoveBirthdayAsync_NotFound()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         await Service.RemoveBirthdayAsync(user);
         Assert.IsTrue(true);
     }
@@ -43,7 +45,7 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task RemoveBirthdayAsync_Found()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         await DbContext.InitUserAsync(user, CancellationToken.None);
         await DbContext.SaveChangesAsync();
 
@@ -54,10 +56,12 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task HaveBirthdayAsync_Yes()
     {
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Birthday = new(2022, 02, 04), Discriminator = "1234", Id = "12345", Username = "User" });
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var dbUser = Database.Entity.User.FromDiscord(user);
+        dbUser.Birthday = DateTime.MaxValue;
+        await DbContext.AddAsync(dbUser);
         await DbContext.SaveChangesAsync();
 
-        var user = DataHelper.CreateDiscordUser();
         var result = await Service.HaveBirthdayAsync(user);
         Assert.IsTrue(result);
     }
@@ -65,7 +69,7 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task HaveBirthdayAsync_No()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var result = await Service.HaveBirthdayAsync(user);
         Assert.IsFalse(result);
     }
@@ -73,7 +77,10 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task GetTodayBirthdaysAsync()
     {
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Birthday = DateTime.Today, Discriminator = "1234", Id = "12345", Username = "User" });
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var dbUser = Database.Entity.User.FromDiscord(user);
+        dbUser.Birthday = DateTime.Today;
+        await DbContext.Users.AddAsync(dbUser);
         await DbContext.SaveChangesAsync();
 
         var result = await Service.GetTodayBirthdaysAsync();

@@ -5,6 +5,8 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Moq;
 using System;
 
@@ -27,9 +29,9 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     [TestMethod]
     public async Task StoreItemsAsync_Success()
     {
-        var user = DataHelper.CreateDiscordUser();
-        var guild = DataHelper.CreateGuild();
-        var guildUser = DataHelper.CreateGuildUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var items = new List<AuditLogDataWrapper>()
         {
@@ -48,8 +50,8 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     [TestMethod]
     public async Task StoreItemAsync_Success()
     {
-        var user = DataHelper.CreateDiscordUser();
-        var guild = DataHelper.CreateGuild();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
         await Service.StoreItemAsync(new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: user, discordAuditLogItemId: "12345"));
         Assert.IsTrue(true);
@@ -82,8 +84,8 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     {
         await FillDataAsync();
 
-        var channel = DataHelper.CreateChannel();
-        var guild = DataHelper.CreateGuild();
+        var channel = new ChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).Build();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var types = new[] { AuditLogItemType.InteractionCommand };
 
         var result = await Service.GetDiscordAuditLogIdsAsync(guild, channel, types, DateTime.MinValue);
@@ -111,10 +113,11 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     [TestMethod]
     public async Task GetGuildFromChannelAsync_GuildChannel()
     {
-        var channel = new Mock<IGuildChannel>();
-        channel.Setup(o => o.Guild).Returns(DataHelper.CreateGuild());
+        var channel = new TextChannelBuilder()
+            .SetIdentity(Consts.ChannelId, Consts.ChannelName)
+            .SetGuild(new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build()).Build();
 
-        var guild = await Service.GetGuildFromChannelAsync(channel.Object, 0);
+        var guild = await Service.GetGuildFromChannelAsync(channel, 0);
         Assert.IsNotNull(guild);
     }
 

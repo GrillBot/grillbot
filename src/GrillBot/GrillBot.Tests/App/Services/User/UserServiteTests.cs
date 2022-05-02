@@ -2,6 +2,8 @@
 using GrillBot.App.Services.User;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.User;
 
@@ -19,8 +21,8 @@ public class UserServiteTests : ServiceTest<UserService>
     [TestMethod]
     public async Task IsUserBotAdmin_NotFound()
     {
-        var dcUser = DataHelper.CreateDiscordUser();
-        var result = await Service.IsUserBotAdminAsync(dcUser);
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var result = await Service.IsUserBotAdminAsync(user);
 
         Assert.IsFalse(result);
     }
@@ -28,32 +30,32 @@ public class UserServiteTests : ServiceTest<UserService>
     [TestMethod]
     public async Task IsUserBotAdmin_Found_NotAdmin()
     {
-        var dcUser = DataHelper.CreateDiscordUser(id: 654321);
-        await DbContext.InitUserAsync(dcUser, CancellationToken.None);
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        await DbContext.InitUserAsync(user, CancellationToken.None);
         await DbContext.SaveChangesAsync();
 
-        var result = await Service.IsUserBotAdminAsync(dcUser);
+        var result = await Service.IsUserBotAdminAsync(user);
         Assert.IsFalse(result);
     }
 
     [TestMethod]
     public async Task IsUserBotAdmin_Found_Admin()
     {
-        var dcUser = DataHelper.CreateDiscordUser(id: 1234556);
-        var userEntity = Database.Entity.User.FromDiscord(dcUser);
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var userEntity = Database.Entity.User.FromDiscord(user);
         userEntity.Flags |= (int)UserFlags.BotAdmin;
 
         await DbContext.Users.AddAsync(userEntity);
         await DbContext.SaveChangesAsync();
 
-        var result = await Service.IsUserBotAdminAsync(dcUser);
+        var result = await Service.IsUserBotAdminAsync(user);
         Assert.IsTrue(result);
     }
 
     [TestMethod]
     public async Task CreateWebAdminLink_NotAdmin()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var result = await Service.CreateWebAdminLink(user, user);
         Assert.IsNull(result);
@@ -62,17 +64,17 @@ public class UserServiteTests : ServiceTest<UserService>
     [TestMethod]
     public async Task CreateWebAdminLink_Admin()
     {
-        var dcUser = DataHelper.CreateDiscordUser(id: 12345566);
+        var dcUser = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).Build();
         var userEntity = Database.Entity.User.FromDiscord(dcUser);
         userEntity.Flags |= (int)UserFlags.WebAdmin;
 
         await DbContext.Users.AddAsync(userEntity);
         await DbContext.SaveChangesAsync();
 
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var result = await Service.CreateWebAdminLink(dcUser, user);
-        Assert.AreEqual("http://grillbot/12345", result);
+        Assert.AreEqual("http://grillbot/370506820197810176", result);
     }
 
     [TestMethod]
@@ -101,7 +103,7 @@ public class UserServiteTests : ServiceTest<UserService>
 
     private void GetUserStateEmote_Test(UserStatus status, Emote expectedEmote, string expectedStatus)
     {
-        var user = DataHelper.CreateDiscordUser(userStatus: status);
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetStatus(status).Build();
         var result = Service.GetUserStateEmote(user, out var userStatus);
 
         Assert.AreEqual(expectedEmote, result);

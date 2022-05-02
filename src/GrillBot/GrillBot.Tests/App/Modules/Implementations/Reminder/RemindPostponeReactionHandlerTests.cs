@@ -2,9 +2,10 @@
 using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.Data;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Moq;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Modules.Implementations.Reminder;
 
@@ -13,7 +14,13 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
 {
     protected override RemindPostponeReactionHandler CreateHandler()
     {
-        var discordClient = DiscordHelper.CreateDiscordClient();
+        var selfUser = new SelfUserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username)
+            .SetDiscriminator(Consts.Discriminator).AsBot()
+            .Build();
+
+        var discordClient = new ClientBuilder()
+            .SetSelfUser(selfUser).Build();
 
         return new RemindPostponeReactionHandler(DbFactory, discordClient);
     }
@@ -66,43 +73,60 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
     [TestMethod]
     public async Task OnReactionAddedAsync_MissingBotReactions()
     {
-        var message = new Mock<IUserMessage>();
-        message.Setup(o => o.Channel).Returns(new Mock<IDMChannel>().Object);
-        message.Setup(o => o.Embeds).Returns(new List<IEmbed>() { new EmbedBuilder().Build() }.AsReadOnly());
-        message.Setup(o => o.GetReactionUsersAsync(It.IsAny<IEmote>(), It.IsAny<int>(), It.IsAny<RequestOptions>()))
-            .Returns(new List<IReadOnlyCollection<IUser>>() { new List<IUser>() { DataHelper.CreateDiscordUser() } }.ToAsyncEnumerable());
+        var guild = new GuildBuilder()
+            .SetId(Consts.GuildId).SetName(Consts.GuildName)
+            .Build();
 
-        var result = await Handler.OnReactionAddedAsync(message.Object, Emojis.One, null);
+        var channel = new TextChannelBuilder()
+            .SetName(Consts.ChannelName).SetId(Consts.ChannelId)
+            .SetGuild(guild).Build();
+
+        var guildUser = new GuildUserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username)
+            .SetDiscriminator(Consts.Discriminator).SetGuild(guild)
+            .Build();
+
+        var message = new UserMessageBuilder()
+            .SetChannel(channel).SetEmbeds(new[] { new EmbedBuilder().Build() })
+            .SetGetReactionUsersAction(new[] { guildUser }).Build();
+
+        var result = await Handler.OnReactionAddedAsync(message, Emojis.One, null);
         Assert.IsFalse(result);
     }
 
     [TestMethod]
     public async Task OnReactionAddedAsync_UnknownRemind()
     {
-        var self = DataHelper.CreateSelfUser();
-        var message = new Mock<IUserMessage>();
-        message.Setup(o => o.Channel).Returns(new Mock<IDMChannel>().Object);
-        message.Setup(o => o.Embeds).Returns(new List<IEmbed>() { new EmbedBuilder().Build() }.AsReadOnly());
-        message.Setup(o => o.GetReactionUsersAsync(It.IsAny<IEmote>(), It.IsAny<int>(), It.IsAny<RequestOptions>()))
-            .Returns(new List<IReadOnlyCollection<IUser>>() { new List<IUser>() { self } }.ToAsyncEnumerable());
+        var selfUser = new SelfUserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .AsBot().Build();
 
-        var result = await Handler.OnReactionAddedAsync(message.Object, Emojis.One, self);
+        var dmChannel = new DmChannelBuilder().Build();
+
+        var message = new UserMessageBuilder()
+            .SetChannel(dmChannel).SetEmbeds(new[] { new EmbedBuilder().Build() })
+            .SetGetReactionUsersAction(new[] { selfUser }).Build();
+
+        var result = await Handler.OnReactionAddedAsync(message, Emojis.One, selfUser);
         Assert.IsFalse(result);
     }
 
     [TestMethod]
     public async Task OnReactionAddedAsync_Success()
     {
-        var self = DataHelper.CreateSelfUser();
-        var message = new Mock<IUserMessage>();
-        message.Setup(o => o.Id).Returns(425639);
-        message.Setup(o => o.Channel).Returns(new Mock<IDMChannel>().Object);
-        message.Setup(o => o.Embeds).Returns(new List<IEmbed>() { new EmbedBuilder().Build() }.AsReadOnly());
-        message.Setup(o => o.GetReactionUsersAsync(It.IsAny<IEmote>(), It.IsAny<int>(), It.IsAny<RequestOptions>()))
-            .Returns(new List<IReadOnlyCollection<IUser>>() { new List<IUser>() { self } }.ToAsyncEnumerable());
-        message.Setup(o => o.DeleteAsync(It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
+        var selfUser = new SelfUserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .AsBot().Build();
 
-        var user = DataHelper.CreateDiscordUser();
+        var message = new UserMessageBuilder()
+            .SetId(Consts.MessageId).SetChannel(new DmChannelBuilder().Build())
+            .SetEmbeds(new[] { new EmbedBuilder().Build() }).SetGetReactionUsersAction(new[] { selfUser })
+            .Build();
+
+        var user = new UserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .Build();
+
         var remind = new RemindMessage()
         {
             At = DateTime.Now,
@@ -112,7 +136,7 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
             Message = "ASDF",
             OriginalMessageId = "425639",
             Postpone = 0,
-            RemindMessageId = "425639",
+            RemindMessageId = Consts.MessageId.ToString(),
             ToUser = User.FromDiscord(user),
             ToUserId = user.Id.ToString()
         };
@@ -120,7 +144,7 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
         await DbContext.AddAsync(remind);
         await DbContext.SaveChangesAsync();
 
-        var result = await Handler.OnReactionAddedAsync(message.Object, Emojis.One, self);
+        var result = await Handler.OnReactionAddedAsync(message, Emojis.One, selfUser);
         Assert.IsTrue(result);
     }
 }

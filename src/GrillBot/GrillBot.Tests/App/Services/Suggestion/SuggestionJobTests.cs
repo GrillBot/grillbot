@@ -5,6 +5,7 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.Suggestion;
 
@@ -15,6 +16,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
 
     protected override SuggestionJob CreateJob()
     {
+        var dcClient = new ClientBuilder().Build();
         var discordClient = DiscordHelper.CreateClient();
         var commandService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
@@ -28,7 +30,6 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
         SessionService = new SuggestionSessionService();
         var emoteSuggestionService = new EmoteSuggestionService(SessionService, DbFactory);
         var featureSuggestionService = new FeatureSuggestionService(SessionService, configuration, DbFactory);
-        var dcClient = DiscordHelper.CreateDiscordClient();
         var suggestionService = new SuggestionService(emoteSuggestionService, featureSuggestionService, dcClient, SessionService);
 
         initializationService.Set(true);
@@ -58,7 +59,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
     [TestMethod]
     public async Task RunAsync_Process()
     {
-        var guild = DataHelper.CreateGuild();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
         await DbContext.Suggestions.AddAsync(new Database.Entity.Suggestion()
         {
@@ -84,7 +85,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
     [TestMethod]
     public async Task RunAsync_Process_FailedId()
     {
-        var guild = DataHelper.CreateGuild();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
         await DbContext.Suggestions.AddAsync(new Database.Entity.Suggestion()
         {

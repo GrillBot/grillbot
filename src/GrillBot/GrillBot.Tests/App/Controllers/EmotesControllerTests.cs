@@ -1,5 +1,4 @@
-﻿using Discord;
-using GrillBot.App.Controllers;
+﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Emotes;
@@ -8,7 +7,6 @@ using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -40,7 +38,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
         var @params = new EmotesListParams()
         {
             FirstOccurence = new RangeParams<DateTime?>() { From = DateTime.MinValue, To = DateTime.MaxValue },
-            GuildId = DataHelper.CreateGuild().Id.ToString(),
+            GuildId = Consts.GuildId.ToString(),
             LastOccurence = new RangeParams<DateTime?>() { From = DateTime.MinValue, To = DateTime.MaxValue },
             Sort = new SortParams() { Descending = true, OrderBy = "EmoteId" },
             UseCount = new RangeParams<int?>() { From = 0, To = 50 },
@@ -88,7 +86,11 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     {
         var guild = new GuildBuilder()
             .SetId(Consts.GuildId).SetName(Consts.GuildName)
-            .SetRoles(Enumerable.Empty<IRole>())
+            .Build();
+
+        var guildUser = new GuildUserBuilder()
+            .SetId(Consts.UserId).SetUsername(Consts.Username)
+            .SetGuild(guild).SetDiscriminator(Consts.Discriminator)
             .Build();
 
         await DbContext.AddAsync(new EmoteStatisticItem()
@@ -99,7 +101,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             GuildId = guild.Id.ToString(),
             LastOccurence = DateTime.MaxValue,
             UseCount = 1,
-            User = GuildUser.FromDiscord(guild, DataHelper.CreateGuildUser()),
+            User = GuildUser.FromDiscord(guild, guildUser),
             UserId = Consts.UserId.ToString()
         });
         await DbContext.SaveChangesAsync();

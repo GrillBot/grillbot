@@ -3,6 +3,8 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -14,10 +16,12 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
 {
     protected override AuditLogClearingJob CreateJob()
     {
+        var selfUser = new SelfUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var client = new ClientBuilder().SetSelfUser(selfUser).Build();
+
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var discordClient = DiscordHelper.CreateClient();
-        var client = DiscordHelper.CreateDiscordClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);

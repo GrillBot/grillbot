@@ -20,6 +20,11 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
         Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
     }
 
+    public GuildUserBuilder SetIdentity(ulong id, string username, string discriminator)
+    {
+        return SetId(id).SetUsername(username).SetDiscriminator(discriminator);
+    }
+
     public GuildUserBuilder SetJoinDate(DateTimeOffset joinedAt)
     {
         Mock.Setup(o => o.JoinedAt).Returns(joinedAt);

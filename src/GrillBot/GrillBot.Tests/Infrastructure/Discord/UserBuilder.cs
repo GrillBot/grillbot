@@ -6,6 +6,11 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 
 public class UserBuilder : BuilderBase<IUser>
 {
+    public UserBuilder SetIdentity(ulong id, string username, string discriminator)
+    {
+        return SetId(id).SetUsername(username).SetDiscriminator(discriminator);
+    }
+
     public UserBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);
@@ -48,6 +53,12 @@ public class UserBuilder : BuilderBase<IUser>
             format != null ? It.Is<ImageFormat>(x => x == format.Value) : It.IsAny<ImageFormat>(),
             size != null ? It.Is<ushort>(x => x == size.Value) : It.IsAny<ushort>()
         )).Returns(avatarUrl);
+        return this;
+    }
+
+    public UserBuilder SetStatus(UserStatus status)
+    {
+        Mock.Setup(o => o.Status).Returns(status);
         return this;
     }
 }

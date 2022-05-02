@@ -4,6 +4,9 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 
 public class TextChannelBuilder : BuilderBase<ITextChannel>
 {
+    public TextChannelBuilder SetIdentity(ulong id, string name)
+        => SetId(id).SetName(name);
+
     public TextChannelBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);

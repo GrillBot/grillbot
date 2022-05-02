@@ -3,7 +3,9 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Database.Services;
+using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
+using Namotion.Reflection;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -54,7 +56,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task CreateRemindAsync_SameUser()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var at = DateTime.Now.AddDays(1);
 
         await Service.CreateRemindAsync(user, user, at, "msg", 970428820521893889);
@@ -64,8 +66,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task CreateRemindAsync_AnotherUser()
     {
-        var from = DataHelper.CreateDiscordUser();
-        var to = DataHelper.CreateDiscordUser("Username", 123456, "1235");
+        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator.Replace("1", "5")).Build();
         var at = DateTime.Now.AddDays(1);
 
         await Service.CreateRemindAsync(from, to, at, "msg", 970428820521893889);
@@ -75,7 +77,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task GetRemindersCountAsync()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var result = await Service.GetRemindersCountAsync(user);
 
         Assert.AreEqual(0, result);
@@ -84,7 +86,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task GetRemindersAsync()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var result = await Service.GetRemindersAsync(user, 0);
 
         Assert.AreEqual(0, result.Count);
@@ -95,7 +97,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_NotFound()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         await Service.CopyAsync(42, user);
     }
@@ -105,7 +107,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_SameUser()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var at = DateTime.Now.AddDays(1);
         var id = await Service.CreateRemindAsync(user, user, at, "msg", 970428820521893889);
@@ -117,21 +119,22 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_Finished()
     {
-        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
-        await DbContext.InitUserAsync(toUser, CancellationToken.None);
-        await DbContext.InitUserAsync(DataHelper.CreateDiscordUser(), CancellationToken.None);
+        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
+        await DbContext.InitUserAsync(to, CancellationToken.None);
+        await DbContext.InitUserAsync(from, CancellationToken.None);
         await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
             At = DateTime.MinValue,
-            FromUserId = "12345",
-            ToUserId = "12345",
+            FromUserId = from.Id.ToString(),
+            ToUserId = to.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 5
         });
 
         await DbContext.SaveChangesAsync();
-        await Service.CopyAsync(5, toUser);
+        await Service.CopyAsync(5, to);
     }
 
     [TestMethod]
@@ -139,24 +142,25 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_UserNotFound()
     {
-        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
-        var fromUser = DataHelper.CreateDiscordUser();
+        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
+        var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await DbContext.InitUserAsync(toUser);
-        await DbContext.InitUserAsync(fromUser);
-        await DbContext.InitUserAsync(DataHelper.CreateDiscordUser("Username", 1234567, "1236"));
+        await DbContext.InitUserAsync(to);
+        await DbContext.InitUserAsync(from);
+        await DbContext.InitUserAsync(middle);
         await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = "12345",
-            ToUserId = "1234567",
+            FromUserId = from.Id.ToString(),
+            ToUserId = middle.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 6
         });
 
         await DbContext.SaveChangesAsync();
-        await Service.CopyAsync(6, toUser);
+        await Service.CopyAsync(6, to);
     }
 
     [TestMethod]
@@ -164,23 +168,23 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_MultipleSame()
     {
-        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
-        var fromUser = DataHelper.CreateDiscordUser();
+        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await DbContext.InitUserAsync(toUser);
-        await DbContext.InitUserAsync(fromUser);
+        await DbContext.InitUserAsync(to);
+        await DbContext.InitUserAsync(from);
         await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = "12345",
-            ToUserId = "123456",
+            FromUserId = from.Id.ToString(),
+            ToUserId = to.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 6
         });
 
         await DbContext.SaveChangesAsync();
-        await Service.CopyAsync(6, toUser);
+        await Service.CopyAsync(6, to);
     }
 
     [TestMethod]
@@ -196,24 +200,22 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CancelRemindAsync_Finished()
     {
-        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
-        var fromUser = DataHelper.CreateDiscordUser();
-        var canceller = DataHelper.CreateDiscordUser("C", 1234567, "1596");
+        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await DbContext.InitUserAsync(toUser, CancellationToken.None);
-        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.InitUserAsync(from, CancellationToken.None);
         await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
             At = DateTime.MinValue,
-            FromUserId = "12345",
-            ToUserId = "12345",
+            FromUserId = from.Id.ToString(),
+            ToUserId = from.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 1
         });
         await DbContext.SaveChangesAsync();
 
-        await Service.CancelRemindAsync(1, canceller, false);
+        await Service.CancelRemindAsync(1, middle, false);
     }
 
     [TestMethod]
@@ -221,17 +223,15 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CancelRemindAsync_Finished2()
     {
-        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
-        var fromUser = DataHelper.CreateDiscordUser();
-        var canceller = DataHelper.CreateDiscordUser("C", 1234567, "1596");
+        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await DbContext.InitUserAsync(toUser, CancellationToken.None);
-        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.InitUserAsync(from, CancellationToken.None);
         await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = "12345",
-            ToUserId = "12345",
+            FromUserId = from.Id.ToString(),
+            ToUserId = from.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 1,
@@ -239,7 +239,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         });
         await DbContext.SaveChangesAsync();
 
-        await Service.CancelRemindAsync(1, canceller, false);
+        await Service.CancelRemindAsync(1, middle, false);
     }
 
     [TestMethod]
@@ -247,45 +247,43 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CancelRemindAsync_NoPerms()
     {
-        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
-        var fromUser = DataHelper.CreateDiscordUser();
-        var canceller = DataHelper.CreateDiscordUser("C", 1234567, "1596");
+        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await DbContext.InitUserAsync(toUser, CancellationToken.None);
-        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.InitUserAsync(from, CancellationToken.None);
         await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = "12345",
-            ToUserId = "12345",
+            FromUserId = from.Id.ToString(),
+            ToUserId = from.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 1
         });
         await DbContext.SaveChangesAsync();
 
-        await Service.CancelRemindAsync(1, canceller, false);
+        await Service.CancelRemindAsync(1, middle, false);
     }
 
     [TestMethod]
     public async Task CancelRemindAsync_Success()
     {
-        var toUser = DataHelper.CreateDiscordUser("Username", 123456, "1236");
-        var fromUser = DataHelper.CreateDiscordUser();
+        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await DbContext.InitUserAsync(toUser, CancellationToken.None);
-        await DbContext.InitUserAsync(fromUser, CancellationToken.None);
+        await DbContext.InitUserAsync(to, CancellationToken.None);
+        await DbContext.InitUserAsync(from, CancellationToken.None);
         await DbContext.Reminders.AddAsync(new Database.Entity.RemindMessage()
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = "12345",
-            ToUserId = "12345",
+            FromUserId = from.Id.ToString(),
+            ToUserId = from.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 1
         });
         await DbContext.SaveChangesAsync();
-        await Service.CancelRemindAsync(1, fromUser, false);
+        await Service.CancelRemindAsync(1, from, false);
         Assert.IsTrue(true);
     }
 
@@ -299,7 +297,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task GetRemindSuggestionsAsync()
     {
-        var user = DataHelper.CreateDiscordUser(id: 48286286392);
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var remind = new Database.Entity.RemindMessage()
         {

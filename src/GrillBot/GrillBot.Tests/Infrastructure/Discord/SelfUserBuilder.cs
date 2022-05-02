@@ -6,9 +6,12 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 
 public class SelfUserBuilder : BuilderBase<ISelfUser>
 {
-    public SelfUserBuilder SetPremiumType(PremiumType type)
+    public SelfUserBuilder SetIdentity(ulong id, string username, string discriminator)
     {
-        Mock.Setup(o => o.PremiumType).Returns(type);
+        SetId(id);
+        SetUsername(username);
+        SetDiscriminator(discriminator);
+
         return this;
     }
 

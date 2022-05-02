@@ -15,4 +15,7 @@ public static class Consts
     public const string GuildName = "GrillBot-Guild-Name";
     public const ulong ChannelId = 461549698004811779;
     public const string ChannelName = "GrillBot-Channel-Name";
+    public const string InviteCode = "ABCDEFGH";
+    public const ulong MessageId = 970663868185608242;
+    public const string Nickname = "GrillBot-GuildUser-Nickname";
 }

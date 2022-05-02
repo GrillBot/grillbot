@@ -69,7 +69,7 @@ public class UsersApiService : ServiceBase
             return null;
 
         var result = Mapper.Map<UserDetail>(entity);
-        var user = await DcClient.FindUserAsync(id);
+        var user = await DcClient.FindUserAsync(id, cancellationToken);
         if (user != null)
             result = Mapper.Map(user, result);
 

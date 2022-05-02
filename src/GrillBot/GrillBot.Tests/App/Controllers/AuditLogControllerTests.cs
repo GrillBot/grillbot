@@ -58,10 +58,15 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var item = new AuditLogItem()
         {
-            ChannelId = Consts.ChannelId.ToString(),
+            GuildChannel = new GuildChannel() { ChannelId = Consts.ChannelId.ToString(), GuildId = Consts.GuildId.ToString(), Name = Consts.ChannelName },
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = Consts.GuildId.ToString(),
+            Guild = new Guild() { Name = Consts.GuildName, Id = Consts.GuildId.ToString() },
+            ProcessedGuildUser = new GuildUser()
+            {
+                GuildId = Consts.GuildId.ToString(),
+                User = new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator }
+            },
             ProcessedUserId = Consts.UserId.ToString(),
             Type = AuditLogItemType.MessageDeleted,
             Id = 12345,
@@ -75,11 +80,6 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         });
 
         await DbContext.AddAsync(item);
-
-        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
-        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
-        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.RemoveItemAsync(12345);
@@ -91,10 +91,15 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var item = new AuditLogItem()
         {
-            ChannelId = Consts.ChannelId.ToString(),
+            GuildChannel = new GuildChannel() { ChannelId = Consts.ChannelId.ToString(), GuildId = Consts.GuildId.ToString(), Name = Consts.ChannelName },
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = Consts.GuildId.ToString(),
+            Guild = new Guild() { Name = Consts.GuildName, Id = Consts.GuildId.ToString() },
+            ProcessedGuildUser = new GuildUser()
+            {
+                GuildId = Consts.GuildId.ToString(),
+                User = new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator }
+            },
             ProcessedUserId = Consts.UserId.ToString(),
             Type = AuditLogItemType.MessageDeleted,
             Id = 12345,
@@ -109,11 +114,6 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         });
 
         await DbContext.AddAsync(item);
-
-        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
-        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
-        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.RemoveItemAsync(12345);
@@ -142,7 +142,16 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
             Types = Enum.GetValues<AuditLogItemType>().ToList()
         };
 
-        await DbContext.AddAsync(new AuditLogItem() { ChannelId = Consts.ChannelId.ToString(), CreatedAt = DateTime.UtcNow, Data = null, GuildId = Consts.GuildId.ToString(), ProcessedUserId = Consts.UserId.ToString(), Type = AuditLogItemType.Command });
+
+        await DbContext.AddAsync(new AuditLogItem()
+        {
+            ChannelId = Consts.ChannelId.ToString(),
+            CreatedAt = DateTime.UtcNow,
+            Data = null,
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
+            Type = AuditLogItemType.Command
+        });
         await DbContext.AddRangeAsync(Enum.GetValues<AuditLogItemType>().Where(o => o > 0).Select(o => new AuditLogItem()
         {
             ChannelId = Consts.ChannelId.ToString(),
@@ -199,13 +208,18 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var item = new AuditLogItem()
         {
-            ChannelId = Consts.ChannelId.ToString(),
+            GuildChannel = new GuildChannel() { ChannelId = Consts.ChannelId.ToString(), GuildId = Consts.GuildId.ToString(), Name = Consts.ChannelName },
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = Consts.GuildId.ToString(),
+            Guild = new Guild() { Name = Consts.GuildName, Id = Consts.GuildId.ToString() },
+            ProcessedGuildUser = new GuildUser()
+            {
+                GuildId = Consts.GuildId.ToString(),
+                User = new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator }
+            },
             ProcessedUserId = Consts.UserId.ToString(),
-            Type = AuditLogItemType.Command,
-            Id = 12345
+            Type = AuditLogItemType.MessageDeleted,
+            Id = 12345,
         };
 
         item.Files.Add(new AuditLogFileMeta()
@@ -216,11 +230,6 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         });
 
         await DbContext.AddAsync(item);
-
-        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
-        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
-        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetFileContentAsync(12345, 123, CancellationToken.None);
@@ -232,13 +241,18 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         var item = new AuditLogItem()
         {
-            ChannelId = Consts.ChannelId.ToString(),
+            GuildChannel = new GuildChannel() { ChannelId = Consts.ChannelId.ToString(), GuildId = Consts.GuildId.ToString(), Name = Consts.ChannelName },
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = Consts.GuildId.ToString(),
+            Guild = new Guild() { Name = Consts.GuildName, Id = Consts.GuildId.ToString() },
+            ProcessedGuildUser = new GuildUser()
+            {
+                GuildId = Consts.GuildId.ToString(),
+                User = new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator }
+            },
             ProcessedUserId = Consts.UserId.ToString(),
-            Type = AuditLogItemType.Command,
-            Id = 12345
+            Type = AuditLogItemType.MessageDeleted,
+            Id = 12345,
         };
 
         await File.WriteAllBytesAsync("Temp.txt", new byte[] { 1, 2, 3, 4, 5, 6 });
@@ -250,11 +264,6 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         });
 
         await DbContext.AddAsync(item);
-
-        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
-        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
-        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetFileContentAsync(12345, 123, CancellationToken.None);

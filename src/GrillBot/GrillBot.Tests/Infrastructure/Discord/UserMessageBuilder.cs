@@ -1,9 +1,16 @@
 ﻿using Discord;
+using Moq;
+using System.Linq;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
 public class UserMessageBuilder : BuilderBase<IUserMessage>
 {
+    public UserMessageBuilder()
+    {
+        Mock.Setup(o => o.DeleteAsync(It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
+    }
+
     public UserMessageBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);
@@ -20,6 +27,25 @@ public class UserMessageBuilder : BuilderBase<IUserMessage>
     public UserMessageBuilder SetAuthor(IUser author)
     {
         Mock.Setup(o => o.Author).Returns(author);
+        return this;
+    }
+
+    public UserMessageBuilder SetChannel(IMessageChannel channel)
+    {
+        Mock.Setup(o => o.Channel).Returns(channel);
+        return this;
+    }
+
+    public UserMessageBuilder SetEmbeds(IEnumerable<IEmbed> embeds)
+    {
+        Mock.Setup(o => o.Embeds).Returns(embeds.ToList().AsReadOnly());
+        return this;
+    }
+
+    public UserMessageBuilder SetGetReactionUsersAction(IEnumerable<IUser> users)
+    {
+        Mock.Setup(o => o.GetReactionUsersAsync(It.IsAny<IEmote>(), It.IsAny<int>(), It.IsAny<RequestOptions>()))
+            .Returns(new List<IReadOnlyCollection<IUser>>() { users.ToList().AsReadOnly() }.ToAsyncEnumerable());
         return this;
     }
 }

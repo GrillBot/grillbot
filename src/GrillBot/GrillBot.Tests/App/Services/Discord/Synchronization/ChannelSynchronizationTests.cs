@@ -24,7 +24,8 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ChannelDeletedAsync_ChannelNotFound()
     {
-        var channel = DataHelper.CreateTextChannel();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
         await Service.ChannelDeletedAsync(channel);
         Assert.IsTrue(true);
@@ -33,11 +34,11 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ChannelDeletedAsync_Ok_WithoutThreads()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateTextChannel(mock => mock.Setup(o => o.GuildId).Returns(guild.Id));
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
         await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
-        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, channel, global::Discord.ChannelType.Text));
+        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
         await DbContext.SaveChangesAsync();
 
         await Service.ChannelDeletedAsync(channel);
@@ -47,8 +48,8 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ChannelDeletedAsync_Ok()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateTextChannel(mock => mock.Setup(o => o.GuildId).Returns(guild.Id));
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
         var thread = new ThreadBuilder()
             .SetId(Consts.ThreadId)
             .SetName(Consts.ThreadName)
@@ -84,16 +85,16 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ThreadDeletedAsync_Ok()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateTextChannel(mock => mock.Setup(o => o.GuildId).Returns(guild.Id));
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
         var thread = new ThreadBuilder()
             .SetId(Consts.ThreadId).SetName(Consts.ThreadName)
             .SetGuild(guild)
             .Build();
 
         await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
-        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, channel, global::Discord.ChannelType.Text));
-        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, thread, global::Discord.ChannelType.PrivateThread));
+        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
+        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, thread, ChannelType.PrivateThread));
         await DbContext.SaveChangesAsync();
 
         await Service.ThreadDeletedAsync(thread);

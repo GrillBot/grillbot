@@ -7,7 +7,6 @@ using GrillBot.Tests.Infrastructure.Discord;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Services.Suggestion;
 
@@ -27,8 +26,8 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     public async Task ProcessSessionAsync_NoMetadata()
     {
         var suggestionId = Guid.NewGuid().ToString();
-        var guild = DataHelper.CreateGuild();
-        var user = DataHelper.CreateDiscordUser();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var modalData = new EmoteSuggestionModal();
 
         await Service.ProcessSessionAsync(suggestionId, guild, user, modalData);
@@ -39,7 +38,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     [ExpectedException(typeof(ValidationException))]
     public async Task ProcessSessionAsync_WithDescription_InvalidChannel()
     {
-        var guild = DataHelper.CreateGuild();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
         guildEntity.EmoteSuggestionChannelId = "123456789";
 
@@ -47,7 +46,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         await DbContext.SaveChangesAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var modalData = new EmoteSuggestionModal()
         {
@@ -70,7 +69,6 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         var guild = new GuildBuilder()
             .SetId(Consts.GuildId).SetName(Consts.GuildName)
             .SetGetTextChannelAction(channel)
-            .SetRoles(Enumerable.Empty<IRole>())
             .Build();
 
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
@@ -80,7 +78,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         await DbContext.SaveChangesAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var attachment = new AttachmentBuilder()
             .SetFilename("File.png")
             .SetUrl("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png")
@@ -105,7 +103,6 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         var guild = new GuildBuilder()
             .SetId(Consts.GuildId).SetName(Consts.GuildName)
             .SetGetTextChannelAction(channel)
-            .SetRoles(Enumerable.Empty<IRole>())
             .Build();
 
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
@@ -115,7 +112,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         await DbContext.SaveChangesAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var modalData = new EmoteSuggestionModal() { EmoteName = "Name" };
 

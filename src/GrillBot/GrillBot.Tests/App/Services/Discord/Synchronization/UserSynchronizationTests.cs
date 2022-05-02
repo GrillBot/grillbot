@@ -15,7 +15,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     [TestMethod]
     public async Task UserUpdatedAsync_UserNotFound()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         await Service.UserUpdatedAsync(user, user);
         Assert.IsTrue(true);
@@ -24,7 +24,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     [TestMethod]
     public async Task UserUpdatedAsync_Ok()
     {
-        var user = DataHelper.CreateDiscordUser();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
         await DbContext.SaveChangesAsync();

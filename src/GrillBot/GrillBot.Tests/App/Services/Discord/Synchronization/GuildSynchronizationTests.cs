@@ -1,5 +1,7 @@
 ﻿using GrillBot.App.Services.Discord.Synchronization;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.Discord.Synchronization;
 
@@ -14,7 +16,7 @@ public class GuildSynchronizationTests : ServiceTest<GuildSynchronization>
     [TestMethod]
     public async Task GuildUpdatedAsync_GuildNotFound()
     {
-        var guild = DataHelper.CreateGuild();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
         await Service.GuildUpdatedAsync(null, guild);
         Assert.IsTrue(true);
@@ -23,7 +25,7 @@ public class GuildSynchronizationTests : ServiceTest<GuildSynchronization>
     [TestMethod]
     public async Task GuildUpdatedAsync_Ok()
     {
-        var guild = DataHelper.CreateGuild();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
         await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
         await DbContext.SaveChangesAsync();

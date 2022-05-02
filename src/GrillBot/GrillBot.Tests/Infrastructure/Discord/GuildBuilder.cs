@@ -6,6 +6,16 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 
 public class GuildBuilder : BuilderBase<IGuild>
 {
+    public GuildBuilder()
+    {
+        SetRoles(Enumerable.Empty<IRole>());
+    }
+
+    public GuildBuilder SetIdentity(ulong id, string name)
+    {
+        return SetId(id).SetName(name);
+    }
+
     public GuildBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);
@@ -35,6 +45,14 @@ public class GuildBuilder : BuilderBase<IGuild>
     {
         Mock.Setup(o => o.GetTextChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
             .Returns(Task.FromResult(channels.ToList().AsReadOnly() as IReadOnlyCollection<ITextChannel>));
+        return this;
+    }
+
+    public GuildBuilder SetGetUsersAction(IEnumerable<IGuildUser> users)
+    {
+        Mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
+            .Returns(Task.FromResult(users.ToList().AsReadOnly() as IReadOnlyCollection<IGuildUser>));
+
         return this;
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Discord;
 using GrillBot.App.Services.Discord.Synchronization;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Moq;
 
 namespace GrillBot.Tests.App.Services.Discord.Synchronization;
@@ -16,7 +18,8 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
     [TestMethod]
     public async Task GuildMemberUpdatedAsync_UserNotFound()
     {
-        var user = DataHelper.CreateGuildUser();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Service.GuildMemberUpdatedAsync(null, user);
         Assert.IsTrue(true);
@@ -25,7 +28,8 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
     [TestMethod]
     public async Task GuildMemberUpdatedAsync_Ok()
     {
-        var user = DataHelper.CreateGuildUser();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
         await DbContext.Guilds.AddAsync(Guild.FromDiscord(user.Guild));
@@ -39,7 +43,8 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
     [TestMethod]
     public async Task GuildMemberUpdatedAsync_Bot()
     {
-        var user = DataHelper.CreateGuildUser(bot: true);
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).AsBot().Build();
 
         await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
         await DbContext.Guilds.AddAsync(Guild.FromDiscord(user.Guild));
@@ -53,17 +58,17 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
     [TestMethod]
     public async Task InitUsersAsync()
     {
-        var guildUser = DataHelper.CreateGuildUser();
-        var botUser = DataHelper.CreateGuildUser(id: 968525658, bot: true);
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator);
+        var botUserBuilder = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).AsBot();
+        var thirdUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username, Consts.Discriminator);
 
-        var guild = DataHelper.CreateGuild(mock =>
-        {
-            mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(new List<IGuildUser>()
-            {
-                guildUser, botUser,
-                DataHelper.CreateGuildUser(id: 9685658)
-            }.AsReadOnly() as IReadOnlyCollection<IGuildUser>));
-        });
+        var guild = new GuildBuilder()
+            .SetIdentity(Consts.GuildId, Consts.GuildName)
+            .SetGetUsersAction(new[] { user.Build(), botUserBuilder.Build(), thirdUser.Build() })
+            .Build();
+
+        var guildUser = user.SetGuild(guild).Build();
+        var botUser = botUserBuilder.SetGuild(guild).Build();
 
         await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
         await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(guildUser));

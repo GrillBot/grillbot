@@ -1,24 +1,28 @@
 ﻿using Discord;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data;
-using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.Emotes;
 
 [TestClass]
 public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
 {
+    private IGuild Guild { get; set; }
+
     protected override EmotesCommandService CreateService()
     {
-        var serviceProvider = DIHelper.CreateEmptyProvider();
-        var dcClient = DiscordHelper.CreateDiscordClient();
+        Guild = new GuildBuilder()
+            .SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
+        var dcClient = new ClientBuilder()
+            .SetGetGuildsAction(new[] { Guild })
+            .Build();
+
+        var serviceProvider = DIHelper.CreateEmptyProvider();
         return new EmotesCommandService(serviceProvider, DbFactory, dcClient);
     }
 
@@ -27,24 +31,26 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
     [ExcludeFromCodeCoverage]
     public async Task GetInfoAsync_NotEmote()
     {
-        await Service.GetInfoAsync(Emojis.Ok, DataHelper.CreateDiscordUser());
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        await Service.GetInfoAsync(Emojis.Ok, user);
     }
 
     [TestMethod]
     public async Task GetInfoAsync_Emote_WithData()
     {
-        var guild = DataHelper.CreateGuild();
-        var user = DataHelper.CreateGuildUser();
+        var user = new GuildUserBuilder()
+            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
+            .SetGuild(Guild).Build();
 
-        await DbContext.AddAsync(new EmoteStatisticItem()
+        await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem()
         {
             EmoteId = "<a:PepeJAMJAM:600070651814084629>",
             FirstOccurence = DateTime.MinValue,
-            Guild = Guild.FromDiscord(guild),
-            GuildId = guild.Id.ToString(),
+            Guild = Database.Entity.Guild.FromDiscord(Guild),
+            GuildId = Guild.Id.ToString(),
             LastOccurence = DateTime.MaxValue,
             UseCount = 1,
-            User = GuildUser.FromDiscord(guild, user),
+            User = Database.Entity.GuildUser.FromDiscord(Guild, user),
             UserId = user.Id.ToString()
         });
         await DbContext.SaveChangesAsync();
@@ -58,7 +64,10 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
     [TestMethod]
     public async Task GetInfoAsync_Emote_WithoutData()
     {
-        var user = DataHelper.CreateGuildUser();
+        var user = new GuildUserBuilder()
+            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
+            .SetGuild(Guild).Build();
+
         var emote = Emote.Parse("<a:PepeJAMJAM:600070651814084629>");
         var result = await Service.GetInfoAsync(emote, user);
 

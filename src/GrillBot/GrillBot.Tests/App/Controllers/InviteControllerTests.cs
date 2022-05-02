@@ -5,6 +5,7 @@ using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
+using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -29,21 +30,15 @@ public class InviteControllerTests : ControllerTest<InviteController>
     [TestMethod]
     public async Task GetInviteListAsync_WithoutFilter()
     {
-        await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Name = "Guild", Id = "12345" });
-        await DbContext.Invites.AddAsync(new Database.Entity.Invite() { Code = "Code", CreatorId = "12345", GuildId = "12345" });
-
-        await DbContext.GuildUsers.AddRangeAsync(new[]
+        var guild = new Database.Entity.Guild() { Name = Consts.GuildName, Id = Consts.GuildId.ToString() };
+        guild.Users.Add(new Database.Entity.GuildUser() { User = new Database.Entity.User() { Username = Consts.Username, Id = Consts.UserId.ToString(), Discriminator = Consts.Discriminator } });
+        guild.Users.Add(new Database.Entity.GuildUser()
         {
-            new Database.Entity.GuildUser() { GuildId = "12345", UserId = "12345" },
-            new Database.Entity.GuildUser() { GuildId = "12345", UserId = "123456", UsedInviteCode = "Code" }
+            User = new Database.Entity.User() { Username = Consts.Username, Id = (Consts.UserId + 1).ToString(), Discriminator = Consts.Discriminator },
+            UsedInvite = new Database.Entity.Invite() { Code = Consts.InviteCode, CreatorId = Consts.UserId.ToString() }
         });
 
-        await DbContext.Users.AddRangeAsync(new[]
-        {
-            new Database.Entity.User() { Username = "Username", Discriminator = "1234", Id = "12345" },
-            new Database.Entity.User() { Username = "Username", Discriminator = "1234", Id = "123456" }
-        });
-
+        await DbContext.Guilds.AddAsync(guild);
         await DbContext.SaveChangesAsync();
 
         var result = await AdminController.GetInviteListAsync(new GetInviteListParams(), CancellationToken.None);
@@ -55,11 +50,11 @@ public class InviteControllerTests : ControllerTest<InviteController>
     {
         var filter = new GetInviteListParams()
         {
-            Code = "Code",
+            Code = Consts.InviteCode,
             CreatedFrom = System.DateTime.MinValue,
             CreatedTo = System.DateTime.MaxValue,
-            CreatorId = "12345",
-            GuildId = "12345"
+            CreatorId = Consts.UserId.ToString(),
+            GuildId = Consts.GuildId.ToString()
         };
 
         var result = await AdminController.GetInviteListAsync(filter, CancellationToken.None);

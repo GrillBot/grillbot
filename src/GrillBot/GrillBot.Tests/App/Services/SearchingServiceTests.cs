@@ -54,10 +54,9 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [TestMethod]
     public async Task CreateAsync_Success()
     {
-        var guild = DataHelper.CreateGuild();
-        var user = DataHelper.CreateGuildUser();
-        var channel = new ChannelBuilder()
-            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var channel = new ChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
 
         await Service.CreateAsync(guild, user, channel, "ahoj");
         Assert.IsTrue(true);
@@ -68,11 +67,10 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [ExpectedException(typeof(UnauthorizedAccessException))]
     public async Task RemoveSearchAsync_NotValidUser()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = new ChannelBuilder()
-            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
-        var user = DataHelper.CreateGuildUser(id: 654321);
-        var anotherUser = DataHelper.CreateGuildUser(id: 123456);
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new ChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var anotherUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await DbContext.AddAsync(new SearchItem()
         {
@@ -93,11 +91,10 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [TestMethod]
     public async Task RemoveSearchAsync_Admin()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = new ChannelBuilder()
-            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
-        var user = DataHelper.CreateGuildUser(id: 654321);
-        var anotherUser = DataHelper.CreateGuildUser(id: 123456);
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new ChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var anotherUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await DbContext.AddAsync(new SearchItem()
         {
@@ -123,8 +120,9 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [TestMethod]
     public async Task RemoveSearchAsync_NotFound()
     {
-        var anotherUser = DataHelper.CreateGuildUser(id: 123456);
-        await Service.RemoveSearchAsync(42, anotherUser);
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        await Service.RemoveSearchAsync(42, user);
 
         Assert.IsTrue(true);
     }
@@ -132,8 +130,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [TestMethod]
     public async Task GetSearchListAsync()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateTextChannel();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
         var result = await Service.GetSearchListAsync(guild, channel, "asdf", 1);
         Assert.AreEqual(0, result.Count);
@@ -142,8 +140,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [TestMethod]
     public async Task GetItemsCountAsync()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = DataHelper.CreateTextChannel();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
         var result = await Service.GetItemsCountAsync(guild, channel, "asdf");
         Assert.AreEqual(0, result);
@@ -152,10 +150,9 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [TestMethod]
     public async Task GenerateSuggestionsAsync()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = new ChannelBuilder()
-            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
-        var user = DataHelper.CreateGuildUser(id: 654321);
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new ChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         var suggestions = await Service.GenerateSuggestionsAsync(user, guild, channel);
         Assert.AreEqual(0, suggestions.Count);
@@ -164,10 +161,9 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [TestMethod]
     public async Task GenerateSuggestionsAsync_Admin()
     {
-        var guild = DataHelper.CreateGuild();
-        var channel = new ChannelBuilder()
-            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
-        var user = DataHelper.CreateGuildUser(id: 654321);
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new ChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         var userEntity = Database.Entity.User.FromDiscord(user);
         userEntity.Flags |= (int)UserFlags.BotAdmin;

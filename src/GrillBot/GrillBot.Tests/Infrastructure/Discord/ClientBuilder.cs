@@ -13,9 +13,9 @@ public class ClientBuilder
         Mock = new Mock<IDiscordClient>();
     }
 
-    public ClientBuilder SetSelfUser(SelfUserBuilder builder)
+    public ClientBuilder SetSelfUser(ISelfUser user)
     {
-        Mock.Setup(o => o.CurrentUser).Returns(builder.Build());
+        Mock.Setup(o => o.CurrentUser).Returns(user);
         return this;
     }
 

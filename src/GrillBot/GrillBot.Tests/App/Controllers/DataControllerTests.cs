@@ -33,7 +33,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads()
     {
-        var result = await AdminController.GetChannelsAsync(12345, false);
+        var result = await AdminController.GetChannelsAsync(Consts.GuildId, false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -47,7 +47,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public void GetRoles_WithGuild()
     {
-        var result = AdminController.GetRoles(12345);
+        var result = AdminController.GetRoles(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -96,7 +96,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads_AsUser()
     {
-        var result = await UserController.GetChannelsAsync(12345, false);
+        var result = await UserController.GetChannelsAsync(Consts.GuildId, false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -110,7 +110,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public void GetRoles_WithGuild_AsUser()
     {
-        var result = UserController.GetRoles(12345);
+        var result = UserController.GetRoles(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 

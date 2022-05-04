@@ -76,6 +76,7 @@ public static class Extensions
         services
             .AddSingleton<User.UserService>()
             .AddSingleton<User.PointsService>()
+            .AddScoped<User.RubbergodKarmaService>()
             .AddScoped<User.UsersApiService>();
 
         services

@@ -21,13 +21,15 @@ public class UsersController : Controller
     private CommandsHelpService HelpService { get; }
     private ExternalCommandsHelpService ExternalCommandsHelpService { get; }
     private UsersApiService ApiService { get; }
+    private RubbergodKarmaService KarmaService { get; }
 
     public UsersController(CommandsHelpService helpService, ExternalCommandsHelpService externalCommandsHelpService,
-        UsersApiService apiService)
+        UsersApiService apiService, RubbergodKarmaService karmaService)
     {
         HelpService = helpService;
         ExternalCommandsHelpService = externalCommandsHelpService;
         ApiService = apiService;
+        KarmaService = karmaService;
     }
 
     /// <summary>
@@ -190,5 +192,27 @@ public class UsersController : Controller
     {
         var result = await ApiService.GetPointsBoardAsync(User, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Get rubbergod karma leaderboard.
+    /// </summary>
+    /// <response code="200">Returns paginated response of karma leaderboard</response>
+    /// <response code="500">Something is wrong.</response>
+    [HttpGet("karma")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromQuery] KarmaListParams parameters, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await KarmaService.GetUserKarmaAsync(parameters.Sort, parameters.Pagination, cancellationToken);
+            return Ok(result);
+        }
+        catch (GrillBotException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new MessageResponse(ex.Message));
+        }
     }
 }

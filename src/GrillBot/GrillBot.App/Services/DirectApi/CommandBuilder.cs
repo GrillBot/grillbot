@@ -11,11 +11,11 @@ public static class CommandBuilder
             .WithParameter("user_id", userId);
     }
 
-    public static DirectMessageCommand CreateKarmaCommand(string board, SortParams sort, PaginatedParams pagination)
+    public static DirectMessageCommand CreateKarmaCommand(SortParams sort, PaginatedParams pagination)
     {
         return new DirectMessageCommand("Karma")
             .WithParameter("order", sort.Descending ? "desc" : "asc")
-            .WithParameter("board", board)
+            .WithParameter("board", sort.OrderBy.ToLower())
             .WithParameter("page", pagination.Page);
     }
 }

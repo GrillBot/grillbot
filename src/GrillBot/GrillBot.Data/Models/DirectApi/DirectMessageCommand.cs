@@ -20,6 +20,12 @@ public class DirectMessageCommand
         Parameters = new Dictionary<string, object>();
     }
 
+    public DirectMessageCommand WithParameter(string key, object value)
+    {
+        Parameters[key] = value;
+        return this;
+    }
+
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)
     {

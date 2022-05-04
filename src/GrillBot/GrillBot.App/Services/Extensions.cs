@@ -20,7 +20,10 @@ public static class Extensions
 
         services
             .AddScoped<CommandsHelp.CommandsHelpService>()
-            .AddSingleton<CommandsHelp.ExternalCommandsHelpService>();
+            .AddScoped<CommandsHelp.ExternalCommandsHelpService>();
+
+        services
+            .AddSingleton<DirectApi.DirectApiService>();
 
         services
             .AddSingleton<Discord.DiscordInitializationService>()

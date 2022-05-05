@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.TestHelpers;
@@ -15,10 +14,10 @@ public static class ConfigurationHelper
                 { "Discord:Logging:GuildId", "12345" },
                 { "Discord:Logging:ChannelId", "12345" },
                 { "Discord:Logging:Enabled", "true" },
-                { "OAuth2:ClientRedirectUrl", "https://client" },
-                { "OAuth2:AdminRedirectUrl", "https://admin" },
-                { "OAuth2:ClientId", "client" },
-                { "OAuth2:ClientSecret", "secret" },
+                { "Auth:OAuth2:ClientRedirectUrl", "https://client" },
+                { "Auth:OAuth2:AdminRedirectUrl", "https://admin" },
+                { "Auth:OAuth2:ClientId", "client" },
+                { "Auth:OAuth2:ClientSecret", "secret" },
                 { "AutoReply:DisabledChannels:0", "12345" },
                 { "Discord:Commands:Prefix", "$" },
                 { "Discord:Emotes:Sadge", ":sadge:" },

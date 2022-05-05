@@ -172,7 +172,7 @@ public class Startup
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = $"GrillBot/{machineInfo}",
                     ValidAudience = $"GrillBot/{machineInfo}",
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["OAuth2:ClientId"]}_{Configuration["OAuth2:ClientSecret"]}"))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["Auth:OAuth2:ClientId"]}_{Configuration["Auth:OAuth2:ClientSecret"]}"))
                 };
             });
 

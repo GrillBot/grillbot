@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using GrillBot.App.Services.CommandsHelp;
 using GrillBot.Data.Exceptions;
 using GrillBot.App.Services.User;
+using GrillBot.App.Infrastructure.Auth;
 
 namespace GrillBot.App.Controllers;
 
@@ -199,8 +200,8 @@ public class UsersController : Controller
     /// </summary>
     /// <response code="200">Returns paginated response of karma leaderboard</response>
     /// <response code="500">Something is wrong.</response>
+    [ApiKeyAuth]
     [HttpGet("karma")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromQuery] KarmaListParams parameters, CancellationToken cancellationToken = default)

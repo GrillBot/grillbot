@@ -20,7 +20,7 @@ public class OAuth2Service
     public OAuth2Service(IConfiguration configuration, GrillBotContextFactory dbFactory, LoggingService loggingService,
         IHttpClientFactory httpClientFactory)
     {
-        Configuration = configuration.GetSection("OAuth2");
+        Configuration = configuration.GetSection("Auth:OAuth2");
         DbFactory = dbFactory;
         LoggingService = loggingService;
         HttpClient = httpClientFactory.CreateClient();

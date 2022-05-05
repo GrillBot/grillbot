@@ -25,7 +25,7 @@ public class RubbergodKarmaService : ServiceBase
         {
             Data = new List<UserKarma>(),
             Page = data["meta"]["page"].Value<int>(),
-            TotalItemsCount = data["content"].ToArray().Length, // TODO
+            TotalItemsCount = data["meta"]["items_count"].Value<int>()
         };
 
         result.CanPrev = result.Page > 1;

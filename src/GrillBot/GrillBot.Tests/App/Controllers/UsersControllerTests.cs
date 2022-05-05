@@ -51,8 +51,9 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var storageFactory = FileStorageHelper.Create(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storageFactory, initializationService);
         var apiService = new UsersApiService(DbFactory, mapper, dcClient, auditLogService);
+        var rubbergodKarmaService = new RubbergodKarmaService(directApi, dcClient, mapper);
 
-        return new UsersController(helpService, externalHelpService, apiService);
+        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService);
     }
 
     [TestMethod]

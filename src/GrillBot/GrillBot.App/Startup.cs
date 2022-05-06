@@ -121,8 +121,17 @@ public class Startup
                 In = OpenApiSecurityApiKeyLocation.Header
             });
 
+            doc.AddSecurity("ApiKey", new OpenApiSecurityScheme()
+            {
+                Name = "ApiKey",
+                Scheme = "ApiKey",
+                Type = OpenApiSecuritySchemeType.ApiKey,
+                In = OpenApiSecurityApiKeyLocation.Header
+            });
+
             doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
             doc.OperationProcessors.Add(new OperationIdProcessor());
+            doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
 
             doc.PostProcess = document =>
             {

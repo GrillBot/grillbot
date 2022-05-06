@@ -14,10 +14,17 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
     {
         var header = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
 
-        if (string.IsNullOrEmpty(header))
-            return AsUnauthorized(context);
+        if (!string.IsNullOrEmpty(header))
+        {
+            if (!header.StartsWith("ApiKey"))
+                return AsUnauthorized(context);
+        }
+        else
+        {
+            header ??= context.HttpContext.Request.Headers["ApiKey"].FirstOrDefault();
+        }
 
-        if (!header.StartsWith("ApiKey"))
+        if (string.IsNullOrEmpty(header))
             return AsUnauthorized(context);
 
         header = header.Replace("ApiKey", "").Trim();

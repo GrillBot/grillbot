@@ -76,7 +76,13 @@ public class Startup
             .AddDatabase(connectionString)
             .AddMemoryCache()
             .AddAutoMapper(typeof(Startup).Assembly, typeof(Emojis).Assembly, typeof(GrillBotContext).Assembly)
-            .AddControllers(c => c.Filters.Add<OperationCancelledExceptionFilterAttribute>())
+            .AddControllers(c =>
+            {
+                c.Filters.Add<OperationCancelledExceptionFilterAttribute>();
+
+                c.CacheProfiles.Add("BoardApi", new() { Duration = 60 }); // Response caching for boards (leaderboard, help, ...).
+                c.CacheProfiles.Add("ConstsApi", new() { Duration = 30 }); // Response caching for constants.
+            })
             .AddNewtonsoftJson();
 
         services
@@ -193,6 +199,7 @@ public class Startup
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();
 
+        app.UseResponseCaching();
         app.UseMiddleware<ErrorHandlingMiddleware>();
         app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
         app.UseRouting();

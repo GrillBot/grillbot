@@ -149,6 +149,7 @@ public class ChannelController : Controller
     [HttpGet("board")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync(CancellationToken cancellationToken)
     {
         var result = await ApiService.GetChannelBoardAsync(User, cancellationToken);

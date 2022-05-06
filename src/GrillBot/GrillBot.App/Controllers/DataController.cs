@@ -18,6 +18,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/data")]
 [OpenApiTag("Data", Description = "Support for form fields, ...")]
+[ResponseCache(CacheProfileName = "ConstsApi")]
 public class DataController : Controller
 {
     private DiscordSocketClient DiscordClient { get; }
@@ -88,15 +89,12 @@ public class DataController : Controller
         if (guildId != null) guilds = guilds.Where(o => o.Id == guildId.Value);
 
         var availableChannels = User.HaveUserPermission() ?
-            guilds.SelectMany(o => o.GetAvailableChannelsFor(o.GetUser(currentUserId))).ToList() :
+            guilds.SelectMany(o => o.GetAvailableChannelsFor(o.GetUser(currentUserId), !ignoreThreads)).ToList() :
             guilds.SelectMany(o => o.Channels);
 
         var channels = availableChannels.Select(o => Mapper.Map<Channel>(o))
             .Where(o => o.Type != null && o.Type != ChannelType.Category)
             .ToList();
-
-        if (ignoreThreads)
-            channels = channels.FindAll(o => o.Type != ChannelType.PrivateThread && o.Type != ChannelType.PublicThread);
 
         var guildIds = guilds.Select(o => o.Id.ToString()).ToList();
         var dbChannelsQuery = DbContext.Channels.AsNoTracking()

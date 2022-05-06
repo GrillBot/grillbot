@@ -13,7 +13,7 @@ public class ChannelsMappingProfile : AutoMapper.Profile
         CreateMap<SocketGuildChannel, Channel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
             .ForMember(dst => dst.Type, opt => opt.MapFrom(src => DiscordHelper.GetChannelType(src)))
-            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => $"{src.Name} ({src.GetCategory().Name})".Replace(" ()", "")));
+            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.HaveCategory() ? $"{src.Name} ({src.GetCategory().Name})" : src.Name));
 
         CreateMap<Database.Entity.GuildChannel, Channel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.ChannelId))

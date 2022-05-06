@@ -68,15 +68,19 @@ static public class GuildExtensions
     static public int CalculateFileUploadLimit(this IGuild guild)
         => Convert.ToInt32((guild?.MaxUploadLimit ?? 0) / 1000000);
 
-    static public IEnumerable<SocketTextChannel> GetAvailableTextChannelsFor(this SocketGuild guild, SocketGuildUser user)
+    static public IEnumerable<SocketTextChannel> GetAvailableTextChannelsFor(this SocketGuild guild, SocketGuildUser user, bool includeThreads = false)
     {
-        return guild.TextChannels
-            .Where(o => o is not SocketThreadChannel && o.HaveAccess(user));
+        var query = guild.TextChannels.AsEnumerable();
+
+        if (!includeThreads)
+            query = query.Where(o => o is not SocketThreadChannel);
+
+        return query.Where(o => o.HaveAccess(user));
     }
 
-    static public IEnumerable<SocketGuildChannel> GetAvailableChannelsFor(this SocketGuild guild, SocketGuildUser user)
+    static public IEnumerable<SocketGuildChannel> GetAvailableChannelsFor(this SocketGuild guild, SocketGuildUser user, bool includeThreads = false)
     {
-        return GetAvailableTextChannelsFor(guild, user)
+        return GetAvailableTextChannelsFor(guild, user, includeThreads)
             .Select(o => o as SocketGuildChannel)
             .Where(o => o != null)
             .Concat(guild.VoiceChannels.Where(o => o.HaveAccess(user)));

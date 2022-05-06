@@ -109,9 +109,13 @@ static public class ChannelExtensions
         return true;
     }
 
-    public static ICategoryChannel GetCategory(this SocketGuildChannel channel)
+    public static bool HaveCategory(this IGuildChannel channel)
+        => channel is INestedChannel nested && nested.CategoryId != null;
+
+    public static IChannel GetCategory(this SocketGuildChannel channel)
     {
         if (channel is SocketCategoryChannel categoryChannel) return categoryChannel;
+        else if (channel is SocketThreadChannel thread) return thread.ParentChannel;
         else if (channel is SocketTextChannel textChannel) return textChannel.Category;
         else if (channel is SocketVoiceChannel voiceChannel) return voiceChannel.Category;
 

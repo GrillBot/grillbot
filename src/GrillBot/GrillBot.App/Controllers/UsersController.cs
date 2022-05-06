@@ -78,7 +78,7 @@ public class UsersController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync(CancellationToken cancellationToken = default)
     {
         var currentUserId = User.GetUserId();
         var user = await GetUserDetailAsync(currentUserId, cancellationToken);
@@ -102,7 +102,8 @@ public class UsersController : Controller
     [HttpGet("me/commands")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync(CancellationToken cancellationToken)
+    [ResponseCache(CacheProfileName = "BoardApi")]
+    public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync(CancellationToken cancellationToken = default)
     {
         var currentUserId = User.GetUserId();
         var result = await HelpService.GetHelpAsync(currentUserId, cancellationToken);
@@ -118,6 +119,7 @@ public class UsersController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+    [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service, CancellationToken cancellationToken)
     {
         try
@@ -189,6 +191,7 @@ public class UsersController : Controller
     [HttpGet("points/board")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<UserPointsItem>>> GetPointsLeaderboardAsync(CancellationToken cancellationToken = default)
     {
         var result = await ApiService.GetPointsBoardAsync(User, cancellationToken);
@@ -204,6 +207,7 @@ public class UsersController : Controller
     [HttpGet("karma")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+    [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromQuery] KarmaListParams parameters, CancellationToken cancellationToken = default)
     {
         try

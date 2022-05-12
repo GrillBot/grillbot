@@ -207,7 +207,7 @@ public class UsersController : Controller
     [HttpGet("karma")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    [ResponseCache(CacheProfileName = "BoardApi")]
+    [ResponseCache(CacheProfileName = "BoardApi", VaryByQueryKeys = new[] { "*" })]
     public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromQuery] KarmaListParams parameters, CancellationToken cancellationToken = default)
     {
         try

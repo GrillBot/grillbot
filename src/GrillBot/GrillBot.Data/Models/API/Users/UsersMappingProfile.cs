@@ -1,7 +1,6 @@
 ﻿using Discord;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Enums;
-using System.IO.Compression;
 using System.Linq;
 
 namespace GrillBot.Data.Models.API.Users;
@@ -10,7 +9,8 @@ public class UsersMappingProfile : AutoMapper.Profile
 {
     public UsersMappingProfile()
     {
-        CreateMap<IUser, User>();
+        CreateMap<IUser, User>()
+            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetAvatarUri(ImageFormat.Auto, 128)));
 
         CreateMap<Database.Entity.User, User>()
             .ForMember(dst => dst.IsBot, opt => opt.MapFrom(src => src.HaveFlags(UserFlags.NotUser)));

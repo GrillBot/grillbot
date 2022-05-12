@@ -31,9 +31,11 @@ public class RubbergodKarmaService : ServiceBase
         result.CanPrev = result.Page > 1;
         result.CanNext = result.Page < data["meta"]["total_pages"].Value<int>();
 
-        foreach (var item in data["content"].OfType<JObject>())
+        var itemsOnPage = data["content"].OfType<JObject>().ToList();
+        for (int i = 0; i < itemsOnPage.Count; i++)
         {
-            var row = await ParseRowAsync(item);
+            var position = pagination.Skip + i + 1;
+            var row = await ParseRowAsync(itemsOnPage[i], position);
             if (row != null)
                 result.Data.Add(row);
         }
@@ -41,7 +43,7 @@ public class RubbergodKarmaService : ServiceBase
         return result;
     }
 
-    private async Task<UserKarma> ParseRowAsync(JObject row)
+    private async Task<UserKarma> ParseRowAsync(JObject row, int position)
     {
         var memberId = row["member_ID"].Value<ulong>();
         var user = await DcClient.FindUserAsync(memberId);
@@ -53,7 +55,8 @@ public class RubbergodKarmaService : ServiceBase
             Negative = row["negative"].Value<int>(),
             Value = row["karma"].Value<int>(),
             Positive = row["positive"].Value<int>(),
-            User = Mapper.Map<Data.Models.API.Users.User>(user)
+            User = Mapper.Map<Data.Models.API.Users.User>(user),
+            Position = position
         };
     }
 }

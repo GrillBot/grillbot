@@ -4,6 +4,7 @@ using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.AuditLog;
+using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
@@ -22,11 +23,45 @@ public class AuditLogApiService : ServiceBase
         FileStorage = fileStorage;
     }
 
+    private async Task<List<long>> GetLogIdsAsync(AuditLogListParams parameters, CancellationToken cancellationToken = default)
+    {
+        if (!parameters.IsExtendedFilterSet())
+            return null; // Log ids could get only if some extended filter was set.
+
+        using var context = DbFactory.Create();
+
+        var query = context.CreateQuery(parameters, true)
+            .Select(o => new AuditLogItem() { Id = o.Id, Type = o.Type, Data = o.Data });
+
+        var data = await query.ToListAsync(cancellationToken);
+        return data
+            .Where(o => IsValidExtendedFilter(parameters, o))
+            .Select(o => o.Id)
+            .ToList();
+    }
+
+    private static bool IsValidExtendedFilter(AuditLogListParams parameters, AuditLogItem item)
+    {
+        var conditions = new[]
+        {
+            () => item.Type == AuditLogItemType.Info && parameters.InfoFilter?.IsValid(item) == true,
+            () => item.Type == AuditLogItemType.Warning && parameters.WarningFilter?.IsValid(item) == true,
+            () => item.Type == AuditLogItemType.Error && parameters.ErrorFilter?.IsValid(item) == true,
+        };
+
+        return conditions.Any(o => o());
+    }
+
     public async Task<PaginatedResponse<AuditLogListItem>> GetListAsync(AuditLogListParams parameters, CancellationToken cancellationToken = default)
     {
+        var logIds = await GetLogIdsAsync(parameters, cancellationToken);
+
         using var context = DbFactory.Create();
 
         var query = context.CreateQuery(parameters, true, true);
+        if (logIds != null)
+            query = query.Where(o => logIds.Contains(o.Id));
+
         return await PaginatedResponse<AuditLogListItem>
             .CreateAsync(query, parameters.Pagination, entity => MapItem(entity), cancellationToken);
     }

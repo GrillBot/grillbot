@@ -2,6 +2,7 @@
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
+using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

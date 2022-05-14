@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GrillBot.Data.Models.API.AuditLog;
+namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
 public class AuditLogListParams : IQueryableModel<AuditLogItem>
 {
@@ -25,12 +25,21 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
     [DiscordId]
     public string ChannelId { get; set; }
 
+    public TextFilter InfoFilter { get; set; }
+    public TextFilter WarningFilter { get; set; }
+    public TextFilter ErrorFilter { get; set; }
+
     /// <summary>
     /// Available: Guild, ProcessedUser, Type, Channel, CreatedAt.
     /// Default: CreatedAt.
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "CreatedAt" };
     public PaginatedParams Pagination { get; set; } = new();
+
+    public bool IsExtendedFilterSet()
+    {
+        return InfoFilter != null || WarningFilter != null || ErrorFilter != null;
+    }
 
     public IQueryable<AuditLogItem> SetIncludes(IQueryable<AuditLogItem> query)
     {

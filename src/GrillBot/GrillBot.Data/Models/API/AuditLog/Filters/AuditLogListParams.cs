@@ -28,6 +28,9 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
     public TextFilter InfoFilter { get; set; }
     public TextFilter WarningFilter { get; set; }
     public TextFilter ErrorFilter { get; set; }
+    public ExecutionFilter CommandFilter { get; set; }
+    public ExecutionFilter InteractionFilter { get; set; }
+    public ExecutionFilter JobFilter { get; set; }
 
     /// <summary>
     /// Available: Guild, ProcessedUser, Type, Channel, CreatedAt.
@@ -38,7 +41,8 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
 
     public bool IsExtendedFilterSet()
     {
-        return InfoFilter != null || WarningFilter != null || ErrorFilter != null;
+        return InfoFilter != null || WarningFilter != null || ErrorFilter != null
+            || CommandFilter != null || InteractionFilter != null || JobFilter != null;
     }
 
     public IQueryable<AuditLogItem> SetIncludes(IQueryable<AuditLogItem> query)

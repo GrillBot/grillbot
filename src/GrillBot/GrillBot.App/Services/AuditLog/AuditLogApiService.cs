@@ -47,6 +47,9 @@ public class AuditLogApiService : ServiceBase
             () => item.Type == AuditLogItemType.Info && parameters.InfoFilter?.IsValid(item) == true,
             () => item.Type == AuditLogItemType.Warning && parameters.WarningFilter?.IsValid(item) == true,
             () => item.Type == AuditLogItemType.Error && parameters.ErrorFilter?.IsValid(item) == true,
+            () => item.Type == AuditLogItemType.Command && parameters.CommandFilter?.IsValidCommand(JsonConvert.DeserializeObject<CommandExecution>(item.Data, JsonSerializerSettings)) == true,
+            () => item.Type == AuditLogItemType.InteractionCommand && parameters.InteractionFilter?.IsValidInteraction(JsonConvert.DeserializeObject<InteractionCommandExecuted>(item.Data, JsonSerializerSettings)) == true,
+            () => item.Type == AuditLogItemType.JobCompleted && parameters.JobFilter?.IsValidJob(JsonConvert.DeserializeObject<JobExecutionData>(item.Data, JsonSerializerSettings)) == true
         };
 
         return conditions.Any(o => o());

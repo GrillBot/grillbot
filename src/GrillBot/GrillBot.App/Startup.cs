@@ -28,7 +28,7 @@ namespace GrillBot.App;
 
 public class Startup
 {
-    private string[] CorsOrigins = new[] { "https://grillbot.cloud", "https://public.grillbot.cloud", "http://localhost:4200", "https://localhost:4200" };
+    private readonly string[] CorsOrigins = new[] { "https://grillbot.cloud", "https://public.grillbot.cloud", "http://localhost:4200", "https://localhost:4200" };
 
     public Startup(IConfiguration configuration)
     {

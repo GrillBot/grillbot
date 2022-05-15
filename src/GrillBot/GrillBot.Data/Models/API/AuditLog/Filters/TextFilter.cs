@@ -6,7 +6,6 @@ namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
 public class TextFilter
 {
-    [Required]
     public string Text { get; set; }
 
     public bool IsValid(AuditLogItem item)

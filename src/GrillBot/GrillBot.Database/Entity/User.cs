@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -35,6 +36,8 @@ public class User
     [StringLength(4)]
     public string Discriminator { get; set; }
 
+    public UserStatus Status { get; set; }
+
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
 
     public ISet<GuildUser> Guilds { get; set; }
@@ -61,7 +64,8 @@ public class User
             Id = user.Id.ToString(),
             Username = user.Username,
             Flags = (int)(user.IsBot || user.IsWebhook ? UserFlags.NotUser : UserFlags.None),
-            Discriminator = user.Discriminator
+            Discriminator = user.Discriminator,
+            Status = user.GetStatus()
         };
     }
 

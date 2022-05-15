@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord.Synchronization;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Extensions;
 
 namespace GrillBot.App.Services.Discord;
 
@@ -25,7 +26,7 @@ public class DiscordSyncService : ServiceBase
 
         DiscordClient.GuildMemberUpdated += (before, after) => RunAsync(
             () => GuildUsers.GuildMemberUpdatedAsync(before.Value, after),
-            () => before.HasValue && (before.Value.Nickname != after.Nickname || before.Value.Username != after.Username || before.Value.Discriminator != after.Discriminator)
+            () => before.HasValue && (before.Value.Nickname != after.Nickname || before.Value.Username != after.Username || before.Value.Discriminator != after.Discriminator || before.Value.GetStatus() != after.GetStatus())
         );
 
         DiscordClient.JoinedGuild += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
@@ -38,7 +39,7 @@ public class DiscordSyncService : ServiceBase
 
         DiscordClient.UserUpdated += (before, after) => RunAsync(
             () => Users.UserUpdatedAsync(before, after),
-            () => before.Username != after.Username || before.Discriminator != after.Discriminator || before.IsUser() != after.IsUser()
+            () => before.Username != after.Username || before.Discriminator != after.Discriminator || before.IsUser() != after.IsUser() || before.GetStatus() != after.GetStatus()
         );
 
         DiscordClient.ChannelUpdated += (before, after) => RunAsync(
@@ -60,6 +61,11 @@ public class DiscordSyncService : ServiceBase
             () => Channels.ThreadUpdatedAsync(before.Value, after),
             () => before.HasValue
         );
+
+        DiscordClient.PresenceUpdated += (user, before, after) => RunAsync(
+            () => Users.PresenceUpdatedAsync(user, before, after),
+            () => before.GetStatus() != after.GetStatus()
+        );
     }
 
     private async Task RunAsync(Func<Task> syncFunction, Func<bool> check = null)
@@ -78,9 +84,12 @@ public class DiscordSyncService : ServiceBase
         var dbChannels = await context.Channels.ToListAsync();
         dbChannels.ForEach(o => o.Flags |= (long)ChannelFlags.Deleted);
 
+        var dbUsers = await context.GuildUsers.Include(o => o.User).ToListAsync();
+        dbUsers.ForEach(o => o.User.Status = UserStatus.Offline);
+
         foreach (var guild in DiscordClient.Guilds)
         {
-            await GuildUsers.InitUsersAsync(context, guild);
+            await GuildUsers.InitUsersAsync(guild, dbUsers);
             await Channels.InitChannelsAsync(guild, dbChannels);
         }
 

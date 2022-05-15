@@ -45,6 +45,8 @@ public class UsersController : Controller
     public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters,
         CancellationToken cancellationToken = default)
     {
+        parameters.FixStatus();
+
         var result = await ApiService.GetListAsync(parameters, cancellationToken);
         return Ok(result);
     }

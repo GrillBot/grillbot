@@ -7,6 +7,7 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
+using System.Linq;
 using System.Security.Claims;
 
 namespace GrillBot.App.Services.User;
@@ -26,7 +27,6 @@ public class UsersApiService : ServiceBase
         using var context = DbFactory.Create();
 
         var query = context.CreateQuery(parameters, true);
-
         return await PaginatedResponse<UserListItem>
             .CreateAsync(query, parameters.Pagination, (entity, cancellationToken) => MapItemAsync(entity, cancellationToken), cancellationToken);
     }
@@ -34,10 +34,6 @@ public class UsersApiService : ServiceBase
     private async Task<UserListItem> MapItemAsync(Database.Entity.User entity, CancellationToken cancellationToken = default)
     {
         var result = Mapper.Map<UserListItem>(entity);
-        var discordUser = await DcClient.FindUserAsync(entity.Id.ToUlong(), cancellationToken);
-
-        if (discordUser != null)
-            result = Mapper.Map(discordUser, result);
 
         foreach (var guild in entity.Guilds)
         {

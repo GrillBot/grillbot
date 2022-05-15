@@ -1,4 +1,5 @@
 ﻿using GrillBot.Database.Enums;
+using GrillBot.Database.Extensions;
 
 namespace GrillBot.App.Services.Discord.Synchronization;
 
@@ -17,6 +18,7 @@ public class UserSynchronization : SynchronizationBase
 
         user.Username = after.Username;
         user.Discriminator = after.Discriminator;
+        user.Status = after.GetStatus();
 
         if (!after.IsUser())
             user.Flags |= (int)UserFlags.NotUser;
@@ -37,5 +39,22 @@ public class UserSynchronization : SynchronizationBase
         botOwner.Flags &= ~(int)UserFlags.NotUser;
         botOwner.Username = application.Owner.Username;
         botOwner.Discriminator = application.Owner.Discriminator;
+    }
+
+    public async Task PresenceUpdatedAsync(IUser user, SocketPresence _, SocketPresence after)
+    {
+        using var context = DbFactory.Create();
+
+        var dbUser = await context.Users.FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
+        if (dbUser == null) return;
+
+        dbUser.Username = user.Username;
+        dbUser.Discriminator = user.Discriminator;
+        dbUser.Status = after.GetStatus();
+
+        if (!user.IsUser())
+            dbUser.Flags |= (int)UserFlags.NotUser;
+
+        await context.SaveChangesAsync();
     }
 }

@@ -1,7 +1,9 @@
-﻿using GrillBot.Data.Infrastructure.Validation;
+﻿using Discord;
+using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Database;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GrillBot.Data.Models.API.Users;
@@ -34,6 +36,8 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
     /// </summary>
     public string UsedInviteCode { get; set; }
 
+    public List<UserStatus> Status { get; set; } = new();
+
     public SortParams Sort { get; set; } = new();
     public PaginatedParams Pagination { get; set; } = new();
 
@@ -60,6 +64,9 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
         if (!string.IsNullOrEmpty(UsedInviteCode))
             query = query.Where(o => o.Guilds.Any(x => EF.Functions.ILike(x.UsedInviteCode, $"{UsedInviteCode.ToLower()}%")));
 
+        if (Status.Count > 0)
+            query = query.Where(o => Status.Contains(o.Status));
+
         return query;
     }
 
@@ -70,5 +77,11 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
             true => query.OrderByDescending(o => o.Username).ThenByDescending(o => o.Discriminator),
             _ => query.OrderBy(o => o.Username).ThenBy(o => o.Discriminator)
         };
+    }
+
+    public void FixStatus()
+    {
+        Status.Remove(UserStatus.Invisible);
+        Status.Remove(UserStatus.AFK);
     }
 }

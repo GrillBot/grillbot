@@ -1,4 +1,5 @@
 ﻿using Discord;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Enums;
 using System.Linq;
@@ -26,22 +27,20 @@ public class UsersMappingProfile : AutoMapper.Profile
         CreateMap<Database.Entity.User, UserListItem>()
             .ForMember(dst => dst.HaveBirthday, opt => opt.MapFrom(src => src.Birthday != null))
             .ForMember(dst => dst.Username, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.Discriminator) ? src.Username : $"{src.Username}#{src.Discriminator}"))
-            .ForMember(dst => dst.Guilds, opt => opt.Ignore());
-
-        CreateMap<IUser, UserListItem>()
+            .ForMember(dst => dst.Guilds, opt => opt.Ignore())
             .ForMember(dst => dst.DiscordStatus, opt => opt.MapFrom(src => src.Status))
-            .ForMember(dst => dst.RegisteredAt, opt => opt.MapFrom(src => src.CreatedAt.LocalDateTime));
+            .ForMember(dst => dst.RegisteredAt, opt => opt.MapFrom(src => SnowflakeUtils.FromSnowflake(src.Id.ToUlong()).LocalDateTime));
 
         CreateMap<Database.Entity.User, UserDetail>()
             .ForMember(dst => dst.HaveBirthday, opt => opt.MapFrom(src => src.Birthday != null))
             .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(_ => CDN.GetDefaultUserAvatarUrl(0)))
-            .ForMember(dst => dst.Guilds, opt => opt.Ignore());
+            .ForMember(dst => dst.Guilds, opt => opt.Ignore())
+            .ForMember(dst => dst.RegisteredAt, opt => opt.MapFrom(src => SnowflakeUtils.FromSnowflake(src.Id.ToUlong()).LocalDateTime));
 
         CreateMap<IUser, UserDetail>()
             .ForMember(dst => dst.IsKnown, opt => opt.MapFrom(_ => true))
             .ForMember(dst => dst.ActiveClients, opt => opt.MapFrom(src => src.ActiveClients.Select(o => o.ToString()).OrderBy(o => o).ToList()))
-            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetAvatarUri(ImageFormat.Auto, 128)))
-            .ForMember(dst => dst.RegisteredAt, opt => opt.MapFrom(src => src.CreatedAt.LocalDateTime));
+            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetAvatarUri(ImageFormat.Auto, 128)));
 
         CreateMap<Database.Entity.GuildUser, GuildUserDetail>()
             .ForMember(dst => dst.Emotes, opt => opt.MapFrom(src => src.EmoteStatistics));

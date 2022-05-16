@@ -23,6 +23,7 @@ using Quartz;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Extensions;
 using GrillBot.App.Infrastructure.OpenApi;
+using GrillBot.App.Infrastructure.RequestProcessing;
 
 namespace GrillBot.App;
 
@@ -80,7 +81,7 @@ public class Startup
             .AddAutoMapper(typeof(Startup).Assembly, typeof(Emojis).Assembly, typeof(GrillBotContext).Assembly)
             .AddControllers(c =>
             {
-                c.Filters.Add<OperationCancelledExceptionFilterAttribute>();
+                c.Filters.Add<ExceptionFilter>();
 
                 c.CacheProfiles.Add("BoardApi", new() { Duration = 60 }); // Response caching for boards (leaderboard, help, ...).
                 c.CacheProfiles.Add("ConstsApi", new() { Duration = 30 }); // Response caching for constants.
@@ -201,7 +202,6 @@ public class Startup
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();
 
-        app.UseMiddleware<ErrorHandlingMiddleware>();
         app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().WithOrigins(CorsOrigins));
         app.UseResponseCaching();
         app.UseRouting();

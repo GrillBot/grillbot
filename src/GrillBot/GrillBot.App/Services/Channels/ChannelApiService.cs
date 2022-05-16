@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.AutoReply;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Helper;
@@ -16,12 +17,14 @@ public class ChannelApiService : ServiceBase
 {
     private MessageCache.MessageCache MessageCache { get; }
     private AuditLogService AuditLogService { get; }
+    private AutoReplyService AutoReplyService { get; }
 
     public ChannelApiService(GrillBotContextFactory dbFactory, IMapper mapper, IDiscordClient client, MessageCache.MessageCache messageCache,
-        AuditLogService auditLogService) : base(null, dbFactory, null, client, mapper)
+        AuditLogService auditLogService, AutoReplyService autoReplyService) : base(null, dbFactory, null, client, mapper)
     {
         MessageCache = messageCache;
         AuditLogService = auditLogService;
+        AutoReplyService = autoReplyService;
     }
 
     public async Task<PaginatedResponse<GuildChannelListItem>> GetListAsync(GetChannelListParams parameters, CancellationToken cancellationToken = default)
@@ -87,8 +90,16 @@ public class ChannelApiService : ServiceBase
         if (channel == null)
             throw new NotFoundException();
 
+        bool reloadAutoReply = channel.HasFlag(ChannelFlags.AutoReplyDeactivated) !=
+            ((parameters.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0);
+
         channel.Flags = parameters.Flags;
-        return (await context.SaveChangesAsync()) > 0;
+        var success = (await context.SaveChangesAsync()) > 0;
+
+        if (reloadAutoReply)
+            await AutoReplyService.InitAsync();
+
+        return success;
     }
 
     public async Task PostMessageAsync(ulong guildId, ulong channelId, SendMessageToChannelParams parameters)

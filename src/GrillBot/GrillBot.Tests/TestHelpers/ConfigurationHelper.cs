@@ -18,7 +18,6 @@ public static class ConfigurationHelper
                 { "Auth:OAuth2:AdminRedirectUrl", "https://admin" },
                 { "Auth:OAuth2:ClientId", "client" },
                 { "Auth:OAuth2:ClientSecret", "secret" },
-                { "AutoReply:DisabledChannels:0", "12345" },
                 { "Discord:Commands:Prefix", "$" },
                 { "Discord:Emotes:Sadge", ":sadge:" },
                 { "Discord:Emotes:Hypers", ":hypers:" },

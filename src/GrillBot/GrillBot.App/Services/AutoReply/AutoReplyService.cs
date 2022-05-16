@@ -1,24 +1,28 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
+using GrillBot.Data.Extensions;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
 using System.Text.RegularExpressions;
 
 namespace GrillBot.App.Services.AutoReply;
 
 [Initializable]
-public partial class AutoReplyService : ServiceBase
+public class AutoReplyService : ServiceBase
 {
     private string Prefix { get; }
 
     private List<ulong> DisabledChannels { get; }
-    private ConcurrentBag<AutoReplyItem> Messages { get; }
+    private List<AutoReplyItem> Messages { get; }
+    private SemaphoreSlim Semaphore { get; }
 
     public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotContextFactory dbFactory,
         DiscordInitializationService initializationService) : base(discordClient, dbFactory, initializationService)
     {
-        DisabledChannels = configuration.GetSection("AutoReply:DisabledChannels").Get<ulong[]>()?.ToList() ?? new List<ulong>();
         Prefix = configuration["Discord:Commands:Prefix"];
-        Messages = new ConcurrentBag<AutoReplyItem>();
+        Messages = new List<AutoReplyItem>();
+        DisabledChannels = new List<ulong>();
+        Semaphore = new(1);
 
         DiscordClient.Ready += () => InitAsync();
         DiscordClient.MessageReceived += (message) =>
@@ -32,23 +36,49 @@ public partial class AutoReplyService : ServiceBase
         };
     }
 
-    public async Task InitAsync(CancellationToken cancellationToken = default)
+    public async Task InitAsync()
     {
-        using var dbContext = DbFactory.Create();
-        var messages = await dbContext.AutoReplies
-            .AsNoTracking().ToListAsync(cancellationToken);
+        await Semaphore.WaitAsync();
 
-        Messages.Clear();
-        foreach (var message in messages)
-            Messages.Add(message);
+        try
+        {
+            using var dbContext = DbFactory.Create();
+            var messages = await dbContext.AutoReplies.AsNoTracking().ToListAsync();
+
+            Messages.Clear();
+            Messages.AddRange(messages);
+
+            var disabledChannels = await dbContext.Channels.AsNoTracking()
+                .Where(o => (o.Flags & (long)ChannelFlags.Deleted) == 0 && (o.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0)
+                .Select(o => o.ChannelId)
+                .ToListAsync();
+
+            DisabledChannels.Clear();
+            DisabledChannels.AddRange(
+                disabledChannels.Select(o => o.ToUlong())
+            );
+        }
+        finally
+        {
+            Semaphore.Release();
+        }
     }
 
-    private Task OnMessageReceivedAsync(SocketUserMessage message)
+    private async Task OnMessageReceivedAsync(SocketUserMessage message)
     {
-        var matched = Messages.Where(o => !o.IsDisabled)
-            .FirstOrDefault(o => Regex.IsMatch(message.Content, o.Template, o.RegexOptions));
+        await Semaphore.WaitAsync();
 
-        if (matched == null) return Task.CompletedTask;
-        return message.Channel.SendMessageAsync(matched.Reply);
+        try
+        {
+            var matched = Messages
+                .Find(o => !o.IsDisabled && Regex.IsMatch(message.Content, o.Template, o.RegexOptions));
+
+            if (matched == null) return;
+            await message.Channel.SendMessageAsync(matched.Reply);
+        }
+        finally
+        {
+            Semaphore.Release();
+        }
     }
 }

@@ -21,4 +21,9 @@ public enum ChannelFlags : long
     /// Channel or thread was deleted/archived.
     /// </summary>
     Deleted = 4,
+
+    /// <summary>
+    /// Automatic replies are disabled in this channel.
+    /// </summary>
+    AutoReplyDeactivated = 8
 }

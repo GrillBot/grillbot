@@ -1,6 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Channels;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
@@ -38,7 +39,8 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var mapper = AutoMapperHelper.CreateMapper();
         var fileStorage = FileStorageHelper.Create(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
-        var apiService = new ChannelApiService(DbFactory, mapper, dcClient, messageCache, auditLogService);
+        var autoReplyService = new AutoReplyService(configuration, discordClient, DbFactory, initializationService);
+        var apiService = new ChannelApiService(DbFactory, mapper, dcClient, messageCache, auditLogService, autoReplyService);
 
         return new ChannelController(apiService);
     }

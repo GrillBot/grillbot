@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.API.AuditLog;
+using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -141,7 +142,6 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
             ProcessedUserIds = new List<string>() { Consts.UserId.ToString() },
             Types = Enum.GetValues<AuditLogItemType>().ToList()
         };
-
 
         await DbContext.AddAsync(new AuditLogItem()
         {

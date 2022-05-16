@@ -1,15 +1,8 @@
 ﻿using Discord;
 using GrillBot.App.Services.Discord.Synchronization;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.Common;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
-using Org.BouncyCastle.Asn1.Crmf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Services.Discord.Synchronization;
 

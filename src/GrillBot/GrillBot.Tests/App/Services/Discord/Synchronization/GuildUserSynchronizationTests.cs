@@ -54,30 +54,4 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
         await Service.GuildMemberUpdatedAsync(null, user);
         Assert.IsTrue(true);
     }
-
-    [TestMethod]
-    public async Task InitUsersAsync()
-    {
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator);
-        var botUserBuilder = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).AsBot();
-        var thirdUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username, Consts.Discriminator);
-
-        var guild = new GuildBuilder()
-            .SetIdentity(Consts.GuildId, Consts.GuildName)
-            .SetGetUsersAction(new[] { user.Build(), botUserBuilder.Build(), thirdUser.Build() })
-            .Build();
-
-        var guildUser = user.SetGuild(guild).Build();
-        var botUser = botUserBuilder.SetGuild(guild).Build();
-
-        await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
-        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(guildUser));
-        await DbContext.GuildUsers.AddAsync(GuildUser.FromDiscord(guild, guildUser));
-        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(botUser));
-        await DbContext.GuildUsers.AddAsync(GuildUser.FromDiscord(guild, botUser));
-        await DbContext.SaveChangesAsync();
-
-        await Service.InitUsersAsync(DbContext, guild);
-        Assert.IsTrue(true);
-    }
 }

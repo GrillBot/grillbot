@@ -53,5 +53,5 @@ public class ExecutionFilter
     }
 
     private bool IsDurationValid(int duration)
-        => Duration == null || (Duration.From >= duration && Duration.To <= duration);
+        => Duration == null || (duration >= Duration.From && duration <= Duration.To);
 }

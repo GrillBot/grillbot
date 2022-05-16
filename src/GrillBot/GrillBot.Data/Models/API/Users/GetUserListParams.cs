@@ -36,7 +36,7 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
     /// </summary>
     public string UsedInviteCode { get; set; }
 
-    public List<UserStatus> Status { get; set; } = new();
+    public UserStatus? Status { get; set; }
 
     public SortParams Sort { get; set; } = new();
     public PaginatedParams Pagination { get; set; } = new();
@@ -64,8 +64,8 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
         if (!string.IsNullOrEmpty(UsedInviteCode))
             query = query.Where(o => o.Guilds.Any(x => EF.Functions.ILike(x.UsedInviteCode, $"{UsedInviteCode.ToLower()}%")));
 
-        if (Status.Count > 0)
-            query = query.Where(o => Status.Contains(o.Status));
+        if (Status != null)
+            query = query.Where(o => o.Status == Status);
 
         return query;
     }
@@ -81,7 +81,9 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
 
     public void FixStatus()
     {
-        Status.Remove(UserStatus.Invisible);
-        Status.Remove(UserStatus.AFK);
+        if (Status == UserStatus.Invisible)
+            Status = UserStatus.Offline;
+        else if (Status == UserStatus.AFK)
+            Status = UserStatus.Idle;
     }
 }

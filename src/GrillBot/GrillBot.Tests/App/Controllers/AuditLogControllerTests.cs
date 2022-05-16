@@ -3,10 +3,12 @@ using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Common;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
@@ -137,7 +139,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
             ChannelId = Consts.ChannelId.ToString(),
             CreatedFrom = DateTime.MinValue,
             CreatedTo = DateTime.MaxValue,
-            GuildId = "12345",
+            GuildId = Consts.GuildId.ToString(),
             IgnoreBots = true,
             ProcessedUserIds = new List<string>() { Consts.UserId.ToString() },
             Types = Enum.GetValues<AuditLogItemType>().ToList()
@@ -156,12 +158,65 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         {
             ChannelId = Consts.ChannelId.ToString(),
             CreatedAt = DateTime.UtcNow,
-            Data = o == AuditLogItemType.Info ? "--" : "{}",
+            Data = "{}",
             GuildId = Consts.GuildId.ToString(),
             ProcessedUserId = Consts.UserId.ToString(),
             Type = o
         }));
 
+        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
+        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
+        await DbContext.SaveChangesAsync();
+
+        var result = await AdminController.GetAuditLogListAsync(filter, CancellationToken.None);
+        CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetAuditLogListAsync_WithExtendedFilters_WithData()
+    {
+        var filter = new AuditLogListParams()
+        {
+            Types = Enum.GetValues<AuditLogItemType>().ToList(),
+            CommandFilter = new()
+            {
+                Duration = new() { From = int.MinValue, To = int.MaxValue },
+                Name = "dd",
+                WasSuccess = true,
+            },
+            ErrorFilter = new() { Text = "T" },
+            InfoFilter = new() { Text = "T" },
+            InteractionFilter = new()
+            {
+                WasSuccess = true,
+                Name = "ddddddd",
+                Duration = new() { From = int.MinValue, To = int.MaxValue }
+            },
+            JobFilter = new()
+            {
+                WasSuccess = true,
+                Name = "ddddddd",
+                Duration = new() { From = int.MinValue, To = int.MaxValue }
+            },
+            WarningFilter = new() { Text = "T" }
+        };
+
+        static AuditLogItem createItem(object data, AuditLogItemType type)
+        {
+            return new AuditLogItem()
+            {
+                ChannelId = Consts.ChannelId.ToString(),
+                CreatedAt = DateTime.UtcNow,
+                Data = JsonConvert.SerializeObject(data, AuditLogService.JsonSerializerSettings),
+                GuildId = Consts.GuildId.ToString(),
+                ProcessedUserId = Consts.UserId.ToString(),
+                Type = type
+            };
+        }
+
+        await DbContext.AddAsync(createItem(new CommandExecution() { Command = "A", Duration = 50, IsSuccess = true }, AuditLogItemType.Command));
         await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
         await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
         await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });

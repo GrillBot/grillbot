@@ -17,7 +17,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
 
     [DiscordId]
     public List<string> ProcessedUserIds { get; set; }
-    public List<AuditLogItemType> Types { get; set; }
+    public List<AuditLogItemType> Types { get; set; } = new();
     public DateTime? CreatedFrom { get; set; }
     public DateTime? CreatedTo { get; set; }
     public bool IgnoreBots { get; set; }
@@ -31,6 +31,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
     public ExecutionFilter CommandFilter { get; set; }
     public ExecutionFilter InteractionFilter { get; set; }
     public ExecutionFilter JobFilter { get; set; }
+    public ApiRequestFilter ApiRequestFilter { get; set; }
 
     /// <summary>
     /// Available: Guild, ProcessedUser, Type, Channel, CreatedAt.
@@ -39,10 +40,20 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
     public SortParams Sort { get; set; } = new() { OrderBy = "CreatedAt" };
     public PaginatedParams Pagination { get; set; } = new();
 
-    public bool IsExtendedFilterSet()
+    public bool AnyExtendedFilter()
     {
-        return InfoFilter != null || WarningFilter != null || ErrorFilter != null
-            || CommandFilter != null || InteractionFilter != null || JobFilter != null;
+        var conditions = new[]
+        {
+            () => Types.Contains(AuditLogItemType.Info) && InfoFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.Warning) && WarningFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.Error) && ErrorFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.Command) && CommandFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.InteractionCommand) && InteractionFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.JobCompleted) && JobFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.API) && ApiRequestFilter?.IsSet() == true
+        };
+
+        return conditions.Any(o => o());
     }
 
     public IQueryable<AuditLogItem> SetIncludes(IQueryable<AuditLogItem> query)
@@ -57,7 +68,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
 
     public IQueryable<AuditLogItem> SetQuery(IQueryable<AuditLogItem> query)
     {
-        if (Types?.Count > 0)
+        if (Types.Count > 0)
             query = query.Where(o => Types.Contains(o.Type));
 
         if (!string.IsNullOrEmpty(GuildId))

@@ -1,18 +1,11 @@
-﻿using Castle.Components.DictionaryAdapter;
-using GrillBot.App.Controllers;
+﻿using GrillBot.App.Controllers;
 using GrillBot.App.Infrastructure.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Routing;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrillBot.Tests.App.Infrastructure.Auth;
 

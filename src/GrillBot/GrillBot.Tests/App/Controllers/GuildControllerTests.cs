@@ -4,13 +4,16 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class GuildControllerTests : ControllerTest<GuildController>
 {
-    protected override GuildController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override GuildController CreateController(IServiceProvider provider)
     {
         var discordClient = DiscordHelper.CreateClient();
         var mapper = AutoMapperHelper.CreateMapper();

@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.Unverify;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -45,6 +46,7 @@ public class SelfUnverifyController : Controller
     {
         try
         {
+            this.SetApiRequestData(parameters);
             await SelfunverifyService.AddKeepablesAsync(parameters);
             return Ok();
         }

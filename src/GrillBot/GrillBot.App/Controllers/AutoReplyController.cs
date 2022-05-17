@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.AutoReply;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AutoReply;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -62,8 +63,9 @@ public class AutoReplyController : Controller
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AutoReplyItem>> CreateItemAsync(AutoReplyItemParams parameters)
+    public async Task<ActionResult<AutoReplyItem>> CreateItemAsync([FromBody] AutoReplyItemParams parameters)
     {
+        this.SetApiRequestData(parameters);
         var item = await AutoReplyApiService.CreateItemAsync(parameters);
         return Ok(item);
     }
@@ -82,6 +84,7 @@ public class AutoReplyController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<AutoReplyItem>> UpdateItemAsync(long id, [FromBody] AutoReplyItemParams parameters)
     {
+        this.SetApiRequestData(parameters);
         var item = await AutoReplyApiService.UpdateItemAsync(id, parameters);
 
         if (item == null)

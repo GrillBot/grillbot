@@ -136,6 +136,12 @@ namespace GrillBot.Database.Enums
         /// Quartz job finished.
         /// </summary>
         [Display(Name = "Skončila naplánována úloha")]
-        JobCompleted = 22
+        JobCompleted = 22,
+
+        /// <summary>
+        /// API request.
+        /// </summary>
+        [Display(Name = "Požadavky z API")]
+        API = 23
     }
 }

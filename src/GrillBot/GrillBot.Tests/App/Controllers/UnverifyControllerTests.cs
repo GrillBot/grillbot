@@ -15,7 +15,9 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class UnverifyControllerTests : ControllerTest<UnverifyController>
 {
-    protected override UnverifyController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override UnverifyController CreateController(IServiceProvider provider)
     {
         var guild = new GuildBuilder()
             .SetName(Consts.GuildName).SetId(Consts.GuildId)

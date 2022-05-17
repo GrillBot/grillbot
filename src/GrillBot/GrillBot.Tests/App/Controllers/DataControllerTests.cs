@@ -5,18 +5,21 @@ using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class DataControllerTests : ControllerTest<DataController>
 {
-    protected override DataController CreateController()
+    protected override bool CanInitProvider() => true;
+
+    protected override DataController CreateController(IServiceProvider provider)
     {
         var discordClient = DiscordHelper.CreateClient();
-        var commandsService = DiscordHelper.CreateCommandsService(true);
+        var commandsService = DiscordHelper.CreateCommandsService(provider);
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var interactions = DiscordHelper.CreateInteractionService(discordClient, true);
+        var interactions = DiscordHelper.CreateInteractionService(discordClient, provider);
         var mapper = AutoMapperHelper.CreateMapper();
         var emotesCache = new EmotesCacheService(discordClient);
 

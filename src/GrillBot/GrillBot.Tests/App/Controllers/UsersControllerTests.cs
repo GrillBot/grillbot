@@ -20,7 +20,9 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class UsersControllerTests : ControllerTest<UsersController>
 {
-    protected override UsersController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override UsersController CreateController(IServiceProvider provider)
     {
         var guild = new GuildBuilder()
             .SetId(Consts.GuildId).SetName(Consts.GuildName)
@@ -43,7 +45,6 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
         var mapper = AutoMapperHelper.CreateMapper();
         var channelsService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
-        var provider = DIHelper.CreateEmptyProvider();
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);
         var memoryCache = CacheHelper.CreateMemoryCache();
         var directApi = new DirectApiService(discordClient, configuration, memoryCache, initializationService);

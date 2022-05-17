@@ -1,14 +1,16 @@
 ﻿using GrillBot.Database.Entity;
 using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class TextFilter
+public class TextFilter : IExtendedFilter
 {
     public string Text { get; set; }
 
-    public bool IsValid(AuditLogItem item)
+    public bool IsSet()
+        => !string.IsNullOrEmpty(Text);
+
+    public bool IsValid(AuditLogItem item, JsonSerializerSettings settings)
     {
         return item.Data.Contains(Text);
     }

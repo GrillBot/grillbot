@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.Emotes;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Emotes;
@@ -63,6 +64,7 @@ public class EmotesController : Controller
     {
         try
         {
+            this.SetApiRequestData(@params);
             var result = await EmotesApiService.MergeStatsToAnotherAsync(@params);
             return Ok(result);
         }

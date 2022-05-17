@@ -3,13 +3,16 @@ using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Discord;
 using GrillBot.Data.Models.API.AutoReply;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
 {
-    protected override AutoReplyController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override AutoReplyController CreateController(IServiceProvider provider)
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var discordClient = DiscordHelper.CreateClient();

@@ -6,13 +6,16 @@ using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class SearchingControllerTests : ControllerTest<SearchingController>
 {
-    protected override SearchingController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override SearchingController CreateController(IServiceProvider provider)
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();

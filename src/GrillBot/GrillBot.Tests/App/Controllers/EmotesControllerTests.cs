@@ -13,7 +13,9 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class EmotesControllerTests : ControllerTest<EmotesController>
 {
-    protected override EmotesController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override EmotesController CreateController(IServiceProvider provider)
     {
         var discordClient = DiscordHelper.CreateClient();
         var cacheService = new EmotesCacheService(discordClient);

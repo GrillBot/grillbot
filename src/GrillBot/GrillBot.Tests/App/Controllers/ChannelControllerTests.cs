@@ -10,13 +10,16 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class ChannelControllerTests : ControllerTest<ChannelController>
 {
-    protected override ChannelController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override ChannelController CreateController(IServiceProvider provider)
     {
         var guild = new GuildBuilder()
             .SetId(Consts.GuildId).SetName(Consts.GuildName)

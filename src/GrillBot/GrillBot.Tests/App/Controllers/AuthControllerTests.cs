@@ -4,6 +4,7 @@ using GrillBot.App.Services.Logging;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Net;
 using System.Net.Http;
 
@@ -12,7 +13,9 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class AuthControllerTests : ControllerTest<AuthController>
 {
-    protected override AuthController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override AuthController CreateController(IServiceProvider provider)
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var discordClient = DiscordHelper.CreateClient();

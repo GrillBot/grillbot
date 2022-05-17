@@ -247,4 +247,92 @@ public class StatisticsController : Controller
 
         return Ok(data);
     }
+
+    /// <summary>
+    /// Get statistics about API by date and year.
+    /// </summary>
+    /// <response code="200">Returns dictionary of api requests per date (Year-Month, Count).</response>
+    [HttpGet("api/date")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByDateAsync(CancellationToken cancellationToken = default)
+    {
+        using var context = DbFactory.Create();
+
+        var query = context.AuditLogs.AsNoTracking()
+            .Where(o => o.Type == AuditLogItemType.API)
+            .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+            .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
+            .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() });
+
+        var data = await query.ToDictionaryAsync(o => o.Date, o => o.Count, cancellationToken);
+        return Ok(data);
+    }
+
+    /// <summary>
+    /// Get statistics about API by endpoint.
+    /// </summary>
+    /// <response code="200">Returns statistics by endpoint.</response>
+    [HttpGet("api/endpoint")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<StatisticItem>>> GetApiRequestsByEndpointAsync(CancellationToken cancellationToken = default)
+    {
+        using var context = DbFactory.Create();
+
+        var query = context.AuditLogs.AsNoTracking()
+            .Where(o => o.Type == AuditLogItemType.API)
+            .Select(o => new { o.CreatedAt, o.Data });
+        var dbData = await query.ToListAsync(cancellationToken);
+
+        var data = dbData
+            .Select(o => new
+            {
+                o.CreatedAt,
+                Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogService.JsonSerializerSettings)
+            })
+            .GroupBy(o => o.Data.TemplatePath)
+            .Select(o => new StatisticItem()
+            {
+                Key = o.Key,
+                FailedCount = o.Count(x => x.Data.StatusCode != "200 (OK)"),
+                Last = o.Max(x => x.CreatedAt),
+                MaxDuration = o.Max(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds)),
+                MinDuration = o.Min(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds)),
+                SuccessCount = o.Count(x => x.Data.StatusCode == "200 (OK)"),
+                TotalDuration = o.Sum(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds))
+            })
+            .OrderBy(o => o.Key)
+            .ToList();
+
+        return Ok(data);
+    }
+
+    /// <summary>
+    /// Get statistics about API by status code.
+    /// </summary>
+    /// <response code="200">Returns dictionary of api requests per status code (Status code, Count).</response>
+    [HttpGet("api/status")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByStatusCodeAsync(CancellationToken cancellationToken = default)
+    {
+        using var context = DbFactory.Create();
+
+        var query = context.AuditLogs.AsNoTracking()
+            .Where(o => o.Type == AuditLogItemType.API)
+            .Select(o => new { o.CreatedAt, o.Data });
+        var dbData = await query.ToListAsync(cancellationToken);
+
+        var data = dbData
+            .Select(o => new
+            {
+                o.CreatedAt,
+                Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogService.JsonSerializerSettings)
+            })
+            .Where(o => !string.IsNullOrEmpty(o.Data.StatusCode))
+            .GroupBy(o => o.Data.StatusCode)
+            .Select(o => new { o.Key, Count = o.Count() })
+            .OrderBy(o => o.Key)
+            .ToDictionary(o => o.Key, o => o.Count);
+
+        return Ok(data);
+    }
 }

@@ -1,22 +1,21 @@
-﻿using Discord;
-using GrillBot.App.Controllers;
+﻿using GrillBot.App.Controllers;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
-using Namotion.Reflection;
 using Newtonsoft.Json;
 using System;
-using System.Linq;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class StatisticsControllerTests : ControllerTest<StatisticsController>
 {
-    protected override StatisticsController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override StatisticsController CreateController(IServiceProvider provider)
     {
         return new StatisticsController(DbFactory);
     }

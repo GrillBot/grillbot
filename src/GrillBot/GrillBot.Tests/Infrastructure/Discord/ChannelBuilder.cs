@@ -1,7 +1,9 @@
 ﻿using Discord;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
+[ExcludeFromCodeCoverage]
 public class ChannelBuilder : BuilderBase<IChannel>
 {
     public ChannelBuilder SetIdentity(ulong id, string name)

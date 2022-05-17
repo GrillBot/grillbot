@@ -1,4 +1,5 @@
 ﻿using GrillBot.App;
+using GrillBot.Data.Models.AuditLog;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +11,9 @@ public static class DIHelper
 {
     public static IServiceProvider CreateEmptyProvider()
     {
-        return new ServiceCollection().BuildServiceProvider();
+        return new ServiceCollection()
+            .AddScoped<ApiRequest>()
+            .BuildServiceProvider();
     }
 
     public static IServiceProvider CreateInitializedProvider()

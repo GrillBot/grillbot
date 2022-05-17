@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using GrillBot.App.Services.Channels;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Controllers;
 
@@ -41,6 +42,7 @@ public class ChannelController : Controller
     {
         try
         {
+            this.SetApiRequestData(parameters);
             await ApiService.PostMessageAsync(guildId, channelId, parameters);
             return Ok();
         }
@@ -114,6 +116,7 @@ public class ChannelController : Controller
     {
         try
         {
+            this.SetApiRequestData(parameters);
             var result = await ApiService.UpdateChannelAsync(id, parameters);
 
             if (result)

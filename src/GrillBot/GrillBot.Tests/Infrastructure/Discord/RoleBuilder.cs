@@ -1,7 +1,9 @@
 ﻿using Discord;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
+[ExcludeFromCodeCoverage]
 public class RoleBuilder : BuilderBase<IRole>
 {
     public RoleBuilder SetId(ulong id)

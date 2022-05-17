@@ -2,13 +2,16 @@
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController>
 {
-    protected override SelfUnverifyController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override SelfUnverifyController CreateController(IServiceProvider provider)
     {
         var service = new SelfunverifyService(null, DbFactory);
         return new SelfUnverifyController(service);

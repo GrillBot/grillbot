@@ -3,9 +3,12 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using GrillBot.App;
 using GrillBot.App.Infrastructure.TypeReaders;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.TestHelpers;
 
+[ExcludeFromCodeCoverage]
 public static class DiscordHelper
 {
     public static DiscordSocketClient CreateClient()
@@ -13,14 +16,12 @@ public static class DiscordHelper
         return new DiscordSocketClient();
     }
 
-    public static CommandService CreateCommandsService(bool init = false)
+    public static CommandService CreateCommandsService(IServiceProvider provider = null)
     {
         var service = new CommandService();
 
-        if (init)
+        if (provider != null)
         {
-            var provider = DIHelper.CreateInitializedProvider();
-
             service.RegisterTypeReaders();
             service.AddModulesAsync(typeof(Startup).Assembly, provider).Wait();
         }
@@ -28,14 +29,12 @@ public static class DiscordHelper
         return service;
     }
 
-    public static InteractionService CreateInteractionService(DiscordSocketClient discordClient, bool init = false)
+    public static InteractionService CreateInteractionService(DiscordSocketClient discordClient, IServiceProvider provider = null)
     {
         var service = new InteractionService(discordClient);
 
-        if (init)
+        if (provider != null)
         {
-            var provider = DIHelper.CreateInitializedProvider();
-
             service.RegisterTypeConverters();
             service.AddModulesAsync(typeof(Startup).Assembly, provider).Wait();
         }

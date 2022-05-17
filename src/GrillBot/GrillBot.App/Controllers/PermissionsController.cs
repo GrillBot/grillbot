@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Permissions;
 using GrillBot.Data.Models.API.Users;
@@ -39,6 +40,7 @@ public class PermissionsController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Conflict)]
     public async Task<ActionResult> CreateExplicitPermissionAsync([FromBody] CreateExplicitPermissionParams parameters)
     {
+        this.SetApiRequestData(parameters);
         var exists = await DbContext.ExplicitPermissions.AsNoTracking()
             .AnyAsync(o => o.Command == parameters.Command && o.TargetId == parameters.TargetId);
 

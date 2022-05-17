@@ -1,9 +1,11 @@
 ﻿using Discord;
 using Moq;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
+[ExcludeFromCodeCoverage]
 public class UserBuilder : BuilderBase<IUser>
 {
     public UserBuilder SetIdentity(ulong id, string username, string discriminator)

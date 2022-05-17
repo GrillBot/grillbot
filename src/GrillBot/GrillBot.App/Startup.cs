@@ -24,6 +24,7 @@ using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Extensions;
 using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.App.Infrastructure.RequestProcessing;
+using GrillBot.Data.Models.AuditLog;
 
 namespace GrillBot.App;
 
@@ -79,9 +80,12 @@ public class Startup
             .AddDatabase(connectionString)
             .AddMemoryCache()
             .AddAutoMapper(typeof(Startup).Assembly, typeof(Emojis).Assembly, typeof(GrillBotContext).Assembly)
+            .AddScoped<ApiRequest>()
             .AddControllers(c =>
             {
                 c.Filters.Add<ExceptionFilter>();
+                c.Filters.Add<ResultFilter>();
+                c.Filters.Add<RequestFilter>();
 
                 c.CacheProfiles.Add("BoardApi", new() { Duration = 60 }); // Response caching for boards (leaderboard, help, ...).
                 c.CacheProfiles.Add("ConstsApi", new() { Duration = 30 }); // Response caching for constants.

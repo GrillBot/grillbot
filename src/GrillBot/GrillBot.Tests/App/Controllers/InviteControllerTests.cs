@@ -7,13 +7,16 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class InviteControllerTests : ControllerTest<InviteController>
 {
-    protected override InviteController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override InviteController CreateController(IServiceProvider provider)
     {
         var discordClient = DiscordHelper.CreateClient();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());

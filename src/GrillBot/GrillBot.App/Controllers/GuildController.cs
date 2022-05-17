@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.Guild;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
@@ -65,6 +66,7 @@ public class GuildController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams parameters)
     {
+        this.SetApiRequestData(parameters);
         var result = await ApiService.UpdateGuildAsync(id, parameters, ModelState);
 
         if (result == null)

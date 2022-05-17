@@ -3,8 +3,8 @@ using GrillBot.Database.Services;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Security.Claims;
 
 namespace GrillBot.Tests.Common;
@@ -18,7 +18,8 @@ public abstract class ControllerTest<TController> where TController : Controller
     protected GrillBotContext DbContext { get; set; }
     protected GrillBotContextFactory DbFactory { get; set; }
 
-    protected abstract TController CreateController();
+    protected abstract bool CanInitProvider();
+    protected abstract TController CreateController(IServiceProvider provider);
 
     [TestInitialize]
     public void Initialize()
@@ -26,11 +27,13 @@ public abstract class ControllerTest<TController> where TController : Controller
         DbFactory = new DbContextBuilder();
         DbContext = DbFactory.Create();
 
-        AdminController = CreateController();
-        AdminController.ControllerContext = CreateContext("Admin");
+        var provider = CreateProvider(CanInitProvider());
 
-        UserController = CreateController();
-        UserController.ControllerContext = CreateContext("User");
+        AdminController = CreateController(provider);
+        AdminController.ControllerContext = CreateContext("Admin", provider);
+
+        UserController = CreateController(provider);
+        UserController.ControllerContext = CreateContext("User", provider);
     }
 
     public virtual void Cleanup() { }
@@ -48,7 +51,7 @@ public abstract class ControllerTest<TController> where TController : Controller
         UserController.Dispose();
     }
 
-    private static ControllerContext CreateContext(string role)
+    private static ControllerContext CreateContext(string role, IServiceProvider provider)
     {
         return new ControllerContext()
         {
@@ -57,7 +60,8 @@ public abstract class ControllerTest<TController> where TController : Controller
                 User = new ClaimsPrincipal(new ClaimsIdentity(new[] {
                     new Claim(ClaimTypes.Role, role),
                     new Claim(ClaimTypes.NameIdentifier, Consts.UserId.ToString())
-                }))
+                })),
+                RequestServices = provider
             }
         };
     }
@@ -89,5 +93,12 @@ public abstract class ControllerTest<TController> where TController : Controller
             Assert.IsInstanceOfType(notFound.Value, typeof(MessageResponse));
         else if (result.Result is BadRequestObjectResult badRequest)
             Assert.IsInstanceOfType(badRequest.Value, typeof(ValidationProblemDetails));
+    }
+
+    protected IServiceProvider CreateProvider(bool init = false)
+    {
+        return init ?
+            DIHelper.CreateInitializedProvider() :
+            DIHelper.CreateEmptyProvider();
     }
 }

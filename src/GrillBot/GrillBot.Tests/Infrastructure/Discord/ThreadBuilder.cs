@@ -1,8 +1,10 @@
 ﻿using Discord;
 using Moq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
+[ExcludeFromCodeCoverage]
 public class ThreadBuilder : BuilderBase<IThreadChannel>
 {
     public ThreadBuilder SetId(ulong id)

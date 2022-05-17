@@ -12,7 +12,6 @@ public abstract class ServiceTest<TService> where TService : class
     protected GrillBotContextFactory DbFactory { get; set; }
 
     protected abstract TService CreateService();
-    internal TService BuildService() => CreateService();
 
     [TestInitialize]
     public void Initialize()

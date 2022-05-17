@@ -14,7 +14,9 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class RemindControllerTests : ControllerTest<ReminderController>
 {
-    protected override ReminderController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override ReminderController CreateController(IServiceProvider provider)
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();

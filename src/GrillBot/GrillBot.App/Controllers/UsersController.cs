@@ -11,6 +11,7 @@ using GrillBot.App.Services.CommandsHelp;
 using GrillBot.Data.Exceptions;
 using GrillBot.App.Services.User;
 using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Controllers;
 
@@ -148,10 +149,11 @@ public class UsersController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> UpdateUserAsync(ulong id, UpdateUserParams parameters)
+    public async Task<ActionResult> UpdateUserAsync(ulong id, [FromBody] UpdateUserParams parameters)
     {
         try
         {
+            this.SetApiRequestData(parameters);
             await ApiService.UpdateUserAsync(id, parameters, User);
             return Ok();
         }

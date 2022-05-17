@@ -1,10 +1,12 @@
 ﻿using Discord;
 using Moq;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
+[ExcludeFromCodeCoverage]
 public class GuildUserBuilder : BuilderBase<IGuildUser>
 {
     public GuildUserBuilder()

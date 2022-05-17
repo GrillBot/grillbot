@@ -18,7 +18,9 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class AuditLogControllerTests : ControllerTest<AuditLogController>
 {
-    protected override AuditLogController CreateController()
+    protected override bool CanInitProvider() => false;
+
+    protected override AuditLogController CreateController(IServiceProvider provider)
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);

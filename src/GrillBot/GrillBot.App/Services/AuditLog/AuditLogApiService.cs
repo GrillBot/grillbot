@@ -9,6 +9,7 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+
 namespace GrillBot.App.Services.AuditLog;
 
 public class AuditLogApiService : ServiceBase
@@ -25,7 +26,7 @@ public class AuditLogApiService : ServiceBase
 
     private async Task<List<long>> GetLogIdsAsync(AuditLogListParams parameters, CancellationToken cancellationToken = default)
     {
-        if (!parameters.IsExtendedFilterSet())
+        if (!parameters.AnyExtendedFilter())
             return null; // Log ids could get only if some extended filter was set.
 
         using var context = DbFactory.Create();
@@ -44,15 +45,24 @@ public class AuditLogApiService : ServiceBase
     {
         var conditions = new[]
         {
-            () => item.Type == AuditLogItemType.Info && parameters.InfoFilter?.IsValid(item) != false,
-            () => item.Type == AuditLogItemType.Warning && parameters.WarningFilter?.IsValid(item) != false,
-            () => item.Type == AuditLogItemType.Error && parameters.ErrorFilter?.IsValid(item) != false,
-            () => item.Type == AuditLogItemType.Command && parameters.CommandFilter?.IsValidCommand(JsonConvert.DeserializeObject<CommandExecution>(item.Data, JsonSerializerSettings)) != false,
-            () => item.Type == AuditLogItemType.InteractionCommand && parameters.InteractionFilter?.IsValidInteraction(JsonConvert.DeserializeObject<InteractionCommandExecuted>(item.Data, JsonSerializerSettings)) != false,
-            () => item.Type == AuditLogItemType.JobCompleted && parameters.JobFilter?.IsValidJob(JsonConvert.DeserializeObject<JobExecutionData>(item.Data, JsonSerializerSettings)) != false
+            () => IsValidFilter(item, AuditLogItemType.Info, parameters.InfoFilter),
+            () => IsValidFilter(item, AuditLogItemType.Warning, parameters.WarningFilter),
+            () => IsValidFilter(item, AuditLogItemType.Error, parameters.ErrorFilter),
+            () => IsValidFilter(item, AuditLogItemType.Command, parameters.CommandFilter),
+            () => IsValidFilter(item, AuditLogItemType.InteractionCommand, parameters.InteractionFilter),
+            () => IsValidFilter(item, AuditLogItemType.JobCompleted, parameters.JobFilter),
+            () => IsValidFilter(item, AuditLogItemType.API, parameters.ApiRequestFilter)
         };
 
         return conditions.Any(o => o());
+    }
+
+    private static bool IsValidFilter(AuditLogItem item, AuditLogItemType type, IExtendedFilter filter)
+    {
+        if (item.Type != type) return false; // Invalid type.
+        if (filter?.IsSet() != true) return true; // Filter not set.
+
+        return filter.IsValid(item, JsonSerializerSettings);
     }
 
     public async Task<PaginatedResponse<AuditLogListItem>> GetListAsync(AuditLogListParams parameters, CancellationToken cancellationToken = default)
@@ -94,6 +104,7 @@ public class AuditLogApiService : ServiceBase
             AuditLogItemType.InteractionCommand => JsonConvert.DeserializeObject<InteractionCommandExecuted>(entity.Data, JsonSerializerSettings),
             AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, JsonSerializerSettings),
             AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, JsonSerializerSettings),
+            AuditLogItemType.API => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, JsonSerializerSettings),
             _ => null
         };
 

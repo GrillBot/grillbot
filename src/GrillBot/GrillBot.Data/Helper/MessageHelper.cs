@@ -1,6 +1,8 @@
 ﻿using Discord;
 using GrillBot.Data.Extensions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace GrillBot.Data.Helper;
@@ -32,5 +34,23 @@ public static class MessageHelper
         }
 
         return null;
+    }
+
+    public static string ClearEmotes(string content, IEnumerable<IEmote> emotes)
+    {
+        foreach (var emote in emotes.Distinct())
+            content = content.Replace(emote.ToString(), "");
+
+        var emojis = new[]
+        {
+            Emojis.PaginationEmojis,
+            Emojis.NumberToEmojiMap.Values.OfType<IEmote>(),
+            Emojis.CharToEmojiMap.Values.OfType<IEmote>(),
+            Emojis.CharToSignEmojiMap.Values.OfType<IEmote>()
+        }.SelectMany(o => o).Distinct();
+
+        foreach (var emoji in emojis)
+            content = content.Replace(emoji.ToString(), "");
+        return content.Trim();
     }
 }

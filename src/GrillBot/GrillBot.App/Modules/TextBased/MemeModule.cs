@@ -3,6 +3,7 @@ using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Images;
+using GrillBot.Data.Helper;
 using System.Net.Http;
 
 namespace GrillBot.App.Modules.TextBased;
@@ -79,7 +80,14 @@ public class MemeModule : Infrastructure.ModuleBase
             return;
         }
 
-        var emojized = Emojis.ConvertStringToEmoji(message, true);
+        var sanitized = MessageHelper.ClearEmotes(message, Context.Message.Tags.Where(o => o.Type == TagType.Emoji).Select(o => o.Value).OfType<IEmote>());
+        if (string.IsNullOrEmpty(sanitized))
+        {
+            await ReplyAsync("Nelze převést zprávu, kterou tvoří pouze emoji.");
+            return;
+        }
+
+        var emojized = Emojis.ConvertStringToEmoji(sanitized, true);
         if (emojized.Count == 0)
         {
             await ReplyAsync("Nepodařilo se převést zprávu na emoji.");

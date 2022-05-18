@@ -27,6 +27,9 @@ public class MockingService
 
     public string CreateMockingString(string original)
     {
+        if (IsStringMocked(original))
+            return original;
+
         original = original.ToLower().Cut(MaxMessageLength, true);
 
         var resultBuilder = new StringBuilder();
@@ -49,5 +52,10 @@ public class MockingService
         }
 
         return $"{MockingEmote} {resultBuilder} {MockingEmote}";
+    }
+
+    private bool IsStringMocked(string str)
+    {
+        return str.StartsWith(MockingEmote.ToString()) && str.EndsWith(MockingEmote.ToString());
     }
 }

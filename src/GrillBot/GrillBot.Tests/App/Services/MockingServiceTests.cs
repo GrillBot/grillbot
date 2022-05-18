@@ -21,4 +21,17 @@ public class MockingServiceTests : ServiceTest<MockingService>
         Assert.IsTrue(result.StartsWith("<a:mocking"));
         Assert.IsTrue(result.EndsWith(">"));
     }
+
+    [TestMethod]
+    public void CreateMockingString_Mocked()
+    {
+        const string input = "ThisIsTest";
+
+        var result = Service.CreateMockingString(input);
+        var nextResult = Service.CreateMockingString(result);
+
+        Assert.AreNotEqual(input, result);
+        Assert.AreNotEqual(input, nextResult);
+        Assert.AreEqual(result, nextResult);
+    }
 }

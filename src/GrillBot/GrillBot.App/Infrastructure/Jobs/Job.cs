@@ -59,10 +59,13 @@ public abstract class Job : IJob
         }
         finally
         {
-            data.MarkFinished();
-            var item = new AuditLogDataWrapper(AuditLogItemType.JobCompleted, data, processedUser: DiscordClient.CurrentUser);
+            if (!string.IsNullOrEmpty(data.Result))
+            {
+                data.MarkFinished();
+                var item = new AuditLogDataWrapper(AuditLogItemType.JobCompleted, data, processedUser: DiscordClient.CurrentUser);
+                await AuditLogService.StoreItemAsync(item);
+            }
 
-            await AuditLogService.StoreItemAsync(item);
             await LoggingService.InfoAsync(JobName, $"Processing completed. Duration: {data.EndAt - data.StartAt}");
         }
     }

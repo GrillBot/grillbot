@@ -26,10 +26,10 @@ public class ApiRequestFilter : IExtendedFilter
     {
         var request = JsonConvert.DeserializeObject<ApiRequest>(item.Data, settings);
 
-        if (!string.IsNullOrEmpty(ControllerName) && ControllerName != request.ControllerName)
+        if (!string.IsNullOrEmpty(ControllerName) && !request.ControllerName.Contains(ControllerName))
             return false;
 
-        if (!string.IsNullOrEmpty(ActionName) && ActionName != request.ActionName)
+        if (!string.IsNullOrEmpty(ActionName) && !request.ActionName.Contains(ActionName))
             return false;
 
         if (!IsDurationValid(Convert.ToInt32((request.EndAt - request.StartAt).TotalMilliseconds)))
@@ -41,7 +41,7 @@ public class ApiRequestFilter : IExtendedFilter
         if (!string.IsNullOrEmpty(Method) && Method != request.Method)
             return false;
 
-        if (!string.IsNullOrEmpty(LoggedUserRole) && !string.IsNullOrEmpty(request.LoggedUserRole) && LoggedUserRole != request.LoggedUserRole)
+        if (!string.IsNullOrEmpty(LoggedUserRole) && LoggedUserRole != request.LoggedUserRole)
             return false;
 
         return true;

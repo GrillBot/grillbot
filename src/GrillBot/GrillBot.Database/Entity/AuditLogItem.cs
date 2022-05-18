@@ -61,11 +61,6 @@ namespace GrillBot.Database.Entity
             };
         }
 
-        public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, ulong? discordAuditLogItemId, DateTime? createdAt)
-        {
-            return Create(type, guild, channel, processedUser, data, discordAuditLogItemId?.ToString(), createdAt);
-        }
-
         public static AuditLogItem Create(AuditLogItemType type, IGuild guild, IChannel channel, IUser processedUser, string data, DateTime? createdAt)
         {
             return Create(type, guild, channel, processedUser, data, null as string, createdAt);

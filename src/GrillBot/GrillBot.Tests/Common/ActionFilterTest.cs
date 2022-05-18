@@ -44,19 +44,30 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
         return request.Object;
     }
 
-    private HttpContext CreateHttpContext(IHeaderDictionary headers = null)
+    private static HttpResponse CreateHttpResponse(int statusCode = 0)
+    {
+        var response = new Mock<HttpResponse>();
+
+        if (statusCode > 0)
+            response.Setup(o => o.StatusCode).Returns(statusCode);
+
+        return response.Object;
+    }
+
+    private HttpContext CreateHttpContext(IHeaderDictionary headers = null, int statusCode = 0)
     {
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(o => o.Request).Returns(CreateHttpRequest(headers));
         httpContext.Setup(o => o.RequestServices).Returns(Provider);
         httpContext.Setup(o => o.User).Returns(new ClaimsPrincipal());
+        httpContext.Setup(o => o.Response).Returns(CreateHttpResponse(statusCode));
 
         return httpContext.Object;
     }
 
-    private ActionContext CreateActionContext(IHeaderDictionary headers = null)
+    private ActionContext CreateActionContext(IHeaderDictionary headers = null, int statusCode = 0)
     {
-        return new ActionContext(CreateHttpContext(headers), new(), new());
+        return new ActionContext(CreateHttpContext(headers, statusCode), new(), new());
     }
 
     protected ActionExecutingContext CreateContext(string methodName, IHeaderDictionary headers = null, bool noControllerDescriptor = false)
@@ -74,7 +85,7 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
 
     protected ResultExecutingContext GetContext(IActionResult result)
     {
-        var actionContext = CreateActionContext();
+        var actionContext = CreateActionContext(null, result is OkResult ? 200 : 500);
         return new ResultExecutingContext(actionContext, new List<IFilterMetadata>(), result, Controller);
     }
 

@@ -289,15 +289,16 @@ public class StatisticsController : Controller
                 o.CreatedAt,
                 Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogService.JsonSerializerSettings)
             })
-            .GroupBy(o => o.Data.TemplatePath)
+            .Where(o => !string.IsNullOrEmpty(o.Data.StatusCode))
+            .GroupBy(o => $"{o.Data.Method} {o.Data.TemplatePath}")
             .Select(o => new StatisticItem()
             {
                 Key = o.Key,
-                FailedCount = o.Count(x => x.Data.StatusCode != "200 (OK)"),
+                FailedCount = o.Count(x => Convert.ToInt32(x.Data.StatusCode.Split(' ')[0]) >= 400),
                 Last = o.Max(x => x.CreatedAt),
                 MaxDuration = o.Max(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds)),
                 MinDuration = o.Min(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds)),
-                SuccessCount = o.Count(x => x.Data.StatusCode == "200 (OK)"),
+                SuccessCount = o.Count(x => Convert.ToInt32(x.Data.StatusCode.Split(' ')[0]) < 400),
                 TotalDuration = o.Sum(x => Convert.ToInt32((x.Data.EndAt - x.Data.StartAt).TotalMilliseconds))
             })
             .OrderBy(o => o.Key)

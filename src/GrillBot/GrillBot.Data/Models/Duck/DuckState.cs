@@ -15,7 +15,7 @@ public class DuckState
     public DuckUser MadeByUser { get; set; }
 
     public DateTime Start { get; set; }
-    public DateTime? End { get; set; }
+    public DateTime? PlannedEnd { get; set; }
 
     public string Note { get; set; }
     public int? EventId { get; set; }

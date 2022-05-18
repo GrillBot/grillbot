@@ -56,7 +56,7 @@ public class DuckModule : Infrastructure.InteractionsModuleBase
     private async Task<DuckState> GetCurrentStateAsync()
     {
         var client = HttpClientFactory.CreateClient("KachnaOnline");
-        var response = await client.GetAsync($"states/current");
+        var response = await client.GetAsync("states/current");
         if (!response.IsSuccessStatusCode) return null;
 
         var json = await response.Content.ReadAsStringAsync();
@@ -100,7 +100,7 @@ public class DuckModule : Infrastructure.InteractionsModuleBase
         if (string.IsNullOrEmpty(state.Note))
         {
             embed.AddField("A co dál?",
-                            $"Další otvíračka není naplánovaná, ale tento stav má skončit {state.FollowingState.End:dd. MM. v HH:mm}. Co bude pak, to nikdo neví.",
+                            $"Další otvíračka není naplánovaná, ale tento stav má skončit {state.FollowingState.PlannedEnd:dd. MM. v HH:mm}. Co bude pak, to nikdo neví.",
                             false);
 
             return;
@@ -114,12 +114,12 @@ public class DuckModule : Infrastructure.InteractionsModuleBase
         titleBuilder.Append("Kachna je otevřená!");
         embedBuilder.AddField("Otevřeno", state.Start.ToString("HH:mm"), true);
 
-        if (state.End.HasValue)
+        if (state.PlannedEnd.HasValue)
         {
-            var left = state.End.Value - DateTime.Now;
+            var left = state.PlannedEnd.Value - DateTime.Now;
 
             titleBuilder.Append(" Do konce zbývá ").Append(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)).Append('.');
-            embedBuilder.AddField("Zavíráme", state.End.Value.ToString("HH:mm"), true);
+            embedBuilder.AddField("Zavíráme", state.PlannedEnd.Value.ToString("HH:mm"), true);
         }
 
         AddNoteToEmbed(embedBuilder, state.Note);
@@ -129,7 +129,7 @@ public class DuckModule : Infrastructure.InteractionsModuleBase
     {
         titleBuilder
             .Append("Kachna je otevřená v režimu chillzóna až do ")
-            .AppendFormat("{0:HH:mm}", state.End.Value)
+            .AppendFormat("{0:HH:mm}", state.PlannedEnd.Value)
             .Append('!');
 
         AddNoteToEmbed(embedBuilder, state.Note);

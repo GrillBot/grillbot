@@ -38,9 +38,10 @@ public static class CommandsPerformanceCounter
     {
         var startAt = RunningTaskCompleted(contextKey);
 
-        return Convert.ToInt32(
-            Math.Round((DateTime.Now - startAt).TotalMilliseconds)
-        );
+        var duration = (DateTime.Now - startAt).TotalMilliseconds;
+        if (duration < 0.0) duration = 0.0;
+
+        return Convert.ToInt32(Math.Round(duration));
     }
 
     private static DateTime RunningTaskCompleted(string contextKey)

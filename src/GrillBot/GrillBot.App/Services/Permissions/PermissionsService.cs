@@ -40,8 +40,10 @@ public class PermissionsService
 
     private static Task<bool> CheckChannelDisabledAsync(GrillBotContext dbContext, CheckRequestBase request)
     {
+        ulong channelId = request.Channel is IThreadChannel thread ? thread.CategoryId.Value : request.Channel.Id;
+
         var query = dbContext.Channels.AsNoTracking()
-            .Where(o => o.ChannelId == request.Channel.Id.ToString() && (o.Flags & (int)ChannelFlags.CommandsDisabled) != 0);
+            .Where(o => o.ChannelId == channelId.ToString() && (o.Flags & (int)ChannelFlags.CommandsDisabled) != 0);
 
         if (request.Guild != null)
             query = query.Where(o => o.GuildId == request.Guild.Id.ToString());

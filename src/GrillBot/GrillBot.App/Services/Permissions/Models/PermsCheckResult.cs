@@ -47,7 +47,7 @@ public class PermsCheckResult
     {
         if (IsAllowed()) return "";
 
-        if (ExplicitBan) return "Byl ti zakázán přístup k tomuto kanálu.";
+        if (ExplicitBan) return "Byl ti zakázán přístup k tomuto příkazu.";
         if (ChannelDisabled) return "V tomto kanálu byly příkazy deaktivovány.";
         if (ContextCheck == false) return "Voláš příkaz tam, kde jej nelze spustit.";
 

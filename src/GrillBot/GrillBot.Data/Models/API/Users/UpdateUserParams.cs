@@ -10,6 +10,7 @@ public class UpdateUserParams
     public bool WebAdminAllowed { get; set; }
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
     public bool PublicAdminBlocked { get; set; }
+    public bool CommandsDisabled { get; set; }
 
     public int GetNewFlags(int currentFlags)
     {
@@ -23,6 +24,9 @@ public class UpdateUserParams
 
         if (PublicAdminBlocked) newFlags |= (int)UserFlags.PublicAdministrationBlocked;
         else newFlags &= ~(int)UserFlags.PublicAdministrationBlocked;
+
+        if (CommandsDisabled) newFlags |= (int)UserFlags.CommandsDisabled;
+        else newFlags &= ~(int)UserFlags.CommandsDisabled;
 
         return newFlags;
     }

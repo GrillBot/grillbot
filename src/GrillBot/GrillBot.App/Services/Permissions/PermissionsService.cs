@@ -18,9 +18,13 @@ public class PermissionsService
 
     public async Task<PermsCheckResult> CheckPermissionsAsync(CheckRequestBase request)
     {
+        request.FixImplicitPermissions();
+
         using var dbContext = DbFactory.Create();
 
-        request.FixImplicitPermissions();
+        var user = await dbContext.Users.AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == request.User.Id.ToString());
+
         return new PermsCheckResult()
         {
             ChannelDisabled = await CheckChannelDisabledAsync(dbContext, request),
@@ -28,9 +32,9 @@ public class PermissionsService
             ChannelPermissions = await CheckChannelPermissionsAsync(request),
             GuildPermissions = await CheckGuildPermissionsAsync(request),
             BoosterAllowed = CheckServerBooster(request),
-            IsAdmin = await CheckBotAdministratorAsync(dbContext, request),
+            IsAdmin = user.HaveFlags(UserFlags.BotAdmin),
             ExplicitAllow = await CheckExplicitAllowAsync(dbContext, request),
-            ExplicitBan = await CheckExplicitBansAsync(dbContext, request)
+            ExplicitBan = user.HaveFlags(UserFlags.CommandsDisabled) || await CheckExplicitBansAsync(dbContext, request)
         };
     }
 
@@ -120,12 +124,6 @@ public class PermissionsService
         if (!request.AllowBooster) return null;
 
         return request.User is SocketGuildUser user && user.Roles.Any(o => o.Tags?.IsPremiumSubscriberRole == true);
-    }
-
-    private static async Task<bool> CheckBotAdministratorAsync(GrillBotContext dbContext, CheckRequestBase request)
-    {
-        return await dbContext.Users.AsNoTracking()
-            .AnyAsync(o => o.Id == request.User.Id.ToString() && (o.Flags & (int)UserFlags.BotAdmin) != 0);
     }
 
     private static async Task<bool?> CheckExplicitAllowAsync(GrillBotContext dbContext, CheckRequestBase request)

@@ -28,5 +28,4 @@ public class MockingModule : Infrastructure.InteractionsModuleBase
     {
         return SetResponseAsync(content: MockingService.CreateMockingString(message.Content));
     }
-
 }

@@ -1,10 +1,8 @@
-﻿#pragma warning disable IDE0060 // Remove unused parameter
-using Discord.Commands;
+﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Images;
 using GrillBot.Data.Helper;
-using System.Net.Http;
 
 namespace GrillBot.App.Modules.TextBased;
 
@@ -14,7 +12,7 @@ public class MemeModule : Infrastructure.ModuleBase
 {
     private FileStorageFactory FileStorageFactory { get; }
 
-    public MemeModule(FileStorageFactory fileStorage, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public MemeModule(FileStorageFactory fileStorage)
     {
         FileStorageFactory = fileStorage;
     }
@@ -60,7 +58,7 @@ public class MemeModule : Infrastructure.ModuleBase
     [Command("hi")]
     [Summary("Pozdraví uživatele")]
     [TextCommandDeprecated(AlternativeCommand = "/hi")]
-    public Task HiAsync(int? @base = null) => Task.CompletedTask; // Command was reimplemented to Slash command.
+    public Task HiAsync(int? _ = null) => Task.CompletedTask; // Command was reimplemented to Slash command.
 
     #endregion
 

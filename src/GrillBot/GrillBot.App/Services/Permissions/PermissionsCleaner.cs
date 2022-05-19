@@ -6,15 +6,12 @@ namespace GrillBot.App.Services.Permissions;
 
 public class PermissionsCleaner : ServiceBase
 {
-    public PermissionsCleaner(GrillBotContextFactory dbFactory, IDiscordClient client) : base(null, dbFactory, null, client, null)
+    public PermissionsCleaner(IDiscordClient client) : base(null, null, null, client, null)
     {
     }
 
     public async Task<List<UselessPermission>> GetUselessPermissionsForUser(IGuildUser user, IGuild guild)
     {
-        if (await HaveUnverifyAsync(user, guild))
-            throw new InvalidOperationException("Nelze zkontrolovat zbytečná oprávnění uživateli, který má unverify.");
-
         var result = new List<UselessPermission>();
         var channels = (await guild.GetChannelsAsync()).ToList();
         foreach (var channel in channels.Where(o => o is not SocketThreadChannel))
@@ -36,7 +33,7 @@ public class PermissionsCleaner : ServiceBase
                 continue;
             }
 
-            foreach (var role in user.RoleIds.Select(o => guild.GetRole(o)).OrderByDescending(o => o.Position))
+            foreach (var role in user.RoleIds.Select(o => guild.GetRole(o)).Where(o => o != null).OrderByDescending(o => o.Position))
             {
                 var roleOverwrite = channel.GetPermissionOverwrite(role);
                 if (roleOverwrite == null) continue;
@@ -51,13 +48,5 @@ public class PermissionsCleaner : ServiceBase
         }
 
         return result;
-    }
-
-    public async Task<bool> HaveUnverifyAsync(IUser user, IGuild guild)
-    {
-        using var context = DbFactory.Create();
-
-        return await context.Unverifies.AsNoTracking()
-            .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
     }
 }

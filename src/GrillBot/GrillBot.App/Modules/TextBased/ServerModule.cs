@@ -8,6 +8,7 @@ using GrillBot.Data.Models.Guilds;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Permissions;
+using GrillBot.App.Services.Unverify;
 
 namespace GrillBot.App.Modules.TextBased;
 
@@ -326,12 +327,14 @@ public class ServerModule : Infrastructure.ModuleBase
                 private IMemoryCache Cache { get; }
                 private IConfiguration Configuration { get; }
                 private PermissionsCleaner PermissionsCleaner { get; }
+                private UnverifyService UnverifyService { get; }
 
-                public GuildUselessPermissionsSubModule(IMemoryCache cache, IConfiguration configuration, PermissionsCleaner permissionsCleaner)
+                public GuildUselessPermissionsSubModule(IMemoryCache cache, IConfiguration configuration, PermissionsCleaner permissionsCleaner, UnverifyService unverifyService)
                 {
                     Cache = cache;
                     Configuration = configuration;
                     PermissionsCleaner = permissionsCleaner;
+                    UnverifyService = unverifyService;
                 }
 
                 [Command("check")]
@@ -424,10 +427,12 @@ public class ServerModule : Infrastructure.ModuleBase
 
                 private async Task<List<UselessPermission>> GetUselessPermissionsAsync()
                 {
+                    var unverifyUsers = await UnverifyService.GetUserIdsWithUnverifyAsync(Context.Guild);
+
                     await Context.Guild.DownloadUsersAsync();
                     var permissions = new List<UselessPermission>();
 
-                    foreach (var user in Context.Guild.Users)
+                    foreach (var user in Context.Guild.Users.Where(o => !unverifyUsers.Contains(o.Id)))
                     {
                         try
                         {

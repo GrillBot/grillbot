@@ -21,7 +21,7 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
-        var permissionsCleaner = new PermissionsCleaner(DbFactory, discordClient);
+        var permissionsCleaner = new PermissionsCleaner(discordClient);
 
         return new UnverifyService(discordClient, checker, profileGenerator, logger, DbFactory, loggingService, permissionsCleaner);
     }

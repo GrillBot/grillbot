@@ -49,7 +49,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
-        var permissionsCleaner = new PermissionsCleaner(DbFactory, dcClient);
+        var permissionsCleaner = new PermissionsCleaner(dcClient);
         var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DbFactory, loggingService, permissionsCleaner);
         var mapper = AutoMapperHelper.CreateMapper();
         var unverifyApiService = new UnverifyApiService(DbFactory, mapper, dcClient);

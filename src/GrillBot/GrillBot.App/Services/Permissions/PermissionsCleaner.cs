@@ -2,7 +2,7 @@
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.Guilds;
 
-namespace GrillBot.App.Services.Guild;
+namespace GrillBot.App.Services.Permissions;
 
 public class PermissionsCleaner : ServiceBase
 {

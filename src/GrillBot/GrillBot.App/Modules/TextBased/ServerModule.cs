@@ -4,12 +4,10 @@ using GrillBot.Data.Extensions;
 using System.Data;
 using ConsoleTableExt;
 using Microsoft.Extensions.Caching.Memory;
-using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.Guilds;
-using GrillBot.Data.Enums;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
-using GrillBot.App.Services.Guild;
+using GrillBot.App.Services.Permissions;
 
 namespace GrillBot.App.Modules.TextBased;
 

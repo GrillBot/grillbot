@@ -69,6 +69,12 @@ public class ChannelApiService : ServiceBase
 
         var result = Mapper.Map<ChannelDetail>(channel);
 
+        var threads = await context.Channels.AsNoTracking()
+            .Where(o => (o.ChannelType == ChannelType.PublicThread || o.ChannelType == ChannelType.PrivateThread) && o.ParentChannelId == result.Id)
+            .ToListAsync(cancellationToken);
+
+        result.Threads = Mapper.Map<List<Channel>>(threads);
+
         var guild = await DcClient.GetGuildAsync(channel.GuildId.ToUlong());
         var guildChannel = guild != null ? await guild.GetChannelAsync(channel.ChannelId.ToUlong()) : null;
         if (guildChannel != null)

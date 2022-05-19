@@ -45,6 +45,7 @@ public class CommandHandler : ServiceBase
         // Null is success, because some modules returns null after success and library always returns ExecuteResult.
         if (result == null) result = ExecuteResult.FromSuccess();
 
+        var duration = CommandsPerformanceCounter.TaskFinished(context);
         if (!result.IsSuccess && result.Error != null)
         {
             string reply = "";
@@ -52,6 +53,7 @@ public class CommandHandler : ServiceBase
             switch (result.Error.Value)
             {
                 case CommandError.Unsuccessful when result is CommandRedirectResult crr && !string.IsNullOrEmpty(crr.NewCommand):
+                    CommandsPerformanceCounter.StartTask(context);
                     await CommandService.ExecuteAsync(context, crr.NewCommand, Provider);
                     break;
 
@@ -67,6 +69,7 @@ public class CommandHandler : ServiceBase
                     break;
 
                 case CommandError.BadArgCount:
+                    CommandsPerformanceCounter.StartTask(context);
                     await CommandService.ExecuteAsync(context, $"help {context.Message.Content[1..]}", Provider);
                     break;
 
@@ -81,13 +84,8 @@ public class CommandHandler : ServiceBase
         }
 
         if (result.Error != CommandError.UnknownCommand)
-        {
-            var duration = CommandsPerformanceCounter.TaskFinished(context);
             await AuditLogService.LogExecutedCommandAsync(command.Value, context, result, duration);
-        }
         else
-        {
             CommandsPerformanceCounter.TaskFinished(context);
-        }
     }
 }

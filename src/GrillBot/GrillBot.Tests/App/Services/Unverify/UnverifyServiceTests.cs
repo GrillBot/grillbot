@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.Logging;
+using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -20,8 +21,9 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
+        var permissionsCleaner = new PermissionsCleaner(DbFactory, discordClient);
 
-        return new UnverifyService(discordClient, checker, profileGenerator, logger, DbFactory, loggingService);
+        return new UnverifyService(discordClient, checker, profileGenerator, logger, DbFactory, loggingService, permissionsCleaner);
     }
 
     [TestMethod]

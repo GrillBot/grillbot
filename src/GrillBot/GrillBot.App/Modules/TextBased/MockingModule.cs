@@ -50,5 +50,4 @@ public class MockingModule : Infrastructure.ModuleBase
     [Summary("Mockuje zadanou zprávu.")]
     [TextCommandDeprecated(AlternativeCommand = "/mock")]
     public Task MockAsync([Remainder][Name("zpráva")] string _) => Task.CompletedTask;
-
 }

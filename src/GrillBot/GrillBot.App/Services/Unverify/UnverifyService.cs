@@ -1,5 +1,6 @@
 ﻿using Discord.Net;
 using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.Guild;
 using GrillBot.App.Services.Logging;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions;
@@ -16,14 +17,16 @@ public class UnverifyService : ServiceBase
     private UnverifyProfileGenerator ProfileGenerator { get; }
     private UnverifyLogger Logger { get; }
     private LoggingService Logging { get; }
+    private PermissionsCleaner PermissionsCleaner { get; }
 
     public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator,
-        UnverifyLogger logger, GrillBotContextFactory dbFactory, LoggingService logging) : base(client, dbFactory)
+        UnverifyLogger logger, GrillBotContextFactory dbFactory, LoggingService logging, PermissionsCleaner permissionsCleaner) : base(client, dbFactory)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
         Logger = logger;
         Logging = logging;
+        PermissionsCleaner = permissionsCleaner;
 
         DiscordClient.UserLeft += OnUserLeftAsync;
     }
@@ -189,6 +192,13 @@ public class UnverifyService : ServiceBase
 
             dbUser.Unverify = null;
             await context.SaveChangesAsync();
+
+            var uselessPermissions = await PermissionsCleaner.GetUselessPermissionsForUser(toUser, guild);
+            if (uselessPermissions.Count > 0)
+            {
+                foreach (var permission in uselessPermissions)
+                    await permission.Channel.RemovePermissionOverwriteAsync(toUser);
+            }
 
             if (!isAuto)
             {
@@ -424,13 +434,5 @@ public class UnverifyService : ServiceBase
             o.GuildId.ToUlong(),
             o.UserId.ToUlong()
         ));
-    }
-
-    public async Task<bool> HaveUnverifyAsync(IUser user, IGuild guild)
-    {
-        using var context = DbFactory.Create();
-
-        return await context.Unverifies.AsNoTracking()
-            .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
     }
 }

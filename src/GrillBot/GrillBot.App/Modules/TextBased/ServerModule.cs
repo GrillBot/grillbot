@@ -9,6 +9,7 @@ using GrillBot.Data.Models.Guilds;
 using GrillBot.Data.Enums;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
+using GrillBot.App.Services.Guild;
 
 namespace GrillBot.App.Modules.TextBased;
 
@@ -326,13 +327,13 @@ public class ServerModule : Infrastructure.ModuleBase
             {
                 private IMemoryCache Cache { get; }
                 private IConfiguration Configuration { get; }
-                private UnverifyService UnverifyService { get; }
+                private PermissionsCleaner PermissionsCleaner { get; }
 
-                public GuildUselessPermissionsSubModule(IMemoryCache cache, IConfiguration configuration, UnverifyService unverifyService)
+                public GuildUselessPermissionsSubModule(IMemoryCache cache, IConfiguration configuration, PermissionsCleaner permissionsCleaner)
                 {
                     Cache = cache;
                     Configuration = configuration;
-                    UnverifyService = unverifyService;
+                    PermissionsCleaner = permissionsCleaner;
                 }
 
                 [Command("check")]
@@ -414,7 +415,8 @@ public class ServerModule : Infrastructure.ModuleBase
                         await permission.Channel.RemovePermissionOverwriteAsync(permission.User);
 
                         removed++;
-                        await msg.ModifyAsync(o => o.Content = $"Probíhá úklid oprávnění **{removed}** / **{permissions.Count}** (**{Math.Round(removed / permissions.Count * 100)} %**)");
+                        if ((removed % 2) == 0)
+                            await msg.ModifyAsync(o => o.Content = $"Probíhá úklid oprávnění **{removed}** / **{permissions.Count}** (**{Math.Round(removed / permissions.Count * 100)} %**)");
                     }
 
                     await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
@@ -426,45 +428,17 @@ public class ServerModule : Infrastructure.ModuleBase
                 {
                     await Context.Guild.DownloadUsersAsync();
                     var permissions = new List<UselessPermission>();
-                    var unverifies = await UnverifyService.GetUserIdsWithUnverifyAsync(Context.Guild);
-                    var channelsQuery = Context.Guild.Channels
-                        .Where(o => o is not SocketThreadChannel && (o is SocketTextChannel || o is SocketVoiceChannel))
-                        .ToList();
 
-                    // Ignore members with unverify.
-                    foreach (var user in Context.Guild.Users.Where(user => !unverifies.Contains(user.Id)))
+                    foreach (var user in Context.Guild.Users)
                     {
-                        foreach (var channel in channelsQuery)
+                        try
                         {
-                            var overwrite = channel.GetPermissionOverwrite(user);
-                            if (overwrite == null) continue; // Overwrite not exists. Skip.
-
-                            if (user.GuildPermissions.Administrator)
-                            {
-                                // User have Administrator permission. This user don't need some overwrites.
-                                permissions.Add(new UselessPermission(channel, user, UselessPermissionType.Administrator));
-                                continue;
-                            }
-
-                            if (overwrite.Value.AllowValue == 0 && overwrite.Value.DenyValue == 0)
-                            {
-                                // Or user have neutral overwrite (overwrite without permissions).
-                                permissions.Add(new UselessPermission(channel, user, UselessPermissionType.Neutral));
-                                continue;
-                            }
-
-                            foreach (var role in user.Roles.OrderByDescending(o => o.Position))
-                            {
-                                var roleOverwrite = channel.GetPermissionOverwrite(role);
-                                if (roleOverwrite == null) continue;
-
-                                // User have something extra.
-                                if (roleOverwrite.Value.AllowValue != overwrite.Value.AllowValue || roleOverwrite.Value.DenyValue != overwrite.Value.DenyValue)
-                                    break;
-
-                                permissions.Add(new UselessPermission(channel, user, UselessPermissionType.AvailableFromRole));
-                                break;
-                            }
+                            var uselessPermissions = await PermissionsCleaner.GetUselessPermissionsForUser(user, Context.Guild);
+                            permissions.AddRange(uselessPermissions);
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // Can ignore
                         }
                     }
 

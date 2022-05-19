@@ -40,7 +40,6 @@ public static class Extensions
             .AddSingleton<FileStorage.FileStorageFactory>();
 
         services
-            .AddSingleton<Guild.PermissionsCleaner>()
             .AddScoped<Guild.GuildApiService>();
 
         services
@@ -54,6 +53,7 @@ public static class Extensions
             .AddSingleton<MessageCache.MessageCache>();
 
         services
+            .AddSingleton<Permissions.PermissionsCleaner>()
             .AddSingleton<Permissions.PermissionsService>();
 
         services

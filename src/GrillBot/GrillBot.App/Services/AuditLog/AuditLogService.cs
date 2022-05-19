@@ -18,7 +18,7 @@ public partial class AuditLogService : ServiceBase
     private MessageCache.MessageCache MessageCache { get; }
     private FileStorageFactory FileStorageFactory { get; }
 
-    private DateTime NextAllowedChannelUpdateEvent { get; set; }
+    private Dictionary<ulong, DateTime> NextAllowedChannelUpdateEvent { get; } = new();
     private DateTime NextAllowedRoleUpdateEvent { get; set; }
 
     static AuditLogService()
@@ -48,8 +48,11 @@ public partial class AuditLogService : ServiceBase
         DiscordClient.ChannelUpdated += (before, after) => HandleEventAsync(new ChannelUpdatedEvent(this, before, after));
         DiscordClient.ChannelUpdated += async (_, after) =>
         {
-            await HandleEventAsync(new OverwriteChangedEvent(this, after, NextAllowedChannelUpdateEvent));
-            NextAllowedChannelUpdateEvent = DateTime.Now.AddMinutes(1);
+            var nextAllowedEvent = NextAllowedChannelUpdateEvent.TryGetValue(after.Id, out var at) ? at : DateTime.MinValue;
+
+            await HandleEventAsync(new OverwriteChangedEvent(this, after, nextAllowedEvent));
+            nextAllowedEvent = DateTime.Now.AddMinutes(1);
+            NextAllowedChannelUpdateEvent[after.Id] = nextAllowedEvent;
         };
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new EmotesUpdatedEvent(this, before, after));
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new GuildUpdatedEvent(this, before, after));

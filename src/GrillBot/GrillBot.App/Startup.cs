@@ -25,6 +25,7 @@ using GrillBot.Data.Extensions;
 using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.Data.Models.AuditLog;
+using GrillBot.Cache;
 
 namespace GrillBot.App;
 
@@ -77,6 +78,7 @@ public class Startup
             .AddSingleton<IDiscordClient>(discordClient)
             .AddSingleton(new CommandService(commandsConfig))
             .AddSingleton(container => new InteractionService(container.GetRequiredService<DiscordSocketClient>(), interactionsConfig))
+            .AddCaching(Configuration)
             .AddDatabase(connectionString)
             .AddMemoryCache()
             .AddAutoMapper(typeof(Startup).Assembly, typeof(Emojis).Assembly, typeof(GrillBotContext).Assembly)
@@ -201,7 +203,9 @@ public class Startup
         if (db.Database.GetPendingMigrations().Any())
             db.Database.Migrate();
 
-        messageCache.ClearIndexes();
+        app.InitCache();
+
+         messageCache.ClearIndexes();
 
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();

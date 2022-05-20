@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GrillBot.Cache\GrillBot.Cache.csproj" />
     <ProjectReference Include="..\GrillBot.Database\GrillBot.Database.csproj" />
     <ProjectReference Include="..\GrillBot.Data\GrillBot.Data.csproj" />
   </ItemGroup>

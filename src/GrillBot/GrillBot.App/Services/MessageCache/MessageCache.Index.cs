@@ -53,7 +53,7 @@ public partial class MessageCache
         try
         {
             var cache = CacheBuilder.CreateRepository();
-            var index = cache.MessageIndexRepository.FindMessageByIdAsync(messageId);
+            var index = await cache.MessageIndexRepository.FindMessageByIdAsync(messageId);
 
             if (index != null)
             {

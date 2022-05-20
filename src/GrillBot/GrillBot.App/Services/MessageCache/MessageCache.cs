@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
+using GrillBot.Cache.Services;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.MessageCache;
 
@@ -18,7 +19,7 @@ public partial class MessageCache : ServiceBase
     }
 
     public MessageCache(DiscordSocketClient client, DiscordInitializationService initializationService,
-        GrillBotContextFactory dbFactory) : base(client, dbFactory, initializationService)
+        GrillBotContextFactory dbFactory, GrillBotCacheBuilder cacheBuilder) : base(client, dbFactory, initializationService, null, null, cacheBuilder)
     {
         Cache = new ConcurrentDictionary<ulong, CachedMessage>();
         InitializedChannels = new ConcurrentBag<ulong>();
@@ -79,7 +80,7 @@ public partial class MessageCache : ServiceBase
         {
             if (msg.Metadata.State == CachedMessageState.ToBeDeleted)
             {
-                await RemoveIndexAsync(msg.Message, cancellationToken);
+                await RemoveIndexAsync(msg.Message);
                 report.Add($"Removed {id} (Author: {msg.Message.Author.GetFullName()}, CreatedAt: {msg.Message.CreatedAt.LocalDateTime})");
                 Cache.Remove(id, out var _);
             }
@@ -99,10 +100,7 @@ public partial class MessageCache : ServiceBase
             }
         }
 
-        await RebuildAsync(cancellationToken);
-        report.Add($"Rebuilded indexes: {Cache.Count}");
-
-        return String.Join("\n", report);
+        return string.Join("\n", report);
     }
 
     public void MarkUpdated(ulong messageId)
@@ -121,26 +119,14 @@ public partial class MessageCache : ServiceBase
         return toClear.Count;
     }
 
-    public async Task<List<IMessage>> GetMessagesAsync(IChannel channel, IUser author = null, IGuild guild = null, CancellationToken cancellationToken = default)
+    public async Task<IMessage> GetLastMessageAsync(IChannel channel = null, IUser author = null, IGuild guild = null)
     {
-        var messageIds = await GetMessageIdsAsync(author, channel, guild, cancellationToken);
-        if (messageIds.Count == 0) return new();
-
-        return messageIds
-            .Select(messageId => Cache[messageId])
-            .Where(o => !o.IsDeleted)
-            .Select(o => o.Message)
-            .ToList();
-    }
-
-    public async Task<IMessage> GetLastMessageAsync(IChannel channel = null, IUser author = null, IGuild guild = null, CancellationToken cancellationToken = default)
-    {
-        var messageIds = await GetMessageIdsAsync(author, channel, guild, cancellationToken);
+        var messageIds = await GetMessageIdsAsync(author, channel, guild);
         if (messageIds.Count == 0) return null;
 
         return messageIds
-            .Select(messageId => Cache[messageId])
-            .Where(o => !o.IsDeleted)
+            .Select(messageId => Cache.TryGetValue(messageId, out var msg) ? msg : null)
+            .Where(o => o?.IsDeleted == false)
             .Select(o => o.Message)
             .OrderByDescending(o => o.Id)
             .FirstOrDefault();

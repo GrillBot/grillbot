@@ -128,7 +128,7 @@ public class ChannelService : ServiceBase
     /// </summary>
     public async Task<IUserMessage> GetLastMsgFromUserAsync(SocketGuild guild, IUser loggedUser, CancellationToken cancellationToken)
     {
-        var lastCachedMsgFromAuthor = await MessageCache.GetLastMessageAsync(guild: guild, author: loggedUser, cancellationToken: cancellationToken);
+        var lastCachedMsgFromAuthor = await MessageCache.GetLastMessageAsync(guild: guild, author: loggedUser);
         if (lastCachedMsgFromAuthor is IUserMessage lastMessage) return lastMessage;
 
         // Using statistics and finding most active channel will help find channel where logged user have any message.
@@ -152,7 +152,7 @@ public class ChannelService : ServiceBase
         var lastMessage = new[]
         {
                 channel.CachedMessages.Where(o => o.Author.Id == loggedUser.Id).OrderByDescending(o => o.Id).FirstOrDefault(),
-                await MessageCache.GetLastMessageAsync(channel: channel, author: loggedUser, cancellationToken: cancellationToken)
+                await MessageCache.GetLastMessageAsync(channel: channel, author: loggedUser)
             }.Where(o => o != null).OrderByDescending(o => o.Id).FirstOrDefault();
 
         if (lastMessage == null && canTryDownload)

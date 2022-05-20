@@ -17,7 +17,7 @@ public partial class MessageCache
                 .ToList();
 
             messages.ForEach(m => Cache.TryAdd(m.Id, new CachedMessage(m)));
-            await CreateIndexesAsync(messages, cancellationToken);
+            await CreateIndexesAsync(messages);
         }
         catch (HttpException httpEx) when (httpEx.HttpCode == HttpStatusCode.InternalServerError)
         {
@@ -25,15 +25,15 @@ public partial class MessageCache
         }
     }
 
-    public async Task<IMessage> GetMessageAsync(IMessageChannel channel, ulong id, CancellationToken cancellationToken = default)
+    public async Task<IMessage> GetMessageAsync(IMessageChannel channel, ulong id)
     {
         var message = GetMessage(id);
         if (message != null) return message;
 
-        message = await channel.GetMessageAsync(id, options: new() { CancelToken = cancellationToken });
+        message = await channel.GetMessageAsync(id);
         if (message != null)
         {
-            await CreateIndexAsync(message, cancellationToken);
+            await CreateIndexAsync(message);
             Cache.TryAdd(id, new CachedMessage(message));
         }
 
@@ -49,7 +49,7 @@ public partial class MessageCache
             .ToList();
 
             messages.ForEach(o => Cache.TryAdd(o.Id, new CachedMessage(o)));
-            await CreateIndexesAsync(messages, cancellationToken);
+            await CreateIndexesAsync(messages);
         }
         catch (HttpException httpEx) when (httpEx.HttpCode == HttpStatusCode.InternalServerError)
         {

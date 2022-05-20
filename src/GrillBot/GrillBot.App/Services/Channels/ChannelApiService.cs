@@ -46,7 +46,7 @@ public class ChannelApiService : ServiceBase
         if (guildChannel != null)
         {
             result = Mapper.Map(guildChannel, result);
-            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: entity.ChannelId.ToUlong(), cancellationToken: cancellationToken);
+            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: entity.ChannelId.ToUlong());
         }
 
         if (result.FirstMessageAt == DateTime.MinValue) result.FirstMessageAt = null;
@@ -83,7 +83,7 @@ public class ChannelApiService : ServiceBase
         if (guildChannel != null)
         {
             result = Mapper.Map(guildChannel, result);
-            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: channel.ChannelId.ToUlong(), cancellationToken: cancellationToken);
+            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: channel.ChannelId.ToUlong());
         }
 
         return result;

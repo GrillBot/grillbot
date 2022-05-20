@@ -35,6 +35,9 @@ public sealed class GrillBotCacheRepository : IDisposable
     public Task AddAsync<TEntity>(TEntity entity) where TEntity : class
         => Context.Set<TEntity>().AddAsync(entity).AsTask();
 
+    public Task AddRangeAsync<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
+        => Context.Set<TEntity>().AddRangeAsync(collection);
+
     public void Remove<TEntity>(TEntity entity) where TEntity : class
         => Context.Set<TEntity>().Remove(entity);
 

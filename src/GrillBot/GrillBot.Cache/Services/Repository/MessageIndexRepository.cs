@@ -9,7 +9,7 @@ public class MessageIndexRepository : RepositoryBase
     {
     }
 
-    private IQueryable<MessageIndex> GetBaseQuery(ulong authorId = default, int channelId = default, ulong guildId = default)
+    private IQueryable<MessageIndex> GetBaseQuery(ulong authorId = default, ulong channelId = default, ulong guildId = default)
     {
         var query = Context.MessageIndex.AsQueryable();
 
@@ -20,11 +20,17 @@ public class MessageIndexRepository : RepositoryBase
         return query;
     }
 
-    public async Task<List<MessageIndex>> GetMessagesAsync(ulong authorId = default, int channelId = default, ulong guildId = default)
+    public async Task<List<MessageIndex>> GetMessagesAsync(ulong authorId = default, ulong channelId = default, ulong guildId = default)
     {
         return await GetBaseQuery(authorId, channelId, guildId).ToListAsync();
     }
 
-    public async Task<int> GetMessagesCountAsync(ulong authorId = default, int channelId = default, ulong guildId = default)
+    public async Task<int> GetMessagesCountAsync(ulong authorId = default, ulong channelId = default, ulong guildId = default)
         => await GetBaseQuery(authorId, channelId, guildId).CountAsync();
+
+    public async Task<MessageIndex?> FindMessageByIdAsync(ulong messageId)
+    {
+        return await GetBaseQuery()
+            .FirstOrDefaultAsync(o => o.MessageId == messageId.ToString());
+    }
 }

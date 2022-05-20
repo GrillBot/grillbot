@@ -1,27 +1,25 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
+using GrillBot.Cache.Entity;
+using GrillBot.Cache.Services;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.DirectApi;
-using Microsoft.Extensions.Caching.Memory;
-using System.Web;
 
 namespace GrillBot.App.Services.DirectApi;
 
 [Initializable]
 public class DirectApiService : ServiceBase
 {
-    private IMemoryCache Cache { get; }
     private IConfiguration Configuration { get; }
 
     private List<ulong> AuthorizedChannelIds { get; }
     private List<ulong> AuthorizedServices { get; }
 
-    public DirectApiService(DiscordSocketClient client, IConfiguration configuration, IMemoryCache cache,
-        DiscordInitializationService initializationService) : base(client, null, initializationService, null, null)
+    public DirectApiService(DiscordSocketClient client, IConfiguration configuration,
+        DiscordInitializationService initializationService, GrillBotCacheBuilder cacheBuilder) : base(client, null, initializationService, null, null, cacheBuilder)
     {
         Configuration = configuration.GetRequiredSection("Services");
-        Cache = cache;
 
         AuthorizedChannelIds = Configuration.AsEnumerable()
             .Where(o => o.Key.EndsWith(":AuthorizedChannelId"))
@@ -44,27 +42,29 @@ public class DirectApiService : ServiceBase
             return;
 
         var attachmentData = await message.Attachments.First().DownloadAsync();
-        var json = Encoding.UTF8.GetString(attachmentData);
+        var entity = new DirectApiMessage()
+        {
+            ExpireAt = DateTime.UtcNow.AddMinutes(10),
+            Id = message.Reference.MessageId.Value.ToString(),
+            JsonData = Encoding.UTF8.GetString(attachmentData)
+        };
 
-        Cache.Set(
-            GetCacheKey(message.Reference.MessageId.Value),
-            json,
-            DateTimeOffset.UtcNow.AddMinutes(10)
-        );
+        using var cache = CacheBuilder.CreateRepository();
+
+        await cache.AddAsync(entity);
+        await cache.CommitAsync();
     }
 
     private bool CanReceiveMessage(SocketMessage message)
         => InitializationService.Get() && AuthorizedServices.Contains(message.Author.Id) && message.Reference != null && message.Attachments.Count == 1 &&
         AuthorizedChannelIds.Contains(message.Channel.Id);
 
-    private string GetCacheKey(ulong messageId) => $"{nameof(DirectApiService)}_{messageId}";
-
     public async Task<string> SendCommandAsync(string service, DirectMessageCommand command, CancellationToken cancellationToken = default)
     {
         var configuration = Configuration.GetRequiredSection(service);
 
         var request = await SendCommandRequestAsync(configuration, command, cancellationToken);
-        return await WaitAndGetResponseAsync(configuration, request, cancellationToken);
+        return await WaitAndGetResponseAsync(configuration, request);
     }
 
     private async Task<IUserMessage> SendCommandRequestAsync(IConfiguration configuration, DirectMessageCommand command, CancellationToken cancellationToken = default)
@@ -82,26 +82,40 @@ public class DirectApiService : ServiceBase
         );
     }
 
-    private async Task<string> WaitAndGetResponseAsync(IConfiguration configuration, IUserMessage request, CancellationToken cancellationToken = default)
+    private async Task<string> WaitAndGetResponseAsync(IConfiguration configuration, IUserMessage request)
     {
         var timeout = configuration.GetValue<double>("Timeout");
         var timeoutChecks = configuration.GetValue<int>("TimeoutChecks");
         var delay = timeout / timeoutChecks;
 
-        var cacheKey = GetCacheKey(request.Id);
-        string json = null;
-
+        DirectApiMessage msg = null;
         for (int i = 0; i < timeoutChecks; i++)
         {
-            await Task.Delay(Convert.ToInt32(delay), cancellationToken);
+            await Task.Delay(Convert.ToInt32(delay));
 
-            if (Cache.TryGetValue(cacheKey, out json))
+            msg = await TryGetCachedMessage(request);
+            if (msg != null)
                 break;
         }
 
-        if (string.IsNullOrEmpty(json))
+        if (msg == null)
             throw new GrillBotException("Cannot get response. The external service did not respond within the expected limit. Try again later please.");
 
-        return json;
+        return msg.JsonData;
+    }
+
+    private async Task<DirectApiMessage> TryGetCachedMessage(IUserMessage message)
+    {
+        using var cache = CacheBuilder.CreateRepository();
+
+        var msg = await cache.DirectApiRepository.FindMessageByIdAsync(message.Id);
+
+        if (msg != null)
+        {
+            cache.Remove(msg);
+            await cache.CommitAsync();
+        }
+
+        return msg;
     }
 }

@@ -24,7 +24,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandService, loggerFactory, configuration, DbFactory, interactionService);
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
         var fileStorage = FileStorageHelper.Create(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
         SessionService = new SuggestionSessionService();

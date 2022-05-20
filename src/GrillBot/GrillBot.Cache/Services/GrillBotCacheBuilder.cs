@@ -13,7 +13,7 @@ public class GrillBotCacheBuilder
         ServiceProvider = serviceProvider;
     }
 
-    public GrillBotCacheRepository CreateRepository()
+    public virtual GrillBotCacheRepository CreateRepository()
     {
         var options = ServiceProvider.GetRequiredService<DbContextOptions<GrillBotCacheContext>>();
         var context = new GrillBotCacheContext(options);

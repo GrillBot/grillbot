@@ -19,7 +19,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var storage = FileStorageHelper.Create(configuration);
 

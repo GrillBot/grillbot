@@ -6,6 +6,7 @@ using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
 using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Cache;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -22,7 +23,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
         var remindService = new RemindService(discordClient, DbFactory, configuration, auditLogService);
         var mapper = AutoMapperHelper.CreateMapper();

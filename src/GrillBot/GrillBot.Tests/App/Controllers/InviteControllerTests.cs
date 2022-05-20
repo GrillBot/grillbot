@@ -6,6 +6,7 @@ using GrillBot.App.Services.MessageCache;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Cache;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -20,7 +21,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory);
+        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var mapper = AutoMapperHelper.CreateMapper();

@@ -1,5 +1,8 @@
 ﻿using GrillBot.App.Infrastructure;
+using GrillBot.Cache.Services;
+using GrillBot.Cache.Services.Repository;
 using GrillBot.Database.Services;
+using GrillBot.Tests.Infrastructure.Cache;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -11,6 +14,8 @@ public abstract class ReactionEventHandlerTest<THandler> where THandler : Reacti
     protected THandler Handler { get; set; }
     protected GrillBotContext DbContext { get; set; }
     protected GrillBotContextFactory DbFactory { get; set; }
+    protected GrillBotCacheRepository CacheRepository { get; set; }
+    protected GrillBotCacheBuilder CacheBuilder { get; set; }
 
     protected abstract THandler CreateHandler();
 
@@ -19,6 +24,9 @@ public abstract class ReactionEventHandlerTest<THandler> where THandler : Reacti
     {
         DbFactory = new DbContextBuilder();
         DbContext = DbFactory.Create();
+
+        CacheBuilder = new TestCacheBuilder();
+        CacheRepository = CacheBuilder.CreateRepository();
 
         Handler = CreateHandler();
     }
@@ -30,10 +38,12 @@ public abstract class ReactionEventHandlerTest<THandler> where THandler : Reacti
     {
         DbContext.ChangeTracker.Clear();
         DatabaseHelper.ClearDatabase(DbContext);
+        TestCacheBuilder.ClearDatabase(CacheRepository);
 
         Cleanup();
 
         DbContext.Dispose();
+        CacheRepository.Dispose();
 
         if (Handler is IDisposable disposable)
             disposable.Dispose();

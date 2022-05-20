@@ -1,6 +1,9 @@
-﻿using GrillBot.Data.Models.API;
+﻿using GrillBot.Cache.Services;
+using GrillBot.Cache.Services.Repository;
+using GrillBot.Data.Models.API;
 using GrillBot.Database.Services;
 using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Cache;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -17,6 +20,8 @@ public abstract class ControllerTest<TController> where TController : Controller
 
     protected GrillBotContext DbContext { get; set; }
     protected GrillBotContextFactory DbFactory { get; set; }
+    protected GrillBotCacheRepository CacheRepository { get; set; }
+    protected GrillBotCacheBuilder CacheBuilder { get; set; }
 
     protected abstract bool CanInitProvider();
     protected abstract TController CreateController(IServiceProvider provider);
@@ -26,6 +31,9 @@ public abstract class ControllerTest<TController> where TController : Controller
     {
         DbFactory = new DbContextBuilder();
         DbContext = DbFactory.Create();
+
+        CacheBuilder = new TestCacheBuilder();
+        CacheRepository = CacheBuilder.CreateRepository();
 
         var provider = CreateProvider(CanInitProvider());
 
@@ -43,12 +51,14 @@ public abstract class ControllerTest<TController> where TController : Controller
     {
         DbContext.ChangeTracker.Clear();
         DatabaseHelper.ClearDatabase(DbContext);
+        TestCacheBuilder.ClearDatabase(CacheRepository);
 
         Cleanup();
 
         DbContext.Dispose();
         AdminController.Dispose();
         UserController.Dispose();
+        CacheRepository.Dispose();
     }
 
     private static ControllerContext CreateContext(string role, IServiceProvider provider)

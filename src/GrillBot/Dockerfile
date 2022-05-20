@@ -26,6 +26,7 @@ COPY "GrillBot.App/GrillBot.App.csproj" /src/GrillBot.App
 RUN dotnet restore "src/GrillBot.App/GrillBot.App.csproj" -r linux-x64
 
 # Publish
+COPY "GrillBot.Cache/" /src/GrillBot.Cache
 COPY "GrillBot.Database/" /src/GrillBot.Database
 COPY "GrillBot.Data/" /src/GrillBot.Data
 COPY "GrillBot.App/" /src/GrillBot.App

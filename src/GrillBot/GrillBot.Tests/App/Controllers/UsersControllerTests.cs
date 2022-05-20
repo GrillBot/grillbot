@@ -43,7 +43,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var commandsService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
+        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
         var mapper = AutoMapperHelper.CreateMapper();
         var channelsService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);

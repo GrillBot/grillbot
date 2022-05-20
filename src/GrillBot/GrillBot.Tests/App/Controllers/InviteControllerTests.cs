@@ -21,7 +21,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
+        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var mapper = AutoMapperHelper.CreateMapper();

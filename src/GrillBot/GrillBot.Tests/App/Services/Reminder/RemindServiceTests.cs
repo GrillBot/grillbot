@@ -19,7 +19,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
+        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
         var fileStorage = FileStorageHelper.Create(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
 

@@ -23,7 +23,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
+        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
         var remindService = new RemindService(discordClient, DbFactory, configuration, auditLogService);
         var mapper = AutoMapperHelper.CreateMapper();

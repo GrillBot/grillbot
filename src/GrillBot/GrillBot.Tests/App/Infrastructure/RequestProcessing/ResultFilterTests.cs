@@ -39,7 +39,7 @@ public class ResultFilterTests : ActionFilterTest<ResultFilter>
 
         var discordClient = DiscordHelper.CreateClient();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
+        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var storage = FileStorageHelper.Create(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initializationService);

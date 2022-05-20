@@ -38,7 +38,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
 
         var discordClient = DiscordHelper.CreateClient();
         var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, DbFactory, CacheBuilder);
+        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var mapper = AutoMapperHelper.CreateMapper();
         var fileStorage = FileStorageHelper.Create(configuration);

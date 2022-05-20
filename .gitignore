@@ -385,6 +385,5 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode
 /src/GrillBot/GrillBot.App/appsettings.*.json
 GrillBot.*.xml
-Cache/
 GrillBotData/
 environment.env

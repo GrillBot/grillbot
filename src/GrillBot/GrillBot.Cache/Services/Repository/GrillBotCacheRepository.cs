@@ -15,6 +15,7 @@ public sealed class GrillBotCacheRepository : IDisposable
 
     public DirectApiRepository DirectApiRepository => GetOrCreateRepository<DirectApiRepository>();
     public MessageIndexRepository MessageIndexRepository => GetOrCreateRepository<MessageIndexRepository>();
+    public StatisticsRepository StatisticsRepository => GetOrCreateRepository<StatisticsRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {

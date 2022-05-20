@@ -17,7 +17,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new GuildApiService(DbFactory, discordClient, mapper);
+        var apiService = new GuildApiService(DbFactory, discordClient, mapper, CacheBuilder);
 
         return new GuildController(apiService);
     }

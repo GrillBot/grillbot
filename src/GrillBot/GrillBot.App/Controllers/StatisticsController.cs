@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.AuditLog;
+using GrillBot.Cache.Services;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
@@ -15,10 +16,12 @@ namespace GrillBot.App.Controllers;
 public class StatisticsController : Controller
 {
     private GrillBotContextFactory DbFactory { get; }
+    private GrillBotCacheBuilder CacheBuilder { get; }
 
-    public StatisticsController(GrillBotContextFactory dbFactory)
+    public StatisticsController(GrillBotContextFactory dbFactory, GrillBotCacheBuilder cacheBuilder)
     {
         DbFactory = dbFactory;
+        CacheBuilder = cacheBuilder;
     }
 
     /// <summary>
@@ -49,11 +52,24 @@ public class StatisticsController : Controller
             { nameof(context.SelfunverifyKeepables), await context.SelfunverifyKeepables.CountAsync(cancellationToken) },
             { nameof(context.ExplicitPermissions), await context.ExplicitPermissions.CountAsync(cancellationToken) },
             { nameof(context.AutoReplies), await context.AutoReplies.CountAsync(cancellationToken) },
-            { nameof(context.MessageCacheIndexes), await context.MessageCacheIndexes.CountAsync(cancellationToken) },
             { nameof(context.Suggestions), await context.Suggestions.CountAsync(cancellationToken) }
         };
 
         return Ok(data);
+    }
+
+    /// <summary>
+    /// Get statistics of database cache tables.
+    /// </summary>
+    /// <response code="200">Returns dictonary of row counts in database tables in the cache database. (TableName, Count)</response>
+    [HttpGet("db/cache")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Dictionary<string, int>>> GetDbCacheStatusAsync(CancellationToken cancellationToken = default)
+    {
+        using var cache = CacheBuilder.CreateRepository();
+
+        var statistics = await cache.StatisticsRepository.GetTableStatisticsAsync(cancellationToken);
+        return Ok(statistics);
     }
 
     /// <summary>

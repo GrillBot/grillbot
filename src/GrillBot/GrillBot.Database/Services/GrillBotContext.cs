@@ -1,5 +1,4 @@
 ﻿using GrillBot.Database.Entity;
-using GrillBot.Database.Entity.Cache;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -121,7 +120,6 @@ namespace GrillBot.Database.Services
         public DbSet<SelfunverifyKeepable> SelfunverifyKeepables { get; set; }
         public DbSet<ExplicitPermission> ExplicitPermissions { get; set; }
         public DbSet<AutoReplyItem> AutoReplies { get; set; }
-        public DbSet<MessageCacheIndex> MessageCacheIndexes { get; set; }
         public DbSet<Suggestion> Suggestions { get; set; }
 
         public IQueryable<TEntity> CreateQuery<TEntity>(IQueryableModel<TEntity> parameters, bool noTracking = false, bool splitQuery = false) where TEntity : class

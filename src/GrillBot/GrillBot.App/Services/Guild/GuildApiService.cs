@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
+using GrillBot.Cache.Services;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
@@ -11,7 +12,8 @@ namespace GrillBot.App.Services.Guild;
 
 public class GuildApiService : ServiceBase
 {
-    public GuildApiService(GrillBotContextFactory dbFactory, DiscordSocketClient client, IMapper mapper) : base(client, dbFactory, null, null, mapper)
+    public GuildApiService(GrillBotContextFactory dbFactory, DiscordSocketClient client, IMapper mapper,
+        GrillBotCacheBuilder cacheBuilder) : base(client, dbFactory, null, null, mapper, cacheBuilder)
     {
     }
 
@@ -90,11 +92,15 @@ public class GuildApiService : ServiceBase
             Searches = guild.Searches.Count,
             Unverifies = guild.Unverifies.Count,
             UnverifyLogs = guild.UnverifyLogs.Count,
-            Users = guild.Users.Count,
-            CacheIndexes = dbContext.MessageCacheIndexes.Count(o => o.GuildId == guild.Id)
+            Users = guild.Users.Count
         });
 
-        return await query.FirstOrDefaultAsync(cancellationToken);
+        var report = await query.FirstOrDefaultAsync(cancellationToken);
+
+        using var cache = CacheBuilder.CreateRepository();
+        report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
+
+        return report;
     }
 
     public async Task<GuildDetail> UpdateGuildAsync(ulong id, UpdateGuildParams parameters, ModelStateDictionary modelState)

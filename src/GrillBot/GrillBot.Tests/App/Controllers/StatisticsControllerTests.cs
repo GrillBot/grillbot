@@ -17,7 +17,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
 
     protected override StatisticsController CreateController(IServiceProvider provider)
     {
-        return new StatisticsController(DbFactory);
+        return new StatisticsController(DbFactory, CacheBuilder);
     }
 
     [TestMethod]

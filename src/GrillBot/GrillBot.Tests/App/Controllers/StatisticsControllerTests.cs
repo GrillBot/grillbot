@@ -28,6 +28,13 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
     }
 
     [TestMethod]
+    public async Task GetDbCacheStatusAsync()
+    {
+        var result = await AdminController.GetDbCacheStatusAsync();
+        CheckResult<OkObjectResult, Dictionary<string, int>>(result);
+    }
+
+    [TestMethod]
     public async Task GetAuditLogsStatisticsByTypeAsync()
     {
         await DbContext.AddAsync(new AuditLogItem()

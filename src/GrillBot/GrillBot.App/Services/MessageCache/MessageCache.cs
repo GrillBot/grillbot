@@ -19,7 +19,7 @@ public partial class MessageCache : ServiceBase
     }
 
     public MessageCache(DiscordSocketClient client, DiscordInitializationService initializationService,
-        GrillBotContextFactory dbFactory, GrillBotCacheBuilder cacheBuilder) : base(client, dbFactory, initializationService, null, null, cacheBuilder)
+        GrillBotCacheBuilder cacheBuilder) : base(client, null, initializationService, null, null, cacheBuilder)
     {
         Cache = new ConcurrentDictionary<ulong, CachedMessage>();
         InitializedChannels = new ConcurrentBag<ulong>();

@@ -5,6 +5,11 @@ ENV TZ=Europe/Prague
 ENV ASPNETCORE_URLS 'http://+:5000'
 ENV DOTNET_PRINT_TELEMETRY_MESSAGE 'false'
 
+# Cache
+RUN mkdir -p /src/GrillBot.Cache
+COPY "GrillBot.Cache/GrillBot.Cache.csproj" /src/GrillBot.Cache
+RUN dotnet restore "src/GrillBot.Cache/GrillBot.Cache.csproj" -r linux-x64
+
 # Database
 RUN mkdir -p /src/GrillBot.Database
 COPY "GrillBot.Database/GrillBot.Database.csproj" /src/GrillBot.Database

@@ -59,9 +59,10 @@ public abstract class Job : IJob
         }
         finally
         {
+            data.MarkFinished();
+
             if (!string.IsNullOrEmpty(data.Result))
             {
-                data.MarkFinished();
                 var item = new AuditLogDataWrapper(AuditLogItemType.JobCompleted, data, processedUser: DiscordClient.CurrentUser);
                 await AuditLogService.StoreItemAsync(item);
             }

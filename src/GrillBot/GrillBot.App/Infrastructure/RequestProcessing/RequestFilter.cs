@@ -1,4 +1,5 @@
 ﻿using GrillBot.Data.Models.AuditLog;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -25,6 +26,13 @@ public class RequestFilter : IAsyncActionFilter
         ApiRequest.Method = context.HttpContext.Request.Method;
         ApiRequest.LoggedUserRole = context.HttpContext.User.GetUserRole();
         ApiRequest.QueryParams = context.HttpContext.Request.Query.ToDictionary(o => o.Key, o => o.Value.ToString());
+
+        if (!context.ModelState.IsValid)
+        {
+            var problemDetails = new ValidationProblemDetails(context.ModelState);
+            context.Result = new BadRequestObjectResult(problemDetails);
+            return;
+        }
 
         await next();
     }

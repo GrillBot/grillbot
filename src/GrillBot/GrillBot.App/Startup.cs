@@ -26,6 +26,7 @@ using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App;
 
@@ -76,6 +77,7 @@ public class Startup
         var discordClient = new DiscordSocketClient(discordConfig);
 
         services
+            .Configure<ApiBehaviorOptions>(opt => opt.SuppressModelStateInvalidFilter = true)
             .AddSingleton(discordClient)
             .AddSingleton<IDiscordClient>(discordClient)
             .AddSingleton(new CommandService(commandsConfig))
@@ -88,8 +90,8 @@ public class Startup
             .AddControllers(c =>
             {
                 c.Filters.Add<ExceptionFilter>();
-                c.Filters.Add<ResultFilter>();
                 c.Filters.Add<RequestFilter>();
+                c.Filters.Add<ResultFilter>();
 
                 c.CacheProfiles.Add("BoardApi", new() { Duration = 60 }); // Response caching for boards (leaderboard, help, ...).
                 c.CacheProfiles.Add("ConstsApi", new() { Duration = 30 }); // Response caching for constants.

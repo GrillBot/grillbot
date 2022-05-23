@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Primitives;
 using Moq;
@@ -65,14 +66,17 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
         return httpContext.Object;
     }
 
-    private ActionContext CreateActionContext(IHeaderDictionary headers = null, int statusCode = 0)
+    private ActionContext CreateActionContext(IHeaderDictionary headers = null, int statusCode = 0, ModelStateDictionary modelState = null)
     {
-        return new ActionContext(CreateHttpContext(headers, statusCode), new(), new());
+        modelState = modelState == null ? new ModelStateDictionary() : new ModelStateDictionary(modelState);
+        return new ActionContext(CreateHttpContext(headers, statusCode), new(), new(), modelState);
     }
 
-    protected ActionExecutingContext CreateContext(string methodName, IHeaderDictionary headers = null, bool noControllerDescriptor = false)
+    protected ActionExecutingContext CreateContext(string methodName, IHeaderDictionary headers = null, bool noControllerDescriptor = false, ModelStateDictionary modelState = null)
     {
-        return new ActionExecutingContext(CreateActionContext(headers), new List<IFilterMetadata>(), new Dictionary<string, object>(), Controller)
+        var actionContext = CreateActionContext(headers, modelState: modelState);
+
+        return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), Controller)
         {
             ActionDescriptor = !noControllerDescriptor ? new ControllerActionDescriptor()
             {

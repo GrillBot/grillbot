@@ -84,8 +84,13 @@ public class CommandHandler : ServiceBase
         }
 
         if (result.Error != CommandError.UnknownCommand)
+        {
             await AuditLogService.LogExecutedCommandAsync(command.Value, context, result, duration);
+        }
         else
-            CommandsPerformanceCounter.TaskFinished(context);
+        {
+            if (CommandsPerformanceCounter.TaskExists(context))
+                CommandsPerformanceCounter.TaskFinished(context);
+        }
     }
 }

@@ -76,7 +76,8 @@ public class InteractionHandler : ServiceBase
         }
         else
         {
-            CommandsPerformanceCounter.TaskFinished(context);
+            if (CommandsPerformanceCounter.TaskExists(context))
+                CommandsPerformanceCounter.TaskFinished(context);
         }
     }
 }

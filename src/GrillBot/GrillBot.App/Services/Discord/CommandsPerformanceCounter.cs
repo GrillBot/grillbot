@@ -29,10 +29,10 @@ public static class CommandsPerformanceCounter
     }
 
     public static int TaskFinished(IInteractionContext context)
-        => RunningTaskFinished($"{context.Interaction.GetType().Name}|{context.User.Id}|{context.Interaction.Id}");
+        => RunningTaskFinished(CreateContextKey(context));
 
     public static int TaskFinished(global::Discord.Commands.ICommandContext context)
-        => RunningTaskFinished($"TextBasedCommand|{context.User.Id}|{context.Message.Id}");
+        => RunningTaskFinished(CreateContextKey(context));
 
     private static int RunningTaskFinished(string contextKey)
     {
@@ -51,6 +51,20 @@ public static class CommandsPerformanceCounter
             RunningTasks.Remove(contextKey, out var startAt);
 
             return startAt;
+        }
+    }
+
+    public static bool TaskExists(IInteractionContext context)
+        => TaskExists(CreateContextKey(context));
+
+    public static bool TaskExists(global::Discord.Commands.ICommandContext context)
+        => TaskExists(CreateContextKey(context));
+
+    public static bool TaskExists(string contextKey)
+    {
+        lock (RunningTasksLock)
+        {
+            return RunningTasks.ContainsKey(contextKey);
         }
     }
 }

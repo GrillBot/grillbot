@@ -1,4 +1,5 @@
 ﻿using GrillBot.Cache.Services;
+using GrillBot.Cache.Services.Managers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +15,8 @@ public static class GrillBotCacheExtensions
 
         return services
             .AddDbContext<GrillBotCacheContext>(opt => opt.EnableDetailedErrors().EnableThreadSafetyChecks().UseNpgsql(connectionString), ServiceLifetime.Scoped, ServiceLifetime.Singleton)
-            .AddSingleton<GrillBotCacheBuilder>();
+            .AddSingleton<GrillBotCacheBuilder>()
+            .AddSingleton<ProfilePictureManager>();
     }
 
     public static void InitCache(this IApplicationBuilder app)

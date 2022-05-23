@@ -1,6 +1,7 @@
 ﻿using GrillBot.Database.Enums;
 using GrillBot.Data.Extensions;
 using GrillBot.App.Infrastructure;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Services.User;
 
@@ -49,7 +50,7 @@ public class UserService : ServiceBase
         var clients = user.ActiveClients.Select(o => o.ToString());
 
         var embed = new EmbedBuilder()
-            .WithAuthor(user.GetFullName(), user.GetAvatarUri(), userDetailUrl)
+            .WithAuthor(user.GetFullName(), user.GetUserAvatarUrl(), userDetailUrl)
             .WithCurrentTimestamp()
             .WithFooter(executor)
             .WithTitle("Informace o uživateli")

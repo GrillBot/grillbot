@@ -13,7 +13,8 @@ public class StatisticsRepository : RepositoryBase
         return new Dictionary<string, int>()
         {
             { nameof(Context.MessageIndex), await Context.MessageIndex.CountAsync(cancellationToken) },
-            { nameof(Context.DirectApiMessages), await Context.DirectApiMessages.CountAsync(cancellationToken) }
+            { nameof(Context.DirectApiMessages), await Context.DirectApiMessages.CountAsync(cancellationToken) },
+            { nameof(Context.ProfilePictures), await Context.ProfilePictures.CountAsync(cancellationToken) }
         };
     }
 }

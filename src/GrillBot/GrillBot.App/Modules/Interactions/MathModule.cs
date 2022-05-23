@@ -1,7 +1,5 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Extensions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.MathJS;
 using System.Net.Http;
 
@@ -28,9 +26,9 @@ public class MathModule : Infrastructure.InteractionsModuleBase
         using var requestContent = new StringContent(requestJson);
 
         var embed = new EmbedBuilder()
-           .WithFooter(Context.User.GetDisplayName(), Context.User.GetAvatarUri())
-           .WithCurrentTimestamp()
-           .AddField("Výraz", $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength)}`", false);
+            .WithFooter(Context.User)
+            .WithCurrentTimestamp()
+            .AddField("Výraz", $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength)}`", false);
 
         try
         {

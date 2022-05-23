@@ -3,6 +3,7 @@ using Discord.Commands;
 using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.App.Helpers;
 using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Modules.Implementations.Help;
 
@@ -15,7 +16,7 @@ static public class HelpExtensions
             .WithTitle(module.Name)
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
-            .WithAuthor(o => o.WithName("Nápověda").WithIconUrl(context.Client.CurrentUser.GetAvatarUri()).WithUrl("https://public.grillbot.cloud"))
+            .WithAuthor(o => o.WithName("Nápověda").WithIconUrl(context.Client.CurrentUser.GetUserAvatarUrl()).WithUrl("https://public.grillbot.cloud"))
             .WithFooter($"{page + 1}/{pagesCount}")
             .WithMetadata(new HelpMetadata() { Page = page, PagesCount = pagesCount });
 

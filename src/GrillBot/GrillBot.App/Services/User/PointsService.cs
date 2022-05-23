@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
@@ -17,17 +18,20 @@ public class PointsService : ServiceBase
     private Random Random { get; }
     private FileStorageFactory FileStorageFactory { get; }
     private MessageCache.MessageCache MessageCache { get; }
+    private ProfilePictureManager ProfilePictureManager { get; }
 
     private MagickImage TrophyImage { get; }
 
     public PointsService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
-        FileStorageFactory fileStorageFactory, MessageCache.MessageCache messageCache, RandomizationService randomizationService) : base(client, dbFactory)
+        FileStorageFactory fileStorageFactory, MessageCache.MessageCache messageCache, RandomizationService randomizationService,
+        ProfilePictureManager profilePictureManager) : base(client, dbFactory)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         Configuration = configuration.GetSection("Points");
         Random = randomizationService.GetOrCreateGenerator("Points");
         FileStorageFactory = fileStorageFactory;
         MessageCache = messageCache;
+        ProfilePictureManager = profilePictureManager;
 
         DiscordClient.MessageReceived += (message) => message.TryLoadMessage(out SocketUserMessage msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
         DiscordClient.ReactionAdded += OnReactionAddedAsync;
@@ -212,17 +216,8 @@ public class PointsService : ServiceBase
 
     private async Task<MagickImage> GetProfilePictureAsync(IUser user)
     {
-        var cache = FileStorageFactory.CreateCache();
-        var filename = $"{user.Id}_{user.AvatarId ?? user.Discriminator}_256.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
-        var fileinfo = await cache.GetProfilePictureInfoAsync(filename);
-
-        if (!fileinfo.Exists)
-        {
-            var profilePicture = await user.DownloadAvatarAsync(size: 256);
-            await cache.StoreProfilePictureAsync(filename, profilePicture);
-        }
-
-        return new MagickImage(fileinfo.FullName);
+        var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
+        return new MagickImage(profilePicture.Data);
     }
 
     public async Task IncrementPointsAsync(SocketGuild guild, SocketGuildUser toUser, int amount)

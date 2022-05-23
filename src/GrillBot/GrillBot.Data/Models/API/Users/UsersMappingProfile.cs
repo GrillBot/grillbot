@@ -1,6 +1,6 @@
 ﻿using Discord;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Enums;
 using System.Linq;
 
@@ -11,7 +11,7 @@ public class UsersMappingProfile : AutoMapper.Profile
     public UsersMappingProfile()
     {
         CreateMap<IUser, User>()
-            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetAvatarUri(ImageFormat.Auto, 128)));
+            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetUserAvatarUrl(128)));
 
         CreateMap<Database.Entity.User, User>()
             .ForMember(dst => dst.IsBot, opt => opt.MapFrom(src => src.HaveFlags(UserFlags.NotUser)));
@@ -40,7 +40,7 @@ public class UsersMappingProfile : AutoMapper.Profile
         CreateMap<IUser, UserDetail>()
             .ForMember(dst => dst.IsKnown, opt => opt.MapFrom(_ => true))
             .ForMember(dst => dst.ActiveClients, opt => opt.MapFrom(src => src.ActiveClients.Select(o => o.ToString()).OrderBy(o => o).ToList()))
-            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetAvatarUri(ImageFormat.Auto, 128)));
+            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetUserAvatarUrl(128)));
 
         CreateMap<Database.Entity.GuildUser, GuildUserDetail>()
             .ForMember(dst => dst.Emotes, opt => opt.MapFrom(src => src.EmoteStatistics));

@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Images;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Data.Helper;
 
 namespace GrillBot.App.Modules.TextBased;
@@ -11,10 +12,12 @@ namespace GrillBot.App.Modules.TextBased;
 public class MemeModule : Infrastructure.ModuleBase
 {
     private FileStorageFactory FileStorageFactory { get; }
+    private ProfilePictureManager ProfilePictureManager { get; }
 
-    public MemeModule(FileStorageFactory fileStorage)
+    public MemeModule(FileStorageFactory fileStorage, ProfilePictureManager profilePictureManager)
     {
         FileStorageFactory = fileStorage;
+        ProfilePictureManager = profilePictureManager;
     }
 
     #region Peepolove
@@ -24,7 +27,7 @@ public class MemeModule : Infrastructure.ModuleBase
     public async Task PeepoloveAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
     {
         if (user == null) user = Context.User;
-        using var renderer = new PeepoloveRenderer(FileStorageFactory);
+        using var renderer = new PeepoloveRenderer(FileStorageFactory, ProfilePictureManager);
         var path = await renderer.RenderAsync(user, Context);
 
         await ReplyFileAsync(path, false);
@@ -40,7 +43,7 @@ public class MemeModule : Infrastructure.ModuleBase
     public async Task PeepoangryAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
     {
         if (user == null) user = Context.User;
-        using var renderer = new PeepoangryRenderer(FileStorageFactory);
+        using var renderer = new PeepoangryRenderer(FileStorageFactory, ProfilePictureManager);
         var path = await renderer.RenderAsync(user, Context);
 
         await ReplyFileAsync(path, false);

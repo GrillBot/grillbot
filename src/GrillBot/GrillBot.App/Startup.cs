@@ -47,16 +47,14 @@ public class Startup
 
         var discordConfig = new DiscordSocketConfig()
         {
-            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildBans | GatewayIntents.GuildEmojis
-                | GatewayIntents.GuildIntegrations | GatewayIntents.GuildWebhooks | GatewayIntents.GuildInvites | GatewayIntents.GuildVoiceStates
-                | GatewayIntents.GuildPresences | GatewayIntents.GuildMembers | GatewayIntents.GuildMessageReactions | GatewayIntents.GuildMessageTyping
-                | GatewayIntents.DirectMessages | GatewayIntents.DirectMessageReactions | GatewayIntents.DirectMessageTyping,
+            GatewayIntents = GatewayIntents.All,
             LogLevel = LogSeverity.Verbose,
             MessageCacheSize = 5000,
             AlwaysDownloadDefaultStickers = true,
             AlwaysDownloadUsers = true,
             AlwaysResolveStickers = true,
-            DefaultRetryMode = RetryMode.RetryRatelimit
+            DefaultRetryMode = RetryMode.RetryRatelimit,
+            SuppressUnknownDispatchWarnings = true
         };
 
         var commandsConfig = new CommandServiceConfig()

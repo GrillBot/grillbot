@@ -16,7 +16,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrillBot.Tests", "GrillBot.Tests\GrillBot.Tests.csproj", "{FB3F5BF1-8620-42D3-B888-E51D476105E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrillBot.Cache", "GrillBot.Cache\GrillBot.Cache.csproj", "{FD37A4E0-7E46-4A52-9833-4C79CB366177}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrillBot.Cache", "GrillBot.Cache\GrillBot.Cache.csproj", "{FD37A4E0-7E46-4A52-9833-4C79CB366177}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrillBot.Common", "GrillBot.Common\GrillBot.Common.csproj", "{06731BD7-84B7-4F3E-8E52-C9A4EA062FB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +46,10 @@ Global
 		{FD37A4E0-7E46-4A52-9833-4C79CB366177}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD37A4E0-7E46-4A52-9833-4C79CB366177}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD37A4E0-7E46-4A52-9833-4C79CB366177}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06731BD7-84B7-4F3E-8E52-C9A4EA062FB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06731BD7-84B7-4F3E-8E52-C9A4EA062FB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06731BD7-84B7-4F3E-8E52-C9A4EA062FB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06731BD7-84B7-4F3E-8E52-C9A4EA062FB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,9 +1,7 @@
-﻿using GrillBot.App.Extensions;
-using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Unverify;
 
 namespace GrillBot.App.Modules.Implementations.Unverify;
@@ -14,7 +12,7 @@ public static class UnverifyListExtensions
     {
         embed.WithFooter(forUser);
 
-        embed.WithAuthor(profile.Destination.GetFullName(), profile.Destination.GetAvatarUri());
+        embed.WithAuthor(profile.Destination.GetFullName(), profile.Destination.GetUserAvatarUrl());
         embed.WithMetadata(new UnverifyListMetadata() { Page = page, GuildId = guild.Id });
 
         var color = new[] { profile.RolesToKeep, profile.RolesToRemove }.SelectMany(o => o)

@@ -1,12 +1,11 @@
-﻿using GrillBot.Data.Extensions.Discord;
+﻿using GrillBot.Common.Extensions.Discord;
 
-namespace GrillBot.App.Extensions.Discord
+namespace GrillBot.App.Extensions.Discord;
+
+static public class EmbedExtensions
 {
-    static public class EmbedExtensions
+    static public EmbedBuilder WithFooter(this EmbedBuilder builder, IUser user)
     {
-        static public EmbedBuilder WithFooter(this EmbedBuilder builder, IUser user)
-        {
-            return builder.WithFooter(user.GetDisplayName(), user.GetAvatarUri());
-        }
+        return builder.WithFooter(user.GetDisplayName(), user.GetUserAvatarUrl());
     }
 }

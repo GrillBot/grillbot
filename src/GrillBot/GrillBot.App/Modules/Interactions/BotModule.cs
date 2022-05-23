@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Common.Extensions.Discord;
 using System.Diagnostics;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -21,7 +22,7 @@ public class BotModule : Infrastructure.InteractionsModuleBase
 
         var embed = new EmbedBuilder()
             .WithTitle(user.GetFullName())
-            .WithThumbnailUrl(user.GetAvatarUri())
+            .WithThumbnailUrl(user.GetUserAvatarUrl())
             .AddField("Založen", user.CreatedAt.LocalDateTime.Humanize(culture: culture))
             .AddField("Uptime", (DateTime.Now - process.StartTime).Humanize(culture: culture, maxUnit: TimeUnit.Day))
             .AddField("Repozitář", "https://gitlab.com/grillbot")

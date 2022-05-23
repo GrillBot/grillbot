@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Services;
@@ -48,7 +49,7 @@ public class BoosterService : ServiceBase
             .WithColor(boostRole.Color)
             .WithCurrentTimestamp()
             .AddField("Uživatel", after.GetFullName(), false)
-            .WithThumbnailUrl(after.GetAvatarUri());
+            .WithThumbnailUrl(after.GetUserAvatarUrl());
 
         if (!boostBefore && boostAfter)
             embed.WithTitle($"Uživatel je nyní Server Booster {Configuration["Discord:Emotes:Hypers"]}");

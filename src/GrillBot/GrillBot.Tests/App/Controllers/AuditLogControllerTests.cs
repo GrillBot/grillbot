@@ -179,6 +179,50 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     }
 
     [TestMethod]
+    public async Task GetAuditLogListAsync_WithExcludes_WithData()
+    {
+        var filter = new AuditLogListParams()
+        {
+            ChannelId = Consts.ChannelId.ToString(),
+            CreatedFrom = DateTime.MinValue,
+            CreatedTo = DateTime.MaxValue,
+            GuildId = Consts.GuildId.ToString(),
+            IgnoreBots = true,
+            ProcessedUserIds = new List<string>() { Consts.UserId.ToString() },
+            Types = new() { AuditLogItemType.Info },
+            ExcludedTypes = new() { AuditLogItemType.MemberRoleUpdated }
+        };
+
+        await DbContext.AddAsync(new AuditLogItem()
+        {
+            ChannelId = Consts.ChannelId.ToString(),
+            CreatedAt = DateTime.UtcNow,
+            Data = null,
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
+            Type = AuditLogItemType.Command
+        });
+        await DbContext.AddRangeAsync(Enum.GetValues<AuditLogItemType>().Where(o => o > 0).Select(o => new AuditLogItem()
+        {
+            ChannelId = Consts.ChannelId.ToString(),
+            CreatedAt = DateTime.UtcNow,
+            Data = "{}",
+            GuildId = Consts.GuildId.ToString(),
+            ProcessedUserId = Consts.UserId.ToString(),
+            Type = o
+        }));
+
+        await DbContext.AddAsync(new Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await DbContext.AddAsync(new GuildChannel() { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
+        await DbContext.AddAsync(new GuildUser() { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
+        await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
+        await DbContext.SaveChangesAsync();
+
+        var result = await AdminController.GetAuditLogListAsync(filter, CancellationToken.None);
+        CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
+    }
+
+    [TestMethod]
     public async Task GetAuditLogListAsync_WithExtendedFilters_WithData()
     {
         var filter = new AuditLogListParams()
@@ -333,10 +377,15 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     [TestMethod]
     public void AuditLogListParams_ModelStateValidation()
     {
-        var @params = new AuditLogListParams() { Ids = "0,1,3;" };
+        var @params = new AuditLogListParams()
+        {
+            Ids = "0,1,3;",
+            Types = new() { AuditLogItemType.Info },
+            ExcludedTypes = new() { AuditLogItemType.Info }
+        };
         var validationContext = new ValidationContext(@params);
 
         var result = @params.Validate(validationContext).ToList();
-        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(2, result.Count);
     }
 }

@@ -19,6 +19,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
     [DiscordId]
     public List<string> ProcessedUserIds { get; set; }
     public List<AuditLogItemType> Types { get; set; } = new();
+    public List<AuditLogItemType> ExcludedTypes { get; set; } = new();
     public DateTime? CreatedFrom { get; set; }
     public DateTime? CreatedTo { get; set; }
     public bool IgnoreBots { get; set; }
@@ -76,6 +77,9 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
     {
         if (Types.Count > 0)
             query = query.Where(o => Types.Contains(o.Type));
+
+        if (ExcludedTypes.Count > 0)
+            query = query.Where(o => !ExcludedTypes.Contains(o.Type));
 
         if (!string.IsNullOrEmpty(GuildId))
             query = query.Where(o => o.GuildId == GuildId);
@@ -159,6 +163,13 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
                 if (!long.TryParse(items[i], out var _))
                     yield return new ValidationResult($"ID[{i}] is not number.", new[] { $"{nameof(Ids)}[{i}]" });
             }
+        }
+
+        if (ExcludedTypes.Count > 0 && Types.Count > 0)
+        {
+            var intersectTypes = ExcludedTypes.Intersect(Types);
+            if (intersectTypes.Any())
+                yield return new ValidationResult("You cannot filter and exclude the same types at the same time.");
         }
     }
 }

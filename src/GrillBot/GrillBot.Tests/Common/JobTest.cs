@@ -57,6 +57,7 @@ public abstract class JobTest<TJob> where TJob : IJob
     {
         var mock = new Mock<IJobExecutionContext>();
         mock.Setup(o => o.CancellationToken).Returns(CancellationToken.None);
+        mock.SetupProperty(o => o.Result);
 
         return mock.Object;
     }

@@ -12,17 +12,12 @@ namespace GrillBot.App.Services.AuditLog;
 public class AuditLogClearingJob : Job
 {
     private GrillBotContextFactory DbFactory { get; }
-    private IConfiguration Configuration { get; }
     private FileStorageFactory FileStorage { get; }
 
-    private int IntervalMonths
-        => Configuration.GetValue<int>("CleanupIntervalMonths");
-
     public AuditLogClearingJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        GrillBotContextFactory dbFactory, IConfiguration configuration, FileStorageFactory fileStorage, DiscordInitializationService initializationService)
+        GrillBotContextFactory dbFactory, FileStorageFactory fileStorage, DiscordInitializationService initializationService)
         : base(loggingService, auditLogService, discordClient, initializationService)
     {
-        Configuration = configuration.GetSection("AuditLog");
         FileStorage = fileStorage;
         DbFactory = dbFactory;
     }
@@ -30,7 +25,7 @@ public class AuditLogClearingJob : Job
     public override async Task RunAsync(IJobExecutionContext context)
     {
         using var dbContext = DbFactory.Create();
-        var beforeDate = DateTime.Now.AddMonths(-IntervalMonths);
+        var beforeDate = DateTime.Now.AddYears(-1);
 
         var query = dbContext.AuditLogs.AsQueryable()
             .Include(o => o.Files)
@@ -41,10 +36,7 @@ public class AuditLogClearingJob : Job
             .Where(o => o.CreatedAt <= beforeDate);
 
         if (!await query.AnyAsync(context.CancellationToken))
-        {
-            context.Result = "NoDataToArchivation";
             return;
-        }
 
         var data = await query.ToListAsync(context.CancellationToken);
         var logRoot = new XElement("AuditLogBackup");

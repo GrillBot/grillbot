@@ -30,7 +30,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
 
-        return new AuditLogClearingJob(loggingService, auditLogService, client, DbFactory, configuration, fileStorage, initializationService);
+        return new AuditLogClearingJob(loggingService, auditLogService, client, DbFactory, fileStorage, initializationService);
     }
 
     [TestMethod]
@@ -47,7 +47,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         await DbContext.AddAsync(new AuditLogItem()
         {
             ChannelId = "12345",
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.MinValue,
             Data = "{}",
             GuildId = "12345",
             ProcessedUserId = "12345",
@@ -75,7 +75,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var item = new AuditLogItem()
         {
             ChannelId = "12345",
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.MinValue,
             Data = "{}",
             GuildId = "12345",
             ProcessedUserId = "12345",
@@ -107,14 +107,13 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
     }
 
     [TestMethod]
-    [ExcludeFromCodeCoverage]
     public async Task Execute_WithData_Error()
     {
         await File.WriteAllBytesAsync("File.zip", new byte[] { 0, 1, 6, 8, 6 });
         var item = new AuditLogItem()
         {
             ChannelId = "12345",
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.MinValue,
             Data = "{}",
             GuildId = "12345",
             ProcessedUserId = "12345",

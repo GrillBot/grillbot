@@ -10,6 +10,8 @@ using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -202,7 +204,8 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
                 Name = "ddddddd",
                 Duration = new() { From = int.MinValue, To = int.MaxValue }
             },
-            WarningFilter = new() { Text = "T" }
+            WarningFilter = new() { Text = "T" },
+            Ids = string.Join(", ", Enumerable.Range(0, 1000).Select(o => o.ToString()))
         };
 
         static AuditLogItem createItem(object data, AuditLogItemType type)
@@ -325,5 +328,15 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
         var result = await AdminController.GetFileContentAsync(12345, 123, CancellationToken.None);
         CheckResult<FileContentResult>(result);
+    }
+
+    [TestMethod]
+    public void AuditLogListParams_ModelStateValidation()
+    {
+        var @params = new AuditLogListParams() { Ids = "0,1,3;" };
+        var validationContext = new ValidationContext(@params);
+
+        var result = @params.Validate(validationContext).ToList();
+        Assert.AreEqual(1, result.Count);
     }
 }

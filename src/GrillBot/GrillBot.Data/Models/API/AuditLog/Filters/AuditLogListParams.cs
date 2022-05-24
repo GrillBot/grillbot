@@ -6,11 +6,12 @@ using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class AuditLogListParams : IQueryableModel<AuditLogItem>
+public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObject
 {
     [DiscordId]
     public string GuildId { get; set; }
@@ -32,6 +33,11 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
     public ExecutionFilter InteractionFilter { get; set; }
     public ExecutionFilter JobFilter { get; set; }
     public ApiRequestFilter ApiRequestFilter { get; set; }
+
+    /// <summary>
+    /// Ids of records. Only number values, separated by ";".
+    /// </summary>
+    public string Ids { get; set; }
 
     /// <summary>
     /// Available: Guild, ProcessedUser, Type, Channel, CreatedAt.
@@ -89,6 +95,17 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
         if (!string.IsNullOrEmpty(ChannelId))
             query = query.Where(o => o.ChannelId == ChannelId);
 
+        if (!string.IsNullOrEmpty(Ids))
+        {
+            var ids = Ids
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(o => long.Parse(o))
+                .Where(o => o > 0)
+                .ToList();
+
+            query = query.Where(o => ids.Contains(o.Id));
+        }
+
         return query;
     }
 
@@ -130,5 +147,18 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>
             return sortQuery.ThenByDescending(o => o.Id);
         else
             return sortQuery.ThenBy(o => o.Id);
+    }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!string.IsNullOrEmpty(Ids))
+        {
+            var items = Ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (!long.TryParse(items[i], out var _))
+                    yield return new ValidationResult($"ID[{i}] is not number.", new[] { $"{nameof(Ids)}[{i}]" });
+            }
+        }
     }
 }

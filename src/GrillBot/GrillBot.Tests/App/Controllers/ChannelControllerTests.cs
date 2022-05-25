@@ -3,7 +3,7 @@ using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Channels;
-using GrillBot.App.Services.MessageCache;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
@@ -37,7 +37,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
 
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var messageCache = new MessageCache(discordClient, initManager, CacheBuilder);
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var mapper = AutoMapperHelper.CreateMapper();
         var fileStorage = FileStorageHelper.Create(configuration);

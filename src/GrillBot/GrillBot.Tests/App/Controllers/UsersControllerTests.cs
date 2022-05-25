@@ -4,8 +4,8 @@ using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Channels;
 using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.DirectApi;
-using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.User;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Help;
@@ -42,7 +42,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var commandsService = DiscordHelper.CreateCommandsService();
         var configuration = ConfigurationHelper.CreateConfiguration();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var messageCache = new MessageCache(discordClient, initManager, CacheBuilder);
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder);
         var mapper = AutoMapperHelper.CreateMapper();
         var channelsService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);

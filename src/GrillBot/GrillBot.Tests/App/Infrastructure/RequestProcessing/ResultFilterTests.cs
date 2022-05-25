@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.MessageCache;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Tests.Infrastructure;
@@ -37,7 +37,7 @@ public class ResultFilterTests : ActionFilterTest<ResultFilter>
 
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var messageCache = new MessageCache(discordClient, initManager, CacheBuilder);
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var storage = FileStorageHelper.Create(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);

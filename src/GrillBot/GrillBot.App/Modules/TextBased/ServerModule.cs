@@ -9,6 +9,7 @@ using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Modules.TextBased;
 

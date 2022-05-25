@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Data.Models.AuditLog;

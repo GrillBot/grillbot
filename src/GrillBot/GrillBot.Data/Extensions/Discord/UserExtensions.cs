@@ -16,15 +16,6 @@ static public class UserExtensions
     }
 
     static public bool IsUser(this IUser user) => !(user.IsBot || user.IsWebhook);
-
-    static public string GetFullName(this IUser user)
-    {
-        if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
-            return $"{sgu.Nickname} ({sgu.Username}#{sgu.Discriminator})";
-
-        return $"{user.Username}#{user.Discriminator}";
-    }
-
     static public bool HaveAnimatedAvatar(this IUser user) => user.AvatarId?.StartsWith("a_") ?? false;
     static public string CreateProfilePicFilename(this IUser user, int size) => $"{user.Id}_{user.AvatarId ?? user.Discriminator}_{size}.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
 

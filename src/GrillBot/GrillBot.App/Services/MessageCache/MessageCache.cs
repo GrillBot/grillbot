@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
 using GrillBot.Cache.Services;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.MessageCache;
 

@@ -14,4 +14,12 @@ public static class UserExtensions
         using var httpClient = new HttpClient();
         return await httpClient.GetByteArrayAsync(url);
     }
+
+    static public string GetFullName(this IUser user)
+    {
+        if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
+            return $"{sgu.Nickname} ({sgu.Username}#{sgu.Discriminator})";
+
+        return $"{user.Username}#{user.Discriminator}";
+    }
 }

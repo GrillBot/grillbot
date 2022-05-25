@@ -6,7 +6,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
 using System.Net;
 
-namespace GrillBot.Cache.Services.Managers.MessageCache;
+namespace GrillBot.Cache.Services.Managers;
 
 public class MessageCacheManager
 {

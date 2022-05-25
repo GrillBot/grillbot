@@ -1,6 +1,5 @@
 ﻿using GrillBot.Cache.Services;
 using GrillBot.Cache.Services.Managers;
-using GrillBot.Cache.Services.Managers.MessageCache;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.AutoReply;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Helper;
@@ -15,11 +16,11 @@ namespace GrillBot.App.Services.Channels;
 
 public class ChannelApiService : ServiceBase
 {
-    private MessageCache.MessageCache MessageCache { get; }
+    private MessageCacheManager MessageCache { get; }
     private AuditLogService AuditLogService { get; }
     private AutoReplyService AutoReplyService { get; }
 
-    public ChannelApiService(GrillBotContextFactory dbFactory, IMapper mapper, IDiscordClient client, MessageCache.MessageCache messageCache,
+    public ChannelApiService(GrillBotContextFactory dbFactory, IMapper mapper, IDiscordClient client, MessageCacheManager messageCache,
         AuditLogService auditLogService, AutoReplyService autoReplyService) : base(null, dbFactory, client, mapper)
     {
         MessageCache = messageCache;
@@ -46,7 +47,7 @@ public class ChannelApiService : ServiceBase
         if (guildChannel != null)
         {
             result = Mapper.Map(guildChannel, result);
-            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: entity.ChannelId.ToUlong());
+            result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
         }
 
         if (result.FirstMessageAt == DateTime.MinValue) result.FirstMessageAt = null;
@@ -83,7 +84,7 @@ public class ChannelApiService : ServiceBase
         if (guildChannel != null)
         {
             result = Mapper.Map(guildChannel, result);
-            result.CachedMessagesCount = await MessageCache.GetMessagesCountAsync(channelId: channel.ChannelId.ToUlong());
+            result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
         }
 
         return result;
@@ -127,15 +128,18 @@ public class ChannelApiService : ServiceBase
 
     public async Task ClearCacheAsync(ulong guildId, ulong channelId, ClaimsPrincipal user)
     {
-        var clearedCount = MessageCache.ClearChannel(channelId);
-
         var guild = await DcClient.GetGuildAsync(guildId);
+        var channel = await guild?.GetTextChannelAsync(channelId);
+
+        if (channel == null)
+            return;
+
+        var clearedCount = MessageCache.ClearAllMessagesFromChannel(channel);
+
         var auditLogItem = new AuditLogDataWrapper(
             AuditLogItemType.Info,
             $"Byla manuálně smazána cache zpráv kanálu. Smazaných zpráv: {clearedCount}",
-            guild,
-            guild == null ? null : await guild.GetTextChannelAsync(channelId),
-            await DcClient.FindUserAsync(user.GetUserId())
+            guild, channel, await DcClient.FindUserAsync(user.GetUserId())
         );
 
         await AuditLogService.StoreItemAsync(auditLogItem);

@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Helpers;
 
@@ -8,10 +9,10 @@ namespace GrillBot.App.Services.Channels;
 public class ChannelService : ServiceBase
 {
     private string CommandPrefix { get; }
-    private MessageCache.MessageCache MessageCache { get; }
+    private MessageCacheManager MessageCache { get; }
 
     public ChannelService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
-        MessageCache.MessageCache messageCache) : base(client, dbFactory, null, null)
+        MessageCacheManager messageCache) : base(client, dbFactory, null, null)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         MessageCache = messageCache;
@@ -67,7 +68,7 @@ public class ChannelService : ServiceBase
 
     private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> messageChannel)
     {
-        var msg = message.HasValue ? message.Value : MessageCache.GetMessage(message.Id);
+        var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, null, true);
         if (!messageChannel.HasValue || msg == null || messageChannel.Value is not SocketTextChannel channel) return;
 
         var guildId = channel.Guild.Id.ToString();
@@ -136,7 +137,7 @@ public class ChannelService : ServiceBase
         var mostActiveChannels = await GetTopMostActiveChannelsOfUserAsync(loggedUser, guild, 10, cancellationToken);
         foreach (var channel in mostActiveChannels)
         {
-            lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, true, cancellationToken);
+            lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, true);
             if (lastMessage != null) return lastMessage;
         }
 
@@ -147,7 +148,7 @@ public class ChannelService : ServiceBase
             .FirstOrDefault() as IUserMessage;
     }
 
-    private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryDownload, CancellationToken cancellationToken = default)
+    private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryDownload)
     {
         var lastMessage = new[]
         {
@@ -158,8 +159,8 @@ public class ChannelService : ServiceBase
         if (lastMessage == null && canTryDownload)
         {
             // Try reload cache and try find message.
-            await MessageCache.DownloadLatestFromChannelAsync(channel, cancellationToken);
-            return await TryFindLastMessageFromUserAsync(channel, loggedUser, false, cancellationToken);
+            await MessageCache.DownloadMessagesAsync(channel);
+            return await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
         }
 
         return lastMessage as IUserMessage;

@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Services.Emotes;
@@ -7,11 +8,11 @@ namespace GrillBot.App.Services.Emotes;
 public partial class EmoteService : ServiceBase
 {
     private string CommandPrefix { get; }
-    private MessageCache.MessageCache MessageCache { get; }
+    private MessageCacheManager MessageCache { get; }
     private EmotesCacheService EmotesCacheService { get; }
 
     public EmoteService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
-        MessageCache.MessageCache messageCache, EmotesCacheService emotesCacheService) : base(client, dbFactory)
+        MessageCacheManager messageCache, EmotesCacheService emotesCacheService) : base(client, dbFactory)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         EmotesCacheService = emotesCacheService;
@@ -75,7 +76,7 @@ public partial class EmoteService : ServiceBase
         var supportedEmotes = EmotesCacheService.GetSupportedEmotes();
         if (supportedEmotes.Count == 0) return;
 
-        var msg = message.HasValue ? message.Value : MessageCache.GetMessage(message.Id);
+        var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, null, true);
         if (msg is not IUserMessage userMessage) return;
         if (userMessage.IsCommand(DiscordClient.CurrentUser, CommandPrefix)) return;
 
@@ -109,7 +110,7 @@ public partial class EmoteService : ServiceBase
         if (reaction.Emote is not Emote emote) return;
         if (!supportedEmotes.Any(o => o.Item1.IsEqual(emote))) return;
 
-        var msg = message.HasValue ? message.Value : await MessageCache.GetMessageAsync(channel.Value, message.Id);
+        var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, channel.Value);
         var reactionUser = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;
 
         if (msg == null) return;

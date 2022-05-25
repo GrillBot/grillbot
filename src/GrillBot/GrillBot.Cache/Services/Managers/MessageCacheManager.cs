@@ -48,6 +48,7 @@ public class MessageCacheManager
             if (!InitManager.Get() || LoadedChannels.Contains(message.Channel.Id)) return;
 
             await DownloadMessagesAsync(message.Channel); // Download 100 latest messages.
+            LoadedChannels.Add(message.Channel.Id);
         }
         finally
         {
@@ -190,6 +191,13 @@ public class MessageCacheManager
         }
     }
 
+    public async Task<int> GetCachedMessagesCount(IChannel channel)
+    {
+        using var cache = CacheBuilder.CreateRepository();
+
+        return await cache.MessageIndexRepository.GetMessagesCountAsync(channelId: channel.Id);
+    }
+
     public async Task<IMessage?> GetAsync(ulong messageId, IMessageChannel channel, bool includeRemoved = false)
     {
         await Semaphore.WaitAsync();
@@ -213,6 +221,30 @@ public class MessageCacheManager
             }
 
             return null;
+        }
+        finally
+        {
+            Semaphore.Release();
+        }
+    }
+
+    public async Task<IMessage?> GetLastMessageAsync(IChannel? channel = null, IUser? author = null, IGuild? guild = null)
+    {
+        await Semaphore.WaitAsync();
+
+        try
+        {
+            using var cache = CacheBuilder.CreateRepository();
+
+            var indexes = await cache.MessageIndexRepository.GetMessagesAsync(author?.Id ?? 0, channel?.Id ?? 0, guild?.Id ?? 0);
+            if (indexes.Count == 0) return null;
+
+            return indexes
+                .Select(index => index.MessageId.ToUlong())
+                .Where(id => !DeletedMessages.Contains(id))
+                .Select(id => Messages[id])
+                .OrderByDescending(o => o.Id)
+                .FirstOrDefault();
         }
         finally
         {

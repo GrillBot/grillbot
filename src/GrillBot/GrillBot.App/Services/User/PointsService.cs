@@ -17,13 +17,13 @@ public class PointsService : ServiceBase
     private IConfiguration Configuration { get; }
     private Random Random { get; }
     private FileStorageFactory FileStorageFactory { get; }
-    private MessageCache.MessageCache MessageCache { get; }
+    private MessageCacheManager MessageCache { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
 
     private MagickImage TrophyImage { get; }
 
     public PointsService(DiscordSocketClient client, GrillBotContextFactory dbFactory, IConfiguration configuration,
-        FileStorageFactory fileStorageFactory, MessageCache.MessageCache messageCache, RandomizationService randomizationService,
+        FileStorageFactory fileStorageFactory, MessageCacheManager messageCache, RandomizationService randomizationService,
         ProfilePictureManager profilePictureManager) : base(client, dbFactory)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
@@ -94,7 +94,7 @@ public class PointsService : ServiceBase
         if (user?.IsUser() != true) return;
 
         int argPos = 0;
-        var msg = message.HasValue ? message.Value : (await MessageCache.GetMessageAsync(textChannel, message.Id)) as IUserMessage;
+        var msg = message.HasValue ? message.Value : (await MessageCache.GetAsync(message.Id, textChannel)) as IUserMessage;
         if (!CanIncrement(msg)) return;
         if (msg.ReferencedMessage?.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix) == true) return;
 

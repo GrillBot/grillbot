@@ -49,9 +49,6 @@ public static class Extensions
             .AddSingleton<Logging.LoggingService>();
 
         services
-            .AddSingleton<MessageCache.MessageCache>();
-
-        services
             .AddSingleton<Permissions.PermissionsCleaner>()
             .AddSingleton<Permissions.PermissionsService>();
 

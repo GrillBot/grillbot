@@ -7,7 +7,6 @@ using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Birthday;
 using GrillBot.App.Services.Discord;
-using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Unverify;
 using GrillBot.App.Services.User;
@@ -166,7 +165,7 @@ public class Startup
         {
             q.UseMicrosoftDependencyInjectionJobFactory();
 
-            q.AddTriggeredJob<MessageCacheCheckCron>(Configuration, "Discord:MessageCache:Period");
+            q.AddTriggeredJob<MessageCacheJob>(Configuration, "Discord:MessageCache:Period");
             q.AddTriggeredJob<AuditLogClearingJob>(Configuration, "AuditLog:CleaningCron");
             q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
             q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron", true);

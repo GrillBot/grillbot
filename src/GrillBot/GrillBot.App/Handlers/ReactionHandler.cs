@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Logging;
-using GrillBot.App.Services.MessageCache;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Handlers;
@@ -10,18 +10,18 @@ namespace GrillBot.App.Handlers;
 public class ReactionHandler : ServiceBase
 {
     private IEnumerable<ReactionEventHandler> EventHandlers { get; }
-    private MessageCache MessageCache { get; }
+    private MessageCacheManager MessageCache { get; }
     private LoggingService LoggingService { get; }
     private InitManager InitManager { get; }
 
     public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers,
-        MessageCache messageCache, InitManager initManager, LoggingService loggingService) : base(client, null)
+        MessageCacheManager messageCacheManager, InitManager initManager, LoggingService loggingService) : base(client, null)
     {
         DiscordClient.ReactionAdded += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added, channel);
         DiscordClient.ReactionRemoved += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed, channel);
 
         EventHandlers = eventHandlers;
-        MessageCache = messageCache;
+        MessageCache = messageCacheManager;
         LoggingService = loggingService;
         InitManager = initManager;
     }
@@ -33,7 +33,7 @@ public class ReactionHandler : ServiceBase
         var messageChannel = await channel.GetOrDownloadAsync();
         if (messageChannel == null) return;
 
-        var msg = (message.HasValue ? message.Value : await MessageCache.GetMessageAsync(messageChannel, message.Id) as IUserMessage);
+        var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, messageChannel) as IUserMessage;
         if (msg == null) return;
 
         var user = reaction.User.IsSpecified ? reaction.User.Value : DiscordClient.GetUser(reaction.UserId);

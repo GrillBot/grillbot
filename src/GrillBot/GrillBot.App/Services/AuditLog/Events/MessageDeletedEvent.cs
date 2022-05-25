@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.FileStorage;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -9,11 +10,11 @@ public class MessageDeletedEvent : AuditEventBase
 {
     private Cacheable<IMessage, ulong> Message { get; }
     private Cacheable<IMessageChannel, ulong> Channel { get; }
-    private MessageCache.MessageCache MessageCache { get; }
+    private MessageCacheManager MessageCache { get; }
     private FileStorageFactory FileStorageFactory { get; }
 
     public MessageDeletedEvent(AuditLogService auditLogService, Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel,
-        MessageCache.MessageCache messageCache, FileStorageFactory fileStorageFactory) : base(auditLogService)
+        MessageCacheManager messageCache, FileStorageFactory fileStorageFactory) : base(auditLogService)
     {
         Message = message;
         Channel = channel;
@@ -27,10 +28,10 @@ public class MessageDeletedEvent : AuditEventBase
     public override async Task ProcessAsync()
     {
         var textChannel = Channel.Value as SocketTextChannel;
-        if ((Message.HasValue ? Message.Value : MessageCache.GetMessage(Message.Id, true)) is not IUserMessage deletedMessage) return;
+        if ((Message.HasValue ? Message.Value : await MessageCache.GetAsync(Message.Id, null, true)) is not IUserMessage deletedMessage) return;
 
         var timeLimit = DateTime.UtcNow.AddMinutes(-1);
-        var auditLog = (await textChannel.Guild.GetAuditLogsAsync(5, actionType: ActionType.MessageDeleted).FlattenAsync())
+        var auditLog = (await textChannel.Guild.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.MessageDeleted).FlattenAsync())
             .Where(o => o.CreatedAt.DateTime >= timeLimit)
             .FirstOrDefault(o =>
             {

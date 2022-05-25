@@ -3,6 +3,7 @@ using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
 using GrillBot.App.Services.FileStorage;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
@@ -14,7 +15,7 @@ namespace GrillBot.App.Services.AuditLog;
 public partial class AuditLogService : ServiceBase
 {
     public static JsonSerializerSettings JsonSerializerSettings { get; }
-    private MessageCache.MessageCache MessageCache { get; }
+    private MessageCacheManager MessageCache { get; }
     private FileStorageFactory FileStorageFactory { get; }
     private InitManager InitManager { get; }
 
@@ -31,11 +32,10 @@ public partial class AuditLogService : ServiceBase
         };
     }
 
-    public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
-        FileStorageFactory storageFactory, InitManager initManager)
-        : base(client, dbFactory)
+    public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCacheManager messageCache, FileStorageFactory storageFactory,
+        InitManager initManager) : base(client, dbFactory)
     {
-        MessageCache = cache;
+        MessageCache = messageCache;
         FileStorageFactory = storageFactory;
         InitManager = initManager;
 

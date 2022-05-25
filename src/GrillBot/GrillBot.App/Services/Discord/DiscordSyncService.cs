@@ -69,7 +69,7 @@ public class DiscordSyncService : ServiceBase
 
         DiscordClient.PresenceUpdated += (user, before, after) => RunAsync(
             () => Users.PresenceUpdatedAsync(user, before, after),
-            () => before.GetStatus() != after.GetStatus()
+            () => before != null && after != null && before.GetStatus() != after.GetStatus()
         );
     }
 

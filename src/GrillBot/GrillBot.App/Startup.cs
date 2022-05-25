@@ -32,8 +32,6 @@ namespace GrillBot.App;
 
 public class Startup
 {
-    private readonly string[] CorsOrigins = new[] { "https://grillbot.cloud", "https://public.grillbot.cloud", "http://localhost:4200", "https://localhost:4200" };
-
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
@@ -211,7 +209,10 @@ public class Startup
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();
 
-        app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().WithOrigins(CorsOrigins));
+        var corsOrigins = Configuration.GetSection("CORS:Origins").AsEnumerable()
+            .Select(o => o.Value).Where(o => !string.IsNullOrEmpty(o)).ToArray();
+        app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().WithOrigins(corsOrigins));
+
         app.UseResponseCaching();
         app.UseRouting();
         app.UseAuthorization();

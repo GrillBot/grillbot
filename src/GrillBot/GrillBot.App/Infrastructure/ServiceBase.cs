@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using GrillBot.App.Services.Discord;
 using GrillBot.Cache.Services;
 
 namespace GrillBot.App.Infrastructure;
@@ -12,17 +11,14 @@ public abstract class ServiceBase
     protected DiscordSocketClient DiscordClient { get; }
     protected IDiscordClient DcClient { get; }
     protected GrillBotContextFactory DbFactory { get; }
-    protected DiscordInitializationService InitializationService { get; }
     protected IMapper Mapper { get; }
     protected GrillBotCacheBuilder CacheBuilder { get; }
 
-    protected ServiceBase(DiscordSocketClient client, GrillBotContextFactory dbFactory = null,
-        DiscordInitializationService initializationService = null, IDiscordClient dcClient = null,
+    protected ServiceBase(DiscordSocketClient client, GrillBotContextFactory dbFactory = null, IDiscordClient dcClient = null,
         IMapper mapper = null, GrillBotCacheBuilder cacheBuilder = null)
     {
         DiscordClient = client;
         DbFactory = dbFactory;
-        InitializationService = initializationService;
         DcClient = dcClient;
         Mapper = mapper;
         CacheBuilder = cacheBuilder;

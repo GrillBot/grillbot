@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Discord;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Services;
 
@@ -9,16 +9,18 @@ namespace GrillBot.App.Services;
 public class BoosterService : ServiceBase
 {
     private IConfiguration Configuration { get; }
+    private InitManager InitManager { get; }
 
     public BoosterService(DiscordSocketClient client, GrillBotContextFactory dbFactory,
-        IConfiguration configuration, DiscordInitializationService initializationService) : base(client, dbFactory, initializationService)
+        IConfiguration configuration, InitManager initManager) : base(client, dbFactory)
     {
         Configuration = configuration;
+        InitManager = initManager;
 
         DiscordClient.GuildMemberUpdated += (before, after) =>
         {
             if (!before.HasValue) return Task.CompletedTask;
-            if (!InitializationService.Get()) return Task.CompletedTask;
+            if (!InitManager.Get()) return Task.CompletedTask;
 
             if (!before.Value.Roles.SequenceEqual(after.Roles))
                 return OnGuildMemberUpdatedAsync(before.Value, after);

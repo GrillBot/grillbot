@@ -27,6 +27,7 @@ using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;
+using GrillBot.Common;
 
 namespace GrillBot.App;
 
@@ -75,6 +76,7 @@ public class Startup
         var discordClient = new DiscordSocketClient(discordConfig);
 
         services
+            .AddCommonManagers()
             .Configure<ApiBehaviorOptions>(opt => opt.SuppressModelStateInvalidFilter = true)
             .AddSingleton(discordClient)
             .AddSingleton<IDiscordClient>(discordClient)

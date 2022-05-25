@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
 using GrillBot.App.Services.Suggestion;
+using GrillBot.Common.Managers;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -23,17 +23,17 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandService, loggerFactory, configuration, DbFactory, interactionService);
-        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
+        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var messageCache = new MessageCache(discordClient, initManager, CacheBuilder);
         var fileStorage = FileStorageHelper.Create(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
         SessionService = new SuggestionSessionService();
         var emoteSuggestionService = new EmoteSuggestionService(SessionService, DbFactory);
         var featureSuggestionService = new FeatureSuggestionService(SessionService, configuration, DbFactory);
         var suggestionService = new SuggestionService(emoteSuggestionService, featureSuggestionService, dcClient, SessionService);
 
-        initializationService.Set(true);
-        return new SuggestionJob(loggingService, auditLogService, discordClient, initializationService, suggestionService, DbFactory);
+        initManager.Set(true);
+        return new SuggestionJob(loggingService, auditLogService, discordClient, initManager, suggestionService, DbFactory);
     }
 
     [TestMethod]

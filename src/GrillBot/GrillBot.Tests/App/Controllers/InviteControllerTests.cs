@@ -1,12 +1,11 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Tests.Infrastructure;
-using GrillBot.Tests.Infrastructure.Cache;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -20,12 +19,12 @@ public class InviteControllerTests : ControllerTest<InviteController>
     protected override InviteController CreateController(IServiceProvider provider)
     {
         var discordClient = DiscordHelper.CreateClient();
-        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
+        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var messageCache = new MessageCache(discordClient, initManager, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var mapper = AutoMapperHelper.CreateMapper();
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
         var service = new InviteService(discordClient, DbFactory, auditLogService, mapper);
 
         return new InviteController(service);

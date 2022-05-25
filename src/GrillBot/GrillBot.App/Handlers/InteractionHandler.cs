@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Handlers;
 
@@ -11,13 +12,15 @@ public class InteractionHandler : ServiceBase
     private InteractionService InteractionService { get; }
     private IServiceProvider Provider { get; }
     private AuditLogService AuditLogService { get; }
+    private InitManager InitManager { get; }
 
     public InteractionHandler(DiscordSocketClient client, GrillBotContextFactory dbFactory, IServiceProvider provider,
-        InteractionService interactionService, DiscordInitializationService initializationService, AuditLogService auditLogService) : base(client, dbFactory, initializationService)
+        InteractionService interactionService, InitManager initManager, AuditLogService auditLogService) : base(client, dbFactory)
     {
         Provider = provider;
         InteractionService = interactionService;
         AuditLogService = auditLogService;
+        InitManager = initManager;
 
         DiscordClient.InteractionCreated += HandleInteractionAsync;
         InteractionService.SlashCommandExecuted += OnCommandExecutedAsync;
@@ -29,7 +32,7 @@ public class InteractionHandler : ServiceBase
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)
     {
-        if (!InitializationService.Get()) return;
+        if (!InitManager.Get()) return;
 
         var context = new SocketInteractionContext(DiscordClient, interaction);
         CommandsPerformanceCounter.StartTask(context);

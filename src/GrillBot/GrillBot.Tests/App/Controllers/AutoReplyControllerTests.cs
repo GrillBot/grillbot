@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.AutoReply;
-using GrillBot.App.Services.Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.AutoReply;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -16,9 +16,8 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var discordClient = DiscordHelper.CreateClient();
-        var logger = LoggingHelper.CreateLogger<DiscordInitializationService>();
-        var initializationService = new DiscordInitializationService(logger);
-        var service = new AutoReplyService(configuration, discordClient, DbFactory, initializationService);
+        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var service = new AutoReplyService(configuration, discordClient, DbFactory, initManager);
         var mapper = AutoMapperHelper.CreateMapper();
         var apiService = new AutoReplyApiService(service, DbFactory, mapper);
 

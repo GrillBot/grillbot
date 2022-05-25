@@ -3,6 +3,7 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Handlers;
 
@@ -13,14 +14,16 @@ public class CommandHandler : ServiceBase
     private IServiceProvider Provider { get; }
     private IConfiguration Configuration { get; }
     private AuditLogService AuditLogService { get; }
+    private InitManager InitManager { get; }
 
     public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IConfiguration configuration,
-        AuditLogService auditLogService, DiscordInitializationService initializationService) : base(client, initializationService: initializationService)
+        AuditLogService auditLogService, InitManager initManager) : base(client)
     {
         CommandService = commandService;
         Provider = provider;
         Configuration = configuration;
         AuditLogService = auditLogService;
+        InitManager = initManager;
 
         CommandService.CommandExecuted += OnCommandExecutedAsync;
         DiscordClient.MessageReceived += OnCommandTriggerTryAsync;
@@ -28,7 +31,7 @@ public class CommandHandler : ServiceBase
 
     private async Task OnCommandTriggerTryAsync(SocketMessage message)
     {
-        if (!InitializationService.Get()) return;
+        if (!InitManager.Get()) return;
         if (!message.TryLoadMessage(out SocketUserMessage userMessage)) return;
 
         var context = new SocketCommandContext(DiscordClient, userMessage);

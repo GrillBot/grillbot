@@ -14,7 +14,7 @@ public class EmotesCommandService : ServiceBase
     private IServiceProvider ServiceProvider { get; }
 
     public EmotesCommandService(IServiceProvider serviceProvider, GrillBotContextFactory dbFactory,
-        IDiscordClient dcClient) : base(null, dbFactory, null, dcClient)
+        IDiscordClient dcClient) : base(null, dbFactory, dcClient)
     {
         ServiceProvider = serviceProvider;
     }

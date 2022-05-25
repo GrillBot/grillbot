@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
+using GrillBot.Common.Managers;
 using Quartz;
 
 namespace GrillBot.App.Services.Suggestion;
@@ -14,8 +14,8 @@ public class SuggestionJob : Job
     private GrillBotContextFactory DbFactory { get; }
 
     public SuggestionJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        DiscordInitializationService initializationService, SuggestionService suggestionService, GrillBotContextFactory dbFactory)
-        : base(loggingService, auditLogService, discordClient, initializationService)
+        InitManager initManager, SuggestionService suggestionService, GrillBotContextFactory dbFactory)
+        : base(loggingService, auditLogService, discordClient, initManager)
     {
         SuggestionService = suggestionService;
         DbFactory = dbFactory;

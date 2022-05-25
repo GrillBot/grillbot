@@ -11,7 +11,7 @@ public class SuggestionService : ServiceBase
     public SuggestionSessionService Sessions { get; }
 
     public SuggestionService(EmoteSuggestionService emoteSuggestionService, FeatureSuggestionService featureSuggestionService,
-        IDiscordClient discordClient, SuggestionSessionService suggestionSessionService) : base(null, null, null, discordClient)
+        IDiscordClient discordClient, SuggestionSessionService suggestionSessionService) : base(null, null, discordClient)
     {
         Emotes = emoteSuggestionService;
         Features = featureSuggestionService;

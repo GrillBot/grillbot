@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Handlers;
 
@@ -12,9 +12,10 @@ public class ReactionHandler : ServiceBase
     private IEnumerable<ReactionEventHandler> EventHandlers { get; }
     private MessageCache MessageCache { get; }
     private LoggingService LoggingService { get; }
+    private InitManager InitManager { get; }
 
     public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers,
-        MessageCache messageCache, DiscordInitializationService initializationService, LoggingService loggingService) : base(client, null, initializationService)
+        MessageCache messageCache, InitManager initManager, LoggingService loggingService) : base(client, null)
     {
         DiscordClient.ReactionAdded += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added, channel);
         DiscordClient.ReactionRemoved += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed, channel);
@@ -22,11 +23,12 @@ public class ReactionHandler : ServiceBase
         EventHandlers = eventHandlers;
         MessageCache = messageCache;
         LoggingService = loggingService;
+        InitManager = initManager;
     }
 
     private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, SocketReaction reaction, ReactionEvents @event, Cacheable<IMessageChannel, ulong> channel)
     {
-        if (!InitializationService.Get()) return;
+        if (!InitManager.Get()) return;
 
         var messageChannel = await channel.GetOrDownloadAsync();
         if (messageChannel == null) return;

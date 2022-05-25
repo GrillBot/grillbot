@@ -3,12 +3,11 @@ using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Channels;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Tests.Infrastructure;
-using GrillBot.Tests.Infrastructure.Cache;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -37,13 +36,13 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
             .Build();
 
         var discordClient = DiscordHelper.CreateClient();
-        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
+        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var messageCache = new MessageCache(discordClient, initManager, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var mapper = AutoMapperHelper.CreateMapper();
         var fileStorage = FileStorageHelper.Create(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initializationService);
-        var autoReplyService = new AutoReplyService(configuration, discordClient, DbFactory, initializationService);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
+        var autoReplyService = new AutoReplyService(configuration, discordClient, DbFactory, initManager);
         var apiService = new ChannelApiService(DbFactory, mapper, dcClient, messageCache, auditLogService, autoReplyService);
 
         return new ChannelController(apiService);

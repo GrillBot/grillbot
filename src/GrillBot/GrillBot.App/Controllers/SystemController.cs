@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.Discord;
+﻿using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -16,14 +16,14 @@ public class SystemController : Controller
 {
     private IWebHostEnvironment Environment { get; }
     private DiscordSocketClient DiscordClient { get; }
-    private DiscordInitializationService InitializationService { get; }
+    private InitManager InitManager { get; }
 
     public SystemController(IWebHostEnvironment environment, DiscordSocketClient discordClient,
-        DiscordInitializationService initializationService)
+        InitManager initManager)
     {
         Environment = environment;
         DiscordClient = discordClient;
-        InitializationService = initializationService;
+        InitManager = initManager;
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public class SystemController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult<DiagnosticsInfo> GetDiagnostics()
     {
-        var data = new DiagnosticsInfo(Environment.EnvironmentName, DiscordClient, InitializationService.Get());
+        var data = new DiagnosticsInfo(Environment.EnvironmentName, DiscordClient, InitManager.Get());
         return Ok(data);
     }
 
@@ -46,7 +46,7 @@ public class SystemController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult ChangeBotStatus(bool isActive)
     {
-        InitializationService.Set(isActive);
+        InitManager.Set(isActive);
         return Ok();
     }
 }

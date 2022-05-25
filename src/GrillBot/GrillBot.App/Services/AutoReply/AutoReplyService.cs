@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Discord;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Text.RegularExpressions;
@@ -16,18 +16,21 @@ public class AutoReplyService : ServiceBase
     private List<AutoReplyItem> Messages { get; }
     private SemaphoreSlim Semaphore { get; }
 
+    private InitManager InitManager { get; }
+
     public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotContextFactory dbFactory,
-        DiscordInitializationService initializationService) : base(discordClient, dbFactory, initializationService)
+        InitManager initManager) : base(discordClient, dbFactory)
     {
         Prefix = configuration["Discord:Commands:Prefix"];
         Messages = new List<AutoReplyItem>();
         DisabledChannels = new List<ulong>();
         Semaphore = new(1);
+        InitManager = initManager;
 
         DiscordClient.Ready += () => InitAsync();
         DiscordClient.MessageReceived += (message) =>
         {
-            if (!InitializationService.Get()) return Task.CompletedTask;
+            if (!InitManager.Get()) return Task.CompletedTask;
             if (!message.TryLoadMessage(out var userMessage)) return Task.CompletedTask;
             if (userMessage.IsCommand(DiscordClient.CurrentUser, Prefix)) return Task.CompletedTask;
             if (DisabledChannels.Contains(message.Channel.Id)) return Task.CompletedTask;

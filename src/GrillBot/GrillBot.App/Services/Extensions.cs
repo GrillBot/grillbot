@@ -26,7 +26,6 @@ public static class Extensions
             .AddSingleton<DirectApi.DirectApiService>();
 
         services
-            .AddSingleton<Discord.DiscordInitializationService>()
             .AddSingleton<Discord.DiscordSyncService>();
 
         services

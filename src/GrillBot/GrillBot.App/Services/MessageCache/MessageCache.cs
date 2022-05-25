@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Discord;
 using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.MessageCache;
 
@@ -13,17 +13,19 @@ public partial class MessageCache : ServiceBase
     private ConcurrentDictionary<ulong, CachedMessage> Cache { get; }
     private ConcurrentBag<ulong> InitializedChannels { get; }
     private static SemaphoreSlim IndexLock { get; }
+    private InitManager InitManager { get; }
 
     static MessageCache()
     {
         IndexLock = new SemaphoreSlim(1);
     }
 
-    public MessageCache(DiscordSocketClient client, DiscordInitializationService initializationService,
-        GrillBotCacheBuilder cacheBuilder) : base(client, null, initializationService, null, null, cacheBuilder)
+    public MessageCache(DiscordSocketClient client, InitManager initManager,
+        GrillBotCacheBuilder cacheBuilder) : base(client, null, null, null, cacheBuilder)
     {
         Cache = new ConcurrentDictionary<ulong, CachedMessage>();
         InitializedChannels = new ConcurrentBag<ulong>();
+        InitManager = initManager;
 
         DiscordClient.MessageDeleted += (message, channel) =>
         {
@@ -38,7 +40,7 @@ public partial class MessageCache : ServiceBase
 
     private async Task OnMessageReceived(SocketMessage message)
     {
-        if (!InitializationService.Get()) return;
+        if (!InitManager.Get()) return;
         if (InitializedChannels.Contains(message.Channel.Id)) return;
 
         await Task.WhenAll(

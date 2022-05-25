@@ -8,9 +8,9 @@ public class InitManager
     private readonly object locker = new();
     private ILogger<InitManager> Logger { get; }
 
-    public InitManager(ILogger<InitManager> logger)
+    public InitManager(ILoggerFactory loggerFactory)
     {
-        Logger = logger;
+        Logger = loggerFactory.CreateLogger<InitManager>();
     }
 
     public void Set(bool initialized)

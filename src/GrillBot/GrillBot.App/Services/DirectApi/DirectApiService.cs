@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Discord;
 using GrillBot.Cache.Entity;
 using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.DirectApi;
 
@@ -12,14 +12,16 @@ namespace GrillBot.App.Services.DirectApi;
 public class DirectApiService : ServiceBase
 {
     private IConfiguration Configuration { get; }
+    private InitManager InitManager { get; }
 
     private List<ulong> AuthorizedChannelIds { get; }
     private List<ulong> AuthorizedServices { get; }
 
     public DirectApiService(DiscordSocketClient client, IConfiguration configuration,
-        DiscordInitializationService initializationService, GrillBotCacheBuilder cacheBuilder) : base(client, null, initializationService, null, null, cacheBuilder)
+        InitManager initManager, GrillBotCacheBuilder cacheBuilder) : base(client, null, null, null, cacheBuilder)
     {
         Configuration = configuration.GetRequiredSection("Services");
+        InitManager = initManager;
 
         AuthorizedChannelIds = Configuration.AsEnumerable()
             .Where(o => o.Key.EndsWith(":AuthorizedChannelId"))
@@ -56,7 +58,7 @@ public class DirectApiService : ServiceBase
     }
 
     private bool CanReceiveMessage(SocketMessage message)
-        => InitializationService.Get() && AuthorizedServices.Contains(message.Author.Id) && message.Reference != null && message.Attachments.Count == 1 &&
+        => InitManager.Get() && AuthorizedServices.Contains(message.Author.Id) && message.Reference != null && message.Attachments.Count == 1 &&
         AuthorizedChannelIds.Contains(message.Channel.Id);
 
     public async Task<string> SendCommandAsync(string service, DirectMessageCommand command, CancellationToken cancellationToken = default)

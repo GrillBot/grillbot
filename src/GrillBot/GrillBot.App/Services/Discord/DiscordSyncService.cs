@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord.Synchronization;
+using GrillBot.Common.Managers;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Extensions;
 
@@ -8,14 +9,18 @@ namespace GrillBot.App.Services.Discord;
 [Initializable]
 public class DiscordSyncService : ServiceBase
 {
+    private InitManager InitManager { get; }
+
     private ChannelSynchronization Channels { get; }
     private UserSynchronization Users { get; }
     private GuildSynchronization Guilds { get; }
     private GuildUserSynchronization GuildUsers { get; }
 
-    public DiscordSyncService(DiscordSocketClient client, GrillBotContextFactory dbFactory, DiscordInitializationService initializationService)
-        : base(client, dbFactory, initializationService)
+    public DiscordSyncService(DiscordSocketClient client, GrillBotContextFactory dbFactory, InitManager initManager)
+        : base(client, dbFactory)
     {
+        InitManager = initManager;
+
         Channels = new ChannelSynchronization(DbFactory);
         Users = new UserSynchronization(DbFactory);
         Guilds = new GuildSynchronization(DbFactory);
@@ -70,7 +75,7 @@ public class DiscordSyncService : ServiceBase
 
     private async Task RunAsync(Func<Task> syncFunction, Func<bool> check = null)
     {
-        if (!InitializationService.Get()) return;
+        if (!InitManager.Get()) return;
         if (check != null && !check()) return;
         if (await CheckPendingMigrationsAsync()) return;
 

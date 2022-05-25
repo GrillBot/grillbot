@@ -1,7 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -18,12 +18,12 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     protected override AuditLogService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
+        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var messageCache = new MessageCache(discordClient, initManager, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var storage = FileStorageHelper.Create(configuration);
 
-        return new AuditLogService(discordClient, DbFactory, messageCache, storage, initializationService);
+        return new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
     }
 
     [TestMethod]

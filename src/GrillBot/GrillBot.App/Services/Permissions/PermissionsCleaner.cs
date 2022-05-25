@@ -6,7 +6,7 @@ namespace GrillBot.App.Services.Permissions;
 
 public class PermissionsCleaner : ServiceBase
 {
-    public PermissionsCleaner(IDiscordClient client) : base(null, null, null, client, null)
+    public PermissionsCleaner(IDiscordClient client) : base(null, null, client, null)
     {
     }
 

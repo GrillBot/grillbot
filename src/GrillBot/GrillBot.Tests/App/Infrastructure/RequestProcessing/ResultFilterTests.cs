@@ -1,14 +1,12 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.MessageCache;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Tests.Infrastructure;
-using GrillBot.Tests.Infrastructure.Cache;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
@@ -38,11 +36,11 @@ public class ResultFilterTests : ActionFilterTest<ResultFilter>
             .Build();
 
         var discordClient = DiscordHelper.CreateClient();
-        var initializationService = new DiscordInitializationService(LoggingHelper.CreateLogger<DiscordInitializationService>());
-        var messageCache = new MessageCache(discordClient, initializationService, CacheBuilder);
+        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var messageCache = new MessageCache(discordClient, initManager, CacheBuilder);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var storage = FileStorageHelper.Create(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initializationService);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
 
         return new ResultFilter(ApiRequest, auditLogService, client);
     }

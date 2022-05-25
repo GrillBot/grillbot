@@ -19,7 +19,7 @@ public class AuditLogApiService : ServiceBase
 
     private FileStorageFactory FileStorage { get; }
 
-    public AuditLogApiService(GrillBotContextFactory dbFactory, IMapper mapper, FileStorageFactory fileStorage) : base(null, dbFactory, null, null, mapper)
+    public AuditLogApiService(GrillBotContextFactory dbFactory, IMapper mapper, FileStorageFactory fileStorage) : base(null, dbFactory, null, mapper)
     {
         FileStorage = fileStorage;
     }

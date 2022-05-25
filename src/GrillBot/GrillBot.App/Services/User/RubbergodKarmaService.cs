@@ -10,7 +10,7 @@ public class RubbergodKarmaService : ServiceBase
 {
     private DirectApiService DirectApi { get; }
 
-    public RubbergodKarmaService(DirectApiService directApi, IDiscordClient client, IMapper mapper) : base(null, null, null, client, mapper)
+    public RubbergodKarmaService(DirectApiService directApi, IDiscordClient client, IMapper mapper) : base(null, null, client, mapper)
     {
         DirectApi = directApi;
     }

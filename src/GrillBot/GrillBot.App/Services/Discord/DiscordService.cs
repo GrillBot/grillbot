@@ -1,18 +1,12 @@
 ﻿using Discord.Commands;
 using Discord.Interactions;
 using Discord.Net;
-using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.AutoReply;
-using GrillBot.App.Services.CommandsHelp;
-using GrillBot.App.Services.Emotes;
 using GrillBot.App.Services.Logging;
-using GrillBot.App.Services.Reminder;
-using GrillBot.App.Services.User;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,21 +23,21 @@ public class DiscordService : IHostedService
     private IServiceProvider Provider { get; }
     private CommandService CommandService { get; }
     private IWebHostEnvironment Environment { get; }
-    private DiscordInitializationService InitializationService { get; }
+    private InitManager InitManager { get; }
     private LoggingService LoggingService { get; }
     private InteractionService InteractionService { get; }
     private AuditLogService AuditLogService { get; }
 
     public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-        LoggingService loggingService, IWebHostEnvironment webHostEnvironment, DiscordInitializationService initializationService,
-        InteractionService interactionService, AuditLogService auditLogService)
+        LoggingService loggingService, IWebHostEnvironment webHostEnvironment, InitManager initManager, InteractionService interactionService,
+        AuditLogService auditLogService)
     {
         DiscordSocketClient = client;
         Configuration = configuration;
         Provider = provider;
         CommandService = commandService;
         Environment = webHostEnvironment;
-        InitializationService = initializationService;
+        InitManager = initManager;
         LoggingService = loggingService;
         InteractionService = interactionService;
         AuditLogService = auditLogService;
@@ -74,7 +68,7 @@ public class DiscordService : IHostedService
                 }
             }
 
-            InitializationService.Set(true);
+            InitManager.Set(true);
         };
 
         CommandService.RegisterTypeReaders();

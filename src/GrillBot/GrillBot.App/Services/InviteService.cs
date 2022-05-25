@@ -19,7 +19,7 @@ public class InviteService : ServiceBase
     private AuditLogService AuditLogService { get; }
 
     public InviteService(DiscordSocketClient discordClient, GrillBotContextFactory dbFactory,
-        AuditLogService auditLogService, IMapper mapper) : base(discordClient, dbFactory, null, null, mapper)
+        AuditLogService auditLogService, IMapper mapper) : base(discordClient, dbFactory, null, mapper)
     {
         MetadataCache = new ConcurrentBag<InviteMetadata>();
         AuditLogService = auditLogService;

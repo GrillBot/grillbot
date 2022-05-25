@@ -2,9 +2,9 @@
 using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -16,6 +16,7 @@ public partial class AuditLogService : ServiceBase
     public static JsonSerializerSettings JsonSerializerSettings { get; }
     private MessageCache.MessageCache MessageCache { get; }
     private FileStorageFactory FileStorageFactory { get; }
+    private InitManager InitManager { get; }
 
     private Dictionary<ulong, DateTime> NextAllowedChannelUpdateEvent { get; } = new();
     private DateTime NextAllowedRoleUpdateEvent { get; set; }
@@ -31,11 +32,12 @@ public partial class AuditLogService : ServiceBase
     }
 
     public AuditLogService(DiscordSocketClient client, GrillBotContextFactory dbFactory, MessageCache.MessageCache cache,
-        FileStorageFactory storageFactory, DiscordInitializationService initializationService)
-        : base(client, dbFactory, initializationService)
+        FileStorageFactory storageFactory, InitManager initManager)
+        : base(client, dbFactory)
     {
         MessageCache = cache;
         FileStorageFactory = storageFactory;
+        InitManager = initManager;
 
         DiscordClient.UserLeft += (guild, user) => HandleEventAsync(new UserLeftEvent(this, guild, user));
         DiscordClient.UserJoined += user => HandleEventAsync(new UserJoinedEvent(this, user));
@@ -117,7 +119,7 @@ public partial class AuditLogService : ServiceBase
 
     private async Task<bool> CanExecuteEvent(Func<Task<bool>> eventSpecificCheck = null)
     {
-        if (!InitializationService.Get()) return false;
+        if (!InitManager.Get()) return false;
         if (eventSpecificCheck == null) return true;
 
         return await eventSpecificCheck();

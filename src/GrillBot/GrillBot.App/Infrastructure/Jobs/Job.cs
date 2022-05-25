@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Logging;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using Quartz;
@@ -13,8 +13,7 @@ public abstract class Job : IJob
     protected LoggingService LoggingService { get; }
     protected AuditLogService AuditLogService { get; }
     protected IDiscordClient DiscordClient { get; }
-
-    private DiscordInitializationService InitializationService { get; }
+    protected InitManager InitManager { get; }
 
     protected string JobName => GetType().Name;
 
@@ -22,15 +21,15 @@ public abstract class Job : IJob
         => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
 
     private bool CanRun
-        => !RequireInitialization || InitializationService.Get();
+        => !RequireInitialization || InitManager.Get();
 
     protected Job(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        DiscordInitializationService initializationService)
+        InitManager initManager)
     {
         LoggingService = loggingService;
         AuditLogService = auditLogService;
         DiscordClient = discordClient;
-        InitializationService = initializationService;
+        InitManager = initManager;
     }
 
     public abstract Task RunAsync(IJobExecutionContext context);

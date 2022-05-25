@@ -13,7 +13,7 @@ namespace GrillBot.App.Services.Unverify;
 public class UnverifyApiService : ServiceBase
 {
     public UnverifyApiService(GrillBotContextFactory dbFactory, IMapper mapper,
-        IDiscordClient discordClient) : base(null, dbFactory, null, discordClient, mapper)
+        IDiscordClient discordClient) : base(null, dbFactory, discordClient, mapper)
     {
     }
 

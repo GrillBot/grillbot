@@ -2,6 +2,7 @@
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Logging;
+using GrillBot.Common.Managers;
 using Quartz;
 using System.IO.Compression;
 using System.Xml.Linq;
@@ -15,8 +16,8 @@ public class AuditLogClearingJob : Job
     private FileStorageFactory FileStorage { get; }
 
     public AuditLogClearingJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        GrillBotContextFactory dbFactory, FileStorageFactory fileStorage, DiscordInitializationService initializationService)
-        : base(loggingService, auditLogService, discordClient, initializationService)
+        GrillBotContextFactory dbFactory, FileStorageFactory fileStorage, InitManager initManager)
+        : base(loggingService, auditLogService, discordClient, initManager)
     {
         FileStorage = fileStorage;
         DbFactory = dbFactory;

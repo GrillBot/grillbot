@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Services;
 

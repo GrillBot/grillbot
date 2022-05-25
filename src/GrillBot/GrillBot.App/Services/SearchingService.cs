@@ -2,7 +2,7 @@
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.User;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Common;

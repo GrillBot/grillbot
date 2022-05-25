@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Text.RegularExpressions;

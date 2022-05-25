@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Modules.Implementations.Emotes;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Emotes;

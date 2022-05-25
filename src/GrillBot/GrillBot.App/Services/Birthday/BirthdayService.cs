@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Services.Birthday;

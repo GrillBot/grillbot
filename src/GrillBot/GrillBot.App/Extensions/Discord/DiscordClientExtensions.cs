@@ -1,4 +1,5 @@
-﻿using GrillBot.Data.Extensions;
+﻿using GrillBot.Common.Extensions;
+using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Extensions.Discord;
 

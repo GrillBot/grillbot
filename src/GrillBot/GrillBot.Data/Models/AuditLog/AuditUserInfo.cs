@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using System;
 
 namespace GrillBot.Data.Models.AuditLog;

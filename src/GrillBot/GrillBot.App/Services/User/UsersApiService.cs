@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using System.Linq;
 using System.Security.Claims;
 
 namespace GrillBot.App.Services.User;

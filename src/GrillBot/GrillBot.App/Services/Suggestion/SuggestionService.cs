@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.Suggestion;

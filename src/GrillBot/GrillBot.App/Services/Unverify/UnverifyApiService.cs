@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using Org.BouncyCastle.Crypto;
 using System.Security.Claims;
 
 namespace GrillBot.App.Services.Unverify;

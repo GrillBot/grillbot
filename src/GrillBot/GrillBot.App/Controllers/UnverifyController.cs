@@ -9,7 +9,7 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Exceptions;
 using AutoMapper;
 using GrillBot.Data.Models.API.Guilds;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.App.Controllers;
 

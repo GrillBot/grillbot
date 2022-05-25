@@ -2,8 +2,8 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.AutoReply;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Helper;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;

@@ -1,6 +1,7 @@
 ﻿using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions;

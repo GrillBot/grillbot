@@ -2,9 +2,9 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Permissions;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;

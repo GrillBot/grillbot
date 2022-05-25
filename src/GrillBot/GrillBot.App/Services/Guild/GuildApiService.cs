@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Common;

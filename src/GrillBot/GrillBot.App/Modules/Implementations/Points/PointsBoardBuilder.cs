@@ -1,8 +1,6 @@
-﻿using GrillBot.App.Extensions.Discord;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Embeds;
-using GrillBot.Data.Extensions;
-using GrillBot.Data.Extensions.Discord;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.App.Modules.Implementations.Points;
 

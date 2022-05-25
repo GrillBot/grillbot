@@ -1,11 +1,10 @@
-﻿using AutoMapper;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.FileStorage;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 

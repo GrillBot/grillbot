@@ -1,5 +1,5 @@
 ﻿using GrillBot.Cache.Entity;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.App.Services.MessageCache;
 

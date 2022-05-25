@@ -2,8 +2,8 @@
 using GrillBot.App.Services.Discord;
 using GrillBot.Cache.Entity;
 using GrillBot.Cache.Services;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.DirectApi;
 
 namespace GrillBot.App.Services.DirectApi;

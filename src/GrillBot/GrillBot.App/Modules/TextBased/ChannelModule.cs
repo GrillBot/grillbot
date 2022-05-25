@@ -3,6 +3,7 @@ using GrillBot.App.Extensions.Discord;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Channels;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Enums;

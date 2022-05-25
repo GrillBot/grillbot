@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Extensions;
 using GrillBot.Database.Entity;
 

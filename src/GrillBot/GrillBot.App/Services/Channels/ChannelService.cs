@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Data.Helpers;
 
 namespace GrillBot.App.Services.Channels;

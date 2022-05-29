@@ -40,7 +40,8 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         await DbContext.AddAsync(new AuditLogItem()
         {
             Type = Database.Enums.AuditLogItemType.Command,
-            Id = 1
+            Id = 1,
+            Data = "{}"
         });
         await DbContext.SaveChangesAsync();
 
@@ -54,7 +55,8 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         await DbContext.AddAsync(new AuditLogItem()
         {
             Type = Database.Enums.AuditLogItemType.Command,
-            Id = 1
+            Id = 1,
+            Data = "{}"
         });
         await DbContext.SaveChangesAsync();
 
@@ -111,7 +113,8 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
             ToUser = GuildUser.FromDiscord(guild, user),
             ToUserId = user.Id.ToString(),
             Guild = Guild.FromDiscord(guild),
-            GuildId = guild.Id.ToString()
+            GuildId = guild.Id.ToString(),
+            Data = "{}"
         });
         await DbContext.SaveChangesAsync();
 
@@ -138,7 +141,8 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
             ToUser = GuildUser.FromDiscord(guild, user),
             ToUserId = user.Id.ToString(),
             Guild = Guild.FromDiscord(guild),
-            GuildId = guild.Id.ToString()
+            GuildId = guild.Id.ToString(),
+            Data = "{}"
         });
         await DbContext.SaveChangesAsync();
 

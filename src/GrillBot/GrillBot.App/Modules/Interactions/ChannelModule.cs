@@ -152,4 +152,12 @@ public class ChannelModule : Infrastructure.InteractionsModuleBase
         var components = ComponentsHelper.CreatePaginationComponents(0, pagesCount, "channelboard");
         await SetResponseAsync(embed: embed.Build(), components: components);
     }
+
+    [RequireSameUserAsAuthor]
+    [ComponentInteraction("channelboard:*", ignoreGroupNames: true)]
+    public async Task HandleChannelboardPaginationAsync(int page)
+    {
+        var handler = new ChannelboardPaginationHandler(Context.Client, DatabaseBuilder, page);
+        await handler.ProcessAsync(Context);
+    }
 }

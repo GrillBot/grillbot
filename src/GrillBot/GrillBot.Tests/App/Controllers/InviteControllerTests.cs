@@ -38,7 +38,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
         guild.Users.Add(new Database.Entity.GuildUser()
         {
             User = new Database.Entity.User() { Username = Consts.Username, Id = (Consts.UserId + 1).ToString(), Discriminator = Consts.Discriminator },
-            UsedInvite = new Database.Entity.Invite() { Code = Consts.InviteCode, CreatorId = Consts.UserId.ToString() }
+            UsedInvite = new Database.Entity.Invite() { Code = Consts.InviteCode, CreatorId = Consts.UserId.ToString(), GuildId = Consts.GuildId.ToString() }
         });
 
         await DbContext.Guilds.AddAsync(guild);

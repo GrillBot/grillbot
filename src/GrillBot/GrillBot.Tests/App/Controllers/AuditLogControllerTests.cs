@@ -45,7 +45,8 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         {
             Id = 12345,
             CreatedAt = DateTime.UtcNow,
-            Type = AuditLogItemType.Command
+            Type = AuditLogItemType.Command,
+            Data = ""
         });
         await DbContext.SaveChangesAsync();
 
@@ -153,7 +154,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         {
             ChannelId = Consts.ChannelId.ToString(),
             CreatedAt = DateTime.UtcNow,
-            Data = null,
+            Data = "",
             GuildId = Consts.GuildId.ToString(),
             ProcessedUserId = Consts.UserId.ToString(),
             Type = AuditLogItemType.Command
@@ -197,7 +198,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         {
             ChannelId = Consts.ChannelId.ToString(),
             CreatedAt = DateTime.UtcNow,
-            Data = null,
+            Data = "",
             GuildId = Consts.GuildId.ToString(),
             ProcessedUserId = Consts.UserId.ToString(),
             Type = AuditLogItemType.Command

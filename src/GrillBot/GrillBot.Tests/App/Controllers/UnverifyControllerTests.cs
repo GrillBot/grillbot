@@ -77,7 +77,8 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             GuildId = "1",
             FromUserId = "1",
             ToUserId = "1",
-            Id = 1
+            Id = 1,
+            Data = "{}"
         });
         await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify() { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await DbContext.SaveChangesAsync();
@@ -164,7 +165,8 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             GuildId = "1",
             FromUserId = "1",
             ToUserId = "1",
-            Id = 1
+            Id = 1,
+            Data = "{}"
         });
         await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify() { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await DbContext.SaveChangesAsync();
@@ -185,7 +187,8 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             GuildId = "1",
             FromUserId = "1",
             ToUserId = "1",
-            Id = 1
+            Id = 1,
+            Data = "{}"
         });
         await DbContext.SaveChangesAsync();
 
@@ -213,7 +216,8 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             GuildId = "1",
             FromUserId = "1",
             ToUserId = "1",
-            Id = 1
+            Id = 1,
+            Data = "{}"
         });
         await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify() { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await DbContext.SaveChangesAsync();

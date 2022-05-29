@@ -5,10 +5,10 @@ namespace GrillBot.App.Modules.Implementations.Channels;
 
 public class ChannelboardReactionHandler : ReactionEventHandler
 {
-    private GrillBotContextFactory DbFactory { get; }
+    private GrillBotDatabaseFactory DbFactory { get; }
     private DiscordSocketClient DiscordClient { get; }
 
-    public ChannelboardReactionHandler(GrillBotContextFactory dbFactory, DiscordSocketClient discordClient)
+    public ChannelboardReactionHandler(GrillBotDatabaseFactory dbFactory, DiscordSocketClient discordClient)
     {
         DbFactory = dbFactory;
         DiscordClient = discordClient;

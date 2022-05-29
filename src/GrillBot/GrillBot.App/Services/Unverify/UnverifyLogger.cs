@@ -8,7 +8,7 @@ namespace GrillBot.App.Services.Unverify
 {
     public class UnverifyLogger : ServiceBase
     {
-        public UnverifyLogger(DiscordSocketClient client, GrillBotContextFactory dbFactory) : base(client, dbFactory)
+        public UnverifyLogger(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory) : base(client, dbFactory)
         {
         }
 

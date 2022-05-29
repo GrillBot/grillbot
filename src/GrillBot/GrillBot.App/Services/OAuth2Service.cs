@@ -13,11 +13,11 @@ namespace GrillBot.App.Services;
 public class OAuth2Service
 {
     private IConfiguration Configuration { get; }
-    private GrillBotContextFactory DbFactory { get; }
+    private GrillBotDatabaseFactory DbFactory { get; }
     private LoggingService LoggingService { get; }
     private HttpClient HttpClient { get; }
 
-    public OAuth2Service(IConfiguration configuration, GrillBotContextFactory dbFactory, LoggingService loggingService,
+    public OAuth2Service(IConfiguration configuration, GrillBotDatabaseFactory dbFactory, LoggingService loggingService,
         IHttpClientFactory httpClientFactory)
     {
         Configuration = configuration.GetSection("Auth:OAuth2");

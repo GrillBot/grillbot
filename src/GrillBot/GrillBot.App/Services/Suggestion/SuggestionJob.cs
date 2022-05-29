@@ -11,10 +11,10 @@ namespace GrillBot.App.Services.Suggestion;
 public class SuggestionJob : Job
 {
     private SuggestionService SuggestionService { get; }
-    private GrillBotContextFactory DbFactory { get; }
+    private GrillBotDatabaseFactory DbFactory { get; }
 
     public SuggestionJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        InitManager initManager, SuggestionService suggestionService, GrillBotContextFactory dbFactory)
+        InitManager initManager, SuggestionService suggestionService, GrillBotDatabaseFactory dbFactory)
         : base(loggingService, auditLogService, discordClient, initManager)
     {
         SuggestionService = suggestionService;

@@ -10,10 +10,10 @@ namespace GrillBot.App.Services.User;
 [DisallowConcurrentExecution]
 public class OnlineUsersCleanJob : Job
 {
-    private GrillBotContextFactory DbFactory { get; }
+    private GrillBotDatabaseFactory DbFactory { get; }
 
     public OnlineUsersCleanJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        GrillBotContextFactory dbFactory, InitManager initManager) : base(loggingService, auditLogService, discordClient, initManager)
+        GrillBotDatabaseFactory dbFactory, InitManager initManager) : base(loggingService, auditLogService, discordClient, initManager)
     {
         DbFactory = dbFactory;
     }

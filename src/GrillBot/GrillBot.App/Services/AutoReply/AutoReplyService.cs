@@ -18,7 +18,7 @@ public class AutoReplyService : ServiceBase
 
     private InitManager InitManager { get; }
 
-    public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotContextFactory dbFactory,
+    public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotDatabaseFactory dbFactory,
         InitManager initManager) : base(discordClient, dbFactory)
     {
         Prefix = configuration["Discord:Commands:Prefix"];
@@ -74,7 +74,7 @@ public class AutoReplyService : ServiceBase
         try
         {
             var matched = Messages
-                .Find(o => !o.IsDisabled && Regex.IsMatch(message.Content, o.Template, o.RegexOptions));
+                .Find(o => !o.HaveFlags(AutoReplyFlags.Disabled) && Regex.IsMatch(message.Content, o.Template, o.RegexOptions));
 
             if (matched == null) return;
             await message.Channel.SendMessageAsync(matched.Reply);

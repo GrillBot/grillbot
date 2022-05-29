@@ -16,7 +16,7 @@ public class EmoteSuggestionService : ServiceBase
 {
     private SuggestionSessionService SessionService { get; }
 
-    public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotContextFactory dbFactory) : base(null, dbFactory, null, null)
+    public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotDatabaseFactory dbFactory) : base(null, dbFactory, null, null)
     {
         SessionService = sessionService;
     }

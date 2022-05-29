@@ -21,7 +21,7 @@ public class UnverifyService : ServiceBase
     private PermissionsCleaner PermissionsCleaner { get; }
 
     public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator,
-        UnverifyLogger logger, GrillBotContextFactory dbFactory, LoggingService logging, PermissionsCleaner permissionsCleaner) : base(client, dbFactory)
+        UnverifyLogger logger, GrillBotDatabaseFactory dbFactory, LoggingService logging, PermissionsCleaner permissionsCleaner) : base(client, dbFactory)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;

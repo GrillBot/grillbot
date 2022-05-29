@@ -8,7 +8,7 @@ public class AutoReplyApiService : ServiceBase
 {
     private AutoReplyService AutoReplyService { get; }
 
-    public AutoReplyApiService(AutoReplyService autoReplyService, GrillBotContextFactory dbFactory, IMapper mapper) : base(null, dbFactory, null, mapper)
+    public AutoReplyApiService(AutoReplyService autoReplyService, GrillBotDatabaseFactory dbFactory, IMapper mapper) : base(null, dbFactory, null, mapper)
     {
         AutoReplyService = autoReplyService;
     }

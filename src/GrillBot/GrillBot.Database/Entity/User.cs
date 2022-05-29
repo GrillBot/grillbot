@@ -15,7 +15,7 @@ public class User
     [Key]
     [StringLength(30)]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     [Required]
     public int Flags { get; set; } = 0;
@@ -25,16 +25,16 @@ public class User
     [NotMapped]
     public bool BirthdayAcceptYear => Birthday != null && Birthday.Value.Year != 1;
 
-    public string Note { get; set; }
+    public string? Note { get; set; }
 
     [StringLength(32)]
     [MinLength(2)]
     [Required]
-    public string Username { get; set; }
+    public string Username { get; set; } = null!;
 
     [Required]
     [StringLength(4)]
-    public string Discriminator { get; set; }
+    public string Discriminator { get; set; } = null!;
 
     public UserStatus Status { get; set; }
 

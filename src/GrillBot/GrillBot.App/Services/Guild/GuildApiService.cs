@@ -12,7 +12,7 @@ namespace GrillBot.App.Services.Guild;
 
 public class GuildApiService : ServiceBase
 {
-    public GuildApiService(GrillBotContextFactory dbFactory, DiscordSocketClient client, IMapper mapper,
+    public GuildApiService(GrillBotDatabaseFactory dbFactory, DiscordSocketClient client, IMapper mapper,
         GrillBotCacheBuilder cacheBuilder) : base(client, dbFactory, null, mapper, cacheBuilder)
     {
     }

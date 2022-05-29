@@ -15,9 +15,9 @@ namespace GrillBot.App.Modules.TextBased;
 [RequireUserPerms(ContextType.Guild)]
 public class ChannelModule : Infrastructure.ModuleBase
 {
-    private GrillBotContextFactory DbFactory { get; }
+    private GrillBotDatabaseFactory DbFactory { get; }
 
-    public ChannelModule(GrillBotContextFactory dbFactory)
+    public ChannelModule(GrillBotDatabaseFactory dbFactory)
     {
         DbFactory = dbFactory;
     }

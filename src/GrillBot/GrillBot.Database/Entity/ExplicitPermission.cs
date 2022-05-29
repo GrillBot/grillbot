@@ -8,12 +8,12 @@ namespace GrillBot.Database.Entity
     {
         [StringLength(30)]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public string TargetId { get; set; }
+        public string TargetId { get; set; } = null!;
 
         public bool IsRole { get; set; }
 
         [StringLength(255)]
-        public string Command { get; set; }
+        public string Command { get; set; } = null!;
 
         public ExplicitPermissionState State { get; set; }
     }

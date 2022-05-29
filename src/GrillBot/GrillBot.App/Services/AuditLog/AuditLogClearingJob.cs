@@ -12,11 +12,11 @@ namespace GrillBot.App.Services.AuditLog;
 [DisallowConcurrentExecution]
 public class AuditLogClearingJob : Job
 {
-    private GrillBotContextFactory DbFactory { get; }
+    private GrillBotDatabaseFactory DbFactory { get; }
     private FileStorageFactory FileStorage { get; }
 
     public AuditLogClearingJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        GrillBotContextFactory dbFactory, FileStorageFactory fileStorage, InitManager initManager)
+        GrillBotDatabaseFactory dbFactory, FileStorageFactory fileStorage, InitManager initManager)
         : base(loggingService, auditLogService, discordClient, initManager)
     {
         FileStorage = fileStorage;

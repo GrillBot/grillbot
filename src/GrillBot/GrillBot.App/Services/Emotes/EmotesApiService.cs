@@ -9,7 +9,7 @@ public class EmotesApiService : ServiceBase
 {
     private EmotesCacheService EmotesCacheService { get; }
 
-    public EmotesApiService(GrillBotContextFactory dbFactory, EmotesCacheService emotesCacheService,
+    public EmotesApiService(GrillBotDatabaseFactory dbFactory, EmotesCacheService emotesCacheService,
         IMapper mapper) : base(null, dbFactory, mapper: mapper)
     {
         EmotesCacheService = emotesCacheService;

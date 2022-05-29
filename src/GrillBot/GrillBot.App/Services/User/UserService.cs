@@ -10,7 +10,7 @@ public class UserService : ServiceBase
 {
     private IConfiguration Configuration { get; }
 
-    public UserService(GrillBotContextFactory dbFactory, IConfiguration configuration, DiscordSocketClient discordClient) : base(discordClient, dbFactory)
+    public UserService(GrillBotDatabaseFactory dbFactory, IConfiguration configuration, DiscordSocketClient discordClient) : base(discordClient, dbFactory)
     {
         Configuration = configuration;
     }

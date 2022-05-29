@@ -3,30 +3,26 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 
-namespace GrillBot.Database.Entity
+namespace GrillBot.Database.Entity;
+
+public class AutoReplyItem
 {
-    public class AutoReplyItem
-    {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
 
-        [Required]
-        public string Template { get; set; }
+    [Required]
+    public string Template { get; set; } = null!;
 
-        [Required]
-        public string Reply { get; set; }
+    [Required]
+    public string Reply { get; set; } = null!;
 
-        [Required]
-        public long Flags { get; set; }
+    [Required]
+    public long Flags { get; set; }
 
-        [NotMapped]
-        public bool IsDisabled => (Flags & (long)AutoReplyFlags.Disabled) != 0;
+    [NotMapped]
+    public RegexOptions RegexOptions => RegexOptions.Multiline | (HaveFlags(AutoReplyFlags.CaseSensitive) ? RegexOptions.None : RegexOptions.IgnoreCase);
 
-        [NotMapped]
-        public bool CaseSensitive => (Flags & (long)AutoReplyFlags.CaseSensitive) != 0;
-
-        [NotMapped]
-        public RegexOptions RegexOptions => RegexOptions.Multiline | (CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
-    }
+    public bool HaveFlags(AutoReplyFlags flags)
+        => (Flags & (long)flags) != 0;
 }

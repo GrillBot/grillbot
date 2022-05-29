@@ -15,10 +15,10 @@ namespace GrillBot.App.Controllers;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 public class StatisticsController : Controller
 {
-    private GrillBotContextFactory DbFactory { get; }
+    private GrillBotDatabaseFactory DbFactory { get; }
     private GrillBotCacheBuilder CacheBuilder { get; }
 
-    public StatisticsController(GrillBotContextFactory dbFactory, GrillBotCacheBuilder cacheBuilder)
+    public StatisticsController(GrillBotDatabaseFactory dbFactory, GrillBotCacheBuilder cacheBuilder)
     {
         DbFactory = dbFactory;
         CacheBuilder = cacheBuilder;

@@ -7,10 +7,10 @@ namespace GrillBot.App.Services.Permissions;
 
 public class PermissionsService
 {
-    private GrillBotContextFactory DbFactory { get; }
+    private GrillBotDatabaseFactory DbFactory { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public PermissionsService(GrillBotContextFactory dbFactory, IServiceProvider serviceProvider)
+    public PermissionsService(GrillBotDatabaseFactory dbFactory, IServiceProvider serviceProvider)
     {
         DbFactory = dbFactory;
         ServiceProvider = serviceProvider;

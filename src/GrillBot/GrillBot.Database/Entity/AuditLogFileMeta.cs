@@ -2,29 +2,29 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 
-namespace GrillBot.Database.Entity
+namespace GrillBot.Database.Entity;
+
+public class AuditLogFileMeta
 {
-    public class AuditLogFileMeta
-    {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
 
-        public long AuditLogItemId { get; set; }
+    public long AuditLogItemId { get; set; }
 
-        [ForeignKey(nameof(AuditLogItemId))]
-        public AuditLogItem AuditLogItem { get; set; }
+    [ForeignKey(nameof(AuditLogItemId))]
+    public AuditLogItem AuditLogItem { get; set; } = null!;
 
-        [StringLength(255)]
-        public string Filename { get; set; }
+    [Required]
+    [StringLength(255)]
+    public string Filename { get; set; } = null!;
 
-        [NotMapped]
-        public string Extension => Path.GetExtension(Filename);
+    [NotMapped]
+    public string Extension => Path.GetExtension(Filename);
 
-        [NotMapped]
-        public string FilenameWithoutExtension => Path.GetFileNameWithoutExtension(Filename);
+    [NotMapped]
+    public string FilenameWithoutExtension => Path.GetFileNameWithoutExtension(Filename);
 
-        [Required]
-        public long Size { get; set; } = 0;
-    }
+    [Required]
+    public long Size { get; set; } = 0;
 }

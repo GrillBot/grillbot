@@ -16,12 +16,12 @@ public class Suggestion
     public SuggestionType Type { get; set; }
 
     [Required]
-    public string Data { get; set; }
+    public string Data { get; set; } = null!;
 
     [Required]
-    public string GuildId { get; set; }
+    public string GuildId { get; set; } = null!;
 
-    public byte[] BinaryData { get; set; }
+    public byte[]? BinaryData { get; set; }
 
-    public string BinaryDataFilename { get; set; }
+    public string? BinaryDataFilename { get; set; }
 }

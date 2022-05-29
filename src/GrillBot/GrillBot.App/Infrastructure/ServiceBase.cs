@@ -10,11 +10,11 @@ public abstract class ServiceBase
 {
     protected DiscordSocketClient DiscordClient { get; }
     protected IDiscordClient DcClient { get; }
-    protected GrillBotContextFactory DbFactory { get; }
+    protected GrillBotDatabaseFactory DbFactory { get; }
     protected IMapper Mapper { get; }
     protected GrillBotCacheBuilder CacheBuilder { get; }
 
-    protected ServiceBase(DiscordSocketClient client, GrillBotContextFactory dbFactory = null, IDiscordClient dcClient = null,
+    protected ServiceBase(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory = null, IDiscordClient dcClient = null,
         IMapper mapper = null, GrillBotCacheBuilder cacheBuilder = null)
     {
         DiscordClient = client;

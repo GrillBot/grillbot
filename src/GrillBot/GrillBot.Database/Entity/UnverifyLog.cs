@@ -3,41 +3,41 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GrillBot.Database.Entity
+namespace GrillBot.Database.Entity;
+
+public class UnverifyLog
 {
-    public class UnverifyLog
-    {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
 
-        [Required]
-        public UnverifyOperation Operation { get; set; }
+    [Required]
+    public UnverifyOperation Operation { get; set; }
 
-        [Required]
-        [StringLength(30)]
-        public string GuildId { get; set; }
+    [Required]
+    [StringLength(30)]
+    public string GuildId { get; set; } = null!;
 
-        [ForeignKey(nameof(GuildId))]
-        public Guild Guild { get; set; }
+    [ForeignKey(nameof(GuildId))]
+    public Guild? Guild { get; set; }
 
-        [Required]
-        [StringLength(30)]
-        public string FromUserId { get; set; }
+    [Required]
+    [StringLength(30)]
+    public string FromUserId { get; set; } = null!;
 
-        public GuildUser FromUser { get; set; }
+    public GuildUser? FromUser { get; set; }
 
-        [Required]
-        [StringLength(30)]
-        public string ToUserId { get; set; }
+    [Required]
+    [StringLength(30)]
+    public string ToUserId { get; set; } = null!;
 
-        public GuildUser ToUser { get; set; }
+    public GuildUser? ToUser { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; }
+    [Required]
+    public DateTime CreatedAt { get; set; }
 
-        public string Data { get; set; }
+    [Required]
+    public string Data { get; set; } = null!;
 
-        public Unverify Unverify { get; set; }
-    }
+    public Unverify? Unverify { get; set; }
 }

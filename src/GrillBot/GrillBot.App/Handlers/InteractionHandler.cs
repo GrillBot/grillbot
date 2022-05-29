@@ -14,7 +14,7 @@ public class InteractionHandler : ServiceBase
     private AuditLogService AuditLogService { get; }
     private InitManager InitManager { get; }
 
-    public InteractionHandler(DiscordSocketClient client, GrillBotContextFactory dbFactory, IServiceProvider provider,
+    public InteractionHandler(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory, IServiceProvider provider,
         InteractionService interactionService, InitManager initManager, AuditLogService auditLogService) : base(client, dbFactory)
     {
         Provider = provider;

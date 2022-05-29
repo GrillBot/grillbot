@@ -4,7 +4,7 @@ namespace GrillBot.App.Services.Discord.Synchronization;
 
 public class ChannelSynchronization : SynchronizationBase
 {
-    public ChannelSynchronization(GrillBotContextFactory dbFactory) : base(dbFactory)
+    public ChannelSynchronization(GrillBotDatabaseFactory dbFactory) : base(dbFactory)
     {
     }
 

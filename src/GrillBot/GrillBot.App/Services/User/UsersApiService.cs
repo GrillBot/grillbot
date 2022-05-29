@@ -15,7 +15,7 @@ public class UsersApiService : ServiceBase
 {
     private AuditLogService AuditLogService { get; }
 
-    public UsersApiService(GrillBotContextFactory dbFactory, IMapper mapper, IDiscordClient dcClient,
+    public UsersApiService(GrillBotDatabaseFactory dbFactory, IMapper mapper, IDiscordClient dcClient,
         AuditLogService auditLogService) : base(null, dbFactory, dcClient, mapper)
     {
         AuditLogService = auditLogService;

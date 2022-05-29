@@ -8,12 +8,12 @@ public class EmoteStatisticItem
 {
     [StringLength(255)]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public string EmoteId { get; set; }
+    public string EmoteId { get; set; } = null!;
 
     [StringLength(30)]
-    public string UserId { get; set; }
+    public string UserId { get; set; } = null!;
 
-    public GuildUser User { get; set; }
+    public GuildUser? User { get; set; }
 
     [Required]
     public long UseCount { get; set; } = 0;
@@ -25,8 +25,8 @@ public class EmoteStatisticItem
     public DateTime LastOccurence { get; set; }
 
     [StringLength(30)]
-    public string GuildId { get; set; }
+    public string GuildId { get; set; } = null!;
 
     [ForeignKey(nameof(GuildId))]
-    public Guild Guild { get; set; }
+    public Guild? Guild { get; set; }
 }

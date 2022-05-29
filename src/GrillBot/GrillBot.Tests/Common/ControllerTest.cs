@@ -19,7 +19,7 @@ public abstract class ControllerTest<TController> where TController : Controller
     protected TController UserController { get; private set; }
 
     protected GrillBotContext DbContext { get; set; }
-    protected GrillBotContextFactory DbFactory { get; set; }
+    protected GrillBotDatabaseFactory DbFactory { get; set; }
     protected GrillBotCacheRepository CacheRepository { get; set; }
     protected GrillBotCacheBuilder CacheBuilder { get; set; }
 

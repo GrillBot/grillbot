@@ -2,7 +2,7 @@
 
 public class GuildSynchronization : SynchronizationBase
 {
-    public GuildSynchronization(GrillBotContextFactory dbFactory) : base(dbFactory)
+    public GuildSynchronization(GrillBotDatabaseFactory dbFactory) : base(dbFactory)
     {
     }
 

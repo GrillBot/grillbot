@@ -12,7 +12,7 @@ public abstract class ServiceTest<TService> where TService : class
 {
     protected TService Service { get; set; }
     protected GrillBotContext DbContext { get; set; }
-    protected GrillBotContextFactory DbFactory { get; set; }
+    protected GrillBotDatabaseFactory DbFactory { get; set; }
     protected GrillBotCacheRepository CacheRepository { get; set; }
     protected GrillBotCacheBuilder CacheBuilder { get; set; }
 

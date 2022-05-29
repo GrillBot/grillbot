@@ -6,9 +6,9 @@ namespace GrillBot.App.Services.Unverify
     public class SelfunverifyService
     {
         public UnverifyService UnverifyService { get; }
-        private GrillBotContextFactory DbFactory { get; }
+        private GrillBotDatabaseFactory DbFactory { get; }
 
-        public SelfunverifyService(UnverifyService unverifyService, GrillBotContextFactory dbFactory)
+        public SelfunverifyService(UnverifyService unverifyService, GrillBotDatabaseFactory dbFactory)
         {
             UnverifyService = unverifyService;
             DbFactory = dbFactory;

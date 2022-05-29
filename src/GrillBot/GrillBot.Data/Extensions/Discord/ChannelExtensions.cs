@@ -49,7 +49,9 @@ static public class ChannelExtensions
         if (channel is IThreadChannel thread)
             return await HaveAccessAsync(await channel.Guild.GetTextChannelAsync(thread.CategoryId.Value), user);
 
-        if ((await channel.GetUserAsync(user.Id)) != null || channel.PermissionOverwrites == null || channel.PermissionOverwrites.Count == 0)
+        if (channel.PermissionOverwrites == null || channel.PermissionOverwrites.Count == 0)
+            return true;
+        if ((await channel.GetUserAsync(user.Id, CacheMode.CacheOnly)) != null)
             return true;
 
         var overwrite = channel.GetPermissionOverwrite(user);

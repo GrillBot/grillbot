@@ -5,11 +5,11 @@ using System;
 
 namespace GrillBot.Database.Services;
 
-public class GrillBotDatabaseFactory
+public class GrillBotDatabaseBuilder
 {
     protected IServiceProvider ServiceProvider { get; }
 
-    public GrillBotDatabaseFactory(IServiceProvider provider)
+    public GrillBotDatabaseBuilder(IServiceProvider provider)
     {
         ServiceProvider = provider;
     }

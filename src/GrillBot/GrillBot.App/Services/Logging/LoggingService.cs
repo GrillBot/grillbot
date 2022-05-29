@@ -18,11 +18,11 @@ namespace GrillBot.App.Services.Logging
         private CommandService CommandService { get; }
         private ILoggerFactory LoggerFactory { get; }
         private IConfiguration Configuration { get; }
-        private GrillBotDatabaseFactory DbFactory { get; }
+        private GrillBotDatabaseBuilder DbFactory { get; }
         private InteractionService InteractionService { get; }
 
         public LoggingService(DiscordSocketClient discordSocketClient, CommandService commandService, ILoggerFactory loggerFactory, IConfiguration configuration,
-            GrillBotDatabaseFactory dbFactory, InteractionService interactionService)
+            GrillBotDatabaseBuilder dbFactory, InteractionService interactionService)
         {
             DiscordClient = discordSocketClient;
             CommandService = commandService;

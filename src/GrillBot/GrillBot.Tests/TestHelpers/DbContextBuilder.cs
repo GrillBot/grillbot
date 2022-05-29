@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace GrillBot.Tests.TestHelpers;
 
 [ExcludeFromCodeCoverage]
-public class DbContextBuilder : GrillBotDatabaseFactory
+public class DbContextBuilder : GrillBotDatabaseBuilder
 {
     public DbContextBuilder() : base(null)
     {

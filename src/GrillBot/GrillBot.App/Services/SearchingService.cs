@@ -17,7 +17,7 @@ public class SearchingService : ServiceBase
 {
     private UserService UserService { get; }
 
-    public SearchingService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory, UserService userService,
+    public SearchingService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, UserService userService,
         IMapper mapper) : base(client, dbFactory, null, mapper)
     {
         UserService = userService;

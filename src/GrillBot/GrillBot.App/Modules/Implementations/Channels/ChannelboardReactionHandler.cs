@@ -5,10 +5,10 @@ namespace GrillBot.App.Modules.Implementations.Channels;
 
 public class ChannelboardReactionHandler : ReactionEventHandler
 {
-    private GrillBotDatabaseFactory DbFactory { get; }
+    private GrillBotDatabaseBuilder DbFactory { get; }
     private DiscordSocketClient DiscordClient { get; }
 
-    public ChannelboardReactionHandler(GrillBotDatabaseFactory dbFactory, DiscordSocketClient discordClient)
+    public ChannelboardReactionHandler(GrillBotDatabaseBuilder dbFactory, DiscordSocketClient discordClient)
     {
         DbFactory = dbFactory;
         DiscordClient = discordClient;
@@ -45,7 +45,7 @@ public class ChannelboardReactionHandler : ReactionEventHandler
         var skip = (newPage == 0 ? 0 : newPage) * 10;
         var groupedData = await groupedDataQuery.Skip(skip).Take(10).ToListAsync();
 
-        var resultEmbed = new ChannelboardBuilder()
+        var resultEmbed = new EmbedBuilder()
             .WithChannelboard(guildUser, guild, groupedData, id => guild.GetTextChannel(id), skip, newPage);
 
         await message.ModifyAsync(o => o.Embed = resultEmbed.Build());

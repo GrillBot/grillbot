@@ -18,7 +18,7 @@ public class RemindService : ServiceBase
     private IConfiguration Configuration { get; }
     private AuditLogService AuditLogService { get; }
 
-    public RemindService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory,
+    public RemindService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory,
         IConfiguration configuration, AuditLogService auditLogService) : base(client, dbFactory)
     {
         Configuration = configuration;

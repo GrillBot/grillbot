@@ -18,7 +18,7 @@ public class InviteService : ServiceBase
     private readonly object MetadataLock = new();
     private AuditLogService AuditLogService { get; }
 
-    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseFactory dbFactory,
+    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder dbFactory,
         AuditLogService auditLogService, IMapper mapper) : base(discordClient, dbFactory, null, mapper)
     {
         MetadataCache = new ConcurrentBag<InviteMetadata>();

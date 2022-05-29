@@ -5,9 +5,9 @@ namespace GrillBot.App.Services.Unverify
 {
     public class UnverifyProfileGenerator
     {
-        private GrillBotDatabaseFactory DbFactory { get; }
+        private GrillBotDatabaseBuilder DbFactory { get; }
 
-        public UnverifyProfileGenerator(GrillBotDatabaseFactory dbFactory)
+        public UnverifyProfileGenerator(GrillBotDatabaseBuilder dbFactory)
         {
             DbFactory = dbFactory;
         }

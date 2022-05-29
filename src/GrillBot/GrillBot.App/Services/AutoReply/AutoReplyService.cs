@@ -18,7 +18,7 @@ public class AutoReplyService : ServiceBase
 
     private InitManager InitManager { get; }
 
-    public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotDatabaseFactory dbFactory,
+    public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotDatabaseBuilder dbFactory,
         InitManager initManager) : base(discordClient, dbFactory)
     {
         Prefix = configuration["Discord:Commands:Prefix"];

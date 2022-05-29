@@ -11,9 +11,9 @@ namespace GrillBot.App.Modules.TextBased;
 public class PointsModule : Infrastructure.ModuleBase
 {
     private PointsService PointsService { get; }
-    private GrillBotDatabaseFactory DbFactory { get; }
+    private GrillBotDatabaseBuilder DbFactory { get; }
 
-    public PointsModule(PointsService pointsService, GrillBotDatabaseFactory dbFactory)
+    public PointsModule(PointsService pointsService, GrillBotDatabaseBuilder dbFactory)
     {
         PointsService = pointsService;
         DbFactory = dbFactory;

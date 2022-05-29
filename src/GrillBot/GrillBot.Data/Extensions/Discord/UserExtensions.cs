@@ -9,6 +9,9 @@ static public class UserExtensions
 {
     static public string GetDisplayName(this IUser user, bool withDiscriminator = true)
     {
+        if (user == null)
+            return "Neznámý uživatel";
+
         if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
             return sgu.Nickname;
 

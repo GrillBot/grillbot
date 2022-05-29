@@ -5,10 +5,10 @@ namespace GrillBot.App.Modules.Implementations.Points;
 
 public class PointsBoardReactionHandler : ReactionEventHandler
 {
-    private GrillBotDatabaseFactory DbFactory { get; }
+    private GrillBotDatabaseBuilder DbFactory { get; }
     private DiscordSocketClient DiscordClient { get; }
 
-    public PointsBoardReactionHandler(GrillBotDatabaseFactory dbFactory, DiscordSocketClient discordClient)
+    public PointsBoardReactionHandler(GrillBotDatabaseBuilder dbFactory, DiscordSocketClient discordClient)
     {
         DbFactory = dbFactory;
         DiscordClient = discordClient;

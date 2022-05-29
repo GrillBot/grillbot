@@ -7,7 +7,7 @@ namespace GrillBot.App.Services.Reminder;
 
 public class RemindApiService : ServiceBase
 {
-    public RemindApiService(GrillBotDatabaseFactory dbFactory, IMapper mapper) : base(null, dbFactory, null, mapper)
+    public RemindApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper) : base(null, dbFactory, null, mapper)
     {
     }
 

@@ -22,7 +22,7 @@ public class PointsService : ServiceBase
 
     private MagickImage TrophyImage { get; }
 
-    public PointsService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory, IConfiguration configuration,
+    public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, IConfiguration configuration,
         FileStorageFactory fileStorageFactory, MessageCacheManager messageCache, RandomizationService randomizationService,
         ProfilePictureManager profilePictureManager) : base(client, dbFactory)
     {

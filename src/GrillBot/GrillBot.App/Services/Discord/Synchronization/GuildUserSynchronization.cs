@@ -6,7 +6,7 @@ namespace GrillBot.App.Services.Discord.Synchronization;
 
 public class GuildUserSynchronization : SynchronizationBase
 {
-    public GuildUserSynchronization(GrillBotDatabaseFactory dbFactory) : base(dbFactory)
+    public GuildUserSynchronization(GrillBotDatabaseBuilder dbFactory) : base(dbFactory)
     {
     }
 

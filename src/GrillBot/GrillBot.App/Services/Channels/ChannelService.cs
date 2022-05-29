@@ -11,7 +11,7 @@ public class ChannelService : ServiceBase
     private string CommandPrefix { get; }
     private MessageCacheManager MessageCache { get; }
 
-    public ChannelService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory, IConfiguration configuration,
+    public ChannelService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, IConfiguration configuration,
         MessageCacheManager messageCache) : base(client, dbFactory, null, null)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");

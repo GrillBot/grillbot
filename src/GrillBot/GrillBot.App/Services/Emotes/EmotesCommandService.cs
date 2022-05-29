@@ -13,7 +13,7 @@ public class EmotesCommandService : ServiceBase
 {
     private IServiceProvider ServiceProvider { get; }
 
-    public EmotesCommandService(IServiceProvider serviceProvider, GrillBotDatabaseFactory dbFactory,
+    public EmotesCommandService(IServiceProvider serviceProvider, GrillBotDatabaseBuilder dbFactory,
         IDiscordClient dcClient) : base(null, dbFactory, dcClient)
     {
         ServiceProvider = serviceProvider;

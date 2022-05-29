@@ -20,7 +20,7 @@ public class ChannelApiService : ServiceBase
     private AuditLogService AuditLogService { get; }
     private AutoReplyService AutoReplyService { get; }
 
-    public ChannelApiService(GrillBotDatabaseFactory dbFactory, IMapper mapper, IDiscordClient client, MessageCacheManager messageCache,
+    public ChannelApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper, IDiscordClient client, MessageCacheManager messageCache,
         AuditLogService auditLogService, AutoReplyService autoReplyService) : base(null, dbFactory, client, mapper)
     {
         MessageCache = messageCache;

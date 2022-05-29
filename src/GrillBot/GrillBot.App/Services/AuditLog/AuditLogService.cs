@@ -32,7 +32,7 @@ public partial class AuditLogService : ServiceBase
         };
     }
 
-    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory, MessageCacheManager messageCache, FileStorageFactory storageFactory,
+    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, MessageCacheManager messageCache, FileStorageFactory storageFactory,
         InitManager initManager) : base(client, dbFactory)
     {
         MessageCache = messageCache;

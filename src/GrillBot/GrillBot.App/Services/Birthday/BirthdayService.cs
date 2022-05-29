@@ -6,7 +6,7 @@ namespace GrillBot.App.Services.Birthday;
 
 public class BirthdayService : ServiceBase
 {
-    public BirthdayService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory) : base(client, dbFactory)
+    public BirthdayService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory) : base(client, dbFactory)
     {
     }
 

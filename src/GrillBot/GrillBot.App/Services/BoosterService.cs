@@ -11,7 +11,7 @@ public class BoosterService : ServiceBase
     private IConfiguration Configuration { get; }
     private InitManager InitManager { get; }
 
-    public BoosterService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory,
+    public BoosterService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory,
         IConfiguration configuration, InitManager initManager) : base(client, dbFactory)
     {
         Configuration = configuration;

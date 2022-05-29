@@ -15,14 +15,14 @@ static public class DatabaseExtensions
                 b.UseNpgsql(connectionString);
                 b.EnableDetailedErrors();
             }, optionsLifetime: ServiceLifetime.Singleton)
-            .AddSingleton<GrillBotDatabaseFactory>();
+            .AddSingleton<GrillBotDatabaseBuilder>();
 
         return services;
     }
 
     public static void InitDatabase(this IApplicationBuilder app)
     {
-        var builder = app.ApplicationServices.GetRequiredService<GrillBotDatabaseFactory>();
+        var builder = app.ApplicationServices.GetRequiredService<GrillBotDatabaseBuilder>();
 
         using var repository = builder.CreateRepository();
         repository.ProcessMigrations();

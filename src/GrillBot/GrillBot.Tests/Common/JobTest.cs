@@ -14,7 +14,7 @@ public abstract class JobTest<TJob> where TJob : IJob
 {
     protected TJob Job { get; set; }
     protected GrillBotContext DbContext { get; set; }
-    protected GrillBotDatabaseFactory DbFactory { get; set; }
+    protected GrillBotDatabaseBuilder DbFactory { get; set; }
     protected GrillBotCacheBuilder CacheBuilder { get; set; }
     protected GrillBotCacheRepository CacheRepository { get; set; }
 

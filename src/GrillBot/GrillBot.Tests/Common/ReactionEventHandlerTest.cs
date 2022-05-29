@@ -13,7 +13,7 @@ public abstract class ReactionEventHandlerTest<THandler> where THandler : Reacti
 {
     protected THandler Handler { get; set; }
     protected GrillBotContext DbContext { get; set; }
-    protected GrillBotDatabaseFactory DbFactory { get; set; }
+    protected GrillBotDatabaseBuilder DbFactory { get; set; }
     protected GrillBotCacheRepository CacheRepository { get; set; }
     protected GrillBotCacheBuilder CacheBuilder { get; set; }
 

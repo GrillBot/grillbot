@@ -14,7 +14,7 @@ public class FeatureSuggestionService : ServiceBase
     private IConfiguration Configuration { get; }
 
     public FeatureSuggestionService(SuggestionSessionService sessionService, IConfiguration configuration,
-        GrillBotDatabaseFactory dbFactory) : base(null, dbFactory, null, null)
+        GrillBotDatabaseBuilder dbFactory) : base(null, dbFactory, null, null)
     {
         SessionService = sessionService;
         Configuration = configuration.GetSection("Services:Trello");

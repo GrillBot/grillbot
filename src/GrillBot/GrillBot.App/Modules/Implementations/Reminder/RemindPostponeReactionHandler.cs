@@ -4,10 +4,10 @@ namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public class RemindPostponeReactionHandler : ReactionEventHandler
 {
-    private GrillBotDatabaseFactory DbFactory { get; }
+    private GrillBotDatabaseBuilder DbFactory { get; }
     private IDiscordClient DiscordClient { get; }
 
-    public RemindPostponeReactionHandler(GrillBotDatabaseFactory dbFactory, IDiscordClient discordClient)
+    public RemindPostponeReactionHandler(GrillBotDatabaseBuilder dbFactory, IDiscordClient discordClient)
     {
         DbFactory = dbFactory;
         DiscordClient = discordClient;

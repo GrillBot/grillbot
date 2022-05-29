@@ -16,7 +16,7 @@ public class DiscordSyncService : ServiceBase
     private GuildSynchronization Guilds { get; }
     private GuildUserSynchronization GuildUsers { get; }
 
-    public DiscordSyncService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory, InitManager initManager)
+    public DiscordSyncService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, InitManager initManager)
         : base(client, dbFactory)
     {
         InitManager = initManager;

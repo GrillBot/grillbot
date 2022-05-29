@@ -10,14 +10,14 @@ namespace GrillBot.App.Services.Unverify
 {
     public class UnverifyChecker
     {
-        private GrillBotDatabaseFactory DbFactory { get; }
+        private GrillBotDatabaseBuilder DbFactory { get; }
 
         private TimeSpan UnverifyMinimalTime { get; }
         private TimeSpan SelfunverifyMinimalTime { get; }
         private int MaxKeepAccessCount { get; }
         private IWebHostEnvironment Environment { get; }
 
-        public UnverifyChecker(GrillBotDatabaseFactory dbFactory, IConfiguration configuration, IWebHostEnvironment environment)
+        public UnverifyChecker(GrillBotDatabaseBuilder dbFactory, IConfiguration configuration, IWebHostEnvironment environment)
         {
             DbFactory = dbFactory;
             Environment = environment;

@@ -2,9 +2,9 @@
 
 public class SynchronizationBase
 {
-    protected GrillBotDatabaseFactory DbFactory { get; }
+    protected GrillBotDatabaseBuilder DbFactory { get; }
 
-    protected SynchronizationBase(GrillBotDatabaseFactory dbFactory)
+    protected SynchronizationBase(GrillBotDatabaseBuilder dbFactory)
     {
         DbFactory = dbFactory;
     }

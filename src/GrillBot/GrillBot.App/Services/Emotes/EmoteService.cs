@@ -11,7 +11,7 @@ public partial class EmoteService : ServiceBase
     private MessageCacheManager MessageCache { get; }
     private EmotesCacheService EmotesCacheService { get; }
 
-    public EmoteService(DiscordSocketClient client, GrillBotDatabaseFactory dbFactory, IConfiguration configuration,
+    public EmoteService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, IConfiguration configuration,
         MessageCacheManager messageCache, EmotesCacheService emotesCacheService) : base(client, dbFactory)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");

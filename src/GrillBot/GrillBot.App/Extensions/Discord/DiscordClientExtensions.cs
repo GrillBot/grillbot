@@ -65,19 +65,12 @@ static public class DiscordClientExtensions
         return user;
     }
 
-    static public async Task<IGuildUser> TryFindGuildUserAsync(this BaseSocketClient client, ulong guildId, ulong userId)
+    public static async Task<IGuildUser> TryFindGuildUserAsync(this IDiscordClient client, ulong guildId, ulong userId)
     {
-        var guild = client.GetGuild(guildId);
+        var guild = await client.GetGuildAsync(guildId);
         if (guild == null) return null;
 
-        IGuildUser user = guild.GetUser(userId);
-        if (user == null)
-        {
-            var restGuild = await client.Rest.GetGuildAsync(guildId);
-            user = await restGuild.GetUserAsync(userId);
-        }
-
-        return user;
+        return await guild.GetUserAsync(userId);
     }
 
     static public IRole FindRole(this BaseSocketClient client, string id)

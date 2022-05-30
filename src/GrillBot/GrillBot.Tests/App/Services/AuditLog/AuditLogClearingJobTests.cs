@@ -2,6 +2,7 @@
 using GrillBot.App.Services.Logging;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -26,7 +27,8 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder);
+        var counterManager = new CounterManager();
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
 
         return new AuditLogClearingJob(loggingService, auditLogService, client, DbFactory, fileStorage, initManager);

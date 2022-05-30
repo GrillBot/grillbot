@@ -3,6 +3,7 @@ using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Tests.Infrastructure;
@@ -20,7 +21,8 @@ public class InviteControllerTests : ControllerTest<InviteController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder);
+        var counterManager = new CounterManager();
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var mapper = AutoMapperHelper.CreateMapper();

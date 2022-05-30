@@ -19,27 +19,27 @@ public class UserServiteTests : ServiceTest<UserService>
     }
 
     [TestMethod]
-    public async Task IsUserBotAdmin_NotFound()
+    public async Task CheckUserFlagsAsync_NotFound()
     {
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var result = await Service.IsUserBotAdminAsync(user);
+        var result = await Service.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
 
         Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public async Task IsUserBotAdmin_Found_NotAdmin()
+    public async Task CheckUserFlagsAsync_Found_NotAdmin()
     {
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         await DbContext.InitUserAsync(user, CancellationToken.None);
         await DbContext.SaveChangesAsync();
 
-        var result = await Service.IsUserBotAdminAsync(user);
+        var result = await Service.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
         Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public async Task IsUserBotAdmin_Found_Admin()
+    public async Task CheckUserFlagsAsync_Found_Admin()
     {
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var userEntity = Database.Entity.User.FromDiscord(user);
@@ -48,7 +48,7 @@ public class UserServiteTests : ServiceTest<UserService>
         await DbContext.Users.AddAsync(userEntity);
         await DbContext.SaveChangesAsync();
 
-        var result = await Service.IsUserBotAdminAsync(user);
+        var result = await Service.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
         Assert.IsTrue(result);
     }
 

@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -16,8 +17,9 @@ public class SystemControllerTests : ControllerTest<SystemController>
         var environment = EnvironmentHelper.CreateEnv("Production");
         var client = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var counterManager = new CounterManager();
 
-        return new SystemController(environment, client, initManager);
+        return new SystemController(environment, client, initManager, counterManager);
     }
 
     [TestMethod]

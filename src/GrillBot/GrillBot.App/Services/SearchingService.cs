@@ -8,6 +8,7 @@ using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
 using System.Security.Claims;
 
 namespace GrillBot.App.Services;
@@ -60,7 +61,7 @@ public class SearchingService : ServiceBase
 
     public async Task RemoveSearchAsync(long id, IGuildUser executor)
     {
-        var isAdmin = (await UserService.IsUserBotAdminAsync(executor)) || executor.GuildPermissions.Administrator || executor.GuildPermissions.ManageMessages;
+        var isAdmin = (await UserService.CheckUserFlagsAsync(executor, UserFlags.BotAdmin)) || executor.GuildPermissions.Administrator || executor.GuildPermissions.ManageMessages;
 
         using var context = DbFactory.Create();
 
@@ -212,7 +213,7 @@ public class SearchingService : ServiceBase
 
     public async Task<Dictionary<long, string>> GenerateSuggestionsAsync(IGuildUser user, IGuild guild, IChannel channel)
     {
-        var isBotAdmin = await UserService.IsUserBotAdminAsync(user);
+        var isBotAdmin = await UserService.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
         var isAdmin = isBotAdmin || user.GuildPermissions.Administrator || user.GuildPermissions.ManageMessages;
 
         var parameters = new GetSearchingListParams()

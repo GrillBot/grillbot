@@ -15,22 +15,12 @@ public class UserService : ServiceBase
         Configuration = configuration;
     }
 
-    public async Task<bool> IsUserBotAdminAsync(IUser user)
+    public async Task<bool> CheckUserFlagsAsync(IUser user, UserFlags flags)
     {
-        using var context = DbFactory.Create();
+        using var repository = DbFactory.CreateRepository();
 
-        var dbUser = await context.Users.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
-
-        return dbUser?.HaveFlags(UserFlags.BotAdmin) ?? false;
-    }
-
-    public async Task<bool> WebAdminAllowedAsync(IUser user)
-    {
-        using var context = DbFactory.Create();
-
-        var dbUser = await context.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
-        return dbUser?.HaveFlags(UserFlags.WebAdmin) ?? false;
+        var userEntity = await repository.User.FindUserByIdAsync(user.Id);
+        return userEntity?.HaveFlags(flags) ?? false;
     }
 
     /// <summary>
@@ -152,8 +142,7 @@ public class UserService : ServiceBase
 
     public async Task<string> CreateWebAdminLink(IUser executor, IUser user)
     {
-        var isBotAdmin = await WebAdminAllowedAsync(executor);
-        if (!isBotAdmin) return null;
+        if (!await CheckUserFlagsAsync(executor, UserFlags.WebAdmin)) return null;
 
         var value = Configuration.GetValue<string>("WebAdmin:UserDetailLink");
         return string.Format(value, user.Id);

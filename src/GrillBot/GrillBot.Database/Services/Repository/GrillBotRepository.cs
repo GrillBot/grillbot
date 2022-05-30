@@ -21,6 +21,7 @@ public sealed class GrillBotRepository : IDisposable
     }
 
     public ChannelRepository Channel => GetOrCreateRepository<ChannelRepository>();
+    public UserRepository User => GetOrCreateRepository<UserRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {

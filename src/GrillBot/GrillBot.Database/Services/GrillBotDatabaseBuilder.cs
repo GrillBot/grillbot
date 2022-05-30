@@ -1,4 +1,5 @@
-﻿using GrillBot.Database.Services.Repository;
+﻿using GrillBot.Common.Managers.Counters;
+using GrillBot.Database.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -24,7 +25,8 @@ public class GrillBotDatabaseBuilder
     {
         var options = ServiceProvider.GetRequiredService<DbContextOptions>();
         var context = new GrillBotContext(options);
+        var counter = ServiceProvider.GetRequiredService<CounterManager>();
 
-        return new GrillBotRepository(context);
+        return new GrillBotRepository(context, counter);
     }
 }

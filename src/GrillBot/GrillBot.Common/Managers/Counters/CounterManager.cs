@@ -30,7 +30,10 @@ public class CounterManager
         {
             return ActiveCounters
                 .GroupBy(o => o.Section)
-                .ToDictionary(o => o.Key, o => o.Count());
+                .Select(o => new { o.Key, Count = o.Count() })
+                .OrderByDescending(o => o.Count)
+                .ThenBy(o => o.Key)
+                .ToDictionary(o => o.Key, o => o.Count);
         }
     }
 }

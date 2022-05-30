@@ -19,4 +19,8 @@
     <Folder Include="Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GrillBot.Common\GrillBot.Common.csproj" />
+  </ItemGroup>
+
 </Project>

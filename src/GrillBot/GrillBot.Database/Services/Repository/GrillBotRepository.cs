@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GrillBot.Common.Managers.Counters;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +11,13 @@ public sealed class GrillBotRepository : IDisposable
 {
     private GrillBotContext Context { get; }
     private List<RepositoryBase> Repositories { get; }
+    private CounterManager CounterManager { get; }
 
-    public GrillBotRepository(GrillBotContext context)
+    public GrillBotRepository(GrillBotContext context, CounterManager counterManager)
     {
         Context = context;
         Repositories = new List<RepositoryBase>();
+        CounterManager = counterManager;
     }
 
     public ChannelRepository Channel => GetOrCreateRepository<ChannelRepository>();
@@ -25,7 +28,7 @@ public sealed class GrillBotRepository : IDisposable
 
         if (repository == null)
         {
-            repository = Activator.CreateInstance(typeof(TRepository), new[] { Context }) as TRepository;
+            repository = Activator.CreateInstance(typeof(TRepository), new object[] { Context, CounterManager }) as TRepository;
             if (repository == null)
                 throw new InvalidOperationException($"Error while creating repository {typeof(TRepository).Name}");
 
@@ -51,8 +54,13 @@ public sealed class GrillBotRepository : IDisposable
         Context.Set<TEntity>().RemoveRange(collection);
     }
 
-    public Task<int> CommitAsync()
-        => Context.SaveChangesAsync();
+    public async Task<int> CommitAsync()
+    {
+        using (CounterManager.Create("Database"))
+        {
+            return await Context.SaveChangesAsync();
+        }
+    }
 
     public void ProcessMigrations()
     {

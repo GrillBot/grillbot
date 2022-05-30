@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace GrillBot.Data.Models.API.System;
@@ -55,6 +56,8 @@ public class DiagnosticsInfo
     /// </summary>
     public DateTime CurrentDateTime { get; set; }
 
+    public Dictionary<string, int> ActiveOperations { get; set; }
+
     public DiagnosticsInfo()
     {
         var process = Process.GetCurrentProcess();
@@ -66,11 +69,13 @@ public class DiagnosticsInfo
         CurrentDateTime = DateTime.Now;
     }
 
-    public DiagnosticsInfo(string environmentName, DiscordSocketClient discord, bool isActive) : this()
+    public DiagnosticsInfo(string environmentName, DiscordSocketClient discord, bool isActive,
+        Dictionary<string, int> activeOperations) : this()
     {
         InstanceType = environmentName;
         Latency = TimeSpan.FromMilliseconds(discord.Latency);
         ConnectionState = discord.ConnectionState;
         IsActive = isActive;
+        ActiveOperations = activeOperations;
     }
 }

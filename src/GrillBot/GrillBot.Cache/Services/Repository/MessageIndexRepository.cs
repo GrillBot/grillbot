@@ -1,11 +1,12 @@
 ﻿using GrillBot.Cache.Entity;
+using GrillBot.Common.Managers.Counters;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Cache.Services.Repository;
 
 public class MessageIndexRepository : RepositoryBase
 {
-    public MessageIndexRepository(GrillBotCacheContext context) : base(context)
+    public MessageIndexRepository(GrillBotCacheContext context, CounterManager counter) : base(context, counter)
     {
     }
 

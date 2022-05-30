@@ -1,11 +1,12 @@
 ﻿using GrillBot.Cache.Entity;
+using GrillBot.Common.Managers.Counters;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Cache.Services.Repository;
 
 public class DirectApiRepository : RepositoryBase
 {
-    public DirectApiRepository(GrillBotCacheContext context) : base(context)
+    public DirectApiRepository(GrillBotCacheContext context, CounterManager counter) : base(context, counter)
     {
     }
 

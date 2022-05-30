@@ -1,15 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GrillBot.Common.Managers.Counters;
+using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Cache.Services.Repository;
 
 public sealed class GrillBotCacheRepository : IDisposable
 {
     private GrillBotCacheContext Context { get; }
+    private CounterManager CounterManager { get; }
     private List<RepositoryBase> Repositories { get; }
 
-    public GrillBotCacheRepository(GrillBotCacheContext context)
+    public GrillBotCacheRepository(GrillBotCacheContext context, CounterManager counterManager)
     {
         Context = context;
+        CounterManager = counterManager;
         Repositories = new();
     }
 
@@ -24,7 +27,7 @@ public sealed class GrillBotCacheRepository : IDisposable
 
         if (repository == null)
         {
-            repository = Activator.CreateInstance(typeof(TRepository), new object[] { Context }) as TRepository;
+            repository = Activator.CreateInstance(typeof(TRepository), new object[] { Context, CounterManager }) as TRepository;
             if (repository == null)
                 throw new InvalidOperationException($"Error while creating repository {typeof(TRepository).Name}");
 

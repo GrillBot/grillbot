@@ -1,4 +1,5 @@
 ﻿using GrillBot.Cache.Services.Repository;
+using GrillBot.Common.Managers.Counters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +18,8 @@ public class GrillBotCacheBuilder
     {
         var options = ServiceProvider.GetRequiredService<DbContextOptions<GrillBotCacheContext>>();
         var context = new GrillBotCacheContext(options);
+        var counter = ServiceProvider.GetRequiredService<CounterManager>();
 
-        return new GrillBotCacheRepository(context);
+        return new GrillBotCacheRepository(context, counter);
     }
 }

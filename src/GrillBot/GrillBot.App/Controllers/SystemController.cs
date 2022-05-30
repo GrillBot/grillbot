@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -17,13 +18,15 @@ public class SystemController : Controller
     private IWebHostEnvironment Environment { get; }
     private DiscordSocketClient DiscordClient { get; }
     private InitManager InitManager { get; }
+    private CounterManager CounterManager { get; }
 
     public SystemController(IWebHostEnvironment environment, DiscordSocketClient discordClient,
-        InitManager initManager)
+        InitManager initManager, CounterManager counterManager)
     {
         Environment = environment;
         DiscordClient = discordClient;
         InitManager = initManager;
+        CounterManager = counterManager;
     }
 
     /// <summary>
@@ -34,7 +37,10 @@ public class SystemController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult<DiagnosticsInfo> GetDiagnostics()
     {
-        var data = new DiagnosticsInfo(Environment.EnvironmentName, DiscordClient, InitManager.Get());
+        var isActive = InitManager.Get();
+        var activeOperations = CounterManager.GetActiveCounters();
+
+        var data = new DiagnosticsInfo(Environment.EnvironmentName, DiscordClient, isActive, activeOperations);
         return Ok(data);
     }
 

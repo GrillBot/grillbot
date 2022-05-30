@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Counters;
 using System.Net;
 
 namespace GrillBot.Cache.Services.Managers;
@@ -19,12 +20,15 @@ public class MessageCacheManager
     private InitManager InitManager { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotCacheBuilder CacheBuilder { get; }
+    private CounterManager CounterManager { get; }
 
-    public MessageCacheManager(DiscordSocketClient discordClient, InitManager initManager, GrillBotCacheBuilder cacheBuilder)
+    public MessageCacheManager(DiscordSocketClient discordClient, InitManager initManager, GrillBotCacheBuilder cacheBuilder,
+        CounterManager counterManager)
     {
         DiscordClient = discordClient;
         InitManager = initManager;
         CacheBuilder = cacheBuilder;
+        CounterManager = counterManager;
 
         Semaphore = new(1);
         Messages = new Dictionary<ulong, IMessage>();
@@ -126,27 +130,48 @@ public class MessageCacheManager
 
     public async Task DownloadMessagesAsync(IMessageChannel channel, ulong messageId, Direction direction, int limit = DiscordConfig.MaxMessagesPerBatch)
     {
-        try
-        {
-            var messages = (await channel.GetMessagesAsync(messageId, direction, limit).FlattenAsync()).ToList();
-            await ProcessDownloadedMessages(messages);
-        }
-        catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.InternalServerError)
-        {
-            // Catches errors from discord API. Internal server error are expected.
-        }
+        var messages = await DownloadMessagesFromChannelAsync(channel, (messageId, direction), limit);
+        await ProcessDownloadedMessages(messages);
     }
 
     public async Task DownloadMessagesAsync(IMessageChannel channel, int limit = DiscordConfig.MaxMessagesPerBatch)
     {
-        try
+        var messages = await DownloadMessagesFromChannelAsync(channel, null, limit);
+        await ProcessDownloadedMessages(messages);
+    }
+
+    public async Task<IMessage?> DownloadMessageFromChannelAsync(IMessageChannel channel, ulong id)
+    {
+        using (CounterManager.Create("Discord.API"))
         {
-            var messages = (await channel.GetMessagesAsync(limit).FlattenAsync()).ToList();
-            await ProcessDownloadedMessages(messages);
+            try
+            {
+                return await channel.GetMessageAsync(id);
+            }
+            catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.InternalServerError)
+            {
+                // Catches errors from discord API. Internal server error are expected.
+                return null;
+            }
         }
-        catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.InternalServerError)
+    }
+
+    private async Task<List<IMessage>> DownloadMessagesFromChannelAsync(IMessageChannel channel, (ulong messageId, Direction direction)? range = null, int limit = DiscordConfig.MaxMessagesPerBatch)
+    {
+        using (CounterManager.Create("Discord.API"))
         {
-            // Catches errors from discord API. Internal server error are expected.
+            try
+            {
+                if (range != null)
+                    return (await channel.GetMessagesAsync(range.Value.messageId, range.Value.direction, limit).FlattenAsync()).ToList();
+
+                return (await channel.GetMessagesAsync(limit).FlattenAsync()).ToList();
+            }
+            catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.InternalServerError)
+            {
+                // Catches errors from discord API. Internal server error are expected.
+                return new();
+            }
         }
     }
 
@@ -212,7 +237,7 @@ public class MessageCacheManager
 
             if (channel != null)
             {
-                var message = await channel.GetMessageAsync(messageId);
+                var message = await DownloadMessageFromChannelAsync(channel, messageId);
                 if (message == null)
                     return null;
 
@@ -299,7 +324,7 @@ public class MessageCacheManager
             {
                 if (Messages.Remove(id, out var msg))
                 {
-                    var message = await msg.Channel.GetMessageAsync(id);
+                    var message = await DownloadMessageFromChannelAsync(msg.Channel, id);
                     if (message == null)
                     {
                         DeletedMessages.Add(id);

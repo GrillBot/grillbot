@@ -14,19 +14,25 @@ public class ProfilePictureRepository : RepositoryBase
 
     public async Task<List<ProfilePicture>> GetProfilePicturesAsync(ulong userId, string? avatarId = null)
     {
-        var query = Context.ProfilePictures
-            .Where(o => o.UserId == userId.ToString());
+        using (Counter.Create("Cache"))
+        {
+            var query = Context.ProfilePictures
+                .Where(o => o.UserId == userId.ToString());
 
-        if (!string.IsNullOrEmpty(avatarId))
-            query = query.Where(o => o.AvatarId == avatarId);
+            if (!string.IsNullOrEmpty(avatarId))
+                query = query.Where(o => o.AvatarId == avatarId);
 
-        return await query.ToListAsync();
+            return await query.ToListAsync();
+        }
     }
 
     public async Task<List<ProfilePicture>> GetProfilePicturesExceptOneAsync(ulong userId, string avatarId)
     {
-        return await Context.ProfilePictures
-            .Where(o => o.UserId == userId.ToString() && o.AvatarId != avatarId)
-            .ToListAsync();
+        using (Counter.Create("Cache"))
+        {
+            return await Context.ProfilePictures
+                .Where(o => o.UserId == userId.ToString() && o.AvatarId != avatarId)
+                .ToListAsync();
+        }
     }
 }

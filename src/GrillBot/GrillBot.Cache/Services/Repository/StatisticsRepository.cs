@@ -11,11 +11,14 @@ public class StatisticsRepository : RepositoryBase
 
     public async Task<Dictionary<string, int>> GetTableStatisticsAsync(CancellationToken cancellationToken = default)
     {
-        return new Dictionary<string, int>()
+        using (Counter.Create("Cache"))
         {
-            { nameof(Context.MessageIndex), await Context.MessageIndex.CountAsync(cancellationToken) },
-            { nameof(Context.DirectApiMessages), await Context.DirectApiMessages.CountAsync(cancellationToken) },
-            { nameof(Context.ProfilePictures), await Context.ProfilePictures.CountAsync(cancellationToken) }
-        };
+            return new Dictionary<string, int>()
+            {
+                { nameof(Context.MessageIndex), await Context.MessageIndex.CountAsync(cancellationToken) },
+                { nameof(Context.DirectApiMessages), await Context.DirectApiMessages.CountAsync(cancellationToken) },
+                { nameof(Context.ProfilePictures), await Context.ProfilePictures.CountAsync(cancellationToken) }
+            };
+        }
     }
 }

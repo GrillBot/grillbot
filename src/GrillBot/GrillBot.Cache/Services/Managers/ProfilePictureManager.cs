@@ -1,16 +1,19 @@
 ﻿using Discord;
 using GrillBot.Cache.Entity;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Counters;
 
 namespace GrillBot.Cache.Services.Managers;
 
 public class ProfilePictureManager
 {
     private GrillBotCacheBuilder CacheBuilder { get; }
+    private CounterManager Counter { get; }
 
-    public ProfilePictureManager(GrillBotCacheBuilder cacheBuilder)
+    public ProfilePictureManager(GrillBotCacheBuilder cacheBuilder, CounterManager counterManager)
     {
         CacheBuilder = cacheBuilder;
+        Counter = counterManager;
     }
 
     public async Task<ProfilePicture> GetOrCreatePictureAsync(IUser user, ushort size = 128)
@@ -32,7 +35,7 @@ public class ProfilePictureManager
 
     public async Task<ProfilePicture> CreatePictureAsync(IUser user, ushort size = 128)
     {
-        var avatarData = await user.DownloadAvatarAsync(size);
+        var avatarData = await DownloadAvatarAsync(user, size);
         var entity = new ProfilePicture()
         {
             AvatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId,
@@ -47,6 +50,17 @@ public class ProfilePictureManager
         await cache.CommitAsync();
 
         return entity;
+    }
+
+    private async Task<byte[]> DownloadAvatarAsync(IUser user, ushort size = 128)
+    {
+        using (Counter.Create("Discord.CDN"))
+        {
+            var url = user.GetUserAvatarUrl(size);
+
+            using var httpClient = new HttpClient();
+            return await httpClient.GetByteArrayAsync(url);
+        }
     }
 
     private async Task CleanCacheForUserAsync(IUser user)

@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using GrillBot.Data.Extensions.Discord;
-using GrillBot.Data.Helpers;
 using System.Linq;
 
 namespace GrillBot.Data.Models.API.Channels;
@@ -12,7 +11,7 @@ public class ChannelsMappingProfile : AutoMapper.Profile
     {
         CreateMap<SocketGuildChannel, Channel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
-            .ForMember(dst => dst.Type, opt => opt.MapFrom(src => DiscordHelper.GetChannelType(src)))
+            .ForMember(dst => dst.Type, opt => opt.MapFrom(src => src.GetChannelType()))
             .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.HaveCategory() ? $"{src.Name} ({src.GetCategory().Name})" : src.Name));
 
         CreateMap<Database.Entity.GuildChannel, Channel>()

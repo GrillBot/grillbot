@@ -3,7 +3,6 @@ using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.User;
 using GrillBot.Common.Extensions;
-using GrillBot.Data.Helpers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
@@ -32,7 +31,7 @@ public class SearchingService : ServiceBase
 
         await context.InitUserAsync(user);
         await context.InitGuildAsync(guild);
-        await context.InitGuildChannelAsync(guild, channel, DiscordHelper.GetChannelType(channel) ?? ChannelType.DM);
+        await context.InitGuildChannelAsync(guild, channel, channel.GetChannelType() ?? ChannelType.DM);
         await context.InitGuildUserAsync(guild, user as IGuildUser);
 
         var entity = new SearchItem()

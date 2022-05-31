@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
-using GrillBot.Data.Helpers;
 
 namespace GrillBot.App.Services.Channels;
 
@@ -40,7 +39,7 @@ public class ChannelService : ServiceBase
         await dbContext.InitGuildAsync(textChannel.Guild, CancellationToken.None);
         await dbContext.InitUserAsync(message.Author, CancellationToken.None);
         await dbContext.InitGuildUserAsync(textChannel.Guild, message.Author as IGuildUser, CancellationToken.None);
-        var channelType = DiscordHelper.GetChannelType(textChannel);
+        var channelType = textChannel.GetChannelType();
         await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel, channelType.Value, CancellationToken.None);
 
         // Search specific channel for specific guild and user.

@@ -1,5 +1,4 @@
 ﻿using Discord;
-using GrillBot.Data.Helpers;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Newtonsoft.Json;
@@ -21,7 +20,7 @@ public class AuditLogDataWrapper
     public List<AuditLogFileMeta> Files { get; set; }
 
     public ChannelType? ChannelType
-        => Channel == null ? null : DiscordHelper.GetChannelType(Channel);
+        => Channel?.GetChannelType();
 
     public AuditLogDataWrapper(AuditLogItemType type, object data, IGuild guild = null, IChannel channel = null, IUser processedUser = null,
         string discordAuditLogItemId = null, DateTime? createdAt = null, IEnumerable<AuditLogFileMeta> files = null)

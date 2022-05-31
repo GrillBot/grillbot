@@ -6,6 +6,7 @@ using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using NSwag.Annotations;
@@ -14,7 +15,6 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/auditlog")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [OpenApiTag("Audit log", Description = "Logging")]
 public class AuditLogController : Controller
 {
@@ -34,6 +34,7 @@ public class AuditLogController : Controller
     [HttpDelete("{id}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult> RemoveItemAsync(long id)
     {
         var result = await ApiService.RemoveItemAsync(id);
@@ -52,6 +53,7 @@ public class AuditLogController : Controller
     [HttpGet]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters, CancellationToken cancellationToken)
     {
         var result = await ApiService.GetListAsync(parameters, cancellationToken);
@@ -66,6 +68,7 @@ public class AuditLogController : Controller
     [HttpGet("{id}/{fileId}")]
     [ProducesResponseType(typeof(FileContentResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<IActionResult> GetFileContentAsync(long id, long fileId, CancellationToken cancellationToken)
     {
         try
@@ -82,5 +85,19 @@ public class AuditLogController : Controller
         {
             return NotFound(new MessageResponse(ex.Message));
         }
+    }
+
+    /// <summary>
+    /// Creates log item from client application.
+    /// </summary>
+    /// <response code="200"></response>
+    [HttpPost("client")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
+    public async Task<ActionResult> HandleClientAppMessageAsync(ClientLogItemRequest request)
+    {
+        await ApiService.HandleClientAppMessageAsync(request, User);
+        return Ok();
     }
 }

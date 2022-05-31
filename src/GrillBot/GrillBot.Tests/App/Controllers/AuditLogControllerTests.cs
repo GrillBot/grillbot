@@ -1,5 +1,8 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Common;
@@ -7,11 +10,11 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -24,10 +27,18 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
     protected override AuditLogController CreateController(IServiceProvider provider)
     {
+        var dcClient = new ClientBuilder()
+            .Build();
+
         var configuration = ConfigurationHelper.CreateConfiguration();
         var fileStorage = FileStorageHelper.Create(configuration);
         var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new AuditLogApiService(DbFactory, mapper, fileStorage);
+        var discordClient = DiscordHelper.CreateClient();
+        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var counterManager = new CounterManager();
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
+        var apiService = new AuditLogApiService(DbFactory, mapper, fileStorage, auditLogService, dcClient);
 
         return new AuditLogController(apiService);
     }

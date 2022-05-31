@@ -9,6 +9,7 @@ using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using System.Security.Claims;
 
 namespace GrillBot.App.Services.AuditLog;
 
@@ -18,10 +19,13 @@ public class AuditLogApiService : ServiceBase
         => AuditLogService.JsonSerializerSettings;
 
     private FileStorageFactory FileStorage { get; }
+    private AuditLogService AuditLogService { get; }
 
-    public AuditLogApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper, FileStorageFactory fileStorage) : base(null, dbFactory, null, mapper)
+    public AuditLogApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper, FileStorageFactory fileStorage,
+        AuditLogService auditLogService, IDiscordClient discordClient) : base(null, dbFactory, discordClient, mapper)
     {
         FileStorage = fileStorage;
+        AuditLogService = auditLogService;
     }
 
     private async Task<List<long>> GetLogIdsAsync(AuditLogListParams parameters, CancellationToken cancellationToken = default)
@@ -161,5 +165,14 @@ public class AuditLogApiService : ServiceBase
 
         context.Remove(item);
         return (await context.SaveChangesAsync()) > 0;
+    }
+
+    public async Task HandleClientAppMessageAsync(ClientLogItemRequest request, ClaimsPrincipal loggedUser)
+    {
+        var loggedUserId = loggedUser.GetUserId();
+        var user = await DcClient.FindUserAsync(loggedUserId);
+        var item = new AuditLogDataWrapper(request.GetAuditLogType(), request.Content, processedUser: user);
+
+        await AuditLogService.StoreItemAsync(item);
     }
 }

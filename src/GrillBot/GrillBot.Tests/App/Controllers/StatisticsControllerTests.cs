@@ -163,4 +163,61 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         var result = await AdminController.GetJobStatisticsAsync();
         CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
+
+    [TestMethod]
+    public async Task GetApiRequestsByDateAsync()
+    {
+        var result = await AdminController.GetApiRequestsByDateAsync();
+        CheckResult<OkObjectResult, Dictionary<string, int>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetApiRequestsByEndpointAsync()
+    {
+        var now = DateTime.Now;
+
+        await DbContext.AddAsync(new AuditLogItem()
+        {
+            Data = JsonConvert.SerializeObject(new ApiRequest()
+            {
+                StatusCode = "200 OK",
+                Method = "GET",
+                TemplatePath = "/test",
+                EndAt = now.AddMinutes(1),
+                StartAt = now
+            }),
+            Type = Database.Enums.AuditLogItemType.API,
+            Id = 5,
+            CreatedAt = DateTime.Now
+        });
+        await DbContext.SaveChangesAsync();
+
+        var result = await AdminController.GetApiRequestsByEndpointAsync();
+        CheckResult<OkObjectResult, List<StatisticItem>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetApiRequestsByStatusCodeAsync()
+    {
+        var now = DateTime.Now;
+
+        await DbContext.AddAsync(new AuditLogItem()
+        {
+            Data = JsonConvert.SerializeObject(new ApiRequest()
+            {
+                StatusCode = "200 OK",
+                Method = "GET",
+                TemplatePath = "/test",
+                EndAt = now.AddMinutes(1),
+                StartAt = now
+            }),
+            Type = Database.Enums.AuditLogItemType.API,
+            Id = 5,
+            CreatedAt = DateTime.Now
+        });
+        await DbContext.SaveChangesAsync();
+
+        var result = await AdminController.GetApiRequestsByStatusCodeAsync();
+        CheckResult<OkObjectResult, Dictionary<string, int>>(result);
+    }
 }

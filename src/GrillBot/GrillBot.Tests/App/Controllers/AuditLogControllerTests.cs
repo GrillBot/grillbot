@@ -27,7 +27,14 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
     protected override AuditLogController CreateController(IServiceProvider provider)
     {
+        var user = new UserBuilder()
+            .SetId(Consts.UserId)
+            .SetUsername(Consts.Username)
+            .SetDiscriminator(Consts.Discriminator)
+            .Build();
+
         var dcClient = new ClientBuilder()
+            .SetGetUserAction(user)
             .Build();
 
         var configuration = ConfigurationHelper.CreateConfiguration();
@@ -399,5 +406,22 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
         var result = @params.Validate(validationContext).ToList();
         Assert.AreEqual(2, result.Count);
+    }
+
+    [TestMethod]
+    public async Task HandleClientAppMessageAsync()
+    {
+        var requests = new[]
+        {
+            new ClientLogItemRequest() { IsInfo = true, Content = "Content" },
+            new ClientLogItemRequest() { IsWarning = true, Content = "Content" },
+            new ClientLogItemRequest() { IsError = true, Content = "Content" }
+        };
+
+        foreach (var request in requests)
+        {
+            var result = await AdminController.HandleClientAppMessageAsync(request);
+            CheckResult<OkResult>(result);
+        }
     }
 }

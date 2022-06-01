@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -97,6 +98,7 @@ public class AuditLogController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     public async Task<ActionResult> HandleClientAppMessageAsync(ClientLogItemRequest request)
     {
+        this.SetApiRequestData(request);
         await ApiService.HandleClientAppMessageAsync(request, User);
         return Ok();
     }

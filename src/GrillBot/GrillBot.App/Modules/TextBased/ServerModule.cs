@@ -367,7 +367,37 @@ public class ServerModule : Infrastructure.ModuleBase
                     double removed = 0;
                     foreach (var permission in permissions)
                     {
-                        await permission.Channel.RemovePermissionOverwriteAsync(permission.User);
+                        await PermissionsCleaner.RemoveUselessPermissionAsync(permission);
+
+                        removed++;
+                        if ((removed % 2) == 0)
+                            await msg.ModifyAsync(o => o.Content = $"Probíhá úklid oprávnění **{removed}** / **{permissions.Count}** (**{Math.Round(removed / permissions.Count * 100)} %**)");
+                    }
+
+                    await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
+                    await Context.Message.RemoveAllReactionsAsync();
+                    await Context.Message.AddReactionAsync(Emojis.Ok);
+                }
+
+                [Command("clearForChannel")]
+                [Summary("Smaže zbytečná oprávnění pro daný kanál.")]
+                public async Task RemoveUselessPermissionsFromChannelAsync([Name("kanal")] IGuildChannel channel)
+                {
+                    await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
+
+                    var permissions = await PermissionsCleaner.GetUselessPermissionsForChannelAsync(channel, channel.Guild);
+                    if (permissions.Count == 0)
+                    {
+                        await ReplyAsync($"Nebylo nalezeno žádné zbytečné oprávnění pro kanál {channel.Name}");
+                        return;
+                    }
+
+                    var msg = await ReplyAsync($"Probíhá úklid oprávnění **0** / **{permissions.Count}** (**0 %**)");
+
+                    double removed = 0;
+                    foreach (var permission in permissions)
+                    {
+                        await PermissionsCleaner.RemoveUselessPermissionAsync(permission);
 
                         removed++;
                         if ((removed % 2) == 0)

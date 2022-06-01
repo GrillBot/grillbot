@@ -393,11 +393,13 @@ public class ServerModule : Infrastructure.ModuleBase
                     }
 
                     var msg = await ReplyAsync($"Probíhá úklid oprávnění **0** / **{permissions.Count}** (**0 %**)");
+                    var unverifyIds = await UnverifyService.GetUserIdsWithUnverifyAsync(channel.Guild);
 
                     double removed = 0;
                     foreach (var permission in permissions)
                     {
-                        await PermissionsCleaner.RemoveUselessPermissionAsync(permission);
+                        if (!unverifyIds.Contains(permission.User.Id))
+                            await PermissionsCleaner.RemoveUselessPermissionAsync(permission);
 
                         removed++;
                         if ((removed % 2) == 0)

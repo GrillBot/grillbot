@@ -198,7 +198,7 @@ public class UnverifyService : ServiceBase
             if (uselessPermissions.Count > 0)
             {
                 foreach (var permission in uselessPermissions)
-                    await permission.Channel.RemovePermissionOverwriteAsync(toUser);
+                    await PermissionsCleaner.RemoveUselessPermissionAsync(permission);
             }
 
             if (!isAuto)

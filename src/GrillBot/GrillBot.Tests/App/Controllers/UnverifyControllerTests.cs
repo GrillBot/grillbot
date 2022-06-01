@@ -3,6 +3,7 @@ using GrillBot.App.Controllers;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
@@ -49,7 +50,9 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
-        var permissionsCleaner = new PermissionsCleaner(dcClient);
+        var counter = new CounterManager();
+        var logging = LoggingHelper.CreateLogger<PermissionsCleaner>();
+        var permissionsCleaner = new PermissionsCleaner(counter, logging);
         var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DbFactory, loggingService, permissionsCleaner);
         var mapper = AutoMapperHelper.CreateMapper();
         var unverifyApiService = new UnverifyApiService(DbFactory, mapper, dcClient);

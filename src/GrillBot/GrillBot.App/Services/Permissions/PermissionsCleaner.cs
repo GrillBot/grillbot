@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Infrastructure;
-using GrillBot.Common.Managers.Counters;
+﻿using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.Guilds;
 using Microsoft.Extensions.Logging;
@@ -8,14 +7,11 @@ namespace GrillBot.App.Services.Permissions;
 
 public class PermissionsCleaner
 {
-    private IDiscordClient DiscordClient { get; }
     private CounterManager Counter { get; }
     private ILogger<PermissionsCleaner> Logger { get; }
 
-    public PermissionsCleaner(IDiscordClient client, CounterManager counter,
-        ILogger<PermissionsCleaner> logger)
+    public PermissionsCleaner(CounterManager counter, ILogger<PermissionsCleaner> logger)
     {
-        DiscordClient = client;
         Counter = counter;
         Logger = logger;
     }
@@ -27,7 +23,7 @@ public class PermissionsCleaner
 
         foreach (var channel in channels.Where(o => o is not SocketThreadChannel))
         {
-            var permission = await GetUselessPermissionAsync(channel, user, guild);
+            var permission = GetUselessPermission(channel, user, guild);
             if (permission != null)
                 result.Add(permission);
         }
@@ -42,7 +38,7 @@ public class PermissionsCleaner
 
         foreach (var user in users)
         {
-            var permission = await GetUselessPermissionAsync(channel, user, guild);
+            var permission = GetUselessPermission(channel, user, guild);
             if (permission != null)
                 result.Add(permission);
         }
@@ -50,7 +46,7 @@ public class PermissionsCleaner
         return result;
     }
 
-    private async Task<UselessPermission> GetUselessPermissionAsync(IGuildChannel channel, IGuildUser user, IGuild guild)
+    private static UselessPermission GetUselessPermission(IGuildChannel channel, IGuildUser user, IGuild guild)
     {
         var overwrite = channel.GetPermissionOverwrite(user);
         if (overwrite == null) return null; // Overwrite not exists. Skip

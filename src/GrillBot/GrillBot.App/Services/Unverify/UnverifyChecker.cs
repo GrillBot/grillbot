@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Database.Entity;
@@ -31,7 +31,7 @@ namespace GrillBot.App.Services.Unverify
         public async Task ValidateUnverifyAsync(SocketGuildUser user, SocketGuild guild, bool selfunverify, DateTime end, int keeped)
         {
             if (keeped > MaxKeepAccessCount)
-                throw new ValidationException($"Nelze si ponechat více, než {MaxKeepAccessCount} rolí a kanálů.");
+                throw new ValidationException($"Nelze si ponechat více než {MaxKeepAccessCount} rolí a kanálů.");
 
             if (guild.OwnerId == user.Id)
                 throw new ValidationException($"Nelze provést odebrání přístupu, protože uživatel **{user.GetDisplayName()}** je vlastník tohoto serveru.");

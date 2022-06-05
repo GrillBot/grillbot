@@ -1,4 +1,4 @@
-﻿using Discord.Net;
+using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Permissions;
@@ -144,10 +144,10 @@ public class UnverifyService : ServiceBase
             .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
 
         if (dbUser?.Unverify == null)
-            throw new NotFoundException("Aktualizace času nelze pro hledaného uživatele provést. Unverify nenalezeno.");
+            throw new NotFoundException("Aktualizaci času nelze pro hledaného uživatele provést. Unverify nenalezeno.");
 
         if ((dbUser.Unverify.EndAt - DateTime.Now).TotalSeconds <= 30.0)
-            throw new ValidationException("Aktualizace data a času již není možná. Vypršel čas, nebo zbývá méně, než půl minuty.");
+            throw new ValidationException("Aktualizace data a času již není možná. Vypršel čas nebo zbývá méně než půl minuty.");
 
         await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user);
 

@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Models.API.Selfunverify;
+using GrillBot.Data.Models.API.Selfunverify;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Services.Unverify
@@ -33,7 +33,7 @@ namespace GrillBot.App.Services.Unverify
             foreach (var param in parameters)
             {
                 if (await context.SelfunverifyKeepables.AsNoTracking().AnyAsync(o => o.GroupName == param.Group && o.Name == param.Name))
-                    throw new ValidationException($"Ponechatelná role, nebo kanál {param.Group}/{param.Name} již existuje.");
+                    throw new ValidationException($"Ponechatelná role nebo kanál {param.Group}/{param.Name} již existuje.");
             }
 
             var entities = parameters.ConvertAll(o => new SelfunverifyKeepable() { Name = o.Name, GroupName = o.Group });
@@ -52,7 +52,7 @@ namespace GrillBot.App.Services.Unverify
             if (string.IsNullOrEmpty(itemName))
             {
                 if (!await itemsQuery.AnyAsync())
-                    throw new ValidationException($"Skupina ponechatelných rolí, nebo kanálů {group} neexistuje.");
+                    throw new ValidationException($"Skupina ponechatelných rolí nebo kanálů {group} neexistuje.");
 
                 var items = await itemsQuery.ToListAsync();
                 context.RemoveRange(items);
@@ -60,7 +60,7 @@ namespace GrillBot.App.Services.Unverify
             else
             {
                 if (!await itemsQuery.AnyAsync(o => o.Name == itemName))
-                    throw new ValidationException($"Ponechatelná role, nebo kanál {group}/{name} neexistuje.");
+                    throw new ValidationException($"Ponechatelná role nebo kanál {group}/{name} neexistuje.");
 
                 var item = await itemsQuery.FirstOrDefaultAsync(o => o.Name == itemName);
                 context.Remove(item);

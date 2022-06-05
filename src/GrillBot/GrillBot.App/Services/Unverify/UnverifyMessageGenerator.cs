@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Extensions.Discord;
 using GrillBot.Data.Models.Unverify;
@@ -19,7 +19,7 @@ namespace GrillBot.App.Services.Unverify
         {
             var endDateTime = profile.End.ToCzechFormat();
 
-            return $"Byly ti dočasně odebrány všechny práva na serveru **{guild.Name}**. Přístup ti bude navrácen **{endDateTime}**. {(!profile.IsSelfUnverify ? $"Důvod: {profile.Reason}" : "")}";
+            return $"Byla ti dočasně odebrána všechna práva na serveru **{guild.Name}**. Přístup ti bude navrácen **{endDateTime}**. {(!profile.IsSelfUnverify ? $"Důvod: {profile.Reason}" : "")}";
         }
 
         public static string CreateUpdatePMMessage(IGuild guild, DateTime endDateTime)
@@ -39,7 +39,7 @@ namespace GrillBot.App.Services.Unverify
 
         public static string CreateRemoveAccessManuallyPMMessage(IGuild guild)
         {
-            return $"Byl ti předčasně vrácen přístup na serveru **{guild.Name}**";
+            return $"Byl ti předčasně vrácen přístup na serveru **{guild.Name}**.";
         }
 
         public static string CreateRemoveAccessManuallyToChannel(IGuildUser user)

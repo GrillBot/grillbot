@@ -122,7 +122,7 @@ public class GrillBotContext : DbContext
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<Suggestion> Suggestions => Set<Suggestion>();
 
-    public IQueryable<TEntity> CreateQuery<TEntity>(IQueryableModel<TEntity> parameters, bool noTracking = false, bool splitQuery = false) where TEntity : class
+    public IQueryable<TEntity> CreateQuery<TEntity>(IQueryableModel<TEntity>? parameters, bool noTracking = false, bool splitQuery = false) where TEntity : class
     {
         var query = Set<TEntity>().AsQueryable();
 

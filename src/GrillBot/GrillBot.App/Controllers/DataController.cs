@@ -28,10 +28,11 @@ public class DataController : Controller
     private InteractionService InteractionService { get; }
     private EmotesCacheService EmotesCacheService { get; }
     private IMapper Mapper { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     public DataController(DiscordSocketClient discordClient, GrillBotContext dbContext, CommandService commandService,
         IConfiguration configuration, InteractionService interactionService, EmotesCacheService emotesCacheService,
-        IMapper mapper)
+        IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
     {
         DiscordClient = discordClient;
         DbContext = dbContext;
@@ -40,6 +41,7 @@ public class DataController : Controller
         InteractionService = interactionService;
         EmotesCacheService = emotesCacheService;
         Mapper = mapper;
+        DatabaseBuilder = databaseBuilder;
     }
 
     /// <summary>
@@ -81,45 +83,42 @@ public class DataController : Controller
     public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false, CancellationToken cancellationToken = default)
     {
         var currentUserId = User.GetUserId();
-        IEnumerable<SocketGuild> guilds;
-        if (User.HaveUserPermission())
-            guilds = DiscordClient.FindMutualGuilds(currentUserId);
-        else
-            guilds = DiscordClient.Guilds.AsEnumerable();
-        if (guildId != null) guilds = guilds.Where(o => o.Id == guildId.Value);
+        var guilds = User.HaveUserPermission() ? await DiscordClient.FindMutualGuildsAsync(currentUserId) : DiscordClient.Guilds.Select(o => o as IGuild).ToList();
 
-        var availableChannels = User.HaveUserPermission() ?
-            guilds.SelectMany(o => o.GetAvailableChannelsFor(o.GetUser(currentUserId), !ignoreThreads)).ToList() :
-            guilds.SelectMany(o => o.Channels);
+        if (guildId != null)
+            guilds = guilds.FindAll(o => o.Id == guildId.Value);
 
-        var channels = availableChannels.Select(o => Mapper.Map<Channel>(o))
+        var availableChannels = new List<IGuildChannel>();
+        foreach (var guild in guilds)
+        {
+            if (User.HaveUserPermission())
+            {
+                var guildUser = await guild.GetUserAsync(currentUserId);
+                availableChannels.AddRange(await guild.GetAvailableChannelsAsync(guildUser, !ignoreThreads));
+            }
+            else
+            {
+                // Get all channels (if wanted ignore threads, ignore it). 
+                availableChannels.AddRange((await guild.GetChannelsAsync()).Where(o => !ignoreThreads || o is not IThreadChannel));
+            }
+        }
+
+        var channels = availableChannels
+            .Select(o => Mapper.Map<Channel>(o))
             .Where(o => o.Type != null && o.Type != ChannelType.Category)
             .ToList();
 
         var guildIds = guilds.Select(o => o.Id.ToString()).ToList();
-        var dbChannelsQuery = DbContext.Channels.AsNoTracking()
-            .Where(o => o.ChannelType != ChannelType.Category && guildIds.Contains(o.GuildId))
-            .OrderBy(o => o.Name)
-            .AsQueryable();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        if (ignoreThreads)
-            dbChannelsQuery = dbChannelsQuery.Where(o => o.ChannelType != ChannelType.PublicThread && o.ChannelType != ChannelType.PrivateThread);
-
-        var query = dbChannelsQuery.Select(o => new Channel()
-        {
-            Type = o.ChannelType,
-            Id = o.ChannelId,
-            Name = o.Name
-        });
-
-        var dbChannels = (await query.ToListAsync(cancellationToken))
-            .Where(o => !channels.Any(x => x.Id == o.Id));
-
-        channels.AddRange(dbChannels);
+        var dbChannels = await repository.Channel.GetAllChannelsAsync(guildIds, ignoreThreads, true, cancellationToken);
+        dbChannels = dbChannels.FindAll(o => channels.All(x => x.Id != o.ChannelId)); // Select from DB all channels that is not visible.
+        channels.AddRange(Mapper.Map<List<Channel>>(dbChannels));
 
         var result = channels
+            .DistinctBy(o => o.Id)
             .OrderBy(o => o.Name)
-            .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type == ChannelType.PublicThread || o.Type == ChannelType.PrivateThread ? "(Thread)" : "")}".Trim());
+            .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type is ChannelType.PublicThread or ChannelType.PrivateThread ? "(Thread)" : "")}".Trim());
 
         return Ok(result);
     }

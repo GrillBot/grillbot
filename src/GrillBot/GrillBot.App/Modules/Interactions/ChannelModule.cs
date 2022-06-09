@@ -74,7 +74,7 @@ public class ChannelModule : Infrastructure.InteractionsModuleBase
         if (isThread)
             channelEmbed.AddField("Kanál", (channel as SocketThreadChannel)!.ParentChannel!.GetMention(), true);
 
-        using var repository = DatabaseBuilder.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var channelData = await repository.Channel.FindChannelByIdAsync(channel.Guild.Id, channel.Id, true);
 
         if (channelData != null)

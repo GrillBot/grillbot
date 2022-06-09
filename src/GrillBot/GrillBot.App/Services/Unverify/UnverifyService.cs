@@ -352,14 +352,8 @@ public class UnverifyService : ServiceBase
 
     public async Task<List<ulong>> GetUserIdsWithUnverifyAsync(IGuild guild)
     {
-        using var context = DbFactory.Create();
-
-        var data = await context.Unverifies.AsNoTracking()
-            .Where(o => o.GuildId == guild.Id.ToString())
-            .Select(o => o.UserId)
-            .ToListAsync();
-
-        return data.ConvertAll(o => o.ToUlong());
+        await using var repository = DbFactory.CreateRepository();
+        return await repository.Unverify.GetUserIdsWithUnverify(guild);
     }
 
     public async Task RecoverUnverifyState(long id, ulong fromUserId)

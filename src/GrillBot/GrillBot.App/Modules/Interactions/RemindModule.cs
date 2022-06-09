@@ -24,33 +24,33 @@ public class RemindModule : Infrastructure.InteractionsModuleBase
         [Summary("kdy", "Datum a čas události. Musí být v budoucnosti.")]
         DateTime at,
         [Summary("zprava", "Zpráva, která se zašle uživateli.")]
-        string message
+        string message,
+        [Summary("tajne", "Toto upozornění má být skryto před zraky ostatních.")] [Choice("Ano", "true")] [Choice("Ne", "false")]
+        bool secret = false
     )
     {
         try
         {
+            await DeferAsync(secret);
+
             var originalMessage = await Context.Interaction.GetOriginalResponseAsync();
             var remindId = await RemindService.CreateRemindAsync(Context.User, who, at, message, originalMessage.Id);
 
-            await SetResponseAsync(
-                $"Připomenutí vytvořeno. Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {Emojis.PersonRisingHand}",
-                components: new ComponentBuilder().WithButton(customId: $"remind_copy:{remindId}", emote: Emojis.PersonRisingHand).Build()
-            );
+            var buttons = secret ? null : new ComponentBuilder().WithButton(customId: $"remind_copy:{remindId}", emote: Emojis.PersonRisingHand).Build();
+            var msg = $"Připomenutí bylo vytvořeno.{(secret ? "" : $"Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {Emojis.PersonRisingHand}")}";
+            await SetResponseAsync(msg, components: buttons, secret: secret);
         }
         catch (ValidationException ex)
         {
-            await SetResponseAsync(ex.Message);
+            await SetResponseAsync(ex.Message, secret: secret);
         }
     }
 
     [SlashCommand("cancel", "Předčasné zrušení připomenutí.")]
     public async Task CancelRemindAsync(
-        [Summary("ident", "Identifikace připomenutí")]
-        [Autocomplete(typeof(RemindAutoCompleteHandler))]
+        [Summary("ident", "Identifikace připomenutí")] [Autocomplete(typeof(RemindAutoCompleteHandler))]
         long id,
-        [Summary("upozornit", "Zda se má cílový uživatel předčasně upozornit.")]
-        [Choice("Ano", "true")]
-        [Choice("Ne", "false")]
+        [Summary("upozornit", "Zda se má cílový uživatel předčasně upozornit.")] [Choice("Ano", "true")] [Choice("Ne", "false")]
         bool notify = false
     )
     {

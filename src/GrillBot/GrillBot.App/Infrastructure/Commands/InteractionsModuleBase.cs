@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using System.Reflection;
+using Discord.Interactions;
 
 namespace GrillBot.App.Infrastructure;
 
@@ -7,11 +8,26 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 {
     protected bool CanDefer { get; set; } = true;
 
+    /// <summary>
+    /// Check whether Defer can be performed.
+    /// </summary>
+    /// <returns>
+    /// True if called command is not component command and command not contains secret switch named "secret" or "tajne".
+    /// In other case, it decides CanDefer parameter.
+    /// </returns>
+    private bool CheckDefer(ICommandInfo command)
+    {
+        if (command.Module.ComponentCommands.Any(c => c.Name == command.Name))
+            return false;
+
+        return !command.Parameters.Any(c => c.Name is "secret" or "tajne") && CanDefer;
+    }
+
     public override async Task BeforeExecuteAsync(ICommandInfo command)
     {
         await base.BeforeExecuteAsync(command);
 
-        if (CanDefer && !command.Module.ComponentCommands.Any(c => c.Name == command.Name))
+        if (CheckDefer(command))
             await DeferAsync();
     }
 
@@ -27,9 +43,10 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         RequestOptions requestOptions = null, bool secret = false)
     {
         if (Context.Interaction.IsValidToken)
-        {
             return await FollowupAsync(content, embeds, false, secret, null, requestOptions, components, embed);
-        }
+
+        if (secret)
+            flags |= MessageFlags.Ephemeral;
 
         return await Context.Interaction.ModifyOriginalResponseAsync(msg =>
         {

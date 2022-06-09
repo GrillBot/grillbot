@@ -34,8 +34,16 @@ public class RemindService : ServiceBase
         if ((at - DateTime.Now).TotalMinutes <= minimalTime)
         {
             var suffix = "minuta";
-            if (minimalTime == 0 || minimalTime >= 5) suffix = "minut";
-            else if (minimalTime > 1 && minimalTime < 5) suffix = "minuty";
+            switch (minimalTime)
+            {
+                case 0:
+                case >= 5:
+                    suffix = "minut";
+                    break;
+                case > 1 and < 5:
+                    suffix = "minuty";
+                    break;
+            }
 
             throw new ValidationException($"Datum a čas upozornění musí být později, než {minimalTime} {suffix}");
         }
@@ -43,24 +51,23 @@ public class RemindService : ServiceBase
         if (string.IsNullOrEmpty(message))
             throw new ValidationException("Text upozornění je povinný.");
 
-        using var context = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
 
-        await context.InitUserAsync(from, CancellationToken.None);
-
-        if (from != to)
-            await context.InitUserAsync(to, CancellationToken.None);
+        var fromUser = await repository.User.GetOrCreateUserAsync(from);
+        var toUser = from != to ? await repository.User.GetOrCreateUserAsync(to) : fromUser;
 
         var remind = new RemindMessage()
         {
             At = at,
-            FromUserId = from.Id.ToString(),
+            FromUser = fromUser,
             Message = message,
             OriginalMessageId = originalMessageId.ToString(),
-            ToUserId = to.Id.ToString(),
+            ToUser = toUser
         };
 
-        await context.AddAsync(remind);
-        await context.SaveChangesAsync();
+        await repository.AddAsync(remind);
+        await repository.CommitAsync();
+
         return remind.Id;
     }
 

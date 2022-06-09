@@ -23,7 +23,7 @@ public class DataControllerTests : ControllerTest<DataController>
         var mapper = AutoMapperHelper.CreateMapper();
         var emotesCache = new EmotesCacheService(discordClient);
 
-        return new DataController(discordClient, DbContext, commandsService, configuration, interactions, emotesCache, mapper);
+        return new DataController(discordClient, DbContext, commandsService, configuration, interactions, emotesCache, mapper, DbFactory);
     }
 
     [TestMethod]

@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
@@ -42,11 +43,11 @@ public class InteractionHandler : ServiceBase
 
     private async Task OnCommandExecutedAsync(ICommandInfo command, IInteractionContext context, IResult result)
     {
-        if (result == null) result = ExecuteResult.FromSuccess();
+        result ??= ExecuteResult.FromSuccess();
 
-        if (!result.IsSuccess)
+        if (!result.IsSuccess && result.Error.HasValue)
         {
-            string reply = "";
+            var reply = "";
 
             switch (result.Error.Value)
             {
@@ -63,12 +64,34 @@ public class InteractionHandler : ServiceBase
                     break;
             }
 
-            if (!string.IsNullOrEmpty(reply) && context.Interaction is not SocketMessageComponent)
+            if (!string.IsNullOrEmpty(reply))
             {
-                await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = "Command failed");
-                var originalMessage = await context.Interaction.GetOriginalResponseAsync();
-                await originalMessage.ReplyAsync($"{context.User.Mention} {reply}",
-                    allowedMentions: new AllowedMentions(AllowedMentionTypes.Users) { MentionRepliedUser = true });
+                if (context.Interaction is SocketMessageComponent)
+                {
+                    if (!context.Interaction.HasResponded)
+                    {
+                        await context.Interaction.RespondAsync(reply, ephemeral: true);
+                        return;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            await context.User.SendMessageAsync(reply);
+                        }
+                        catch (HttpException ex) when (ex.DiscordCode != DiscordErrorCode.CannotSendMessageToUser)
+                        {
+                            throw;
+                        }
+                    }
+                }
+                else
+                {
+                    await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = "Command failed");
+                    var originalMessage = await context.Interaction.GetOriginalResponseAsync();
+                    await originalMessage.ReplyAsync($"{context.User.Mention} {reply}",
+                        allowedMentions: new AllowedMentions(AllowedMentionTypes.Users) { MentionRepliedUser = true });
+                }
             }
         }
 

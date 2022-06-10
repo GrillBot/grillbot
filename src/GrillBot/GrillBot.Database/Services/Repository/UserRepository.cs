@@ -1,8 +1,11 @@
-﻿using GrillBot.Common.Managers.Counters;
+﻿using System.Collections.Generic;
+using System.Linq;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Discord;
+using GrillBot.Database.Enums;
 
 namespace GrillBot.Database.Services.Repository;
 
@@ -35,6 +38,16 @@ public class UserRepository : RepositoryBase
             await Context.AddAsync(entity);
 
             return entity;
+        }
+    }
+
+    public async Task<List<User>> GetOnlineUsersAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.Users
+                .Where(o => (o.Flags & (int)UserFlags.PublicAdminOnline) != 0 || (o.Flags & (int)UserFlags.WebAdminOnline) != 0)
+                .ToListAsync();
         }
     }
 }

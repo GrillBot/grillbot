@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 
 namespace GrillBot.Database.Extensions;
 
@@ -11,10 +10,13 @@ public static class UserExtensions
     public static UserStatus GetStatus(this IPresence presence)
         => FixStatus(presence.Status);
 
-    public static UserStatus FixStatus(this UserStatus status)
+    private static UserStatus FixStatus(this UserStatus status)
     {
-        if (status == UserStatus.Invisible) return UserStatus.Offline;
-        else if (status == UserStatus.AFK) return UserStatus.Idle;
-        return status;
+        return status switch
+        {
+            UserStatus.Invisible => UserStatus.Offline,
+            UserStatus.AFK => UserStatus.Idle,
+            _ => status
+        };
     }
 }

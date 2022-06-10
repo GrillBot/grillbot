@@ -20,25 +20,18 @@ public class OnlineUsersCleanJob : Job
 
     public override async Task RunAsync(IJobExecutionContext context)
     {
-        using var dbContext = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
 
-        var usersQuery = dbContext.Users.AsQueryable()
-            .Where(o => (o.Flags & (int)UserFlags.WebAdminOnline) != 0 || (o.Flags & (int)UserFlags.PublicAdminOnline) != 0);
-        var users = await usersQuery.ToListAsync(context.CancellationToken);
-
-        if (users.Count == 0)
-        {
-            context.Result = "NoLoggedUsers";
-            return;
-        }
-
+        var users = await repository.User.GetOnlineUsersAsync();
+        if (users.Count == 0) return;
+        
         foreach (var user in users)
         {
             user.Flags &= ~(int)UserFlags.WebAdminOnline;
             user.Flags &= ~(int)UserFlags.PublicAdminOnline;
         }
 
-        context.Result = $"Users: {users.Count}";
-        await dbContext.SaveChangesAsync();
+        context.Result = $"LoggedUsers (Count: {users.Count}): {string.Join(", ", users.Select(o => o.Username))}";
+        await repository.CommitAsync();
     }
 }

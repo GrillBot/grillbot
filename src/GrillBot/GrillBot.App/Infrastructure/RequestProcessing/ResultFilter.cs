@@ -30,7 +30,7 @@ public class ResultFilter : IAsyncResultFilter
         var userId = context.HttpContext.User.GetUserId();
         var processedUser = userId > 0 ? await DiscordClient.FindUserAsync(userId) : null;
 
-        var wrapper = new AuditLogDataWrapper(AuditLogItemType.API, ApiRequest, null, null, processedUser, null, DateTime.Now, null);
+        var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, processedUser, null, DateTime.Now, null);
         await AuditLogService.StoreItemAsync(wrapper);
     }
 }

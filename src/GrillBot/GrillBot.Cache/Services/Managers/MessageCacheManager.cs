@@ -30,7 +30,7 @@ public class MessageCacheManager
         CacheBuilder = cacheBuilder;
         CounterManager = counterManager;
 
-        Semaphore = new(1);
+        Semaphore = new SemaphoreSlim(1);
         Messages = new Dictionary<ulong, IMessage>();
         DeletedMessages = new HashSet<ulong>();
         LoadedChannels = new HashSet<ulong>();
@@ -83,7 +83,7 @@ public class MessageCacheManager
 
         try
         {
-            using var cache = CacheBuilder.CreateRepository();
+            await using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id);
             foreach (var msg in messages)
@@ -102,7 +102,7 @@ public class MessageCacheManager
 
         try
         {
-            using var cache = CacheBuilder.CreateRepository();
+            await using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: thread.Value.Id, guildId: thread.Value.Guild.Id);
             foreach (var msg in messages)
@@ -128,7 +128,7 @@ public class MessageCacheManager
         }
     }
 
-    public async Task DownloadMessagesAsync(IMessageChannel channel, ulong messageId, Direction direction, int limit = DiscordConfig.MaxMessagesPerBatch)
+    private async Task DownloadMessagesAsync(IMessageChannel channel, ulong messageId, Direction direction, int limit = DiscordConfig.MaxMessagesPerBatch)
     {
         var messages = await DownloadMessagesFromChannelAsync(channel, (messageId, direction), limit);
         await ProcessDownloadedMessages(messages);
@@ -140,7 +140,7 @@ public class MessageCacheManager
         await ProcessDownloadedMessages(messages);
     }
 
-    public async Task<IMessage?> DownloadMessageFromChannelAsync(IMessageChannel channel, ulong id)
+    private async Task<IMessage?> DownloadMessageFromChannelAsync(IMessageChannel channel, ulong id)
     {
         using (CounterManager.Create("Discord.API"))
         {
@@ -162,15 +162,14 @@ public class MessageCacheManager
         {
             try
             {
-                if (range != null)
-                    return (await channel.GetMessagesAsync(range.Value.messageId, range.Value.direction, limit).FlattenAsync()).ToList();
-
-                return (await channel.GetMessagesAsync(limit).FlattenAsync()).ToList();
+                return range != null
+                    ? (await channel.GetMessagesAsync(range.Value.messageId, range.Value.direction, limit).FlattenAsync()).ToList()
+                    : (await channel.GetMessagesAsync(limit).FlattenAsync()).ToList();
             }
             catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.InternalServerError)
             {
                 // Catches errors from discord API. Internal server error are expected.
-                return new();
+                return new List<IMessage>();
             }
         }
     }
@@ -190,7 +189,7 @@ public class MessageCacheManager
 
     private async Task CreateIndexesAsync(List<IMessage> newMessages)
     {
-        var entities = newMessages.ConvertAll(o => new Entity.MessageIndex()
+        var entities = newMessages.ConvertAll(o => new Entity.MessageIndex
         {
             MessageId = o.Id.ToString(),
             AuthorId = o.Author.Id.ToString(),
@@ -198,7 +197,7 @@ public class MessageCacheManager
             GuildId = o.Channel is IGuildChannel guildChanel ? guildChanel.GuildId.ToString() : "0"
         });
 
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
 
         await cache.AddRangeAsync(entities);
         await cache.CommitAsync();
@@ -206,7 +205,7 @@ public class MessageCacheManager
 
     private async Task RemoveIndexAsync(IMessage message)
     {
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
 
         var msgIndex = await cache.MessageIndexRepository.FindMessageByIdAsync(message.Id);
         if (msgIndex != null)
@@ -218,12 +217,12 @@ public class MessageCacheManager
 
     public async Task<int> GetCachedMessagesCount(IChannel channel)
     {
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
 
         return await cache.MessageIndexRepository.GetMessagesCountAsync(channelId: channel.Id);
     }
 
-    public async Task<IMessage?> GetAsync(ulong messageId, IMessageChannel channel, bool includeRemoved = false)
+    public async Task<IMessage?> GetAsync(ulong messageId, IMessageChannel? channel, bool includeRemoved = false)
     {
         await Semaphore.WaitAsync();
 
@@ -235,17 +234,15 @@ public class MessageCacheManager
             if (Messages.ContainsKey(messageId))
                 return Messages[messageId];
 
-            if (channel != null)
-            {
-                var message = await DownloadMessageFromChannelAsync(channel, messageId);
-                if (message == null)
-                    return null;
+            if (channel == null)
+                return null;
 
-                await ProcessDownloadedMessages(new() { message });
-                return message;
-            }
+            var message = await DownloadMessageFromChannelAsync(channel, messageId);
+            if (message == null)
+                return null;
 
-            return null;
+            await ProcessDownloadedMessages(new List<IMessage> { message });
+            return message;
         }
         finally
         {
@@ -259,7 +256,7 @@ public class MessageCacheManager
 
         try
         {
-            using var cache = CacheBuilder.CreateRepository();
+            await using var cache = CacheBuilder.CreateRepository();
 
             var indexes = await cache.MessageIndexRepository.GetMessagesAsync(author?.Id ?? 0, channel?.Id ?? 0, guild?.Id ?? 0);
             if (indexes.Count == 0) return null;
@@ -268,8 +265,7 @@ public class MessageCacheManager
                 .Select(index => index.MessageId.ToUlong())
                 .Where(id => !DeletedMessages.Contains(id))
                 .Select(id => Messages[id])
-                .OrderByDescending(o => o.Id)
-                .FirstOrDefault();
+                .MaxBy(o => o.Id);
         }
         finally
         {
@@ -283,10 +279,11 @@ public class MessageCacheManager
 
         try
         {
-            using var cache = CacheBuilder.CreateRepository();
-            var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id);
+            await using var cache = CacheBuilder.CreateRepository();
+            var messages = (await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id))
+                .ConvertAll(o => o.MessageId.ToUlong());
 
-            foreach (var msgId in messages.Select(o => o.MessageId.ToUlong()))
+            foreach (var msgId in messages)
             {
                 DeletedMessages.Add(msgId);
 
@@ -312,31 +309,30 @@ public class MessageCacheManager
         {
             foreach (var id in DeletedMessages)
             {
-                if (Messages.Remove(id, out var msg))
-                {
-                    await RemoveIndexAsync(msg);
-                    report.Add($"Removed {id} (Author: {msg.Author.GetFullName()}, Channel: {msg.Channel.Name}, CreatedAt: {msg.CreatedAt.LocalDateTime})");
-                }
+                if (!Messages.Remove(id, out var msg)) continue;
+
+                await RemoveIndexAsync(msg);
+                report.Add($"Removed {id} (Author: {msg.Author.GetFullName()}, Channel: {msg.Channel.Name}, CreatedAt: {msg.CreatedAt.LocalDateTime})");
             }
+
             DeletedMessages.Clear();
 
             foreach (var id in MessagesForUpdate)
             {
-                if (Messages.Remove(id, out var msg))
+                if (!Messages.Remove(id, out var msg)) continue;
+
+                var message = await DownloadMessageFromChannelAsync(msg.Channel, id);
+                if (message == null)
                 {
-                    var message = await DownloadMessageFromChannelAsync(msg.Channel, id);
-                    if (message == null)
-                    {
-                        DeletedMessages.Add(id);
-                        continue;
-                    }
-
-                    Messages.Add(id, message);
-                    report.Add($"Refreshed {id} (Author: {msg.Author.GetFullName()}, Channel: {msg.Channel.Name}, CreatedAt: {msg.CreatedAt.LocalDateTime})");
+                    DeletedMessages.Add(id);
+                    continue;
                 }
-            }
-            MessagesForUpdate.Clear();
 
+                Messages.Add(id, message);
+                report.Add($"Refreshed {id} (Author: {msg.Author.GetFullName()}, Channel: {msg.Channel.Name}, CreatedAt: {msg.CreatedAt.LocalDateTime})");
+            }
+
+            MessagesForUpdate.Clear();
             return string.Join("\n", report);
         }
         finally

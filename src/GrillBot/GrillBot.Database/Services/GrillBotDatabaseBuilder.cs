@@ -8,7 +8,7 @@ namespace GrillBot.Database.Services;
 
 public class GrillBotDatabaseBuilder
 {
-    protected IServiceProvider ServiceProvider { get; }
+    private IServiceProvider ServiceProvider { get; }
 
     public GrillBotDatabaseBuilder(IServiceProvider provider)
     {

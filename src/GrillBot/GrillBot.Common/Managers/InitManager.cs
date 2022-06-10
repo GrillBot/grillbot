@@ -5,7 +5,7 @@ namespace GrillBot.Common.Managers;
 public class InitManager
 {
     private bool Initialized { get; set; }
-    private readonly object locker = new();
+    private readonly object _locker = new();
     private ILogger<InitManager> Logger { get; }
 
     public InitManager(ILoggerFactory loggerFactory)
@@ -15,7 +15,7 @@ public class InitManager
 
     public void Set(bool initialized)
     {
-        lock (locker)
+        lock (_locker)
         {
             Logger.LogInformation("Change init status (From: {Initialized}, To: {initialized})", Initialized, initialized);
             Initialized = initialized;
@@ -24,7 +24,7 @@ public class InitManager
 
     public bool Get()
     {
-        lock (locker)
+        lock (_locker)
         {
             return Initialized;
         }

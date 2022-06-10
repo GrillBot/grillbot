@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace GrillBot.Data.Extensions;
 
-static public class CollectionExtensions
+public static class CollectionExtensions
 {
-    static public async Task<List<T>> FindAllAsync<T>(this IEnumerable<T> collection, Func<T, Task<bool>> func)
+    public static async Task<List<T>> FindAllAsync<T>(this IEnumerable<T> collection, Func<T, Task<bool>> func)
     {
         var result = new List<T>();
 
@@ -21,7 +21,9 @@ static public class CollectionExtensions
 
     public static IEnumerable<IEnumerable<T>> SplitInParts<T>(this IEnumerable<T> source, int partSize)
     {
-        for (int i = 0; i < Math.Ceiling((double)source.Count() / partSize); i++)
-            yield return source.Skip(i * partSize).Take(partSize);
+        var sourceData = source as List<T> ?? source.ToList();
+
+        for (var i = 0; i < Math.Ceiling((double)sourceData.Count / partSize); i++)
+            yield return sourceData.Skip(i * partSize).Take(partSize);
     }
 }

@@ -55,11 +55,12 @@ public class User
         SearchItems = new HashSet<SearchItem>();
     }
 
-    public bool HaveFlags(UserFlags flags) => (Flags & (int)flags) != 0;
+    public bool HaveFlags(UserFlags flags) 
+        => (Flags & (int)flags) != 0;
 
     public static User FromDiscord(IUser user)
     {
-        return new User()
+        return new User
         {
             Id = user.Id.ToString(),
             Username = user.Username,

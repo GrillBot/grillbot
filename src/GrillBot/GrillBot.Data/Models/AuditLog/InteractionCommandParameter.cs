@@ -11,7 +11,7 @@ public class InteractionCommandParameter
 
     public InteractionCommandParameter() { }
 
-    public InteractionCommandParameter(SocketSlashCommandDataOption option)
+    public InteractionCommandParameter(IApplicationCommandInteractionDataOption option)
     {
         Name = option.Name;
         Type = option.Type.ToString();

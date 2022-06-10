@@ -5,53 +5,56 @@ using System.Threading.Tasks;
 
 namespace GrillBot.Data.Extensions.Discord;
 
-static public class ChannelExtensions
+public static class ChannelExtensions
 {
-    static public string GetMention(this IChannel channel) => $"<#{channel.Id}>";
+    public static string GetMention(this IChannel channel) => $"<#{channel.Id}>";
 
-    static public bool HaveAccess(this SocketGuildChannel channel, SocketGuildUser user)
+    public static bool HaveAccess(this SocketGuildChannel channel, SocketGuildUser user)
     {
-        if (channel is SocketThreadChannel thread)
-            return HaveAccess(thread.ParentChannel, user);
-
-        if (channel.GetUser(user.Id) != null || channel.PermissionOverwrites.Count == 0)
-            return true;
-
-        var overwrite = channel.GetPermissionOverwrite(user);
-        if (overwrite != null)
+        while (true)
         {
-            if (overwrite.Value.ViewChannel == PermValue.Allow)
+            if (channel is SocketThreadChannel thread)
+            {
+                channel = thread.ParentChannel;
+                continue;
+            }
+
+            if (channel.GetUser(user.Id) != null || channel.PermissionOverwrites.Count == 0) 
                 return true;
-            else if (overwrite.Value.ViewChannel == PermValue.Deny)
-                return false;
+
+            var overwrite = channel.GetPermissionOverwrite(user);
+            if (overwrite != null)
+            {
+                if (overwrite.Value.ViewChannel == PermValue.Allow)
+                    return true;
+                else if (overwrite.Value.ViewChannel == PermValue.Deny) 
+                    return false;
+            }
+
+            var everyonePerm = channel.GetPermissionOverwrite(user.Guild.EveryoneRole);
+            var isEveryonePerm = everyonePerm is { ViewChannel: PermValue.Allow or PermValue.Inherit };
+
+            foreach (var role in user.Roles.Where(o => !o.IsEveryone).OrderByDescending(o => o.Position))
+            {
+                var roleOverwrite = channel.GetPermissionOverwrite(role);
+                if (roleOverwrite == null) continue;
+
+                if (roleOverwrite.Value.ViewChannel == PermValue.Deny && isEveryonePerm) return false;
+                if (roleOverwrite.Value.ViewChannel == PermValue.Allow) return true;
+            }
+
+            return isEveryonePerm;
         }
-
-        var everyonePerm = channel.GetPermissionOverwrite(user.Guild.EveryoneRole);
-        var isEveryonePerm = everyonePerm != null && (everyonePerm.Value.ViewChannel == PermValue.Allow || everyonePerm.Value.ViewChannel == PermValue.Inherit);
-
-        foreach (var role in user.Roles.Where(o => !o.IsEveryone).OrderByDescending(o => o.Position))
-        {
-            var roleOverwrite = channel.GetPermissionOverwrite(role);
-            if (roleOverwrite == null) continue;
-
-            if (roleOverwrite.Value.ViewChannel == PermValue.Deny && isEveryonePerm)
-                return false;
-
-            if (roleOverwrite.Value.ViewChannel == PermValue.Allow)
-                return true;
-        }
-
-        return isEveryonePerm;
     }
 
     public static async Task<bool> HaveAccessAsync(this IGuildChannel channel, IGuildUser user)
     {
-        if (channel is IThreadChannel thread)
+        if (channel is IThreadChannel { CategoryId: { } } thread)
             return await HaveAccessAsync(await channel.Guild.GetTextChannelAsync(thread.CategoryId.Value), user);
 
         if (channel.PermissionOverwrites == null || channel.PermissionOverwrites.Count == 0)
             return true;
-        if ((await channel.GetUserAsync(user.Id, CacheMode.CacheOnly)) != null)
+        if (await channel.GetUserAsync(user.Id, CacheMode.CacheOnly) != null)
             return true;
 
         var overwrite = channel.GetPermissionOverwrite(user);
@@ -64,7 +67,7 @@ static public class ChannelExtensions
         }
 
         var everyonePerm = channel.GetPermissionOverwrite(user.Guild.EveryoneRole);
-        var isEveryonePerm = everyonePerm != null && (everyonePerm.Value.ViewChannel == PermValue.Allow || everyonePerm.Value.ViewChannel == PermValue.Inherit);
+        var isEveryonePerm = everyonePerm is { ViewChannel: PermValue.Allow or PermValue.Inherit };
 
         var userRoles = user.RoleIds
             .Where(o => o != user.Guild.EveryoneRole.Id)
@@ -112,15 +115,17 @@ static public class ChannelExtensions
     }
 
     public static bool HaveCategory(this IGuildChannel channel)
-        => channel is INestedChannel nested && nested.CategoryId != null;
+        => channel is INestedChannel { CategoryId: { } };
 
     public static IChannel GetCategory(this SocketGuildChannel channel)
     {
-        if (channel is SocketCategoryChannel categoryChannel) return categoryChannel;
-        else if (channel is SocketThreadChannel thread) return thread.ParentChannel;
-        else if (channel is SocketTextChannel textChannel) return textChannel.Category;
-        else if (channel is SocketVoiceChannel voiceChannel) return voiceChannel.Category;
-
-        return null;
+        return channel switch
+        {
+            SocketCategoryChannel categoryChannel => categoryChannel,
+            SocketThreadChannel thread => thread.ParentChannel,
+            SocketVoiceChannel voiceChannel => voiceChannel.Category,
+            SocketTextChannel textChannel => textChannel.Category,
+            _ => null
+        };
     }
 }

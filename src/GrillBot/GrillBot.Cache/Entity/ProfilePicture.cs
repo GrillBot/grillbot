@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace GrillBot.Cache.Entity;
 
@@ -22,8 +20,4 @@ public class ProfilePicture
 
     [Required]
     public byte[] Data { get; set; } = null!;
-
-    [NotMapped]
-    public string Extension
-        => IsAnimated ? "gif" : "png";
 }

@@ -1,16 +1,15 @@
 ﻿using System.ComponentModel;
 
-namespace GrillBot.Data.Enums
+namespace GrillBot.Data.Enums;
+
+public enum UselessPermissionType
 {
-    public enum UselessPermissionType
-    {
-        [Description("Administrator")]
-        Administrator,
+    [Description("Administrator")]
+    Administrator,
 
-        [Description("Neutrální oprávnění")]
-        Neutral,
+    [Description("Neutrální oprávnění")]
+    Neutral,
 
-        [Description("Dostupné přes roli")]
-        AvailableFromRole
-    }
+    [Description("Dostupné přes roli")]
+    AvailableFromRole
 }

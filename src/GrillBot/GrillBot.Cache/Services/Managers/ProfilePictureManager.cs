@@ -18,25 +18,23 @@ public class ProfilePictureManager
 
     public async Task<ProfilePicture> GetOrCreatePictureAsync(IUser user, ushort size = 128)
     {
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
 
         var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId;
         var profilePictures = await cache.ProfilePictureRepository.GetProfilePicturesAsync(user.Id, avatarId);
         var profilePicture = profilePictures.Find(o => o.Size == size);
 
-        if (profilePicture == null)
-        {
-            await CleanCacheForUserAsync(user); // Remove all profile pictures if user changed picture.
-            return await CreatePictureAsync(user, size);
-        }
-
-        return profilePicture;
+        if (profilePicture != null) 
+            return profilePicture;
+        
+        await CleanCacheForUserAsync(user); // Remove all profile pictures if user changed picture.
+        return await CreatePictureAsync(user, size);
     }
 
-    public async Task<ProfilePicture> CreatePictureAsync(IUser user, ushort size = 128)
+    private async Task<ProfilePicture> CreatePictureAsync(IUser user, ushort size = 128)
     {
         var avatarData = await DownloadAvatarAsync(user, size);
-        var entity = new ProfilePicture()
+        var entity = new ProfilePicture
         {
             AvatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId,
             IsAnimated = user.AvatarId?.StartsWith("a_") ?? false,
@@ -45,7 +43,7 @@ public class ProfilePictureManager
             Data = avatarData
         };
 
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
         await cache.AddAsync(entity);
         await cache.CommitAsync();
 
@@ -65,7 +63,7 @@ public class ProfilePictureManager
 
     private async Task CleanCacheForUserAsync(IUser user)
     {
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
 
         var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId;
         var invalidProfilePictures = await cache.ProfilePictureRepository.GetProfilePicturesExceptOneAsync(user.Id, avatarId);

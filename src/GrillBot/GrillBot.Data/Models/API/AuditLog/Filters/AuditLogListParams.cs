@@ -57,7 +57,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
             () => Types.Contains(AuditLogItemType.Command) && CommandFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.InteractionCommand) && InteractionFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.JobCompleted) && JobFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.API) && ApiRequestFilter?.IsSet() == true
+            () => Types.Contains(AuditLogItemType.Api) && ApiRequestFilter?.IsSet() == true
         };
 
         return conditions.Any(o => o());

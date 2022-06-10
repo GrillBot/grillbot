@@ -10,7 +10,9 @@ public class AuditUserInfo : IComparable
     public string Username { get; set; }
     public string Discriminator { get; set; }
 
-    public AuditUserInfo() { }
+    public AuditUserInfo()
+    {
+    }
 
     public AuditUserInfo(IUser user)
     {
@@ -43,8 +45,8 @@ public class AuditUserInfo : IComparable
         return Id.ToString().GetHashCode();
     }
 
-    public static bool operator ==(AuditUserInfo left, AuditUserInfo right) => left.CompareTo(right) == 0;
-    public static bool operator !=(AuditUserInfo left, AuditUserInfo right) => left.CompareTo(right) != 0;
+    public static bool operator ==(AuditUserInfo left, AuditUserInfo right) => left != null && left.CompareTo(right) == 0;
+    public static bool operator !=(AuditUserInfo left, AuditUserInfo right) => left != null && left.CompareTo(right) != 0;
     public static bool operator >(AuditUserInfo left, AuditUserInfo right) => left.CompareTo(right) != 0;
     public static bool operator <(AuditUserInfo left, AuditUserInfo right) => left.CompareTo(right) != 0;
     public static bool operator <=(AuditUserInfo left, AuditUserInfo right) => left.CompareTo(right) != 0;

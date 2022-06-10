@@ -45,7 +45,7 @@ public class GuildChannel
 
     public static GuildChannel FromDiscord(IGuild guild, IChannel channel, ChannelType channelType)
     {
-        var guildChannel = new GuildChannel()
+        var guildChannel = new GuildChannel
         {
             ChannelId = channel.Id.ToString(),
             GuildId = guild.Id.ToString(),
@@ -53,7 +53,7 @@ public class GuildChannel
             ChannelType = channelType
         };
 
-        if (channel is IThreadChannel thread && thread.CategoryId != null)
+        if (channel is IThreadChannel { CategoryId: { } } thread)
             guildChannel.ParentChannelId = thread.CategoryId.Value.ToString();
 
         return guildChannel;
@@ -62,7 +62,7 @@ public class GuildChannel
     public bool HasFlag(ChannelFlags flags) => (Flags & (long)flags) != 0;
 
     public bool IsThread()
-        => ChannelType == ChannelType.PublicThread || ChannelType == ChannelType.PrivateThread;
+        => ChannelType is ChannelType.PublicThread or ChannelType.PrivateThread;
 
     public bool IsText()
         => ChannelType == ChannelType.Text;

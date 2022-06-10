@@ -22,7 +22,7 @@ public class MathModule : Infrastructure.InteractionsModuleBase
     )
     {
         var client = HttpClientFactory.CreateClient("MathJS");
-        var requestJson = JsonConvert.SerializeObject(new MathJSRequest() { Expression = expression });
+        var requestJson = JsonConvert.SerializeObject(new MathJsRequest() { Expression = expression });
         using var requestContent = new StringContent(requestJson);
 
         var embed = new EmbedBuilder()
@@ -34,7 +34,7 @@ public class MathModule : Infrastructure.InteractionsModuleBase
         {
             using var response = await client.PostAsync("", requestContent);
             var responseContent = await response.Content.ReadAsStringAsync();
-            var calcResult = JsonConvert.DeserializeObject<MathJSResult>(responseContent);
+            var calcResult = JsonConvert.DeserializeObject<MathJsResult>(responseContent);
 
             if (!response.IsSuccessStatusCode)
             {

@@ -20,11 +20,11 @@ public class CommandExecution
         MessageContent = message.Content;
         Duration = duration;
 
-        if (result != null)
-        {
-            IsSuccess = result.IsSuccess;
-            CommandError = result.Error;
-            ErrorReason = result.ErrorReason;
-        }
+        if (result == null) 
+            return;
+
+        IsSuccess = result.IsSuccess;
+        CommandError = result.Error;
+        ErrorReason = result.ErrorReason;
     }
 }

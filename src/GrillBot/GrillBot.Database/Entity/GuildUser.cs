@@ -61,7 +61,7 @@ public class GuildUser
 
     public static GuildUser FromDiscord(IGuild guild, IGuildUser user)
     {
-        return new GuildUser()
+        return new GuildUser
         {
             GuildId = guild.Id.ToString(),
             UserId = user.Id.ToString(),

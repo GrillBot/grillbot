@@ -1,9 +1,8 @@
-﻿namespace GrillBot.Database.Entity
+﻿namespace GrillBot.Database.Entity;
+
+public class GuildChannelOverride
 {
-    public class GuildChannelOverride
-    {
-        public ulong ChannelId { get; set; }
-        public ulong AllowValue { get; set; }
-        public ulong DenyValue { get; set; }
-    }
+    public ulong ChannelId { get; set; }
+    public ulong AllowValue { get; set; }
+    public ulong DenyValue { get; set; }
 }

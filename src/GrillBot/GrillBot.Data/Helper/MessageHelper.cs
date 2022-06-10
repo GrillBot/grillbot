@@ -19,18 +19,17 @@ public static class MessageHelper
         if (ulong.TryParse(reference, out var messageId))
             return new MessageReference(messageId, channelId, guildId);
 
-        if (Uri.IsWellFormedUriString(reference, UriKind.Absolute))
-        {
-            var uriMatch = DiscordMessageUriRegex.Match(reference);
+        if (!Uri.IsWellFormedUriString(reference, UriKind.Absolute))
+            return null;
 
-            if (uriMatch.Success)
-            {
-                return new MessageReference(
-                    uriMatch.Groups[3].Value.ToUlong(),
-                    channelId ?? uriMatch.Groups[2].Value.ToUlong(),
-                    guildId ?? uriMatch.Groups[1].Value.ToUlong()
-                );
-            }
+        var uriMatch = DiscordMessageUriRegex.Match(reference);
+        if (uriMatch.Success)
+        {
+            return new MessageReference(
+                uriMatch.Groups[3].Value.ToUlong(),
+                channelId ?? uriMatch.Groups[2].Value.ToUlong(),
+                guildId ?? uriMatch.Groups[1].Value.ToUlong()
+            );
         }
 
         return null;
@@ -38,19 +37,22 @@ public static class MessageHelper
 
     public static string ClearEmotes(string content, IEnumerable<IEmote> emotes)
     {
-        foreach (var emote in emotes.Distinct())
-            content = content.Replace(emote.ToString(), "");
-
-        var emojis = new[]
+        string Process(IEnumerable<IEmote> emotesData)
         {
-            Emojis.PaginationEmojis,
-            Emojis.NumberToEmojiMap.Values.OfType<IEmote>(),
-            Emojis.CharToEmojiMap.Values.OfType<IEmote>(),
-            Emojis.CharToSignEmojiMap.Values.OfType<IEmote>()
-        }.SelectMany(o => o).Distinct();
+            content = emotesData
+                .Distinct()
+                .Select(o => o.ToString() ?? "")
+                .Aggregate(content, (current, emoteId) => current.Replace(emoteId, ""));
 
-        foreach (var emoji in emojis)
-            content = content.Replace(emoji.ToString(), "");
-        return content.Trim();
+            return content.Trim();
+        }
+
+        content = Process(emotes.ToList());
+        content = Process(Emojis.PaginationEmojis);
+        content = Process(Emojis.NumberToEmojiMap.Values);
+        content = Process(Emojis.CharToEmojiMap.Values);
+        content = Process(Emojis.CharToSignEmojiMap.Values);
+
+        return content;
     }
 }

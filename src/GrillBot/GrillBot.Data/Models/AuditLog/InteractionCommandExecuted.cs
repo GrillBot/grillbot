@@ -43,7 +43,7 @@ public class InteractionCommandExecuted
         }
     }
 
-    public InteractionCommandExecuted(SlashCommandInfo commandInfo, SocketSlashCommand interaction, IResult result, int duration)
+    public InteractionCommandExecuted(ICommandInfo commandInfo, SocketSlashCommand interaction, IResult result, int duration)
         : this(commandInfo, result, duration)
     {
         HasResponded = interaction.HasResponded;
@@ -55,23 +55,23 @@ public class InteractionCommandExecuted
             .ToList();
     }
 
-    public InteractionCommandExecuted(MessageCommandInfo commandInfo, SocketMessageCommand interaction, IResult result, int duration)
+    public InteractionCommandExecuted(ICommandInfo commandInfo, SocketMessageCommand interaction, IResult result, int duration)
         : this(commandInfo, result, duration)
     {
         HasResponded = interaction.HasResponded;
         IsValidToken = interaction.IsValidToken;
-        Parameters = new() { new(interaction.Data) };
+        Parameters = new List<InteractionCommandParameter> { new(interaction.Data) };
     }
 
-    public InteractionCommandExecuted(UserCommandInfo commandInfo, SocketUserCommand interaction, IResult result, int duration)
+    public InteractionCommandExecuted(ICommandInfo commandInfo, SocketUserCommand interaction, IResult result, int duration)
         : this(commandInfo, result, duration)
     {
         HasResponded = interaction.HasResponded;
         IsValidToken = interaction.IsValidToken;
-        Parameters = new() { new(interaction.Data) };
+        Parameters = new List<InteractionCommandParameter> { new(interaction.Data) };
     }
 
-    public InteractionCommandExecuted(ComponentCommandInfo commandInfo, SocketMessageComponent component, IResult result, int duration)
+    public InteractionCommandExecuted(ICommandInfo commandInfo, SocketMessageComponent component, IResult result, int duration)
         : this(commandInfo, result, duration)
     {
         HasResponded = component.HasResponded;
@@ -79,12 +79,12 @@ public class InteractionCommandExecuted
 
         Parameters = new List<InteractionCommandParameter>()
         {
-            new InteractionCommandParameter() { Name = "CustomId", Type = "String", Value = component.Data.CustomId },
-            new InteractionCommandParameter() { Name = "Type", Type = "String", Value = component.Data.Type.ToString() }
+            new() { Name = "CustomId", Type = "String", Value = component.Data.CustomId },
+            new() { Name = "Type", Type = "String", Value = component.Data.Type.ToString() }
         };
     }
 
-    public InteractionCommandExecuted(ModalCommandInfo commandInfo, SocketModal modal, IResult result, int duration)
+    public InteractionCommandExecuted(ICommandInfo commandInfo, SocketModal modal, IResult result, int duration)
         : this(commandInfo, result, duration)
     {
         HasResponded = modal.HasResponded;
@@ -92,16 +92,16 @@ public class InteractionCommandExecuted
 
         Parameters = new List<InteractionCommandParameter>()
         {
-            new InteractionCommandParameter() { Name = "ModalCustomId", Type = "String", Value = modal.Data.CustomId }
+            new() { Name = "ModalCustomId", Type = "String", Value = modal.Data.CustomId }
         };
 
         Parameters.AddRange(
             modal.Data.Components.SelectMany((component, index) => new[]
             {
-                 new InteractionCommandParameter() { Name = $"ModalComponent({index}).CustomId", Type = "String", Value = component.CustomId },
-                 new InteractionCommandParameter() { Name = $"ModalComponent({index}).Type", Type = "String", Value = component.Type.ToString() },
-                 component.Values?.Count > 0 ? new InteractionCommandParameter() { Name = $"ModalComponent({index}).Values", Type = "String", Value = string.Join(", ", component.Values) } : null,
-                 !string.IsNullOrEmpty(component.Value) ? new InteractionCommandParameter() { Name =  $"ModalComponent({index}).Value", Type = "String", Value = component.Value } : null
+                 new InteractionCommandParameter { Name = $"ModalComponent({index}).CustomId", Type = "String", Value = component.CustomId },
+                 new InteractionCommandParameter { Name = $"ModalComponent({index}).Type", Type = "String", Value = component.Type.ToString() },
+                 component.Values?.Count > 0 ? new InteractionCommandParameter { Name = $"ModalComponent({index}).Values", Type = "String", Value = string.Join(", ", component.Values) } : null,
+                 !string.IsNullOrEmpty(component.Value) ? new InteractionCommandParameter { Name =  $"ModalComponent({index}).Value", Type = "String", Value = component.Value } : null
             }).Where(o => o != null)
         );
     }
@@ -114,17 +114,14 @@ public class InteractionCommandExecuted
 
     public static InteractionCommandExecuted Create(IDiscordInteraction interaction, ICommandInfo commandInfo, IResult result, int duration)
     {
-        if (interaction is SocketSlashCommand slashCommand)
-            return new InteractionCommandExecuted(commandInfo as SlashCommandInfo, slashCommand, result, duration);
-        else if (interaction is SocketMessageCommand messageCommand)
-            return new InteractionCommandExecuted(commandInfo as MessageCommandInfo, messageCommand, result, duration);
-        else if (interaction is SocketUserCommand userCommand)
-            return new InteractionCommandExecuted(commandInfo as UserCommandInfo, userCommand, result, duration);
-        else if (interaction is SocketMessageComponent component)
-            return new InteractionCommandExecuted(commandInfo as ComponentCommandInfo, component, result, duration);
-        else if (interaction is SocketModal modal)
-            return new InteractionCommandExecuted(commandInfo as ModalCommandInfo, modal, result, duration);
-
-        throw new NotSupportedException("Unsupported interaction type");
+        return interaction switch
+        {
+            SocketSlashCommand slashCommand => new InteractionCommandExecuted(commandInfo as SlashCommandInfo, slashCommand, result, duration),
+            SocketMessageCommand messageCommand => new InteractionCommandExecuted(commandInfo as MessageCommandInfo, messageCommand, result, duration),
+            SocketUserCommand userCommand => new InteractionCommandExecuted(commandInfo as UserCommandInfo, userCommand, result, duration),
+            SocketMessageComponent component => new InteractionCommandExecuted(commandInfo as ComponentCommandInfo, component, result, duration),
+            SocketModal modal => new InteractionCommandExecuted(commandInfo as ModalCommandInfo, modal, result, duration),
+            _ => throw new NotSupportedException("Unsupported interaction type")
+        };
     }
 }

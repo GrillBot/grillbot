@@ -55,7 +55,7 @@ public class AuditLogApiService : ServiceBase
             () => IsValidFilter(item, AuditLogItemType.Command, parameters.CommandFilter),
             () => IsValidFilter(item, AuditLogItemType.InteractionCommand, parameters.InteractionFilter),
             () => IsValidFilter(item, AuditLogItemType.JobCompleted, parameters.JobFilter),
-            () => IsValidFilter(item, AuditLogItemType.API, parameters.ApiRequestFilter)
+            () => IsValidFilter(item, AuditLogItemType.Api, parameters.ApiRequestFilter)
         };
 
         return conditions.Any(o => o());
@@ -108,7 +108,7 @@ public class AuditLogApiService : ServiceBase
             AuditLogItemType.InteractionCommand => JsonConvert.DeserializeObject<InteractionCommandExecuted>(entity.Data, JsonSerializerSettings),
             AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, JsonSerializerSettings),
             AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.API => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, JsonSerializerSettings),
+            AuditLogItemType.Api => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, JsonSerializerSettings),
             _ => null
         };
 

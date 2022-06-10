@@ -275,7 +275,7 @@ public class StatisticsController : Controller
         using var context = DbFactory.Create();
 
         var query = context.AuditLogs.AsNoTracking()
-            .Where(o => o.Type == AuditLogItemType.API)
+            .Where(o => o.Type == AuditLogItemType.Api)
             .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
             .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
             .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() });
@@ -295,7 +295,7 @@ public class StatisticsController : Controller
         using var context = DbFactory.Create();
 
         var query = context.AuditLogs.AsNoTracking()
-            .Where(o => o.Type == AuditLogItemType.API)
+            .Where(o => o.Type == AuditLogItemType.Api)
             .Select(o => new { o.CreatedAt, o.Data });
         var dbData = await query.ToListAsync(cancellationToken);
 
@@ -334,7 +334,7 @@ public class StatisticsController : Controller
         using var context = DbFactory.Create();
 
         var query = context.AuditLogs.AsNoTracking()
-            .Where(o => o.Type == AuditLogItemType.API)
+            .Where(o => o.Type == AuditLogItemType.Api)
             .Select(o => new { o.CreatedAt, o.Data });
         var dbData = await query.ToListAsync(cancellationToken);
 

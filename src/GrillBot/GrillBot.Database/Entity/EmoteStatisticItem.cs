@@ -16,7 +16,7 @@ public class EmoteStatisticItem
     public GuildUser? User { get; set; }
 
     [Required]
-    public long UseCount { get; set; } = 0;
+    public long UseCount { get; set; }
 
     [Required]
     public DateTime FirstOccurence { get; set; }

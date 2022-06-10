@@ -2,14 +2,14 @@
 
 namespace GrillBot.Data.Extensions;
 
-static public class DateTimeExtensions
+public static class DateTimeExtensions
 {
-    static public string ToCzechFormat(this DateTime dateTime, bool withoutTime = false)
+    public static string ToCzechFormat(this DateTime dateTime, bool withoutTime = false)
     {
         return dateTime.ToString($"dd. MM. yyyy{(withoutTime ? "" : " HH:mm:ss")}");
     }
 
-    static public int ComputeAge(this DateTime dateTime)
+    public static int ComputeAge(this DateTime dateTime)
     {
         var today = DateTime.Today;
         var age = today.Year - dateTime.Year;

@@ -2,19 +2,18 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GrillBot.Database.Entity
+namespace GrillBot.Database.Entity;
+
+public class ExplicitPermission
 {
-    public class ExplicitPermission
-    {
-        [StringLength(30)]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public string TargetId { get; set; } = null!;
+    [StringLength(30)]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public string TargetId { get; set; } = null!;
 
-        public bool IsRole { get; set; }
+    public bool IsRole { get; set; }
 
-        [StringLength(255)]
-        public string Command { get; set; } = null!;
+    [StringLength(255)]
+    public string Command { get; set; } = null!;
 
-        public ExplicitPermissionState State { get; set; }
-    }
+    public ExplicitPermissionState State { get; set; }
 }

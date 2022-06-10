@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace GrillBot.Data.Extensions.Discord;
 
-static public class GuildExtensions
+public static class GuildExtensions
 {
-    private static Dictionary<string, string> FeaturesList { get; } = new Dictionary<string, string>()
+    private static Dictionary<string, string> FeaturesList { get; } = new()
         {
             { "AnimatedIcon", "Animovaná ikona" },
             { "Banner", "Banner" },
@@ -44,14 +44,14 @@ static public class GuildExtensions
             { "ThreadsEnabledTesting", "" }
         };
 
-    static public IRole GetHighestRole(this IGuild guild, bool requireColor = false)
+    public static IRole GetHighestRole(this IGuild guild, bool requireColor = false)
     {
         var roles = requireColor ? guild.Roles.Where(o => o.Color != Color.Default) : guild.Roles.AsEnumerable();
 
-        return roles.OrderByDescending(o => o.Position).FirstOrDefault();
+        return roles.MaxBy(o => o.Position);
     }
 
-    static public IEnumerable<string> GetTranslatedFeatures(this IGuild guild)
+    public static IEnumerable<string> GetTranslatedFeatures(this IGuild guild)
     {
         if (guild.Features.Value == GuildFeature.None)
             return Enumerable.Empty<string>();
@@ -59,16 +59,16 @@ static public class GuildExtensions
         return Enum.GetValues<GuildFeature>()
             .Where(o => o > 0 && guild.Features.HasFeature(o))
             .Select(o => o.ToString())
-            .Select(o => FeaturesList.TryGetValue(o, out string text) ? text : o)
+            .Select(o => FeaturesList.TryGetValue(o, out var text) ? text : o)
             .Where(o => !string.IsNullOrEmpty(o))
             .Distinct()
             .OrderBy(o => o);
     }
 
-    static public int CalculateFileUploadLimit(this IGuild guild)
+    public static int CalculateFileUploadLimit(this IGuild guild)
         => Convert.ToInt32((guild?.MaxUploadLimit ?? 0) / 1000000);
 
-    static public IEnumerable<SocketTextChannel> GetAvailableTextChannelsFor(this SocketGuild guild, SocketGuildUser user, bool includeThreads = false)
+    private static IEnumerable<SocketTextChannel> GetAvailableTextChannelsFor(this SocketGuild guild, SocketGuildUser user, bool includeThreads = false)
     {
         var query = guild.TextChannels.AsEnumerable();
 
@@ -78,7 +78,7 @@ static public class GuildExtensions
         return query.Where(o => o.HaveAccess(user));
     }
 
-    static public IEnumerable<SocketGuildChannel> GetAvailableChannelsFor(this SocketGuild guild, SocketGuildUser user, bool includeThreads = false)
+    public static IEnumerable<SocketGuildChannel> GetAvailableChannelsFor(this SocketGuild guild, SocketGuildUser user, bool includeThreads = false)
     {
         return GetAvailableTextChannelsFor(guild, user, includeThreads)
             .Select(o => o as SocketGuildChannel)

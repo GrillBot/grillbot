@@ -1,10 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace GrillBot.Data.Models.MathJS
+namespace GrillBot.Data.Models.MathJS;
+
+public class MathJsRequest
 {
-    public class MathJSRequest
-    {
-        [JsonProperty("expr", Required = Required.Always)]
-        public string Expression { get; set; }
-    }
+    [JsonProperty("expr", Required = Required.Always)]
+    public string Expression { get; set; }
 }

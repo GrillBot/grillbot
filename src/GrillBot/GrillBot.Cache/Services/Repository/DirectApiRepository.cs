@@ -10,7 +10,7 @@ public class DirectApiRepository : RepositoryBase
     {
     }
 
-    public List<DirectApiMessage> GetAll() => Context.DirectApiMessages.ToList();
+    public IEnumerable<DirectApiMessage> GetAll() => Context.DirectApiMessages.ToList();
 
     private IQueryable<DirectApiMessage> GetBaseQuery(bool asNoTracking = false)
     {

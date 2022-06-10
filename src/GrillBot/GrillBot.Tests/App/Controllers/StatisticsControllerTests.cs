@@ -186,7 +186,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
                 EndAt = now.AddMinutes(1),
                 StartAt = now
             }),
-            Type = Database.Enums.AuditLogItemType.API,
+            Type = Database.Enums.AuditLogItemType.Api,
             Id = 5,
             CreatedAt = DateTime.Now
         });
@@ -211,7 +211,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
                 EndAt = now.AddMinutes(1),
                 StartAt = now
             }),
-            Type = Database.Enums.AuditLogItemType.API,
+            Type = Database.Enums.AuditLogItemType.Api,
             Id = 5,
             CreatedAt = DateTime.Now
         });

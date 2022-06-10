@@ -13,6 +13,7 @@ public static class EnumerableExtensions
 
             var childrenData = getChildren(item);
             if (childrenData == null) yield break;
+            
             foreach (var child in childrenData.Flatten(getChildren))
                 yield return child;
         }

@@ -26,5 +26,5 @@ public class AuditLogFileMeta
     public string FilenameWithoutExtension => Path.GetFileNameWithoutExtension(Filename);
 
     [Required]
-    public long Size { get; set; } = 0;
+    public long Size { get; set; }
 }

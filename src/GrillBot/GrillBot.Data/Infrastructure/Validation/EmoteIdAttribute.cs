@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GrillBot.Data.Infrastructure.Validation;
 
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
 public class EmoteIdAttribute : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
@@ -12,9 +12,6 @@ public class EmoteIdAttribute : ValidationAttribute
         if (value is not string val)
             return ValidationResult.Success;
 
-        if (!Emote.TryParse(val, out var _))
-            return new ValidationResult(ErrorMessage);
-
-        return ValidationResult.Success;
+        return !Emote.TryParse(val, out _) ? new ValidationResult(ErrorMessage) : ValidationResult.Success;
     }
 }

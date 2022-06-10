@@ -55,7 +55,7 @@ public class Guild
 
     public static Guild FromDiscord(IGuild guild)
     {
-        return new Guild()
+        return new Guild
         {
             Id = guild.Id.ToString(),
             Name = guild.Name,

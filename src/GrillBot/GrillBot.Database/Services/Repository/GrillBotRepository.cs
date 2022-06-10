@@ -23,6 +23,9 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public UserRepository User => GetOrCreateRepository<UserRepository>();
     public UnverifyRepository Unverify => GetOrCreateRepository<UnverifyRepository>();
     public RemindRepository Remind => GetOrCreateRepository<RemindRepository>();
+    public GuildRepository Guild => GetOrCreateRepository<GuildRepository>();
+    public GuildUserRepository GuildUser => GetOrCreateRepository<GuildUserRepository>();
+    public InviteRepository Invite => GetOrCreateRepository<InviteRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {
@@ -54,11 +57,11 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
         Context.Set<TEntity>().RemoveRange(enumerable);
     }
 
-    public async Task<int> CommitAsync()
+    public async Task CommitAsync()
     {
         using (CounterManager.Create("Database"))
         {
-            return await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync();
         }
     }
 

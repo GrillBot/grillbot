@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public sealed class GrillBotCacheRepository : IDisposable
+public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
 {
     private GrillBotCacheContext Context { get; }
     private CounterManager CounterManager { get; }
@@ -13,7 +13,7 @@ public sealed class GrillBotCacheRepository : IDisposable
     {
         Context = context;
         CounterManager = counterManager;
-        Repositories = new();
+        Repositories = new List<RepositoryBase>();
     }
 
     public DirectApiRepository DirectApiRepository => GetOrCreateRepository<DirectApiRepository>();
@@ -24,16 +24,14 @@ public sealed class GrillBotCacheRepository : IDisposable
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {
         var repository = Repositories.OfType<TRepository>().FirstOrDefault();
+        if (repository != null)
+            return repository;
 
+        repository = Activator.CreateInstance(typeof(TRepository), Context, CounterManager) as TRepository;
         if (repository == null)
-        {
-            repository = Activator.CreateInstance(typeof(TRepository), new object[] { Context, CounterManager }) as TRepository;
-            if (repository == null)
-                throw new InvalidOperationException($"Error while creating repository {typeof(TRepository).Name}");
+            throw new InvalidOperationException($"Error while creating repository {typeof(TRepository).Name}");
 
-            Repositories.Add(repository);
-        }
-
+        Repositories.Add(repository);
         return repository;
     }
 
@@ -48,42 +46,47 @@ public sealed class GrillBotCacheRepository : IDisposable
 
     public void RemoveCollection<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
     {
-        collection = collection.Where(o => o != null);
-
-        if (!collection.Any())
+        var enumerable = collection as List<TEntity> ?? collection.ToList();
+        if (enumerable.Count == 0)
             return;
 
-        Context.Set<TEntity>().RemoveRange(collection);
+        Context.Set<TEntity>().RemoveRange(enumerable);
     }
 
-    public async Task<int> CommitAsync()
+    public async Task CommitAsync()
     {
         using (CounterManager.Create("Cache"))
         {
-            return await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync();
         }
     }
 
-    public int Commit()
+    public void Commit()
     {
         using (CounterManager.Create("Cache"))
         {
-            return Context.SaveChanges();
+            Context.SaveChanges();
         }
-    }
-
-    public async Task ProcessMigrationsAsync()
-    {
-        if ((await Context.Database.GetPendingMigrationsAsync()).Any())
-            await Context.Database.MigrateAsync();
     }
 
     public void ProcessMigrations()
-        => ProcessMigrationsAsync().Wait();
+    {
+        using (CounterManager.Create("Cache"))
+        {
+            if (Context.Database.GetPendingMigrations().Any())
+                Context.Database.Migrate();
+        }
+    }
 
     public void Dispose()
     {
-        Context?.Dispose();
+        Context.Dispose();
         Repositories.Clear();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Repositories.Clear();
+        return Context.DisposeAsync();
     }
 }

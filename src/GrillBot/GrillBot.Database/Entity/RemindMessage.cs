@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -32,7 +31,7 @@ public class RemindMessage
     public string Message { get; set; } = null!;
 
     [Required]
-    public int Postpone { get; set; } = 0;
+    public int Postpone { get; set; }
 
     [StringLength(30)]
     public string? RemindMessageId { get; set; }

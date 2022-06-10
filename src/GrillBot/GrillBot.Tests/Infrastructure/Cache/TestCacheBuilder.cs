@@ -35,6 +35,7 @@ public class TestCacheBuilder : GrillBotCacheBuilder
     {
         repository.RemoveCollection(repository.DirectApiRepository.GetAll());
         repository.RemoveCollection(repository.MessageIndexRepository.GetMessagesAsync().Result);
+        repository.RemoveCollection(repository.ProfilePictureRepository.GetAll());
 
         repository.Commit();
     }

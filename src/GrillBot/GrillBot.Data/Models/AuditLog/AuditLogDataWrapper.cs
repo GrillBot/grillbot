@@ -37,7 +37,7 @@ public class AuditLogDataWrapper
 
     public AuditLogItem ToEntity(JsonSerializerSettings serializerSettings = null)
     {
-        var entity = new AuditLogItem()
+        var entity = new AuditLogItem
         {
             Type = Type,
             ChannelId = Channel?.Id.ToString(),
@@ -47,8 +47,8 @@ public class AuditLogDataWrapper
             GuildId = Guild?.Id.ToString()
         };
 
-        if (Type == AuditLogItemType.Info || Type == AuditLogItemType.Warning || Type == AuditLogItemType.Error)
-            entity.Data = Data as string;
+        if (Type is AuditLogItemType.Info or AuditLogItemType.Warning or AuditLogItemType.Error)
+            entity.Data = (string)Data;
         else
             entity.Data = JsonConvert.SerializeObject(Data, serializerSettings);
 

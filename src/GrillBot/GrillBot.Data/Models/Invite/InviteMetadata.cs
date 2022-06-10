@@ -19,7 +19,7 @@ public class InviteMetadata
         GuildId = guild.Id;
     }
 
-    static public InviteMetadata FromDiscord(IInviteMetadata metadata)
+    public static InviteMetadata FromDiscord(IInviteMetadata metadata)
     {
         return new InviteMetadata(metadata.Code, metadata.Uses, metadata.Guild)
         {
@@ -31,7 +31,7 @@ public class InviteMetadata
 
     public Database.Entity.Invite ToEntity()
     {
-        return new Database.Entity.Invite()
+        return new Database.Entity.Invite
         {
             CreatedAt = CreatedAt,
             Code = Code,

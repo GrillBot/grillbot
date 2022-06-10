@@ -13,7 +13,7 @@ public class StatisticsRepository : RepositoryBase
     {
         using (Counter.Create("Cache"))
         {
-            return new Dictionary<string, int>()
+            return new Dictionary<string, int>
             {
                 { nameof(Context.MessageIndex), await Context.MessageIndex.CountAsync(cancellationToken) },
                 { nameof(Context.DirectApiMessages), await Context.DirectApiMessages.CountAsync(cancellationToken) },

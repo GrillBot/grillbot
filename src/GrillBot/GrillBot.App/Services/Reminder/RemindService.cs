@@ -260,23 +260,18 @@ public class RemindService : ServiceBase
         return embed;
     }
 
-    public async Task<List<long>> GetProcessableReminderIdsAsync(CancellationToken cancellationToken = default)
+    public async Task<List<long>> GetRemindIdsForProcessAsync()
     {
-        using var context = DbFactory.Create();
-
-        var query = context.Reminders.AsQueryable()
-            .Where(o => o.RemindMessageId == null && o.At <= DateTime.Now)
-            .Select(o => o.Id);
-
-        return await query.ToListAsync(cancellationToken);
+        await using var repository = DbFactory.CreateRepository();
+        return await repository.Remind.GetRemindIdsForProcessAsync();
     }
 
     public async Task ProcessRemindFromJobAsync(long id)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
 
-        var remind = await context.Reminders.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id);
+        var remind = await repository.Remind.FindRemindByIdAsync(id);
+        if (remind == null) return;
 
         var embed = (await CreateRemindEmbedAsync(remind, false)).Build();
         var toUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
@@ -299,7 +294,7 @@ public class RemindService : ServiceBase
         }
 
         remind.RemindMessageId = messageId.ToString();
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
     public async Task<Dictionary<long, string>> GetRemindSuggestionsAsync(IUser user)

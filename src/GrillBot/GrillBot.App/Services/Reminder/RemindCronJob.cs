@@ -20,13 +20,14 @@ public class RemindCronJob : Job
 
     public override async Task RunAsync(IJobExecutionContext context)
     {
-        var reminders = await RemindService.GetProcessableReminderIdsAsync(context.CancellationToken);
+        var reminders = await RemindService.GetRemindIdsForProcessAsync();
 
         foreach (var id in reminders)
         {
             await RemindService.ProcessRemindFromJobAsync(id);
         }
 
-        context.Result = $"Reminders: {reminders.Count} ({string.Join(", ", reminders)})";
+        if (reminders.Count > 0)
+            context.Result = $"Reminders: {reminders.Count} ({string.Join(", ", reminders)})";
     }
 }

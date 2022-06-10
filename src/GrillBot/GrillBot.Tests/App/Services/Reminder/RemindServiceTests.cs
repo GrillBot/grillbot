@@ -291,7 +291,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task GetProcessableReminderIdsAsync()
     {
-        var result = await Service.GetProcessableReminderIdsAsync();
+        var result = await Service.GetRemindIdsForProcessAsync();
         Assert.AreEqual(0, result.Count);
     }
 

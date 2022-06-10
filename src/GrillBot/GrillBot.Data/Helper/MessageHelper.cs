@@ -39,12 +39,11 @@ public static class MessageHelper
     {
         string Process(IEnumerable<IEmote> emotesData)
         {
-            content = emotesData
+            return emotesData
                 .Distinct()
                 .Select(o => o.ToString() ?? "")
-                .Aggregate(content, (current, emoteId) => current.Replace(emoteId, ""));
-
-            return content.Trim();
+                .Aggregate(content, (current, emoteId) => current.Replace(emoteId, ""))
+                .Trim();
         }
 
         content = Process(emotes.ToList());

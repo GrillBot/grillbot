@@ -12,7 +12,7 @@ using GrillBot.Database.Enums;
 namespace GrillBot.App.Services.AuditLog;
 
 [Initializable]
-public partial class AuditLogService : ServiceBase
+public class AuditLogService : ServiceBase
 {
     public static JsonSerializerSettings JsonSerializerSettings { get; }
     private MessageCacheManager MessageCache { get; }
@@ -75,46 +75,56 @@ public partial class AuditLogService : ServiceBase
     /// </summary>
     public async Task<IGuild> GetGuildFromChannelAsync(IChannel channel, ulong channelId)
     {
-        if (channel is IDMChannel) return null; // Direct messages
-        if (channel is IGuildChannel guildChannel) return guildChannel.Guild;
-        if (channel == null && channelId == default) return null;
-
-        using var dbContext = DbFactory.Create();
-
-        var guildId = await dbContext.Channels
-            .Where(o => o.ChannelId == channelId.ToString())
-            .Select(o => o.GuildId)
-            .FirstOrDefaultAsync();
-
-        return string.IsNullOrEmpty(guildId) ? null : DiscordClient.GetGuild(guildId.ToUlong());
-    }
-
-    public Task StoreItemAsync(AuditLogDataWrapper item, CancellationToken cancellationToken = default)
-        => StoreItemsAsync(new() { item }, cancellationToken);
-
-    public async Task StoreItemsAsync(List<AuditLogDataWrapper> items, CancellationToken cancellationToken = default)
-    {
-        using var dbContext = DbFactory.Create();
-
-        foreach (var item in items.Where(o => o.Guild != null).DistinctBy(o => o.Guild.Id))
-            await dbContext.InitGuildAsync(item.Guild, cancellationToken);
-
-        foreach (var item in items.Where(o => o.ProcessedUser != null).DistinctBy(o => o.ProcessedUser.Id))
-            await dbContext.InitUserAsync(item.ProcessedUser, cancellationToken);
-
-        foreach (var item in items.Where(o => o.Guild != null && o.Channel != null).DistinctBy(o => o.Channel.Id))
-            await dbContext.InitGuildChannelAsync(item.Guild, item.Channel, item.ChannelType.Value, cancellationToken);
-
-        foreach (var item in items.Where(o => o.Guild != null && o.ProcessedUser != null).DistinctBy(o => o.ProcessedUser.Id))
+        switch (channel)
         {
-            var guildUser = item.ProcessedUser is not IGuildUser _guildUser ? await item.Guild.GetUserAsync(item.ProcessedUser.Id) : _guildUser;
-
-            if (guildUser != null)
-                await dbContext.InitGuildUserAsync(item.Guild, guildUser, cancellationToken);
+            case IDMChannel:
+                return null; // Direct messages
+            case IGuildChannel guildChannel:
+                return guildChannel.Guild;
+            case null when channelId == default:
+                return null;
         }
 
-        await dbContext.AddRangeAsync(items.Select(o => o.ToEntity(JsonSerializerSettings)), cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await using var repository = DbFactory.CreateRepository();
+
+        var channels = await repository.Channel.FindChannelsByIdAsync(channelId, true);
+        var channelEntity = channels.FirstOrDefault();
+        if (channelEntity == null)
+            return null;
+
+        var guildId = channelEntity.GuildId.ToUlong();
+        return DiscordClient.GetGuild(guildId);
+    }
+
+    public Task StoreItemAsync(AuditLogDataWrapper item)
+        => StoreItemsAsync(new List<AuditLogDataWrapper> { item });
+
+    public async Task StoreItemsAsync(List<AuditLogDataWrapper> items)
+    {
+        await using var repository = DbFactory.CreateRepository();
+
+        foreach (var item in items.Where(o => o.Guild != null).DistinctBy(o => o.Guild.Id))
+            await repository.Guild.GetOrCreateRepositoryAsync(item.Guild);
+
+        foreach (var item in items.Where(o => o.Guild != null && o.Channel != null).DistinctBy(o => o.Channel.Id))
+            await repository.Channel.GetOrCreateChannelAsync(item.Channel);
+
+        foreach (var item in items.Where(o => o.ProcessedUser != null).DistinctBy(o => o.ProcessedUser.Id))
+        {
+            if (item.Guild != null)
+            {
+                var guildUser = item.ProcessedUser as IGuildUser ?? await item.Guild.GetUserAsync(item.ProcessedUser.Id);
+                if (guildUser != null)
+                    await repository.GuildUser.GetOrCreateGuildUserAsync(guildUser);
+            }
+            else
+            {
+                await repository.User.GetOrCreateUserAsync(item.ProcessedUser);
+            }
+        }
+
+        await repository.AddRangeAsync(items.Select(o => o.ToEntity(JsonSerializerSettings)));
+        await repository.CommitAsync();
     }
 
     private async Task<bool> CanExecuteEvent(Func<Task<bool>> eventSpecificCheck = null)
@@ -145,26 +155,7 @@ public partial class AuditLogService : ServiceBase
     /// </summary>
     public async Task<List<ulong>> GetDiscordAuditLogIdsAsync(IGuild guild, IChannel channel, AuditLogItemType[] types, DateTime after)
     {
-        using var dbContext = DbFactory.Create();
-
-        var baseQuery = dbContext.AuditLogs.AsNoTracking()
-            .Where(o => o.DiscordAuditLogItemId != null && o.CreatedAt >= after);
-
-        if (guild != null)
-            baseQuery = baseQuery.Where(o => o.GuildId == guild.Id.ToString());
-
-        if (channel != null)
-            baseQuery = baseQuery.Where(o => o.ChannelId == channel.Id.ToString());
-
-        if (types?.Length > 0)
-            baseQuery = baseQuery.Where(o => types.Contains(o.Type));
-
-        var idsQuery = baseQuery.Select(o => o.DiscordAuditLogItemId).AsQueryable();
-        var ids = await idsQuery.ToListAsync();
-        return ids
-            .SelectMany(o => o.Split(','))
-            .Select(o => o.ToUlong())
-            .Distinct()
-            .ToList();
+        await using var repository = DbFactory.CreateRepository();
+        return await repository.AuditLog.GetDiscordAuditLogIdsAsync(guild, channel, types, after);
     }
 }

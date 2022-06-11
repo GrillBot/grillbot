@@ -35,7 +35,7 @@ public class UserRepository : RepositoryBase
                 return entity;
 
             entity = User.FromDiscord(user);
-            await Context.AddAsync(entity);
+            if (!Context.IsEntityTracked<User>(entry => entry.Entity.Id == entity.Id)) await Context.AddAsync(entity);
 
             return entity;
         }

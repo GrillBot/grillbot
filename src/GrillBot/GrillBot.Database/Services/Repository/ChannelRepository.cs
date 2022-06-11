@@ -33,12 +33,24 @@ public class ChannelRepository : RepositoryBase
             .Where(o => o.ChannelType != ChannelType.Category);
     }
 
-    public async Task<GuildChannel?> FindChannelByIdAsync(ulong guildId, ulong channelId, bool disableTracking = false)
+    public async Task<GuildChannel?> FindChannelByIdAsync(ulong guildId, ulong channelId, bool disableTracking = false, bool includeUsers = false)
     {
         using (Counter.Create("Database"))
         {
-            var query = GetBaseQuery(false, disableTracking, true);
+            var query = GetBaseQuery(false, disableTracking, includeUsers);
             return await query.FirstOrDefaultAsync(o => o.GuildId == guildId.ToString() && o.ChannelId == channelId.ToString());
+        }
+    }
+
+    public async Task<List<GuildChannel>> FindChannelsByIdAsync(ulong channelId, bool disableTracking = false, bool includeUsers = false)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = GetBaseQuery(false, disableTracking, includeUsers);
+
+            return await query
+                .Where(o => o.ChannelId == channelId.ToString())
+                .ToListAsync();
         }
     }
 
@@ -70,6 +82,28 @@ public class ChannelRepository : RepositoryBase
                 query = query.Where(o => !new[] { ChannelType.NewsThread, ChannelType.PrivateThread, ChannelType.PublicThread }.Contains(o.ChannelType));
 
             return await query.ToListAsync(cancellationToken);
+        }
+    }
+
+    public async Task<GuildChannel> GetOrCreateChannelAsync(IGuildChannel channel)
+    {
+        using (Counter.Create("Database"))
+        {
+            var entity = await GetBaseQuery(true, false, false)
+                .FirstOrDefaultAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString());
+
+            if (entity != null)
+                return entity;
+
+            var guildEntity = await Context.Guilds.FirstOrDefaultAsync(o => o.Id == channel.GuildId.ToString()) ?? Guild.FromDiscord(channel.Guild);
+            if (!Context.IsEntityTracked<Guild>(entry => entry.Entity.Id == guildEntity.Id)) await Context.AddAsync(guildEntity);
+
+            entity = GuildChannel.FromDiscord(channel.Guild, channel, channel.GetChannelType() ?? ChannelType.DM);
+            entity.Guild = guildEntity;
+            if (!Context.IsEntityTracked<GuildChannel>(entry => entry.Entity.ChannelId == entity.ChannelId && entry.Entity.GuildId == entity.GuildId))
+                await Context.AddAsync(entity);
+
+            return entity;
         }
     }
 }

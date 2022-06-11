@@ -33,7 +33,7 @@ public class ExecutedCommandEvent : AuditEventBase
     public override async Task ProcessAsync()
     {
         var data = new CommandExecution(Command, Context.Message, Result, Duration);
-        var item = new AuditLogDataWrapper(AuditLogItemType.Command, data, Context.Guild, Context.Channel, Context.User);
+        var item = new AuditLogDataWrapper(AuditLogItemType.Command, data, Context.Guild, Context.Channel as IGuildChannel, Context.User);
         await AuditLogService.StoreItemAsync(item);
     }
 }

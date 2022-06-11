@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace GrillBot.Database.Services;
 
@@ -140,4 +141,10 @@ public class GrillBotContext : DbContext
 
         return query;
     }
+
+    /// <summary>
+    /// Checks if same entity is currently tracked.
+    /// </summary>
+    public bool IsEntityTracked<TEntity>(Func<EntityEntry<TEntity>, bool> comparer) where TEntity : class
+        => ChangeTracker.Entries<TEntity>().Any(comparer);
 }

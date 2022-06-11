@@ -26,7 +26,7 @@ public class ExecutedInteractionCommandEvent : AuditEventBase
     public override async Task ProcessAsync()
     {
         var data = InteractionCommandExecuted.Create(Context.Interaction, Command, Result, Duration);
-        var item = new AuditLogDataWrapper(AuditLogItemType.InteractionCommand, data, Context.Guild, Context.Channel, Context.User);
+        var item = new AuditLogDataWrapper(AuditLogItemType.InteractionCommand, data, Context.Guild, Context.Channel as IGuildChannel, Context.User);
         await AuditLogService.StoreItemAsync(item);
     }
 }

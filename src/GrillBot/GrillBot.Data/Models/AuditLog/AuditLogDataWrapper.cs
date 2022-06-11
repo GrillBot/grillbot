@@ -12,7 +12,7 @@ public class AuditLogDataWrapper
 {
     public AuditLogItemType Type { get; set; }
     public IGuild Guild { get; set; }
-    public IChannel Channel { get; set; }
+    public IGuildChannel Channel { get; set; }
     public IUser ProcessedUser { get; set; }
     public object Data { get; set; }
     public string DiscordAuditLogItemId { get; set; }
@@ -22,7 +22,7 @@ public class AuditLogDataWrapper
     public ChannelType? ChannelType
         => Channel?.GetChannelType();
 
-    public AuditLogDataWrapper(AuditLogItemType type, object data, IGuild guild = null, IChannel channel = null, IUser processedUser = null,
+    public AuditLogDataWrapper(AuditLogItemType type, object data, IGuild guild = null, IGuildChannel channel = null, IUser processedUser = null,
         string discordAuditLogItemId = null, DateTime? createdAt = null, IEnumerable<AuditLogFileMeta> files = null)
     {
         Type = type;

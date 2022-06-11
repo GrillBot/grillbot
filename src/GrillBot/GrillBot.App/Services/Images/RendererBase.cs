@@ -1,7 +1,7 @@
 ﻿using Discord.Commands;
-using GrillBot.App.Services.FileStorage;
 using GrillBot.Cache.Entity;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.FileStorage;
 
 namespace GrillBot.App.Services.Images;
 
@@ -14,7 +14,7 @@ public abstract class RendererBase
     protected RendererBase(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
     {
         FileStorageFactory = fileStorageFactory;
-        Cache = FileStorageFactory.CreateCache();
+        Cache = FileStorageFactory.Create("Cache");
         ProfilePictureManager = profilePictureManager;
     }
 

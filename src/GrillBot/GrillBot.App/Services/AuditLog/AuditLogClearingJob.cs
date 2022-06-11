@@ -1,11 +1,10 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.App.Services.Discord;
-using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Logging;
 using GrillBot.Common.Managers;
 using Quartz;
 using System.IO.Compression;
 using System.Xml.Linq;
+using GrillBot.Common.FileStorage;
 
 namespace GrillBot.App.Services.AuditLog;
 

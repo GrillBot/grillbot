@@ -21,7 +21,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var fileStorage = FileStorageHelper.Create(configuration);
+        var fileStorage = new FileStorageMock(configuration);
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
         var counterManager = new CounterManager();
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);

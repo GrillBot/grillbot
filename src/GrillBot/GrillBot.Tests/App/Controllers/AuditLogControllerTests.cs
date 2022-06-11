@@ -38,7 +38,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
             .Build();
 
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var fileStorage = FileStorageHelper.Create(configuration);
+        var fileStorage = new FileStorageMock(configuration);
         var mapper = AutoMapperHelper.CreateMapper();
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());

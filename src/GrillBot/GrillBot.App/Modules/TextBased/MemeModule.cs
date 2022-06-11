@@ -1,8 +1,8 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
-using GrillBot.App.Services.FileStorage;
 using GrillBot.App.Services.Images;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.FileStorage;
 using GrillBot.Data.Helper;
 
 namespace GrillBot.App.Modules.TextBased;

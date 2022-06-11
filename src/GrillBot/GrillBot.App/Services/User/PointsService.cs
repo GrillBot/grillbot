@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.IO;
-using GrillBot.App.Services.FileStorage;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.FileStorage;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;

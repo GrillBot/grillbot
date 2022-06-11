@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.FileStorage;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.AuditLog;
@@ -10,6 +9,7 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Common.FileStorage;
 
 namespace GrillBot.App.Services.AuditLog;
 

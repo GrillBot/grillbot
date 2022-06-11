@@ -2,9 +2,9 @@
 using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
-using GrillBot.App.Services.FileStorage;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;

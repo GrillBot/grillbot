@@ -1,23 +1,17 @@
-﻿using GrillBot.App.Services.FileStorage;
+﻿using System.IO;
+using GrillBot.Common.FileStorage;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
-namespace GrillBot.Tests.TestHelpers;
+namespace GrillBot.Tests.Infrastructure;
 
-[ExcludeFromCodeCoverage]
-public static class FileStorageHelper
+public class FileStorageMock : FileStorageFactory
 {
-    public static FileStorageFactory Create(IConfiguration configuration)
+    public FileStorageMock(IConfiguration configuration) : base(configuration)
     {
-        var mock = new Mock<FileStorageFactory>(new object[] { configuration });
-        mock.Setup(o => o.Create(It.IsAny<string>())).Returns(CreateStorage());
-
-        return mock.Object;
     }
 
-    public static IFileStorage CreateStorage()
+    public override IFileStorage Create(string categoryName)
     {
         var mock = new Mock<IFileStorage>();
         mock.Setup(o => o.GetFileInfoAsync(It.Is<string>(c => c == "DeletedAttachments"), It.Is<string>(c => c == "Temp.txt"))).ReturnsAsync(new FileInfo("Temp.txt"));

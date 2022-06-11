@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.Birthday;
+using GrillBot.Common.FileStorage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services;
@@ -36,7 +37,7 @@ public static class Extensions
             .AddSingleton<Emotes.EmotesCommandService>();
 
         services
-            .AddSingleton<FileStorage.FileStorageFactory>();
+            .AddSingleton<FileStorageFactory>();
 
         services
             .AddScoped<Guild.GuildApiService>();

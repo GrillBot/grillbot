@@ -42,8 +42,8 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var mapper = AutoMapperHelper.CreateMapper();
-        var fileStorage = FileStorageHelper.Create(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
+        var storage = new FileStorageMock(configuration);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
         var autoReplyService = new AutoReplyService(configuration, discordClient, DbFactory, initManager);
         var apiService = new ChannelApiService(DbFactory, mapper, dcClient, messageCache, auditLogService, autoReplyService);
 

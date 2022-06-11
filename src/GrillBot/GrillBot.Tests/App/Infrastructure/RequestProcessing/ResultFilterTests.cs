@@ -41,7 +41,7 @@ public class ResultFilterTests : ActionFilterTest<ResultFilter>
         var counterManager = new CounterManager();
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var storage = FileStorageHelper.Create(configuration);
+        var storage = new FileStorageMock(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
 
         return new ResultFilter(ApiRequest, auditLogService, client);

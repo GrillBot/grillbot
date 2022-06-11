@@ -50,8 +50,8 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);
         var directApi = new DirectApiService(discordClient, configuration, initManager, CacheBuilder);
         var externalHelpService = new ExternalCommandsHelpService(directApi, configuration, provider);
-        var storageFactory = FileStorageHelper.Create(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storageFactory, initManager);
+        var storage = new FileStorageMock(configuration);
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
         var apiService = new UsersApiService(DbFactory, mapper, dcClient, auditLogService);
         var rubbergodKarmaService = new RubbergodKarmaService(directApi, dcClient, mapper);
 

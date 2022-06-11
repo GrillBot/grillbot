@@ -22,7 +22,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
         var counterManager = new CounterManager();
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var fileStorage = FileStorageHelper.Create(configuration);
+        var fileStorage = new FileStorageMock(configuration);
         var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
 
         return new RemindService(discordClient, DbFactory, configuration, auditLogService);

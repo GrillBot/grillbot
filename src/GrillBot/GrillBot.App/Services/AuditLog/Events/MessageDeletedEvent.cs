@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Services.FileStorage;
-using GrillBot.Cache.Services.Managers;
+﻿using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.FileStorage;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;

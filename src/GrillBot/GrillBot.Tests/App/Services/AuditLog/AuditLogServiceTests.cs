@@ -23,7 +23,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         var counterManager = new CounterManager();
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var storage = FileStorageHelper.Create(configuration);
+        var storage = new FileStorageMock(configuration);
 
         return new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
     }

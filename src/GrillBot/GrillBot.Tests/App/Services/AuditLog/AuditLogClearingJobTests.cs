@@ -20,7 +20,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var client = new ClientBuilder().SetSelfUser(selfUser).Build();
 
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var fileStorage = FileStorageHelper.Create(configuration);
+        var fileStorage = new FileStorageMock(configuration);
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();

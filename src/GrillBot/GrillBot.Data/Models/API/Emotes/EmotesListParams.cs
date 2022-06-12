@@ -22,6 +22,7 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>
     public RangeParams<DateTime?> LastOccurence { get; set; }
 
     public bool FilterAnimated { get; set; }
+    public string EmoteName { get; set; }
 
     /// <summary>
     /// Available: UseCount, FirstOccurence, LastOccurence, EmoteId.
@@ -47,6 +48,9 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>
 
         if (FilterAnimated)
             query = query.Where(o => !o.EmoteId.StartsWith("<a:"));
+
+        if (!string.IsNullOrEmpty(EmoteName))
+            query = query.Where(o => o.EmoteId.Contains($":{EmoteName}:"));
 
         return query;
     }

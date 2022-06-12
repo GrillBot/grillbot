@@ -37,16 +37,17 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     [TestMethod]
     public async Task GetStatsOfSupportedEmotesAsync_WithFilter()
     {
-        var @params = new EmotesListParams()
+        var @params = new EmotesListParams
         {
-            FirstOccurence = new RangeParams<DateTime?>() { From = DateTime.MinValue, To = DateTime.MaxValue },
+            FirstOccurence = new RangeParams<DateTime?> { From = DateTime.MinValue, To = DateTime.MaxValue },
             GuildId = Consts.GuildId.ToString(),
-            LastOccurence = new RangeParams<DateTime?>() { From = DateTime.MinValue, To = DateTime.MaxValue },
-            Sort = new SortParams() { Descending = true, OrderBy = "EmoteId" },
-            UseCount = new RangeParams<int?>() { From = 0, To = 50 },
+            LastOccurence = new RangeParams<DateTime?> { From = DateTime.MinValue, To = DateTime.MaxValue },
+            Sort = new SortParams { Descending = true, OrderBy = "EmoteId" },
+            UseCount = new RangeParams<int?> { From = 0, To = 50 },
             UserId = Consts.UserId.ToString(),
             Pagination = new PaginatedParams(),
-            FilterAnimated = true
+            FilterAnimated = true,
+            EmoteName = "Emote"
         };
 
         var result = await AdminController.GetStatsOfSupportedEmotesAsync(@params, CancellationToken.None);

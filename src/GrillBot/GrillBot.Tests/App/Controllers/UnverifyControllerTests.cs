@@ -5,12 +5,12 @@ using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 

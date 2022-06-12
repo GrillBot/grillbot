@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Emotes;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Emotes;
 
@@ -15,7 +15,7 @@ public class EmotesApiService : ServiceBase
         EmotesCacheService = emotesCacheService;
     }
 
-    public async Task<PaginatedResponse<EmoteStatItem>> GetStatsOfEmotesAsync(EmotesListParams @params, bool unsupported, CancellationToken cancellationToken)
+    public async Task<PaginatedResponse<EmoteStatItem>> GetStatsOfEmotesAsync(EmotesListParams @params, bool unsupported)
     {
         var supportedEmotes = EmotesCacheService.GetSupportedEmotes()
             .ConvertAll(o => o.Item1.ToString());
@@ -41,7 +41,7 @@ public class EmotesApiService : ServiceBase
         groupedQuery = GetFilterAndSortQuery(groupedQuery, @params);
 
         var result = await PaginatedResponse<EmoteStatItem>
-            .CreateAsync(groupedQuery, @params.Pagination, entity => Mapper.Map<EmoteStatItem>(entity), cancellationToken);
+            .CreateAsync(groupedQuery, @params.Pagination, entity => Mapper.Map<EmoteStatItem>(entity));
 
         if (unsupported)
             result.Data.ForEach(o => o.Emote.ImageUrl = null);

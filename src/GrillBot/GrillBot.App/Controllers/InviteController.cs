@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Services;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
+using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -30,9 +30,9 @@ public class InviteController : Controller
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromQuery] GetInviteListParams parameters, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromQuery] GetInviteListParams parameters)
     {
-        var result = await InviteService.GetInviteListAsync(parameters, cancellationToken);
+        var result = await InviteService.GetInviteListAsync(parameters);
         return Ok(result);
     }
 

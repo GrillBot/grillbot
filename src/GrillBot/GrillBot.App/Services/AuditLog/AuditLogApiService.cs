@@ -4,12 +4,12 @@ using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
 using GrillBot.Common.FileStorage;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.AuditLog;
 
@@ -80,7 +80,7 @@ public class AuditLogApiService : ServiceBase
             query = query.Where(o => logIds.Contains(o.Id));
 
         return await PaginatedResponse<AuditLogListItem>
-            .CreateAsync(query, parameters.Pagination, entity => MapItem(entity), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, MapItem);
     }
 
     private AuditLogListItem MapItem(AuditLogItem entity)

@@ -1,6 +1,5 @@
 ﻿using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Data.Models.API.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +8,7 @@ using NSwag.Annotations;
 using GrillBot.App.Services.Channels;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Controllers;
 
@@ -59,10 +59,9 @@ public class ChannelController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<GuildChannelListItem>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<GuildChannelListItem>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters)
     {
-        var result = await ApiService.GetListAsync(parameters, cancellationToken);
+        var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
 

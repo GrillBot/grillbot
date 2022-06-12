@@ -3,11 +3,11 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.User;
 
@@ -21,13 +21,13 @@ public class UsersApiService : ServiceBase
         AuditLogService = auditLogService;
     }
 
-    public async Task<PaginatedResponse<UserListItem>> GetListAsync(GetUserListParams parameters, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<UserListItem>> GetListAsync(GetUserListParams parameters)
     {
         using var context = DbFactory.Create();
 
         var query = context.CreateQuery(parameters, true);
         return await PaginatedResponse<UserListItem>
-            .CreateAsync(query, parameters.Pagination, (entity, cancellationToken) => MapItemAsync(entity, cancellationToken), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, entity => MapItemAsync(entity));
     }
 
     private async Task<UserListItem> MapItemAsync(Database.Entity.User entity, CancellationToken cancellationToken = default)

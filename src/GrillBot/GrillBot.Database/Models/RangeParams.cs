@@ -1,14 +1,12 @@
-﻿using NSwag.Annotations;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace GrillBot.Data.Models.API.Common;
+namespace GrillBot.Database.Models;
 
 public class RangeParams<T> : IValidatableObject
 {
-    public T From { get; set; }
-    public T To { get; set; }
+    public T? From { get; set; }
+    public T? To { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

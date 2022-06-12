@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Exceptions;
 using AutoMapper;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Common.Extensions;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Controllers;
 

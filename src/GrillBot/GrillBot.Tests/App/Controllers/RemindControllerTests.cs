@@ -4,11 +4,11 @@ using GrillBot.App.Services.Reminder;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -46,7 +46,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetRemindMessagesListAsync(new GetReminderListParams(), CancellationToken.None);
+        var result = await AdminController.GetRemindMessagesListAsync(new GetReminderListParams());
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 
@@ -69,7 +69,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
             }
         };
 
-        var result = await AdminController.GetRemindMessagesListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetRemindMessagesListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 
@@ -131,7 +131,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
-        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { Sort = new() { Descending = true, OrderBy = "At" } }, CancellationToken.None);
+        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { Sort = new() { Descending = true, OrderBy = "At" } });
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 
@@ -149,7 +149,7 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         await DbContext.AddAsync(new Database.Entity.User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
-        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { Sort = new() { Descending = true, OrderBy = "ToUser" } }, CancellationToken.None);
+        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams() { Sort = new() { Descending = true, OrderBy = "ToUser" } });
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 }

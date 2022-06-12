@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
+using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -34,8 +34,7 @@ public class ReminderController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromQuery] GetReminderListParams parameters,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromQuery] GetReminderListParams parameters)
     {
         if (User.HaveUserPermission())
         {
@@ -46,7 +45,7 @@ public class ReminderController : Controller
                 parameters.Sort.OrderBy = "Id";
         }
 
-        var result = await ApiService.GetListAsync(parameters, cancellationToken);
+        var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
 

@@ -7,10 +7,10 @@ using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Helper;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Channels;
 
@@ -28,14 +28,14 @@ public class ChannelApiService : ServiceBase
         AutoReplyService = autoReplyService;
     }
 
-    public async Task<PaginatedResponse<GuildChannelListItem>> GetListAsync(GetChannelListParams parameters, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<GuildChannelListItem>> GetListAsync(GetChannelListParams parameters)
     {
         using var context = DbFactory.Create();
 
         var query = context.CreateQuery(parameters, true);
 
         return await PaginatedResponse<GuildChannelListItem>
-            .CreateAsync(query, parameters.Pagination, (entity, cancellationToken) => MapChannelAsync(entity, cancellationToken), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, entity => MapChannelAsync(entity));
     }
 
     private async Task<GuildChannelListItem> MapChannelAsync(Database.Entity.GuildChannel entity, CancellationToken cancellationToken = default)
@@ -154,8 +154,8 @@ public class ChannelApiService : ServiceBase
             .OrderByDescending(o => o.Count)
             .Where(o => o.ChannelId == channelId.ToString() && o.Count > 0);
 
-        var result = await PaginatedResponse<ChannelUserStatItem>.CreateAsync(query, pagination,
-            entity => Mapper.Map<ChannelUserStatItem>(entity), cancellationToken);
+        var result = await PaginatedResponse<ChannelUserStatItem>
+            .CreateAsync(query, pagination, entity => Mapper.Map<ChannelUserStatItem>(entity));
 
         for (int i = 0; i < result.Data.Count; i++)
             result.Data[i].Position = pagination.Skip + i + 1;

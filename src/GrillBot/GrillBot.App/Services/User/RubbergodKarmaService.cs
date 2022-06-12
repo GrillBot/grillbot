@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.DirectApi;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.User;
 

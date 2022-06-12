@@ -4,8 +4,8 @@ using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GrillBot.App.Services.Guild;
@@ -23,7 +23,7 @@ public class GuildApiService : ServiceBase
 
         var query = context.CreateQuery(parameters, true);
         var result = await PaginatedResponse<Data.Models.API.Guilds.Guild>
-            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<Data.Models.API.Guilds.Guild>(entity), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<Data.Models.API.Guilds.Guild>(entity));
 
         for (int i = 0; i < result.Data.Count; i++)
         {

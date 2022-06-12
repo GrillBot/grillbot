@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Emotes;
+using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,9 +32,9 @@ public class EmotesController : Controller
     [HttpGet("stats/supported")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfSupportedEmotesAsync([FromQuery] EmotesListParams @params, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfSupportedEmotesAsync([FromQuery] EmotesListParams @params)
     {
-        var result = await EmotesApiService.GetStatsOfEmotesAsync(@params, false, cancellationToken);
+        var result = await EmotesApiService.GetStatsOfEmotesAsync(@params, false);
         return Ok(result);
     }
 
@@ -46,9 +46,9 @@ public class EmotesController : Controller
     [HttpGet("stats/unsupported")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfUnsupportedEmotesAsync([FromQuery] EmotesListParams @params, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfUnsupportedEmotesAsync([FromQuery] EmotesListParams @params)
     {
-        var result = await EmotesApiService.GetStatsOfEmotesAsync(@params, true, cancellationToken);
+        var result = await EmotesApiService.GetStatsOfEmotesAsync(@params, true);
         return Ok(result);
     }
 

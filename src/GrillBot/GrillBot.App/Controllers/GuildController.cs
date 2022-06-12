@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Services.Guild;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

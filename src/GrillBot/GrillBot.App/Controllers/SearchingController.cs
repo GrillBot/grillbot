@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Services;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
+using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

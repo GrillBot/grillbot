@@ -8,13 +8,13 @@ using GrillBot.App.Services.User;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -71,7 +71,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
         };
         filter.Sort.Descending = true;
 
-        var result = await AdminController.GetUsersListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetUsersListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UserListItem>>(result);
     }
 
@@ -116,7 +116,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
         await DbContext.SaveChangesAsync();
 
         var filter = new GetUserListParams();
-        var result = await AdminController.GetUsersListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetUsersListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UserListItem>>(result);
     }
 

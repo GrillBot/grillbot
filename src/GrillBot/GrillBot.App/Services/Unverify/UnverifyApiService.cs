@@ -2,11 +2,11 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Unverify;
 
@@ -34,12 +34,12 @@ public class UnverifyApiService : ServiceBase
         var query = context.CreateQuery(parameters, true);
 
         return await PaginatedResponse<UnverifyLogItem>
-            .CreateAsync(query, parameters.Pagination, (entity, cancellationToken) => MapItemAsync(entity, cancellationToken), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, MapItemAsync);
     }
 
-    private async Task<UnverifyLogItem> MapItemAsync(UnverifyLog entity, CancellationToken cancellationToken)
+    private async Task<UnverifyLogItem> MapItemAsync(UnverifyLog entity)
     {
-        var guild = await DcClient.GetGuildAsync(entity.GuildId.ToUlong(), options: new() { CancelToken = cancellationToken });
+        var guild = await DcClient.GetGuildAsync(entity.GuildId.ToUlong());
         var result = Mapper.Map<UnverifyLogItem>(entity);
 
         switch (entity.Operation)

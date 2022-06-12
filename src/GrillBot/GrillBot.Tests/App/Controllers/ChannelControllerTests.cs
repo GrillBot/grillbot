@@ -7,11 +7,11 @@ using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -67,7 +67,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
             NameContains = Consts.ChannelName[..5]
         };
 
-        var result = await AdminController.GetChannelsListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetChannelsListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<GuildChannelListItem>>(result);
     }
 
@@ -82,7 +82,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await DbContext.SaveChangesAsync();
 
         var filter = new GetChannelListParams();
-        var result = await AdminController.GetChannelsListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetChannelsListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<GuildChannelListItem>>(result);
     }
 

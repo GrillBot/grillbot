@@ -1,5 +1,4 @@
 ﻿using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +11,7 @@ using GrillBot.Data.Exceptions;
 using GrillBot.App.Services.User;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Data.Extensions;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Controllers;
 
@@ -43,12 +43,11 @@ public class UsersController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters,
-        CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters)
     {
         parameters.FixStatus();
 
-        var result = await ApiService.GetListAsync(parameters, cancellationToken);
+        var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
 

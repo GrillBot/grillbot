@@ -1,8 +1,7 @@
-﻿using NSwag.Annotations;
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using NSwag.Annotations;
 
-namespace GrillBot.Data.Models.API.Common;
+namespace GrillBot.Database.Models;
 
 /// <summary>
 /// Parameters for pagination.

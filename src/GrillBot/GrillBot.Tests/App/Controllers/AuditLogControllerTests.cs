@@ -5,7 +5,6 @@ using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -17,6 +16,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 

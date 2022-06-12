@@ -1,6 +1,6 @@
-﻿using GrillBot.Data.Models.API.Common;
-using GrillBot.Database;
+﻿using GrillBot.Database;
 using System.Linq;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Guilds;
 

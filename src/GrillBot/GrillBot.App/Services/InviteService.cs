@@ -2,12 +2,12 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Data.Models.Invite;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services;
 
@@ -184,12 +184,12 @@ public class InviteService : ServiceBase
         return Task.CompletedTask;
     }
 
-    public async Task<PaginatedResponse<GuildInvite>> GetInviteListAsync(GetInviteListParams parameters, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<GuildInvite>> GetInviteListAsync(GetInviteListParams parameters)
     {
         using var context = DbFactory.Create();
 
         var query = context.CreateQuery(parameters, true);
         return await PaginatedResponse<GuildInvite>
-            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<GuildInvite>(entity), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<GuildInvite>(entity));
     }
 }

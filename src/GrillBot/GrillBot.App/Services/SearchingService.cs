@@ -4,11 +4,11 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.User;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Models;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services;
 

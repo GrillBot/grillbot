@@ -1,9 +1,9 @@
-﻿using GrillBot.Data.Models.API.Common;
-using GrillBot.Data.Models.AuditLog;
+﻿using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Newtonsoft.Json;
 using System;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 

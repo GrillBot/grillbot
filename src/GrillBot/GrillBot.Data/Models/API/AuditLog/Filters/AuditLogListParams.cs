@@ -1,5 +1,4 @@
 ﻿using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Database;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -8,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 

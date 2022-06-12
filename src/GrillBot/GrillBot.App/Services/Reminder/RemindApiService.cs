@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Reminder;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Reminder;
 
@@ -11,12 +11,12 @@ public class RemindApiService : ServiceBase
     {
     }
 
-    public async Task<PaginatedResponse<RemindMessage>> GetListAsync(GetReminderListParams parameters, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<RemindMessage>> GetListAsync(GetReminderListParams parameters)
     {
         using var context = DbFactory.Create();
 
         var query = context.CreateQuery(parameters, true);
         return await PaginatedResponse<RemindMessage>
-            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<RemindMessage>(entity), cancellationToken);
+            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<RemindMessage>(entity));
     }
 }

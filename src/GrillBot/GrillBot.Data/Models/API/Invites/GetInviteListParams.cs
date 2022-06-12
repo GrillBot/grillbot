@@ -1,9 +1,9 @@
 ﻿using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Database;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Invites;
 

@@ -1,10 +1,10 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.Guild;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 

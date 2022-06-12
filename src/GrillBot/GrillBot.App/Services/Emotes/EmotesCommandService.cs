@@ -3,8 +3,8 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Extensions;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Emotes;
+using GrillBot.Database.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services.Emotes;
@@ -41,7 +41,7 @@ public class EmotesCommandService : ServiceBase
 
         using var scope = ServiceProvider.CreateScope();
         var apiService = scope.ServiceProvider.GetRequiredService<EmotesApiService>();
-        var list = await apiService.GetStatsOfEmotesAsync(@params, false, CancellationToken.None);
+        var list = await apiService.GetStatsOfEmotesAsync(@params, false);
 
         return Tuple.Create(
             new EmbedBuilder().WithEmoteList(list.Data, context.User, ofUser, context.Guild, orderBy, descending, page).Build(),
@@ -60,7 +60,7 @@ public class EmotesCommandService : ServiceBase
 
         using var scope = ServiceProvider.CreateScope();
         var apiService = scope.ServiceProvider.GetRequiredService<EmotesApiService>();
-        var list = await apiService.GetStatsOfEmotesAsync(@params, false, CancellationToken.None);
+        var list = await apiService.GetStatsOfEmotesAsync(@params, false);
 
         return list.TotalItemsCount;
     }

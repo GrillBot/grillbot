@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Models.API.Common;
+﻿using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Users;
 

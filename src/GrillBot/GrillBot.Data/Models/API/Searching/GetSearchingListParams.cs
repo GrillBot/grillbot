@@ -1,6 +1,5 @@
 ﻿using Discord;
 using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Database;
 using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +7,7 @@ using Newtonsoft.Json;
 using NSwag.Annotations;
 using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Searching;
 

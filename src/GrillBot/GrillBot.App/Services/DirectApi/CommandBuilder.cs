@@ -1,5 +1,5 @@
-﻿using GrillBot.Data.Models.API.Common;
-using GrillBot.Data.Models.DirectApi;
+﻿using GrillBot.Data.Models.DirectApi;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.DirectApi;
 

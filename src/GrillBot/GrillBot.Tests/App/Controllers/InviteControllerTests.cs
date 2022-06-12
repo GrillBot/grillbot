@@ -4,11 +4,11 @@ using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -46,7 +46,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
         await DbContext.Guilds.AddAsync(guild);
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetInviteListAsync(new GetInviteListParams(), CancellationToken.None);
+        var result = await AdminController.GetInviteListAsync(new GetInviteListParams());
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
     }
 
@@ -62,7 +62,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
             GuildId = Consts.GuildId.ToString()
         };
 
-        var result = await AdminController.GetInviteListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetInviteListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
     }
 

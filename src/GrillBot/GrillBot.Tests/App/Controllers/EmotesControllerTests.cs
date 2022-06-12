@@ -1,12 +1,12 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.Emotes;
-using GrillBot.Data.Models.API.Common;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -29,7 +29,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     public async Task GetStatsOfSupportedEmotesAsync_WithoutFilter()
     {
         var @params = new EmotesListParams();
-        var result = await AdminController.GetStatsOfSupportedEmotesAsync(@params, CancellationToken.None);
+        var result = await AdminController.GetStatsOfSupportedEmotesAsync(@params);
 
         CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
     }
@@ -50,7 +50,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             EmoteName = "Emote"
         };
 
-        var result = await AdminController.GetStatsOfSupportedEmotesAsync(@params, CancellationToken.None);
+        var result = await AdminController.GetStatsOfSupportedEmotesAsync(@params);
         CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
     }
 
@@ -60,7 +60,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
         var @params = new EmotesListParams();
         @params.Sort.OrderBy = "FirstOccurence";
 
-        var result = await AdminController.GetStatsOfUnsupportedEmotesAsync(@params, CancellationToken.None);
+        var result = await AdminController.GetStatsOfUnsupportedEmotesAsync(@params);
         CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
     }
 

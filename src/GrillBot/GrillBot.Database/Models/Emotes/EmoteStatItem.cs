@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace GrillBot.Data.Models;
+namespace GrillBot.Database.Models.Emotes;
 
 public class EmoteStatItem
 {
-    public string Id { get; set; }
-    public int UsersCount { get; set; }
+    public string EmoteId { get; set; } = null!;
     public long UseCount { get; set; }
     public DateTime FirstOccurence { get; set; }
     public DateTime LastOccurence { get; set; }
+    public int UsedUsersCount { get; set; }
 }

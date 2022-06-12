@@ -1,18 +1,29 @@
 ﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Emotes;
+using GrillBot.Data.Models.AuditLog;
+using GrillBot.Database.Enums;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Emotes;
 
-public class EmotesApiService : ServiceBase
+public class EmotesApiService
 {
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private EmotesCacheService EmotesCacheService { get; }
+    private IMapper Mapper { get; }
+    private AuditLogService AuditLogService { get; }
+    private ApiRequestContext ApiRequestContext { get; }
 
-    public EmotesApiService(GrillBotDatabaseBuilder dbFactory, EmotesCacheService emotesCacheService,
-        IMapper mapper) : base(null, dbFactory, mapper: mapper)
+    public EmotesApiService(GrillBotDatabaseBuilder databaseBuilder, EmotesCacheService emotesCacheService,
+        IMapper mapper, AuditLogService auditLogService, ApiRequestContext apiRequestContext)
     {
         EmotesCacheService = emotesCacheService;
+        DatabaseBuilder = databaseBuilder;
+        Mapper = mapper;
+        AuditLogService = auditLogService;
+        ApiRequestContext = apiRequestContext;
     }
 
     public async Task<PaginatedResponse<EmoteStatItem>> GetStatsOfEmotesAsync(EmotesListParams @params, bool unsupported)
@@ -20,70 +31,65 @@ public class EmotesApiService : ServiceBase
         var supportedEmotes = EmotesCacheService.GetSupportedEmotes()
             .ConvertAll(o => o.Item1.ToString());
 
-        using var context = CreateContext();
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var statisticsData = await repository.Emote.GetEmoteStatisticsDataAsync(@params, supportedEmotes, unsupported);
 
-        var query = context.CreateQuery(@params, true);
+        var statsData = SetStatsFilter(statisticsData, @params);
+        statsData = SetStatsSort(statsData, @params);
 
-        if (unsupported)
-            query = query.Where(o => !supportedEmotes.Contains(o.EmoteId));
-        else
-            query = query.Where(o => supportedEmotes.Contains(o.EmoteId));
+        var stats = statsData
+            .Select(o => Mapper.Map<EmoteStatItem>(o))
+            .ToList();
 
-        var groupedQuery = query.GroupBy(o => o.EmoteId).Select(o => new Data.Models.EmoteStatItem()
-        {
-            Id = o.Key,
-            LastOccurence = o.Max(x => x.LastOccurence),
-            FirstOccurence = o.Min(x => x.FirstOccurence),
-            UseCount = o.Sum(x => x.UseCount),
-            UsersCount = o.Count()
-        });
-
-        groupedQuery = GetFilterAndSortQuery(groupedQuery, @params);
-
-        var result = await PaginatedResponse<EmoteStatItem>
-            .CreateAsync(groupedQuery, @params.Pagination, entity => Mapper.Map<EmoteStatItem>(entity));
-
+        var result = PaginatedResponse<EmoteStatItem>.Create(stats, @params.Pagination);
         if (unsupported)
             result.Data.ForEach(o => o.Emote.ImageUrl = null);
 
         return result;
     }
 
-    private static IQueryable<Data.Models.EmoteStatItem> GetFilterAndSortQuery(IQueryable<Data.Models.EmoteStatItem> query, EmotesListParams @params)
+    private static IEnumerable<Database.Models.Emotes.EmoteStatItem> SetStatsFilter(IEnumerable<Database.Models.Emotes.EmoteStatItem> data,
+        EmotesListParams @params)
     {
         if (@params.UseCount != null)
         {
             if (@params.UseCount.From != null)
-                query = query.Where(o => o.UseCount >= @params.UseCount.From.Value);
+                data = data.Where(o => o.UseCount >= @params.UseCount.From.Value);
 
             if (@params.UseCount.To != null)
-                query = query.Where(o => o.UseCount < @params.UseCount.To.Value);
+                data = data.Where(o => o.UseCount < @params.UseCount.To.Value);
         }
 
         if (@params.FirstOccurence != null)
         {
             if (@params.FirstOccurence.From != null)
-                query = query.Where(o => o.FirstOccurence >= @params.FirstOccurence.From.Value);
+                data = data.Where(o => o.FirstOccurence >= @params.FirstOccurence.From.Value);
 
             if (@params.FirstOccurence.To != null)
-                query = query.Where(o => o.FirstOccurence < @params.FirstOccurence.To.Value);
+                data = data.Where(o => o.FirstOccurence < @params.FirstOccurence.To.Value);
         }
 
         if (@params.LastOccurence != null)
         {
             if (@params.LastOccurence.From != null)
-                query = query.Where(o => o.LastOccurence >= @params.LastOccurence.From.Value);
+                data = data.Where(o => o.LastOccurence >= @params.LastOccurence.From.Value);
 
             if (@params.LastOccurence.To != null)
-                query = query.Where(o => o.LastOccurence < @params.LastOccurence.To.Value);
+                data = data.Where(o => o.LastOccurence < @params.LastOccurence.To.Value);
         }
 
+        return data;
+    }
+
+    private static IEnumerable<Database.Models.Emotes.EmoteStatItem> SetStatsSort(IEnumerable<Database.Models.Emotes.EmoteStatItem> query,
+        EmotesListParams @params)
+    {
         return @params.Sort.OrderBy switch
         {
             "UseCount" => @params.Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.UseCount).ThenByDescending(o => o.Id).ThenByDescending(o => o.LastOccurence),
-                _ => query.OrderBy(o => o.UseCount).ThenBy(o => o.Id).ThenBy(o => o.LastOccurence)
+                true => query.OrderByDescending(o => o.UseCount).ThenByDescending(o => o.EmoteId).ThenByDescending(o => o.LastOccurence),
+                _ => query.OrderBy(o => o.UseCount).ThenBy(o => o.EmoteId).ThenBy(o => o.LastOccurence)
             },
             "FirstOccurence" => @params.Sort.Descending switch
             {
@@ -97,8 +103,8 @@ public class EmotesApiService : ServiceBase
             },
             _ => @params.Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.Id).ThenByDescending(o => o.UseCount).ThenByDescending(o => o.LastOccurence),
-                _ => query.OrderBy(o => o.Id).ThenBy(o => o.UseCount).ThenBy(o => o.LastOccurence)
+                true => query.OrderByDescending(o => o.EmoteId).ThenByDescending(o => o.UseCount).ThenByDescending(o => o.LastOccurence),
+                _ => query.OrderBy(o => o.EmoteId).ThenBy(o => o.UseCount).ThenBy(o => o.LastOccurence)
             }
         };
     }
@@ -107,33 +113,26 @@ public class EmotesApiService : ServiceBase
     {
         ValidateMerge(@params);
 
-        using var context = CreateContext();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var sourceStats = await context.Emotes.AsQueryable()
-            .Where(o => o.EmoteId == @params.SourceEmoteId)
-            .ToListAsync();
-
+        var sourceStats = await repository.Emote.FindStatisticsByEmoteIdAsync(@params.SourceEmoteId);
         if (sourceStats.Count == 0)
             return 0;
 
-        var destinationStats = await context.Emotes.AsQueryable()
-            .Where(o => o.EmoteId == @params.DestinationEmoteId)
-            .ToListAsync();
-
+        var destinationStats = await repository.Emote.FindStatisticsByEmoteIdAsync(@params.DestinationEmoteId);
         foreach (var item in sourceStats)
         {
             var destinationStatItem = destinationStats.Find(o => o.UserId == item.UserId && o.GuildId == item.GuildId);
-
             if (destinationStatItem == null)
             {
-                destinationStatItem = new Database.Entity.EmoteStatisticItem()
+                destinationStatItem = new Database.Entity.EmoteStatisticItem
                 {
                     EmoteId = item.EmoteId,
                     GuildId = item.GuildId,
                     UserId = item.UserId
                 };
 
-                await context.AddAsync(destinationStatItem);
+                await repository.AddAsync(destinationStatItem);
             }
 
             if (item.LastOccurence > destinationStatItem.LastOccurence)
@@ -143,11 +142,14 @@ public class EmotesApiService : ServiceBase
                 destinationStatItem.FirstOccurence = item.FirstOccurence;
 
             destinationStatItem.UseCount += item.UseCount;
-            context.Remove(item);
+            repository.Remove(item);
         }
 
-        // TODO Log merge to AuditLog.
-        return await context.SaveChangesAsync();
+        var logItem = new AuditLogDataWrapper(AuditLogItemType.Info,
+            $"Provedeno sloučení emotů {@params.SourceEmoteId} do {@params.DestinationEmoteId}. Sloučeno záznamů: {sourceStats.Count}/{destinationStats.Count}",
+            null, null, ApiRequestContext.LoggedUser);
+        await AuditLogService.StoreItemAsync(logItem);
+        return await repository.CommitAsync();
     }
 
     private void ValidateMerge(MergeEmoteStatsParams @params)
@@ -164,17 +166,18 @@ public class EmotesApiService : ServiceBase
 
     public async Task<int> RemoveStatisticsAsync(string emoteId)
     {
-        using var context = CreateContext();
-
-        var emotes = await context.Emotes
-            .Where(o => o.EmoteId == emoteId)
-            .ToListAsync();
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var emotes = await repository.Emote.FindStatisticsByEmoteIdAsync(emoteId);
 
         if (emotes.Count == 0)
             return 0;
 
-        // TODO Log remove to AuditLog.
-        context.RemoveRange(emotes);
-        return await context.SaveChangesAsync();
+        var auditLogItem = new AuditLogDataWrapper(AuditLogItemType.Info,
+            $"Statistiky emotu {emoteId} byly smazány. Smazáno záznamů: {emotes.Count}", null, null,
+            ApiRequestContext.LoggedUser);
+        await AuditLogService.StoreItemAsync(auditLogItem);
+
+        repository.RemoveCollection(emotes);
+        return await repository.CommitAsync();
     }
 }

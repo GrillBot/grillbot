@@ -19,8 +19,7 @@ public class EmoteStatItemMappingProfile : AutoMapper.Profile
         CreateMap<Database.Entity.EmoteStatisticItem, EmoteStatItem>()
             .ForMember(dst => dst.Emote, opt => opt.MapFrom(src => Emote.Parse(src.EmoteId)));
 
-        CreateMap<Models.EmoteStatItem, EmoteStatItem>()
-            .ForMember(dst => dst.Emote, opt => opt.MapFrom(src => Emote.Parse(src.Id)))
-            .ForMember(dst => dst.UsedUsersCount, opt => opt.MapFrom(src => src.UsersCount));
+        CreateMap<Database.Models.Emotes.EmoteStatItem, EmoteStatItem>()
+            .ForMember(dst => dst.Emote, opt => opt.MapFrom(src => Emote.Parse(src.EmoteId)));
     }
 }

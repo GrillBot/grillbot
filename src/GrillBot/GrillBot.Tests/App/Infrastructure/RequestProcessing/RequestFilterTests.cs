@@ -4,6 +4,8 @@ using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
+using GrillBot.Common.Models;
+using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
 
@@ -11,6 +13,7 @@ namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
 public class RequestFilterTests : ActionFilterTest<RequestFilter>
 {
     private ApiRequest ApiRequest { get; set; }
+    private ApiRequestContext ApiRequestContext { get; set; }
 
     protected override bool CanInitProvider() => false;
 
@@ -19,8 +22,13 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
 
     protected override RequestFilter CreateFilter()
     {
+        var discordClient = new ClientBuilder()
+            .Build();
+        
         ApiRequest = new ApiRequest();
-        return new RequestFilter(ApiRequest);
+        ApiRequestContext = new ApiRequestContext();
+
+        return new RequestFilter(ApiRequest, ApiRequestContext, discordClient);
     }
 
     [TestMethod]

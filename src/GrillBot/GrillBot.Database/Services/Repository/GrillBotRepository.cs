@@ -27,6 +27,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public GuildUserRepository GuildUser => GetOrCreateRepository<GuildUserRepository>();
     public InviteRepository Invite => GetOrCreateRepository<InviteRepository>();
     public AuditLogRepository AuditLog => GetOrCreateRepository<AuditLogRepository>();
+    public EmoteRepository Emote => GetOrCreateRepository<EmoteRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {
@@ -49,6 +50,9 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public Task AddRangeAsync<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
         => Context.Set<TEntity>().AddRangeAsync(collection);
 
+    public void Remove<TEntity>(TEntity entity) where TEntity : class
+        => Context.Set<TEntity>().Remove(entity);
+
     public void RemoveCollection<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
     {
         var enumerable = collection as List<TEntity> ?? collection.ToList();
@@ -58,11 +62,11 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
         Context.Set<TEntity>().RemoveRange(enumerable);
     }
 
-    public async Task CommitAsync()
+    public async Task<int> CommitAsync()
     {
         using (CounterManager.Create("Database"))
         {
-            await Context.SaveChangesAsync();
+            return await Context.SaveChangesAsync();
         }
     }
 
@@ -77,7 +81,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
 
     public void Dispose()
     {
-        Context?.Dispose();
+        Context.Dispose();
         Repositories.Clear();
     }
 

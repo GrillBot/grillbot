@@ -1,4 +1,5 @@
-﻿using GrillBot.Data.Models.AuditLog;
+﻿using GrillBot.Common.Models;
+using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -8,10 +9,14 @@ namespace GrillBot.App.Infrastructure.RequestProcessing;
 public class RequestFilter : IAsyncActionFilter
 {
     private ApiRequest ApiRequest { get; }
+    private ApiRequestContext ApiRequestContext { get; }
+    private IDiscordClient DiscordClient { get; }
 
-    public RequestFilter(ApiRequest apiRequest)
+    public RequestFilter(ApiRequest apiRequest, ApiRequestContext apiRequestContext, IDiscordClient discordClient)
     {
         ApiRequest = apiRequest;
+        ApiRequestContext = apiRequestContext;
+        DiscordClient = discordClient;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -34,6 +39,18 @@ public class RequestFilter : IAsyncActionFilter
             return;
         }
 
+        await SetApiRequestContext(context);
         await next();
+    }
+
+    private async Task SetApiRequestContext(ActionContext context)
+    {
+        if (!(context.HttpContext.User.Identity?.IsAuthenticated ?? false))
+            return;
+
+        ApiRequestContext.LoggedUserData = context.HttpContext.User;
+
+        var loggedUserId = ApiRequestContext.LoggedUserData.GetUserId();
+        ApiRequestContext.LoggedUser = await DiscordClient.FindUserAsync(loggedUserId);
     }
 }

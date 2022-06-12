@@ -6,6 +6,11 @@ using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Counters;
+using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -20,7 +25,13 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
         var discordClient = DiscordHelper.CreateClient();
         var cacheService = new EmotesCacheService(discordClient);
         var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new EmotesApiService(DbFactory, cacheService, mapper);
+        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var counterManager = new CounterManager();
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
+        var fileStorage = new FileStorageMock(ConfigurationHelper.CreateConfiguration());
+        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
+        var apiRequestContext = new ApiRequestContext();
+        var apiService = new EmotesApiService(DbFactory, cacheService, mapper, auditLogService, apiRequestContext);
 
         return new EmotesController(apiService);
     }

@@ -14,4 +14,7 @@ public class ApiRequestContext
     /// Logged user discord entity.
     /// </summary>
     public IUser? LoggedUser { get; set; }
+
+    public bool IsAdmin() => LoggedUserData?.IsInRole("Admin") ?? false;
+    public bool IsPublic() => LoggedUserData?.IsInRole("User") ?? false;
 }

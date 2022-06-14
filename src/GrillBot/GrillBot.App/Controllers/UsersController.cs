@@ -60,9 +60,9 @@ public class UsersController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id)
     {
-        var result = await ApiService.GetUserDetailAsync(id, cancellationToken);
+        var result = await ApiService.GetUserDetailAsync(id);
 
         if (result == null)
             return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
@@ -80,22 +80,22 @@ public class UsersController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
     {
         var currentUserId = User.GetUserId();
-        var user = await GetUserDetailAsync(currentUserId, cancellationToken);
+        var user = await GetUserDetailAsync(currentUserId);
 
-        if (user.Result is NotFoundObjectResult)
-            return user;
-
-        // Remove private data. User not have permission to view this.
-        if (user.Result is OkObjectResult okResult && okResult.Value is UserDetail userDetail)
+        switch (user.Result)
         {
-            userDetail.RemoveSecretData();
-            return user;
+            case NotFoundObjectResult:
+                return user;
+            // Remove private data. User not have permission to view this.
+            case OkObjectResult { Value: UserDetail userDetail }:
+                userDetail.RemoveSecretData();
+                return user;
+            default:
+                throw new InvalidOperationException("Při načítání aktuálně přihlášeného uživatele došlo k neočekávanému výstupu.");
         }
-
-        throw new InvalidOperationException("Při načítání aktuálně přihlášeného uživatele došlo k neočekávanému výstupu.");
     }
 
     /// <summary>
@@ -153,7 +153,7 @@ public class UsersController : Controller
         try
         {
             this.SetApiRequestData(parameters);
-            await ApiService.UpdateUserAsync(id, parameters, User);
+            await ApiService.UpdateUserAsync(id, parameters);
             return Ok();
         }
         catch (NotFoundException)
@@ -171,7 +171,7 @@ public class UsersController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatAsync()
     {
-        await ApiService.SetHearthbeatStatusAsync(User, true);
+        await ApiService.SetHearthbeatStatusAsync(true);
         return Ok();
     }
 
@@ -183,7 +183,7 @@ public class UsersController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatOffAsync()
     {
-        await ApiService.SetHearthbeatStatusAsync(User, false);
+        await ApiService.SetHearthbeatStatusAsync(false);
         return Ok();
     }
 
@@ -195,9 +195,9 @@ public class UsersController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ResponseCache(CacheProfileName = "BoardApi")]
-    public async Task<ActionResult<List<UserPointsItem>>> GetPointsLeaderboardAsync(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<List<UserPointsItem>>> GetPointsLeaderboardAsync()
     {
-        var result = await ApiService.GetPointsBoardAsync(User, cancellationToken);
+        var result = await ApiService.GetPointsBoardAsync();
         return Ok(result);
     }
 

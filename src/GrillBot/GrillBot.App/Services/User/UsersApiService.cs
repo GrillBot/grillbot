@@ -6,7 +6,9 @@ using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using System.Security.Claims;
+using GrillBot.App.Services.Unverify;
+using GrillBot.Common.Models;
+using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.User;
@@ -14,84 +16,89 @@ namespace GrillBot.App.Services.User;
 public class UsersApiService : ServiceBase
 {
     private AuditLogService AuditLogService { get; }
+    private UnverifyProfileGenerator UnverifyProfileGenerator { get; }
+    private ApiRequestContext ApiRequestContext { get; }
 
     public UsersApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper, IDiscordClient dcClient,
-        AuditLogService auditLogService) : base(null, dbFactory, dcClient, mapper)
+        AuditLogService auditLogService, UnverifyProfileGenerator unverifyProfileGenerator,
+        ApiRequestContext apiRequestContext) : base(null, dbFactory, dcClient, mapper)
     {
         AuditLogService = auditLogService;
+        UnverifyProfileGenerator = unverifyProfileGenerator;
+        ApiRequestContext = apiRequestContext;
     }
 
     public async Task<PaginatedResponse<UserListItem>> GetListAsync(GetUserListParams parameters)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
 
-        var query = context.CreateQuery(parameters, true);
-        return await PaginatedResponse<UserListItem>
-            .CreateAsync(query, parameters.Pagination, entity => MapItemAsync(entity));
+        var data = await repository.User.GetUsersListAsync(parameters, parameters.Pagination);
+        return await PaginatedResponse<UserListItem>.CopyAndMapAsync(data, MapItemAsync);
     }
 
-    private async Task<UserListItem> MapItemAsync(Database.Entity.User entity, CancellationToken cancellationToken = default)
+    private async Task<UserListItem> MapItemAsync(Database.Entity.User entity)
     {
         var result = Mapper.Map<UserListItem>(entity);
 
-        foreach (var guild in entity.Guilds)
+        foreach (var guild in entity.Guilds.OrderBy(o => o.Guild!.Name))
         {
-            var discordGuild = await DcClient.GetGuildAsync(guild.GuildId.ToUlong(), options: new() { CancelToken = cancellationToken });
-            var guildUser = discordGuild != null ? await discordGuild.GetUserAsync(guild.UserId.ToUlong(), options: new() { CancelToken = cancellationToken }) : null;
+            var discordGuild = await DcClient.GetGuildAsync(guild.GuildId.ToUlong());
+            var guildUser = discordGuild != null ? await discordGuild.GetUserAsync(guild.UserId.ToUlong()) : null;
 
-            result.Guilds.Add(guild.Guild.Name, guildUser != null);
+            result.Guilds.Add(guild.Guild!.Name, guildUser != null);
         }
 
         return result;
     }
 
-    public async Task<UserDetail> GetUserDetailAsync(ulong id, CancellationToken cancellationToken = default)
+    public async Task<UserDetail> GetUserDetailAsync(ulong id)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
 
-        var query = context.Users
-            .Include(o => o.Guilds).ThenInclude(o => o.Guild)
-            .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite.Creator.User)
-            .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(x => x.UsedUsers.Count > 0))
-            .Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(x => x.Count > 0)).ThenInclude(o => o.Channel)
-            .Include(o => o.Guilds).ThenInclude(o => o.EmoteStatistics.Where(x => x.UseCount > 0))
-            .Where(o => o.Id == id.ToString())
-            .AsQueryable();
-        query = query.AsNoTracking().AsSplitQuery();
-
-        var entity = await query.FirstOrDefaultAsync(cancellationToken);
+        var entity = await repository.User.FindUserWithDetailsByIdAsync(id);
         if (entity == null)
             return null;
 
         var result = Mapper.Map<UserDetail>(entity);
-        var user = await DcClient.FindUserAsync(id, cancellationToken);
+        var user = await DcClient.FindUserAsync(id);
         if (user != null)
             result = Mapper.Map(user, result);
 
         foreach (var guildUserEntity in entity.Guilds)
         {
-            var guildUser = Mapper.Map<GuildUserDetail>(guildUserEntity);
+            var guildUserDetail = Mapper.Map<GuildUserDetail>(guildUserEntity);
 
-            guildUser.CreatedInvites = guildUser.CreatedInvites
+            guildUserDetail.CreatedInvites = guildUserDetail.CreatedInvites
                 .OrderByDescending(o => o.CreatedAt)
                 .ToList();
 
-            guildUser.Channels = guildUser.Channels
+            guildUserDetail.Channels = guildUserDetail.Channels
                 .OrderByDescending(o => o.Count)
                 .ThenBy(o => o.Channel.Name)
                 .ToList();
 
-            guildUser.Emotes = guildUser.Emotes
+            guildUserDetail.Emotes = guildUserDetail.Emotes
                 .OrderByDescending(o => o.UseCount)
                 .ThenByDescending(o => o.LastOccurence)
                 .ThenBy(o => o.Emote.Name)
                 .ToList();
 
-            var guild = await DcClient.GetGuildAsync(guildUser.Guild.Id.ToUlong(), options: new() { CancelToken = cancellationToken });
+            var guild = await DcClient.GetGuildAsync(guildUserDetail.Guild.Id.ToUlong());
 
-            guildUser.IsGuildKnown = guild != null;
-            guildUser.IsUserInGuild = guildUser.IsGuildKnown && (await guild.GetUserAsync(result.Id.ToUlong())) != null;
-            result.Guilds.Add(guildUser);
+            guildUserDetail.IsGuildKnown = guild != null;
+            if (guild != null)
+            {
+                var guildUser = await guild.GetUserAsync(result.Id.ToUlong());
+                guildUserDetail.IsUserInGuild = guildUserDetail.IsGuildKnown && guildUser != null;
+
+                if (guildUserEntity.Unverify != null && guildUser != null)
+                {
+                    var unverifyUserProfile = UnverifyProfileGenerator.Reconstruct(guildUserEntity.Unverify, guildUser, guild);
+                    guildUserDetail.Unverify = Mapper.Map<UnverifyInfo>(unverifyUserProfile);
+                }
+            }
+
+            result.Guilds.Add(guildUserDetail);
         }
 
         result.Guilds = result.Guilds
@@ -102,12 +109,10 @@ public class UsersApiService : ServiceBase
         return result;
     }
 
-    public async Task UpdateUserAsync(ulong id, UpdateUserParams parameters, ClaimsPrincipal loggedUser)
+    public async Task UpdateUserAsync(ulong id, UpdateUserParams parameters)
     {
-        using var context = DbFactory.Create();
-
-        var user = await context.Users.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id.ToString());
+        await using var repository = DbFactory.CreateRepository();
+        var user = await repository.User.FindUserByIdAsync(id);
 
         if (user == null)
             throw new NotFoundException();
@@ -120,50 +125,39 @@ public class UsersApiService : ServiceBase
         var auditLogItem = new AuditLogDataWrapper(
             AuditLogItemType.MemberUpdated,
             new MemberUpdatedData(before, user),
-            processedUser: await DcClient.FindUserAsync(loggedUser.GetUserId())
+            processedUser: ApiRequestContext.LoggedUser
         );
 
         await AuditLogService.StoreItemAsync(auditLogItem);
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
-    public async Task SetHearthbeatStatusAsync(ClaimsPrincipal loggedUser, bool online)
+    public async Task SetHearthbeatStatusAsync(bool online)
     {
-        var userId = loggedUser.GetUserId().ToString();
-        var isPublic = loggedUser.HaveUserPermission();
+        var isPublic = ApiRequestContext.IsPublic();
 
-        using var context = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
 
-        var user = await context.Users.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == userId);
+        var user = await repository.User.FindUserByIdAsync(ApiRequestContext.LoggedUser!.Id);
+        if (user == null)
+            throw new NotFoundException();
 
         if (online)
             user.Flags |= (int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
         else
             user.Flags &= ~(int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
-    public async Task<List<UserPointsItem>> GetPointsBoardAsync(ClaimsPrincipal loggedUser, CancellationToken cancellationToken = default)
+    public async Task<List<UserPointsItem>> GetPointsBoardAsync()
     {
-        var loggedUserId = loggedUser.GetUserId();
         var result = new List<UserPointsItem>();
-        var mutualGuilds = (await DcClient.FindMutualGuildsAsync(loggedUserId)).ConvertAll(o => o.Id.ToString());
+        var mutualGuilds = (await DcClient.FindMutualGuildsAsync(ApiRequestContext.LoggedUser!.Id)).ConvertAll(o => o.Id.ToString());
 
-        using var context = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
 
-        var query = context.GuildUsers
-            .Include(o => o.Guild)
-            .Include(o => o.User)
-            .Where(o => o.Points > 0 && (o.User.Flags & (int)UserFlags.NotUser) == 0 && mutualGuilds.Contains(o.GuildId) && !o.User.Username.StartsWith("Imported"))
-            .OrderByDescending(o => o.Points)
-            .ThenBy(o => o.Nickname).ThenBy(o => o.User.Username).ThenBy(o => o.User.Discriminator)
-            .AsQueryable();
-
-        query = query.AsNoTracking();
-
-        var data = await query.ToListAsync(cancellationToken);
+        var data = await repository.GuildUser.GetPointsBoardDataAsync(mutualGuilds);
         if (data.Count > 0)
             result.AddRange(Mapper.Map<List<UserPointsItem>>(data));
 

@@ -1,6 +1,7 @@
 ﻿using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
 using System.Collections.Generic;
+using GrillBot.Data.Models.API.Unverify;
 
 namespace GrillBot.Data.Models.API.Users;
 
@@ -17,4 +18,5 @@ public class GuildUserDetail
     public bool IsGuildKnown { get; set; }
     public bool IsUserInGuild { get; set; }
     public List<Emotes.EmoteStatItem> Emotes { get; set; }
+    public UnverifyInfo Unverify { get; set; }
 }

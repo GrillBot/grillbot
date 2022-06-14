@@ -44,7 +44,7 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
     public IQueryable<Database.Entity.User> SetIncludes(IQueryable<Database.Entity.User> query)
     {
         return query
-            .Include(o => o.Guilds.OrderBy(o => o.Guild.Name)).ThenInclude(o => o.Guild);
+            .Include(o => o.Guilds).ThenInclude(o => o.Guild);
     }
 
     public IQueryable<Database.Entity.User> SetQuery(IQueryable<Database.Entity.User> query)
@@ -81,9 +81,11 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
 
     public void FixStatus()
     {
-        if (Status == UserStatus.Invisible)
-            Status = UserStatus.Offline;
-        else if (Status == UserStatus.AFK)
-            Status = UserStatus.Idle;
+        Status = Status switch
+        {
+            UserStatus.Invisible => UserStatus.Offline,
+            UserStatus.AFK => UserStatus.Idle,
+            _ => Status
+        };
     }
 }

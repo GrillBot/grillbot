@@ -43,6 +43,7 @@ public class UsersMappingProfile : AutoMapper.Profile
             .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetUserAvatarUrl(128)));
 
         CreateMap<Database.Entity.GuildUser, GuildUserDetail>()
-            .ForMember(dst => dst.Emotes, opt => opt.MapFrom(src => src.EmoteStatistics));
+            .ForMember(dst => dst.Emotes, opt => opt.MapFrom(src => src.EmoteStatistics))
+            .ForMember(dst => dst.Unverify, opt => opt.Ignore());
     }
 }

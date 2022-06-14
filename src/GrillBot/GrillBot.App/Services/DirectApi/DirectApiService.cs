@@ -44,14 +44,14 @@ public class DirectApiService : ServiceBase
             return;
 
         var attachmentData = await message.Attachments.First().DownloadAsync();
-        var entity = new DirectApiMessage()
+        var entity = new DirectApiMessage
         {
             ExpireAt = DateTime.UtcNow.AddMinutes(10),
             Id = message.Reference.MessageId.Value.ToString(),
             JsonData = Encoding.UTF8.GetString(attachmentData)
         };
 
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
 
         await cache.AddAsync(entity);
         await cache.CommitAsync();
@@ -80,7 +80,7 @@ public class DirectApiService : ServiceBase
 
         return await apiChannel.SendMessageAsync(
             $"```json\n{json}\n```",
-            options: new() { CancelToken = cancellationToken }
+            options: new RequestOptions { CancelToken = cancellationToken }
         );
     }
 
@@ -91,7 +91,7 @@ public class DirectApiService : ServiceBase
         var delay = timeout / timeoutChecks;
 
         DirectApiMessage msg = null;
-        for (int i = 0; i < timeoutChecks; i++)
+        for (var i = 0; i < timeoutChecks; i++)
         {
             await Task.Delay(Convert.ToInt32(delay));
 
@@ -108,16 +108,14 @@ public class DirectApiService : ServiceBase
 
     private async Task<DirectApiMessage> TryGetCachedMessage(IUserMessage message)
     {
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
 
         var msg = await cache.DirectApiRepository.FindMessageByIdAsync(message.Id);
-
-        if (msg != null)
-        {
-            cache.Remove(msg);
-            await cache.CommitAsync();
-        }
-
+        if (msg == null) 
+            return null;
+        
+        cache.Remove(msg);
+        await cache.CommitAsync();
         return msg;
     }
 }

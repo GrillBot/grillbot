@@ -15,7 +15,7 @@ public static class CommandBuilder
     {
         return new DirectMessageCommand("Karma")
             .WithParameter("order", sort.Descending ? "desc" : "asc")
-            .WithParameter("board", sort.OrderBy.ToLower())
+            .WithParameter("board", sort.OrderBy!.ToLower())
             .WithParameter("page", pagination.Page);
     }
 }

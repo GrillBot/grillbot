@@ -71,4 +71,11 @@ public class User
     }
 
     public User Clone() => (User)MemberwiseClone();
+
+    public void Update(IUser user)
+    {
+        Username = user.Username;
+        Discriminator = user.Discriminator;
+        Status = user.Status;
+    }
 }

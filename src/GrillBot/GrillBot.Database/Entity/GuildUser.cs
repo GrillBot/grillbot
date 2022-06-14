@@ -68,4 +68,10 @@ public class GuildUser
             Nickname = user.Nickname
         };
     }
+
+    public void Update(IGuildUser user)
+    {
+        Nickname = user.Nickname;
+        User?.Update(user);
+    }
 }

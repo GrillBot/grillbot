@@ -2,7 +2,6 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.FileStorage;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
@@ -16,20 +15,18 @@ public class PointsService : ServiceBase
     private string CommandPrefix { get; }
     private IConfiguration Configuration { get; }
     private Random Random { get; }
-    private FileStorageFactory FileStorageFactory { get; }
     private MessageCacheManager MessageCache { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
 
     private MagickImage TrophyImage { get; }
 
     public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, IConfiguration configuration,
-        FileStorageFactory fileStorageFactory, MessageCacheManager messageCache, RandomizationService randomizationService,
+        MessageCacheManager messageCache, RandomizationService randomizationService,
         ProfilePictureManager profilePictureManager) : base(client, dbFactory)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         Configuration = configuration.GetSection("Points");
         Random = randomizationService.GetOrCreateGenerator("Points");
-        FileStorageFactory = fileStorageFactory;
         MessageCache = messageCache;
         ProfilePictureManager = profilePictureManager;
 
@@ -44,23 +41,10 @@ public class PointsService : ServiceBase
         if (!CanIncrement(message)) return;
         if (message.Channel is not SocketTextChannel textChannel) return;
 
-        var guildId = textChannel.Guild.Id.ToString();
         var guildUserEntity = message.Author as IGuildUser ?? textChannel.Guild.GetUser(message.Author.Id);
-        var userId = guildUserEntity.Id.ToString();
 
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(textChannel.Guild, CancellationToken.None);
-        await context.InitUserAsync(message.Author, CancellationToken.None);
-
-        var guildUser = await context.GuildUsers.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
-
-        if (guildUser == null)
-        {
-            guildUser = GuildUser.FromDiscord(textChannel.Guild, guildUserEntity);
-            await context.AddAsync(guildUser);
-        }
+        await using var repository = DbFactory.CreateRepository();
+        var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(guildUserEntity);
 
         IncrementPoints(
             guildUser,
@@ -70,19 +54,17 @@ public class PointsService : ServiceBase
             user => user.LastPointsMessageIncrement = DateTime.Now
         );
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
     private bool CanIncrement(IUserMessage message)
     {
-        int argPos = 0;
+        var argPos = 0;
 
         if (message == null) return false;
         if (string.IsNullOrEmpty(message.Content)) return false;
         if (message.Content.Length < Configuration.GetValue<int>("MessageMinLength")) return false;
-        if (message.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix)) return false;
-
-        return true;
+        return !message.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix);
     }
 
     private async Task OnReactionAddedAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
@@ -93,43 +75,28 @@ public class PointsService : ServiceBase
         var user = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;
         if (user?.IsUser() != true) return;
 
-        int argPos = 0;
+        var argPos = 0;
         var msg = message.HasValue ? message.Value : (await MessageCache.GetAsync(message.Id, textChannel)) as IUserMessage;
         if (!CanIncrement(msg)) return;
-        if (msg.ReferencedMessage?.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix) == true) return;
+        if (msg!.ReferencedMessage?.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix) == true) return;
 
-        var guildId = textChannel.Guild.Id.ToString();
-        var userId = reaction.UserId.ToString();
-
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(textChannel.Guild, CancellationToken.None);
-        await context.InitUserAsync(reaction.User.Value, CancellationToken.None);
-
-        var guildUser = await context.GuildUsers.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
-
-        if (guildUser == null)
-        {
-            guildUser = GuildUser.FromDiscord(textChannel.Guild, user);
-            await context.AddAsync(guildUser);
-        }
+        await using var repository = DbFactory.CreateRepository();
+        var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
 
         IncrementPoints(
             guildUser,
-            guildUser => guildUser.LastPointsReactionIncrement,
+            gu => gu.LastPointsReactionIncrement,
             Configuration.GetSection("Range:Reaction"),
             Configuration.GetValue<int>("Cooldown:Reaction"),
-            guildUser => guildUser.LastPointsReactionIncrement = DateTime.Now
+            gu => gu.LastPointsReactionIncrement = DateTime.Now
         );
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
     private void IncrementPoints(GuildUser user, Func<GuildUser, DateTime?> lastIncrementSelector, IConfiguration range, int cooldown, Action<GuildUser> lastIncrementReset)
     {
         var lastIncrement = lastIncrementSelector(user);
-
         if (lastIncrement.HasValue && lastIncrement.Value.AddSeconds(cooldown) > DateTime.Now)
             return;
 
@@ -139,12 +106,12 @@ public class PointsService : ServiceBase
 
     public async Task<TemporaryFile> GetPointsOfUserImageAsync(IGuild guild, IUser user)
     {
-        using var dbContext = DbFactory.Create();
+        var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
 
-        var guildUser = await dbContext.GuildUsers.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
+        await using var repository = DbFactory.CreateRepository();
+        var guildUserEntity = await repository.GuildUser.FindGuildUserByIdAsync(guildUser, true);
 
-        if (guildUser == null)
+        if (guildUserEntity == null)
             throw new NotFoundException($"{user.GetDisplayName()} ještě neprojevil na serveru žádnou aktivitu.");
 
         const int height = 340;
@@ -154,11 +121,11 @@ public class PointsService : ServiceBase
         const int profilePictureSize = 250;
         const string fontName = "Open Sans";
 
-        var position = await CalculatePointsPositionAsync(dbContext, guild, user);
+        var position = await repository.GuildUser.CalculatePointsPositionAsync(guildUser);
         var nickname = user.GetDisplayName(false);
 
         using var profilePicture = await GetProfilePictureAsync(user);
-        var cuttedNickname = nickname.CutToImageWidth(width - (border * 4) - profilePictureSize, fontName, nicknameFontSize);
+        var cuttedNickname = nickname.CutToImageWidth(width - border * 4 - profilePictureSize, fontName, nicknameFontSize);
 
         var dominantColor = profilePicture.GetDominantColor();
         var textBackground = dominantColor.CreateDarkerBackgroundColor();
@@ -188,7 +155,7 @@ public class PointsService : ServiceBase
             pointsInfoX += TrophyImage.Width + 10;
         }
 
-        var pointsInfo = $"{position}. místo\n{FormatHelper.FormatPointsToCzech(guildUser.Points)}";
+        var pointsInfo = $"{position}. místo\n{FormatHelper.FormatPointsToCzech(guildUserEntity.Points)}";
         drawable
             .Font("Arial")
             .FontPointSize(60)
@@ -201,49 +168,22 @@ public class PointsService : ServiceBase
         return tmpFile;
     }
 
-    private static async Task<int> CalculatePointsPositionAsync(GrillBotContext context, IGuild guild, IUser user)
-    {
-        var guildId = guild.Id.ToString();
-
-        var query = context.GuildUsers.AsQueryable()
-            .AsNoTracking()
-            .Where(o => o.GuildId == guildId && o.UserId == user.Id.ToString())
-            .Select(o => o.Points)
-            .SelectMany(pts => context.GuildUsers.AsQueryable().Where(o => o.GuildId == guildId && o.Points > pts));
-
-        return (await query.CountAsync()) + 1;
-    }
-
     private async Task<MagickImage> GetProfilePictureAsync(IUser user)
     {
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
         return new MagickImage(profilePicture.Data);
     }
 
-    public async Task IncrementPointsAsync(SocketGuild guild, SocketGuildUser toUser, int amount)
+    public async Task IncrementPointsAsync(SocketGuildUser toUser, int amount)
     {
-        var guildId = guild.Id.ToString();
-        var userId = toUser.Id.ToString();
+        await using var repository = DbFactory.CreateRepository();
+        var guildUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
-        using var context = DbFactory.Create();
-
-        await context.InitGuildAsync(guild, CancellationToken.None);
-        await context.InitUserAsync(toUser, CancellationToken.None);
-
-        var guildUser = await context.GuildUsers.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
-
-        if (guildUser == null)
-        {
-            guildUser = GuildUser.FromDiscord(guild, toUser);
-            await context.AddAsync(guildUser);
-        }
-
-        guildUser.Points += amount;
-        await context.SaveChangesAsync();
+        guildUserEntity.Points += amount;
+        await repository.CommitAsync();
     }
 
-    public async Task TransferPointsAsync(SocketGuild guild, SocketUser fromUser, SocketGuildUser toUser, long amount)
+    public async Task TransferPointsAsync(IGuildUser fromUser, IGuildUser toUser, long amount)
     {
         if (fromUser == toUser)
             throw new InvalidOperationException("Nelze převést body mezi stejnými účty.");
@@ -254,35 +194,19 @@ public class PointsService : ServiceBase
         if (!toUser.IsUser())
             throw new InvalidOperationException($"Nelze převést body uživateli `{toUser.GetDisplayName()}`, protože se nejedná o běžného uživatele.");
 
-        var guildId = guild.Id.ToString();
-        var fromUserId = fromUser.Id.ToString();
-        var toUserId = toUser.Id.ToString();
+        await using var repository = DbFactory.CreateRepository();
 
-        using var context = DbFactory.Create();
-
-        var fromGuildUser = await context.GuildUsers.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == fromUserId);
-
+        var fromGuildUser = await repository.GuildUser.FindGuildUserByIdAsync(fromUser);
         if (fromGuildUser == null)
             throw new InvalidOperationException($"Nelze převést body od uživatele `{fromUser.GetDisplayName()}`, protože žádné body ještě nemá.");
 
         if (fromGuildUser.Points < amount)
             throw new InvalidOperationException($"Nelze převést body od uživatele `{fromUser.GetDisplayName()}`, protože jich nemá dostatek.");
 
-        await context.InitGuildAsync(guild, CancellationToken.None);
-        await context.InitUserAsync(toUser, CancellationToken.None);
-
-        var toGuildUser = await context.GuildUsers.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == toUserId);
-
-        if (toGuildUser == null)
-        {
-            toGuildUser = GuildUser.FromDiscord(guild, toUser);
-            await context.AddAsync(toGuildUser);
-        }
+        var toGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
         toGuildUser.Points += amount;
         fromGuildUser.Points -= amount;
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 }

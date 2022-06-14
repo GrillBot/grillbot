@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.DirectApi;
+using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Models;
 
@@ -21,15 +22,20 @@ public class RubbergodKarmaService : ServiceBase
         var jsonData = await DirectApi.SendCommandAsync("Rubbergod", command, cancellationToken);
         var data = JObject.Parse(jsonData);
 
+        if (data["meta"] == null)
+            throw new GrillBotException("Missing required field \"meta\" in rubbergod API output.");
+        if (data["content"] == null)
+            throw new GrillBotException("Missing required field \"content\" in rubbergod API output.");
+
         var result = new PaginatedResponse<UserKarma>()
         {
             Data = new List<UserKarma>(),
-            Page = data["meta"]["page"].Value<int>(),
-            TotalItemsCount = data["meta"]["items_count"].Value<int>()
+            Page = data["meta"]["page"]!.Value<int>(),
+            TotalItemsCount = data["meta"]["items_count"]!.Value<int>()
         };
 
         result.CanPrev = result.Page > 1;
-        result.CanNext = result.Page < data["meta"]["total_pages"].Value<int>();
+        result.CanNext = result.Page < data["meta"]["total_pages"]!.Value<int>();
 
         var itemsOnPage = data["content"].OfType<JObject>().ToList();
         for (int i = 0; i < itemsOnPage.Count; i++)

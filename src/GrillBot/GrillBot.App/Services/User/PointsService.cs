@@ -10,25 +10,29 @@ using ImageMagick;
 namespace GrillBot.App.Services.User;
 
 [Initializable]
-public class PointsService : ServiceBase
+public class PointsService
 {
     private string CommandPrefix { get; }
     private IConfiguration Configuration { get; }
     private Random Random { get; }
     private MessageCacheManager MessageCache { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     private MagickImage TrophyImage { get; }
 
-    public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, IConfiguration configuration,
+    public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
         MessageCacheManager messageCache, RandomizationService randomizationService,
-        ProfilePictureManager profilePictureManager) : base(client, dbFactory)
+        ProfilePictureManager profilePictureManager)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         Configuration = configuration.GetSection("Points");
         Random = randomizationService.GetOrCreateGenerator("Points");
         MessageCache = messageCache;
         ProfilePictureManager = profilePictureManager;
+        DiscordClient = client;
+        DatabaseBuilder = databaseBuilder;
 
         DiscordClient.MessageReceived += (message) => message.TryLoadMessage(out SocketUserMessage msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
         DiscordClient.ReactionAdded += OnReactionAddedAsync;
@@ -43,7 +47,7 @@ public class PointsService : ServiceBase
 
         var guildUserEntity = message.Author as IGuildUser ?? textChannel.Guild.GetUser(message.Author.Id);
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(guildUserEntity);
 
         IncrementPoints(
@@ -80,7 +84,7 @@ public class PointsService : ServiceBase
         if (!CanIncrement(msg)) return;
         if (msg!.ReferencedMessage?.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix) == true) return;
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
 
         IncrementPoints(
@@ -108,7 +112,7 @@ public class PointsService : ServiceBase
     {
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var guildUserEntity = await repository.GuildUser.FindGuildUserByIdAsync(guildUser, true);
 
         if (guildUserEntity == null)
@@ -176,7 +180,7 @@ public class PointsService : ServiceBase
 
     public async Task IncrementPointsAsync(SocketGuildUser toUser, int amount)
     {
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var guildUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
         guildUserEntity.Points += amount;
@@ -194,7 +198,7 @@ public class PointsService : ServiceBase
         if (!toUser.IsUser())
             throw new InvalidOperationException($"Nelze převést body uživateli `{toUser.GetDisplayName()}`, protože se nejedná o běžného uživatele.");
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var fromGuildUser = await repository.GuildUser.FindGuildUserByIdAsync(fromUser);
         if (fromGuildUser == null)

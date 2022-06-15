@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
@@ -13,24 +12,30 @@ using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.User;
 
-public class UsersApiService : ServiceBase
+public class UsersApiService
 {
     private AuditLogService AuditLogService { get; }
     private UnverifyProfileGenerator UnverifyProfileGenerator { get; }
     private ApiRequestContext ApiRequestContext { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IDiscordClient DiscordClient { get; }
+    private IMapper Mapper { get; }
 
-    public UsersApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper, IDiscordClient dcClient,
+    public UsersApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient dcClient,
         AuditLogService auditLogService, UnverifyProfileGenerator unverifyProfileGenerator,
-        ApiRequestContext apiRequestContext) : base(null, dbFactory, dcClient, mapper)
+        ApiRequestContext apiRequestContext)
     {
         AuditLogService = auditLogService;
         UnverifyProfileGenerator = unverifyProfileGenerator;
         ApiRequestContext = apiRequestContext;
+        DatabaseBuilder = databaseBuilder;
+        DiscordClient = dcClient;
+        Mapper = mapper;
     }
 
     public async Task<PaginatedResponse<UserListItem>> GetListAsync(GetUserListParams parameters)
     {
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.User.GetUsersListAsync(parameters, parameters.Pagination);
         return await PaginatedResponse<UserListItem>.CopyAndMapAsync(data, MapItemAsync);
@@ -42,7 +47,7 @@ public class UsersApiService : ServiceBase
 
         foreach (var guild in entity.Guilds.OrderBy(o => o.Guild!.Name))
         {
-            var discordGuild = await DcClient.GetGuildAsync(guild.GuildId.ToUlong());
+            var discordGuild = await DiscordClient.GetGuildAsync(guild.GuildId.ToUlong());
             var guildUser = discordGuild != null ? await discordGuild.GetUserAsync(guild.UserId.ToUlong()) : null;
 
             result.Guilds.Add(guild.Guild!.Name, guildUser != null);
@@ -53,14 +58,14 @@ public class UsersApiService : ServiceBase
 
     public async Task<UserDetail> GetUserDetailAsync(ulong id)
     {
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var entity = await repository.User.FindUserWithDetailsByIdAsync(id);
         if (entity == null)
             return null;
 
         var result = Mapper.Map<UserDetail>(entity);
-        var user = await DcClient.FindUserAsync(id);
+        var user = await DiscordClient.FindUserAsync(id);
         if (user != null)
             result = Mapper.Map(user, result);
 
@@ -83,7 +88,7 @@ public class UsersApiService : ServiceBase
                 .ThenBy(o => o.Emote.Name)
                 .ToList();
 
-            var guild = await DcClient.GetGuildAsync(guildUserDetail.Guild.Id.ToUlong());
+            var guild = await DiscordClient.GetGuildAsync(guildUserDetail.Guild.Id.ToUlong());
 
             guildUserDetail.IsGuildKnown = guild != null;
             if (guild != null)
@@ -111,7 +116,7 @@ public class UsersApiService : ServiceBase
 
     public async Task UpdateUserAsync(ulong id, UpdateUserParams parameters)
     {
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var user = await repository.User.FindUserByIdAsync(id);
 
         if (user == null)
@@ -136,7 +141,7 @@ public class UsersApiService : ServiceBase
     {
         var isPublic = ApiRequestContext.IsPublic();
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var user = await repository.User.FindUserByIdAsync(ApiRequestContext.LoggedUser!.Id);
         if (user == null)
@@ -153,9 +158,9 @@ public class UsersApiService : ServiceBase
     public async Task<List<UserPointsItem>> GetPointsBoardAsync()
     {
         var result = new List<UserPointsItem>();
-        var mutualGuilds = (await DcClient.FindMutualGuildsAsync(ApiRequestContext.LoggedUser!.Id)).ConvertAll(o => o.Id.ToString());
+        var mutualGuilds = (await DiscordClient.FindMutualGuildsAsync(ApiRequestContext.LoggedUser!.Id)).ConvertAll(o => o.Id.ToString());
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.GuildUser.GetPointsBoardDataAsync(mutualGuilds);
         if (data.Count > 0)

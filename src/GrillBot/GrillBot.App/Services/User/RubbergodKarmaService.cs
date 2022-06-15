@@ -7,13 +7,17 @@ using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.User;
 
-public class RubbergodKarmaService : ServiceBase
+public class RubbergodKarmaService
 {
     private DirectApiService DirectApi { get; }
+    private IDiscordClient DiscordClient { get; }
+    private IMapper Mapper { get; }
 
-    public RubbergodKarmaService(DirectApiService directApi, IDiscordClient client, IMapper mapper) : base(null, null, client, mapper)
+    public RubbergodKarmaService(DirectApiService directApi, IDiscordClient client, IMapper mapper)
     {
         DirectApi = directApi;
+        DiscordClient = client;
+        Mapper = mapper;
     }
 
     public async Task<PaginatedResponse<UserKarma>> GetUserKarmaAsync(SortParams sort, PaginatedParams pagination, CancellationToken cancellationToken = default)
@@ -52,7 +56,7 @@ public class RubbergodKarmaService : ServiceBase
     private async Task<UserKarma> ParseRowAsync(JObject row, int position)
     {
         var memberId = row["member_ID"].Value<ulong>();
-        var user = await DcClient.FindUserAsync(memberId);
+        var user = await DiscordClient.FindUserAsync(memberId);
         if (user == null)
             return null;
 

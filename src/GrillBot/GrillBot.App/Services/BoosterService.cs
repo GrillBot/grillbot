@@ -6,36 +6,36 @@ using GrillBot.Common.Managers;
 namespace GrillBot.App.Services;
 
 [Initializable]
-public class BoosterService : ServiceBase
+public class BoosterService
 {
     private IConfiguration Configuration { get; }
     private InitManager InitManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public BoosterService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory,
-        IConfiguration configuration, InitManager initManager) : base(client, dbFactory)
+    public BoosterService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder,
+        IConfiguration configuration, InitManager initManager)
     {
         Configuration = configuration;
         InitManager = initManager;
+        DiscordClient = client;
+        DatabaseBuilder = databaseBuilder;
 
         DiscordClient.GuildMemberUpdated += (before, after) =>
         {
             if (!before.HasValue) return Task.CompletedTask;
             if (!InitManager.Get()) return Task.CompletedTask;
 
-            if (!before.Value.Roles.SequenceEqual(after.Roles))
-                return OnGuildMemberUpdatedAsync(before.Value, after);
-
-            return Task.CompletedTask;
+            return !before.Value.Roles.SequenceEqual(after.Roles) ? OnGuildMemberUpdatedAsync(before.Value, after) : Task.CompletedTask;
         };
     }
 
     private async Task OnGuildMemberUpdatedAsync(SocketGuildUser before, SocketGuildUser after)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var guild = await context.Guilds.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == before.Guild.Id.ToString());
-        if (guild?.BoosterRoleId == null || guild?.AdminChannelId == null) return;
+        var guild = await repository.Guild.FindGuildAsync(before.Guild, true);
+        if (guild?.BoosterRoleId == null || guild.AdminChannelId == null) return;
 
         var boostRole = before.Guild.GetRole(guild.BoosterRoleId.ToUlong());
         if (boostRole == null) return;
@@ -50,22 +50,31 @@ public class BoosterService : ServiceBase
         var embed = new EmbedBuilder()
             .WithColor(boostRole.Color)
             .WithCurrentTimestamp()
-            .AddField("Uživatel", after.GetFullName(), false)
+            .AddField("Uživatel", after.GetFullName())
             .WithThumbnailUrl(after.GetUserAvatarUrl());
 
-        if (!boostBefore && boostAfter)
-            embed.WithTitle($"Uživatel je nyní Server Booster {Configuration["Discord:Emotes:Hypers"]}");
-        else if (boostBefore && !boostAfter)
-            embed.WithTitle($"Uživatel již není Server Booster {Configuration["Discord:Emotes:Sadge"]}");
+        switch (boostBefore)
+        {
+            case false when boostAfter:
+                embed.WithTitle($"Uživatel je nyní Server Booster {Configuration["Discord:Emotes:Hypers"]}");
+                break;
+            case true when !boostAfter:
+                embed.WithTitle($"Uživatel již není Server Booster {Configuration["Discord:Emotes:Sadge"]}");
+                break;
+        }
 
         await adminChannel.SendMessageAsync(embed: embed.Build());
     }
 
     private static bool IsBoostReallyChanged(bool before, bool after)
     {
-        if (before && after) return false;
-        if (!before && !after) return false;
-
-        return true;
+        switch (before)
+        {
+            case true when after:
+            case false when !after:
+                return false;
+            default:
+                return true;
+        }
     }
 }

@@ -13,9 +13,7 @@ public class UserServiteTests : ServiceTest<UserService>
     protected override UserService CreateService()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var discordClient = DiscordHelper.CreateClient();
-
-        return new UserService(DbFactory, configuration, discordClient);
+        return new UserService(DbFactory, configuration);
     }
 
     [TestMethod]

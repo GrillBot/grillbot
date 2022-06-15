@@ -1,20 +1,19 @@
-﻿namespace GrillBot.App.Services
+﻿namespace GrillBot.App.Services;
+
+public class RandomizationService
 {
-    public class RandomizationService
+    private ConcurrentDictionary<string, Random> Generators { get; }
+
+    public RandomizationService()
     {
-        private ConcurrentDictionary<string, Random> Generators { get; }
+        Generators = new ConcurrentDictionary<string, Random>();
+    }
 
-        public RandomizationService()
-        {
-            Generators = new ConcurrentDictionary<string, Random>();
-        }
+    public Random GetOrCreateGenerator(string key)
+    {
+        if (!Generators.ContainsKey(key))
+            Generators.TryAdd(key, new Random());
 
-        public Random GetOrCreateGenerator(string key)
-        {
-            if (!Generators.ContainsKey(key))
-                Generators.TryAdd(key, new Random());
-
-            return Generators[key];
-        }
+        return Generators[key];
     }
 }

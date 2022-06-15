@@ -19,7 +19,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var userService = new UserService(DbFactory, configuration, discordClient);
+        var userService = new UserService(DbFactory, configuration);
         var mapper = AutoMapperHelper.CreateMapper();
         var searchingService = new SearchingService(discordClient, DbFactory, userService, mapper);
 
@@ -29,13 +29,16 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     [TestMethod]
     public async Task GetSearchListAsync_WithFilter()
     {
-        var filter = new GetSearchingListParams()
+        var filter = new GetSearchingListParams
         {
             ChannelId = Consts.ChannelId.ToString(),
             GuildId = Consts.GuildId.ToString(),
-            UserId = Consts.UserId.ToString()
+            UserId = Consts.UserId.ToString(),
+            Sort =
+            {
+                Descending = true
+            }
         };
-        filter.Sort.Descending = true;
 
         var result = await AdminController.GetSearchListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
@@ -44,13 +47,16 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     [TestMethod]
     public async Task GetSearchListAsync_WithFilter_AsUser()
     {
-        var filter = new GetSearchingListParams()
+        var filter = new GetSearchingListParams
         {
             ChannelId = Consts.ChannelId.ToString(),
             GuildId = Consts.GuildId.ToString(),
-            UserId = Consts.UserId.ToString()
+            UserId = Consts.UserId.ToString(),
+            Sort =
+            {
+                Descending = true
+            }
         };
-        filter.Sort.Descending = true;
 
         var result = await UserController.GetSearchListAsync(filter, CancellationToken.None);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
@@ -59,10 +65,10 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
     [TestMethod]
     public async Task GetSearchListAsync_WithoutFilter()
     {
-        var search = new SearchItem()
+        var search = new SearchItem
         {
-            User = new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator },
-            Channel = new GuildChannel()
+            User = new User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator },
+            Channel = new GuildChannel
             {
                 ChannelId = Consts.ChannelId.ToString(),
                 ChannelType = Discord.ChannelType.Text,
@@ -70,7 +76,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
                 Name = Consts.ChannelName
             },
             MessageContent = "Msg",
-            Guild = new Database.Entity.Guild() { Id = Consts.GuildId.ToString(), Name = Consts.GuildName }
+            Guild = new Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName }
         };
 
         await DbContext.AddAsync(search);

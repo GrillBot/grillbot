@@ -30,14 +30,14 @@ public class OAuth2Service
     {
         var builder = new UriBuilder("https://discord.com/api/oauth2/authorize")
         {
-            Query = string.Join("&", new[]
-            {
-                    $"client_id={Configuration["ClientId"]}",
-                    $"redirect_uri={WebUtility.UrlEncode(Configuration["RedirectUrl"])}",
-                    "response_type=code",
-                    "scope=identify",
-                    $"state={state.Encode()}"
-                })
+            Query = string.Join(
+                "&",
+                $"client_id={Configuration["ClientId"]}",
+                $"redirect_uri={WebUtility.UrlEncode(Configuration["RedirectUrl"])}",
+                "response_type=code",
+                "scope=identify",
+                $"state={state.Encode()}"
+            )
         };
 
         return new OAuth2GetLink(builder.ToString());
@@ -51,37 +51,28 @@ public class OAuth2Service
 
         var uriBuilder = new UriBuilder(redirectUrl)
         {
-            Query = string.Join("&", new[]
-            {
-                    $"sessionId={accessToken}",
-                    $"isPublic={state.IsPublic}"
-                })
+            Query = string.Join("&", $"sessionId={accessToken}", $"isPublic={state.IsPublic}")
         };
 
         return uriBuilder.ToString();
     }
 
     private string GetReturnUrl(AuthState state)
-    {
-        if (!string.IsNullOrEmpty(state.ReturnUrl))
-            return state.ReturnUrl;
-
-        return Configuration[state.IsPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"];
-    }
+        => !string.IsNullOrEmpty(state.ReturnUrl) ? state.ReturnUrl : Configuration[state.IsPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"];
 
     private async Task<string> CreateAccessTokenAsync(string code, CancellationToken cancellationToken)
     {
         using var message = new HttpRequestMessage(HttpMethod.Post, "https://discord.com/api/oauth2/token")
         {
-            Content = new FormUrlEncodedContent(new Dictionary<string, string>()
-                {
-                    { "client_id", Configuration["ClientId"] },
-                    { "client_secret", Configuration["ClientSecret"] },
-                    { "grant_type", "authorization_code" },
-                    { "code", code },
-                    { "scope", "identify" },
-                    { "redirect_uri", Configuration["RedirectUrl"] }
-                })
+            Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "client_id", Configuration["ClientId"] },
+                { "client_secret", Configuration["ClientSecret"] },
+                { "grant_type", "authorization_code" },
+                { "code", code },
+                { "scope", "identify" },
+                { "redirect_uri", Configuration["RedirectUrl"] }
+            })
         };
 
         using var response = await HttpClient.SendAsync(message, cancellationToken);
@@ -90,12 +81,17 @@ public class OAuth2Service
         if (!response.IsSuccessStatusCode)
             throw new WebException(json);
 
-        return JObject.Parse(json)["access_token"].ToString();
+        return JObject.Parse(json)["access_token"]!.ToString();
     }
 
     private async Task<IUser> GetUserAsync(string token)
     {
-        using var client = new DiscordRestClient(new() { LogLevel = LogSeverity.Verbose });
+        var config = new DiscordRestConfig
+        {
+            LogLevel = LogSeverity.Verbose
+        };
+
+        await using var client = new DiscordRestClient(config);
         client.Log += LoggingService.OnLogAsync;
         await client.LoginAsync(TokenType.Bearer, token);
 
@@ -106,9 +102,8 @@ public class OAuth2Service
     {
         var user = await GetUserAsync(sessionId);
 
-        using var context = DbFactory.Create();
-        var dbUser = await context.Users.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == user.Id.ToString(), cancellationToken);
+        await using var repository = DbFactory.CreateRepository();
+        var dbUser = await repository.User.FindUserByIdAsync(user.Id);
 
         if (dbUser == null)
             return new OAuth2LoginToken($"Uživatel {user.Username} nebyl nalezen.");
@@ -133,7 +128,7 @@ public class OAuth2Service
         expiresAt = DateTimeOffset.UtcNow.AddHours(3); // Token will be valid for 3 hours.
 
         var machineInfo = $"{Environment.MachineName}/{Environment.UserName}";
-        var tokenDescriptor = new SecurityTokenDescriptor()
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
             Audience = $"GrillBot/{machineInfo}",
             Expires = expiresAt.DateTime,
@@ -145,10 +140,10 @@ public class OAuth2Service
             ),
             Subject = new ClaimsIdentity(new[]
             {
-                    new Claim(ClaimTypes.Name, $"{user.Username}#{user.Discriminator}"),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Role, isPublic ? "User" : "Admin")
-                })
+                new Claim(ClaimTypes.Name, $"{user.Username}#{user.Discriminator}"),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Role, isPublic ? "User" : "Admin")
+            })
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();

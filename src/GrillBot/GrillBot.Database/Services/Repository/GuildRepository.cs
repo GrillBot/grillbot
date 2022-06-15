@@ -16,9 +16,7 @@ public class GuildRepository : RepositoryBase
     {
         using (Counter.Create("Database"))
         {
-            var entity = await Context.Guilds
-                .FirstOrDefaultAsync(o => o.Id == guild.Id.ToString());
-
+            var entity = await FindGuildAsync(guild);
             if (entity != null)
                 return entity;
 
@@ -26,6 +24,24 @@ public class GuildRepository : RepositoryBase
             if (!Context.IsEntityTracked<Guild>(entry => entry.Entity.Id == entity.Id))
                 await Context.AddAsync(entity);
 
+            return entity;
+        }
+    }
+
+    public async Task<Guild?> FindGuildAsync(IGuild guild, bool disableTracking = false)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = Context.Guilds.AsQueryable();
+            if (disableTracking)
+                query = query.AsNoTracking();
+
+            var entity = await query.FirstOrDefaultAsync(o => o.Id == guild.Id.ToString());
+            if (entity == null)
+                return null;
+
+            if (!disableTracking)
+                entity.Update(guild);
             return entity;
         }
     }

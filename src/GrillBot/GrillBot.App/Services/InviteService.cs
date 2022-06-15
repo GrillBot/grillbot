@@ -5,27 +5,32 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Data.Models.Invite;
-using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services;
 
 [Initializable]
-public class InviteService : ServiceBase
+public class InviteService
 {
     private ConcurrentBag<InviteMetadata> MetadataCache { get; }
     private readonly object _metadataLock = new();
     private AuditLogService AuditLogService { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IMapper Mapper { get; }
 
-    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder dbFactory,
-        AuditLogService auditLogService, IMapper mapper) : base(discordClient, dbFactory, null, mapper)
+    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder,
+        AuditLogService auditLogService, IMapper mapper)
     {
         MetadataCache = new ConcurrentBag<InviteMetadata>();
         AuditLogService = auditLogService;
+        DiscordClient = discordClient;
+        DatabaseBuilder = databaseBuilder;
+        Mapper = mapper;
 
         DiscordClient.Ready += InitAsync;
-        DiscordClient.UserJoined += (user) => user.IsUser() ? OnUserJoinedAsync(user) : Task.CompletedTask;
+        DiscordClient.UserJoined += user => user.IsUser() ? OnUserJoinedAsync(user) : Task.CompletedTask;
         DiscordClient.InviteCreated += OnInviteCreated;
     }
 
@@ -110,7 +115,7 @@ public class InviteService : ServiceBase
 
     private async Task SetInviteToUserAsync(IGuildUser user, IGuild guild, InviteMetadata usedInvite, List<InviteMetadata> latestInvites)
     {
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var joinedUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
 
         if (usedInvite == null)
@@ -186,10 +191,9 @@ public class InviteService : ServiceBase
 
     public async Task<PaginatedResponse<GuildInvite>> GetInviteListAsync(GetInviteListParams parameters)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.CreateQuery(parameters, true);
-        return await PaginatedResponse<GuildInvite>
-            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<GuildInvite>(entity));
+        var data = await repository.Invite.GetInviteListAsync(parameters, parameters.Pagination);
+        return await PaginatedResponse<GuildInvite>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<GuildInvite>(entity)));
     }
 }

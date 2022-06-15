@@ -62,4 +62,10 @@ public class Guild
             BoosterRoleId = guild.Roles.FirstOrDefault(o => o.Tags?.IsPremiumSubscriberRole == true)?.Id.ToString()
         };
     }
+
+    public void Update(IGuild guild)
+    {
+        Name = guild.Name;
+        BoosterRoleId = guild.Roles.FirstOrDefault(o => o.Tags?.IsPremiumSubscriberRole == true)?.Id.ToString();
+    }
 }

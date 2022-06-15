@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Extensions;
-
-namespace GrillBot.App.Services;
+﻿namespace GrillBot.App.Services;
 
 public class MockingService
 {
@@ -17,7 +15,7 @@ public class MockingService
     // This means the char following uppercased char has 20% (1/5) chance of changing to uppercase.
     // If it's not changed, then the next char has 50% (1/2) chance of being uppercased. Finally if
     // even the second char is not uppercased, the next valid char has 100% chance.
-    private readonly int[] MockRandomCoefficient = { 1, 2, 5 };
+    private readonly int[] _mockRandomCoefficient = { 1, 2, 5 };
 
     public MockingService(IConfiguration configuration, RandomizationService randomizationService)
     {
@@ -39,10 +37,10 @@ public class MockingService
         {
             // Letter 'i' cannot be uppercased and letter 'l' should be always uppercased.
             // This feature is here to prevent confusion of lowercase 'l' and uppercase 'i'
-            if (char.IsLetter(c) && c != 'i' && (c == 'l' || Random.Next(MockRandomCoefficient[coeffIndex]) == 0))
+            if (char.IsLetter(c) && c != 'i' && (c == 'l' || Random.Next(_mockRandomCoefficient[coeffIndex]) == 0))
             {
                 resultBuilder.Append(char.ToUpperInvariant(c));
-                coeffIndex = MockRandomCoefficient.Length - 1;
+                coeffIndex = _mockRandomCoefficient.Length - 1;
                 continue;
             }
 

@@ -106,4 +106,41 @@ public class ChannelRepository : RepositoryBase
             return entity;
         }
     }
+
+    public async Task<long> GetMessagesCountOfUserAsync(IGuildUser user)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = Context.UserChannels.AsNoTracking()
+                .Where(o =>
+                    o.Count > 0 &&
+                    o.GuildId == user.GuildId.ToString() &&
+                    o.UserId == user.Id.ToString() &&
+                    (o.Channel!.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
+                    (o.Channel!.Flags & (long)ChannelFlags.Deleted) == 0
+                );
+
+            return await query.SumAsync(o => o.Count);
+        }
+    }
+
+    public async Task<(GuildUserChannel? lastActive, GuildUserChannel? mostActive)> GetTopChannelsOfUserAsync(IGuildUser user)
+    {
+        using (Counter.Create("Database"))
+        {
+            var baseQuery = Context.UserChannels.AsNoTracking()
+                .Where(o =>
+                    o.GuildId == user.GuildId.ToString() &&
+                    (o.Channel!.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
+                    o.Channel!.ChannelType == ChannelType.Text &&
+                    o.Count > 0 &&
+                    (o.Channel!.Flags & (long)ChannelFlags.Deleted) == 0
+                );
+
+            var lastActive = await baseQuery.OrderByDescending(o => o.LastMessageAt).FirstOrDefaultAsync();
+            var mostActive = await baseQuery.OrderByDescending(o => o.Count).FirstOrDefaultAsync();
+
+            return (lastActive, mostActive);
+        }
+    }
 }

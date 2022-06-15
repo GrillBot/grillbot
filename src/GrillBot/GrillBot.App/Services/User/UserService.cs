@@ -1,23 +1,24 @@
 ﻿using GrillBot.Database.Enums;
 using GrillBot.Data.Extensions;
-using GrillBot.App.Infrastructure;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Extensions;
+using GrillBot.Database.Extensions;
 
 namespace GrillBot.App.Services.User;
 
-public class UserService : ServiceBase
+public class UserService
 {
     private IConfiguration Configuration { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public UserService(GrillBotDatabaseBuilder dbFactory, IConfiguration configuration, DiscordSocketClient discordClient) : base(discordClient, dbFactory)
+    public UserService(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration)
     {
         Configuration = configuration;
+        DatabaseBuilder = databaseBuilder;
     }
 
     public async Task<bool> CheckUserFlagsAsync(IUser user, UserFlags flags)
     {
-        using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var userEntity = await repository.User.FindUserByIdAsync(user.Id);
         return userEntity?.HaveFlags(flags) ?? false;
@@ -31,14 +32,12 @@ public class UserService : ServiceBase
     /// <param name="user">The user we want to get information about.</param>
     public async Task<Embed> CreateInfoEmbed(IUser executor, IGuild guild, SocketGuildUser user)
     {
-        using var dbContext = DbFactory.Create();
-
         var userDetailUrl = await CreateWebAdminLink(executor, user);
         var highestRoleWithColor = user.GetHighestRole(true);
         var state = GetUserStateEmote(user, out var userStatus);
         var joinPosition = user.CalculateJoinPosition();
-        var roles = user.Roles.Where(o => !o.IsEveryone).OrderByDescending(o => o.Position).Select(o => o.Mention);
-        var clients = user.ActiveClients.Select(o => o.ToString());
+        var roles = user.Roles.Where(o => !o.IsEveryone).OrderByDescending(o => o.Position).Select(o => o.Mention).ToList();
+        var clients = user.ActiveClients.Select(o => o.ToString()).ToList();
 
         var embed = new EmbedBuilder()
             .WithAuthor(user.GetFullName(), user.GetUserAvatarUrl(), userDetailUrl)
@@ -46,96 +45,61 @@ public class UserService : ServiceBase
             .WithFooter(executor)
             .WithTitle("Informace o uživateli")
             .WithColor(highestRoleWithColor?.Color ?? Color.Default)
-            .AddField("Stav", $"{state} {userStatus}", false)
-            .AddField("Role", roles.Any() ? string.Join(" ", roles) : "*Uživatel nemá žádné role.*", false)
-            .AddField("Založen", user.CreatedAt.LocalDateTime.ToCzechFormat(), true)
-            .AddField("Připojen (pořadí)", $"{user.JoinedAt.Value.LocalDateTime.ToCzechFormat()} ({joinPosition}.)", true);
+            .AddField("Stav", $"{state} {userStatus}")
+            .AddField("Role", roles.Count > 0 ? string.Join(" ", roles) : "*Uživatel nemá žádné role.*")
+            .AddField("Založen", user.CreatedAt.LocalDateTime.ToCzechFormat(), true);
+
+        if (user.JoinedAt != null)
+            embed.AddField("Připojen (pořadí)", $"{user.JoinedAt.Value.LocalDateTime.ToCzechFormat()} ({joinPosition}.)", true);
 
         if (user.PremiumSince != null)
             embed.AddField("Boost od", user.PremiumSince.Value.LocalDateTime.ToCzechFormat(), true);
 
-        if (clients.Any())
-            embed.AddField("Aktivní zařízení", string.Join(", ", clients), false);
+        if (clients.Count > 0)
+            embed.AddField("Aktivní zařízení", string.Join(", ", clients));
 
-        var userStateQueryBase = dbContext.GuildUsers.AsNoTracking()
-            .Where(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var baseData = await userStateQueryBase.Include(o => o.UsedInvite)
-            .Select(o => new { o.Points, o.GivenReactions, o.ObtainedReactions, o.UsedInvite }).FirstOrDefaultAsync();
-        if (baseData != null)
+        var guildUserEntity = await repository.GuildUser.FindGuildUserByIdAsync(user, true);
+        if (guildUserEntity != null)
         {
-            embed.AddField("Body", baseData.Points, true)
-                .AddField("Udělené reakce", baseData?.GivenReactions, true)
-                .AddField("Obdržené reakce", baseData?.ObtainedReactions, true);
+            embed
+                .AddField("Body", guildUserEntity.Points, true)
+                .AddField("Udělené reakce", guildUserEntity.GivenReactions, true)
+                .AddField("Obdržené reakce", guildUserEntity.ObtainedReactions, true);
         }
 
-        var messagesCount = await dbContext.UserChannels.AsNoTracking()
-            .Where(o =>
-                o.Count > 0 &&
-                o.GuildId == guild.Id.ToString() &&
-                o.UserId == user.Id.ToString() &&
-                (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0
-            ).SumAsync(o => o.Count);
+        var messagesCount = await repository.Channel.GetMessagesCountOfUserAsync(user);
         embed.AddField("Počet zpráv", messagesCount, true);
 
-        var unverifyStatsQuery = dbContext.UnverifyLogs.AsQueryable().AsNoTracking()
-            .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == guild.Id.ToString());
-
-        var unverifyCount = await unverifyStatsQuery.CountAsync(o => o.Operation == UnverifyOperation.Unverify);
-        var selfUnverifyCount = await unverifyStatsQuery.CountAsync(o => o.Operation == UnverifyOperation.Selfunverify);
-
-        if (unverifyCount + selfUnverifyCount > 0)
+        var unverifyStats = await repository.Unverify.GetUserStatsAsync(user);
+        if (unverifyStats.unverify + unverifyStats.selfunverify > 0)
         {
-            embed.AddField("Počet unverify", unverifyCount, true)
-                .AddField("Počet selfunverify", selfUnverifyCount, true);
+            embed
+                .AddField("Počet unverify", unverifyStats.unverify, true)
+                .AddField("Počet selfunverify", unverifyStats.selfunverify, true);
         }
 
-        if (baseData?.UsedInvite != null)
+        if (guildUserEntity?.UsedInvite != null)
         {
-            var invite = baseData.UsedInvite;
-            bool isVanity = invite.Code == guild.VanityURLCode;
-            var creator = isVanity ? null : await DiscordClient.FindUserAsync(invite.CreatorId.ToUlong());
+            var invite = guildUserEntity.UsedInvite;
+            var isVanity = invite.Code == guild.VanityURLCode;
+            var creator = (isVanity ? null : invite.Creator)?.FullName();
 
             embed.AddField(
                 "Použitá pozvánka",
-                $"**{invite.Code}**\n{(isVanity ? "Vanity invite" : $"Založil: **{creator?.GetFullName()}** (**{invite.CreatedAt?.ToCzechFormat()}**)")}",
-                false
+                $"**{invite.Code}**\n{(isVanity ? "Vanity invite" : $"Založil: **{creator}** (**{invite.CreatedAt?.ToCzechFormat()}**)")}"
             );
         }
 
-        var channelActivityQuery = userStateQueryBase.Select(o => new
-        {
-            MostActive = o.User.Channels
-                .Where(x =>
-                    x.GuildId == o.GuildId &&
-                    (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
-                    x.Channel.ChannelType != ChannelType.PrivateThread &&
-                    x.Channel.ChannelType != ChannelType.PublicThread &&
-                    x.Count > 0
-                )
-                .OrderByDescending(o => o.Count)
-                .Select(o => new { o.ChannelId, o.Count })
-                .FirstOrDefault(),
-            LastMessage = o.User.Channels
-                .Where(x =>
-                    x.GuildId == o.GuildId &&
-                    (x.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
-                    x.Count > 0
-                )
-                .OrderByDescending(o => o.LastMessageAt)
-                .Select(o => new { o.ChannelId, o.LastMessageAt })
-                .FirstOrDefault()
-        });
+        var topChannels = await repository.Channel.GetTopChannelsOfUserAsync(user);
 
-        var channelActivity = await channelActivityQuery.FirstOrDefaultAsync();
-        if (channelActivity != null)
-        {
-            if (channelActivity.MostActive != null)
-                embed.AddField("Nejaktivnější kanál", $"<#{channelActivity.MostActive.ChannelId}> ({channelActivity.MostActive.Count})", false);
+        if (topChannels.mostActive != null)
+            embed.AddField("Nejaktivnější kanál", $"<#{topChannels.mostActive.ChannelId}> ({topChannels.mostActive.Count})");
 
-            if (channelActivity.LastMessage != null)
-                embed.AddField("Poslední zpráva", $"<#{channelActivity.LastMessage.ChannelId}> ({channelActivity.LastMessage.LastMessageAt.ToCzechFormat()})", false);
-        }
+        // ReSharper disable once InvertIf
+        if (topChannels.lastActive != null)
+            embed.AddField("Poslední zpráva", $"<#{topChannels.lastActive.ChannelId}> ({topChannels.lastActive.LastMessageAt.ToCzechFormat()})");
 
         return embed.Build();
     }
@@ -150,10 +114,7 @@ public class UserService : ServiceBase
 
     public Emote GetUserStateEmote(IUser user, out string userStatus)
     {
-        var status = user.Status;
-        if (status == UserStatus.AFK) status = UserStatus.Idle;
-        else if (status == UserStatus.Invisible) status = UserStatus.Offline;
-
+        var status = user.GetStatus();
         userStatus = status switch
         {
             UserStatus.DoNotDisturb => "Nerušit",

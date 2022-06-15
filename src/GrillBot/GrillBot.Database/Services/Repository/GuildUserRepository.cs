@@ -44,6 +44,7 @@ public class GuildUserRepository : RepositoryBase
             var query = Context.GuildUsers
                 .Include(o => o.Guild)
                 .Include(o => o.User)
+                .Include(o => o.UsedInvite.Creator) // TODO Null operator in lambda queries.
                 .AsQueryable();
 
             if (disableTracking)

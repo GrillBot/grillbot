@@ -28,6 +28,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public InviteRepository Invite => GetOrCreateRepository<InviteRepository>();
     public AuditLogRepository AuditLog => GetOrCreateRepository<AuditLogRepository>();
     public EmoteRepository Emote => GetOrCreateRepository<EmoteRepository>();
+    public SearchingRepository Searching => GetOrCreateRepository<SearchingRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {

@@ -56,7 +56,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var channel = new ChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var channel = new TextChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).SetGuild(guild).Build();
 
         await Service.CreateAsync(guild, user, channel, "ahoj");
         Assert.IsTrue(true);

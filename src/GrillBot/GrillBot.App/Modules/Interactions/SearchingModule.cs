@@ -54,7 +54,7 @@ public class SearchingModule : Infrastructure.InteractionsModuleBase
     {
         try
         {
-            await SearchingService.CreateAsync(Context.Guild, Context.User, Context.Channel, message);
+            await SearchingService.CreateAsync(Context.Guild, Context.User as IGuildUser, Context.Channel as IGuildChannel, message);
             await SetResponseAsync("Hledání bylo úspěšně uloženo.");
         }
         catch (ValidationException ex)

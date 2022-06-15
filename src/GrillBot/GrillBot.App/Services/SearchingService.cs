@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.User;
 using GrillBot.Common.Extensions;
@@ -13,37 +12,42 @@ using GrillBot.Database.Models;
 namespace GrillBot.App.Services;
 
 [Initializable]
-public class SearchingService : ServiceBase
+public class SearchingService
 {
     private UserService UserService { get; }
+    private IDiscordClient DiscordClient { get; }
+    private IMapper Mapper { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public SearchingService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, UserService userService,
-        IMapper mapper) : base(client, dbFactory, null, mapper)
+    public SearchingService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder, UserService userService,
+        IMapper mapper)
     {
         UserService = userService;
+        DiscordClient = client;
+        DatabaseBuilder = databaseBuilder;
+        Mapper = mapper;
     }
 
-    public async Task CreateAsync(IGuild guild, IUser user, IChannel channel, string message)
+    public async Task CreateAsync(IGuild guild, IGuildUser user, IGuildChannel channel, string message)
     {
         var content = CheckMessage(message);
 
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        await context.InitUserAsync(user);
-        await context.InitGuildAsync(guild);
-        await context.InitGuildChannelAsync(guild, channel, channel.GetChannelType() ?? ChannelType.DM);
-        await context.InitGuildUserAsync(guild, user as IGuildUser);
+        var guildEntity = await repository.Guild.GetOrCreateRepositoryAsync(guild);
+        var userEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
+        var channelEntity = await repository.Channel.GetOrCreateChannelAsync(channel);
 
-        var entity = new SearchItem()
+        var entity = new SearchItem
         {
-            ChannelId = channel.Id.ToString(),
-            GuildId = guild.Id.ToString(),
-            UserId = user.Id.ToString(),
+            Channel = channelEntity,
+            Guild = guildEntity,
+            User = userEntity.User,
             MessageContent = content
         };
 
-        await context.AddAsync(entity);
-        await context.SaveChangesAsync();
+        await repository.AddAsync(entity);
+        await repository.CommitAsync();
     }
 
     private static string CheckMessage(string message)
@@ -60,44 +64,44 @@ public class SearchingService : ServiceBase
 
     public async Task RemoveSearchAsync(long id, IGuildUser executor)
     {
-        var isAdmin = (await UserService.CheckUserFlagsAsync(executor, UserFlags.BotAdmin)) || executor.GuildPermissions.Administrator || executor.GuildPermissions.ManageMessages;
+        var isAdmin = await UserService.CheckUserFlagsAsync(executor, UserFlags.BotAdmin) || executor.GuildPermissions.Administrator || executor.GuildPermissions.ManageMessages;
 
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var search = await context.SearchItems.AsQueryable().FirstOrDefaultAsync(o => o.Id == id);
+        var search = await repository.Searching.FindSearchItemByIdAsync(id);
         if (search == null) return;
 
         if (!isAdmin && executor.Id != search.UserId.ToUlong())
             throw new UnauthorizedAccessException("Toto hledání jsi nezaložil ty a současně nemáš vyšší oprávnění hledání smazat.");
 
-        context.Remove(search);
-        await context.SaveChangesAsync();
+        repository.Remove(search);
+        await repository.CommitAsync();
     }
 
     public async Task RemoveSearchesAsync(long[] ids)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var searches = await context.SearchItems.AsQueryable()
-            .Where(o => ids.Contains(o.Id))
-            .ToListAsync();
+        var searches = await repository.Searching.FindSearchesByIdsAsync(ids);
+        if (searches.Count == 0)
+            return;
 
-        context.RemoveRange(searches);
-        await context.SaveChangesAsync();
+        repository.RemoveCollection(searches);
+        await repository.CommitAsync();
     }
 
     public async Task<List<SearchingItem>> GetSearchListAsync(IGuild guild, ITextChannel channel, string messageQuery, int page)
     {
-        var parameters = new GetSearchingListParams()
+        var parameters = new GetSearchingListParams
         {
             ChannelId = channel.Id.ToString(),
             GuildId = guild.Id.ToString(),
-            Pagination = new()
+            Pagination = new PaginatedParams
             {
                 Page = page + 1,
                 PageSize = EmbedBuilder.MaxFieldCount
             },
-            Sort = new()
+            Sort = new SortParams
             {
                 OrderBy = "Id",
                 Descending = false
@@ -105,9 +109,9 @@ public class SearchingService : ServiceBase
             MessageQuery = messageQuery
         };
 
-        var data = await GetPaginatedListAsync(parameters, null, CancellationToken.None);
+        var data = await GetPaginatedListAsync(parameters, null);
 
-        return data.Data.ConvertAll(o => new SearchingItem()
+        return data.Data.ConvertAll(o => new SearchingItem
         {
             DisplayName = o.User.Username,
             Id = o.Id,
@@ -115,42 +119,40 @@ public class SearchingService : ServiceBase
         });
     }
 
-    public async Task<List<SearchingListItem>> GetListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser,
-        CancellationToken cancellationToken)
+    private async Task<List<SearchingListItem>> GetListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser)
     {
+        // TODO: Use ApiRequestContext.
         if (loggedUser?.HaveUserPermission() == true)
         {
             var loggedUserId = loggedUser.GetUserId();
             var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
 
-            if (!string.IsNullOrEmpty(parameters.GuildId) && !mutualGuilds.Any(o => o.Id.ToString() == parameters.GuildId))
+            if (!string.IsNullOrEmpty(parameters.GuildId) && mutualGuilds.All(o => o.Id.ToString() != parameters.GuildId))
                 parameters.GuildId = null;
 
             parameters.UserId = loggedUserId.ToString();
             parameters.MutualGuilds = mutualGuilds.ConvertAll(o => o.Id.ToString());
         }
 
-        using var context = DbFactory.Create();
-
-        var query = context.CreateQuery(parameters);
-        var data = await query.ToListAsync(cancellationToken);
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var data = await repository.Searching.FindSearchesAsync(parameters);
 
         var results = new List<SearchingListItem>();
         var synchronizedGuilds = new List<ulong>();
 
         foreach (var item in data)
         {
-            var guild = DiscordClient.GetGuild(item.GuildId.ToUlong());
+            var guild = await DiscordClient.GetGuildAsync(item.GuildId.ToUlong());
             if (guild == null)
             {
-                CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
+                repository.Remove(item);
                 continue;
             }
 
-            var channel = guild.GetTextChannel(item.ChannelId.ToUlong());
+            var channel = await guild.GetTextChannelAsync(item.ChannelId.ToUlong());
             if (channel == null)
             {
-                CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
+                repository.Remove(item);
                 continue;
             }
 
@@ -160,46 +162,44 @@ public class SearchingService : ServiceBase
                 synchronizedGuilds.Add(guild.Id);
             }
 
-            var author = guild.GetUser(item.UserId.ToUlong());
+            var author = await guild.GetUserAsync(item.UserId.ToUlong());
             if (author == null)
             {
-                CommonHelper.SuppressException<InvalidOperationException>(() => context.Remove(item));
+                repository.Remove(item);
                 continue;
             }
 
             results.Add(Mapper.Map<SearchingListItem>(item));
         }
 
-        await context.SaveChangesAsync(cancellationToken);
+        await repository.CommitAsync();
         return results;
     }
 
-    public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser,
-        CancellationToken cancellationToken)
+    public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser)
     {
-        var results = await GetListAsync(parameters, loggedUser, cancellationToken);
+        var results = await GetListAsync(parameters, loggedUser);
         return PaginatedResponse<SearchingListItem>.Create(results, parameters.Pagination);
     }
 
-    public async Task<int> GetItemsCountAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser,
-        CancellationToken cancellationToken)
+    private async Task<int> GetItemsCountAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser)
     {
-        var results = await GetListAsync(parameters, loggedUser, cancellationToken);
+        var results = await GetListAsync(parameters, loggedUser);
         return results.Count;
     }
 
     public async Task<int> GetItemsCountAsync(IGuild guild, ITextChannel channel, string messageQuery)
     {
-        var parameters = new GetSearchingListParams()
+        var parameters = new GetSearchingListParams
         {
             ChannelId = channel.Id.ToString(),
             GuildId = guild.Id.ToString(),
-            Pagination = new()
+            Pagination = new PaginatedParams
             {
                 Page = 1,
                 PageSize = EmbedBuilder.MaxFieldCount
             },
-            Sort = new()
+            Sort = new SortParams
             {
                 Descending = false,
                 OrderBy = "Id"
@@ -207,7 +207,7 @@ public class SearchingService : ServiceBase
             MessageQuery = messageQuery
         };
 
-        return await GetItemsCountAsync(parameters, null, CancellationToken.None);
+        return await GetItemsCountAsync(parameters, null);
     }
 
     public async Task<Dictionary<long, string>> GenerateSuggestionsAsync(IGuildUser user, IGuild guild, IChannel channel)
@@ -215,14 +215,14 @@ public class SearchingService : ServiceBase
         var isBotAdmin = await UserService.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
         var isAdmin = isBotAdmin || user.GuildPermissions.Administrator || user.GuildPermissions.ManageMessages;
 
-        var parameters = new GetSearchingListParams()
+        var parameters = new GetSearchingListParams
         {
             GuildId = guild.Id.ToString(),
             ChannelId = channel.Id.ToString(),
             UserId = isAdmin ? null : user.Id.ToString()
         };
 
-        var items = await GetListAsync(parameters, null, CancellationToken.None);
+        var items = await GetListAsync(parameters, null);
 
         return items.Take(25).ToDictionary(
             o => o.Id,

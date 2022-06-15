@@ -29,10 +29,9 @@ public class SearchingController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters)
     {
-        var data = await Service.GetPaginatedListAsync(parameters, User, cancellationToken);
+        var data = await Service.GetPaginatedListAsync(parameters, User);
         return Ok(data);
     }
 

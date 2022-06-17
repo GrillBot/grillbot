@@ -1,21 +1,22 @@
-﻿using GrillBot.App.Infrastructure;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.Suggestion;
 
-public class SuggestionService : ServiceBase
+public class SuggestionService
 {
     public EmoteSuggestionService Emotes { get; }
     public FeatureSuggestionService Features { get; }
     public SuggestionSessionService Sessions { get; }
+    private IDiscordClient DiscordClient { get; }
 
     public SuggestionService(EmoteSuggestionService emoteSuggestionService, FeatureSuggestionService featureSuggestionService,
-        IDiscordClient discordClient, SuggestionSessionService suggestionSessionService) : base(null, null, discordClient)
+        IDiscordClient discordClient, SuggestionSessionService suggestionSessionService)
     {
         Emotes = emoteSuggestionService;
         Features = featureSuggestionService;
         Sessions = suggestionSessionService;
+        DiscordClient = discordClient;
     }
 
     public async Task ProcessPendingSuggestion(Database.Entity.Suggestion suggestion)
@@ -23,12 +24,14 @@ public class SuggestionService : ServiceBase
         switch (suggestion.Type)
         {
             case SuggestionType.Emote:
-                var guild = await DcClient.GetGuildAsync(suggestion.GuildId.ToUlong());
+                var guild = await DiscordClient.GetGuildAsync(suggestion.GuildId.ToUlong());
                 await Emotes.TrySendSuggestionAsync(guild, suggestion);
                 break;
             case SuggestionType.FeatureRequest:
                 await Features.TrySendSuggestionAsync(suggestion);
                 break;
+            default:
+                throw new ArgumentOutOfRangeException("", nameof(suggestion.Type));
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Modules.Implementations.Suggestion;
+﻿using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Enums;
@@ -8,16 +7,18 @@ using MimeKit;
 
 namespace GrillBot.App.Services.Suggestion;
 
-public class FeatureSuggestionService : ServiceBase
+public class FeatureSuggestionService
 {
     private SuggestionSessionService SessionService { get; }
     private IConfiguration Configuration { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     public FeatureSuggestionService(SuggestionSessionService sessionService, IConfiguration configuration,
-        GrillBotDatabaseBuilder dbFactory) : base(null, dbFactory, null, null)
+        GrillBotDatabaseBuilder databaseBuilder)
     {
         SessionService = sessionService;
         Configuration = configuration.GetSection("Services:Trello");
+        DatabaseBuilder = databaseBuilder;
     }
 
     public void InitSession(string suggestionId)
@@ -31,7 +32,7 @@ public class FeatureSuggestionService : ServiceBase
 
         modalData.User = user.GetFullName();
 
-        var entity = new Database.Entity.Suggestion()
+        var entity = new Database.Entity.Suggestion
         {
             CreatedAt = DateTime.Now,
             Data = JsonConvert.SerializeObject(modalData),
@@ -47,6 +48,8 @@ public class FeatureSuggestionService : ServiceBase
         try
         {
             var modalData = JsonConvert.DeserializeObject<FeatureSuggestionModal>(suggestion.Data);
+            if (modalData == null)
+                return;
 
             var dataBuilder = new StringBuilder()
                 .Append("Návrh od uživatele: **").Append(modalData.User).AppendLine("**")
@@ -70,13 +73,12 @@ public class FeatureSuggestionService : ServiceBase
             if (ex is GrillBotException)
                 return;
 
-            if (suggestion.Id == default)
-            {
-                using var context = DbFactory.Create();
+            if (suggestion.Id != default)
+                throw;
 
-                await context.AddAsync(suggestion);
-                await context.SaveChangesAsync();
-            }
+            await using var repository = DatabaseBuilder.CreateRepository();
+            await repository.AddAsync(suggestion);
+            await repository.CommitAsync();
 
             throw;
         }

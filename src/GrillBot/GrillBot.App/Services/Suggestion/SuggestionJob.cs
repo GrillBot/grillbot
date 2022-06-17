@@ -11,14 +11,14 @@ namespace GrillBot.App.Services.Suggestion;
 public class SuggestionJob : Job
 {
     private SuggestionService SuggestionService { get; }
-    private GrillBotDatabaseBuilder DbFactory { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     public SuggestionJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        InitManager initManager, SuggestionService suggestionService, GrillBotDatabaseBuilder dbFactory)
+        InitManager initManager, SuggestionService suggestionService, GrillBotDatabaseBuilder databaseBuilder)
         : base(loggingService, auditLogService, discordClient, initManager)
     {
         SuggestionService = suggestionService;
-        DbFactory = dbFactory;
+        DatabaseBuilder = databaseBuilder;
     }
 
     public override async Task RunAsync(IJobExecutionContext context)
@@ -29,8 +29,8 @@ public class SuggestionJob : Job
 
     private async Task ProcessPendingSuggestions(IJobExecutionContext context)
     {
-        using var dbContext = DbFactory.Create();
-        var pendingSuggestions = await dbContext.Suggestions.OrderBy(o => o.Id).ToListAsync(context.CancellationToken);
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var pendingSuggestions = await repository.Suggestion.GetSuggestionsAsync();
 
         if (pendingSuggestions.Count == 0)
             return;
@@ -45,7 +45,7 @@ public class SuggestionJob : Job
             {
                 await SuggestionService.ProcessPendingSuggestion(suggestion);
 
-                dbContext.Remove(suggestion);
+                repository.Remove(suggestion);
                 result += "Success";
             }
             catch (Exception ex)
@@ -57,7 +57,7 @@ public class SuggestionJob : Job
             resultBuilder.Add(result);
         }
 
-        await dbContext.SaveChangesAsync();
+        await repository.CommitAsync();
         context.Result = string.Join("\n", resultBuilder);
     }
 }

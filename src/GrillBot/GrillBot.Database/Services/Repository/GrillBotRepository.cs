@@ -30,6 +30,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public EmoteRepository Emote => GetOrCreateRepository<EmoteRepository>();
     public SearchingRepository Searching => GetOrCreateRepository<SearchingRepository>();
     public SelfUnverifyRepository SelfUnverify => GetOrCreateRepository<SelfUnverifyRepository>();
+    public SuggestionRepository Suggestion => GetOrCreateRepository<SuggestionRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {

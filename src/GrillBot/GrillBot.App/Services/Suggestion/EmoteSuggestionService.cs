@@ -1,7 +1,4 @@
-﻿#pragma warning disable IDE0063 // Use simple 'using' statement
-
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Modules.Implementations.Suggestion;
+﻿using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
@@ -12,13 +9,15 @@ using System.Net.Http;
 
 namespace GrillBot.App.Services.Suggestion;
 
-public class EmoteSuggestionService : ServiceBase
+public class EmoteSuggestionService
 {
     private SuggestionSessionService SessionService { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotDatabaseBuilder dbFactory) : base(null, dbFactory, null, null)
+    public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotDatabaseBuilder databaseBuilder)
     {
         SessionService = sessionService;
+        DatabaseBuilder = databaseBuilder;
     }
 
     public void InitSession(string suggestionId, object data)
@@ -37,7 +36,7 @@ public class EmoteSuggestionService : ServiceBase
         if (!string.IsNullOrEmpty(modalData.EmoteDescription))
             dataBuilder.AppendLine("Popis:").AppendLine("```").AppendLine(modalData.EmoteDescription).AppendLine("```");
 
-        var entity = new Database.Entity.Suggestion()
+        var entity = new Database.Entity.Suggestion
         {
             CreatedAt = DateTime.Now,
             Data = dataBuilder.ToString(),
@@ -51,29 +50,33 @@ public class EmoteSuggestionService : ServiceBase
 
     private static async Task SetEmoteDataAsync(SuggestionMetadata metadata, Database.Entity.Suggestion suggestion)
     {
-        if (metadata.Data is Emote emote)
+        switch (metadata.Data)
         {
-            using var httpClient = new HttpClient();
+            case Emote emote:
+            {
+                using var httpClient = new HttpClient();
 
-            suggestion.BinaryDataFilename = emote.Name + Path.GetExtension(Path.GetFileName(emote.Url));
-            suggestion.BinaryData = await httpClient.GetByteArrayAsync(emote.Url);
-        }
-        else if (metadata.Data is IAttachment attachment)
-        {
-            suggestion.BinaryDataFilename = attachment.Filename;
-            suggestion.BinaryData = await attachment.DownloadAsync();
+                suggestion.BinaryDataFilename = emote.Name + Path.GetExtension(Path.GetFileName(emote.Url));
+                suggestion.BinaryData = await httpClient.GetByteArrayAsync(emote.Url);
+                break;
+            }
+            case IAttachment attachment:
+                suggestion.BinaryDataFilename = attachment.Filename;
+                suggestion.BinaryData = await attachment.DownloadAsync();
+                break;
         }
     }
 
     public async Task TrySendSuggestionAsync(IGuild guild, Database.Entity.Suggestion suggestion)
     {
         var data = suggestion.Data +
-            (suggestion.Id != default ? $"\nTenhle návrh vznikl {suggestion.CreatedAt.ToCzechFormat()}, ale nepovedlo se ho poslat." : "");
+                   (suggestion.Id != default ? $"\nTenhle návrh vznikl {suggestion.CreatedAt.ToCzechFormat()}, ale nepovedlo se ho poslat." : "");
 
         try
         {
-            using var dbContext = DbFactory.Create();
-            var guildData = await dbContext.Guilds.FirstOrDefaultAsync(o => o.Id == guild.Id.ToString());
+            await using var repository = DatabaseBuilder.CreateRepository();
+            var guildData = await repository.Guild.FindGuildAsync(guild);
+            if (guildData == null) return;
 
             if (string.IsNullOrEmpty(guildData.EmoteSuggestionChannelId))
                 throw new ValidationException("Tvůj návrh na emote byl zařazen ke zpracování, ale kvůli technickým důvodům jej nelze nyní zpracovat.");
@@ -86,6 +89,7 @@ public class EmoteSuggestionService : ServiceBase
             if (suggestion.BinaryData == null)
                 throw new GrillBotException("Nepodařilo se stáhnout požadovaný emote. Zkus to prosím znovu.");
 
+            // ReSharper disable once ConvertToUsingDeclaration
             using (var ms = new MemoryStream(suggestion.BinaryData))
             {
                 var attachment = new FileAttachment(ms, suggestion.BinaryDataFilename);
@@ -94,13 +98,12 @@ public class EmoteSuggestionService : ServiceBase
         }
         catch (Exception ex) when (ex is not GrillBotException)
         {
-            if (suggestion.Id == default)
-            {
-                using var context = DbFactory.Create();
+            if (suggestion.Id != default)
+                throw;
 
-                await context.AddAsync(suggestion);
-                await context.SaveChangesAsync();
-            }
+            await using var repository = DatabaseBuilder.CreateRepository();
+            await repository.AddAsync(suggestion);
+            await repository.CommitAsync();
 
             throw;
         }

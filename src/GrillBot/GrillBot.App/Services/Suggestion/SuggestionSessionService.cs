@@ -6,7 +6,7 @@ namespace GrillBot.App.Services.Suggestion;
 public class SuggestionSessionService
 {
     private List<SuggestionMetadata> Metadata { get; } = new();
-    private readonly object MetadataLock = new();
+    private readonly object _metadataLock = new();
 
     public void InitSuggestion(string suggestionId, SuggestionType type, object data)
     {
@@ -18,7 +18,7 @@ public class SuggestionSessionService
             CreatedAt = DateTime.Now
         };
 
-        lock (MetadataLock)
+        lock (_metadataLock)
         {
             Metadata.Add(metadata);
         }
@@ -26,7 +26,7 @@ public class SuggestionSessionService
 
     public SuggestionMetadata PopMetadata(SuggestionType type, string suggestionId)
     {
-        lock (MetadataLock)
+        lock (_metadataLock)
         {
             var metadata = Metadata.Find(o => o.Type == type && o.Id == suggestionId);
             if (metadata == null)
@@ -39,7 +39,7 @@ public class SuggestionSessionService
 
     public void PurgeExpired()
     {
-        lock (MetadataLock)
+        lock (_metadataLock)
         {
             if (Metadata.Count == 0)
                 return;

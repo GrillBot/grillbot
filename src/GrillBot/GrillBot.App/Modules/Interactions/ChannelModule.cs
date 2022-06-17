@@ -66,7 +66,7 @@ public class ChannelModule : Infrastructure.InteractionsModuleBase
             var userPermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.User);
             var rolePermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.Role);
             var permsFormatted = $"Uživatelské: {FormatHelper.FormatPermissionstoCzech(userPermsCount)}\n" +
-                $"Role: {FormatHelper.FormatPermissionstoCzech(rolePermsCount)}";
+                                 $"Role: {FormatHelper.FormatPermissionstoCzech(rolePermsCount)}";
 
             channelEmbed.AddField("Počet oprávnění", permsFormatted);
         }
@@ -75,7 +75,7 @@ public class ChannelModule : Infrastructure.InteractionsModuleBase
             channelEmbed.AddField("Kanál", (channel as SocketThreadChannel)!.ParentChannel!.GetMention(), true);
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var channelData = await repository.Channel.FindChannelByIdAsync(channel.Guild.Id, channel.Id, true, true);
+        var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.Guild.Id, true, true);
 
         if (channelData != null)
         {

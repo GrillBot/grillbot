@@ -23,9 +23,7 @@ public class RemindCronJob : Job
         var reminders = await RemindService.GetRemindIdsForProcessAsync();
 
         foreach (var id in reminders)
-        {
             await RemindService.ProcessRemindFromJobAsync(id);
-        }
 
         if (reminders.Count > 0)
             context.Result = $"Reminders: {reminders.Count} ({string.Join(", ", reminders)})";

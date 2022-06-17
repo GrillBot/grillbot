@@ -16,13 +16,11 @@ namespace GrillBot.App.Controllers;
 [OpenApiTag("Reminder", Description = "Reminder management")]
 public class ReminderController : Controller
 {
-    private RemindService RemindService { get; }
     private RemindApiService ApiService { get; }
 
-    public ReminderController(RemindService remindService, RemindApiService apiService)
+    public ReminderController(RemindApiService apiService)
     {
         ApiService = apiService;
-        RemindService = remindService;
     }
 
     /// <summary>
@@ -66,7 +64,7 @@ public class ReminderController : Controller
     {
         try
         {
-            await RemindService.ServiceCancellationAsync(id, User, notify);
+            await ApiService.ServiceCancellationAsync(id, notify);
             return Ok();
         }
         catch (NotFoundException ex)

@@ -33,12 +33,16 @@ public class ChannelRepository : RepositoryBase
             .Where(o => o.ChannelType != ChannelType.Category);
     }
 
-    public async Task<GuildChannel?> FindChannelByIdAsync(ulong guildId, ulong channelId, bool disableTracking = false, bool includeUsers = false)
+    public async Task<GuildChannel?> FindChannelByIdAsync(ulong channelId, ulong? guildId = null, bool disableTracking = false,
+        bool includeUsers = false)
     {
         using (Counter.Create("Database"))
         {
             var query = GetBaseQuery(false, disableTracking, includeUsers);
-            return await query.FirstOrDefaultAsync(o => o.GuildId == guildId.ToString() && o.ChannelId == channelId.ToString());
+            if (guildId != null)
+                query = query.Where(o => o.GuildId == guildId.ToString());
+
+            return await query.FirstOrDefaultAsync(o => o.ChannelId == channelId.ToString());
         }
     }
 

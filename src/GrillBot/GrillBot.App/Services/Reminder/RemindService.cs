@@ -1,28 +1,25 @@
 ﻿using Discord.Net;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Exceptions;
 using GrillBot.Data.Extensions;
-using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Enums;
-using System.Security.Claims;
 
 namespace GrillBot.App.Services.Reminder;
 
 [Initializable]
-public class RemindService : ServiceBase
+public class RemindService
 {
     private IConfiguration Configuration { get; }
-    private AuditLogService AuditLogService { get; }
+    private IDiscordClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public RemindService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory,
-        IConfiguration configuration, AuditLogService auditLogService) : base(client, dbFactory)
+    public RemindService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder,
+        IConfiguration configuration)
     {
         Configuration = configuration;
-        AuditLogService = auditLogService;
+        DiscordClient = client;
+        DatabaseBuilder = databaseBuilder;
     }
 
     public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
@@ -51,12 +48,12 @@ public class RemindService : ServiceBase
         if (string.IsNullOrEmpty(message))
             throw new ValidationException("Text upozornění je povinný.");
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var fromUser = await repository.User.GetOrCreateUserAsync(from);
         var toUser = from != to ? await repository.User.GetOrCreateUserAsync(to) : fromUser;
 
-        var remind = new RemindMessage()
+        var remind = new RemindMessage
         {
             At = at,
             FromUser = fromUser,
@@ -73,40 +70,20 @@ public class RemindService : ServiceBase
 
     public async Task<int> GetRemindersCountAsync(IUser forUser)
     {
-        using var context = DbFactory.Create();
-
-        return await context.Users
-            .Include(o => o.IncomingReminders)
-            .Where(o => o.Id == forUser.Id.ToString())
-            .SelectMany(o => o.IncomingReminders)
-            .Where(o => o.RemindMessageId == null)
-            .CountAsync();
+        await using var repository = DatabaseBuilder.CreateRepository();
+        return await repository.Remind.GetRemindersCountAsync(forUser);
     }
 
     public async Task<List<RemindMessage>> GetRemindersAsync(IUser forUser, int page)
     {
-        using var context = DbFactory.Create();
-
-        var remindersQuery = context.Users
-            .Include(o => o.IncomingReminders)
-            .Where(o => o.Id == forUser.Id.ToString())
-            .SelectMany(o => o.IncomingReminders)
-            .Include(o => o.FromUser)
-            .Where(o => o.RemindMessageId == null)
-            .OrderBy(o => o.At)
-            .ThenBy(o => o.Id)
-            .Skip(page * EmbedBuilder.MaxFieldCount)
-            .Take(EmbedBuilder.MaxFieldCount);
-
-        return await remindersQuery.ToListAsync();
+        await using var repository = DatabaseBuilder.CreateRepository();
+        return await repository.Remind.GetRemindersPageAsync(forUser, page);
     }
 
     public async Task CopyAsync(long originalRemindId, IUser toUser)
     {
-        using var context = DbFactory.Create();
-
-        var original = await context.Reminders.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == originalRemindId);
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var original = await repository.Remind.FindRemindByIdAsync(originalRemindId);
 
         if (original == null)
             throw new InvalidOperationException("Upozornění nebylo nalezeno.");
@@ -122,15 +99,14 @@ public class RemindService : ServiceBase
             throw new InvalidOperationException("Toto upozornění již bylo odesláno.");
         }
 
-        var exists = await context.Reminders.AnyAsync(o => o.OriginalMessageId == original.OriginalMessageId && o.ToUserId == toUser.Id.ToString());
-        if (exists)
+        if (await repository.Remind.ExistsCopyAsync(original.OriginalMessageId, toUser))
             throw new ValidationException("Toto upozornění jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další.");
 
         var fromUser = await DiscordClient.FindUserAsync(original.FromUserId.ToUlong());
         if (fromUser == null)
             throw new ValidationException("Uživatel, který založil toto upozornění se nepodařilo dohledat");
 
-        await CreateRemindAsync(fromUser, toUser, original.At, original.Message, original.OriginalMessageId.ToUlong());
+        await CreateRemindAsync(fromUser, toUser, original.At, original.Message, original.OriginalMessageId!.ToUlong());
     }
 
     /// <summary>
@@ -141,10 +117,8 @@ public class RemindService : ServiceBase
     /// <param name="notify">Send notifiaction before cancel.</param>
     public async Task CancelRemindAsync(long id, IUser user, bool notify = false)
     {
-        using var context = DbFactory.Create();
-
-        var remind = await context.Reminders.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id);
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var remind = await repository.Remind.FindRemindByIdAsync(id);
 
         if (remind == null)
             throw new ValidationException("Upozornění nebylo nalezeno.");
@@ -165,61 +139,26 @@ public class RemindService : ServiceBase
             messageId = await SendNotificationMessageAsync(remind, true);
 
         remind.RemindMessageId = messageId.ToString();
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
-    /// <summary>
-    /// Service cancellation of remind.
-    /// </summary>
-    public async Task ServiceCancellationAsync(long id, ClaimsPrincipal loggedUser, bool notify = false)
-    {
-        using var context = DbFactory.Create();
-
-        var remind = await context.Reminders.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id);
-
-        if (remind == null) throw new NotFoundException("Požadované upozornění neexistuje.");
-        if (!string.IsNullOrEmpty(remind.RemindMessageId))
-        {
-            if (remind.RemindMessageId == "0")
-                throw new InvalidOperationException("Nelze zrušit již zrušené upozornění.");
-
-            throw new InvalidOperationException("Nelze zrušit již proběhlé upozornění.");
-        }
-
-        ulong messageId = 0;
-        if (notify)
-            messageId = await SendNotificationMessageAsync(remind, true);
-
-        var logItem = new AuditLogDataWrapper(
-            AuditLogItemType.Info,
-            $"Bylo stornováno upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(),
-            null, null, await DiscordClient.FindUserAsync(loggedUser.GetUserId())
-        );
-        await AuditLogService.StoreItemAsync(logItem);
-
-        remind.RemindMessageId = messageId.ToString();
-        await context.SaveChangesAsync();
-    }
-
-    private async Task<ulong> SendNotificationMessageAsync(RemindMessage remind, bool force = false)
+    public async Task<ulong> SendNotificationMessageAsync(RemindMessage remind, bool force = false)
     {
         var embed = (await CreateRemindEmbedAsync(remind, force))?.Build();
 
-        if (embed != null)
-        {
-            var toUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
+        if (embed == null)
+            return 0;
 
-            try
-            {
-                if (toUser != null)
-                    return (await toUser.SendMessageAsync(embed: embed)).Id;
-            }
-            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-            {
-                // User have disabled DMs.
-                return 0;
-            }
+        var toUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
+        try
+        {
+            if (toUser != null)
+                return (await toUser.SendMessageAsync(embed: embed)).Id;
+        }
+        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
+        {
+            // User have disabled DMs.
+            return 0;
         }
 
         return 0;
@@ -230,14 +169,8 @@ public class RemindService : ServiceBase
         var embed = new EmbedBuilder()
             .WithAuthor(DiscordClient.CurrentUser)
             .WithColor(force ? Color.Gold : Color.Green)
-            .WithCurrentTimestamp();
-
-        if (force)
-            embed.WithTitle("Máš předčasně nové upozornění.");
-        else
-            embed.WithTitle("Máš nové upozornění.");
-
-        embed
+            .WithCurrentTimestamp()
+            .WithTitle(force ? "Máš předčasně nové upozornění." : "Máš nové upozornění.")
             .AddField("ID", remind.Id, true);
 
         if (remind.FromUserId != remind.ToUserId)
@@ -249,10 +182,10 @@ public class RemindService : ServiceBase
         }
 
         if (remind.Postpone > 0)
-            embed.AddField("POZOR", $"Toto upozornění bylo odloženo už {remind.Postpone}x", false);
+            embed.AddField("POZOR", $"Toto upozornění bylo odloženo už {remind.Postpone}x");
 
         embed
-            .AddField("Zpráva", remind.Message, false);
+            .AddField("Zpráva", remind.Message);
 
         if (!force)
             embed.AddField("Možnosti", "Pokud si přeješ toto upozornění posunout, tak klikni na příslušnou reakci podle počtu hodin.");
@@ -262,18 +195,18 @@ public class RemindService : ServiceBase
 
     public async Task<List<long>> GetRemindIdsForProcessAsync()
     {
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         return await repository.Remind.GetRemindIdsForProcessAsync();
     }
 
     public async Task ProcessRemindFromJobAsync(long id)
     {
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var remind = await repository.Remind.FindRemindByIdAsync(id);
         if (remind == null) return;
 
-        var embed = (await CreateRemindEmbedAsync(remind, false)).Build();
+        var embed = (await CreateRemindEmbedAsync(remind)).Build();
         var toUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
 
         ulong messageId = 0;
@@ -299,24 +232,18 @@ public class RemindService : ServiceBase
 
     public async Task<Dictionary<long, string>> GetRemindSuggestionsAsync(IUser user)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.Users
-            .Where(o => o.Id == user.Id.ToString())
-            .Select(o => new
-            {
-                Incoming = o.IncomingReminders
-                    .Where(o => o.RemindMessageId == null)
-                    .Select(x => new { x.Id, x.At, x.FromUser }),
-                Outgoing = o.OutgoingReminders
-                    .Where(o => o.RemindMessageId == null)
-                    .Select(x => new { x.Id, x.At, x.ToUser })
-            });
+        var data = await repository.Remind.GetRemindSuggestionsAsync(user);
+        var userId = user.Id.ToString();
 
-        var data = await query.FirstOrDefaultAsync();
+        var incoming = data
+            .Where(o => o.ToUserId == userId)
+            .ToDictionary(o => o.Id, o => $"Příchozí #{o.Id} ({o.At.ToCzechFormat()}) od uživatele {o.FromUser!.Username}#{o.FromUser!.Discriminator}");
 
-        var incoming = data.Incoming.ToDictionary(o => o.Id, o => $"Příchozí #{o.Id} ({o.At.ToCzechFormat()}) od uživatele {o.FromUser.Username}#{o.FromUser.Discriminator}");
-        var outgoing = data.Outgoing.ToDictionary(o => o.Id, o => $"Odchozí #{o.Id} ({o.At.ToCzechFormat()}) pro uživatele {o.ToUser.Username}#{o.ToUser.Discriminator}");
+        var outgoing = data
+            .Where(o => o.FromUserId == userId)
+            .ToDictionary(o => o.Id, o => $"Odchozí #{o.Id} ({o.At.ToCzechFormat()}) pro uživatele {o.ToUser!.Username}#{o.ToUser!.Discriminator}");
 
         return incoming
             .Concat(outgoing)

@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Managers.Counters;
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.Guilds;
 using Microsoft.Extensions.Logging;
@@ -16,34 +17,24 @@ public class PermissionsCleaner
         Logger = logger;
     }
 
-    public async Task<List<UselessPermission>> GetUselessPermissionsForUser(IGuildUser user, IGuild guild)
+    public static async Task<List<UselessPermission>> GetUselessPermissionsForUser(IGuildUser user, IGuild guild)
     {
-        var result = new List<UselessPermission>();
         var channels = (await guild.GetChannelsAsync()).ToList();
 
-        foreach (var channel in channels.Where(o => o is not SocketThreadChannel))
-        {
-            var permission = GetUselessPermission(channel, user, guild);
-            if (permission != null)
-                result.Add(permission);
-        }
-
-        return result;
+        return channels
+            .Where(o => o is not IThreadChannel)
+            .Select(o => GetUselessPermission(o, user, guild))
+            .Where(o => o != null)
+            .ToList();
     }
 
-    public async Task<List<UselessPermission>> GetUselessPermissionsForChannelAsync(IGuildChannel channel, IGuild guild)
+    public static async Task<List<UselessPermission>> GetUselessPermissionsForChannelAsync(IGuildChannel channel, IGuild guild)
     {
-        var result = new List<UselessPermission>();
         var users = await guild.GetUsersAsync();
-
-        foreach (var user in users)
-        {
-            var permission = GetUselessPermission(channel, user, guild);
-            if (permission != null)
-                result.Add(permission);
-        }
-
-        return result;
+        return users
+            .Select(o => GetUselessPermission(channel, o, guild))
+            .Where(o => o != null)
+            .ToList();
     }
 
     private static UselessPermission GetUselessPermission(IGuildChannel channel, IGuildUser user, IGuild guild)
@@ -54,7 +45,7 @@ public class PermissionsCleaner
         if (user.GuildPermissions.Administrator)
         {
             // User have Administrator permission. This user don't need some overwrites.
-            return new(channel, user, UselessPermissionType.Administrator);
+            return new UselessPermission(channel, user, UselessPermissionType.Administrator);
         }
 
         if (overwrite.Value.AllowValue == 0 && overwrite.Value.DenyValue == 0)
@@ -63,7 +54,7 @@ public class PermissionsCleaner
             return new UselessPermission(channel, user, UselessPermissionType.Neutral);
         }
 
-        foreach (var role in user.RoleIds.Select(o => guild.GetRole(o)).Where(o => o != null).OrderByDescending(o => o.Position))
+        foreach (var role in user.GetRoles().OrderByDescending(o => o.Position))
         {
             var roleOverwrite = channel.GetPermissionOverwrite(role);
             if (roleOverwrite == null) continue;

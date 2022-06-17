@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Services.Permissions.Models;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Services.Repository;
 using Commands = Discord.Commands;
 using Interactions = Discord.Interactions;
 
@@ -7,12 +8,12 @@ namespace GrillBot.App.Services.Permissions;
 
 public class PermissionsService
 {
-    private GrillBotDatabaseBuilder DbFactory { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public PermissionsService(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider)
+    public PermissionsService(GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider)
     {
-        DbFactory = dbFactory;
+        DatabaseBuilder = databaseBuilder;
         ServiceProvider = serviceProvider;
     }
 
@@ -20,47 +21,42 @@ public class PermissionsService
     {
         request.FixImplicitPermissions();
 
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var user = await repository.User.FindUserByIdAsync(request.User.Id);
 
-        var user = await dbContext.Users.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == request.User.Id.ToString());
-
-        return new PermsCheckResult()
+        return new PermsCheckResult
         {
-            ChannelDisabled = await CheckChannelDisabledAsync(dbContext, request),
+            ChannelDisabled = await CheckChannelDisabledAsync(repository, request),
             ContextCheck = CheckContext(request),
             ChannelPermissions = await CheckChannelPermissionsAsync(request),
             GuildPermissions = await CheckGuildPermissionsAsync(request),
             BoosterAllowed = CheckServerBooster(request),
-            IsAdmin = user.HaveFlags(UserFlags.BotAdmin),
-            ExplicitAllow = await CheckExplicitAllowAsync(dbContext, request),
-            ExplicitBan = user.HaveFlags(UserFlags.CommandsDisabled) || await CheckExplicitBansAsync(dbContext, request)
+            IsAdmin = user?.HaveFlags(UserFlags.BotAdmin) ?? false,
+            ExplicitAllow = await CheckExplicitAllowAsync(repository, request),
+            ExplicitBan = (user?.HaveFlags(UserFlags.CommandsDisabled) ?? false) || await CheckExplicitBansAsync(repository, request)
         };
     }
 
-    private static Task<bool> CheckChannelDisabledAsync(GrillBotContext dbContext, CheckRequestBase request)
+    private static async Task<bool> CheckChannelDisabledAsync(GrillBotRepository repository, CheckRequestBase request)
     {
-        ulong channelId = request.Channel is IThreadChannel thread ? thread.CategoryId.Value : request.Channel.Id;
+        var channelId = request.Channel is IThreadChannel { CategoryId: { } } thread
+            ? thread.CategoryId.Value
+            : request.Channel.Id;
 
-        var query = dbContext.Channels.AsNoTracking()
-            .Where(o => o.ChannelId == channelId.ToString() && (o.Flags & (int)ChannelFlags.CommandsDisabled) != 0);
-
-        if (request.Guild != null)
-            query = query.Where(o => o.GuildId == request.Guild.Id.ToString());
-
-        return query.AnyAsync();
+        var channel = await repository.Channel.FindChannelByIdAsync(channelId, request.Guild?.Id);
+        return channel?.HasFlag(ChannelFlags.CommandsDisabled) ?? false;
     }
 
     private static bool? CheckContext(CheckRequestBase request)
     {
         if (request is InteractionsCheckRequest) return true; // Interactions are registered only to guilds.
 
-        var _request = request as CommandsCheckRequest;
-        if (_request.Context == null) return null; // Command not depend on the context (Guild/DMs).
+        var checkRequest = (CommandsCheckRequest)request;
+        if (checkRequest.Context == null) return null; // Command not depend on the context (Guild/DMs).
 
         // Command allows only DMs or only Guilds.
-        return (_request.Context == Commands.ContextType.DM && request.Guild == null) ||
-            (_request.Context == Commands.ContextType.Guild && request.Guild != null);
+        return (checkRequest.Context == Commands.ContextType.DM && request.Guild == null) ||
+               (checkRequest.Context == Commands.ContextType.Guild && request.Guild != null);
     }
 
     private async Task<bool?> CheckChannelPermissionsAsync(CheckRequestBase request)
@@ -70,11 +66,11 @@ public class PermissionsService
         var commandsRequest = request as CommandsCheckRequest;
         foreach (var perm in request.ChannelPermissions)
         {
-            if (request is InteractionsCheckRequest interactionsRequest)
+            if (commandsRequest == null)
             {
-                var _request = request as InteractionsCheckRequest;
+                var checkRequest = (InteractionsCheckRequest)request;
                 var attribute = new Interactions.RequireUserPermissionAttribute(perm);
-                var result = await attribute.CheckRequirementsAsync(interactionsRequest.InteractionContext, _request.CommandInfo, ServiceProvider);
+                var result = await attribute.CheckRequirementsAsync(checkRequest.InteractionContext, checkRequest.CommandInfo, ServiceProvider);
 
                 if (!result.IsSuccess)
                     return false;
@@ -99,11 +95,11 @@ public class PermissionsService
         var commandsRequest = request as CommandsCheckRequest;
         foreach (var perm in request.GuildPermissions)
         {
-            if (request is InteractionsCheckRequest interactionsRequest)
+            if (commandsRequest == null)
             {
-                var _request = request as InteractionsCheckRequest;
+                var checkRequest = (InteractionsCheckRequest)request;
                 var attribute = new Interactions.RequireUserPermissionAttribute(perm);
-                var result = await attribute.CheckRequirementsAsync(interactionsRequest.InteractionContext, _request.CommandInfo, ServiceProvider);
+                var result = await attribute.CheckRequirementsAsync(checkRequest.InteractionContext, checkRequest.CommandInfo, ServiceProvider);
 
                 if (!result.IsSuccess)
                     return false;
@@ -128,24 +124,20 @@ public class PermissionsService
         return request.User is SocketGuildUser user && user.Roles.Any(o => o.Tags?.IsPremiumSubscriberRole == true);
     }
 
-    private static async Task<bool?> CheckExplicitAllowAsync(GrillBotContext dbContext, CheckRequestBase request)
+    private static async Task<bool?> CheckExplicitAllowAsync(GrillBotRepository repository, CheckRequestBase request)
     {
-        var permissions = await dbContext.ExplicitPermissions.AsNoTracking()
-            .Where(o => o.Command == request.CommandName.Trim() && o.State == ExplicitPermissionState.Allowed)
-            .ToListAsync();
-
+        var permissions = await repository.Permissions.GetAllowedPermissionsForCommand(request.CommandName);
         if (permissions.Count == 0)
             return null;
 
         if (permissions.Any(o => !o.IsRole && o.TargetId == request.User.Id.ToString()))
-            return true;
+            return true; // Explicit allow permission for user.
 
-        return request.User is SocketGuildUser user && user.Roles.Any(role => permissions.Any(o => o.IsRole && o.TargetId == role.Id.ToString()));
+        return request.User is IGuildUser user && user.RoleIds.Any(roleId => permissions.Any(x => x.IsRole && x.TargetId == roleId.ToString()));
     }
 
-    private static async Task<bool> CheckExplicitBansAsync(GrillBotContext dbContext, CheckRequestBase request)
+    private static async Task<bool> CheckExplicitBansAsync(GrillBotRepository repository, CheckRequestBase request)
     {
-        return await dbContext.ExplicitPermissions.AsNoTracking()
-            .AnyAsync(o => o.Command == request.CommandName && !o.IsRole && o.State == ExplicitPermissionState.Banned && o.TargetId == request.User.Id.ToString());
+        return await repository.Permissions.ExistsBannedCommandForUser(request.CommandName, request.User);
     }
 }

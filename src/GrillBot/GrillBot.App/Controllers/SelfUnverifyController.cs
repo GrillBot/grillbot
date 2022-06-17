@@ -10,7 +10,7 @@ using NSwag.Annotations;
 namespace GrillBot.App.Controllers;
 
 [ApiController]
-[Route("api/selfunverify")]
+[Route("api/selfunverify/keep")]
 [OpenApiTag("SelfUnverify", Description = "SelfUnverify management")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 public class SelfUnverifyController : Controller
@@ -26,11 +26,11 @@ public class SelfUnverifyController : Controller
     /// Get non paginated list of keepable roles and channels.
     /// </summary>
     /// <response code="200">Success</response>
-    [HttpGet("keep")]
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, List<string>>>> GetKeepablesListAsync(CancellationToken cancellationToken)
     {
-        var result = await SelfunverifyService.GetKeepablesAsync(null, cancellationToken);
+        var result = await SelfunverifyService.GetKeepablesAsync(null);
         return Ok(result);
     }
 
@@ -39,7 +39,7 @@ public class SelfUnverifyController : Controller
     /// </summary>
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
-    [HttpPost("keep")]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> AddKeepableAsync([FromBody] List<KeepableParams> parameters)
@@ -62,11 +62,11 @@ public class SelfUnverifyController : Controller
     /// Check if keepable exists. For validation purposes.
     /// </summary>
     /// <response code="200">Success</response>
-    [HttpGet("keep/exist")]
+    [HttpGet("exist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<bool>> KeepableExistsAsync([FromQuery] KeepableParams parameters, CancellationToken cancellationToken)
+    public async Task<ActionResult<bool>> KeepableExistsAsync([FromQuery] KeepableParams parameters)
     {
-        var result = await SelfunverifyService.KeepableExistsAsync(parameters, cancellationToken);
+        var result = await SelfunverifyService.KeepableExistsAsync(parameters);
         return Ok(result);
     }
 
@@ -75,7 +75,7 @@ public class SelfUnverifyController : Controller
     /// </summary>
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
-    [HttpDelete("keep")]
+    [HttpDelete]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> KeepableRemoveAsync(string group, string name = null)

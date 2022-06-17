@@ -29,6 +29,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public AuditLogRepository AuditLog => GetOrCreateRepository<AuditLogRepository>();
     public EmoteRepository Emote => GetOrCreateRepository<EmoteRepository>();
     public SearchingRepository Searching => GetOrCreateRepository<SearchingRepository>();
+    public SelfUnverifyRepository SelfUnverify => GetOrCreateRepository<SelfUnverifyRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {
@@ -48,7 +49,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public Task AddAsync<TEntity>(TEntity entity) where TEntity : class
         => Context.Set<TEntity>().AddAsync(entity).AsTask();
 
-    public Task AddRangeAsync<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
+    public Task AddCollectionAsync<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
         => Context.Set<TEntity>().AddRangeAsync(collection);
 
     public void Remove<TEntity>(TEntity entity) where TEntity : class

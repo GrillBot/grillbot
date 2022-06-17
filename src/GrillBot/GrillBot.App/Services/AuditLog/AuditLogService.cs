@@ -123,7 +123,7 @@ public class AuditLogService : ServiceBase
             }
         }
 
-        await repository.AddRangeAsync(items.Select(o => o.ToEntity(JsonSerializerSettings)));
+        await repository.AddCollectionAsync(items.Select(o => o.ToEntity(JsonSerializerSettings)));
         await repository.CommitAsync();
     }
 

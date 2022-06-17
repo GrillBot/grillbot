@@ -1,99 +1,83 @@
 using GrillBot.Data.Models.API.Selfunverify;
 using GrillBot.Database.Entity;
 
-namespace GrillBot.App.Services.Unverify
+namespace GrillBot.App.Services.Unverify;
+
+public class SelfunverifyService
 {
-    public class SelfunverifyService
+    private UnverifyService UnverifyService { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+
+    public SelfunverifyService(UnverifyService unverifyService, GrillBotDatabaseBuilder databaseBuilder)
     {
-        public UnverifyService UnverifyService { get; }
-        private GrillBotDatabaseBuilder DbFactory { get; }
+        UnverifyService = unverifyService;
+        DatabaseBuilder = databaseBuilder;
+    }
 
-        public SelfunverifyService(UnverifyService unverifyService, GrillBotDatabaseBuilder dbFactory)
+    public Task<string> ProcessSelfUnverifyAsync(SocketUser user, DateTime end, SocketGuild guild, List<string> toKeep)
+    {
+        var guildUser = user as SocketGuildUser ?? guild.GetUser(user.Id);
+        return UnverifyService.SetUnverifyAsync(guildUser, end, null, guild, guildUser, true, toKeep, null, false);
+    }
+
+    public async Task AddKeepablesAsync(List<KeepableParams> parameters)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        foreach (var param in parameters)
         {
-            UnverifyService = unverifyService;
-            DbFactory = dbFactory;
+            if (await repository.SelfUnverify.KeepableExistsAsync(param.Group, param.Name))
+                throw new ValidationException($"Ponechatelná role nebo kanál {param.Group}/{param.Name} již existuje.");
         }
 
-        public Task<string> ProcessSelfUnverifyAsync(SocketUser user, DateTime end, SocketGuild guild, List<string> toKeep)
+        var entities = parameters.ConvertAll(o => new SelfunverifyKeepable
         {
-            var guildUser = user as SocketGuildUser ?? guild.GetUser(user.Id);
-            return UnverifyService.SetUnverifyAsync(guildUser, end, null, guild, guildUser, true, toKeep, null, false);
+            Name = o.Name.ToLower(),
+            GroupName = o.Group.ToLower()
+        });
+
+        await repository.AddCollectionAsync(entities);
+        await repository.CommitAsync();
+    }
+
+    public async Task RemoveKeepableAsync(string group, string name = null)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        if (string.IsNullOrEmpty(name))
+        {
+            if (!await repository.SelfUnverify.KeepableExistsAsync(group))
+                throw new ValidationException($"Skupina ponechatelných rolí nebo kanálů {group} neexistuje.");
+
+            var items = await repository.SelfUnverify.GetKeepablesAsync(group);
+            if (items.Count > 0)
+                repository.RemoveCollection(items);
+        }
+        else
+        {
+            if (!await repository.SelfUnverify.KeepableExistsAsync(group, name))
+                throw new ValidationException($"Ponechatelná role nebo kanál {group}/{name} neexistuje.");
+
+            var item = await repository.SelfUnverify.FindKeepableAsync(group, name);
+            if (item != null)
+                repository.Remove(item);
         }
 
-        public async Task AddKeepablesAsync(List<KeepableParams> parameters)
-        {
-            foreach (var param in parameters)
-            {
-                param.Group = param.Group.ToLower();
-                param.Name = param.Name.ToLower();
-            }
+        await repository.CommitAsync();
+    }
 
-            using var context = DbFactory.Create();
+    public async Task<Dictionary<string, List<string>>> GetKeepablesAsync(string group)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-            foreach (var param in parameters)
-            {
-                if (await context.SelfunverifyKeepables.AsNoTracking().AnyAsync(o => o.GroupName == param.Group && o.Name == param.Name))
-                    throw new ValidationException($"Ponechatelná role nebo kanál {param.Group}/{param.Name} již existuje.");
-            }
+        var items = await repository.SelfUnverify.GetKeepablesAsync(group);
+        return items.GroupBy(o => o.GroupName.ToUpper())
+            .ToDictionary(o => o.Key, o => o.Select(x => x.Name.ToUpper()).ToList());
+    }
 
-            var entities = parameters.ConvertAll(o => new SelfunverifyKeepable() { Name = o.Name, GroupName = o.Group });
-            await context.AddRangeAsync(entities);
-            await context.SaveChangesAsync();
-        }
-
-        public async Task RemoveKeepableAsync(string group, string name = null)
-        {
-            var groupName = group.ToLower();
-            var itemName = name?.ToLower();
-
-            using var context = DbFactory.Create();
-            var itemsQuery = context.SelfunverifyKeepables.AsQueryable().Where(o => o.GroupName == groupName);
-
-            if (string.IsNullOrEmpty(itemName))
-            {
-                if (!await itemsQuery.AnyAsync())
-                    throw new ValidationException($"Skupina ponechatelných rolí nebo kanálů {group} neexistuje.");
-
-                var items = await itemsQuery.ToListAsync();
-                context.RemoveRange(items);
-            }
-            else
-            {
-                if (!await itemsQuery.AnyAsync(o => o.Name == itemName))
-                    throw new ValidationException($"Ponechatelná role nebo kanál {group}/{name} neexistuje.");
-
-                var item = await itemsQuery.FirstOrDefaultAsync(o => o.Name == itemName);
-                context.Remove(item);
-            }
-
-            await context.SaveChangesAsync();
-        }
-
-        public async Task<Dictionary<string, List<string>>> GetKeepablesAsync(string group, CancellationToken cancellationToken = default)
-        {
-            var groupName = group?.ToLower();
-
-            using var context = DbFactory.Create();
-            var query = context.SelfunverifyKeepables.AsQueryable()
-                .OrderBy(o => o.GroupName).ThenBy(o => o.Name)
-                .AsNoTracking();
-
-            if (!string.IsNullOrEmpty(groupName))
-                query = query.Where(o => EF.Functions.ILike(o.GroupName, $"{groupName}%"));
-
-            var data = await query.ToListAsync(cancellationToken);
-            return data.GroupBy(o => o.GroupName.ToUpper())
-                .ToDictionary(o => o.Key, o => o.Select(o => o.Name.ToUpper()).ToList());
-        }
-
-        public async Task<bool> KeepableExistsAsync(KeepableParams parameters, CancellationToken cancellationToken = default)
-        {
-            var groupName = parameters.Group.ToLower();
-            var itemName = parameters.Name.ToLower();
-
-            using var context = DbFactory.Create();
-            return await context.SelfunverifyKeepables.AsNoTracking()
-                .AnyAsync(o => o.GroupName == groupName && o.Name == itemName, cancellationToken);
-        }
+    public async Task<bool> KeepableExistsAsync(KeepableParams parameters)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+        return await repository.SelfUnverify.KeepableExistsAsync(parameters.Group, parameters.Name);
     }
 }

@@ -1,45 +1,51 @@
 ﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using System.Security.Claims;
+using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Unverify;
 
-public class UnverifyApiService : ServiceBase
+public class UnverifyApiService
 {
-    public UnverifyApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper,
-        IDiscordClient discordClient) : base(null, dbFactory, discordClient, mapper)
+    private IDiscordClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IMapper Mapper { get; }
+    private ApiRequestContext ApiRequestContext { get; }
+
+    public UnverifyApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient,
+        ApiRequestContext apiRequestContext)
     {
+        DatabaseBuilder = databaseBuilder;
+        Mapper = mapper;
+        DiscordClient = discordClient;
+        ApiRequestContext = apiRequestContext;
     }
 
-    public async Task<PaginatedResponse<UnverifyLogItem>> GetLogsAsync(UnverifyLogParams parameters, ClaimsPrincipal loggedUser,
-        CancellationToken cancellationToken)
+    public async Task<PaginatedResponse<UnverifyLogItem>> GetLogsAsync(UnverifyLogParams parameters)
     {
-        if (loggedUser.HaveUserPermission())
+        if (ApiRequestContext.IsPublic())
         {
-            var loggedUserId = loggedUser.GetUserId();
+            var loggedUserId = ApiRequestContext.LoggedUserId;
+            var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
 
             parameters.FromUserId = null;
             parameters.ToUserId = loggedUserId.ToString();
-            parameters.MutualGuilds = (await DcClient.FindMutualGuildsAsync(loggedUserId)).ConvertAll(o => o.Id.ToString());
+            parameters.MutualGuilds = mutualGuilds.ConvertAll(o => o.Id.ToString());
         }
 
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.CreateQuery(parameters, true);
-
-        return await PaginatedResponse<UnverifyLogItem>
-            .CreateAsync(query, parameters.Pagination, MapItemAsync);
+        var data = await repository.Unverify.GetLogsAsync(parameters, parameters.Pagination);
+        return await PaginatedResponse<UnverifyLogItem>.CopyAndMapAsync(data, MapItemAsync);
     }
 
     private async Task<UnverifyLogItem> MapItemAsync(UnverifyLog entity)
     {
-        var guild = await DcClient.GetGuildAsync(entity.GuildId.ToUlong());
+        var guild = await DiscordClient.GetGuildAsync(entity.GuildId.ToUlong());
         var result = Mapper.Map<UnverifyLogItem>(entity);
 
         switch (entity.Operation)
@@ -47,20 +53,25 @@ public class UnverifyApiService : ServiceBase
             case UnverifyOperation.Autoremove:
             case UnverifyOperation.Recover:
             case UnverifyOperation.Remove:
+            {
+                var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogRemove>(entity.Data);
+                if (jsonData != null)
                 {
-                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogRemove>(entity.Data);
-                    result.RemoveData = new UnverifyLogRemove()
+                    result.RemoveData = new UnverifyLogRemove
                     {
                         ReturnedChannelIds = jsonData.ReturnedOverwrites.ConvertAll(o => o.ChannelId.ToString()),
                         ReturnedRoles = jsonData.ReturnedRoles.ConvertAll(o => Mapper.Map<Role>(guild.GetRole(o)))
                     };
                 }
+            }
                 break;
             case UnverifyOperation.Selfunverify:
             case UnverifyOperation.Unverify:
+            {
+                var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(entity.Data);
+                if (jsonData != null)
                 {
-                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(entity.Data);
-                    result.SetData = new UnverifyLogSet()
+                    result.SetData = new UnverifyLogSet
                     {
                         ChannelIdsToKeep = jsonData.ChannelsToKeep.ConvertAll(o => o.ChannelId.ToString()),
                         ChannelIdsToRemove = jsonData.ChannelsToRemove.ConvertAll(o => o.ChannelId.ToString()),
@@ -72,17 +83,23 @@ public class UnverifyApiService : ServiceBase
                         Start = jsonData.Start
                     };
                 }
+            }
                 break;
             case UnverifyOperation.Update:
+            {
+                var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogUpdate>(entity.Data);
+                if (jsonData != null)
                 {
-                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogUpdate>(entity.Data);
-                    result.UpdateData = new UnverifyLogUpdate()
+                    result.UpdateData = new UnverifyLogUpdate
                     {
                         End = jsonData.End,
                         Start = jsonData.Start
                     };
                 }
+            }
                 break;
+            default:
+                throw new ArgumentOutOfRangeException($"Invalid operation type ({entity.Operation})", nameof(entity.Operation));
         }
 
         return result;

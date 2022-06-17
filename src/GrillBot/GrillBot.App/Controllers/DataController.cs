@@ -80,7 +80,7 @@ public class DataController : Controller
     [HttpGet("channels")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
     {
         var currentUserId = User.GetUserId();
         var guilds = User.HaveUserPermission() ? await DiscordClient.FindMutualGuildsAsync(currentUserId) : DiscordClient.Guilds.Select(o => o as IGuild).ToList();
@@ -111,7 +111,7 @@ public class DataController : Controller
         var guildIds = guilds.Select(o => o.Id.ToString()).ToList();
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbChannels = await repository.Channel.GetAllChannelsAsync(guildIds, ignoreThreads, true, cancellationToken);
+        var dbChannels = await repository.Channel.GetAllChannelsAsync(guildIds, ignoreThreads, true);
         dbChannels = dbChannels.FindAll(o => channels.All(x => x.Id != o.ChannelId)); // Select from DB all channels that is not visible.
         channels.AddRange(Mapper.Map<List<Channel>>(dbChannels));
 

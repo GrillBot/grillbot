@@ -48,7 +48,7 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
     [TestMethod]
     public async Task GetPendingUnverifiesForRemoveAsync()
     {
-        var result = await Service.GetPendingUnverifiesForRemoveAsync(CancellationToken.None);
+        var result = await Service.GetPendingUnverifiesForRemoveAsync();
         Assert.AreEqual(0, result.Count);
     }
 }

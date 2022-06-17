@@ -70,8 +70,7 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<List<GuildChannel>> GetAllChannelsAsync(List<string> guildIds, bool ignoreThreads, bool disableTracking = false,
-        CancellationToken cancellationToken = default)
+    public async Task<List<GuildChannel>> GetAllChannelsAsync(List<string> guildIds, bool ignoreThreads, bool disableTracking = false)
     {
         using (Counter.Create("Database"))
         {
@@ -81,7 +80,7 @@ public class ChannelRepository : RepositoryBase
             if (ignoreThreads)
                 query = query.Where(o => !new[] { ChannelType.NewsThread, ChannelType.PrivateThread, ChannelType.PublicThread }.Contains(o.ChannelType));
 
-            return await query.ToListAsync(cancellationToken);
+            return await query.ToListAsync();
         }
     }
 

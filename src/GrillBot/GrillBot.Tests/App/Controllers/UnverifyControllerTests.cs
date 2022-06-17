@@ -10,6 +10,7 @@ using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -34,7 +35,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             .SetUsername(Consts.Username + "2").Build();
 
         var dcClient = new ClientBuilder()
-            .SetGetGuildsAction(new List<IGuild>() { guild })
+            .SetGetGuildsAction(new List<IGuild> { guild })
             .SetGetGuildAction(guild)
             .SetGetUserAction(user)
             .SetGetUserAction(anotherUser)
@@ -55,7 +56,8 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var permissionsCleaner = new PermissionsCleaner(counter, logging);
         var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DbFactory, loggingService, permissionsCleaner);
         var mapper = AutoMapperHelper.CreateMapper();
-        var unverifyApiService = new UnverifyApiService(DbFactory, mapper, dcClient);
+        var apiRequestContext = new ApiRequestContext();
+        var unverifyApiService = new UnverifyApiService(DbFactory, mapper, dcClient, apiRequestContext);
 
         return new UnverifyController(unverifyService, dcClient, mapper, unverifyApiService);
     }
@@ -63,17 +65,17 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task GetCurrentUnverifiesAsync_NotFound()
     {
-        var result = await AdminController.GetCurrentUnverifiesAsync(CancellationToken.None);
+        var result = await AdminController.GetCurrentUnverifiesAsync();
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
     [TestMethod]
     public async Task GetCurrentUnverifiesAsync_Found()
     {
-        await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Id = "1", Name = "Guild" });
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Id = "1", Username = "User", Discriminator = "1" });
-        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser() { GuildId = "1", UserId = "1" });
-        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog()
+        await DbContext.Guilds.AddAsync(new Database.Entity.Guild { Id = "1", Name = "Guild" });
+        await DbContext.Users.AddAsync(new Database.Entity.User { Id = "1", Username = "User", Discriminator = "1" });
+        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser { GuildId = "1", UserId = "1" });
+        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog
         {
             CreatedAt = DateTime.UtcNow,
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
@@ -83,10 +85,10 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             Id = 1,
             Data = "{}"
         });
-        await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify() { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
+        await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetCurrentUnverifiesAsync(CancellationToken.None);
+        var result = await AdminController.GetCurrentUnverifiesAsync();
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
@@ -107,9 +109,9 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task GetUnverifyLogsAsync_WithFilter()
     {
-        var filter = new UnverifyLogParams()
+        var filter = new UnverifyLogParams
         {
-            Created = new()
+            Created = new RangeParams<DateTime?>
             {
                 From = DateTime.MinValue,
                 To = DateTime.MaxValue
@@ -117,21 +119,24 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             FromUserId = "1",
             GuildId = "1",
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
-            ToUserId = "1"
+            ToUserId = "1",
+            Sort =
+            {
+                Descending = true
+            }
         };
-        filter.Sort.Descending = true;
 
-        var result = await AdminController.GetUnverifyLogsAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetUnverifyLogsAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 
     [TestMethod]
     public async Task GetUnverifyLogsAsync_WithoutFilter()
     {
-        await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Id = "1", Name = "Guild" });
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Id = "1", Username = "User", Discriminator = "1" });
-        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser() { GuildId = "1", UserId = "1" });
-        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog()
+        await DbContext.Guilds.AddAsync(new Database.Entity.Guild { Id = "1", Name = "Guild" });
+        await DbContext.Users.AddAsync(new Database.Entity.User { Id = "1", Username = "User", Discriminator = "1" });
+        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser { GuildId = "1", UserId = "1" });
+        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog
         {
             CreatedAt = DateTime.UtcNow,
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
@@ -144,7 +149,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         await DbContext.SaveChangesAsync();
 
         var filter = new UnverifyLogParams();
-        var result = await AdminController.GetUnverifyLogsAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetUnverifyLogsAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 
@@ -158,10 +163,10 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task RecoverUnverifyAsync_UnverifyNotExists()
     {
-        await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Id = "1", Name = "Guild" });
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Id = "1", Username = "User", Discriminator = "1" });
-        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser() { GuildId = "1", UserId = "1" });
-        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog()
+        await DbContext.Guilds.AddAsync(new Database.Entity.Guild { Id = "1", Name = "Guild" });
+        await DbContext.Users.AddAsync(new Database.Entity.User { Id = "1", Username = "User", Discriminator = "1" });
+        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser { GuildId = "1", UserId = "1" });
+        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog
         {
             CreatedAt = DateTime.UtcNow,
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
@@ -171,7 +176,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             Id = 1,
             Data = "{}"
         });
-        await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify() { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
+        await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await DbContext.SaveChangesAsync();
         var result = await AdminController.RecoverUnverifyAsync(1);
         CheckResult<BadRequestObjectResult>(result);
@@ -180,10 +185,10 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task RecoverUnverifyAsync_GuildNotFound()
     {
-        await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Id = "1", Name = "Guild" });
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Id = "1", Username = "User", Discriminator = "1" });
-        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser() { GuildId = "1", UserId = "1" });
-        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog()
+        await DbContext.Guilds.AddAsync(new Database.Entity.Guild { Id = "1", Name = "Guild" });
+        await DbContext.Users.AddAsync(new Database.Entity.User { Id = "1", Username = "User", Discriminator = "1" });
+        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser { GuildId = "1", UserId = "1" });
+        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog
         {
             CreatedAt = DateTime.UtcNow,
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
@@ -202,17 +207,17 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task GetCurrentUnverifiesAsync_NotFound_AsUser()
     {
-        var result = await UserController.GetCurrentUnverifiesAsync(CancellationToken.None);
+        var result = await UserController.GetCurrentUnverifiesAsync();
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
     [TestMethod]
     public async Task GetCurrentUnverifiesAsync_Found_AsUser()
     {
-        await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Id = "1", Name = "Guild" });
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Id = "1", Username = "User", Discriminator = "1" });
-        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser() { GuildId = "1", UserId = "1" });
-        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog()
+        await DbContext.Guilds.AddAsync(new Database.Entity.Guild { Id = "1", Name = "Guild" });
+        await DbContext.Users.AddAsync(new Database.Entity.User { Id = "1", Username = "User", Discriminator = "1" });
+        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser { GuildId = "1", UserId = "1" });
+        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog
         {
             CreatedAt = DateTime.UtcNow,
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
@@ -222,19 +227,19 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             Id = 1,
             Data = "{}"
         });
-        await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify() { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
+        await DbContext.Unverifies.AddAsync(new Database.Entity.Unverify { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await DbContext.SaveChangesAsync();
 
-        var result = await UserController.GetCurrentUnverifiesAsync(CancellationToken.None);
+        var result = await UserController.GetCurrentUnverifiesAsync();
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
     [TestMethod]
     public async Task GetUnverifyLogsAsync_WithFilter_AsUser()
     {
-        var filter = new UnverifyLogParams()
+        var filter = new UnverifyLogParams
         {
-            Created = new()
+            Created = new RangeParams<DateTime?>
             {
                 From = DateTime.MinValue,
                 To = DateTime.MaxValue
@@ -242,21 +247,24 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             FromUserId = "1",
             GuildId = "1",
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
-            ToUserId = "1"
+            ToUserId = "1",
+            Sort =
+            {
+                Descending = true
+            }
         };
-        filter.Sort.Descending = true;
 
-        var result = await UserController.GetUnverifyLogsAsync(filter, CancellationToken.None);
+        var result = await UserController.GetUnverifyLogsAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 
     [TestMethod]
     public async Task GetUnverifyLogsAsync_WithoutFilter_AsUser()
     {
-        await DbContext.Guilds.AddAsync(new Database.Entity.Guild() { Id = "1", Name = "Guild" });
-        await DbContext.Users.AddAsync(new Database.Entity.User() { Id = "1", Username = "User", Discriminator = "1" });
-        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser() { GuildId = "1", UserId = "1" });
-        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog()
+        await DbContext.Guilds.AddAsync(new Database.Entity.Guild { Id = "1", Name = "Guild" });
+        await DbContext.Users.AddAsync(new Database.Entity.User { Id = "1", Username = "User", Discriminator = "1" });
+        await DbContext.GuildUsers.AddAsync(new Database.Entity.GuildUser { GuildId = "1", UserId = "1" });
+        await DbContext.UnverifyLogs.AddAsync(new Database.Entity.UnverifyLog
         {
             CreatedAt = DateTime.UtcNow,
             Operation = Database.Enums.UnverifyOperation.Selfunverify,
@@ -269,7 +277,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         await DbContext.SaveChangesAsync();
 
         var filter = new UnverifyLogParams();
-        var result = await UserController.GetUnverifyLogsAsync(filter, CancellationToken.None);
+        var result = await UserController.GetUnverifyLogsAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 }

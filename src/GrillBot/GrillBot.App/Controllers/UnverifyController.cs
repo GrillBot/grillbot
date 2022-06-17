@@ -39,13 +39,12 @@ public class UnverifyController : Controller
     [HttpGet("current")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync()
     {
         var userId = User.HaveUserPermission() ? User.GetUserId() : (ulong?)null;
-
-        var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId, cancellationToken);
-
+        var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId);
         var result = Mapper.Map<List<UnverifyUserProfile>>(unverifies.Select(o => o.Item1));
+
         foreach (var profile in result)
         {
             var entity = unverifies.Find(o => o.Item1.Destination.Id == profile.User.Id.ToUlong());
@@ -120,10 +119,9 @@ public class UnverifyController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters)
     {
-        var result = await UnverifyApiService.GetLogsAsync(parameters, User, cancellationToken);
+        var result = await UnverifyApiService.GetLogsAsync(parameters);
         return Ok(result);
     }
 

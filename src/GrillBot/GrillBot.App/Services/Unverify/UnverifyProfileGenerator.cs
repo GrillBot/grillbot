@@ -1,130 +1,155 @@
-﻿using GrillBot.Data.Models;
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 
-namespace GrillBot.App.Services.Unverify
+namespace GrillBot.App.Services.Unverify;
+
+public class UnverifyProfileGenerator
 {
-    public class UnverifyProfileGenerator
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+
+    public UnverifyProfileGenerator(GrillBotDatabaseBuilder databaseBuilder)
     {
-        private GrillBotDatabaseBuilder DbFactory { get; }
+        DatabaseBuilder = databaseBuilder;
+    }
 
-        public UnverifyProfileGenerator(GrillBotDatabaseBuilder dbFactory)
+    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole)
+    {
+        var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify)
         {
-            DbFactory = dbFactory;
-        }
+            Reason = !selfunverify ? ParseReason(data) : null
+        };
 
-        public async Task<UnverifyUserProfile> CreateAsync(SocketGuildUser user, SocketGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole)
+        var keepables = await GetKeepablesAsync();
+
+        await ProcessRolesAsync(profile, user, guild, selfunverify, keep, mutedRole, keepables);
+        await ProcessChannelsAsync(profile, guild, user, keep, keepables);
+
+        return profile;
+    }
+
+    public static UnverifyUserProfile Reconstruct(Database.Entity.Unverify unverify, IGuildUser toUser, IGuild guild)
+    {
+        var logData = JsonConvert.DeserializeObject<UnverifyLogSet>(unverify.UnverifyLog!.Data);
+        if (logData == null)
+            throw new ArgumentException("Missing log data for unverify reconstruction.");
+
+        return new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify)
         {
-            var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify) { Reason = !selfunverify ? ParseReason(data) : null };
+            ChannelsToKeep = logData.ChannelsToKeep,
+            ChannelsToRemove = logData.ChannelsToRemove,
+            Reason = logData.Reason,
+            RolesToKeep = logData.RolesToKeep.Select(guild.GetRole).Where(o => o != null).ToList(),
+            RolesToRemove = logData.RolesToRemove.Select(guild.GetRole).Where(o => o != null).ToList()
+        };
+    }
 
-            using var context = DbFactory.Create();
-            var keepables = (await context.SelfunverifyKeepables.ToListAsync()).GroupBy(o => o.GroupName).ToDictionary(o => o.Key, o => o.Select(o => o.Name).ToList());
+    private static string ParseReason(string data)
+    {
+        var ex = new ValidationException("Nelze bezdůvodně odebrat přístup. Přečti si nápovědu a pak to zkus znovu.");
 
-            ProcessRoles(profile, user, guild, selfunverify, keep, mutedRole, keepables);
-            ProcessChannels(profile, guild, user, keep, keepables);
+        var parts = data.Split("<@", StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 2) throw ex;
 
-            return profile;
-        }
+        var reason = parts[0].Trim();
+        if (string.IsNullOrEmpty(reason)) throw ex;
+        return reason;
+    }
 
-        public UnverifyUserProfile Reconstruct(Database.Entity.Unverify unverify, IGuildUser toUser, IGuild guild)
+    private static async Task ProcessRolesAsync(UnverifyUserProfile profile, IGuildUser user, IGuild guild, bool selfunverify, List<string> keep, IRole mutedRole,
+        Dictionary<string, List<string>> keepables)
+    {
+        var rolesToRemove = user.GetRoles();
+        profile.RolesToRemove.AddRange(rolesToRemove);
+
+        if (selfunverify)
         {
-            var logData = JsonConvert.DeserializeObject<UnverifyLogSet>(unverify.UnverifyLog.Data);
+            var currentUser = await guild.GetCurrentUserAsync();
+            var botRolePosition = currentUser.GetRoles().Max(o => o.Position);
+            var rolesToKeep = profile.RolesToRemove.FindAll(o => o.Position >= botRolePosition);
 
-            return new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify)
+            if (rolesToKeep.Count > 0)
             {
-                ChannelsToKeep = logData.ChannelsToKeep,
-                ChannelsToRemove = logData.ChannelsToRemove,
-                Reason = logData.Reason,
-                RolesToKeep = logData.RolesToKeep.Select(o => guild.GetRole(o)).Where(o => o != null).ToList(),
-                RolesToRemove = logData.RolesToRemove.Select(o => guild.GetRole(o)).Where(o => o != null).ToList()
-            };
-        }
-
-        private static string ParseReason(string data)
-        {
-            var ex = new ValidationException("Nelze bezdůvodně odebrat přístup. Přečti si nápovědu a pak to zkus znovu.");
-
-            var parts = data.Split("<@", StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length < 2) throw ex;
-
-            var reason = parts[0].Trim();
-            if (string.IsNullOrEmpty(reason)) throw ex;
-            return reason;
-        }
-
-        private static void ProcessRoles(UnverifyUserProfile profile, SocketGuildUser user, SocketGuild guild, bool selfunverify, List<string> keep, IRole mutedRole, Dictionary<string, List<string>> keepables)
-        {
-            profile.RolesToRemove.AddRange(user.Roles.Where(o => !o.IsEveryone));
-
-            if (selfunverify)
-            {
-                var botRolePosition = guild.CurrentUser.Roles.Max(o => o.Position);
-                var rolesToKeep = profile.RolesToRemove.FindAll(o => o.Position >= botRolePosition);
-
                 profile.RolesToKeep.AddRange(rolesToKeep);
                 profile.RolesToRemove.RemoveAll(o => rolesToKeep.Any(x => x.Id == o.Id));
             }
+        }
 
-            var unavailable = profile.RolesToRemove.FindAll(o => o.IsManaged || (mutedRole != null && o.Id == mutedRole.Id));
+        var unavailable = profile.RolesToRemove.FindAll(o => o.IsManaged || (mutedRole != null && o.Id == mutedRole.Id));
+        if (unavailable.Count > 0)
+        {
             profile.RolesToKeep.AddRange(unavailable);
             profile.RolesToRemove.RemoveAll(o => unavailable.Any(x => x.Id == o.Id));
+        }
 
-            foreach (var toKeep in keep)
+        foreach (var toKeep in keep)
+        {
+            CheckDefinition(keepables, toKeep);
+            var role = profile.RolesToRemove.Find(o => string.Equals(o.Name, toKeep, StringComparison.InvariantCultureIgnoreCase));
+
+            if (role != null)
             {
-                CheckDefinition(keepables, toKeep);
-                var role = profile.RolesToRemove.Find(o => string.Equals(o.Name, toKeep, StringComparison.InvariantCultureIgnoreCase));
+                profile.RolesToKeep.Add(role);
+                profile.RolesToRemove.Remove(role);
+                continue;
+            }
 
-                if (role != null)
-                {
-                    profile.RolesToKeep.Add(role);
-                    profile.RolesToRemove.Remove(role);
+            foreach (var groupKey in keepables.Where(o => o.Value?.Contains(toKeep) == true).Select(o => o.Key))
+            {
+                role = profile.RolesToRemove.Find(o => string.Equals(o.Name, groupKey == "_" ? toKeep : groupKey, StringComparison.InvariantCultureIgnoreCase));
+                if (role == null)
                     continue;
-                }
 
-                foreach (var groupKey in keepables.Where(o => o.Value?.Contains(toKeep) == true).Select(o => o.Key))
-                {
-                    role = profile.RolesToRemove.Find(o => string.Equals(o.Name, groupKey == "_" ? toKeep : groupKey, StringComparison.InvariantCultureIgnoreCase));
-
-                    if (role != null)
-                    {
-                        profile.RolesToKeep.Add(role);
-                        profile.RolesToRemove.Remove(role);
-                    }
-                }
+                profile.RolesToKeep.Add(role);
+                profile.RolesToRemove.Remove(role);
             }
         }
+    }
 
-        private static void ProcessChannels(UnverifyUserProfile profile, SocketGuild guild, SocketGuildUser user, List<string> keep, Dictionary<string, List<string>> keepabless)
+    private static async Task ProcessChannelsAsync(UnverifyUserProfile profile, IGuild guild, IUser user, List<string> keep, Dictionary<string, List<string>> keepabless)
+    {
+        var channels = (await guild.GetChannelsAsync()).ToList();
+        channels = channels
+            .FindAll(o => o is (IVoiceChannel or ITextChannel) and not IThreadChannel); // Select channels but ignore channels
+
+        var channelsToRemove = channels
+            .Select(o => new ChannelOverride(o, o.GetPermissionOverwrite(user) ?? OverwritePermissions.InheritAll))
+            .Where(o => o.AllowValue > 0 || o.DenyValue > 0);
+
+        profile.ChannelsToRemove.AddRange(channelsToRemove);
+        foreach (var toKeep in keep)
         {
-            var channels = guild.Channels
-                .Where(o => (o is SocketTextChannel || o is SocketVoiceChannel) && o is not SocketThreadChannel); // Select channels but ignore channels
-
-            var channelsToRemove = channels
-                .Select(o => new ChannelOverride(o, o.GetPermissionOverwrite(user) ?? OverwritePermissions.InheritAll))
-                .Where(o => o.AllowValue > 0 || o.DenyValue > 0);
-
-            profile.ChannelsToRemove.AddRange(channelsToRemove);
-            foreach (var toKeep in keep)
+            CheckDefinition(keepabless, toKeep);
+            foreach (var overwrite in profile.ChannelsToRemove.ToList())
             {
-                CheckDefinition(keepabless, toKeep);
-                var overwrite = profile.ChannelsToRemove.Find(o => string.Equals(guild.GetChannel(o.ChannelId)?.Name, toKeep));
+                var guildChannel = await guild.GetChannelAsync(overwrite.ChannelId);
 
-                if (overwrite != null)
-                {
-                    profile.ChannelsToKeep.Add(overwrite);
-                    profile.ChannelsToRemove.RemoveAll(o => o.ChannelId == overwrite.ChannelId);
-                }
+                if (guildChannel == null) continue;
+                if (!string.Equals(guildChannel.Name, toKeep)) continue;
+
+                profile.ChannelsToKeep.Add(overwrite);
+                profile.ChannelsToRemove.RemoveAll(o => o.ChannelId == overwrite.ChannelId);
             }
         }
+    }
 
-        private static bool ExistsInKeepDefinition(Dictionary<string, List<string>> definitions, string item)
-        {
-            return definitions.ContainsKey(item) || definitions.Values.Any(o => o?.Contains(item) == true);
-        }
+    private static bool ExistsInKeepDefinition(Dictionary<string, List<string>> definitions, string item)
+    {
+        return definitions.ContainsKey(item) || definitions.Values.Any(o => o?.Contains(item) == true);
+    }
 
-        private static void CheckDefinition(Dictionary<string, List<string>> definitions, string item)
-        {
-            if (!ExistsInKeepDefinition(definitions, item))
-                throw new ValidationException($"{item.ToUpper()} není ponechatelné.");
-        }
+    private static void CheckDefinition(Dictionary<string, List<string>> definitions, string item)
+    {
+        if (!ExistsInKeepDefinition(definitions, item))
+            throw new ValidationException($"{item.ToUpper()} není ponechatelné.");
+    }
+
+    private async Task<Dictionary<string, List<string>>> GetKeepablesAsync()
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var keepables = await repository.SelfUnverify.GetKeepablesAsync();
+        return keepables.GroupBy(o => o.GroupName.ToUpper())
+            .ToDictionary(o => o.Key, o => o.Select(x => x.Name.ToUpper()).ToList());
     }
 }

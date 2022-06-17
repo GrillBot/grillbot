@@ -49,7 +49,7 @@ public class UnverifyMessageGeneratorTests
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
-        var result = UnverifyMessageGenerator.CreateUnverifyPMMessage(profile, guild);
+        var result = UnverifyMessageGenerator.CreateUnverifyPmMessage(profile, guild);
 
         Assert.AreEqual(
             "Byly ti dočasně odebrány všechny práva na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. ",
@@ -65,7 +65,7 @@ public class UnverifyMessageGeneratorTests
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
-        var result = UnverifyMessageGenerator.CreateUnverifyPMMessage(profile, guild);
+        var result = UnverifyMessageGenerator.CreateUnverifyPmMessage(profile, guild);
 
         Assert.AreEqual(
             "Byly ti dočasně odebrány všechny práva na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. Důvod: Duvod",
@@ -78,7 +78,7 @@ public class UnverifyMessageGeneratorTests
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var end = new DateTime(2022, 02, 04);
-        var result = UnverifyMessageGenerator.CreateUpdatePMMessage(guild, end);
+        var result = UnverifyMessageGenerator.CreateUpdatePmMessage(guild, end);
 
         Assert.AreEqual(
             "Byl ti aktualizován čas pro odebrání práv na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**.",
@@ -105,7 +105,7 @@ public class UnverifyMessageGeneratorTests
     public void CreateRemoveAccessManuallyPMMessage()
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyPMMessage(guild);
+        var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyPmMessage(guild);
 
         Assert.AreEqual(
            "Byl ti předčasně vrácen přístup na serveru **GrillBot-Guild-Name**",

@@ -82,12 +82,12 @@ static public class DiscordClientExtensions
             .FirstOrDefault(o => !o.IsEveryone && o.Id == id);
     }
 
-    static public async Task<List<IGuild>> FindMutualGuildsAsync(this IDiscordClient client, ulong userId)
+    public static async Task<List<IGuild>> FindMutualGuildsAsync(this IDiscordClient client, ulong userId)
     {
         var guilds = (await client.GetGuildsAsync()).ToList();
 
         return await guilds
-            .FindAllAsync(async g => (await g.GetUserAsync(userId)) != null);
+            .FindAllAsync(async g => await g.GetUserAsync(userId) != null);
     }
 
     static public IEnumerable<SocketGuild> FindMutualGuilds(this BaseSocketClient client, ulong userId)

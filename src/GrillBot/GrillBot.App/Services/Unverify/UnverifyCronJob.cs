@@ -20,9 +20,9 @@ public class UnverifyCronJob : Job
 
     public override async Task RunAsync(IJobExecutionContext context)
     {
-        var pending = await UnverifyService.GetPendingUnverifiesForRemoveAsync(context.CancellationToken);
+        var pending = await UnverifyService.GetPendingUnverifiesForRemoveAsync();
 
-        foreach ((var guildId, var userId) in pending)
+        foreach (var (guildId, userId) in pending)
         {
             await UnverifyService.UnverifyAutoremoveAsync(guildId, userId);
         }

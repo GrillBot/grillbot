@@ -10,7 +10,8 @@ public sealed class PeepoangryRenderer : RendererBase, IDisposable
 {
     private MagickImage AngryPeepo { get; }
 
-    public PeepoangryRenderer(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager) : base(fileStorageFactory, profilePictureManager)
+    public PeepoangryRenderer(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
+        : base(fileStorageFactory, profilePictureManager)
     {
         AngryPeepo = new MagickImage(PeepoangryResources.peepoangry);
     }

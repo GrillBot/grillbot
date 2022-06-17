@@ -1,33 +1,42 @@
 ﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Database.Extensions;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GrillBot.App.Services.Guild;
 
-public class GuildApiService : ServiceBase
+public class GuildApiService
 {
-    public GuildApiService(GrillBotDatabaseBuilder dbFactory, DiscordSocketClient client, IMapper mapper,
-        GrillBotCacheBuilder cacheBuilder) : base(client, dbFactory, null, mapper, cacheBuilder)
+    private IDiscordClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IMapper Mapper { get; }
+    private GrillBotCacheBuilder CacheBuilder { get; }
+
+    public GuildApiService(GrillBotDatabaseBuilder databaseBuilder, DiscordSocketClient client, IMapper mapper,
+        GrillBotCacheBuilder cacheBuilder)
     {
+        DatabaseBuilder = databaseBuilder;
+        DiscordClient = client;
+        Mapper = mapper;
+        CacheBuilder = cacheBuilder;
     }
 
-    public async Task<PaginatedResponse<Data.Models.API.Guilds.Guild>> GetListAsync(GetGuildListParams parameters, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<Data.Models.API.Guilds.Guild>> GetListAsync(GetGuildListParams parameters)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.CreateQuery(parameters, true);
+        var data = await repository.Guild.GetGuildListAsync(parameters, parameters.Pagination);
         var result = await PaginatedResponse<Data.Models.API.Guilds.Guild>
-            .CreateAsync(query, parameters.Pagination, entity => Mapper.Map<Data.Models.API.Guilds.Guild>(entity));
+            .CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<Data.Models.API.Guilds.Guild>(entity)));
 
-        for (int i = 0; i < result.Data.Count; i++)
+        for (var i = 0; i < result.Data.Count; i++)
         {
-            var guild = DiscordClient.GetGuild(result.Data[i].Id.ToUlong());
+            var guild = await DiscordClient.GetGuildAsync(result.Data[i].Id.ToUlong());
             if (guild == null) continue;
 
             result.Data[i] = Mapper.Map(guild, result.Data[i]);
@@ -36,68 +45,64 @@ public class GuildApiService : ServiceBase
         return result;
     }
 
-    public async Task<GuildDetail> GetDetailAsync(ulong id, CancellationToken cancellationToken = default)
+    public async Task<GuildDetail> GetDetailAsync(ulong id)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbGuild = await context.Guilds.FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
+        var dbGuild = await repository.Guild.FindGuildByIdAsync(id);
         if (dbGuild == null) return null;
 
         var detail = Mapper.Map<GuildDetail>(dbGuild);
-        detail.DatabaseReport = await CreateDatabaseReportAsync(id, cancellationToken);
+        detail.DatabaseReport = await CreateDatabaseReportAsync(id);
 
-        var discordGuild = DiscordClient.GetGuild(id);
-        if (discordGuild != null)
-        {
-            detail = Mapper.Map(discordGuild, detail);
+        var discordGuild = await DiscordClient.GetGuildAsync(id);
+        if (discordGuild == null)
+            return detail;
 
-            if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
-                detail.AdminChannel = Mapper.Map<Channel>(discordGuild.GetChannel(dbGuild.AdminChannelId.ToUlong()));
+        detail = Mapper.Map(discordGuild, detail);
+        if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
+            detail.AdminChannel = Mapper.Map<Channel>(await discordGuild.GetChannelAsync(dbGuild.AdminChannelId.ToUlong()));
 
-            if (!string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
-                detail.EmoteSuggestionChannel = Mapper.Map<Channel>(discordGuild.GetChannel(dbGuild.EmoteSuggestionChannelId.ToUlong()));
+        if (!string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
+            detail.EmoteSuggestionChannel = Mapper.Map<Channel>(await discordGuild.GetChannelAsync(dbGuild.EmoteSuggestionChannelId.ToUlong()));
 
-            if (!string.IsNullOrEmpty(dbGuild.BoosterRoleId))
-                detail.BoosterRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.BoosterRoleId.ToUlong()));
+        if (!string.IsNullOrEmpty(dbGuild.BoosterRoleId))
+            detail.BoosterRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.BoosterRoleId.ToUlong()));
 
-            if (!string.IsNullOrEmpty(dbGuild.MuteRoleId))
-                detail.MutedRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.MuteRoleId.ToUlong()));
+        if (!string.IsNullOrEmpty(dbGuild.MuteRoleId))
+            detail.MutedRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.MuteRoleId.ToUlong()));
 
-            detail.UserStatusReport = discordGuild.Users.GroupBy(o =>
-            {
-                if (o.Status == UserStatus.AFK) return UserStatus.Idle;
-                else if (o.Status == UserStatus.Invisible) return UserStatus.Offline;
-                return o.Status;
-            }).ToDictionary(o => o.Key, o => o.Count());
+        var guildUsers = await discordGuild.GetUsersAsync();
+        detail.UserStatusReport = guildUsers
+            .GroupBy(o => o.GetStatus())
+            .ToDictionary(o => o.Key, o => o.Count());
 
-            detail.ClientTypeReport = discordGuild.Users
-                .Where(o => o.Status != UserStatus.Offline && o.Status != UserStatus.Invisible)
-                .SelectMany(o => o.ActiveClients)
-                .GroupBy(o => o)
-                .ToDictionary(o => o.Key, o => o.Count());
-        }
+        detail.ClientTypeReport = guildUsers
+            .Where(o => o.Status != UserStatus.Offline && o.Status != UserStatus.Invisible)
+            .SelectMany(o => o.ActiveClients)
+            .GroupBy(o => o)
+            .ToDictionary(o => o.Key, o => o.Count());
 
         return detail;
     }
 
-    private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId, CancellationToken cancellationToken = default)
+    private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId)
     {
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var data = await repository.Guild.GetDatabaseReportDataAsync(guildId);
 
-        var query = dbContext.Guilds.Where(o => o.Id == guildId.ToString()).Select(guild => new GuildDatabaseReport()
+        var report = new GuildDatabaseReport
         {
-            AuditLogs = guild.AuditLogs.Count,
-            Channels = guild.Channels.Count,
-            Invites = guild.Invites.Count,
-            Searches = guild.Searches.Count,
-            Unverifies = guild.Unverifies.Count,
-            UnverifyLogs = guild.UnverifyLogs.Count,
-            Users = guild.Users.Count
-        });
+            Channels = data.channels,
+            Invites = data.invites,
+            Searches = data.searches,
+            Unverifies = data.unverify,
+            Users = data.users,
+            AuditLogs = data.auditLogs,
+            UnverifyLogs = data.unverifyLogs
+        };
 
-        var report = await query.FirstOrDefaultAsync(cancellationToken);
-
-        using var cache = CacheBuilder.CreateRepository();
+        await using var cache = CacheBuilder.CreateRepository();
         report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
 
         return report;
@@ -105,17 +110,14 @@ public class GuildApiService : ServiceBase
 
     public async Task<GuildDetail> UpdateGuildAsync(ulong id, UpdateGuildParams parameters, ModelStateDictionary modelState)
     {
-        var guild = DiscordClient.GetGuild(id);
-
+        var guild = await DiscordClient.GetGuildAsync(id);
         if (guild == null)
             return null;
 
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbGuild = await context.Guilds.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id.ToString());
-
-        if (parameters.AdminChannelId != null && guild.GetTextChannel(parameters.AdminChannelId.ToUlong()) == null)
+        var dbGuild = await repository.Guild.GetOrCreateRepositoryAsync(guild);
+        if (parameters.AdminChannelId != null && guild.GetTextChannelAsync(parameters.AdminChannelId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.AdminChannelId), "Nepodařilo se dohledat administrátorský kanál");
         else
             dbGuild.AdminChannelId = parameters.AdminChannelId;
@@ -125,12 +127,12 @@ public class GuildApiService : ServiceBase
         else
             dbGuild.MuteRoleId = parameters.MuteRoleId;
 
-        if (parameters.EmoteSuggestionChannelId != null && guild.GetTextChannel(parameters.EmoteSuggestionChannelId.ToUlong()) == null)
+        if (parameters.EmoteSuggestionChannelId != null && guild.GetTextChannelAsync(parameters.EmoteSuggestionChannelId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.EmoteSuggestionChannelId), "Nepodařilo se dohledat kanál pro návrhy emotů.");
         else
             dbGuild.EmoteSuggestionChannelId = parameters.EmoteSuggestionChannelId;
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
         return await GetDetailAsync(id);
     }
 }

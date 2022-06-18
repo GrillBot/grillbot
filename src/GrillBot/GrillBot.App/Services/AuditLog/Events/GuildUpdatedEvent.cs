@@ -8,7 +8,7 @@ public class GuildUpdatedEvent : AuditEventBase
     private SocketGuild Before { get; }
     private SocketGuild After { get; }
 
-    public GuildUpdatedEvent(AuditLogService auditLogService, SocketGuild before, SocketGuild after) : base(auditLogService)
+    public GuildUpdatedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketGuild before, SocketGuild after) : base(auditLogService, auditLogWriter)
     {
         Before = before;
         After = after;
@@ -41,12 +41,11 @@ public class GuildUpdatedEvent : AuditEventBase
         var timeLimit = DateTime.UtcNow.AddMinutes(-5);
         var auditLog = (await After.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.GuildUpdated).FlattenAsync())
             .Where(o => o.CreatedAt.DateTime >= timeLimit)
-            .OrderByDescending(o => o.CreatedAt.DateTime)
-            .FirstOrDefault();
+            .MaxBy(o => o.CreatedAt.DateTime);
         if (auditLog == null) return;
 
         var data = new GuildUpdatedData(Before, After);
         var item = new AuditLogDataWrapper(AuditLogItemType.GuildUpdated, data, After, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

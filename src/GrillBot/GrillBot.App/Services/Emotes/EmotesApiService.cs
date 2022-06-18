@@ -13,17 +13,17 @@ public class EmotesApiService
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private EmotesCacheService EmotesCacheService { get; }
     private IMapper Mapper { get; }
-    private AuditLogService AuditLogService { get; }
     private ApiRequestContext ApiRequestContext { get; }
+    private AuditLogWriter AuditLogWriter { get; }
 
     public EmotesApiService(GrillBotDatabaseBuilder databaseBuilder, EmotesCacheService emotesCacheService,
-        IMapper mapper, AuditLogService auditLogService, ApiRequestContext apiRequestContext)
+        IMapper mapper, ApiRequestContext apiRequestContext, AuditLogWriter auditLogWriter)
     {
         EmotesCacheService = emotesCacheService;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
-        AuditLogService = auditLogService;
         ApiRequestContext = apiRequestContext;
+        AuditLogWriter = auditLogWriter;
     }
 
     public async Task<PaginatedResponse<EmoteStatItem>> GetStatsOfEmotesAsync(EmotesListParams @params, bool unsupported)
@@ -148,7 +148,7 @@ public class EmotesApiService
         var logItem = new AuditLogDataWrapper(AuditLogItemType.Info,
             $"Provedeno sloučení emotů {@params.SourceEmoteId} do {@params.DestinationEmoteId}. Sloučeno záznamů: {sourceStats.Count}/{destinationStats.Count}",
             null, null, ApiRequestContext.LoggedUser);
-        await AuditLogService.StoreItemAsync(logItem);
+        await AuditLogWriter.StoreAsync(logItem);
         return await repository.CommitAsync();
     }
 
@@ -175,7 +175,7 @@ public class EmotesApiService
         var auditLogItem = new AuditLogDataWrapper(AuditLogItemType.Info,
             $"Statistiky emotu {emoteId} byly smazány. Smazáno záznamů: {emotes.Count}", null, null,
             ApiRequestContext.LoggedUser);
-        await AuditLogService.StoreItemAsync(auditLogItem);
+        await AuditLogWriter.StoreAsync(auditLogItem);
 
         repository.RemoveCollection(emotes);
         return await repository.CommitAsync();

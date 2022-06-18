@@ -17,23 +17,23 @@ namespace GrillBot.App.Services.Channels;
 public class ChannelApiService
 {
     private MessageCacheManager MessageCache { get; }
-    private AuditLogService AuditLogService { get; }
     private AutoReplyService AutoReplyService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
     private ApiRequestContext ApiRequestContext { get; }
+    private AuditLogWriter AuditLogWriter { get; }
 
     public ChannelApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient client, MessageCacheManager messageCache,
-        AuditLogService auditLogService, AutoReplyService autoReplyService, ApiRequestContext apiRequestContext)
+        AutoReplyService autoReplyService, ApiRequestContext apiRequestContext, AuditLogWriter auditLogWriter)
     {
         MessageCache = messageCache;
-        AuditLogService = auditLogService;
         AutoReplyService = autoReplyService;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = client;
         ApiRequestContext = apiRequestContext;
+        AuditLogWriter = auditLogWriter;
     }
 
     public async Task<PaginatedResponse<GuildChannelListItem>> GetListAsync(GetChannelListParams parameters)
@@ -136,7 +136,7 @@ public class ChannelApiService
             guild, channel, ApiRequestContext.LoggedUser
         );
 
-        await AuditLogService.StoreItemAsync(auditLogItem);
+        await AuditLogWriter.StoreAsync(auditLogItem);
     }
 
     public async Task<PaginatedResponse<ChannelUserStatItem>> GetChannelUsersAsync(ulong channelId, PaginatedParams pagination)

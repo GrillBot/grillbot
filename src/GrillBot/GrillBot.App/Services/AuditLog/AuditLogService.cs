@@ -6,67 +6,58 @@ using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers;
-using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.AuditLog;
 
 [Initializable]
-public class AuditLogService : ServiceBase
+public class AuditLogService
 {
-    public static JsonSerializerSettings JsonSerializerSettings { get; }
     private MessageCacheManager MessageCache { get; }
     private FileStorageFactory FileStorageFactory { get; }
     private InitManager InitManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private AuditLogWriter AuditLogWriter { get; }
 
     private Dictionary<ulong, DateTime> NextAllowedChannelUpdateEvent { get; } = new();
     private DateTime NextAllowedRoleUpdateEvent { get; set; }
 
-    static AuditLogService()
-    {
-        JsonSerializerSettings = new JsonSerializerSettings()
-        {
-            DefaultValueHandling = DefaultValueHandling.Ignore,
-            Formatting = Formatting.None,
-            NullValueHandling = NullValueHandling.Ignore
-        };
-    }
-
-    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, MessageCacheManager messageCache, FileStorageFactory storageFactory,
-        InitManager initManager) : base(client, dbFactory)
+    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, MessageCacheManager messageCache, FileStorageFactory storageFactory,
+        InitManager initManager, AuditLogWriter auditLogWriter)
     {
         MessageCache = messageCache;
         FileStorageFactory = storageFactory;
         InitManager = initManager;
+        DiscordClient = client;
+        DatabaseBuilder = databaseBuilder;
+        AuditLogWriter = auditLogWriter;
 
-        DiscordClient.UserLeft += (guild, user) => HandleEventAsync(new UserLeftEvent(this, guild, user));
-        DiscordClient.UserJoined += user => HandleEventAsync(new UserJoinedEvent(this, user));
-        DiscordClient.MessageUpdated += (before, after, channel) => HandleEventAsync(new MessageEditedEvent(this, before, after, channel, MessageCache, DiscordClient));
-        DiscordClient.MessageDeleted += (message, channel) => HandleEventAsync(new MessageDeletedEvent(this, message, channel, MessageCache, FileStorageFactory));
-
-        DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, channel));
-        DiscordClient.ChannelDestroyed += channel => HandleEventAsync(new ChannelDeletedEvent(this, channel));
-        DiscordClient.ChannelUpdated += (before, after) => HandleEventAsync(new ChannelUpdatedEvent(this, before, after));
+        DiscordClient.UserLeft += (guild, user) => HandleEventAsync(new UserLeftEvent(this, AuditLogWriter, guild, user));
+        DiscordClient.UserJoined += user => HandleEventAsync(new UserJoinedEvent(this, AuditLogWriter, user));
+        DiscordClient.MessageUpdated += (before, after, channel) => HandleEventAsync(new MessageEditedEvent(this, AuditLogWriter, before, after, channel, MessageCache, DiscordClient));
+        DiscordClient.MessageDeleted += (message, channel) => HandleEventAsync(new MessageDeletedEvent(this, AuditLogWriter, message, channel, MessageCache, FileStorageFactory));
+        DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, AuditLogWriter, channel));
+        DiscordClient.ChannelDestroyed += channel => HandleEventAsync(new ChannelDeletedEvent(this, AuditLogWriter, channel));
+        DiscordClient.ChannelUpdated += (before, after) => HandleEventAsync(new ChannelUpdatedEvent(this, AuditLogWriter, before, after));
         DiscordClient.ChannelUpdated += async (_, after) =>
         {
             var nextAllowedEvent = NextAllowedChannelUpdateEvent.TryGetValue(after.Id, out var at) ? at : DateTime.MinValue;
-
-            await HandleEventAsync(new OverwriteChangedEvent(this, after, nextAllowedEvent));
+            await HandleEventAsync(new OverwriteChangedEvent(this, AuditLogWriter, after, nextAllowedEvent));
             nextAllowedEvent = DateTime.Now.AddMinutes(1);
             NextAllowedChannelUpdateEvent[after.Id] = nextAllowedEvent;
         };
-        DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new EmotesUpdatedEvent(this, before, after));
-        DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new GuildUpdatedEvent(this, before, after));
-
-        DiscordClient.UserUnbanned += (user, guild) => HandleEventAsync(new UserUnbannedEvent(this, guild, user));
-        DiscordClient.GuildMemberUpdated += (before, after) => HandleEventAsync(new MemberUpdatedEvent(this, before, after));
+        DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new EmotesUpdatedEvent(this, AuditLogWriter, before, after));
+        DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new GuildUpdatedEvent(this, AuditLogWriter, before, after));
+        DiscordClient.UserUnbanned += (user, guild) => HandleEventAsync(new UserUnbannedEvent(this, AuditLogWriter, guild, user));
+        DiscordClient.GuildMemberUpdated += (before, after) => HandleEventAsync(new MemberUpdatedEvent(this, AuditLogWriter, before, after));
         DiscordClient.GuildMemberUpdated += async (before, after) =>
         {
-            var @event = new MemberRolesUpdatedEvent(this, before, after, NextAllowedRoleUpdateEvent);
+            var @event = new MemberRolesUpdatedEvent(this, AuditLogWriter, before, after, NextAllowedRoleUpdateEvent);
             await HandleEventAsync(@event);
             if (@event.Finished) NextAllowedRoleUpdateEvent = DateTime.Now.AddSeconds(30);
         };
-        DiscordClient.ThreadDeleted += thread => HandleEventAsync(new ThreadDeletedEvent(this, thread));
+        DiscordClient.ThreadDeleted += thread => HandleEventAsync(new ThreadDeletedEvent(this, AuditLogWriter, thread));
     }
 
     /// <summary>
@@ -85,7 +76,7 @@ public class AuditLogService : ServiceBase
                 return null;
         }
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         var channelEntity = await repository.Channel.FindChannelByIdAsync(channelId, null, true);
         if (channelEntity == null)
@@ -93,37 +84,6 @@ public class AuditLogService : ServiceBase
 
         var guildId = channelEntity.GuildId.ToUlong();
         return DiscordClient.GetGuild(guildId);
-    }
-
-    public Task StoreItemAsync(AuditLogDataWrapper item)
-        => StoreItemsAsync(new List<AuditLogDataWrapper> { item });
-
-    public async Task StoreItemsAsync(List<AuditLogDataWrapper> items)
-    {
-        await using var repository = DbFactory.CreateRepository();
-
-        foreach (var item in items.Where(o => o.Guild != null).DistinctBy(o => o.Guild.Id))
-            await repository.Guild.GetOrCreateRepositoryAsync(item.Guild);
-
-        foreach (var item in items.Where(o => o.Guild != null && o.Channel != null).DistinctBy(o => o.Channel.Id))
-            await repository.Channel.GetOrCreateChannelAsync(item.Channel);
-
-        foreach (var item in items.Where(o => o.ProcessedUser != null).DistinctBy(o => o.ProcessedUser.Id))
-        {
-            if (item.Guild != null)
-            {
-                var guildUser = item.ProcessedUser as IGuildUser ?? await item.Guild.GetUserAsync(item.ProcessedUser.Id);
-                if (guildUser != null)
-                    await repository.GuildUser.GetOrCreateGuildUserAsync(guildUser);
-            }
-            else
-            {
-                await repository.User.GetOrCreateUserAsync(item.ProcessedUser);
-            }
-        }
-
-        await repository.AddCollectionAsync(items.Select(o => o.ToEntity(JsonSerializerSettings)));
-        await repository.CommitAsync();
     }
 
     private async Task<bool> CanExecuteEvent(Func<Task<bool>> eventSpecificCheck = null)
@@ -141,12 +101,12 @@ public class AuditLogService : ServiceBase
     }
 
     public Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result, int duration)
-        => HandleEventAsync(new ExecutedCommandEvent(this, command, context, result, duration));
+        => HandleEventAsync(new ExecutedCommandEvent(this, AuditLogWriter, command, context, result, duration));
 
     public Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result,
         int duration)
     {
-        return HandleEventAsync(new ExecutedInteractionCommandEvent(this, command, context, result, duration));
+        return HandleEventAsync(new ExecutedInteractionCommandEvent(this, AuditLogWriter, command, context, result, duration));
     }
 
     /// <summary>
@@ -154,7 +114,7 @@ public class AuditLogService : ServiceBase
     /// </summary>
     public async Task<List<ulong>> GetDiscordAuditLogIdsAsync(IGuild guild, IChannel channel, AuditLogItemType[] types, DateTime after)
     {
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         return await repository.AuditLog.GetDiscordAuditLogIdsAsync(guild, channel, types, after);
     }
 }

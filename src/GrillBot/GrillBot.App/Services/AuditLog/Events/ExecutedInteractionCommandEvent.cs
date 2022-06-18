@@ -11,8 +11,8 @@ public class ExecutedInteractionCommandEvent : AuditEventBase
     private IResult Result { get; }
     private int Duration { get; }
 
-    public ExecutedInteractionCommandEvent(AuditLogService auditLogService, ICommandInfo command, IInteractionContext context,
-        IResult result, int duration) : base(auditLogService)
+    public ExecutedInteractionCommandEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, ICommandInfo command, IInteractionContext context,
+        IResult result, int duration) : base(auditLogService, auditLogWriter)
     {
         Command = command;
         Context = context;
@@ -27,6 +27,6 @@ public class ExecutedInteractionCommandEvent : AuditEventBase
     {
         var data = InteractionCommandExecuted.Create(Context.Interaction, Command, Result, Duration);
         var item = new AuditLogDataWrapper(AuditLogItemType.InteractionCommand, data, Context.Guild, Context.Channel as IGuildChannel, Context.User);
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

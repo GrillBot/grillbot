@@ -12,13 +12,13 @@ public class RemindCronJob : Job
 {
     private RemindService RemindService { get; }
 
-    public RemindCronJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        RemindService remindService, InitManager initManager) : base(loggingService, auditLogService, discordClient, initManager)
+    public RemindCronJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
+        RemindService remindService, InitManager initManager) : base(loggingService, auditLogWriter, discordClient, initManager)
     {
         RemindService = remindService;
     }
 
-    public override async Task RunAsync(IJobExecutionContext context)
+    protected override async Task RunAsync(IJobExecutionContext context)
     {
         var reminders = await RemindService.GetRemindIdsForProcessAsync();
 

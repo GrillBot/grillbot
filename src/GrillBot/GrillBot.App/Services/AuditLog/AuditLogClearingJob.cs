@@ -14,31 +14,24 @@ public class AuditLogClearingJob : Job
     private GrillBotDatabaseBuilder DbFactory { get; }
     private FileStorageFactory FileStorage { get; }
 
-    public AuditLogClearingJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
+    public AuditLogClearingJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
         GrillBotDatabaseBuilder dbFactory, FileStorageFactory fileStorage, InitManager initManager)
-        : base(loggingService, auditLogService, discordClient, initManager)
+        : base(loggingService, auditLogWriter, discordClient, initManager)
     {
         FileStorage = fileStorage;
         DbFactory = dbFactory;
     }
 
-    public override async Task RunAsync(IJobExecutionContext context)
+    protected override async Task RunAsync(IJobExecutionContext context)
     {
-        using var dbContext = DbFactory.Create();
-        var beforeDate = DateTime.Now.AddYears(-1);
+        var expirationDate = DateTime.Now.AddYears(-1);
 
-        var query = dbContext.AuditLogs.AsQueryable()
-            .Include(o => o.Files)
-            .Include(o => o.Guild)
-            .Include(o => o.GuildChannel)
-            .Include(o => o.ProcessedGuildUser).ThenInclude(o => o.User)
-            .Include(o => o.ProcessedUser)
-            .Where(o => o.CreatedAt <= beforeDate);
+        await using var repository = DbFactory.CreateRepository();
 
-        if (!await query.AnyAsync(context.CancellationToken))
+        if (!await repository.AuditLog.ExistsExpiredItemAsync(expirationDate))
             return;
 
-        var data = await query.ToListAsync(context.CancellationToken);
+        var data = await repository.AuditLog.GetExpiredDataAsync(expirationDate);
         var logRoot = new XElement("AuditLogBackup");
 
         logRoot.Add(
@@ -55,7 +48,7 @@ public class AuditLogClearingJob : Job
         logRoot.Add(guilds);
 
         var guildUsers = data.Select(o => o.ProcessedGuildUser).Where(o => o != null).GroupBy(o => o.UserId).Select(o => o.First()).ToList();
-        var users = data.Select(o => o.ProcessedUser).Where(o => o != null && !guildUsers.Any(x => x.UserId == o.Id)).GroupBy(o => o.Id)
+        var users = data.Select(o => o.ProcessedUser).Where(o => o != null && guildUsers.All(x => x.UserId != o.Id)).GroupBy(o => o.Id)
             .Select(o => o.First()).ToList();
 
         logRoot.Add(
@@ -66,9 +59,9 @@ public class AuditLogClearingJob : Job
                 user.Add(
                     new XAttribute("Id", o.UserId),
                     new XAttribute("GuildId", o.GuildId),
-                    new XAttribute("UserFlags", o.User.Flags),
-                    new XAttribute("Username", o.User.Username),
-                    new XAttribute("Discriminator", o.User.Discriminator)
+                    new XAttribute("UserFlags", o.User!.Flags),
+                    new XAttribute("Username", o.User!.Username),
+                    new XAttribute("Discriminator", o.User!.Discriminator)
                 );
 
                 if (!string.IsNullOrEmpty(o.UsedInviteCode))
@@ -127,10 +120,10 @@ public class AuditLogClearingJob : Job
             );
 
             if (item.Guild != null)
-                element.Add(new XAttribute("GuildId", item.GuildId));
+                element.Add(new XAttribute("GuildId", item.GuildId!));
 
             if (item.ProcessedGuildUser != null)
-                element.Add(new XAttribute("ProcessedUserId", item.ProcessedUserId));
+                element.Add(new XAttribute("ProcessedUserId", item.ProcessedUserId!));
 
             if (!string.IsNullOrEmpty(item.DiscordAuditLogItemId))
                 element.Add(new XAttribute("DiscordAuditLogItemId", item.DiscordAuditLogItemId));
@@ -139,7 +132,7 @@ public class AuditLogClearingJob : Job
                 element.Add(new XElement("Data", item.Data));
 
             if (item.GuildChannel != null)
-                element.Add(new XAttribute("ChannelId", item.ChannelId));
+                element.Add(new XAttribute("ChannelId", item.ChannelId!));
 
             if (item.Files.Count > 0)
             {
@@ -162,12 +155,12 @@ public class AuditLogClearingJob : Job
             }
 
             logRoot.Add(element);
-            dbContext.Remove(item);
+            repository.Remove(item);
         }
 
         context.Result = $"Items: {data.Count}, Files: {data.Sum(o => o.Files.Count)} ({data.Sum(o => o.Files.Sum(x => x.Size))} B), XmlSize: {Encoding.UTF8.GetBytes(logRoot.ToString()).Length} B";
         await StoreDataAsync(logRoot, data.SelectMany(o => o.Files), context.CancellationToken);
-        await dbContext.SaveChangesAsync(context.CancellationToken);
+        await repository.CommitAsync();
     }
 
     private async Task StoreDataAsync(XElement logRoot, IEnumerable<Database.Entity.AuditLogFileMeta> files, CancellationToken cancellationToken)
@@ -176,7 +169,7 @@ public class AuditLogClearingJob : Job
         var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
         var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
 
-        using (var stream = fileinfo.OpenWrite())
+        await using (var stream = fileinfo.OpenWrite())
         {
             await logRoot.SaveAsync(stream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, cancellationToken);
         }

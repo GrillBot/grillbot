@@ -8,7 +8,7 @@ public class EmotesUpdatedEvent : AuditEventBase
     private SocketGuild Before { get; }
     private SocketGuild After { get; }
 
-    public EmotesUpdatedEvent(AuditLogService auditLogService, SocketGuild before, SocketGuild after) : base(auditLogService)
+    public EmotesUpdatedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketGuild before, SocketGuild after) : base(auditLogService, auditLogWriter)
     {
         Before = before;
         After = after;
@@ -19,21 +19,16 @@ public class EmotesUpdatedEvent : AuditEventBase
 
     public override async Task ProcessAsync()
     {
-        (List<GuildEmote> added, List<GuildEmote> removed) = new Func<(List<GuildEmote>, List<GuildEmote>)>(() =>
-        {
-            var removed = Before.Emotes.Where(e => !After.Emotes.Contains(e)).ToList();
-            var added = After.Emotes.Where(e => !Before.Emotes.Contains(e)).ToList();
-            return (added, removed);
-        })();
-
-        if (removed.Count == 0) return;
+        var removedEmotes = Before.Emotes.Where(o => !After.Emotes.Contains(o)).ToList();
+        if (removedEmotes.Count == 0) return;
 
         var auditLog = (await Before.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.EmojiDeleted).FlattenAsync())
-            .FirstOrDefault(o => removed.Any(x => x.Id == ((EmoteDeleteAuditLogData)o.Data).EmoteId));
+            .FirstOrDefault(o => removedEmotes.Any(x => x.Id == ((EmoteDeleteAuditLogData)o.Data).EmoteId));
+        if (auditLog == null) return;
 
-        var data = new AuditEmoteInfo(auditLog.Data as EmoteDeleteAuditLogData);
+        var data = new AuditEmoteInfo((EmoteDeleteAuditLogData)auditLog.Data);
 
         var item = new AuditLogDataWrapper(AuditLogItemType.EmojiDeleted, data, Before, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

@@ -13,8 +13,8 @@ public class MessageDeletedEvent : AuditEventBase
     private MessageCacheManager MessageCache { get; }
     private FileStorageFactory FileStorageFactory { get; }
 
-    public MessageDeletedEvent(AuditLogService auditLogService, Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel,
-        MessageCacheManager messageCache, FileStorageFactory fileStorageFactory) : base(auditLogService)
+    public MessageDeletedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel,
+        MessageCacheManager messageCache, FileStorageFactory fileStorageFactory) : base(auditLogService, auditLogWriter)
     {
         Message = message;
         Channel = channel;
@@ -27,7 +27,7 @@ public class MessageDeletedEvent : AuditEventBase
 
     public override async Task ProcessAsync()
     {
-        var textChannel = Channel.Value as SocketTextChannel;
+        var textChannel = (SocketTextChannel)Channel.Value;
         if ((Message.HasValue ? Message.Value : await MessageCache.GetAsync(Message.Id, null, true)) is not IUserMessage deletedMessage) return;
 
         var timeLimit = DateTime.UtcNow.AddMinutes(-1);
@@ -44,7 +44,7 @@ public class MessageDeletedEvent : AuditEventBase
 
         var attachments = await GetAndStoreAttachmentsAsync(deletedMessage);
         var item = new AuditLogDataWrapper(AuditLogItemType.MessageDeleted, data, textChannel.Guild, textChannel, removedBy, auditLog?.Id.ToString(), files: attachments);
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 
     private async Task<List<AuditLogFileMeta>> GetAndStoreAttachmentsAsync(IUserMessage message)
@@ -67,11 +67,7 @@ public class MessageDeletedEvent : AuditEventBase
 
             var filenameWithoutExtension = file.FilenameWithoutExtension.Cut(100, true);
             var extension = file.Extension;
-            file.Filename = string.Join("_", new[] {
-                filenameWithoutExtension,
-                attachment.Id.ToString(),
-                message.Author.Id.ToString()
-            }) + extension;
+            file.Filename = string.Join("_", filenameWithoutExtension, attachment.Id.ToString(), message.Author.Id.ToString()) + extension;
 
             await storage.StoreFileAsync("DeletedAttachments", file.Filename, content);
             files.Add(file);

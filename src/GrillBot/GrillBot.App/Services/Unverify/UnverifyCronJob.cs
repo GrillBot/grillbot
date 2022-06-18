@@ -12,20 +12,18 @@ public class UnverifyCronJob : Job
 {
     private UnverifyService UnverifyService { get; }
 
-    public UnverifyCronJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        UnverifyService unverifyService, InitManager initManager) : base(loggingService, auditLogService, discordClient, initManager)
+    public UnverifyCronJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
+        UnverifyService unverifyService, InitManager initManager) : base(loggingService, auditLogWriter, discordClient, initManager)
     {
         UnverifyService = unverifyService;
     }
 
-    public override async Task RunAsync(IJobExecutionContext context)
+    protected override async Task RunAsync(IJobExecutionContext context)
     {
         var pending = await UnverifyService.GetPendingUnverifiesForRemoveAsync();
 
         foreach (var (guildId, userId) in pending)
-        {
             await UnverifyService.UnverifyAutoremoveAsync(guildId, userId);
-        }
 
         if (pending.Count > 0)
             context.Result = $"Processed: {string.Join(", ", pending.Select(o => $"{o.Item1}/{o.Item2}"))}";

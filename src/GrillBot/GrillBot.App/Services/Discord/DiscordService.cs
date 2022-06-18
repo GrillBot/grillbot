@@ -26,11 +26,11 @@ public class DiscordService : IHostedService
     private InitManager InitManager { get; }
     private LoggingService LoggingService { get; }
     private InteractionService InteractionService { get; }
-    private AuditLogService AuditLogService { get; }
+    private AuditLogWriter AuditLogWriter { get; }
 
     public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
         LoggingService loggingService, IWebHostEnvironment webHostEnvironment, InitManager initManager, InteractionService interactionService,
-        AuditLogService auditLogService)
+        AuditLogWriter auditLogWriter)
     {
         DiscordSocketClient = client;
         Configuration = configuration;
@@ -40,7 +40,7 @@ public class DiscordService : IHostedService
         InitManager = initManager;
         LoggingService = loggingService;
         InteractionService = interactionService;
-        AuditLogService = auditLogService;
+        AuditLogWriter = auditLogWriter;
 
         DiscordSocketClient.Log += OnLogAsync;
         CommandService.Log += OnLogAsync;
@@ -106,7 +106,7 @@ public class DiscordService : IHostedService
         if (message.Exception is GatewayReconnectException && message.Exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase))
         {
             var item = new AuditLogDataWrapper(AuditLogItemType.Info, "Application restart after reconnect", null, null, DiscordSocketClient.CurrentUser);
-            await AuditLogService.StoreItemAsync(item);
+            await AuditLogWriter.StoreAsync(item);
 
             await Task.Delay(3000);
             Process.GetCurrentProcess().Kill();

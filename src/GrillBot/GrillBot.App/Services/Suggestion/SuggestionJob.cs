@@ -13,15 +13,15 @@ public class SuggestionJob : Job
     private SuggestionService SuggestionService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public SuggestionJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
+    public SuggestionJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
         InitManager initManager, SuggestionService suggestionService, GrillBotDatabaseBuilder databaseBuilder)
-        : base(loggingService, auditLogService, discordClient, initManager)
+        : base(loggingService, auditLogWriter, discordClient, initManager)
     {
         SuggestionService = suggestionService;
         DatabaseBuilder = databaseBuilder;
     }
 
-    public override async Task RunAsync(IJobExecutionContext context)
+    protected override async Task RunAsync(IJobExecutionContext context)
     {
         await ProcessPendingSuggestions(context);
         SuggestionService.Sessions.PurgeExpired();

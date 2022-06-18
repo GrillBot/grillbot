@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Discord;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Counters;
+using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
@@ -41,6 +43,67 @@ public class AuditLogRepository : RepositoryBase
                 .Select(o => o.Trim().ToUlong())
                 .Distinct()
                 .ToList();
+        }
+    }
+
+    public async Task<bool> ExistsExpiredItemAsync(DateTime expiredAt)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await GetExpiredItemsQueryAsync(expiredAt).AnyAsync();
+        }
+    }
+
+    public async Task<List<AuditLogItem>> GetExpiredDataAsync(DateTime expiredAt)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await GetExpiredItemsQueryAsync(expiredAt).ToListAsync();
+        }
+    }
+
+    private IQueryable<AuditLogItem> GetExpiredItemsQueryAsync(DateTime expiredAt)
+    {
+        return Context.AuditLogs.AsQueryable()
+            .Include(o => o.Files)
+            .Include(o => o.Guild)
+            .Include(o => o.GuildChannel)
+            .Include(o => o.ProcessedGuildUser!.User)
+            .Include(o => o.ProcessedUser)
+            .Where(o => o.CreatedAt <= expiredAt);
+    }
+
+    public async Task<List<AuditLogItem>> GetSimpleDataForExtendedFiltersAsync(IQueryableModel<AuditLogItem> model)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await CreateQuery(model, true)
+                .Select(o => new AuditLogItem { Id = o.Id, Type = o.Type, Data = o.Data })
+                .ToListAsync();
+        }
+    }
+
+    public async Task<PaginatedResponse<AuditLogItem>> GetLogListAsync(IQueryableModel<AuditLogItem> model, PaginatedParams pagination, List<long>? logIds)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = CreateQuery(model, true);
+            if (logIds != null)
+                query = query.Where(o => logIds.Contains(o.Id));
+
+            return await PaginatedResponse<AuditLogItem>.CreateWithEntityAsync(query, pagination);
+        }
+    }
+
+    public async Task<AuditLogItem?> FindLogItemByIdAsync(long id, bool includeFiles = false)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = Context.AuditLogs.AsQueryable();
+            if (includeFiles)
+                query = query.Include(o => o.Files);
+
+            return await query.FirstOrDefaultAsync(o => o.Id == id);
         }
     }
 }

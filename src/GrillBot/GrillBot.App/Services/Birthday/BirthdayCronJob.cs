@@ -14,14 +14,14 @@ public class BirthdayCronJob : Job
     private IConfiguration Configuration { get; }
 
     public BirthdayCronJob(IConfiguration configuration, BirthdayService service, LoggingService logging,
-        AuditLogService auditLogService, IDiscordClient discordClient, InitManager initManager)
-        : base(logging, auditLogService, discordClient, initManager)
+        AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager)
+        : base(logging, auditLogWriter, discordClient, initManager)
     {
         BirthdayService = service;
         Configuration = configuration;
     }
 
-    public override async Task RunAsync(IJobExecutionContext context)
+    protected override async Task RunAsync(IJobExecutionContext context)
     {
         var birthdays = await BirthdayService.GetTodayBirthdaysAsync();
         if (birthdays.Count == 0) return;

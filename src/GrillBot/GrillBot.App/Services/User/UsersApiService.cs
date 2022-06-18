@@ -14,20 +14,20 @@ namespace GrillBot.App.Services.User;
 
 public class UsersApiService
 {
-    private AuditLogService AuditLogService { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
+    private AuditLogWriter AuditLogWriter { get; }
 
     public UsersApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient dcClient,
-        AuditLogService auditLogService, ApiRequestContext apiRequestContext)
+        ApiRequestContext apiRequestContext, AuditLogWriter auditLogWriter)
     {
-        AuditLogService = auditLogService;
         ApiRequestContext = apiRequestContext;
         DatabaseBuilder = databaseBuilder;
         DiscordClient = dcClient;
         Mapper = mapper;
+        AuditLogWriter = auditLogWriter;
     }
 
     public async Task<PaginatedResponse<UserListItem>> GetListAsync(GetUserListParams parameters)
@@ -130,7 +130,7 @@ public class UsersApiService
             processedUser: ApiRequestContext.LoggedUser
         );
 
-        await AuditLogService.StoreItemAsync(auditLogItem);
+        await AuditLogWriter.StoreAsync(auditLogItem);
         await repository.CommitAsync();
     }
 

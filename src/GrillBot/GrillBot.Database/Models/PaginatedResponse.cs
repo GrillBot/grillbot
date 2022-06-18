@@ -61,7 +61,7 @@ public class PaginatedResponse<TModel>
     public static async Task<PaginatedResponse<TModel>> CopyAndMapAsync<TEntity>(PaginatedResponse<TEntity> resultWithEntity,
         Func<TEntity, Task<TModel>> converter)
     {
-        var result = new PaginatedResponse<TModel>()
+        var result = new PaginatedResponse<TModel>
         {
             Page = resultWithEntity.Page,
             CanNext = resultWithEntity.CanNext,
@@ -73,20 +73,6 @@ public class PaginatedResponse<TModel>
             result.Data.Add(await converter(item));
 
         return result;
-    }
-
-    public static async Task<PaginatedResponse<TModel>> CreateAsync<TEntity>(IQueryable<TEntity> query, PaginatedParams @params,
-        Converter<TEntity, TModel> itemConverter)
-    {
-        var data = await CreateWithEntityAsync(query, @params);
-        return await CopyAndMapAsync(data, entity => Task.FromResult(itemConverter(entity)));
-    }
-
-    public static async Task<PaginatedResponse<TModel>> CreateAsync<TEntity>(IQueryable<TEntity> query, PaginatedParams @params,
-        Func<TEntity, Task<TModel>> asyncConverter)
-    {
-        var data = await CreateWithEntityAsync(query, @params);
-        return await CopyAndMapAsync(data, asyncConverter);
     }
 
     public static PaginatedResponse<TModel> Create(List<TModel> data, PaginatedParams request)

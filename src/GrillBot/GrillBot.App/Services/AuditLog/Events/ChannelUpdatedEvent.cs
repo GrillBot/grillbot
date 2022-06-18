@@ -9,7 +9,7 @@ public class ChannelUpdatedEvent : AuditEventBase
     private SocketChannel Before { get; }
     private SocketChannel After { get; }
 
-    public ChannelUpdatedEvent(AuditLogService auditLogService, SocketChannel before, SocketChannel after) : base(auditLogService)
+    public ChannelUpdatedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketChannel before, SocketChannel after) : base(auditLogService, auditLogWriter)
     {
         Before = before;
         After = after;
@@ -26,15 +26,15 @@ public class ChannelUpdatedEvent : AuditEventBase
 
     public override async Task ProcessAsync()
     {
-        var after = After as SocketGuildChannel;
+        var after = (SocketGuildChannel)After;
 
         var auditLog = (await after.Guild.GetAuditLogsAsync(DiscordConfig.MaxAuditLogEntriesPerBatch, actionType: ActionType.ChannelUpdated).FlattenAsync())
             .FirstOrDefault(o => ((ChannelUpdateAuditLogData)o.Data).ChannelId == after.Id);
         if (auditLog == null) return;
 
-        var auditData = auditLog.Data as ChannelUpdateAuditLogData;
-        var data = new Diff<AuditChannelInfo>(new(Before.Id, auditData.Before), new(after.Id, auditData.After));
+        var auditData = (ChannelUpdateAuditLogData)auditLog.Data;
+        var data = new Diff<AuditChannelInfo>(new AuditChannelInfo(Before.Id, auditData.Before), new AuditChannelInfo(after.Id, auditData.After));
         var item = new AuditLogDataWrapper(AuditLogItemType.ChannelUpdated, data, after.Guild, after, auditLog.User, auditLog.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

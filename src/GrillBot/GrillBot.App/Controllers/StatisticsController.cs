@@ -129,7 +129,7 @@ public class StatisticsController : Controller
         var deserializedData = dbData.Select(o => new
         {
             o.CreatedAt,
-            Data = JsonConvert.DeserializeObject<CommandExecution>(o.Data, AuditLogService.JsonSerializerSettings)
+            Data = JsonConvert.DeserializeObject<CommandExecution>(o.Data, AuditLogWriter.SerializerSettings)
         });
 
         var groupedData = deserializedData.Where(o => !string.IsNullOrEmpty(o.Data.Command))
@@ -167,7 +167,7 @@ public class StatisticsController : Controller
         var deserializedData = dbData.ConvertAll(o => new
         {
             o.CreatedAt,
-            Data = JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogService.JsonSerializerSettings)
+            Data = JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogWriter.SerializerSettings)
         });
 
         var groupedData = deserializedData.GroupBy(o => o.Data.FullName)
@@ -245,7 +245,7 @@ public class StatisticsController : Controller
             .Select(o => new
             {
                 o.CreatedAt,
-                Data = JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogService.JsonSerializerSettings)
+                Data = JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriter.SerializerSettings)
             })
             .GroupBy(o => o.Data.JobName)
             .Select(o => new StatisticItem()
@@ -303,7 +303,7 @@ public class StatisticsController : Controller
             .Select(o => new
             {
                 o.CreatedAt,
-                Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogService.JsonSerializerSettings)
+                Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)
             })
             .Where(o => !string.IsNullOrEmpty(o.Data.StatusCode))
             .GroupBy(o => $"{o.Data.Method} {o.Data.TemplatePath}")
@@ -342,7 +342,7 @@ public class StatisticsController : Controller
             .Select(o => new
             {
                 o.CreatedAt,
-                Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogService.JsonSerializerSettings)
+                Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)
             })
             .Where(o => !string.IsNullOrEmpty(o.Data.StatusCode))
             .GroupBy(o => o.Data.StatusCode)

@@ -7,7 +7,7 @@ public class ThreadDeletedEvent : AuditEventBase
 {
     private Cacheable<SocketThreadChannel, ulong> CachedThread { get; }
 
-    public ThreadDeletedEvent(AuditLogService auditLogService, Cacheable<SocketThreadChannel, ulong> cachedThread) : base(auditLogService)
+    public ThreadDeletedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, Cacheable<SocketThreadChannel, ulong> cachedThread) : base(auditLogService, auditLogWriter)
     {
         CachedThread = cachedThread;
     }
@@ -27,6 +27,6 @@ public class ThreadDeletedEvent : AuditEventBase
 
         var data = new AuditThreadInfo(auditLog.Data as ThreadDeleteAuditLogData);
         var item = new AuditLogDataWrapper(AuditLogItemType.ThreadDeleted, data, guild, thread, auditLog.User, auditLog.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

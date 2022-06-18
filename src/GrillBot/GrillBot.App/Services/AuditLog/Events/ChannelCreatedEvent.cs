@@ -8,7 +8,7 @@ public class ChannelCreatedEvent : AuditEventBase
     private SocketChannel Channel { get; }
     private SocketGuildChannel GuildChannel => Channel as SocketGuildChannel;
 
-    public ChannelCreatedEvent(AuditLogService auditLogService, SocketChannel channel) : base(auditLogService)
+    public ChannelCreatedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketChannel channel) : base(auditLogService, auditLogWriter)
     {
         Channel = channel;
     }
@@ -26,6 +26,6 @@ public class ChannelCreatedEvent : AuditEventBase
 
         var data = new AuditChannelInfo(auditLog.Data as ChannelCreateAuditLogData);
         var item = new AuditLogDataWrapper(AuditLogItemType.ChannelCreated, data, channel.Guild, channel, auditLog.User, auditLog.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

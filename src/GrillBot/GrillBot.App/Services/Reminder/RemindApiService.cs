@@ -15,16 +15,16 @@ public class RemindApiService
     private IMapper Mapper { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private RemindService RemindService { get; }
-    private AuditLogService AuditLogService { get; }
+    private AuditLogWriter AuditLogWriter { get; }
 
     public RemindApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, ApiRequestContext apiRequestContext,
-        RemindService remindService, AuditLogService auditLogService)
+        RemindService remindService, AuditLogWriter auditLogWriter)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         ApiRequestContext = apiRequestContext;
         RemindService = remindService;
-        AuditLogService = auditLogService;
+        AuditLogWriter = auditLogWriter;
     }
 
     public async Task<PaginatedResponse<RemindMessage>> GetListAsync(GetReminderListParams parameters)
@@ -63,7 +63,7 @@ public class RemindApiService
             $"Bylo stornováno upozornění s ID {id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(),
             null, null, ApiRequestContext.LoggedUser
         );
-        await AuditLogService.StoreItemAsync(logItem);
+        await AuditLogWriter.StoreAsync(logItem);
 
         remind.RemindMessageId = messageId.ToString();
         await repository.CommitAsync();

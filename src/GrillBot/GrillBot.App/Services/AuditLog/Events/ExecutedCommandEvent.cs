@@ -12,8 +12,8 @@ public class ExecutedCommandEvent : AuditEventBase
     private IResult Result { get; }
     private int Duration { get; }
 
-    public ExecutedCommandEvent(AuditLogService auditLogService, CommandInfo command, ICommandContext context,
-        IResult result, int duration) : base(auditLogService)
+    public ExecutedCommandEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, CommandInfo command, ICommandContext context,
+        IResult result, int duration) : base(auditLogService, auditLogWriter)
     {
         Command = command;
         Context = context;
@@ -24,16 +24,13 @@ public class ExecutedCommandEvent : AuditEventBase
     public override Task<bool> CanProcessAsync()
     {
         // Do not log deprecated text commands.
-        if (Result?.IsSuccess == false && Result.Error == CommandError.UnmetPrecondition && Result.ErrorReason.StartsWith(TextCommandDeprecatedAttribute.Prefix))
-            return Task.FromResult(false);
-
-        return Task.FromResult(true);
+        return Task.FromResult(Result is not { IsSuccess: false, Error: CommandError.UnmetPrecondition } || !Result.ErrorReason.StartsWith(TextCommandDeprecatedAttribute.Prefix));
     }
 
     public override async Task ProcessAsync()
     {
         var data = new CommandExecution(Command, Context.Message, Result, Duration);
         var item = new AuditLogDataWrapper(AuditLogItemType.Command, data, Context.Guild, Context.Channel as IGuildChannel, Context.User);
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

@@ -150,7 +150,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     [TestMethod]
     public async Task GetAuditLogListAsync_WithoutFilter_WithoutData()
     {
-        var result = await AdminController.GetAuditLogListAsync(new AuditLogListParams(), CancellationToken.None);
+        var result = await AdminController.GetAuditLogListAsync(new AuditLogListParams());
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
@@ -193,7 +193,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetAuditLogListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetAuditLogListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
@@ -237,7 +237,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetAuditLogListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetAuditLogListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
@@ -291,7 +291,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await DbContext.AddAsync(new User() { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetAuditLogListAsync(filter, CancellationToken.None);
+        var result = await AdminController.GetAuditLogListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 

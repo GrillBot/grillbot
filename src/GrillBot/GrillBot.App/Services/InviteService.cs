@@ -15,19 +15,18 @@ public class InviteService
 {
     private ConcurrentBag<InviteMetadata> MetadataCache { get; }
     private readonly object _metadataLock = new();
-    private AuditLogService AuditLogService { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
+    private AuditLogWriter AuditLogWriter { get; }
 
-    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder,
-        AuditLogService auditLogService, IMapper mapper)
+    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, AuditLogWriter auditLogWriter)
     {
         MetadataCache = new ConcurrentBag<InviteMetadata>();
-        AuditLogService = auditLogService;
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
+        AuditLogWriter = auditLogWriter;
 
         DiscordClient.Ready += InitAsync;
         DiscordClient.UserJoined += user => user.IsUser() ? OnUserJoinedAsync(user) : Task.CompletedTask;
@@ -44,7 +43,7 @@ public class InviteService
 
             var item = new AuditLogDataWrapper(AuditLogItemType.Info, $"Invites for guild {guild.Name} ({guild.Id}) loaded. Loaded invites: {guildInvites.Count}",
                 guild, processedUser: DiscordClient.CurrentUser);
-            await AuditLogService.StoreItemAsync(item);
+            await AuditLogWriter.StoreAsync(item);
 
             invites.AddRange(guildInvites);
         }
@@ -121,7 +120,7 @@ public class InviteService
         if (usedInvite == null)
         {
             var item = new AuditLogDataWrapper(AuditLogItemType.Warning, $"User {user.GetFullName()} ({user.Id}) used unknown invite.", guild, processedUser: user);
-            await AuditLogService.StoreItemAsync(item);
+            await AuditLogWriter.StoreAsync(item);
         }
         else
         {

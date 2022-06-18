@@ -12,8 +12,8 @@ public class MemberRolesUpdatedEvent : AuditEventBase
     private SocketGuild Guild => After.Guild;
     public bool Finished { get; private set; }
 
-    public MemberRolesUpdatedEvent(AuditLogService auditLogService, Cacheable<SocketGuildUser, ulong> before, SocketGuildUser after,
-        DateTime nextEventAt) : base(auditLogService)
+    public MemberRolesUpdatedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, Cacheable<SocketGuildUser, ulong> before, SocketGuildUser after,
+        DateTime nextEventAt) : base(auditLogService, auditLogWriter)
     {
         Before = before;
         After = after;
@@ -47,7 +47,7 @@ public class MemberRolesUpdatedEvent : AuditEventBase
 
         foreach (var log in logs)
         {
-            var roles = (log.Data as MemberRoleAuditLogData).Roles.Select(o =>
+            var roles = ((MemberRoleAuditLogData)log.Data).Roles.Select(o =>
             {
                 var role = Guild.GetRole(o.RoleId);
                 return role != null ? new AuditRoleUpdateInfo(role, o.Added) : null;
@@ -60,7 +60,7 @@ public class MemberRolesUpdatedEvent : AuditEventBase
                 discordAuditLogItemId: log.Id.ToString(), createdAt: log.CreatedAt.LocalDateTime));
         }
 
-        await AuditLogService.StoreItemsAsync(items);
+        await AuditLogWriter.StoreAsync(items);
         Finished = true;
     }
 }

@@ -12,19 +12,19 @@ public class OnlineUsersCleanJob : Job
 {
     private GrillBotDatabaseBuilder DbFactory { get; }
 
-    public OnlineUsersCleanJob(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
-        GrillBotDatabaseBuilder dbFactory, InitManager initManager) : base(loggingService, auditLogService, discordClient, initManager)
+    public OnlineUsersCleanJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
+        GrillBotDatabaseBuilder dbFactory, InitManager initManager) : base(loggingService, auditLogWriter, discordClient, initManager)
     {
         DbFactory = dbFactory;
     }
 
-    public override async Task RunAsync(IJobExecutionContext context)
+    protected override async Task RunAsync(IJobExecutionContext context)
     {
         await using var repository = DbFactory.CreateRepository();
 
         var users = await repository.User.GetOnlineUsersAsync();
         if (users.Count == 0) return;
-        
+
         foreach (var user in users)
         {
             user.Flags &= ~(int)UserFlags.WebAdminOnline;

@@ -11,9 +11,9 @@ namespace GrillBot.App.Infrastructure.Jobs;
 public abstract class Job : IJob
 {
     protected LoggingService LoggingService { get; }
-    protected AuditLogService AuditLogService { get; }
+    private AuditLogWriter AuditLogWriter { get; }
     protected IDiscordClient DiscordClient { get; }
-    protected InitManager InitManager { get; }
+    private InitManager InitManager { get; }
 
     protected string JobName => GetType().Name;
 
@@ -23,23 +23,23 @@ public abstract class Job : IJob
     private bool CanRun
         => !RequireInitialization || InitManager.Get();
 
-    protected Job(LoggingService loggingService, AuditLogService auditLogService, IDiscordClient discordClient,
+    protected Job(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
         InitManager initManager)
     {
         LoggingService = loggingService;
-        AuditLogService = auditLogService;
+        AuditLogWriter = auditLogWriter;
         DiscordClient = discordClient;
         InitManager = initManager;
     }
 
-    public abstract Task RunAsync(IJobExecutionContext context);
+    protected abstract Task RunAsync(IJobExecutionContext context);
 
     public async Task Execute(IJobExecutionContext context)
     {
         if (!CanRun) return;
 
         await LoggingService.InfoAsync(JobName, $"Triggered processing at {DateTime.Now}");
-        var data = new JobExecutionData()
+        var data = new JobExecutionData
         {
             JobName = JobName,
             StartAt = DateTime.Now
@@ -63,7 +63,7 @@ public abstract class Job : IJob
             if (!string.IsNullOrEmpty(data.Result))
             {
                 var item = new AuditLogDataWrapper(AuditLogItemType.JobCompleted, data, processedUser: DiscordClient.CurrentUser);
-                await AuditLogService.StoreItemAsync(item);
+                await AuditLogWriter.StoreAsync(item);
             }
 
             await LoggingService.InfoAsync(JobName, $"Processing completed. Duration: {data.EndAt - data.StartAt}");

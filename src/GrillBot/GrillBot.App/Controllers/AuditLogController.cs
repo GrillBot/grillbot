@@ -55,9 +55,9 @@ public class AuditLogController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters)
     {
-        var result = await ApiService.GetListAsync(parameters, cancellationToken);
+        var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
 
@@ -70,16 +70,14 @@ public class AuditLogController : Controller
     [ProducesResponseType(typeof(FileContentResult), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetFileContentAsync(long id, long fileId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetFileContentAsync(long id, long fileId)
     {
         try
         {
-            var fileInfo = await ApiService.GetLogItemFileAsync(id, fileId, cancellationToken);
+            var fileInfo = await ApiService.GetLogItemFileAsync(id, fileId);
+            var contentType = new FileExtensionContentTypeProvider().TryGetContentType(fileInfo.FullName, out var type) ? type : "application/octet-stream";
 
-            var contentType = new FileExtensionContentTypeProvider()
-                .TryGetContentType(fileInfo.FullName, out var _contentType) ? _contentType : "application/octet-stream";
-
-            var content = await System.IO.File.ReadAllBytesAsync(fileInfo.FullName, cancellationToken);
+            var content = await System.IO.File.ReadAllBytesAsync(fileInfo.FullName);
             return File(content, contentType);
         }
         catch (NotFoundException ex)
@@ -99,7 +97,7 @@ public class AuditLogController : Controller
     public async Task<ActionResult> HandleClientAppMessageAsync(ClientLogItemRequest request)
     {
         this.SetApiRequestData(request);
-        await ApiService.HandleClientAppMessageAsync(request, User);
+        await ApiService.HandleClientAppMessageAsync(request);
         return Ok();
     }
 }

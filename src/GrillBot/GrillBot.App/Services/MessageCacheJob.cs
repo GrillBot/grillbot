@@ -13,14 +13,14 @@ public class MessageCacheJob : Job
 {
     private MessageCacheManager MessageCacheManager { get; }
 
-    public MessageCacheJob(LoggingService loggingService, AuditLogService auditLogService,
+    public MessageCacheJob(LoggingService loggingService, AuditLogWriter auditLogWriter,
         IDiscordClient discordClient, InitManager initManager, MessageCacheManager messageCacheManager)
-        : base(loggingService, auditLogService, discordClient, initManager)
+        : base(loggingService, auditLogWriter, discordClient, initManager)
     {
         MessageCacheManager = messageCacheManager;
     }
 
-    public override async Task RunAsync(IJobExecutionContext context)
+    protected override async Task RunAsync(IJobExecutionContext context)
     {
         context.Result = await MessageCacheManager.ProcessScheduledTaskAsync();
     }

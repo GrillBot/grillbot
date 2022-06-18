@@ -8,7 +8,7 @@ public class UserUnbannedEvent : AuditEventBase
     private SocketGuild Guild { get; }
     private SocketUser User { get; }
 
-    public UserUnbannedEvent(AuditLogService auditLogService, SocketGuild guild, SocketUser user) : base(auditLogService)
+    public UserUnbannedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketGuild guild, SocketUser user) : base(auditLogService, auditLogWriter)
     {
         Guild = guild;
         User = user;
@@ -25,6 +25,6 @@ public class UserUnbannedEvent : AuditEventBase
 
         var data = new AuditUserInfo(User);
         var item = new AuditLogDataWrapper(AuditLogItemType.Unban, data, Guild, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

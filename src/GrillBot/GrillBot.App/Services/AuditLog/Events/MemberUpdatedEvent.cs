@@ -10,8 +10,8 @@ public class MemberUpdatedEvent : AuditEventBase
 
     private SocketGuild Guild => After.Guild;
 
-    public MemberUpdatedEvent(AuditLogService auditLogService, Cacheable<SocketGuildUser, ulong> before,
-        SocketGuildUser after) : base(auditLogService)
+    public MemberUpdatedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, Cacheable<SocketGuildUser, ulong> before,
+        SocketGuildUser after) : base(auditLogService, auditLogWriter)
     {
         Before = before;
         After = after;
@@ -37,6 +37,6 @@ public class MemberUpdatedEvent : AuditEventBase
 
         var data = new MemberUpdatedData(Before.Value, After);
         var item = new AuditLogDataWrapper(AuditLogItemType.MemberUpdated, data, Guild, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

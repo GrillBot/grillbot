@@ -8,7 +8,7 @@ public class ChannelDeletedEvent : AuditEventBase
     private SocketChannel Channel { get; }
     private SocketGuildChannel GuildChannel => Channel as SocketGuildChannel;
 
-    public ChannelDeletedEvent(AuditLogService auditLogService, SocketChannel channel) : base(auditLogService)
+    public ChannelDeletedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketChannel channel) : base(auditLogService, auditLogWriter)
     {
         Channel = channel;
     }
@@ -26,6 +26,6 @@ public class ChannelDeletedEvent : AuditEventBase
 
         var data = new AuditChannelInfo(auditLog.Data as ChannelDeleteAuditLogData, (channel as SocketTextChannel)?.Topic);
         var item = new AuditLogDataWrapper(AuditLogItemType.ChannelDeleted, data, channel.Guild, channel, auditLog.User, auditLog.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

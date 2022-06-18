@@ -8,7 +8,7 @@ public class UserJoinedEvent : AuditEventBase
 {
     private SocketGuildUser User { get; }
 
-    public UserJoinedEvent(AuditLogService auditLogService, SocketGuildUser user) : base(auditLogService)
+    public UserJoinedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketGuildUser user) : base(auditLogService, auditLogWriter)
     {
         User = user;
     }
@@ -21,6 +21,6 @@ public class UserJoinedEvent : AuditEventBase
         var data = new UserJoinedAuditData(User.Guild);
         var item = new AuditLogDataWrapper(AuditLogItemType.UserJoined, data, User.Guild, processedUser: User);
 
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

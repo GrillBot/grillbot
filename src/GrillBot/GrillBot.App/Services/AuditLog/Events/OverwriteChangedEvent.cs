@@ -12,7 +12,7 @@ public class OverwriteChangedEvent : AuditEventBase
     private SocketGuild Guild => ((SocketGuildChannel)Channel).Guild;
     private IGuildChannel GuildChannel => (IGuildChannel)Channel;
 
-    public OverwriteChangedEvent(AuditLogService auditLogService, SocketChannel channel, DateTime nextEventAt) : base(auditLogService)
+    public OverwriteChangedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketChannel channel, DateTime nextEventAt) : base(auditLogService, auditLogWriter)
     {
         Channel = channel;
         NextEventAt = nextEventAt;
@@ -71,6 +71,6 @@ public class OverwriteChangedEvent : AuditEventBase
             items.Add(new AuditLogDataWrapper(AuditLogItemType.OverwriteUpdated, data, guild, channel, log.User, log.Id.ToString(), log.CreatedAt.LocalDateTime));
         }
 
-        await AuditLogService.StoreItemsAsync(items);
+        await AuditLogWriter.StoreAsync(items);
     }
 }

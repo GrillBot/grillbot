@@ -11,12 +11,12 @@ public class MessageEditedEvent : AuditEventBase
     private SocketMessage After { get; }
     private ISocketMessageChannel Channel { get; }
     private MessageCacheManager MessageCache { get; }
-    private DiscordSocketClient DiscordClient { get; }
+    private IDiscordClient DiscordClient { get; }
 
     private SocketTextChannel TextChannel => Channel as SocketTextChannel;
 
-    public MessageEditedEvent(AuditLogService auditLogService, Cacheable<IMessage, ulong> before, SocketMessage after,
-        ISocketMessageChannel channel, MessageCacheManager messageCache, DiscordSocketClient discordClient) : base(auditLogService)
+    public MessageEditedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, Cacheable<IMessage, ulong> before, SocketMessage after,
+        ISocketMessageChannel channel, MessageCacheManager messageCache, IDiscordClient discordClient) : base(auditLogService, auditLogWriter)
     {
         Before = before;
         After = after;
@@ -30,8 +30,8 @@ public class MessageEditedEvent : AuditEventBase
         var oldMessage = await GetOldMessageAsync();
 
         return TextChannel != null && oldMessage?.Author.IsUser() == true &&
-            !string.IsNullOrEmpty(After?.Content) && oldMessage.Content != After.Content &&
-            oldMessage.Type != MessageType.ApplicationCommand;
+               !string.IsNullOrEmpty(After?.Content) && oldMessage.Content != After.Content &&
+               oldMessage.Type != MessageType.ApplicationCommand;
     }
 
     public override async Task ProcessAsync()
@@ -43,7 +43,7 @@ public class MessageEditedEvent : AuditEventBase
 
         var data = new MessageEditedData(oldMessage, After);
         var item = new AuditLogDataWrapper(AuditLogItemType.MessageEdited, data, textChannel.Guild, textChannel, author);
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 
     private async Task<IMessage> GetOldMessageAsync()

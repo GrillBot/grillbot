@@ -8,7 +8,7 @@ public class UserLeftEvent : AuditEventBase
     private SocketGuild Guild { get; }
     private SocketUser User { get; }
 
-    public UserLeftEvent(AuditLogService auditLogService, SocketGuild guild, SocketUser user) : base(auditLogService)
+    public UserLeftEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, SocketGuild guild, SocketUser user) : base(auditLogService, auditLogWriter)
     {
         Guild = guild;
         User = user;
@@ -41,6 +41,6 @@ public class UserLeftEvent : AuditEventBase
 
         var data = new UserLeftGuildData(Guild, User, ban != null, ban?.Reason);
         var item = new AuditLogDataWrapper(AuditLogItemType.UserLeft, data, Guild, processedUser: auditLog?.User ?? User, discordAuditLogItemId: auditLog?.Id.ToString());
-        await AuditLogService.StoreItemAsync(item);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

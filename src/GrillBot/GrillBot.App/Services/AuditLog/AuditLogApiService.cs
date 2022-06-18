@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.AuditLog;
@@ -7,38 +6,38 @@ using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using System.Security.Claims;
 using GrillBot.Common.FileStorage;
+using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.AuditLog;
 
-public class AuditLogApiService : ServiceBase
+public class AuditLogApiService
 {
-    private static JsonSerializerSettings JsonSerializerSettings
-        => AuditLogService.JsonSerializerSettings;
-
     private FileStorageFactory FileStorage { get; }
-    private AuditLogService AuditLogService { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IMapper Mapper { get; }
+    private ApiRequestContext ApiRequestContext { get; }
+    private AuditLogWriter AuditLogWriter { get; }
 
-    public AuditLogApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper, FileStorageFactory fileStorage,
-        AuditLogService auditLogService, IDiscordClient discordClient) : base(null, dbFactory, discordClient, mapper)
+    public AuditLogApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, FileStorageFactory fileStorage,
+        ApiRequestContext apiRequestContext, AuditLogWriter auditLogWriter)
     {
         FileStorage = fileStorage;
-        AuditLogService = auditLogService;
+        DatabaseBuilder = databaseBuilder;
+        Mapper = mapper;
+        ApiRequestContext = apiRequestContext;
+        AuditLogWriter = auditLogWriter;
     }
 
-    private async Task<List<long>> GetLogIdsAsync(AuditLogListParams parameters, CancellationToken cancellationToken = default)
+    private async Task<List<long>> GetLogIdsAsync(AuditLogListParams parameters)
     {
         if (!parameters.AnyExtendedFilter())
             return null; // Log ids could get only if some extended filter was set.
 
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.CreateQuery(parameters, true)
-            .Select(o => new AuditLogItem() { Id = o.Id, Type = o.Type, Data = o.Data });
-
-        var data = await query.ToListAsync(cancellationToken);
+        var data = await repository.AuditLog.GetSimpleDataForExtendedFiltersAsync(parameters);
         return data
             .Where(o => IsValidExtendedFilter(parameters, o))
             .Select(o => o.Id)
@@ -47,7 +46,7 @@ public class AuditLogApiService : ServiceBase
 
     private static bool IsValidExtendedFilter(AuditLogListParams parameters, AuditLogItem item)
     {
-        var conditions = new[]
+        var conditions = new Func<bool>[]
         {
             () => IsValidFilter(item, AuditLogItemType.Info, parameters.InfoFilter),
             () => IsValidFilter(item, AuditLogItemType.Warning, parameters.WarningFilter),
@@ -64,23 +63,17 @@ public class AuditLogApiService : ServiceBase
     private static bool IsValidFilter(AuditLogItem item, AuditLogItemType type, IExtendedFilter filter)
     {
         if (item.Type != type) return false; // Invalid type.
-        if (filter?.IsSet() != true) return true; // Filter not set.
-
-        return filter.IsValid(item, JsonSerializerSettings);
+        return filter?.IsSet() != true || filter.IsValid(item, AuditLogWriter.SerializerSettings);
     }
 
-    public async Task<PaginatedResponse<AuditLogListItem>> GetListAsync(AuditLogListParams parameters, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<AuditLogListItem>> GetListAsync(AuditLogListParams parameters)
     {
-        var logIds = await GetLogIdsAsync(parameters, cancellationToken);
+        var logIds = await GetLogIdsAsync(parameters);
 
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.CreateQuery(parameters, true, true);
-        if (logIds != null)
-            query = query.Where(o => logIds.Contains(o.Id));
-
-        return await PaginatedResponse<AuditLogListItem>
-            .CreateAsync(query, parameters.Pagination, MapItem);
+        var data = await repository.AuditLog.GetLogListAsync(parameters, parameters.Pagination, logIds);
+        return await PaginatedResponse<AuditLogListItem>.CopyAndMapAsync(data, entity => Task.FromResult(MapItem(entity)));
     }
 
     private AuditLogListItem MapItem(AuditLogItem entity)
@@ -92,46 +85,44 @@ public class AuditLogApiService : ServiceBase
         mapped.Data = entity.Type switch
         {
             AuditLogItemType.Error or AuditLogItemType.Info or AuditLogItemType.Warning => entity.Data,
-            AuditLogItemType.Command => JsonConvert.DeserializeObject<CommandExecution>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.ChannelCreated or AuditLogItemType.ChannelDeleted => JsonConvert.DeserializeObject<AuditChannelInfo>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.ChannelUpdated => JsonConvert.DeserializeObject<Diff<AuditChannelInfo>>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.EmojiDeleted => JsonConvert.DeserializeObject<AuditEmoteInfo>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.GuildUpdated => JsonConvert.DeserializeObject<GuildUpdatedData>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.MemberRoleUpdated or AuditLogItemType.MemberUpdated => JsonConvert.DeserializeObject<MemberUpdatedData>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.MessageDeleted => JsonConvert.DeserializeObject<MessageDeletedData>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.MessageEdited => JsonConvert.DeserializeObject<MessageEditedData>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.OverwriteCreated or AuditLogItemType.OverwriteDeleted => JsonConvert.DeserializeObject<AuditOverwriteInfo>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.OverwriteUpdated => JsonConvert.DeserializeObject<Diff<AuditOverwriteInfo>>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.Unban => JsonConvert.DeserializeObject<AuditUserInfo>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.UserJoined => JsonConvert.DeserializeObject<UserJoinedAuditData>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.UserLeft => JsonConvert.DeserializeObject<UserLeftGuildData>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.InteractionCommand => JsonConvert.DeserializeObject<InteractionCommandExecuted>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, JsonSerializerSettings),
-            AuditLogItemType.Api => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, JsonSerializerSettings),
+            AuditLogItemType.Command => JsonConvert.DeserializeObject<CommandExecution>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.ChannelCreated or AuditLogItemType.ChannelDeleted => JsonConvert.DeserializeObject<AuditChannelInfo>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.ChannelUpdated => JsonConvert.DeserializeObject<Diff<AuditChannelInfo>>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.EmojiDeleted => JsonConvert.DeserializeObject<AuditEmoteInfo>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.GuildUpdated => JsonConvert.DeserializeObject<GuildUpdatedData>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.MemberRoleUpdated or AuditLogItemType.MemberUpdated => JsonConvert.DeserializeObject<MemberUpdatedData>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.MessageDeleted => JsonConvert.DeserializeObject<MessageDeletedData>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.MessageEdited => JsonConvert.DeserializeObject<MessageEditedData>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.OverwriteCreated or AuditLogItemType.OverwriteDeleted => JsonConvert.DeserializeObject<AuditOverwriteInfo>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.OverwriteUpdated => JsonConvert.DeserializeObject<Diff<AuditOverwriteInfo>>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.Unban => JsonConvert.DeserializeObject<AuditUserInfo>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.UserJoined => JsonConvert.DeserializeObject<UserJoinedAuditData>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.UserLeft => JsonConvert.DeserializeObject<UserLeftGuildData>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.InteractionCommand => JsonConvert.DeserializeObject<InteractionCommandExecuted>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.Api => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, AuditLogWriter.SerializerSettings),
             _ => null
         };
 
         return mapped;
     }
 
-    public async Task<FileInfo> GetLogItemFileAsync(long logId, long fileId, CancellationToken cancellationToken = default)
+    public async Task<FileInfo> GetLogItemFileAsync(long logId, long fileId)
     {
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var logItem = await dbContext.AuditLogs.AsNoTracking()
-            .Where(o => o.Id == logId)
-            .Select(o => new { File = o.Files.FirstOrDefault(x => x.Id == fileId) })
-            .FirstOrDefaultAsync(cancellationToken);
+        var logItem = await repository.AuditLog.FindLogItemByIdAsync(logId);
 
         if (logItem == null)
             throw new NotFoundException("Požadovaný záznam v logu nebyl nalezen.");
 
-        if (logItem.File == null)
+        var fileEntity = logItem.Files.FirstOrDefault(o => o.Id == fileId);
+        if (fileEntity == null)
             throw new NotFoundException("K tomuto záznamu neexistuje žádný záznam o existenci souboru.");
 
         var storage = FileStorage.Create("Audit");
-        var file = await storage.GetFileInfoAsync("DeletedAttachments", logItem.File.Filename);
+        var file = await storage.GetFileInfoAsync("DeletedAttachments", fileEntity.Filename);
 
         if (!file.Exists)
             throw new NotFoundException("Hledaný soubor neexistuje na disku.");
@@ -141,11 +132,8 @@ public class AuditLogApiService : ServiceBase
 
     public async Task<bool> RemoveItemAsync(long id)
     {
-        using var context = DbFactory.Create();
-
-        var item = await context.AuditLogs
-            .Include(o => o.Files)
-            .FirstOrDefaultAsync(o => o.Id == id);
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var item = await repository.AuditLog.FindLogItemByIdAsync(id);
 
         if (item == null) return false;
         if (item.Files.Count > 0)
@@ -160,19 +148,16 @@ public class AuditLogApiService : ServiceBase
                 fileInfo.Delete();
             }
 
-            context.RemoveRange(item.Files);
+            repository.RemoveCollection(item.Files);
         }
 
-        context.Remove(item);
-        return (await context.SaveChangesAsync()) > 0;
+        repository.Remove(item);
+        return await repository.CommitAsync() > 0;
     }
 
-    public async Task HandleClientAppMessageAsync(ClientLogItemRequest request, ClaimsPrincipal loggedUser)
+    public async Task HandleClientAppMessageAsync(ClientLogItemRequest request)
     {
-        var loggedUserId = loggedUser.GetUserId();
-        var user = await DcClient.FindUserAsync(loggedUserId);
-        var item = new AuditLogDataWrapper(request.GetAuditLogType(), request.Content, processedUser: user);
-
-        await AuditLogService.StoreItemAsync(item);
+        var item = new AuditLogDataWrapper(request.GetAuditLogType(), request.Content, processedUser: ApiRequestContext.LoggedUser);
+        await AuditLogWriter.StoreAsync(item);
     }
 }

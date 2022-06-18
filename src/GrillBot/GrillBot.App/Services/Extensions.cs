@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Services.Birthday;
-using GrillBot.Common.FileStorage;
+﻿using GrillBot.Common.FileStorage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services;
@@ -10,14 +9,15 @@ public static class Extensions
     {
         services
             .AddSingleton<AuditLog.AuditLogService>()
-            .AddScoped<AuditLog.AuditLogApiService>();
+            .AddScoped<AuditLog.AuditLogApiService>()
+            .AddSingleton<AuditLog.AuditLogWriter>();
 
         services
             .AddSingleton<AutoReply.AutoReplyService>()
             .AddScoped<AutoReply.AutoReplyApiService>();
 
         services
-            .AddSingleton<BirthdayService>();
+            .AddSingleton<Birthday.BirthdayService>();
 
         services
             .AddScoped<CommandsHelp.CommandsHelpService>()

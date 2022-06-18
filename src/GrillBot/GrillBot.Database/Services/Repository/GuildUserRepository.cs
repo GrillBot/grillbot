@@ -107,4 +107,13 @@ public class GuildUserRepository : RepositoryBase
             return await query.ToListAsync();
         }
     }
+
+    public async Task<bool> ExistsAsync(IGuildUser user)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.GuildUsers.AsNoTracking()
+                .AnyAsync(o => o.UserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString());
+        }
+    }
 }

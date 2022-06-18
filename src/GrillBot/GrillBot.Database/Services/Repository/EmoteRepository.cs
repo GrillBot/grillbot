@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models.Emotes;
@@ -22,17 +23,7 @@ public class EmoteRepository : RepositoryBase
             var query = CreateQuery(model, true);
             query = unsupported ? query.Where(o => !emoteIds.Contains(o.EmoteId)) : query.Where(o => emoteIds.Contains(o.EmoteId));
 
-            var grouped = query
-                .GroupBy(o => o.EmoteId)
-                .Select(o => new EmoteStatItem()
-                {
-                    EmoteId = o.Key,
-                    FirstOccurence = o.Min(x => x.FirstOccurence),
-                    LastOccurence = o.Max(x => x.LastOccurence),
-                    UseCount = o.Sum(x => x.UseCount),
-                    UsedUsersCount = o.Count()
-                });
-
+            var grouped = CreateGroupingQuery(query);
             return await grouped.ToListAsync();
         }
     }
@@ -44,6 +35,56 @@ public class EmoteRepository : RepositoryBase
             return await Context.Emotes
                 .Where(o => o.EmoteId == emoteId)
                 .ToListAsync();
+        }
+    }
+
+    public async Task<EmoteStatItem?> GetStatisticsOfEmoteAsync(IEmote emote)
+    {
+        using (Counter.Create("Database"))
+        {
+            var baseQuery = Context.Emotes.AsNoTracking()
+                .Where(o => o.UseCount > 0);
+
+            var query = CreateGroupingQuery(baseQuery);
+            return await query.FirstOrDefaultAsync(o => o.EmoteId == emote.ToString());
+        }
+    }
+
+    private static IQueryable<EmoteStatItem> CreateGroupingQuery(IQueryable<EmoteStatisticItem> query)
+    {
+        return query
+            .GroupBy(o => o.EmoteId)
+            .Select(o => new EmoteStatItem
+            {
+                EmoteId = o.Key,
+                FirstOccurence = o.Min(x => x.FirstOccurence),
+                LastOccurence = o.Max(x => x.LastOccurence),
+                UseCount = o.Sum(x => x.UseCount),
+                UsedUsersCount = o.Count(),
+                GuildId = o.Min(x => x.GuildId)!
+            });
+    }
+
+    public async Task<List<EmoteStatisticItem>> GetTopUsersOfUsage(IEmote emote, int count)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = Context.Emotes.AsNoTracking()
+                .Where(o => o.UseCount > 0 && o.EmoteId == emote.ToString())
+                .OrderByDescending(o => o.UseCount)
+                .ThenByDescending(o => o.LastOccurence)
+                .Take(count);
+
+            return await query.ToListAsync();
+        }
+    }
+
+    public async Task<EmoteStatisticItem?> FindStatisticAsync(IEmote emote, IUser user, IGuild guild)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.Emotes
+                .FirstOrDefaultAsync(o => o.EmoteId == emote.ToString() && o.UserId == user.Id.ToString() && o.GuildId == guild.Id.ToString());
         }
     }
 }

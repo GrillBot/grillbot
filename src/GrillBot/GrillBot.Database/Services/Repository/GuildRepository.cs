@@ -90,4 +90,13 @@ public class GuildRepository : RepositoryBase
             return data == null ? (0, 0, 0, 0, 0, 0, 0) : (data.AuditLogs, data.Channels, data.Invites, data.Searches, data.Unverifies, data.UnverifyLogs, data.Users);
         }
     }
+
+    public async Task<bool> ExistsAsync(IGuild guild)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.Guilds.AsNoTracking()
+                .AnyAsync(o => o.Id == guild.Id.ToString());
+        }
+    }
 }

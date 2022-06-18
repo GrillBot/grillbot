@@ -1,22 +1,27 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Services.Emotes;
 
 [Initializable]
-public partial class EmoteService : ServiceBase
+public class EmoteService
 {
     private string CommandPrefix { get; }
     private MessageCacheManager MessageCache { get; }
     private EmotesCacheService EmotesCacheService { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public EmoteService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, IConfiguration configuration,
-        MessageCacheManager messageCache, EmotesCacheService emotesCacheService) : base(client, dbFactory)
+    public EmoteService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
+        MessageCacheManager messageCache, EmotesCacheService emotesCacheService)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         EmotesCacheService = emotesCacheService;
         MessageCache = messageCache;
+        DiscordClient = client;
+        DatabaseBuilder = databaseBuilder;
 
         DiscordClient.MessageReceived += OnMessageReceivedAsync;
         DiscordClient.MessageDeleted += OnMessageRemovedAsync;
@@ -29,49 +34,47 @@ public partial class EmoteService : ServiceBase
         var supportedEmotes = EmotesCacheService.GetSupportedEmotes().ConvertAll(o => o.Item1);
 
         if (supportedEmotes.Count == 0) return; // Ignore events when no supported emotes is available.
-        if (!message.TryLoadMessage(out SocketUserMessage msg)) return; // Ignore messages from bots.
+        if (!message.TryLoadMessage(out var msg)) return; // Ignore messages from bots.
         if (string.IsNullOrEmpty(message.Content)) return; // Ignore empty messages.
         if (msg.IsCommand(DiscordClient.CurrentUser, CommandPrefix)) return; // Ignore commands.
         if (msg.Channel is not SocketTextChannel textChannel) return; // Ignore DMs.
 
         var emotes = message.GetEmotesFromMessage(supportedEmotes).ToList();
         if (emotes.Count == 0) return;
+        if (msg.Author is not IGuildUser guildUser) return;
 
-        var userId = message.Author.Id.ToString();
-        var guildId = textChannel.Guild.Id.ToString();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        using var context = DbFactory.Create();
-        await context.InitGuildAsync(textChannel.Guild, CancellationToken.None);
-        await context.InitUserAsync(message.Author, CancellationToken.None);
+        var guild = await repository.Guild.GetOrCreateRepositoryAsync(textChannel.Guild);
+        var user = await repository.GuildUser.GetOrCreateGuildUserAsync(guildUser);
 
         foreach (var emote in emotes)
         {
-            var emoteId = emote.ToString();
-            var dbEmote = await context.Emotes.AsQueryable().FirstOrDefaultAsync(o => o.UserId == userId && o.EmoteId == emoteId && o.GuildId == guildId);
+            var dbEmote = await repository.Emote.FindStatisticAsync(emote, guildUser, textChannel.Guild);
 
             if (dbEmote == null)
             {
-                dbEmote = new EmoteStatisticItem()
+                dbEmote = new EmoteStatisticItem
                 {
-                    EmoteId = emoteId,
+                    EmoteId = emote.ToString(),
                     FirstOccurence = DateTime.Now,
-                    UserId = userId,
-                    GuildId = guildId,
+                    Guild = guild,
+                    User = user
                 };
 
-                await context.AddAsync(dbEmote);
+                await repository.AddAsync(dbEmote);
             }
 
             dbEmote.LastOccurence = DateTime.Now;
             dbEmote.UseCount++;
         }
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
     private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> messageChannel)
     {
-        if (!messageChannel.HasValue || messageChannel.Value is not SocketTextChannel textChannel) return;
+        if (!messageChannel.HasValue || messageChannel.Value is not ITextChannel) return;
 
         var supportedEmotes = EmotesCacheService.GetSupportedEmotes();
         if (supportedEmotes.Count == 0) return;
@@ -81,24 +84,23 @@ public partial class EmoteService : ServiceBase
         if (userMessage.IsCommand(DiscordClient.CurrentUser, CommandPrefix)) return;
 
         var emotes = msg.GetEmotesFromMessage(supportedEmotes.ConvertAll(o => o.Item1)).ToList();
+
         if (emotes.Count == 0) return;
+        if (msg.Author is not IGuildUser guildUser) return;
 
-        var userId = msg.Author.Id.ToString();
-        var guildId = textChannel.Guild.Id.ToString();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        using var context = DbFactory.Create();
-        if (!await context.GuildUsers.AsQueryable().AnyAsync(o => o.UserId == userId && o.GuildId == guildId)) return;
+        if (!await repository.GuildUser.ExistsAsync(guildUser)) return;
 
         foreach (var emote in emotes)
         {
-            var emoteId = emote.ToString();
-            var dbEmote = await context.Emotes.AsQueryable().FirstOrDefaultAsync(o => o.EmoteId == emoteId && o.UserId == userId && o.GuildId == guildId);
+            var dbEmote = await repository.Emote.FindStatisticAsync(emote, guildUser, guildUser.Guild);
             if (dbEmote == null || dbEmote.UseCount == 0) continue;
 
             dbEmote.UseCount--;
         }
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
     private async Task OnReactionAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction, ReactionEvents @event)
@@ -113,121 +115,98 @@ public partial class EmoteService : ServiceBase
         var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, channel.Value);
         var reactionUser = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;
 
-        if (msg == null) return;
-        if (msg.Author is not IGuildUser author || author.Id == reaction.UserId) return;
+        if (msg?.Author is not IGuildUser author || author.Id == reaction.UserId) return;
 
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        await context.InitUserAsync(reactionUser, CancellationToken.None);
-        await context.InitUserAsync(msg.Author, CancellationToken.None);
-        await context.InitGuildAsync(author.Guild, CancellationToken.None);
+        if (reactionUser != null)
+            await repository.GuildUser.GetOrCreateGuildUserAsync(reactionUser);
+        await repository.GuildUser.GetOrCreateGuildUserAsync(author);
 
-        if (@event == ReactionEvents.Added)
+        switch (@event)
         {
-            await EmoteStats_OnReactionAddedAsync(context, reaction.UserId, emote, textChannel.Guild);
+            case ReactionEvents.Added:
+            {
+                if (reactionUser != null)
+                {
+                    await EmoteStats_OnReactionAddedAsync(repository, reactionUser, emote, textChannel.Guild);
+                    await Guild_OnReactionAddedAsync(repository, reactionUser, author);
+                }
 
-            if (reactionUser != null)
-                await Guild_OnReactionAddedAsync(context, textChannel.Guild, reactionUser, author);
+                break;
+            }
+            case ReactionEvents.Removed:
+            {
+                if (reactionUser != null)
+                {
+                    await EmoteStats_OnReactionRemovedAsync(repository, reactionUser, emote, textChannel.Guild);
+                    await Guild_OnReactionRemovedAsync(repository, textChannel.Guild, reactionUser, author);
+                }
+
+                break;
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(@event), @event, null);
         }
-        else if (@event == ReactionEvents.Removed)
-        {
-            await EmoteStats_OnReactionRemovedAsync(context, reaction.UserId, emote, textChannel.Guild);
 
-            if (reactionUser != null)
-                await Guild_OnReactionRemovedAsync(context, textChannel.Guild, reactionUser, msg.Author);
-        }
-
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
     #region EmoteStats
 
-    private static async Task EmoteStats_OnReactionAddedAsync(GrillBotContext context, ulong userId, Emote emote, IGuild guild)
+    private static async Task EmoteStats_OnReactionAddedAsync(GrillBotRepository repository, IUser user, IEmote emote, IGuild guild)
     {
-        var strUserId = userId.ToString();
-        var emoteId = emote.ToString();
-        var guildId = guild.Id.ToString();
-
-        var dbEmote = await context.Emotes.AsQueryable()
-            .FirstOrDefaultAsync(o => o.UserId == strUserId && o.EmoteId == emoteId && o.GuildId == guildId);
+        var dbEmote = await repository.Emote.FindStatisticAsync(emote, user, guild);
         if (dbEmote == null)
         {
-            dbEmote = new EmoteStatisticItem()
+            dbEmote = new EmoteStatisticItem
             {
-                EmoteId = emoteId,
-                UserId = strUserId,
+                EmoteId = emote.ToString() ?? throw new InvalidOperationException(),
+                UserId = user.Id.ToString(),
                 FirstOccurence = DateTime.Now,
-                GuildId = guildId,
+                GuildId = guild.Id.ToString(),
             };
 
-            await context.AddAsync(dbEmote);
+            await repository.AddAsync(dbEmote);
         }
 
         dbEmote.UseCount++;
         dbEmote.LastOccurence = DateTime.Now;
-        await context.SaveChangesAsync();
     }
 
-    private static async Task EmoteStats_OnReactionRemovedAsync(GrillBotContext context, ulong userId, Emote emote, IGuild guild)
+    private static async Task EmoteStats_OnReactionRemovedAsync(GrillBotRepository repository, IGuildUser user, IEmote emote, IGuild guild)
     {
-        var strUserId = userId.ToString();
-        var emoteId = emote.ToString();
-        var guildId = guild.Id.ToString();
+        if (!await repository.GuildUser.ExistsAsync(user)) return;
 
-        if (!await context.GuildUsers.AsQueryable().AnyAsync(o => o.UserId == strUserId && o.GuildId == guildId)) return;
-
-        var dbEmote = await context.Emotes.AsQueryable().FirstOrDefaultAsync(o => o.UserId == strUserId && o.EmoteId == emoteId && o.GuildId == guildId);
+        var dbEmote = await repository.Emote.FindStatisticAsync(emote, user, guild);
         if (dbEmote == null || dbEmote.UseCount == 0) return;
 
         dbEmote.UseCount--;
-        await context.SaveChangesAsync();
     }
 
     #endregion
 
     #region GivenAndObtainedEmotes
 
-    private static async Task Guild_OnReactionAddedAsync(GrillBotContext context, SocketGuild guild, IGuildUser user, IGuildUser messageAuthor)
+    private static async Task Guild_OnReactionAddedAsync(GrillBotRepository repository, IGuildUser user, IGuildUser messageAuthor)
     {
-        var guildId = guild.Id.ToString();
-        var authorUserId = messageAuthor.Id.ToString();
-
-        await context.InitGuildAsync(guild, CancellationToken.None);
-        var reactingUser = await context.GuildUsers.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString());
-        if (reactingUser == null)
-        {
-            reactingUser = GuildUser.FromDiscord(guild, user);
-            await context.AddAsync(reactingUser);
-        }
-
-        var authorUser = await context.GuildUsers.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == authorUserId);
-        if (authorUser == null)
-        {
-            authorUser = GuildUser.FromDiscord(guild, messageAuthor);
-            await context.AddAsync(authorUser);
-        }
+        var reactingUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
+        var authorUser = await repository.GuildUser.GetOrCreateGuildUserAsync(messageAuthor);
 
         authorUser.ObtainedReactions++;
         reactingUser.GivenReactions++;
     }
 
-    private static async Task Guild_OnReactionRemovedAsync(GrillBotContext context, SocketGuild guild, IUser user, IUser messageAuthor)
+    private static async Task Guild_OnReactionRemovedAsync(GrillBotRepository repository, IGuild guild, IGuildUser user, IGuildUser messageAuthor)
     {
-        var guildId = guild.Id.ToString();
-        var userId = user.Id.ToString();
-        var authorUserId = messageAuthor.Id.ToString();
+        if (!await repository.Guild.ExistsAsync(guild)) return;
 
-        if (!await context.Guilds.AsQueryable().AnyAsync(o => o.Id == guildId)) return;
-        if (!await context.Users.AsQueryable().AnyAsync(o => o.Id == userId) && !await context.Users.AsQueryable().AnyAsync(o => o.Id == authorUserId)) return;
-
-        var reactingUser = await context.GuildUsers.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId);
-        if (reactingUser?.GivenReactions > 0)
+        var reactingUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
+        if (reactingUser.GivenReactions > 0)
             reactingUser.GivenReactions--;
 
-        var authorUser = await context.GuildUsers.AsQueryable().FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == authorUserId);
-        if (authorUser?.ObtainedReactions > 0)
+        var authorUser = await repository.GuildUser.GetOrCreateGuildUserAsync(messageAuthor);
+        if (authorUser.ObtainedReactions > 0)
             authorUser.ObtainedReactions--;
     }
 

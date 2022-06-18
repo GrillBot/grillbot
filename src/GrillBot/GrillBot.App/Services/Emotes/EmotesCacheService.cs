@@ -3,21 +3,24 @@
 namespace GrillBot.App.Services.Emotes;
 
 [Initializable]
-public class EmotesCacheService : ServiceBase
+public class EmotesCacheService
 {
     private ConcurrentBag<Tuple<GuildEmote, IGuild>> SupportedEmotes { get; } = new();
-    private readonly object SupportedEmotesLock = new();
+    private readonly object _supportedEmotesLock = new();
+    private DiscordSocketClient DiscordClient { get; }
 
-    public EmotesCacheService(DiscordSocketClient client) : base(client)
+    public EmotesCacheService(DiscordSocketClient client)
     {
-        DiscordClient.Ready += () => SyncSupportedEmotesAsync();
+        DiscordClient = client;
+
+        DiscordClient.Ready += SyncSupportedEmotesAsync;
         DiscordClient.GuildAvailable += _ => SyncSupportedEmotesAsync();
         DiscordClient.GuildUpdated += (_, _) => SyncSupportedEmotesAsync();
     }
 
     private Task SyncSupportedEmotesAsync()
     {
-        lock (SupportedEmotesLock)
+        lock (_supportedEmotesLock)
         {
             SupportedEmotes.Clear();
             DiscordClient.Guilds
@@ -32,7 +35,7 @@ public class EmotesCacheService : ServiceBase
 
     public List<Tuple<GuildEmote, IGuild>> GetSupportedEmotes()
     {
-        lock (SupportedEmotesLock)
+        lock (_supportedEmotesLock)
         {
             return SupportedEmotes.ToList();
         }

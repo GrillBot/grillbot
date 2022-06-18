@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure;
 using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Extensions;
@@ -9,30 +8,34 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services.Emotes;
 
-public class EmotesCommandService : ServiceBase
+public class EmotesCommandService
 {
     private IServiceProvider ServiceProvider { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IDiscordClient DiscordClient { get; }
 
-    public EmotesCommandService(IServiceProvider serviceProvider, GrillBotDatabaseBuilder dbFactory,
-        IDiscordClient dcClient) : base(null, dbFactory, dcClient)
+    public EmotesCommandService(IServiceProvider serviceProvider, GrillBotDatabaseBuilder databaseBuilder,
+        IDiscordClient discordClient)
     {
         ServiceProvider = serviceProvider;
+        DatabaseBuilder = databaseBuilder;
+        DiscordClient = discordClient;
     }
 
     public async Task<Tuple<Embed, long>> GetEmoteStatListEmbedAsync(IInteractionContext context, IUser ofUser, string orderBy, bool descending,
         bool filterAnimated, int page = 1)
     {
-        var @params = new EmotesListParams()
+        var @params = new EmotesListParams
         {
             GuildId = context.Guild.Id.ToString(),
             UserId = ofUser?.Id.ToString(),
             FilterAnimated = filterAnimated,
-            Sort = new SortParams()
+            Sort = new SortParams
             {
                 Descending = descending,
                 OrderBy = orderBy
             },
-            Pagination = new PaginatedParams()
+            Pagination = new PaginatedParams
             {
                 Page = page,
                 PageSize = EmbedBuilder.MaxFieldCount - 1
@@ -51,7 +54,7 @@ public class EmotesCommandService : ServiceBase
 
     public async Task<long> GetEmoteStatsCountAsync(IInteractionContext context, IUser ofUser, bool filterAnimated)
     {
-        var @params = new EmotesListParams()
+        var @params = new EmotesListParams
         {
             GuildId = context.Guild.Id.ToString(),
             UserId = ofUser?.Id.ToString(),
@@ -69,31 +72,22 @@ public class EmotesCommandService : ServiceBase
     {
         EnsureEmote(emoteItem, out var emote);
 
-        using var context = DbFactory.Create();
-        var baseQuery = context.Emotes.AsNoTracking()
-            .Where(o => o.EmoteId == emote.ToString() && o.UseCount > 0);
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var queryData = baseQuery.GroupBy(o => o.EmoteId).Select(o => new
-        {
-            UsersCount = o.Count(),
-            FirstOccurence = o.Min(x => x.FirstOccurence),
-            LastOccurence = o.Max(x => x.LastOccurence),
-            UseCount = o.Sum(x => x.UseCount),
-            GuildId = o.Min(o => o.GuildId)
-        });
-
-        var data = await queryData.FirstOrDefaultAsync();
+        var data = await repository.Emote.GetStatisticsOfEmoteAsync(emote);
         if (data == null)
             return null;
 
-        var guild = await DcClient.GetGuildAsync(data.GuildId.ToUlong());
-        var topTenQuery = baseQuery.OrderByDescending(x => x.UseCount).ThenByDescending(x => x.LastOccurence).Take(10);
+        var guild = await DiscordClient.GetGuildAsync(data.GuildId.ToUlong());
+        var topTenData = await repository.Emote.GetTopUsersOfUsage(emote, 10);
+        var topTen = new List<string>();
 
-        var topTen = await topTenQuery.AsAsyncEnumerable().SelectAwait(async (o, i) =>
+        for (var i = 0; i < 10; i++)
         {
-            var user = await DcClient.FindUserAsync(o.UserId.ToUlong());
-            return $"**{i + 1,2}.** {user?.GetDisplayName() ?? "Neznámý uživatel"} ({o.UseCount})";
-        }).ToListAsync();
+            var stat = topTenData[i];
+            var user = await DiscordClient.FindUserAsync(stat.UserId.ToUlong());
+            topTen.Add($"**{i + 1,2}.** {user?.GetDisplayName() ?? "Neznámý uživatel"} ({stat.UseCount})");
+        }
 
         var embed = new EmbedBuilder()
             .WithFooter(caller)
@@ -106,10 +100,10 @@ public class EmotesCommandService : ServiceBase
             .AddField("Poslední výskyt", data.LastOccurence.ToCzechFormat(), true)
             .AddField("Od posl. použití", (DateTime.Now - data.LastOccurence).Humanize(culture: new CultureInfo("cs-CZ")), true)
             .AddField("Počet použití", data.UseCount, true)
-            .AddField("Počet uživatelů", data.UsersCount, true)
+            .AddField("Počet uživatelů", data.UsedUsersCount, true)
             .AddField("Server", guild?.Name ?? "Neznámý server", true)
-            .AddField("TOP 10 použití", string.Join("\n", topTen), false)
-            .AddField("Odkaz", emote.Url, false)
+            .AddField("TOP 10 použití", string.Join("\n", topTen))
+            .AddField("Odkaz", emote.Url)
             .WithThumbnailUrl(emote.Url);
 
         return embed.Build();
@@ -117,9 +111,9 @@ public class EmotesCommandService : ServiceBase
 
     private static void EnsureEmote(IEmote emote, out Emote result)
     {
-        if (emote is not Emote _result)
+        if (emote is not Emote resultData)
             throw new ArgumentException("Unicode emoji nejsou v tomto příkazu podporovány.");
 
-        result = _result;
+        result = resultData;
     }
 }

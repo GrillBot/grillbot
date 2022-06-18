@@ -86,11 +86,11 @@ public class UserRepository : RepositoryBase
         {
             var query = Context.Users.AsSplitQuery().AsNoTracking()
                 .Include(o => o.Guilds).ThenInclude(o => o.Guild)
-                .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite.Creator!.User) // TODO UsedInvite is nullable, but ? cannot be used in lambda queries.
+                .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite!.Creator!.User) // TODO UsedInvite is nullable, but ? cannot be used in lambda queries.
                 .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(x => x.UsedUsers.Count > 0))
                 .Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(x => x.Count > 0)).ThenInclude(o => o.Channel)
                 .Include(o => o.Guilds).ThenInclude(o => o.EmoteStatistics.Where(x => x.UseCount > 0))
-                .Include(o => o.Guilds).ThenInclude(o => o.Unverify.UnverifyLog); // TODO Unverify is nullable, but ? cannot be used in lambda queries.
+                .Include(o => o.Guilds).ThenInclude(o => o.Unverify!.UnverifyLog); // TODO Unverify is nullable, but ? cannot be used in lambda queries.
 
             return await query.FirstOrDefaultAsync(o => o.Id == id.ToString());
         }

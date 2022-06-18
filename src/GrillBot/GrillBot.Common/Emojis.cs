@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿// ReSharper disable MemberCanBePrivate.Global
+using Discord;
 
 namespace GrillBot.Common;
 
@@ -54,7 +55,7 @@ public static class Emojis
     public static Emoji Parking => new("🅿️");
     public static Emoji InformationSource => new("ℹ️");
 
-    public static IEmote[] PaginationEmojis => new[] { MoveToFirst, MoveToPrev, MoveToNext, MoveToLast };
+    public static IEnumerable<IEmote> PaginationEmojis => new[] { MoveToFirst, MoveToPrev, MoveToNext, MoveToLast };
 
     public static Dictionary<int, Emoji> NumberToEmojiMap => new()
     {
@@ -68,20 +69,6 @@ public static class Emojis
         { 7, Seven },
         { 8, Eight },
         { 9, Nine }
-    };
-
-    public static Dictionary<Emoji, int> EmojiToIntMap => new()
-    {
-        { Zero, 0 },
-        { One, 1 },
-        { Two, 2 },
-        { Three, 3 },
-        { Four, 4 },
-        { Five, 5 },
-        { Six, 6 },
-        { Seven, 7 },
-        { Eight, 8 },
-        { Nine, 9 }
     };
 
     public static Dictionary<char, Emoji> CharToEmojiMap => new()

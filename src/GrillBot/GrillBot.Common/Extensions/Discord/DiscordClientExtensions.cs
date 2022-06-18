@@ -43,7 +43,7 @@ public static class DiscordClientExtensions
         if (client.LoginState != LoginState.LoggedIn)
             return null;
 
-        return await client.Rest.GetUserAsync(id, new RequestOptions() { CancelToken = cancellationToken });
+        return await client.Rest.GetUserAsync(id, new RequestOptions { CancelToken = cancellationToken });
     }
 
     public static async Task<IUser?> FindUserAsync(this IDiscordClient client, ulong id)
@@ -75,7 +75,7 @@ public static class DiscordClientExtensions
     public static IRole? FindRole(this BaseSocketClient client, string id)
         => FindRole(client, id.ToUlong());
 
-    public static IRole? FindRole(this BaseSocketClient client, ulong id)
+    private static IRole? FindRole(this BaseSocketClient client, ulong id)
     {
         return client.Guilds.SelectMany(o => o.Roles)
             .FirstOrDefault(o => !o.IsEveryone && o.Id == id);

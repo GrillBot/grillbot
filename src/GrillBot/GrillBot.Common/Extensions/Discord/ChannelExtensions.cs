@@ -20,9 +20,10 @@ public static class ChannelExtensions
         var overwrite = channel.GetPermissionOverwrite(user);
         if (overwrite != null)
         {
+            // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (overwrite.Value.ViewChannel == PermValue.Allow)
                 return true;
-            else if (overwrite.Value.ViewChannel == PermValue.Deny)
+            if (overwrite.Value.ViewChannel == PermValue.Deny)
                 return false;
         }
 
@@ -39,6 +40,7 @@ public static class ChannelExtensions
             var roleOverwrite = channel.GetPermissionOverwrite(role);
             if (roleOverwrite == null) continue;
 
+            // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (roleOverwrite.Value.ViewChannel == PermValue.Deny && isEveryonePerm)
                 return false;
 

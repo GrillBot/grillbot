@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.Data.Extensions.Discord;
 using System.Linq;
 using GrillBot.Common.Extensions.Discord;
 

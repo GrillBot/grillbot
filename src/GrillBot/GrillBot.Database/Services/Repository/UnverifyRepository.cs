@@ -73,7 +73,7 @@ public class UnverifyRepository : RepositoryBase
         {
             return await Context.UnverifyLogs.AsNoTracking()
                 .Include(o => o.Guild)
-                .Include(o => o.ToUser.Unverify) // TODO Nullable
+                .Include(o => o.ToUser!.Unverify) // TODO Nullable
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
     }

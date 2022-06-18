@@ -14,16 +14,6 @@ public class FileStorage : IFileStorage
             StorageInfo.Create();
     }
 
-    public async Task<byte[]?> GetFileAsync(string subcategory, string filename)
-    {
-        var fullpath = BuildPath(subcategory, filename);
-
-        if (!File.Exists(fullpath))
-            return null;
-
-        return await File.ReadAllBytesAsync(fullpath);
-    }
-
     public Task StoreFileAsync(string subcategory, string filename, byte[] content)
     {
         var path = BuildPath(subcategory, filename);

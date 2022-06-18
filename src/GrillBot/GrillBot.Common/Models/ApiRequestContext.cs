@@ -17,6 +17,5 @@ public class ApiRequestContext
 
     public ulong LoggedUserId => LoggedUser?.Id ?? 0;
 
-    public bool IsAdmin() => LoggedUserData?.IsInRole("Admin") ?? false;
     public bool IsPublic() => LoggedUserData?.IsInRole("User") ?? false;
 }

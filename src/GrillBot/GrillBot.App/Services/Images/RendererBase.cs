@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.Cache.Entity;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.FileStorage;
 
 namespace GrillBot.App.Services.Images;

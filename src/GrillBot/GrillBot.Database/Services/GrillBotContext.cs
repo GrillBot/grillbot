@@ -123,26 +123,6 @@ public class GrillBotContext : DbContext
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<Suggestion> Suggestions => Set<Suggestion>();
 
-    [Obsolete("Use CreateQuery method from repository.")]
-    public IQueryable<TEntity> CreateQuery<TEntity>(IQueryableModel<TEntity>? parameters, bool noTracking = false, bool splitQuery = false) where TEntity : class
-    {
-        var query = Set<TEntity>().AsQueryable();
-
-        if (parameters != null)
-        {
-            query = parameters.SetIncludes(query);
-            query = parameters.SetQuery(query);
-            query = parameters.SetSort(query);
-        }
-
-        if (noTracking)
-            query = query.AsNoTracking();
-        if (splitQuery)
-            query = query.AsSplitQuery();
-
-        return query;
-    }
-
     /// <summary>
     /// Checks if same entity is currently tracked.
     /// </summary>

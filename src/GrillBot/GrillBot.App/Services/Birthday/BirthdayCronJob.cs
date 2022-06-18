@@ -23,7 +23,7 @@ public class BirthdayCronJob : Job
 
     public override async Task RunAsync(IJobExecutionContext context)
     {
-        var birthdays = await BirthdayService.GetTodayBirthdaysAsync(context.CancellationToken);
+        var birthdays = await BirthdayService.GetTodayBirthdaysAsync();
         if (birthdays.Count == 0) return;
 
         var birthdayNotificationSection = Configuration.GetSection("Birthday:Notifications");

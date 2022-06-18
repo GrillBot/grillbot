@@ -1,71 +1,61 @@
-﻿using GrillBot.App.Infrastructure;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Data.Extensions;
 
 namespace GrillBot.App.Services.Birthday;
 
-public class BirthdayService : ServiceBase
+public class BirthdayService
 {
-    public BirthdayService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory) : base(client, dbFactory)
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IDiscordClient DiscordClient { get; }
+
+    public BirthdayService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder)
     {
+        DatabaseBuilder = databaseBuilder;
+        DiscordClient = client;
     }
 
     public async Task AddBirthdayAsync(IUser user, DateTime birthday)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbUser = await context.Users.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
-
-        if (dbUser == null)
-        {
-            dbUser = Database.Entity.User.FromDiscord(user);
-            await context.AddAsync(dbUser);
-        }
-
+        var dbUser = await repository.User.GetOrCreateUserAsync(user);
         dbUser.Birthday = birthday.Date;
-        await context.SaveChangesAsync();
+
+        await repository.CommitAsync();
     }
 
     public async Task RemoveBirthdayAsync(IUser user)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbUser = await context.Users.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
-
+        var dbUser = await repository.User.FindUserAsync(user);
         if (dbUser == null) return;
+
         dbUser.Birthday = null;
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
     public async Task<bool> HaveBirthdayAsync(IUser user)
     {
-        using var context = DbFactory.Create();
-        return await context.Users.AsQueryable()
-            .Where(o => o.Id == user.Id.ToString())
-            .Select(o => o.Birthday != null)
-            .FirstOrDefaultAsync();
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var dbUser = await repository.User.FindUserAsync(user);
+        return dbUser?.Birthday != null;
     }
 
-    public async Task<List<Tuple<IUser, int?>>> GetTodayBirthdaysAsync(CancellationToken cancellationToken = default)
+    public async Task<List<(IUser user, int? age)>> GetTodayBirthdaysAsync()
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var today = DateTime.Today.Date;
-        var query = context.Users.AsQueryable()
-            .Where(o => o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
-            .Select(o => new Database.Entity.User { Id = o.Id, Birthday = o.Birthday });
-
-        var users = await query.ToListAsync(cancellationToken);
-        var result = new List<Tuple<IUser, int?>>();
+        var users = await repository.User.GetUsersWithTodayBirthday();
+        var result = new List<(IUser user, int? age)>();
 
         foreach (var entity in users)
         {
-            var user = await DiscordClient.FindUserAsync(entity.Id.ToUlong(), cancellationToken);
+            var user = await DiscordClient.FindUserAsync(entity.Id.ToUlong());
 
             if (user != null)
-                result.Add(new Tuple<IUser, int?>(user, entity.BirthdayAcceptYear ? entity.Birthday.Value.ComputeAge() : null));
+                result.Add((user, entity.BirthdayAcceptYear ? entity.Birthday!.Value.ComputeAge() : null));
         }
 
         return result;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
@@ -92,6 +93,18 @@ public class UserRepository : RepositoryBase
                 .Include(o => o.Guilds).ThenInclude(o => o.Unverify.UnverifyLog); // TODO Unverify is nullable, but ? cannot be used in lambda queries.
 
             return await query.FirstOrDefaultAsync(o => o.Id == id.ToString());
+        }
+    }
+
+    public async Task<List<User>> GetUsersWithTodayBirthday()
+    {
+        using (Counter.Create("Database"))
+        {
+            var today = DateTime.Now;
+
+            return await Context.Users.AsNoTracking()
+                .Where(o => o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
+                .ToListAsync();
         }
     }
 }

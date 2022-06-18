@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.Database.Entity;
 
@@ -55,19 +56,15 @@ public class User
         SearchItems = new HashSet<SearchItem>();
     }
 
-    public bool HaveFlags(UserFlags flags) 
+    public bool HaveFlags(UserFlags flags)
         => (Flags & (int)flags) != 0;
 
     public static User FromDiscord(IUser user)
     {
-        return new User
-        {
-            Id = user.Id.ToString(),
-            Username = user.Username,
-            Flags = (int)(user.IsBot || user.IsWebhook ? UserFlags.NotUser : UserFlags.None),
-            Discriminator = user.Discriminator,
-            Status = user.GetStatus()
-        };
+        var entity = new User { Id = user.Id.ToString() };
+        entity.Update(user);
+
+        return entity;
     }
 
     public User Clone() => (User)MemberwiseClone();
@@ -76,6 +73,9 @@ public class User
     {
         Username = user.Username;
         Discriminator = user.Discriminator;
-        Status = user.Status;
+        Status = user.GetStatus();
+
+        if (!user.IsUser())
+            Flags |= (int)UserFlags.NotUser;
     }
 }

@@ -4,7 +4,7 @@ namespace GrillBot.App.Services.Discord.Synchronization;
 
 public class ChannelSynchronization : SynchronizationBase
 {
-    public ChannelSynchronization(GrillBotDatabaseBuilder dbFactory) : base(dbFactory)
+    public ChannelSynchronization(GrillBotDatabaseBuilder databaseBuilder) : base(databaseBuilder)
     {
     }
 
@@ -13,79 +13,65 @@ public class ChannelSynchronization : SynchronizationBase
 
     public async Task ChannelDeletedAsync(ITextChannel channel)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var baseQuery = GetBaseQuery(context, channel.GuildId);
-
-        var dbChannel = await baseQuery.FirstOrDefaultAsync(o => o.ChannelId == channel.Id.ToString());
+        var dbChannel = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.Guild.Id);
         if (dbChannel == null) return;
 
         dbChannel.MarkDeleted(true);
         if (channel is not IThreadChannel)
         {
-            var threads = await baseQuery.Where(o => o.ParentChannelId == channel.Id.ToString()).ToListAsync();
+            var threads = await repository.Channel.GetChildChannelsAsync(channel);
             threads.ForEach(o => o.MarkDeleted(true));
         }
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
     public async Task ThreadDeletedAsync(IThreadChannel threadChannel)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var baseQuery = GetBaseQuery(context, threadChannel.GuildId);
-        var thread = await baseQuery.FirstOrDefaultAsync(o =>
-            (o.ChannelType == ChannelType.PublicThread || o.ChannelType == ChannelType.PrivateThread) &&
-            o.ChannelId == threadChannel.Id.ToString() && o.ParentChannelId == threadChannel.CategoryId.ToString()
-        );
-
+        var thread = await repository.Channel.FindThreadAsync(threadChannel);
         if (thread == null) return;
 
         thread.MarkDeleted(true);
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
-    public async Task ThreadUpdatedAsync(IThreadChannel before, IThreadChannel after)
+    public async Task ThreadUpdatedAsync(IThreadChannel after)
     {
-        if (before.Name == after.Name && before.IsArchived == after.IsArchived) return;
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        using var context = DbFactory.Create();
-
-        var baseQuery = GetBaseQuery(context, after.GuildId);
-        var thread = await baseQuery.FirstOrDefaultAsync(o =>
-            (o.ChannelType == ChannelType.PublicThread || o.ChannelType == ChannelType.PrivateThread) &&
-            o.ChannelId == after.Id.ToString() && o.ParentChannelId == after.CategoryId.ToString()
-        );
+        var thread = await repository.Channel.FindThreadAsync(after);
         if (thread == null) return;
 
         thread.Name = after.Name;
         thread.MarkDeleted(after.IsArchived);
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
-    public async Task ChannelUpdatedAsync(ITextChannel before, ITextChannel after)
+    public async Task ChannelUpdatedAsync(ITextChannel after)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var baseQuery = GetBaseQuery(context, before.GuildId);
-        var channel = await baseQuery.FirstOrDefaultAsync(o => o.ChannelId == before.Id.ToString());
+        var channel = await repository.Channel.FindChannelByIdAsync(after.Id, after.GuildId);
         if (channel == null) return;
 
         channel.MarkDeleted(false);
         channel.Name = after.Name;
 
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 
-    public async Task InitChannelsAsync(IGuild guild, List<GuildChannel> databaseChannels)
+    public static async Task InitChannelsAsync(IGuild guild, List<GuildChannel> databaseChannels)
     {
-        var guildChannels = databaseChannels.Where(o => o.GuildId == guild.Id.ToString());
+        var guildChannels = databaseChannels.FindAll(o => o.GuildId == guild.Id.ToString());
 
         foreach (var textChannel in await guild.GetTextChannelsAsync())
         {
-            var channel = guildChannels.FirstOrDefault(o => o.IsText() && o.ChannelId == textChannel.Id.ToString());
+            var channel = guildChannels.Find(o => o.IsText() && o.ChannelId == textChannel.Id.ToString());
             if (channel == null) continue;
 
             channel.Name = textChannel.Name;
@@ -94,7 +80,7 @@ public class ChannelSynchronization : SynchronizationBase
 
         foreach (var voiceChannel in await guild.GetVoiceChannelsAsync())
         {
-            var channel = guildChannels.FirstOrDefault(o => o.IsVoice() && o.ChannelId == voiceChannel.Id.ToString());
+            var channel = guildChannels.Find(o => o.IsVoice() && o.ChannelId == voiceChannel.Id.ToString());
             if (channel == null) continue;
 
             channel.Name = voiceChannel.Name;
@@ -103,7 +89,7 @@ public class ChannelSynchronization : SynchronizationBase
 
         foreach (var stageChannel in await guild.GetStageChannelsAsync())
         {
-            var channel = guildChannels.FirstOrDefault(o => o.IsStage() && o.ChannelId == stageChannel.Id.ToString());
+            var channel = guildChannels.Find(o => o.IsStage() && o.ChannelId == stageChannel.Id.ToString());
             if (channel == null) continue;
 
             channel.Name = stageChannel.Name;
@@ -112,7 +98,7 @@ public class ChannelSynchronization : SynchronizationBase
 
         foreach (var threadChannel in await guild.GetThreadChannelsAsync())
         {
-            var channel = guildChannels.FirstOrDefault(o => o.IsThread() && o.ChannelId == threadChannel.Id.ToString() && o.ParentChannelId == threadChannel.CategoryId.ToString());
+            var channel = guildChannels.Find(o => o.IsThread() && o.ChannelId == threadChannel.Id.ToString() && o.ParentChannelId == threadChannel.CategoryId.ToString());
             if (channel == null) continue;
 
             channel.Name = threadChannel.Name;

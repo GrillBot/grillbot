@@ -25,6 +25,21 @@ public class UserRepository : RepositoryBase
         }
     }
 
+    public async Task<User?> FindUserAsync(IUser user)
+    {
+        using (Counter.Create("Database"))
+        {
+            var entity = await Context.Users
+                .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
+
+            if (entity == null)
+                return null;
+
+            entity.Update(user);
+            return entity;
+        }
+    }
+
     public async Task<User> GetOrCreateUserAsync(IUser user)
     {
         using (Counter.Create("Database"))
@@ -33,7 +48,10 @@ public class UserRepository : RepositoryBase
                 .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
 
             if (entity != null)
+            {
+                entity.Update(user);
                 return entity;
+            }
 
             entity = User.FromDiscord(user);
             if (!Context.IsEntityTracked<User>(entry => entry.Entity.Id == entity.Id)) await Context.AddAsync(entity);

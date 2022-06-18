@@ -15,18 +15,15 @@ namespace GrillBot.App.Services.User;
 public class UsersApiService
 {
     private AuditLogService AuditLogService { get; }
-    private UnverifyProfileGenerator UnverifyProfileGenerator { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
 
     public UsersApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient dcClient,
-        AuditLogService auditLogService, UnverifyProfileGenerator unverifyProfileGenerator,
-        ApiRequestContext apiRequestContext)
+        AuditLogService auditLogService, ApiRequestContext apiRequestContext)
     {
         AuditLogService = auditLogService;
-        UnverifyProfileGenerator = unverifyProfileGenerator;
         ApiRequestContext = apiRequestContext;
         DatabaseBuilder = databaseBuilder;
         DiscordClient = dcClient;
@@ -143,7 +140,7 @@ public class UsersApiService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var user = await repository.User.FindUserByIdAsync(ApiRequestContext.LoggedUser!.Id);
+        var user = await repository.User.FindUserAsync(ApiRequestContext.LoggedUser!);
         if (user == null)
             throw new NotFoundException();
 

@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
-using GrillBot.Data.Extensions.Discord;
 using System.Net.Http;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Extensions.Discord
 {

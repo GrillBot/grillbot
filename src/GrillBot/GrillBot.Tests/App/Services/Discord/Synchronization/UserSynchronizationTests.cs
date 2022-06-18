@@ -61,7 +61,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
             .SetOwner(owner)
             .Build();
 
-        await Service.InitBotAdminAsync(DbContext, application);
+        await UserSynchronization.InitBotAdminAsync(DbContext, application);
         Assert.IsTrue(true);
     }
 
@@ -82,7 +82,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
             .SetOwner(owner)
             .Build();
 
-        await Service.InitBotAdminAsync(DbContext, application);
+        await UserSynchronization.InitBotAdminAsync(DbContext, application);
         Assert.IsTrue(true);
     }
 }

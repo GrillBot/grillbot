@@ -74,6 +74,14 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
+    public async Task<List<GuildChannel>> GetAllChannelsAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await GetBaseQuery(true, false, false).ToListAsync();
+        }
+    }
+
     public async Task<List<GuildChannel>> GetAllChannelsAsync(List<string> guildIds, bool ignoreThreads, bool disableTracking = false)
     {
         using (Counter.Create("Database"))
@@ -144,6 +152,38 @@ public class ChannelRepository : RepositoryBase
             var mostActive = await baseQuery.OrderByDescending(o => o.Count).FirstOrDefaultAsync();
 
             return (lastActive, mostActive);
+        }
+    }
+
+    public async Task<List<GuildChannel>> GetChildChannelsAsync(IGuildChannel parentChannel)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.Channels
+                .Where(o =>
+                    new[] { ChannelType.NewsThread, ChannelType.PrivateThread, ChannelType.PublicThread }.Contains(o.ChannelType) &&
+                    o.ParentChannelId == parentChannel.Id.ToString() &&
+                    o.GuildId == parentChannel.GuildId.ToString()
+                )
+                .ToListAsync();
+        }
+    }
+
+    public async Task<GuildChannel?> FindThreadAsync(IThreadChannel thread)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = Context.Channels
+                .Where(o =>
+                    o.GuildId == thread.GuildId.ToString() &&
+                    new[] { ChannelType.NewsThread, ChannelType.PrivateThread, ChannelType.PublicThread }.Contains(o.ChannelType) &&
+                    o.ChannelId == thread.Id.ToString()
+                );
+
+            if (thread.CategoryId != null)
+                query = query.Where(o => o.ParentChannelId == thread.CategoryId.ToString());
+
+            return await query.FirstOrDefaultAsync();
         }
     }
 }

@@ -60,7 +60,7 @@ public static class CommandsPerformanceCounter
     public static bool TaskExists(global::Discord.Commands.ICommandContext context)
         => TaskExists(CreateContextKey(context));
 
-    public static bool TaskExists(string contextKey)
+    private static bool TaskExists(string contextKey)
     {
         lock (RunningTasksLock)
         {

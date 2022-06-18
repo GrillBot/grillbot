@@ -22,7 +22,7 @@ public class PermissionsService
         request.FixImplicitPermissions();
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var user = await repository.User.FindUserByIdAsync(request.User.Id);
+        var user = await repository.User.FindUserAsync(request.User);
 
         return new PermsCheckResult
         {

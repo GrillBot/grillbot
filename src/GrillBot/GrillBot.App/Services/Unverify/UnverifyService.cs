@@ -128,7 +128,7 @@ public class UnverifyService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbUser = await repository.GuildUser.FindGuildUserByIdAsync(user);
+        var dbUser = await repository.GuildUser.FindGuildUserAsync(user);
         if (dbUser?.Unverify == null)
             throw new NotFoundException("Aktualizaci času nelze pro hledaného uživatele provést. Unverify nenalezeno.");
 
@@ -160,7 +160,7 @@ public class UnverifyService
         {
             await using var repository = DatabaseBuilder.CreateRepository();
 
-            var dbUser = await repository.GuildUser.FindGuildUserByIdAsync(toUser);
+            var dbUser = await repository.GuildUser.FindGuildUserAsync(toUser);
             if (dbUser?.Unverify == null)
                 return UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser);
 
@@ -254,7 +254,7 @@ public class UnverifyService
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var guildUser = await guild.GetUserAsync(user.Id);
-        var dbUser = await repository.GuildUser.FindGuildUserByIdAsync(guildUser);
+        var dbUser = await repository.GuildUser.FindGuildUserAsync(guildUser);
 
         if (dbUser?.Unverify != null)
         {

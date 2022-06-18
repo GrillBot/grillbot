@@ -2,22 +2,19 @@
 
 public class GuildSynchronization : SynchronizationBase
 {
-    public GuildSynchronization(GrillBotDatabaseBuilder dbFactory) : base(dbFactory)
+    public GuildSynchronization(GrillBotDatabaseBuilder databaseBuilder) : base(databaseBuilder)
     {
     }
 
-    public Task GuildUpdatedAsync(IGuild _, IGuild after) => GuildAvailableAsync(after);
+    public Task GuildUpdatedAsync(IGuild after) => GuildAvailableAsync(after);
 
     public async Task GuildAvailableAsync(IGuild guild)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var guildEntity = await context.Guilds.FirstOrDefaultAsync(x => x.Id == guild.Id.ToString());
+        var guildEntity = await repository.Guild.FindGuildAsync(guild);
         if (guildEntity == null) return;
 
-        guildEntity.BoosterRoleId = guild.Roles.FirstOrDefault(o => o.Tags?.IsPremiumSubscriberRole == true)?.Id.ToString();
-        guildEntity.Name = guild.Name;
-
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
     }
 }

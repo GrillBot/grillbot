@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
@@ -113,7 +114,7 @@ public class PointsService
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var guildUserEntity = await repository.GuildUser.FindGuildUserByIdAsync(guildUser, true);
+        var guildUserEntity = await repository.GuildUser.FindGuildUserAsync(guildUser, true);
 
         if (guildUserEntity == null)
             throw new NotFoundException($"{user.GetDisplayName()} ještě neprojevil na serveru žádnou aktivitu.");
@@ -200,7 +201,7 @@ public class PointsService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var fromGuildUser = await repository.GuildUser.FindGuildUserByIdAsync(fromUser);
+        var fromGuildUser = await repository.GuildUser.FindGuildUserAsync(fromUser);
         if (fromGuildUser == null)
             throw new InvalidOperationException($"Nelze převést body od uživatele `{fromUser.GetDisplayName()}`, protože žádné body ještě nemá.");
 

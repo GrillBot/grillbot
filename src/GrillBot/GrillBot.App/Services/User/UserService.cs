@@ -20,7 +20,7 @@ public class UserService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var userEntity = await repository.User.FindUserByIdAsync(user.Id);
+        var userEntity = await repository.User.FindUserAsync(user);
         return userEntity?.HaveFlags(flags) ?? false;
     }
 
@@ -60,7 +60,7 @@ public class UserService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var guildUserEntity = await repository.GuildUser.FindGuildUserByIdAsync(user, true);
+        var guildUserEntity = await repository.GuildUser.FindGuildUserAsync(user, true);
         if (guildUserEntity != null)
         {
             embed

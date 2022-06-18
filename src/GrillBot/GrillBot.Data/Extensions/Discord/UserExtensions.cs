@@ -17,7 +17,6 @@ public static class UserExtensions
         };
     }
 
-    public static bool IsUser(this IUser user) => !(user.IsBot || user.IsWebhook);
     public static bool HaveAnimatedAvatar(this IUser user) => user.AvatarId?.StartsWith("a_") ?? false;
     public static string CreateProfilePicFilename(this IUser user, int size) => $"{user.Id}_{user.AvatarId ?? user.Discriminator}_{size}.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
 

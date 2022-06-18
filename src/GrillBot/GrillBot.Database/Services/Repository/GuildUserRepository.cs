@@ -19,7 +19,7 @@ public class GuildUserRepository : RepositoryBase
     {
         using (Counter.Create("Database"))
         {
-            var entity = await FindGuildUserByIdAsync(user);
+            var entity = await FindGuildUserAsync(user);
             if (entity != null)
                 return entity;
 
@@ -37,7 +37,7 @@ public class GuildUserRepository : RepositoryBase
         }
     }
 
-    public async Task<GuildUser?> FindGuildUserByIdAsync(IGuildUser user, bool disableTracking = false)
+    public async Task<GuildUser?> FindGuildUserAsync(IGuildUser user, bool disableTracking = false)
     {
         using (Counter.Create("Database"))
         {
@@ -114,6 +114,16 @@ public class GuildUserRepository : RepositoryBase
         {
             return await Context.GuildUsers.AsNoTracking()
                 .AnyAsync(o => o.UserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString());
+        }
+    }
+
+    public async Task<List<GuildUser>> GetAllUsersAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.GuildUsers
+                .Include(o => o.User)
+                .ToListAsync();
         }
     }
 }

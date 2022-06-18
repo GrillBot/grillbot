@@ -83,6 +83,15 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
         }
     }
 
+    public async Task ProcessMigrationsAsync()
+    {
+        using (CounterManager.Create("Database"))
+        {
+            if ((await Context.Database.GetPendingMigrationsAsync()).Any())
+                await Context.Database.MigrateAsync();
+        }
+    }
+
     public void Dispose()
     {
         Context.Dispose();

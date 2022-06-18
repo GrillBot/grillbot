@@ -20,4 +20,6 @@ public static class UserExtensions
         var ids = withEveryone ? user.RoleIds : user.RoleIds.Where(o => user.Guild.EveryoneRole.Id != o);
         return ids.Select(user.Guild.GetRole).Where(o => o != null);
     }
+
+    public static bool IsUser(this IUser user) => !user.IsBot && !user.IsWebhook;
 }

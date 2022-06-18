@@ -103,7 +103,7 @@ public class OAuth2Service
         var user = await GetUserAsync(sessionId);
 
         await using var repository = DbFactory.CreateRepository();
-        var dbUser = await repository.User.FindUserByIdAsync(user.Id);
+        var dbUser = await repository.User.FindUserAsync(user);
 
         if (dbUser == null)
             return new OAuth2LoginToken($"Uživatel {user.Username} nebyl nalezen.");

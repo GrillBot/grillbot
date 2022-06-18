@@ -62,7 +62,7 @@ public class GuildChannel
     public bool HasFlag(ChannelFlags flags) => (Flags & (long)flags) != 0;
 
     public bool IsThread()
-        => ChannelType is ChannelType.PublicThread or ChannelType.PrivateThread;
+        => ChannelType is ChannelType.PublicThread or ChannelType.PrivateThread or ChannelType.NewsThread;
 
     public bool IsText()
         => ChannelType == ChannelType.Text;

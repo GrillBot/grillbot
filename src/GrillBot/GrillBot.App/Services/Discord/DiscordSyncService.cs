@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord.Synchronization;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Extensions;
@@ -7,49 +8,54 @@ using GrillBot.Database.Extensions;
 namespace GrillBot.App.Services.Discord;
 
 [Initializable]
-public class DiscordSyncService : ServiceBase
+public class DiscordSyncService
 {
     private InitManager InitManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     private ChannelSynchronization Channels { get; }
     private UserSynchronization Users { get; }
     private GuildSynchronization Guilds { get; }
     private GuildUserSynchronization GuildUsers { get; }
 
-    public DiscordSyncService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, InitManager initManager)
-        : base(client, dbFactory)
+    private bool MigrationsChecked { get; set; }
+
+    public DiscordSyncService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, InitManager initManager)
     {
         InitManager = initManager;
+        DiscordClient = client;
+        DatabaseBuilder = databaseBuilder;
 
-        Channels = new ChannelSynchronization(DbFactory);
-        Users = new UserSynchronization(DbFactory);
-        Guilds = new GuildSynchronization(DbFactory);
-        GuildUsers = new GuildUserSynchronization(DbFactory);
+        Channels = new ChannelSynchronization(DatabaseBuilder);
+        Users = new UserSynchronization(DatabaseBuilder);
+        Guilds = new GuildSynchronization(DatabaseBuilder);
+        GuildUsers = new GuildUserSynchronization(DatabaseBuilder);
 
         DiscordClient.Ready += OnReadyAsync;
         DiscordClient.UserJoined += user => RunAsync(() => GuildUsers.UserJoinedAsync(user));
 
         DiscordClient.GuildMemberUpdated += (before, after) => RunAsync(
-            () => GuildUsers.GuildMemberUpdatedAsync(before.Value, after),
-            () => before.HasValue && (before.Value.Nickname != after.Nickname || before.Value.Username != after.Username || before.Value.Discriminator != after.Discriminator || before.Value.GetStatus() != after.GetStatus())
+            () => GuildUsers.GuildMemberUpdatedAsync(after),
+            () => before.HasValue && (before.Value.Nickname != after.Nickname || before.Value.Username != after.Username || before.Value.Discriminator != after.Discriminator)
         );
 
         DiscordClient.JoinedGuild += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
         DiscordClient.GuildAvailable += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
 
         DiscordClient.GuildUpdated += (before, after) => RunAsync(
-            () => Guilds.GuildUpdatedAsync(before, after),
+            () => Guilds.GuildUpdatedAsync(after),
             () => before.Name != after.Name || !before.Roles.SequenceEqual(after.Roles)
         );
 
         DiscordClient.UserUpdated += (before, after) => RunAsync(
-            () => Users.UserUpdatedAsync(before, after),
-            () => before.Username != after.Username || before.Discriminator != after.Discriminator || before.IsUser() != after.IsUser() || before.GetStatus() != after.GetStatus()
+            () => Users.UserUpdatedAsync(after),
+            () => before.Username != after.Username || before.Discriminator != after.Discriminator || before.IsUser() != after.IsUser()
         );
 
-        DiscordClient.ChannelUpdated += (before, after) => RunAsync(
-            () => Channels.ChannelUpdatedAsync(before as ITextChannel, after as ITextChannel),
-            () => before is ITextChannel && after is ITextChannel
+        DiscordClient.ChannelUpdated += (_, after) => RunAsync(
+            () => Channels.ChannelUpdatedAsync(after as ITextChannel),
+            () => after is ITextChannel
         );
 
         DiscordClient.ThreadDeleted += thread => RunAsync(
@@ -63,12 +69,12 @@ public class DiscordSyncService : ServiceBase
         );
 
         DiscordClient.ThreadUpdated += (before, after) => RunAsync(
-            () => Channels.ThreadUpdatedAsync(before.Value, after),
-            () => before.HasValue
+            () => Channels.ThreadUpdatedAsync(after),
+            () => before.HasValue && (before.Value.Name != after.Name || before.Value.IsArchived != after.IsArchived)
         );
 
         DiscordClient.PresenceUpdated += (user, before, after) => RunAsync(
-            () => Users.PresenceUpdatedAsync(user, before, after),
+            () => Users.PresenceUpdatedAsync(user, after),
             () => before != null && after != null && before.GetStatus() != after.GetStatus()
         );
     }
@@ -77,28 +83,34 @@ public class DiscordSyncService : ServiceBase
     {
         if (!InitManager.Get()) return;
         if (check != null && !check()) return;
-        if (await CheckPendingMigrationsAsync()) return;
+
+        if (!MigrationsChecked)
+        {
+            await using var repository = DatabaseBuilder.CreateRepository();
+            await repository.ProcessMigrationsAsync();
+            MigrationsChecked = true;
+        }
 
         await syncFunction();
     }
 
     private async Task OnReadyAsync()
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbChannels = await context.Channels.ToListAsync();
-        dbChannels.ForEach(o => o.Flags |= (long)ChannelFlags.Deleted);
+        var channels = await repository.Channel.GetAllChannelsAsync();
+        channels.ForEach(o => o.Flags |= (long)ChannelFlags.Deleted);
 
-        var dbUsers = await context.GuildUsers.Include(o => o.User).ToListAsync();
-        dbUsers.ForEach(o => o.User.Status = UserStatus.Offline);
+        var dbUsers = await repository.GuildUser.GetAllUsersAsync();
+        dbUsers.ForEach(o => o.User!.Status = UserStatus.Offline);
 
         foreach (var guild in DiscordClient.Guilds)
         {
-            await GuildUsers.InitUsersAsync(guild, dbUsers);
-            await Channels.InitChannelsAsync(guild, dbChannels);
+            await GuildUserSynchronization.InitUsersAsync(guild, dbUsers);
+            await ChannelSynchronization.InitChannelsAsync(guild, channels);
         }
 
-        await Users.InitBotAdminAsync(context, await DiscordClient.GetApplicationInfoAsync());
-        await context.SaveChangesAsync();
+        await UserSynchronization.InitBotAdminAsync(repository, await DiscordClient.GetApplicationInfoAsync());
+        await repository.CommitAsync();
     }
 }

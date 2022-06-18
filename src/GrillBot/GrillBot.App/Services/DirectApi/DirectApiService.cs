@@ -9,19 +9,22 @@ using GrillBot.Data.Models.DirectApi;
 namespace GrillBot.App.Services.DirectApi;
 
 [Initializable]
-public class DirectApiService : ServiceBase
+public class DirectApiService
 {
     private IConfiguration Configuration { get; }
     private InitManager InitManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotCacheBuilder CacheBuilder { get; }
 
     private List<ulong> AuthorizedChannelIds { get; }
     private List<ulong> AuthorizedServices { get; }
 
-    public DirectApiService(DiscordSocketClient client, IConfiguration configuration,
-        InitManager initManager, GrillBotCacheBuilder cacheBuilder) : base(client, null, null, null, cacheBuilder)
+    public DirectApiService(DiscordSocketClient client, IConfiguration configuration, InitManager initManager, GrillBotCacheBuilder cacheBuilder)
     {
         Configuration = configuration.GetRequiredSection("Services");
         InitManager = initManager;
+        DiscordClient = client;
+        CacheBuilder = cacheBuilder;
 
         AuthorizedChannelIds = Configuration.AsEnumerable()
             .Where(o => o.Key.EndsWith(":AuthorizedChannelId"))
@@ -59,7 +62,7 @@ public class DirectApiService : ServiceBase
 
     private bool CanReceiveMessage(SocketMessage message)
         => InitManager.Get() && AuthorizedServices.Contains(message.Author.Id) && message.Reference != null && message.Attachments.Count == 1 &&
-        AuthorizedChannelIds.Contains(message.Channel.Id);
+           AuthorizedChannelIds.Contains(message.Channel.Id);
 
     public async Task<string> SendCommandAsync(string service, DirectMessageCommand command, CancellationToken cancellationToken = default)
     {
@@ -111,9 +114,9 @@ public class DirectApiService : ServiceBase
         await using var cache = CacheBuilder.CreateRepository();
 
         var msg = await cache.DirectApiRepository.FindMessageByIdAsync(message.Id);
-        if (msg == null) 
+        if (msg == null)
             return null;
-        
+
         cache.Remove(msg);
         await cache.CommitAsync();
         return msg;

@@ -1,8 +1,8 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.User;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Extensions;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Modules.Interactions;

@@ -1,6 +1,8 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Logging;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Handlers;

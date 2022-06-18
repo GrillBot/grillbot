@@ -1,51 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GrillBot.Data.Extensions.Discord;
+namespace GrillBot.Common.Extensions.Discord;
 
 public static class ChannelExtensions
 {
     public static string GetMention(this IChannel channel) => $"<#{channel.Id}>";
-
-    public static bool HaveAccess(this SocketGuildChannel channel, SocketGuildUser user)
-    {
-        while (true)
-        {
-            if (channel is SocketThreadChannel thread)
-            {
-                channel = thread.ParentChannel;
-                continue;
-            }
-
-            if (channel.GetUser(user.Id) != null || channel.PermissionOverwrites.Count == 0) 
-                return true;
-
-            var overwrite = channel.GetPermissionOverwrite(user);
-            if (overwrite != null)
-            {
-                if (overwrite.Value.ViewChannel == PermValue.Allow)
-                    return true;
-                else if (overwrite.Value.ViewChannel == PermValue.Deny) 
-                    return false;
-            }
-
-            var everyonePerm = channel.GetPermissionOverwrite(user.Guild.EveryoneRole);
-            var isEveryonePerm = everyonePerm is { ViewChannel: PermValue.Allow or PermValue.Inherit };
-
-            foreach (var role in user.Roles.Where(o => !o.IsEveryone).OrderByDescending(o => o.Position))
-            {
-                var roleOverwrite = channel.GetPermissionOverwrite(role);
-                if (roleOverwrite == null) continue;
-
-                if (roleOverwrite.Value.ViewChannel == PermValue.Deny && isEveryonePerm) return false;
-                if (roleOverwrite.Value.ViewChannel == PermValue.Allow) return true;
-            }
-
-            return isEveryonePerm;
-        }
-    }
 
     public static async Task<bool> HaveAccessAsync(this IGuildChannel channel, IGuildUser user)
     {
@@ -104,20 +64,18 @@ public static class ChannelExtensions
             if (textChannel.Topic != anotherTextChannel.Topic) return false;
         }
 
-        if (channel is IVoiceChannel voiceChannel && another is IVoiceChannel anotherVoiceChannel)
-        {
-            if (voiceChannel.Bitrate != anotherVoiceChannel.Bitrate) return false;
-            if (voiceChannel.CategoryId != anotherVoiceChannel.CategoryId) return false;
-            if (voiceChannel.UserLimit != anotherVoiceChannel.UserLimit) return false;
-        }
+        if (channel is not IVoiceChannel voiceChannel || another is not IVoiceChannel anotherVoiceChannel)
+            return true;
 
-        return true;
+        if (voiceChannel.Bitrate != anotherVoiceChannel.Bitrate) return false;
+        if (voiceChannel.CategoryId != anotherVoiceChannel.CategoryId) return false;
+        return voiceChannel.UserLimit == anotherVoiceChannel.UserLimit;
     }
 
     public static bool HaveCategory(this IGuildChannel channel)
         => channel is INestedChannel { CategoryId: { } };
 
-    public static IChannel GetCategory(this SocketGuildChannel channel)
+    public static IChannel? GetCategory(this SocketGuildChannel channel)
     {
         return channel switch
         {

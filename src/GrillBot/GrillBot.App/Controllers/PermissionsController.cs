@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Permissions;

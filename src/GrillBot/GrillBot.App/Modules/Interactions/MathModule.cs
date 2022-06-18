@@ -2,6 +2,8 @@
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Data.Models.MathJS;
 using System.Net.Http;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Modules.Interactions;
 

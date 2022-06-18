@@ -1,4 +1,5 @@
-﻿using GrillBot.Database.Enums;
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Database.Enums;
 using GrillBot.Database.Extensions;
 using GrillBot.Database.Services.Repository;
 

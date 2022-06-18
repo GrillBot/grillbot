@@ -1,4 +1,6 @@
-﻿namespace GrillBot.App.Services.Birthday;
+﻿using GrillBot.Common.Extensions.Discord;
+
+namespace GrillBot.App.Services.Birthday;
 
 public static class BirthdayHelper
 {

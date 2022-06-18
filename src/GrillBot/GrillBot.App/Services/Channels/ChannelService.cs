@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Services.Channels;
 

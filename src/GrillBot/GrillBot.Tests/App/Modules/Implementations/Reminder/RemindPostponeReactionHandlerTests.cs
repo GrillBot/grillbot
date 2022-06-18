@@ -6,6 +6,7 @@ using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Moq;
 using System;
+using GrillBot.Common;
 
 namespace GrillBot.Tests.App.Modules.Implementations.Reminder;
 

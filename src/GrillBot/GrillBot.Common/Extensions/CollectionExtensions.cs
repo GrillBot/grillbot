@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GrillBot.Data.Extensions;
+﻿namespace GrillBot.Common.Extensions;
 
 public static class CollectionExtensions
 {
@@ -25,5 +20,19 @@ public static class CollectionExtensions
 
         for (var i = 0; i < Math.Ceiling((double)sourceData.Count / partSize); i++)
             yield return sourceData.Skip(i * partSize).Take(partSize);
+    }
+
+    public static IEnumerable<TSource> Flatten<TSource>(this IEnumerable<TSource> source, Func<TSource, IEnumerable<TSource>?> getChildren)
+    {
+        foreach (var item in source)
+        {
+            yield return item;
+
+            var childrenData = getChildren(item);
+            if (childrenData == null) yield break;
+
+            foreach (var child in childrenData.Flatten(getChildren))
+                yield return child;
+        }
     }
 }

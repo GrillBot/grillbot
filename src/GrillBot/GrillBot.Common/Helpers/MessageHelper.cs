@@ -1,17 +1,14 @@
-﻿using Discord;
+﻿using System.Text.RegularExpressions;
+using Discord;
 using GrillBot.Common.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
-namespace GrillBot.Data.Helper;
+namespace GrillBot.Common.Helpers;
 
 public static class MessageHelper
 {
     public static Regex DiscordMessageUriRegex { get; } = new(@"https:\/\/discord\.com\/channels\/(@me|\d*)\/(\d+)\/(\d+)");
 
-    public static MessageReference CreateMessageReference(string reference, ulong? channelId = null, ulong? guildId = null)
+    public static MessageReference? CreateMessageReference(string reference, ulong? channelId = null, ulong? guildId = null)
     {
         if (string.IsNullOrEmpty(reference))
             return null;

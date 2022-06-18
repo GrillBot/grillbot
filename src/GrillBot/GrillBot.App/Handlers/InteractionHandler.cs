@@ -3,6 +3,7 @@ using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
+using GrillBot.Common;
 using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Handlers;

@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using GrillBot.Common;
 
 namespace GrillBot.App.Infrastructure
 {

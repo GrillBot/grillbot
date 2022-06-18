@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
-using GrillBot.App.Extensions.Discord;
 using System.Text.RegularExpressions;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
@@ -44,10 +44,11 @@ public class UserConverter : ConverterBase<IUser>
         else if (Guild is SocketGuild guild)
         {
             var matches = guild.Users
-                 .Where(o => (!string.IsNullOrEmpty(o.Nickname) && o.Nickname.Contains(value, StringComparison.CurrentCultureIgnoreCase)) || o.Username.Contains(value, StringComparison.CurrentCultureIgnoreCase))
-                 .Select(o => o as IGuildUser)
-                 .Where(o => o != null)
-                 .ToList();
+                .Where(o => (!string.IsNullOrEmpty(o.Nickname) && o.Nickname.Contains(value, StringComparison.CurrentCultureIgnoreCase)) ||
+                            o.Username.Contains(value, StringComparison.CurrentCultureIgnoreCase))
+                .Select(o => o as IGuildUser)
+                .Where(o => o != null)
+                .ToList();
 
             if (matches.Count == 1) return matches[0];
 

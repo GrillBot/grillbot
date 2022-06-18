@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Models;
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Models;
 using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;

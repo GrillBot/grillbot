@@ -1,6 +1,6 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
+using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Implementations.Searching;
 

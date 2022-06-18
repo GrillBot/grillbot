@@ -4,11 +4,12 @@ using GrillBot.App.Services.AutoReply;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Helper;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 

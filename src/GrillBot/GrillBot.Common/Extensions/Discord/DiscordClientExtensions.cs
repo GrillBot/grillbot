@@ -1,11 +1,11 @@
-﻿using GrillBot.Common.Extensions;
-using GrillBot.Data.Extensions;
+﻿using Discord;
+using Discord.WebSocket;
 
-namespace GrillBot.App.Extensions.Discord;
+namespace GrillBot.Common.Extensions.Discord;
 
-static public class DiscordClientExtensions
+public static class DiscordClientExtensions
 {
-    static public async Task<IUser> FindUserAsync(this BaseSocketClient client, string username, string discriminator)
+    public static async Task<IUser?> FindUserAsync(this BaseSocketClient client, string username, string discriminator)
     {
         var user = client.GetUser(username, discriminator);
 
@@ -25,7 +25,7 @@ static public class DiscordClientExtensions
         return user;
     }
 
-    static public async Task<IUser> FindUserAsync(this BaseSocketClient client, ulong id, CancellationToken cancellationToken = default)
+    public static async Task<IUser?> FindUserAsync(this BaseSocketClient client, ulong id, CancellationToken cancellationToken = default)
     {
         var user = client.GetUser(id);
 
@@ -46,17 +46,16 @@ static public class DiscordClientExtensions
         return await client.Rest.GetUserAsync(id, new RequestOptions() { CancelToken = cancellationToken });
     }
 
-    static public async Task<IUser> FindUserAsync(this IDiscordClient client, ulong id, CancellationToken cancellationToken = default)
+    public static async Task<IUser?> FindUserAsync(this IDiscordClient client, ulong id)
     {
-        var requestOptions = new RequestOptions() { CancelToken = cancellationToken };
-        var user = await client.GetUserAsync(id, options: requestOptions);
+        var user = await client.GetUserAsync(id);
 
         if (user != null)
             return user;
 
-        foreach (var guild in await client.GetGuildsAsync(options: requestOptions))
+        foreach (var guild in await client.GetGuildsAsync())
         {
-            user = await guild.GetUserAsync(id, options: requestOptions);
+            user = await guild.GetUserAsync(id);
 
             if (user != null)
                 return user;
@@ -65,7 +64,7 @@ static public class DiscordClientExtensions
         return user;
     }
 
-    public static async Task<IGuildUser> TryFindGuildUserAsync(this IDiscordClient client, ulong guildId, ulong userId)
+    public static async Task<IGuildUser?> TryFindGuildUserAsync(this IDiscordClient client, ulong guildId, ulong userId)
     {
         var guild = await client.GetGuildAsync(guildId);
         if (guild == null) return null;
@@ -73,10 +72,10 @@ static public class DiscordClientExtensions
         return await guild.GetUserAsync(userId);
     }
 
-    static public IRole FindRole(this BaseSocketClient client, string id)
+    public static IRole? FindRole(this BaseSocketClient client, string id)
         => FindRole(client, id.ToUlong());
 
-    static public IRole FindRole(this BaseSocketClient client, ulong id)
+    public static IRole? FindRole(this BaseSocketClient client, ulong id)
     {
         return client.Guilds.SelectMany(o => o.Roles)
             .FirstOrDefault(o => !o.IsEveryone && o.Id == id);
@@ -90,13 +89,13 @@ static public class DiscordClientExtensions
             .FindAllAsync(async g => await g.GetUserAsync(userId) != null);
     }
 
-    static public IEnumerable<SocketGuild> FindMutualGuilds(this BaseSocketClient client, ulong userId)
+    public static IEnumerable<SocketGuild> FindMutualGuilds(this BaseSocketClient client, ulong userId)
     {
         return client.Guilds
             .Where(o => o.GetUser(userId) != null);
     }
 
-    public static async Task<ITextChannel> FindTextChannelAsync(this IDiscordClient client, ulong id)
+    public static async Task<ITextChannel?> FindTextChannelAsync(this IDiscordClient client, ulong id)
     {
         foreach (var guild in await client.GetGuildsAsync())
         {

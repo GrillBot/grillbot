@@ -18,7 +18,5 @@ namespace GrillBot.App.Extensions
 
         [Obsolete("Use ApiRequestContext")]
         public static bool HaveUserPermission(this ClaimsPrincipal user) => user.GetUserRole() == "User";
-        [Obsolete("Use ApiRequestContext")]
-        public static bool HaveAdminPermission(this ClaimsPrincipal user) => user.GetUserRole() == "Admin";
     }
 }

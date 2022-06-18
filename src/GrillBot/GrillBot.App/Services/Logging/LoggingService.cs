@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Services.Logging;
 

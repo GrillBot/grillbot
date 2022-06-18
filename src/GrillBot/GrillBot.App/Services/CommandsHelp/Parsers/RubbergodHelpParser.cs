@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Helpers;
+﻿using GrillBot.Common.Helpers;
 using GrillBot.Data.Models.API.Help;
 
 namespace GrillBot.App.Services.CommandsHelp.Parsers;

@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.FileStorage;
 using GrillBot.Data.Resources.Peepolove;
 using ImageMagick;

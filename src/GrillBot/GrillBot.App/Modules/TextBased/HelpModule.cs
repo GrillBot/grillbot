@@ -1,7 +1,8 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Help;
-using GrillBot.Data.Extensions;
+using GrillBot.Common;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.App.Modules.TextBased;
 

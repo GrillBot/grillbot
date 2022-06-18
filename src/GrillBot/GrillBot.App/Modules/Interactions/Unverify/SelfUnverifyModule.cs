@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Common;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;
 

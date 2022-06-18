@@ -1,7 +1,6 @@
 using Discord.Commands;
 using Discord.Interactions;
 using GrillBot.App.Handlers;
-using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
@@ -27,6 +26,8 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Common;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Helpers;
 
 namespace GrillBot.App;
 
@@ -101,7 +102,10 @@ public class Startup
             .AddSingleton<InteractionHandler>()
             .AddServices();
 
-        ReflectionHelper.GetAllReactionEventHandlers().ToList()
+        var reactionHandlerType = typeof(ReactionEventHandler);
+        reactionHandlerType.Assembly.GetTypes()
+            .Where(o => !o.IsAbstract && reactionHandlerType.IsAssignableFrom(o))
+            .ToList()
             .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));
 
         services.AddHttpClient("MathJS", c =>

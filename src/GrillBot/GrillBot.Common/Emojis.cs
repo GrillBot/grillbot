@@ -1,8 +1,6 @@
 ﻿using Discord;
-using System;
-using System.Collections.Generic;
 
-namespace GrillBot.Data;
+namespace GrillBot.Common;
 
 public static class Emojis
 {
@@ -136,20 +134,21 @@ public static class Emojis
         {
             var emoji = ConvertCharacterToEmoji(character);
 
-            if (result.Contains(emoji) && !allowDuplicity)
+            if (emoji == null || (result.Contains(emoji) && !allowDuplicity))
                 emoji = ConvertCharacterToEmoji(character, true);
+
+            if (emoji == null) continue;
 
             if (result.Contains(emoji) && !allowDuplicity)
                 throw new ArgumentException($"Duplicitní znak `{character}`.");
 
-            if (emoji != null)
-                result.Add(emoji);
+            result.Add(emoji);
         }
 
         return result;
     }
 
-    private static Emoji ConvertCharacterToEmoji(char character, bool alternativeFirst = false)
+    private static Emoji? ConvertCharacterToEmoji(char character, bool alternativeFirst = false)
     {
         if (char.IsDigit(character) && NumberToEmojiMap.ContainsKey((int)char.GetNumericValue(character)))
             return NumberToEmojiMap[(int)char.GetNumericValue(character)];

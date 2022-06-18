@@ -1,7 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
-using GrillBot.Data.Extensions.Discord;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Modules.Interactions;
 

@@ -1,9 +1,9 @@
 ﻿#pragma warning disable S1075 // URIs should not be hardcoded
 using Discord.Commands;
 using GrillBot.App.Infrastructure.Embeds;
-using GrillBot.App.Helpers;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Implementations.Help;
 

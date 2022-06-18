@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Extensions;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Services.Birthday;
 

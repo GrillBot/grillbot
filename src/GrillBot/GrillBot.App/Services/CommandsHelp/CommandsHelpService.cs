@@ -1,8 +1,9 @@
 ﻿using Discord.Commands;
 using GrillBot.Data.Models.API.Help;
-using GrillBot.App.Helpers;
-using GrillBot.Data.Extensions;
 using GrillBot.App.Services.Channels;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Services.CommandsHelp;
 
@@ -72,7 +73,7 @@ public class CommandsHelpService
                         Aliases = command.GetAliases(Prefix).ToList(),
                         Description = FormatHelper.FormatCommandDescription(command.Summary, Prefix, true),
                         Guilds = new List<string>(),
-                        Parameters = command.Parameters.Where(o => !string.IsNullOrEmpty(o.Name)).Select(o => FormatHelper.FormatParameter(o.Name, o.IsOptional)).ToList()
+                        Parameters = command.Parameters.Where(o => !string.IsNullOrEmpty(o.Name)).Select(o => o.FormatParameter()).ToList()
                     };
                     group.Commands.Add(cmd);
                 }

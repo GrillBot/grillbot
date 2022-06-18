@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GrillBot.Data.Extensions;
+﻿namespace GrillBot.Common.Extensions;
 
 public static class DateTimeExtensions
 {

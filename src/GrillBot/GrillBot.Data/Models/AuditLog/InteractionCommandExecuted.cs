@@ -1,12 +1,12 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrillBot.Data.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.Data.Models.AuditLog;
 
@@ -26,7 +26,9 @@ public class InteractionCommandExecuted
     [JsonIgnore]
     public string FullName => $"{Name} ({ModuleName}/{MethodName})";
 
-    public InteractionCommandExecuted() { }
+    public InteractionCommandExecuted()
+    {
+    }
 
     public InteractionCommandExecuted(ICommandInfo commandInfo, IResult result, int duration)
     {
@@ -98,10 +100,10 @@ public class InteractionCommandExecuted
         Parameters.AddRange(
             modal.Data.Components.SelectMany((component, index) => new[]
             {
-                 new InteractionCommandParameter { Name = $"ModalComponent({index}).CustomId", Type = "String", Value = component.CustomId },
-                 new InteractionCommandParameter { Name = $"ModalComponent({index}).Type", Type = "String", Value = component.Type.ToString() },
-                 component.Values?.Count > 0 ? new InteractionCommandParameter { Name = $"ModalComponent({index}).Values", Type = "String", Value = string.Join(", ", component.Values) } : null,
-                 !string.IsNullOrEmpty(component.Value) ? new InteractionCommandParameter { Name =  $"ModalComponent({index}).Value", Type = "String", Value = component.Value } : null
+                new InteractionCommandParameter { Name = $"ModalComponent({index}).CustomId", Type = "String", Value = component.CustomId },
+                new InteractionCommandParameter { Name = $"ModalComponent({index}).Type", Type = "String", Value = component.Type.ToString() },
+                component.Values?.Count > 0 ? new InteractionCommandParameter { Name = $"ModalComponent({index}).Values", Type = "String", Value = string.Join(", ", component.Values) } : null,
+                !string.IsNullOrEmpty(component.Value) ? new InteractionCommandParameter { Name = $"ModalComponent({index}).Value", Type = "String", Value = component.Value } : null
             }).Where(o => o != null)
         );
     }

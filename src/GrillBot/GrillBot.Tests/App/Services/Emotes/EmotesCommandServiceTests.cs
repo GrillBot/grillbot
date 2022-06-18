@@ -1,10 +1,10 @@
 ﻿using Discord;
 using GrillBot.App.Services.Emotes;
-using GrillBot.Data;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using GrillBot.Common;
 
 namespace GrillBot.Tests.App.Services.Emotes;
 

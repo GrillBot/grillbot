@@ -1,4 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Common;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Infrastructure;
 

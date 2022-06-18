@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using GrillBot.Data.Extensions.Discord;
 using System.Linq;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.Data.Models.API.Channels;
 

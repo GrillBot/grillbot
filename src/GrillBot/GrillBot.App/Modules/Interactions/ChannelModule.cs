@@ -1,9 +1,9 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Channels;
 using GrillBot.Common.Extensions;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Modules.Interactions;

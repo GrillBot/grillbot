@@ -22,4 +22,52 @@ public static class UserExtensions
     }
 
     public static bool IsUser(this IUser user) => !user.IsBot && !user.IsWebhook;
+
+    public static string GetDisplayName(this IUser user, bool withDiscriminator = true)
+    {
+        return user switch
+        {
+            null => "Neznámý uživatel",
+            IGuildUser sgu when !string.IsNullOrEmpty(sgu.Nickname) => sgu.Nickname,
+            _ => withDiscriminator ? $"{user.Username}#{user.Discriminator}" : user.Username
+        };
+    }
+
+    private static bool HaveAnimatedAvatar(this IUser user) => user.AvatarId?.StartsWith("a_") ?? false;
+    public static string CreateProfilePicFilename(this IUser user, int size) => $"{user.Id}_{user.AvatarId ?? user.Discriminator}_{size}.{(user.HaveAnimatedAvatar() ? "gif" : "png")}";
+
+    public static IRole? GetHighestRole(this IGuildUser user, bool requireColor = false)
+    {
+        var roles = user.GetRoles();
+        if (requireColor)
+            roles = roles.Where(o => o.Color != Color.Default);
+
+        return roles.MaxBy(o => o.Position);
+    }
+
+    public static Task TryAddRoleAsync(this IGuildUser user, IRole role)
+    {
+        return user.RoleIds.Any(o => o == role.Id) ? Task.CompletedTask : user.AddRoleAsync(role);
+    }
+
+    public static Task TryRemoveRoleAsync(this IGuildUser user, IRole role)
+    {
+        return user.RoleIds.All(o => o != role.Id) ? Task.CompletedTask : user.RemoveRoleAsync(role);
+    }
+
+    public static UserStatus GetStatus(this IUser user)
+        => FixStatus(user.Status);
+
+    public static UserStatus GetStatus(this IPresence presence)
+        => FixStatus(presence.Status);
+
+    private static UserStatus FixStatus(this UserStatus status)
+    {
+        return status switch
+        {
+            UserStatus.Invisible => UserStatus.Offline,
+            UserStatus.AFK => UserStatus.Idle,
+            _ => status
+        };
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Modules.Implementations.Unverify;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Common;
 using GrillBot.Data.Exceptions;
 using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 

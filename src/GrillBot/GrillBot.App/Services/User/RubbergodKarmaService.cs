@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.DirectApi;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Models;

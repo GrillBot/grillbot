@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models;
 
 namespace GrillBot.App.Modules.Implementations.Searching;

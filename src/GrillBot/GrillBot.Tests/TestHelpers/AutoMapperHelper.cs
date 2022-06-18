@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using GrillBot.App;
-using GrillBot.Data;
 using GrillBot.Database.Services;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using GrillBot.Common;
 
 namespace GrillBot.Tests.TestHelpers;
 

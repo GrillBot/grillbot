@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;

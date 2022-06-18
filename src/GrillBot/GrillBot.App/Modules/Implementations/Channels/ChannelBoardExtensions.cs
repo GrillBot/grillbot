@@ -1,6 +1,7 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure.Embeds;
+﻿using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Implementations.Channels;
 

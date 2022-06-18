@@ -1,6 +1,7 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Emotes;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Implementations.Emotes;
 

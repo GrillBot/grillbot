@@ -1,8 +1,8 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
+using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Interactions;
 

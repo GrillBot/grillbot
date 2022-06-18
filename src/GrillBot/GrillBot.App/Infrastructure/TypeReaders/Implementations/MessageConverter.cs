@@ -1,7 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Helper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;

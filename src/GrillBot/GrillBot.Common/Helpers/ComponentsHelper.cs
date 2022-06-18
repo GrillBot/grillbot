@@ -1,8 +1,10 @@
-﻿namespace GrillBot.App.Helpers;
+﻿using Discord;
+
+namespace GrillBot.Common.Helpers;
 
 public static class ComponentsHelper
 {
-    public static MessageComponent CreatePaginationComponents(int currentPage, int maxPages, string customIdPrefix)
+    public static MessageComponent? CreatePaginationComponents(int currentPage, int maxPages, string customIdPrefix)
     {
         if (maxPages < 2) return null;
 

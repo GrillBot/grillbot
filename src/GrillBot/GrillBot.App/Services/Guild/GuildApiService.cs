@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
-using GrillBot.Database.Extensions;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 

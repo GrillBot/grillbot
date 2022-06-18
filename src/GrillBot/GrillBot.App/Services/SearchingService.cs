@@ -7,6 +7,7 @@ using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services;

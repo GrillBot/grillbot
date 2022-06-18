@@ -1,4 +1,6 @@
-﻿namespace GrillBot.App.Services;
+﻿using GrillBot.Common.Extensions;
+
+namespace GrillBot.App.Services;
 
 public class MockingService
 {

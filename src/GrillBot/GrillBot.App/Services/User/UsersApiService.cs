@@ -6,6 +6,7 @@ using GrillBot.Data.Models.API.Users;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Models;

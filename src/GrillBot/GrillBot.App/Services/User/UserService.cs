@@ -1,4 +1,5 @@
-﻿using GrillBot.Database.Enums;
+﻿using GrillBot.Common.Extensions;
+using GrillBot.Database.Enums;
 using GrillBot.Data.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Extensions;
@@ -35,7 +36,7 @@ public class UserService
         var userDetailUrl = await CreateWebAdminLink(executor, user);
         var highestRoleWithColor = user.GetHighestRole(true);
         var state = GetUserStateEmote(user, out var userStatus);
-        var joinPosition = user.CalculateJoinPosition();
+        var joinPosition = user.Guild.Users.Count(o => o.JoinedAt < user.JoinedAt);
         var roles = user.Roles.Where(o => !o.IsEveryone).OrderByDescending(o => o.Position).Select(o => o.Mention).ToList();
         var clients = user.ActiveClients.Select(o => o.ToString()).ToList();
 

@@ -1,7 +1,7 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.App.Modules.Implementations.Emotes;
+﻿using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.Common.Extensions;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Models;
 using Microsoft.Extensions.DependencyInjection;

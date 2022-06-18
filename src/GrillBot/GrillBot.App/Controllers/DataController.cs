@@ -11,6 +11,7 @@ using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
 using AutoMapper;
+using GrillBot.Common.Extensions.Discord;
 using Microsoft.AspNetCore.Http;
 
 namespace GrillBot.App.Controllers;

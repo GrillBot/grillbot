@@ -5,119 +5,89 @@ using GrillBot.Common.Extensions;
 namespace GrillBot.App.Services.Channels;
 
 [Initializable]
-public class ChannelService : ServiceBase
+public class ChannelService
 {
     private string CommandPrefix { get; }
     private MessageCacheManager MessageCache { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public ChannelService(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, IConfiguration configuration,
-        MessageCacheManager messageCache) : base(client, dbFactory, null, null)
+    public ChannelService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
+        MessageCacheManager messageCache)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         MessageCache = messageCache;
+        DiscordClient = client;
+        DatabaseBuilder = databaseBuilder;
 
-        DiscordClient.MessageReceived += (message) => message.TryLoadMessage(out SocketUserMessage msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
-        DiscordClient.ChannelDestroyed += (channel) => channel is SocketTextChannel chnl ? OnGuildChannelRemovedAsync(chnl) : Task.CompletedTask;
+        DiscordClient.MessageReceived += message => message.TryLoadMessage(out var msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
         DiscordClient.MessageDeleted += OnMessageRemovedAsync;
     }
 
     private async Task OnMessageReceivedAsync(SocketUserMessage message)
     {
-        int argPos = 0;
+        var argPos = 0;
 
         // Commands and DM in channelboard is not allowed.
         if (message.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix)) return;
-        if (message.Channel is not SocketTextChannel textChannel) return;
+        if (message.Channel is not ITextChannel textChannel) return;
+        if (message.Author is not IGuildUser author) return;
 
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var guildId = textChannel.Guild.Id.ToString();
-        var channelId = textChannel.Id.ToString();
-        var userId = message.Author.Id.ToString();
+        var channel = await repository.Channel.GetOrCreateChannelAsync(textChannel, true);
+        var user = await repository.GuildUser.GetOrCreateGuildUserAsync(author);
 
-        // Check DB for consistency.
-        await dbContext.InitGuildAsync(textChannel.Guild, CancellationToken.None);
-        await dbContext.InitUserAsync(message.Author, CancellationToken.None);
-        await dbContext.InitGuildUserAsync(textChannel.Guild, message.Author as IGuildUser, CancellationToken.None);
-        var channelType = textChannel.GetChannelType();
-        await dbContext.InitGuildChannelAsync(textChannel.Guild, textChannel, channelType.Value, CancellationToken.None);
+        var userChannel = channel.Users.FirstOrDefault(o => o.UserId == user.UserId);
 
-        // Search specific channel for specific guild and user.
-        var channel = await dbContext.UserChannels.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guildId && o.ChannelId == channelId && o.UserId == userId);
-
-        if (channel == null)
+        if (userChannel == null)
         {
-            channel = new Database.Entity.GuildUserChannel()
+            userChannel = new Database.Entity.GuildUserChannel
             {
-                UserId = userId,
-                GuildId = guildId,
-                ChannelId = channelId,
+                User = user,
                 FirstMessageAt = DateTime.Now,
                 Count = 0
             };
 
-            await dbContext.AddAsync(channel);
+            channel.Users.Add(userChannel);
         }
 
-        channel.Count++;
-        channel.LastMessageAt = DateTime.Now;
-        await dbContext.SaveChangesAsync();
+        userChannel.Count++;
+        userChannel.LastMessageAt = DateTime.Now;
+        await repository.CommitAsync();
     }
 
     private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> messageChannel)
     {
         var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, null, true);
-        if (!messageChannel.HasValue || msg == null || messageChannel.Value is not SocketTextChannel channel) return;
+        if (!messageChannel.HasValue || msg == null || messageChannel.Value is not ITextChannel channel) return;
 
-        var guildId = channel.Guild.Id.ToString();
-        var userId = msg.Author.Id.ToString();
-        var channelId = channel.Id.ToString();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        using var dbContext = DbFactory.Create();
+        var channelEntity = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.GuildId, true);
+        var userChannel = channelEntity?.Users.FirstOrDefault(o => o.UserId == msg.Author.Id.ToString());
+        if (userChannel == null) return;
 
-        var dbChannel = await dbContext.UserChannels.AsQueryable()
-            .FirstOrDefaultAsync(o => o.GuildId == guildId && o.UserId == userId && o.ChannelId == channelId);
-
-        if (dbChannel == null) return;
-
-        dbChannel.Count--;
-        await dbContext.SaveChangesAsync();
+        userChannel.Count--;
+        await repository.CommitAsync();
     }
 
-    private async Task OnGuildChannelRemovedAsync(SocketTextChannel channel)
+    private async Task<List<SocketTextChannel>> GetTopMostActiveChannelsOfUserAsync(IUser user, IGuild guild, int take)
     {
-        var guildId = channel.Guild.Id.ToString();
-        var channelId = channel.Id.ToString();
+        await using var repositor = DatabaseBuilder.CreateRepository();
 
-        using var dbContext = DbFactory.Create();
-
-        var channelsQuery = dbContext.UserChannels.AsQueryable().Where(o => o.ChannelId == channelId && o.GuildId == guildId);
-        var channels = await channelsQuery.ToListAsync();
-
-        dbContext.RemoveRange(channels);
-        await dbContext.SaveChangesAsync();
-    }
-
-    public async Task<List<SocketTextChannel>> GetTopMostActiveChannelsOfUserAsync(IUser user, IGuild guild, int take, CancellationToken cancellationToken)
-    {
-        using var dbContext = DbFactory.Create();
-
-        var channelIdQuery = dbContext.UserChannels.AsNoTracking()
-            .Where(o => o.Channel.ChannelType == ChannelType.Text && o.GuildId == guild.Id.ToString() && o.UserId == user.Id.ToString() && o.Count > 0)
-            .OrderByDescending(o => o.Count)
-            .Select(o => o.ChannelId)
-            .Take(take);
-
-        var channelIds = await channelIdQuery.ToListAsync(cancellationToken);
+        var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
+        var topChannels = await repositor.Channel.GetTopChannelsOfUserAsync(guildUser, take, true);
 
         // User not have any active channel.
-        if (channelIds.Count == 0) return new();
+        if (topChannels.Count == 0) return new List<SocketTextChannel>();
 
+        var channelIds = topChannels.ConvertAll(o => o.ChannelId);
         var channels = new List<SocketTextChannel>();
         foreach (var channelId in channelIds)
         {
-            if ((await guild.GetTextChannelAsync(channelId.ToUlong())) is SocketTextChannel channel) channels.Add(channel);
+            if (await guild.GetTextChannelAsync(channelId.ToUlong()) is SocketTextChannel channel)
+                channels.Add(channel);
         }
 
         return channels;
@@ -126,14 +96,14 @@ public class ChannelService : ServiceBase
     /// <summary>
     /// Finds last message from user in cache. If message wasn't found bot will use statistics and refresh cache and tries find message.
     /// </summary>
-    public async Task<IUserMessage> GetLastMsgFromUserAsync(SocketGuild guild, IUser loggedUser, CancellationToken cancellationToken)
+    public async Task<IUserMessage> GetLastMsgFromUserAsync(SocketGuild guild, IUser loggedUser)
     {
         var lastCachedMsgFromAuthor = await MessageCache.GetLastMessageAsync(guild: guild, author: loggedUser);
         if (lastCachedMsgFromAuthor is IUserMessage lastMessage) return lastMessage;
 
         // Using statistics and finding most active channel will help find channel where logged user have any message.
         // This eliminates the need to browser channels and finds some activity.
-        var mostActiveChannels = await GetTopMostActiveChannelsOfUserAsync(loggedUser, guild, 10, cancellationToken);
+        var mostActiveChannels = await GetTopMostActiveChannelsOfUserAsync(loggedUser, guild, 10);
         foreach (var channel in mostActiveChannels)
         {
             lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, true);
@@ -143,25 +113,25 @@ public class ChannelService : ServiceBase
         return guild.TextChannels
             .SelectMany(o => o.CachedMessages)
             .Where(o => o.Author.Id == loggedUser.Id)
-            .OrderByDescending(o => o.Id)
-            .FirstOrDefault() as IUserMessage;
+            .MaxBy(o => o.Id) as IUserMessage;
     }
 
-    private async Task<IUserMessage> TryFindLastMessageFromUserAsync(SocketTextChannel channel, IUser loggedUser, bool canTryDownload)
+    private async Task<IUserMessage> TryFindLastMessageFromUserAsync(ISocketMessageChannel channel, IUser loggedUser, bool canTryDownload)
     {
         var lastMessage = new[]
         {
-                channel.CachedMessages.Where(o => o.Author.Id == loggedUser.Id).OrderByDescending(o => o.Id).FirstOrDefault(),
-                await MessageCache.GetLastMessageAsync(channel: channel, author: loggedUser)
-            }.Where(o => o != null).OrderByDescending(o => o.Id).FirstOrDefault();
+            channel.CachedMessages.Where(o => o.Author.Id == loggedUser.Id).MaxBy(o => o.Id),
+            await MessageCache.GetLastMessageAsync(channel: channel, author: loggedUser)
+        }.Where(o => o != null).MaxBy(o => o.Id);
 
-        if (lastMessage == null && canTryDownload)
-        {
-            // Try reload cache and try find message.
-            await MessageCache.DownloadMessagesAsync(channel);
-            return await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
-        }
+        if (lastMessage != null)
+            return (IUserMessage)lastMessage;
 
-        return lastMessage as IUserMessage;
+        if (!canTryDownload)
+            return null;
+
+        // Try reload cache and try find message.
+        await MessageCache.DownloadMessagesAsync(channel);
+        return await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
     }
 }

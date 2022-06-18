@@ -10,7 +10,7 @@ public class GuildUserChannel
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public string ChannelId { get; set; } = null!;
 
-    public GuildChannel? Channel { get; set; }
+    public GuildChannel Channel { get; set; } = null!;
 
     [StringLength(30)]
     public string GuildId { get; set; } = null!;

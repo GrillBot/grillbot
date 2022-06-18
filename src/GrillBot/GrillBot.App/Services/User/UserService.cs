@@ -92,7 +92,7 @@ public class UserService
             );
         }
 
-        var topChannels = await repository.Channel.GetTopChannelsOfUserAsync(user);
+        var topChannels = await repository.Channel.GetTopChannelStatsOfUserAsync(user);
 
         if (topChannels.mostActive != null)
             embed.AddField("Nejaktivnější kanál", $"<#{topChannels.mostActive.ChannelId}> ({topChannels.mostActive.Count})");

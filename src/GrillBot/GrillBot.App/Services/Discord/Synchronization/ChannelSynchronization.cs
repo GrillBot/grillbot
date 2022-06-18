@@ -8,9 +8,6 @@ public class ChannelSynchronization : SynchronizationBase
     {
     }
 
-    private static IQueryable<GuildChannel> GetBaseQuery(GrillBotContext context, ulong guildId)
-        => context.Channels.Where(o => o.GuildId == guildId.ToString());
-
     public async Task ChannelDeletedAsync(ITextChannel channel)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -21,7 +18,7 @@ public class ChannelSynchronization : SynchronizationBase
         dbChannel.MarkDeleted(true);
         if (channel is not IThreadChannel)
         {
-            var threads = await repository.Channel.GetChildChannelsAsync(channel);
+            var threads = await repository.Channel.GetChildChannelsAsync(channel.Id, channel.Guild.Id);
             threads.ForEach(o => o.MarkDeleted(true));
         }
 

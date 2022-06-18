@@ -81,16 +81,15 @@ public class ChannelController : Controller
     /// Get detail of channel.
     /// </summary>
     /// <param name="id">Channel Id</param>
-    /// <param name="cancellationToken"></param>
     /// <response code="200">Returns detail of channel.</response>
     /// <response code="404">Channel not found.</response>
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id)
     {
-        var result = await ApiService.GetDetailAsync(id, cancellationToken);
+        var result = await ApiService.GetDetailAsync(id);
 
         if (result == null)
             return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
@@ -140,7 +139,7 @@ public class ChannelController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromQuery] PaginatedParams pagination, CancellationToken cancellationToken = default)
     {
-        var result = await ApiService.GetChannelUsersAsync(id, pagination, cancellationToken);
+        var result = await ApiService.GetChannelUsersAsync(id, pagination);
         return Ok(result);
     }
 
@@ -152,9 +151,9 @@ public class ChannelController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ResponseCache(CacheProfileName = "BoardApi")]
-    public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync()
     {
-        var result = await ApiService.GetChannelBoardAsync(User, cancellationToken);
+        var result = await ApiService.GetChannelBoardAsync();
         return Ok(result);
     }
 }

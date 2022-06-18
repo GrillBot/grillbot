@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.AutoReply;
 using GrillBot.Cache.Services.Managers;
@@ -10,37 +9,44 @@ using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Channels;
 
-public class ChannelApiService : ServiceBase
+public class ChannelApiService
 {
     private MessageCacheManager MessageCache { get; }
     private AuditLogService AuditLogService { get; }
     private AutoReplyService AutoReplyService { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IDiscordClient DiscordClient { get; }
+    private IMapper Mapper { get; }
+    private ApiRequestContext ApiRequestContext { get; }
 
-    public ChannelApiService(GrillBotDatabaseBuilder dbFactory, IMapper mapper, IDiscordClient client, MessageCacheManager messageCache,
-        AuditLogService auditLogService, AutoReplyService autoReplyService) : base(null, dbFactory, client, mapper)
+    public ChannelApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient client, MessageCacheManager messageCache,
+        AuditLogService auditLogService, AutoReplyService autoReplyService, ApiRequestContext apiRequestContext)
     {
         MessageCache = messageCache;
         AuditLogService = auditLogService;
         AutoReplyService = autoReplyService;
+        DatabaseBuilder = databaseBuilder;
+        Mapper = mapper;
+        DiscordClient = client;
+        ApiRequestContext = apiRequestContext;
     }
 
     public async Task<PaginatedResponse<GuildChannelListItem>> GetListAsync(GetChannelListParams parameters)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.CreateQuery(parameters, true);
-
-        return await PaginatedResponse<GuildChannelListItem>
-            .CreateAsync(query, parameters.Pagination, entity => MapChannelAsync(entity));
+        var data = await repository.Channel.GetChannelListAsync(parameters, parameters.Pagination);
+        return await PaginatedResponse<GuildChannelListItem>.CopyAndMapAsync(data, MapChannelAsync);
     }
 
-    private async Task<GuildChannelListItem> MapChannelAsync(Database.Entity.GuildChannel entity, CancellationToken cancellationToken = default)
+    private async Task<GuildChannelListItem> MapChannelAsync(Database.Entity.GuildChannel entity)
     {
-        var guild = await DcClient.GetGuildAsync(entity.GuildId.ToUlong(), options: new() { CancelToken = cancellationToken });
+        var guild = await DiscordClient.GetGuildAsync(entity.GuildId.ToUlong());
         var guildChannel = guild != null ? await guild.GetChannelAsync(entity.ChannelId.ToUlong()) : null;
 
         var result = Mapper.Map<GuildChannelListItem>(entity);
@@ -56,57 +62,44 @@ public class ChannelApiService : ServiceBase
         return result;
     }
 
-    public async Task<ChannelDetail> GetDetailAsync(ulong id, CancellationToken cancellationToken = default)
+    public async Task<ChannelDetail> GetDetailAsync(ulong id)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.Channels.AsNoTracking()
-            .Include(o => o.Guild)
-            .Include(o => o.Users.Where(o => o.Count > 0)).ThenInclude(o => o.User.User)
-            .Include(o => o.ParentChannel);
-
-        var channel = await query.FirstOrDefaultAsync(o => o.ChannelId == id.ToString(), cancellationToken);
+        var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, true, true);
         if (channel == null) return null;
 
         var result = Mapper.Map<ChannelDetail>(channel);
-
         if (channel.IsText())
         {
-            var threads = await context.Channels.AsNoTracking()
-                .Where(o => (o.ChannelType == ChannelType.PublicThread || o.ChannelType == ChannelType.PrivateThread) && o.ParentChannelId == result.Id)
-                .ToListAsync(cancellationToken);
-
+            var threads = await repository.Channel.GetChildChannelsAsync(id);
             result.Threads = Mapper.Map<List<Channel>>(threads);
         }
 
-        var guild = await DcClient.GetGuildAsync(channel.GuildId.ToUlong());
+        var guild = await DiscordClient.GetGuildAsync(channel.GuildId.ToUlong());
         var guildChannel = guild != null ? await guild.GetChannelAsync(channel.ChannelId.ToUlong()) : null;
-        if (guildChannel != null)
-        {
-            result = Mapper.Map(guildChannel, result);
-            result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
-        }
+        if (guildChannel == null)
+            return result;
 
+        result = Mapper.Map(guildChannel, result);
+        result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
         return result;
     }
 
     public async Task<bool> UpdateChannelAsync(ulong id, UpdateChannelParams parameters)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var channel = await context.Channels
-            .FirstOrDefaultAsync(o => o.ChannelId == id.ToString());
-
+        var channel = await repository.Channel.FindChannelByIdAsync(id);
         if (channel == null)
             throw new NotFoundException();
 
-        bool reloadAutoReply = channel.HasFlag(ChannelFlags.AutoReplyDeactivated) !=
-            ((parameters.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0);
+        var reloadAutoReply = channel.HasFlag(ChannelFlags.AutoReplyDeactivated) != ((parameters.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0);
 
         channel.Flags = parameters.Flags;
-        var success = (await context.SaveChangesAsync()) > 0;
+        var success = await repository.CommitAsync() > 0;
 
-        if (reloadAutoReply)
+        if (reloadAutoReply && success)
             await AutoReplyService.InitAsync();
 
         return success;
@@ -114,7 +107,7 @@ public class ChannelApiService : ServiceBase
 
     public async Task PostMessageAsync(ulong guildId, ulong channelId, SendMessageToChannelParams parameters)
     {
-        var guild = await DcClient.GetGuildAsync(guildId);
+        var guild = await DiscordClient.GetGuildAsync(guildId);
         if (guild == null)
             throw new NotFoundException("Nepodařilo se najít server.");
 
@@ -128,9 +121,10 @@ public class ChannelApiService : ServiceBase
 
     public async Task ClearCacheAsync(ulong guildId, ulong channelId, ClaimsPrincipal user)
     {
-        var guild = await DcClient.GetGuildAsync(guildId);
-        var channel = await guild?.GetTextChannelAsync(channelId);
+        var guild = await DiscordClient.GetGuildAsync(guildId);
+        if (guild == null) return;
 
+        var channel = await guild.GetTextChannelAsync(channelId);
         if (channel == null)
             return;
 
@@ -138,39 +132,35 @@ public class ChannelApiService : ServiceBase
 
         var auditLogItem = new AuditLogDataWrapper(
             AuditLogItemType.Info,
-            $"Byla manuálně smazána cache zpráv kanálu. Smazaných zpráv: {clearedCount}",
-            guild, channel, await DcClient.FindUserAsync(user.GetUserId())
+            $"Byla ručně smazána cache zpráv kanálu. Smazaných zpráv: {clearedCount}",
+            guild, channel, ApiRequestContext.LoggedUser
         );
 
         await AuditLogService.StoreItemAsync(auditLogItem);
     }
 
-    public async Task<PaginatedResponse<ChannelUserStatItem>> GetChannelUsersAsync(ulong channelId, PaginatedParams pagination, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<ChannelUserStatItem>> GetChannelUsersAsync(ulong channelId, PaginatedParams pagination)
     {
-        using var context = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = context.UserChannels.AsNoTracking()
-            .Include(o => o.User.User)
-            .OrderByDescending(o => o.Count)
-            .Where(o => o.ChannelId == channelId.ToString() && o.Count > 0);
-
+        var data = await repository.Channel.GetUserChannelListAsync(channelId, pagination);
         var result = await PaginatedResponse<ChannelUserStatItem>
-            .CreateAsync(query, pagination, entity => Mapper.Map<ChannelUserStatItem>(entity));
+            .CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<ChannelUserStatItem>(entity)));
 
-        for (int i = 0; i < result.Data.Count; i++)
+        for (var i = 0; i < result.Data.Count; i++)
             result.Data[i].Position = pagination.Skip + i + 1;
 
         return result;
     }
 
-    public async Task<List<ChannelboardItem>> GetChannelBoardAsync(ClaimsPrincipal loggedUser, CancellationToken cancellationToken = default)
+    public async Task<List<ChannelboardItem>> GetChannelBoardAsync()
     {
-        var loggedUserId = loggedUser.GetUserId();
-        var mutualGuilds = await DcClient.FindMutualGuildsAsync(loggedUserId);
+        var loggedUserId = ApiRequestContext.LoggedUserId;
+        var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
         var result = new List<ChannelboardItem>();
 
         foreach (var guild in mutualGuilds)
-            result.AddRange(await GetChannelBoardOfGuildAsync(loggedUserId, guild, cancellationToken));
+            result.AddRange(await GetChannelBoardOfGuildAsync(loggedUserId, guild));
 
         return result
             .OrderByDescending(o => o.Count)
@@ -178,43 +168,31 @@ public class ChannelApiService : ServiceBase
             .ToList();
     }
 
-    private async Task<List<ChannelboardItem>> GetChannelBoardOfGuildAsync(ulong loggedUserId, IGuild guild, CancellationToken cancellationToken = default)
+    private async Task<List<ChannelboardItem>> GetChannelBoardOfGuildAsync(ulong loggedUserId, IGuild guild)
     {
         var guildUser = await guild.GetUserAsync(loggedUserId);
+
         var availableChannels = await guild.GetAvailableChannelsAsync(guildUser, true);
         if (availableChannels.Count == 0) return new List<ChannelboardItem>();
-
-        using var context = DbFactory.Create();
-
         var availableChannelIds = availableChannels.ConvertAll(o => o.Id.ToString());
-        var baseQuery = context.UserChannels.AsNoTracking()
-            .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString() && availableChannelIds.Contains(o.ChannelId))
-            .GroupBy(o => o.ChannelId)
-            .Select(o => new
-            {
-                ChannelId = o.Key,
-                Count = o.Sum(x => x.Count),
-                LastMessageAt = o.Max(x => x.LastMessageAt),
-                FirstMessageAt = o.Min(x => x.FirstMessageAt)
-            });
 
-        var channelStats = await baseQuery.ToListAsync(cancellationToken);
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var channelStats = await repository.Channel.GetAvailableStatsAsync(guild, availableChannelIds);
         if (channelStats.Count == 0) return new List<ChannelboardItem>();
 
-        var channelStatIds = channelStats.ConvertAll(o => o.ChannelId);
-        var channelsQuery = context.Channels.AsNoTracking()
-            .Include(o => o.Guild)
-            .Where(o => o.GuildId == guild.Id.ToString() && channelStatIds.Contains(o.ChannelId));
+        var channelStatIds = channelStats.ConvertAll(o => o.channelId);
+        var channels = await repository.Channel.GetVisibleChannelsAsync(guild.Id, channelStatIds, true, true);
 
         var result = new List<ChannelboardItem>();
-        foreach (var channel in await channelsQuery.ToListAsync(cancellationToken))
+        foreach (var channel in channels)
         {
-            var stats = channelStats.Find(o => o.ChannelId == channel.ChannelId);
+            var stats = channelStats.Find(o => o.channelId == channel.ChannelId);
 
             var channelboardItem = Mapper.Map<ChannelboardItem>(channel);
-            channelboardItem.Count = stats.Count;
-            channelboardItem.LastMessageAt = stats.LastMessageAt;
-            channelboardItem.FirstMessageAt = stats.FirstMessageAt;
+            channelboardItem.Count = stats.count;
+            channelboardItem.LastMessageAt = stats.lastMessageAt;
+            channelboardItem.FirstMessageAt = stats.firstMessageAt;
 
             result.Add(channelboardItem);
         }

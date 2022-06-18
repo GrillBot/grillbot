@@ -87,8 +87,7 @@ public class AuditLogService : ServiceBase
 
         await using var repository = DbFactory.CreateRepository();
 
-        var channels = await repository.Channel.FindChannelsByIdAsync(channelId, true);
-        var channelEntity = channels.FirstOrDefault();
+        var channelEntity = await repository.Channel.FindChannelByIdAsync(channelId, null, true);
         if (channelEntity == null)
             return null;
 

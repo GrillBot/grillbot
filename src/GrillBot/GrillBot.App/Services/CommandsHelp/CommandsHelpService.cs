@@ -36,14 +36,14 @@ public class CommandsHelpService
 
         foreach (var module in CommandService.Modules.Where(o => o.Commands.Count > 0))
         {
-            var group = await GetTextBasedGroupAsync(loggedUser, module, cancellationToken);
+            var group = await GetTextBasedGroupAsync(loggedUser, module);
             if (group != null) result.Add(group);
         }
 
         return result;
     }
 
-    private async Task<CommandGroup> GetTextBasedGroupAsync(IUser loggedUser, ModuleInfo module, CancellationToken cancellationToken)
+    private async Task<CommandGroup> GetTextBasedGroupAsync(IUser loggedUser, ModuleInfo module)
     {
         var group = new CommandGroup
         {
@@ -53,7 +53,7 @@ public class CommandsHelpService
 
         foreach (var guild in DiscordClient.FindMutualGuilds(loggedUser.Id))
         {
-            var lastMessage = await ChannelService.GetLastMsgFromUserAsync(guild, loggedUser, cancellationToken);
+            var lastMessage = await ChannelService.GetLastMsgFromUserAsync(guild, loggedUser);
             if (lastMessage == null) continue;
             var context = new CommandContext(DiscordClient, lastMessage);
 

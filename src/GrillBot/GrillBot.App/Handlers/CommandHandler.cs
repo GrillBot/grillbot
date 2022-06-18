@@ -9,22 +9,24 @@ using GrillBot.Common.Managers;
 namespace GrillBot.App.Handlers;
 
 [Initializable]
-public class CommandHandler : ServiceBase
+public class CommandHandler
 {
     private CommandService CommandService { get; }
     private IServiceProvider Provider { get; }
     private IConfiguration Configuration { get; }
     private AuditLogService AuditLogService { get; }
     private InitManager InitManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
 
     public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IConfiguration configuration,
-        AuditLogService auditLogService, InitManager initManager) : base(client)
+        AuditLogService auditLogService, InitManager initManager)
     {
         CommandService = commandService;
         Provider = provider;
         Configuration = configuration;
         AuditLogService = auditLogService;
         InitManager = initManager;
+        DiscordClient = client;
 
         CommandService.CommandExecuted += OnCommandExecutedAsync;
         DiscordClient.MessageReceived += OnCommandTriggerTryAsync;
@@ -33,12 +35,13 @@ public class CommandHandler : ServiceBase
     private async Task OnCommandTriggerTryAsync(SocketMessage message)
     {
         if (!InitManager.Get()) return;
-        if (!message.TryLoadMessage(out SocketUserMessage userMessage)) return;
+        if (!message.TryLoadMessage(out var userMessage)) return;
+        if (userMessage == null) return;
 
         var context = new SocketCommandContext(DiscordClient, userMessage);
         CommandsPerformanceCounter.StartTask(context);
 
-        int argumentPosition = 0;
+        var argumentPosition = 0;
         var prefix = Configuration.GetValue<string>("Discord:Commands:Prefix");
         if (userMessage.IsCommand(ref argumentPosition, DiscordClient.CurrentUser, prefix))
             await CommandService.ExecuteAsync(context, argumentPosition, Provider);
@@ -47,12 +50,12 @@ public class CommandHandler : ServiceBase
     private async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
     {
         // Null is success, because some modules returns null after success and library always returns ExecuteResult.
-        if (result == null) result = ExecuteResult.FromSuccess();
+        result ??= ExecuteResult.FromSuccess();
 
         var duration = CommandsPerformanceCounter.TaskFinished(context);
         if (!result.IsSuccess && result.Error != null)
         {
-            string reply = "";
+            var reply = "";
 
             switch (result.Error.Value)
             {
@@ -80,6 +83,11 @@ public class CommandHandler : ServiceBase
                 case CommandError.Exception:
                     await context.Message.AddReactionAsync(new Emoji("❌"));
                     break;
+                case CommandError.UnknownCommand:
+                case CommandError.MultipleMatches:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(null, nameof(result.Error));
             }
 
             // Reply to command message with mentioning user

@@ -9,16 +9,19 @@ namespace GrillBot.App.Handlers;
 
 // Credits to Janch and Khub.
 [Initializable]
-public class ReactionHandler : ServiceBase
+public class ReactionHandler
 {
     private IEnumerable<ReactionEventHandler> EventHandlers { get; }
     private MessageCacheManager MessageCache { get; }
     private LoggingService LoggingService { get; }
     private InitManager InitManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
 
     public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers,
-        MessageCacheManager messageCacheManager, InitManager initManager, LoggingService loggingService) : base(client, null)
+        MessageCacheManager messageCacheManager, InitManager initManager, LoggingService loggingService)
     {
+        DiscordClient = client;
+
         DiscordClient.ReactionAdded += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added, channel);
         DiscordClient.ReactionRemoved += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed, channel);
 
@@ -84,7 +87,7 @@ public class ReactionHandler : ServiceBase
             }
             catch (Exception ex)
             {
-                var exMessage = string.Format("Reaction handler threw an exception when handling reaction {0} added to message {1}.", reaction.Emote.Name, message.ToString());
+                var exMessage = $"Reaction handler threw an exception when handling reaction {reaction.Emote.Name} added to message {message.ToString()}.";
                 await LoggingService.ErrorAsync(handler.GetType().Name, exMessage, ex);
             }
         }

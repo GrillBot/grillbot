@@ -9,20 +9,21 @@ using GrillBot.Common.Managers;
 namespace GrillBot.App.Handlers;
 
 [Initializable]
-public class InteractionHandler : ServiceBase
+public class InteractionHandler
 {
     private InteractionService InteractionService { get; }
     private IServiceProvider Provider { get; }
     private AuditLogService AuditLogService { get; }
     private InitManager InitManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
 
-    public InteractionHandler(DiscordSocketClient client, GrillBotDatabaseBuilder dbFactory, IServiceProvider provider,
-        InteractionService interactionService, InitManager initManager, AuditLogService auditLogService) : base(client, dbFactory)
+    public InteractionHandler(DiscordSocketClient client, IServiceProvider provider, InteractionService interactionService, InitManager initManager, AuditLogService auditLogService)
     {
         Provider = provider;
         InteractionService = interactionService;
         AuditLogService = auditLogService;
         InitManager = initManager;
+        DiscordClient = client;
 
         DiscordClient.InteractionCreated += HandleInteractionAsync;
         InteractionService.SlashCommandExecuted += OnCommandExecutedAsync;
@@ -63,6 +64,11 @@ public class InteractionHandler : ServiceBase
                     if (originalMessage != null)
                         await originalMessage.AddReactionAsync(Emojis.Nok);
                     break;
+                case InteractionCommandError.UnknownCommand:
+                case InteractionCommandError.BadArgs:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(null, nameof(result.Error));
             }
 
             if (!string.IsNullOrEmpty(reply))
@@ -74,21 +80,18 @@ public class InteractionHandler : ServiceBase
                         await context.Interaction.RespondAsync(reply, ephemeral: true);
                         return;
                     }
-                    else
+
+                    try
                     {
-                        try
-                        {
-                            await context.User.SendMessageAsync(reply);
-                        }
-                        catch (HttpException ex) when (ex.DiscordCode != DiscordErrorCode.CannotSendMessageToUser)
-                        {
-                            throw;
-                        }
+                        await context.User.SendMessageAsync(reply);
+                    }
+                    catch (HttpException ex) when (ex.DiscordCode != DiscordErrorCode.CannotSendMessageToUser)
+                    {
+                        throw;
                     }
                 }
                 else
                 {
-                    await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Content = "Command failed");
                     var originalMessage = await context.Interaction.GetOriginalResponseAsync();
                     await originalMessage.ReplyAsync($"{context.User.Mention} {reply}",
                         allowedMentions: new AllowedMentions(AllowedMentionTypes.Users) { MentionRepliedUser = true });

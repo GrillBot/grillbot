@@ -31,9 +31,9 @@ public class GuildController : Controller
     [HttpGet]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromQuery] GetGuildListParams parameters, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromQuery] GetGuildListParams parameters)
     {
-        var result = await ApiService.GetListAsync(parameters, cancellationToken);
+        var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
 
@@ -45,9 +45,9 @@ public class GuildController : Controller
     [HttpGet("{id}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id, CancellationToken cancellationToken)
+    public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id)
     {
-        var guildDetail = await ApiService.GetDetailAsync(id, cancellationToken);
+        var guildDetail = await ApiService.GetDetailAsync(id);
         if (guildDetail == null)
             return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
 

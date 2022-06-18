@@ -1,50 +1,50 @@
 ﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
 using GrillBot.Data.Models.API.AutoReply;
 
 namespace GrillBot.App.Services.AutoReply;
 
-public class AutoReplyApiService : ServiceBase
+public class AutoReplyApiService
 {
     private AutoReplyService AutoReplyService { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IMapper Mapper { get; }
 
-    public AutoReplyApiService(AutoReplyService autoReplyService, GrillBotDatabaseBuilder dbFactory, IMapper mapper) : base(null, dbFactory, null, mapper)
+    public AutoReplyApiService(AutoReplyService autoReplyService, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper)
     {
         AutoReplyService = autoReplyService;
+        DatabaseBuilder = databaseBuilder;
+        Mapper = mapper;
     }
 
-    public async Task<List<AutoReplyItem>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<List<AutoReplyItem>> GetListAsync()
     {
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = dbContext.AutoReplies.AsNoTracking().OrderBy(o => o.Id);
-        var data = await query.ToListAsync(cancellationToken);
+        var data = await repository.AutoReply.GetAllAsync();
         return Mapper.Map<List<AutoReplyItem>>(data);
     }
 
-    public async Task<AutoReplyItem> GetItemAsync(long id, CancellationToken cancellationToken)
+    public async Task<AutoReplyItem> GetItemAsync(long id)
     {
-        using var dbContext = DbFactory.Create();
-
-        var entity = await dbContext.AutoReplies.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var entity = await repository.AutoReply.FindReplyByIdAsync(id);
 
         return Mapper.Map<AutoReplyItem>(entity);
     }
 
     public async Task<AutoReplyItem> CreateItemAsync(AutoReplyItemParams parameters)
     {
-        var entity = new Database.Entity.AutoReplyItem()
+        var entity = new Database.Entity.AutoReplyItem
         {
             Flags = parameters.Flags,
             Reply = parameters.Reply,
             Template = parameters.Template
         };
 
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        await dbContext.AddAsync(entity);
-        await dbContext.SaveChangesAsync();
+        await repository.AddAsync(entity);
+        await repository.CommitAsync();
         await AutoReplyService.InitAsync();
 
         return Mapper.Map<AutoReplyItem>(entity);
@@ -52,11 +52,9 @@ public class AutoReplyApiService : ServiceBase
 
     public async Task<AutoReplyItem> UpdateItemAsync(long id, AutoReplyItemParams parameters)
     {
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var entity = await dbContext.AutoReplies.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id);
-
+        var entity = await repository.AutoReply.FindReplyByIdAsync(id);
         if (entity == null)
             return null;
 
@@ -64,7 +62,7 @@ public class AutoReplyApiService : ServiceBase
         entity.Flags = parameters.Flags;
         entity.Reply = parameters.Reply;
 
-        await dbContext.SaveChangesAsync();
+        await repository.CommitAsync();
         await AutoReplyService.InitAsync();
 
         return Mapper.Map<AutoReplyItem>(entity);
@@ -72,16 +70,15 @@ public class AutoReplyApiService : ServiceBase
 
     public async Task<bool> RemoveItemAsync(long id)
     {
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var entity = await dbContext.AutoReplies.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Id == id);
-
+        var entity = await repository.AutoReply.FindReplyByIdAsync(id);
         if (entity == null) return false;
 
-        dbContext.Remove(entity);
-        await dbContext.SaveChangesAsync();
+        repository.Remove(entity);
+        await repository.CommitAsync();
         await AutoReplyService.InitAsync();
+
         return true;
     }
 }

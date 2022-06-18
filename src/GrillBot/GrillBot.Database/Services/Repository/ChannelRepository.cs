@@ -70,11 +70,11 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<List<GuildChannel>> GetAllChannelsAsync()
+    public async Task<List<GuildChannel>> GetAllChannelsAsync(bool disableTracking = false, bool includeDeleted = true)
     {
         using (Counter.Create("Database"))
         {
-            return await GetBaseQuery(true, false, false).ToListAsync();
+            return await GetBaseQuery(includeDeleted, disableTracking, false).ToListAsync();
         }
     }
 
@@ -123,8 +123,8 @@ public class ChannelRepository : RepositoryBase
                     o.Count > 0 &&
                     o.GuildId == user.GuildId.ToString() &&
                     o.UserId == user.Id.ToString() &&
-                    (o.Channel!.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
-                    (o.Channel!.Flags & (long)ChannelFlags.Deleted) == 0
+                    (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
+                    (o.Channel.Flags & (long)ChannelFlags.Deleted) == 0
                 );
 
             return await query.SumAsync(o => o.Count);
@@ -157,7 +157,7 @@ public class ChannelRepository : RepositoryBase
         {
             var query = Context.UserChannels
                 .Where(o =>
-                    o.Channel!.ChannelType == ChannelType.Text &&
+                    o.Channel.ChannelType == ChannelType.Text &&
                     o.GuildId == user.GuildId.ToString() &&
                     o.UserId == user.Id.ToString() &&
                     o.Count > 0 &&

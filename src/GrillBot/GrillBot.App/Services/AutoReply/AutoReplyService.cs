@@ -8,34 +8,35 @@ using System.Text.RegularExpressions;
 namespace GrillBot.App.Services.AutoReply;
 
 [Initializable]
-public class AutoReplyService : ServiceBase
+public class AutoReplyService
 {
     private string Prefix { get; }
 
     private List<ulong> DisabledChannels { get; }
     private List<AutoReplyItem> Messages { get; }
-    private SemaphoreSlim Semaphore { get; }
+    private SemaphoreSlim Semaphore { get; } = new(1);
 
     private InitManager InitManager { get; }
+    private DiscordSocketClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotDatabaseBuilder dbFactory,
-        InitManager initManager) : base(discordClient, dbFactory)
+    public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder,
+        InitManager initManager)
     {
         Prefix = configuration["Discord:Commands:Prefix"];
         Messages = new List<AutoReplyItem>();
         DisabledChannels = new List<ulong>();
-        Semaphore = new(1);
         InitManager = initManager;
+        DatabaseBuilder = databaseBuilder;
+        DiscordClient = discordClient;
 
-        DiscordClient.Ready += () => InitAsync();
-        DiscordClient.MessageReceived += (message) =>
+        DiscordClient.Ready += InitAsync;
+        DiscordClient.MessageReceived += message =>
         {
             if (!InitManager.Get()) return Task.CompletedTask;
             if (!message.TryLoadMessage(out var userMessage)) return Task.CompletedTask;
             if (userMessage.IsCommand(DiscordClient.CurrentUser, Prefix)) return Task.CompletedTask;
-            if (DisabledChannels.Contains(message.Channel.Id)) return Task.CompletedTask;
-
-            return OnMessageReceivedAsync(userMessage);
+            return DisabledChannels.Contains(message.Channel.Id) ? Task.CompletedTask : OnMessageReceivedAsync(userMessage);
         };
     }
 
@@ -45,20 +46,18 @@ public class AutoReplyService : ServiceBase
 
         try
         {
-            using var dbContext = DbFactory.Create();
-            var messages = await dbContext.AutoReplies.AsNoTracking().ToListAsync();
+            await using var repository = DatabaseBuilder.CreateRepository();
+            var messages = await repository.AutoReply.GetAllAsync();
 
             Messages.Clear();
             Messages.AddRange(messages);
 
-            var disabledChannels = await dbContext.Channels.AsNoTracking()
-                .Where(o => (o.Flags & (long)ChannelFlags.Deleted) == 0 && (o.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0)
-                .Select(o => o.ChannelId)
-                .ToListAsync();
+            var disabledChannels = await repository.Channel.GetAllChannelsAsync(true, false);
+            disabledChannels = disabledChannels.FindAll(o => (o.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0);
 
             DisabledChannels.Clear();
             DisabledChannels.AddRange(
-                disabledChannels.Select(o => o.ToUlong())
+                disabledChannels.Select(o => o.ChannelId.ToUlong())
             );
         }
         finally
@@ -67,7 +66,7 @@ public class AutoReplyService : ServiceBase
         }
     }
 
-    private async Task OnMessageReceivedAsync(SocketUserMessage message)
+    private async Task OnMessageReceivedAsync(SocketMessage message)
     {
         await Semaphore.WaitAsync();
 

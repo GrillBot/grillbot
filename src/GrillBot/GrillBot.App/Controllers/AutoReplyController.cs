@@ -31,7 +31,7 @@ public class AutoReplyController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync(CancellationToken cancellationToken)
     {
-        var result = await AutoReplyApiService.GetListAsync(cancellationToken);
+        var result = await AutoReplyApiService.GetListAsync();
         return Ok(result);
     }
 
@@ -47,7 +47,7 @@ public class AutoReplyController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id, CancellationToken cancellationToken)
     {
-        var item = await AutoReplyApiService.GetItemAsync(id, cancellationToken);
+        var item = await AutoReplyApiService.GetItemAsync(id);
 
         if (item == null)
             return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));

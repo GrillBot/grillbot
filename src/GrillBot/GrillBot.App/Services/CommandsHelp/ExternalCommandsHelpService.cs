@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.CommandsHelp.Parsers;
+﻿using GrillBot.App.Services.CommandsHelp.Parsers;
 using GrillBot.App.Services.DirectApi;
 using GrillBot.Data.Models.API.Help;
 using System.Reflection;
@@ -36,33 +35,28 @@ public class ExternalCommandsHelpService
 
     private List<CommandGroup> FindParserAndParse(IConfiguration externalServiceConfig, JArray json)
     {
-        IHelpParser parserInstance = null;
         var parserName = externalServiceConfig.GetValue<string>("HelpParserClass");
 
-        if (!string.IsNullOrEmpty(parserName))
-        {
-            var parserType = Array.Find(
-                Assembly.GetExecutingAssembly().GetTypes(),
-                o => o.GetInterface(ParserInterfaceType.Name) != null && o.Name == parserName
-            );
-
-            if (parserType != null)
-            {
-                parserInstance = ServiceProvider.GetService(parserType) as IHelpParser;
-                if (parserInstance == null)
-                {
-                    var constructor = parserType.GetConstructor(Type.EmptyTypes);
-
-                    if (constructor?.IsPublic == true && constructor.GetParameters().Length == 0)
-                        parserInstance = Activator.CreateInstance(parserType) as IHelpParser;
-                }
-            }
-        }
-
-        // If no parser is defined or cannot get instance, then is used direct deserialization to API models.
-        if (parserInstance == null)
+        if (string.IsNullOrEmpty(parserName))
             return json.ToObject<List<CommandGroup>>();
 
-        return parserInstance.Parse(json);
+        var parserType = Array.Find(
+            Assembly.GetExecutingAssembly().GetTypes(),
+            o => o.GetInterface(ParserInterfaceType.Name) != null && o.Name == parserName
+        );
+
+        if (parserType == null)
+            return json.ToObject<List<CommandGroup>>();
+
+        var parserInstance = ServiceProvider.GetService(parserType) as IHelpParser;
+        if (parserInstance != null)
+            return parserInstance.Parse(json);
+
+        var constructor = parserType.GetConstructor(Type.EmptyTypes);
+        if (constructor?.IsPublic == true && constructor.GetParameters().Length == 0)
+            parserInstance = Activator.CreateInstance(parserType) as IHelpParser;
+
+        // If no parser is defined or cannot get instance, then is used direct deserialization to API models.
+        return parserInstance == null ? json.ToObject<List<CommandGroup>>() : parserInstance.Parse(json);
     }
 }

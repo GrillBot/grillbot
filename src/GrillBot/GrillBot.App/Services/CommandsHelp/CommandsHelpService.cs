@@ -45,7 +45,7 @@ public class CommandsHelpService
 
     private async Task<CommandGroup> GetTextBasedGroupAsync(IUser loggedUser, ModuleInfo module, CancellationToken cancellationToken)
     {
-        var group = new CommandGroup()
+        var group = new CommandGroup
         {
             Description = FormatHelper.FormatCommandDescription(module.Summary, Prefix, true),
             GroupName = module.Name
@@ -65,7 +65,7 @@ public class CommandsHelpService
 
                 if (cmd == null)
                 {
-                    cmd = new TextBasedCommand()
+                    cmd = new TextBasedCommand
                     {
                         CommandId = fullCommand,
                         Command = Prefix + command.Aliases[0],

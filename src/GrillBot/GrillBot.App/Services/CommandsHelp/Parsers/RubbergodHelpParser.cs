@@ -8,35 +8,34 @@ public class RubbergodHelpParser : IHelpParser
     public List<CommandGroup> Parse(JArray json)
     {
         return json
-            .Select(o => o as JObject)
-            .Where(o => o != null)
-            .Select(o => ProcessGroup(o))
+            .OfType<JObject>()
+            .Select(ProcessGroup)
             .ToList();
     }
 
     private static CommandGroup ProcessGroup(JObject group)
     {
-        var commandGroup = new CommandGroup()
+        var commandGroup = new CommandGroup
         {
             Description = FormatHelper.FormatCommandDescription(group.Value<string>("description"), "", true),
             GroupName = group.Value<string>("groupName")
         };
 
         commandGroup.Commands.AddRange(
-            group.Value<JArray>("commands").Select(o => ProcessCommand(o as JObject))
+            group.Value<JArray>("commands")!.Select(o => ProcessCommand(o as JObject))
         );
 
         return commandGroup;
     }
 
-    private static TextBasedCommand ProcessCommand(JObject command)
+    private static TextBasedCommand ProcessCommand(JToken command)
     {
         var commandName = command.Value<string>("command");
-        var signature = command.Value<string>("signature").Trim();
+        var signature = command.Value<string>("signature")!.Trim();
 
-        return new TextBasedCommand()
+        return new TextBasedCommand
         {
-            Aliases = command.Value<JArray>("aliases").Select(o => o.ToObject<string>()).ToList(),
+            Aliases = command.Value<JArray>("aliases")!.Select(o => o.ToObject<string>()).ToList(),
             Command = commandName,
             CommandId = $"{commandName} {signature}",
             Description = FormatHelper.FormatCommandDescription(command.Value<string>("description"), "", true),
@@ -47,7 +46,7 @@ public class RubbergodHelpParser : IHelpParser
     private static List<string> ParseParameters(string signature)
     {
         if (string.IsNullOrEmpty(signature))
-            return new();
+            return new List<string>();
 
         signature = FixAsterisks(signature);
         return GetParams(signature);
@@ -59,7 +58,7 @@ public class RubbergodHelpParser : IHelpParser
             signature = $"<{signature[1..]}";
 
         if (signature.EndsWith("*"))
-            signature = $"{signature[0..^1]}>";
+            signature = $"{signature[..^1]}>";
 
         return signature;
     }
@@ -70,7 +69,7 @@ public class RubbergodHelpParser : IHelpParser
         var result = new List<string>();
 
         var paramBuilder = new StringBuilder();
-        char paramType = ' ';
+        var paramType = ' ';
         foreach (var field in fields)
         {
             if (field.StartsWith("["))

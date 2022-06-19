@@ -30,7 +30,7 @@ public class UnverifyApiService
     {
         if (ApiRequestContext.IsPublic())
         {
-            var loggedUserId = ApiRequestContext.LoggedUserId;
+            var loggedUserId = ApiRequestContext.GetUserId();
             var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
 
             parameters.FromUserId = null;

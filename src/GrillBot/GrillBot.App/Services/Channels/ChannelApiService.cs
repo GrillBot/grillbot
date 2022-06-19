@@ -156,7 +156,7 @@ public class ChannelApiService
 
     public async Task<List<ChannelboardItem>> GetChannelBoardAsync()
     {
-        var loggedUserId = ApiRequestContext.LoggedUserId;
+        var loggedUserId = ApiRequestContext.GetUserId();
         var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
         var result = new List<ChannelboardItem>();
 

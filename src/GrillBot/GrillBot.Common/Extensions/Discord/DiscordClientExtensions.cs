@@ -5,19 +5,17 @@ namespace GrillBot.Common.Extensions.Discord;
 
 public static class DiscordClientExtensions
 {
-    public static async Task<IUser?> FindUserAsync(this BaseSocketClient client, string username, string discriminator)
+    public static async Task<IUser?> FindUserAsync(this IDiscordClient client, string username, string? discriminator)
     {
-        var user = client.GetUser(username, discriminator);
-
+        var user = await client.GetUserAsync(username, discriminator);
         if (user != null)
-            return user;
+            return null;
 
-        foreach (var guild in client.Guilds)
+        foreach (var guild in await client.GetGuildsAsync())
         {
-            await guild.DownloadUsersAsync();
-            user = guild.Users
-                .FirstOrDefault(o => o.Username == username && (string.IsNullOrEmpty(discriminator) || o.Discriminator == discriminator));
+            var users = await guild.GetUsersAsync();
 
+            user = users.FirstOrDefault(o => o.Username == username && (string.IsNullOrEmpty(discriminator) || o.Discriminator == discriminator));
             if (user != null)
                 break;
         }

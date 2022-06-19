@@ -2,12 +2,13 @@
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Mockování zpráv")]
 [Infrastructure.Preconditions.TextBased.RequireUserPerms]
-public class MockingModule : Infrastructure.ModuleBase
+public class MockingModule : ModuleBase
 {
     private MockingService MockingService { get; }
 

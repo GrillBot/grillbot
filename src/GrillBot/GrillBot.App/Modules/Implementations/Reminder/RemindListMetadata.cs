@@ -8,12 +8,12 @@ public class RemindListMetadata : PaginatedMetadataBase
 
     public ulong OfUser { get; set; }
 
-    public override void Save(IDictionary<string, string> destination)
+    protected override void Save(IDictionary<string, string> destination)
     {
         destination[nameof(OfUser)] = OfUser.ToString();
     }
 
-    public override bool TryLoad(IReadOnlyDictionary<string, string> values)
+    protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
         ulong ofUser = 0;
         var success = values.TryGetValue(nameof(OfUser), out var _ofUser) && ulong.TryParse(_ofUser, out ofUser);
@@ -27,7 +27,7 @@ public class RemindListMetadata : PaginatedMetadataBase
         return false;
     }
 
-    public override void Reset()
+    protected override void Reset()
     {
         OfUser = default;
     }

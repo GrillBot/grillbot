@@ -3,12 +3,13 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions.Discord;
 using System.Diagnostics;
+using GrillBot.App.Infrastructure.Commands;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("bot", "Příkazy k informacím a konfiguraci bota.")]
-public class BotModule : Infrastructure.InteractionsModuleBase
+public class BotModule : InteractionsModuleBase
 {
     [SlashCommand("info", "Informace o botovi")]
     public async Task BotInfoAsync()
@@ -39,7 +40,7 @@ public class BotModule : Infrastructure.InteractionsModuleBase
     }
 
     [Group("selfunverify", "Konfigurace selfunverify.")]
-    public class SelfUnverifyConfig : Infrastructure.InteractionsModuleBase
+    public class SelfUnverifyConfig : InteractionsModuleBase
     {
         private SelfunverifyService Service { get; }
 

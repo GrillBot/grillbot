@@ -11,7 +11,9 @@ public class RequireUserPermsAttribute : PreconditionAttribute
     public ChannelPermission[] ChannelPermissions { get; set; }
     public bool AllowBooster { get; set; }
 
-    public RequireUserPermsAttribute() { }
+    public RequireUserPermsAttribute()
+    {
+    }
 
     public RequireUserPermsAttribute(GuildPermission[] guildPermissions)
     {
@@ -23,13 +25,18 @@ public class RequireUserPermsAttribute : PreconditionAttribute
         ChannelPermissions = channelPermissions;
     }
 
-    public RequireUserPermsAttribute(GuildPermission permission) : this(new[] { permission }) { }
-    public RequireUserPermsAttribute(ChannelPermission permission) : this(new[] { permission }) { }
+    public RequireUserPermsAttribute(GuildPermission permission) : this(new[] { permission })
+    {
+    }
+
+    public RequireUserPermsAttribute(ChannelPermission permission) : this(new[] { permission })
+    {
+    }
 
     public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
     {
         var service = services.GetRequiredService<PermissionsService>();
-        var request = new InteractionsCheckRequest()
+        var request = new InteractionsCheckRequest
         {
             AllowBooster = AllowBooster,
             ChannelPermissions = ChannelPermissions,
@@ -39,10 +46,6 @@ public class RequireUserPermsAttribute : PreconditionAttribute
         };
 
         var result = await service.CheckPermissionsAsync(request);
-
-        if (result.IsAllowed())
-            return PreconditionResult.FromSuccess();
-
-        return PreconditionResult.FromError(result.ToString());
+        return result.IsAllowed() ? PreconditionResult.FromSuccess() : PreconditionResult.FromError(result.ToString());
     }
 }

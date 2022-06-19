@@ -10,7 +10,7 @@ public class SearchingMetadata : PaginatedMetadataBase
     public ulong GuildId { get; set; }
     public string MessageQuery { get; set; }
 
-    public override void Save(IDictionary<string, string> destination)
+    protected override void Save(IDictionary<string, string> destination)
     {
         destination[nameof(ChannelId)] = ChannelId.ToString();
         destination[nameof(GuildId)] = GuildId.ToString();
@@ -19,7 +19,7 @@ public class SearchingMetadata : PaginatedMetadataBase
             destination[nameof(MessageQuery)] = MessageQuery;
     }
 
-    public override bool TryLoad(IReadOnlyDictionary<string, string> values)
+    protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
         ulong guildId = 0;
         ulong channelId = 0;
@@ -39,7 +39,7 @@ public class SearchingMetadata : PaginatedMetadataBase
         return false;
     }
 
-    public override void Reset()
+    protected override void Reset()
     {
         ChannelId = default;
         GuildId = default;

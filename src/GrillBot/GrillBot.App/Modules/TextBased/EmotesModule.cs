@@ -1,20 +1,21 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Group("emote")]
-public class EmotesModule : Infrastructure.ModuleBase
+public class EmotesModule : ModuleBase
 {
     [Group("list")]
-    public class EmoteListSubModule : Infrastructure.ModuleBase
+    public class EmoteListSubModule : ModuleBase
     {
         [Command]
         [TextCommandDeprecated(AlternativeCommand = "/emote", AdditionalMessage = "Všechny příkazy pro práci s emote statistikou byly přesunuty pod lomítko")]
         public Task GetListByCount(IUser _ = null) => Task.CompletedTask;
 
         [Group("count")]
-        public class EmoteListByCountSubModule : Infrastructure.ModuleBase
+        public class EmoteListByCountSubModule : ModuleBase
         {
             [Command("desc")]
             [TextCommandDeprecated(AlternativeCommand = "/emote", AdditionalMessage = "Všechny příkazy pro práci s emote statistikou byly přesunuty pod lomítko")]
@@ -26,7 +27,7 @@ public class EmotesModule : Infrastructure.ModuleBase
         }
 
         [Group("lastuse")]
-        public class EmoteListByLastUseSubModule : Infrastructure.ModuleBase
+        public class EmoteListByLastUseSubModule : ModuleBase
         {
             [Command("desc")]
             [TextCommandDeprecated(AlternativeCommand = "/emote", AdditionalMessage = "Všechny příkazy pro práci s emote statistikou byly přesunuty pod lomítko")]

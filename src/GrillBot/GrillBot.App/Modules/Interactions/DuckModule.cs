@@ -2,11 +2,12 @@
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Data.Models.Duck;
 using System.Net.Http;
+using GrillBot.App.Infrastructure.Commands;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-public class DuckModule : Infrastructure.InteractionsModuleBase
+public class DuckModule : InteractionsModuleBase
 {
     private IHttpClientFactory HttpClientFactory { get; }
     private IConfiguration Configuration { get; }

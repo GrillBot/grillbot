@@ -51,10 +51,7 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
             return AsUnauthorized(context);
 
         var method = $"{descriptor.ControllerTypeInfo.Name}.{descriptor.MethodInfo.Name}";
-        if (!allowedMethods.Contains(method))
-            return AsUnauthorized(context);
-
-        return next();
+        return !allowedMethods.Contains(method) ? AsUnauthorized(context) : next();
     }
 
     private static Task AsUnauthorized(ActionExecutingContext context)

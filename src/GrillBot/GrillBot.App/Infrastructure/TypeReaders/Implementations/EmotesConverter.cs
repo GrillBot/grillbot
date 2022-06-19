@@ -16,20 +16,20 @@ public class EmotesConverter : ConverterBase<IEmote>
     public override async Task<IEmote> ConvertAsync(string value)
     {
         if (NeoSmart.Unicode.Emoji.IsEmoji(value)) return new Emoji(value);
-        if (Emote.TryParse(value, out Emote emote)) return emote;
+        if (Emote.TryParse(value, out var emote)) return emote;
 
-        if (Guild != null)
+        if (Guild == null)
+            return emote;
+
+        if (ulong.TryParse(value, out var emoteId))
         {
-            if (ulong.TryParse(value, out ulong emoteId))
-            {
-                emote = await TryDownloadEmoteAsync(emoteId);
+            emote = await TryDownloadEmoteAsync(emoteId);
 
-                if (emote != null) return emote;
-            }
-
-            emote = Guild.Emotes.FirstOrDefault(o => o.Name == value);
+            if (emote != null)
+                return emote;
         }
 
+        emote = Guild.Emotes.FirstOrDefault(o => o.Name == value);
         return emote;
     }
 

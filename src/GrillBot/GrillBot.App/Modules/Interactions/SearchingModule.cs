@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
@@ -8,7 +9,7 @@ namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("hledam", "Hledání")]
-public class SearchingModule : Infrastructure.InteractionsModuleBase
+public class SearchingModule : InteractionsModuleBase
 {
     private SearchingService SearchingService { get; }
 

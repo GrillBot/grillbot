@@ -9,8 +9,8 @@ public abstract class ConverterBase
     protected IGuild Guild { get; }
     protected IMessageChannel Channel { get; }
     protected IUser User { get; }
-    protected IUserMessage UserMessage { get; }
-    protected IDiscordInteraction Interaction { get; }
+    private IUserMessage UserMessage { get; }
+    private IDiscordInteraction Interaction { get; }
 
     private ConverterBase(IServiceProvider provider, IDiscordClient client, IGuild guild, IMessageChannel channel,
         IUser user, IUserMessage message, IDiscordInteraction interaction)
@@ -41,7 +41,12 @@ public abstract class ConverterBase<TResult> : ConverterBase
     {
     }
 
-    protected ConverterBase(IServiceProvider provider, IInteractionContext context) : base(provider, context) { }
+    protected ConverterBase(IServiceProvider provider, IInteractionContext context) : base(provider, context)
+    {
+    }
 
-    public virtual Task<TResult> ConvertAsync(string value) { return Task.FromResult(default(TResult)); }
+    public virtual Task<TResult> ConvertAsync(string value)
+    {
+        return Task.FromResult(default(TResult));
+    }
 }

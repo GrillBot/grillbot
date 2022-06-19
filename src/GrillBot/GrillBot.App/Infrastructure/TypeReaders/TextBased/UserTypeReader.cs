@@ -1,19 +1,18 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
-namespace GrillBot.App.Infrastructure.TypeReaders.TextBased
+namespace GrillBot.App.Infrastructure.TypeReaders.TextBased;
+
+public class UserTypeReader : TextBasedTypeReader<UserConverter>
 {
-    public class UserTypeReader : TextBasedTypeReader<UserConverter>
+    protected override async Task<TypeReaderResult> ProcessAsync(UserConverter converter, string input, ICommandContext context, IServiceProvider provider)
     {
-        protected override async Task<TypeReaderResult> ProcessAsync(UserConverter converter, string input, ICommandContext context, IServiceProvider provider)
-        {
-            var result = await converter.ConvertAsync(input);
+        var result = await converter.ConvertAsync(input);
 
-            if (result != null)
-                return TypeReaderResult.FromSuccess(result);
+        if (result != null)
+            return TypeReaderResult.FromSuccess(result);
 
-            var reader = new UserTypeReader<IUser>();
-            return await reader.ReadAsync(context, input, provider);
-        }
+        var reader = new UserTypeReader<IUser>();
+        return await reader.ReadAsync(context, input, provider);
     }
 }

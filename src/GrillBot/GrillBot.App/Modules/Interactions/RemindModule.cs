@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.App.Services.Reminder;
@@ -9,7 +10,7 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("remind", "Připomenutí k určitému datu")]
 [RequireUserPerms]
-public class RemindModule : Infrastructure.InteractionsModuleBase
+public class RemindModule : InteractionsModuleBase
 {
     private RemindService RemindService { get; }
 

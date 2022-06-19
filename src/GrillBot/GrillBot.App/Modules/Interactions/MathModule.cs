@@ -2,13 +2,14 @@
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Data.Models.MathJS;
 using System.Net.Http;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-public class MathModule : Infrastructure.InteractionsModuleBase
+public class MathModule : InteractionsModuleBase
 {
     private IHttpClientFactory HttpClientFactory { get; }
 

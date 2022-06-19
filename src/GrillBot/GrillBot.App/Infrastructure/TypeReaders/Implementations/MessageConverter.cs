@@ -38,32 +38,30 @@ public class MessageConverter : ConverterBase<IMessage>
         {
             // Is DM
             throw new InvalidOperationException("Použití odkazů na soukromou konverzaci není podporován. Pokud chceš použít soukromou konverzaci, " +
-                "pak zavolej příkaz v soukromé konverzaci s identifikátorem zprávy.");
+                                                "pak zavolej příkaz v soukromé konverzaci s identifikátorem zprávy.");
         }
-        else
-        {
-            if (!ulong.TryParse(uriMatch.Groups[1].Value, out ulong guildId))
-                throw new FormatException("Nesprávný formát identifikátoru serveru.");
 
-            var guild = await Client.GetGuildAsync(guildId);
-            if (guild == null)
-                throw new NotFoundException("Identifikátor serveru v odkazu odkazuje na server, kde se bot nenachází.");
+        if (!ulong.TryParse(uriMatch.Groups[1].Value, out var guildId))
+            throw new FormatException("Nesprávný formát identifikátoru serveru.");
 
-            if (!ulong.TryParse(uriMatch.Groups[2].Value, out ulong channelId))
-                throw new FormatException("Nesprávný formát identifikátoru kanálu.");
+        var guild = await Client.GetGuildAsync(guildId);
+        if (guild == null)
+            throw new NotFoundException("Identifikátor serveru v odkazu odkazuje na server, kde se bot nenachází.");
 
-            var channel = await guild.GetTextChannelAsync(channelId);
-            if (channel == null)
-                throw new NotFoundException("Identifikátor kanálu v odkazu odkazuje na neexistující kanál.");
+        if (!ulong.TryParse(uriMatch.Groups[2].Value, out var channelId))
+            throw new FormatException("Nesprávný formát identifikátoru kanálu.");
 
-            if (!ulong.TryParse(uriMatch.Groups[3].Value, out ulong msgId))
-                throw new FormatException("Nesprávný formát identifikátoru zprávy.");
+        var channel = await guild.GetTextChannelAsync(channelId);
+        if (channel == null)
+            throw new NotFoundException("Identifikátor kanálu v odkazu odkazuje na neexistující kanál.");
 
-            var msg = await channel.GetMessageAsync(msgId);
-            if (msg == null)
-                throw new NotFoundException("Identifikátor zprávy v odkazu odkazuje na neexistující zprávu.");
+        if (!ulong.TryParse(uriMatch.Groups[3].Value, out var msgId))
+            throw new FormatException("Nesprávný formát identifikátoru zprávy.");
 
-            return msg;
-        }
+        var msg = await channel.GetMessageAsync(msgId);
+        if (msg == null)
+            throw new NotFoundException("Identifikátor zprávy v odkazu odkazuje na neexistující zprávu.");
+
+        return msg;
     }
 }

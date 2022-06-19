@@ -1,6 +1,6 @@
 ﻿namespace GrillBot.App.Infrastructure.Jobs;
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class)]
 public class DisallowUninitializedAttribute : Attribute
 {
 }

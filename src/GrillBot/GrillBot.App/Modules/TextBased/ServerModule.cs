@@ -12,11 +12,12 @@ using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Správa serveru")]
-public class ServerModule : Infrastructure.ModuleBase
+public class ServerModule : ModuleBase
 {
     private IConfiguration Configuration { get; }
 
@@ -72,7 +73,7 @@ public class ServerModule : Infrastructure.ModuleBase
     [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidat reakce indikující stav.")]
     [RequireBotPermission(GuildPermission.ReadMessageHistory, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na čtení historie.")]
     [RequireUserPerms(GuildPermission.ManageMessages)]
-    public class PinManagementSubmodule : Infrastructure.ModuleBase
+    public class PinManagementSubmodule : ModuleBase
     {
         private IConfiguration Configuration { get; }
 
@@ -144,7 +145,7 @@ public class ServerModule : Infrastructure.ModuleBase
 
     [Group("guild")]
     [Name("Servery")]
-    public class GuildManagementSubmodule : Infrastructure.ModuleBase
+    public class GuildManagementSubmodule : ModuleBase
     {
         [Command("send")]
         [Summary("Pošle zprávu (vč. příloh) do kanálu.")]
@@ -208,7 +209,7 @@ public class ServerModule : Infrastructure.ModuleBase
         [RequireBotPermission(GuildPermission.ManageChannels, ErrorMessage = "Nemohu spravovat oprávnění, protože nemám oprávnění na správu kanálů.")]
         [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu spravovat oprávnění, protože nemám oprávnění na správu rolí.")]
         [RequireUserPerms(GuildPermission.ManageRoles)]
-        public class GuildPermissionsSubModule : Infrastructure.ModuleBase
+        public class GuildPermissionsSubModule : ModuleBase
         {
             private IConfiguration Configuration { get; }
 
@@ -278,7 +279,7 @@ public class ServerModule : Infrastructure.ModuleBase
             [Name("Zbytečná oprávnění")]
             [Summary("Detekce a smazání zbytečných oprávnění.")]
             [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nelze provést kontrolu zbytečných oprávnění, protože nemám oprávnění přidávat reakce.")]
-            public class GuildUselessPermissionsSubModule : Infrastructure.ModuleBase
+            public class GuildUselessPermissionsSubModule : ModuleBase
             {
                 private IMemoryCache Cache { get; }
                 private IConfiguration Configuration { get; }
@@ -450,7 +451,7 @@ public class ServerModule : Infrastructure.ModuleBase
         [Group("react")]
         [Name("Správa reakcí na serveru")]
         [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu spravovat reakce, protože nemám oprávnění pro správu zpráv.")]
-        public class GuildReactSubModule : Infrastructure.ModuleBase
+        public class GuildReactSubModule : ModuleBase
         {
             [Command("clear")]
             [Summary("Smaže reakci pro daný emote ze zprávy.")]
@@ -465,12 +466,12 @@ public class ServerModule : Infrastructure.ModuleBase
         [Group("role")]
         [Name("Správa rolí")]
         [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu pracovat s rolemi, protože nemám dostatečná oprávnění.")]
-        public class GuildRolesSubModule : Infrastructure.ModuleBase
+        public class GuildRolesSubModule : ModuleBase
         {
             [Group("info")]
             [Name("Informace o roli")]
             [RequireUserPerms(GuildPermission.ManageRoles)]
-            public class GuildRoleInfoSubModule : Infrastructure.ModuleBase
+            public class GuildRoleInfoSubModule : ModuleBase
             {
                 [Command("")]
                 [Alias("position")]

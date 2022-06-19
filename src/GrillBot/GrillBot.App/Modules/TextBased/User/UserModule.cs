@@ -5,6 +5,7 @@ using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Extensions;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.User;
@@ -12,7 +13,7 @@ namespace GrillBot.App.Modules.TextBased.User;
 [Group("user")]
 [Name("Správa uživatelů")]
 [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]
-public class UserModule : Infrastructure.ModuleBase
+public class UserModule : ModuleBase
 {
     private UserService UserService { get; }
 

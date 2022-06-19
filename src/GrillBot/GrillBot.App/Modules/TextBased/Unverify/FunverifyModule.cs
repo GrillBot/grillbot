@@ -1,13 +1,14 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.Unverify;
 
 [Name("Falešné odebrání přístupu")]
 [RequireUserPerms(GuildPermission.ManageRoles)]
-public class FunverifyModule : Infrastructure.ModuleBase
+public class FunverifyModule : ModuleBase
 {
     private UnverifyService UnverifyService { get; }
     private IConfiguration Configuration { get; }

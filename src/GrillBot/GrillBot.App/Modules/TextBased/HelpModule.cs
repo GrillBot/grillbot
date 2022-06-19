@@ -3,12 +3,13 @@ using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Help;
 using GrillBot.Common;
 using GrillBot.Common.Extensions;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Nápověda")]
 [RequireUserPerms]
-public class HelpModule : Infrastructure.ModuleBase
+public class HelpModule : ModuleBase
 {
     private CommandService CommandService { get; }
     private IServiceProvider Provider { get; }

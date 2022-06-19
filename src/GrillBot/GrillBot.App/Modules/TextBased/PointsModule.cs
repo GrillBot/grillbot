@@ -3,13 +3,14 @@ using GrillBot.App.Modules.Implementations.Points;
 using GrillBot.App.Services.User;
 using GrillBot.Common;
 using GrillBot.Data.Exceptions;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Group("points")]
 [Alias("body")]
 [Name("Body")]
-public class PointsModule : Infrastructure.ModuleBase
+public class PointsModule : ModuleBase
 {
     private PointsService PointsService { get; }
     private GrillBotDatabaseBuilder DbFactory { get; }

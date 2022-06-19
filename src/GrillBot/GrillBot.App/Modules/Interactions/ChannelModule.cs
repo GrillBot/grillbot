@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Channels;
 using GrillBot.Common.Extensions;
@@ -10,7 +11,7 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("channel", "Informace o kanálech")]
 [RequireUserPerms]
-public class ChannelModule : Infrastructure.InteractionsModuleBase
+public class ChannelModule : InteractionsModuleBase
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 

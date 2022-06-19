@@ -1,10 +1,11 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Services.Birthday;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [Group("narozeniny", "Narozeniny")]
-public class BirthdayModule : Infrastructure.InteractionsModuleBase
+public class BirthdayModule : InteractionsModuleBase
 {
     private BirthdayService BirthdayService { get; }
     private IConfiguration Configuration { get; }

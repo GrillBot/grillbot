@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.User;
 using GrillBot.Common.Extensions;
@@ -10,7 +11,7 @@ namespace GrillBot.App.Modules.Interactions;
 [Group("guild", "Management serveru")]
 [RequireUserPerms]
 [RequireBotPermission(GuildPermission.Administrator)]
-public class GuildModule : Infrastructure.InteractionsModuleBase
+public class GuildModule : InteractionsModuleBase
 {
     private UserService UserService { get; }
 

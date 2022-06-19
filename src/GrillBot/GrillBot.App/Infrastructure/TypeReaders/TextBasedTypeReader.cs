@@ -1,7 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
-namespace GrillBot.App.Infrastructure.TypeReaders.TextBased;
+namespace GrillBot.App.Infrastructure.TypeReaders;
 
 public abstract class TextBasedTypeReader<TConverter> : TypeReader where TConverter : ConverterBase
 {

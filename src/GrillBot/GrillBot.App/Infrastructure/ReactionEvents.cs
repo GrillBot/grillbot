@@ -1,8 +1,7 @@
-﻿namespace GrillBot.App.Infrastructure
+﻿namespace GrillBot.App.Infrastructure;
+
+public enum ReactionEvents
 {
-    public enum ReactionEvents
-    {
-        Added,
-        Removed
-    }
+    Added,
+    Removed
 }

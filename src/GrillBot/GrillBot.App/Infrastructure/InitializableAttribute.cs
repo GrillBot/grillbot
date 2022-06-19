@@ -1,6 +1,6 @@
 ﻿namespace GrillBot.App.Infrastructure;
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class)]
 public class InitializableAttribute : Attribute
 {
 }

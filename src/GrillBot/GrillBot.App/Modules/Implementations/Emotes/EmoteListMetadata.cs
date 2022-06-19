@@ -12,7 +12,7 @@ public class EmoteListMetadata : PaginatedMetadataBase
     public ulong? OfUserId { get; set; }
     public bool FilterAnimated { get; set; }
 
-    public override void Save(IDictionary<string, string> destination)
+    protected override void Save(IDictionary<string, string> destination)
     {
         destination[nameof(OrderBy)] = OrderBy;
         destination[nameof(Descending)] = Descending.ToString();
@@ -23,7 +23,7 @@ public class EmoteListMetadata : PaginatedMetadataBase
             destination[nameof(OfUserId)] = OfUserId.Value.ToString();
     }
 
-    public override bool TryLoad(IReadOnlyDictionary<string, string> values)
+    protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
         ulong guildId = 0;
         ulong ofUserId = 0;
@@ -49,7 +49,7 @@ public class EmoteListMetadata : PaginatedMetadataBase
         return false;
     }
 
-    public override void Reset()
+    protected override void Reset()
     {
         Descending = default;
         OrderBy = default;

@@ -23,10 +23,9 @@ public class ResultFilter : IAsyncResultFilter
     {
         await next();
 
-        ApiRequest.EndAt = DateTime.Now;
-
         var response = context.HttpContext.Response;
         ApiRequest.StatusCode = $"{response.StatusCode} ({(HttpStatusCode)response.StatusCode})";
+        ApiRequest.EndAt = DateTime.Now;
 
         var processedUser = ApiRequestContext.LoggedUser;
         var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, processedUser, null, DateTime.Now);

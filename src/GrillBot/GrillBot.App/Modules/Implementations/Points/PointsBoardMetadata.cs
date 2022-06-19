@@ -8,12 +8,12 @@ public class PointsBoardMetadata : PaginatedMetadataBase
 
     public ulong GuildId { get; set; }
 
-    public override void Save(IDictionary<string, string> destination)
+    protected override void Save(IDictionary<string, string> destination)
     {
         destination[nameof(GuildId)] = GuildId.ToString();
     }
 
-    public override bool TryLoad(IReadOnlyDictionary<string, string> values)
+    protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
         ulong guildId = 0;
 
@@ -28,7 +28,7 @@ public class PointsBoardMetadata : PaginatedMetadataBase
         return false;
     }
 
-    public override void Reset()
+    protected override void Reset()
     {
         GuildId = default;
     }

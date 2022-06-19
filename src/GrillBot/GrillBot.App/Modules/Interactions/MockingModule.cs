@@ -1,11 +1,12 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-public class MockingModule : Infrastructure.InteractionsModuleBase
+public class MockingModule : InteractionsModuleBase
 {
     private MockingService MockingService { get; }
 

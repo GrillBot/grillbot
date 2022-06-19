@@ -22,16 +22,8 @@ public class RequestFilter : IAsyncActionFilter
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var descriptor = (ControllerActionDescriptor)context.ActionDescriptor;
-
-        ApiRequest.StartAt = DateTime.Now;
-        ApiRequest.TemplatePath = context.ActionDescriptor.AttributeRouteInfo.Template;
-        ApiRequest.Path = context.HttpContext.Request.Path.ToString();
-        ApiRequest.ActionName = descriptor.MethodInfo.Name;
-        ApiRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
-        ApiRequest.Method = context.HttpContext.Request.Method;
-        ApiRequest.LoggedUserRole = context.HttpContext.User.GetUserRole();
-        ApiRequest.QueryParams = context.HttpContext.Request.Query.ToDictionary(o => o.Key, o => o.Value.ToString());
+        await SetApiRequestContext(context);
+        SetApiRequest(context);
 
         if (!context.ModelState.IsValid)
         {
@@ -40,7 +32,6 @@ public class RequestFilter : IAsyncActionFilter
             return;
         }
 
-        await SetApiRequestContext(context);
         await next();
     }
 
@@ -51,7 +42,20 @@ public class RequestFilter : IAsyncActionFilter
 
         ApiRequestContext.LoggedUserData = context.HttpContext.User;
 
-        var loggedUserId = ApiRequestContext.LoggedUserData.GetUserId();
+        var loggedUserId = ApiRequestContext.GetUserId();
         ApiRequestContext.LoggedUser = await DiscordClient.FindUserAsync(loggedUserId);
+    }
+
+    private void SetApiRequest(ActionContext context)
+    {
+        var descriptor = (ControllerActionDescriptor)context.ActionDescriptor;
+        ApiRequest.StartAt = DateTime.Now;
+        ApiRequest.TemplatePath = descriptor.AttributeRouteInfo!.Template;
+        ApiRequest.Path = context.HttpContext.Request.Path.ToString();
+        ApiRequest.ActionName = descriptor.MethodInfo.Name;
+        ApiRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
+        ApiRequest.Method = context.HttpContext.Request.Method;
+        ApiRequest.LoggedUserRole = ApiRequestContext.GetUserRole();
+        ApiRequest.QueryParams = context.HttpContext.Request.Query.ToDictionary(o => o.Key, o => o.Value.ToString());
     }
 }

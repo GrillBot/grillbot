@@ -9,13 +9,13 @@ public class UserAccessListMetadata : PaginatedMetadataBase
     public ulong ForUserId { get; set; }
     public ulong GuildId { get; set; }
 
-    public override void Save(IDictionary<string, string> destination)
+    protected override void Save(IDictionary<string, string> destination)
     {
         destination[nameof(ForUserId)] = ForUserId.ToString();
         destination[nameof(GuildId)] = GuildId.ToString();
     }
 
-    public override bool TryLoad(IReadOnlyDictionary<string, string> values)
+    protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
         ulong forUserId = 0;
         ulong guildId = 0;
@@ -33,7 +33,7 @@ public class UserAccessListMetadata : PaginatedMetadataBase
         return false;
     }
 
-    public override void Reset()
+    protected override void Reset()
     {
         ForUserId = default;
         GuildId = default;

@@ -5,12 +5,13 @@ using GrillBot.Cache.Services.Managers;
 using GrillBot.Common;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Helpers;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
 
 [Name("Náhodné věci")]
 [RequireUserPerms]
-public class MemeModule : Infrastructure.ModuleBase
+public class MemeModule : ModuleBase
 {
     private FileStorageFactory FileStorageFactory { get; }
     private ProfilePictureManager ProfilePictureManager { get; }

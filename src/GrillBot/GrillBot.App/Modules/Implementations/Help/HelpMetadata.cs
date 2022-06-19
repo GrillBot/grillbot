@@ -8,12 +8,12 @@ public class HelpMetadata : PaginatedMetadataBase
 
     public int PagesCount { get; set; }
 
-    public override void Save(IDictionary<string, string> destination)
+    protected override void Save(IDictionary<string, string> destination)
     {
         destination[nameof(PagesCount)] = PagesCount.ToString();
     }
 
-    public override bool TryLoad(IReadOnlyDictionary<string, string> values)
+    protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
         int pagesCount = 0;
 
@@ -28,7 +28,7 @@ public class HelpMetadata : PaginatedMetadataBase
         return false;
     }
 
-    public override void Reset()
+    protected override void Reset()
     {
         PagesCount = default;
     }

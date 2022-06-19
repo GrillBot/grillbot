@@ -14,7 +14,7 @@ public class TextCommandDeprecatedAttribute : PreconditionAttribute
         var msgBuilder = new StringBuilder(Prefix);
 
         if (!string.IsNullOrEmpty(AlternativeCommand))
-            msgBuilder.AppendFormat(" Příkaz byl nahrazen příkazem `{0}`", AlternativeCommand);
+            msgBuilder.Append($" Příkaz byl nahrazen příkazem `{AlternativeCommand}`");
 
         if (!string.IsNullOrEmpty(AdditionalMessage))
             msgBuilder.AppendLine().AppendLine(AdditionalMessage);

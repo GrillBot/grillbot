@@ -1,11 +1,12 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.User;
 
 namespace GrillBot.App.Modules.Interactions.User;
 
 [RequireUserPerms]
-public class UserMeModule : Infrastructure.InteractionsModuleBase
+public class UserMeModule : InteractionsModuleBase
 {
     private UserService UserService { get; }
 

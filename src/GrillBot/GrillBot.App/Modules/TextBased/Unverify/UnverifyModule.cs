@@ -3,6 +3,7 @@ using GrillBot.App.Modules.Implementations.Unverify;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common;
 using GrillBot.Data.Exceptions;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.Unverify;
@@ -10,7 +11,7 @@ namespace GrillBot.App.Modules.TextBased.Unverify;
 [Group("unverify")]
 [Name("Odebrání přístupu")]
 [RequireUserPerms(GuildPermission.ManageRoles)]
-public class UnverifyModule : Infrastructure.ModuleBase
+public class UnverifyModule : ModuleBase
 {
     private UnverifyService UnverifyService { get; }
     private IConfiguration Configuration { get; }

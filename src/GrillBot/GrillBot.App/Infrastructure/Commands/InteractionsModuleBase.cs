@@ -1,7 +1,6 @@
-﻿using System.Reflection;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 
-namespace GrillBot.App.Infrastructure;
+namespace GrillBot.App.Infrastructure.Commands;
 
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands)]
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>

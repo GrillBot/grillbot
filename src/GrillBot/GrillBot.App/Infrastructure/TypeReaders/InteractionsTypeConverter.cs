@@ -14,7 +14,7 @@ public abstract class InteractionsTypeConverter<TConverter, TType> : TypeConvert
     }
 
     private static TConverter CreateConverter(IInteractionContext context, IServiceProvider services)
-        => (TConverter)Activator.CreateInstance(typeof(TConverter), new object[] { services, context });
+        => (TConverter)Activator.CreateInstance(typeof(TConverter), services, context);
 
     protected abstract Task<TypeConverterResult> ProcessAsync(TConverter converter, string input, IInteractionContext context, IServiceProvider provider);
 }

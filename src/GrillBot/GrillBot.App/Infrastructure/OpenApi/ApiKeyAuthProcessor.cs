@@ -14,22 +14,20 @@ public class ApiKeyAuthProcessor : IOperationProcessor
         var ctx = (AspNetCoreOperationProcessorContext)context;
         var metadata = ctx?.ApiDescription?.ActionDescriptor?.EndpointMetadata;
 
-        if (metadata != null)
+        if (metadata == null)
+            return true;
+
+        if (metadata.OfType<AllowAnonymousAttribute>().Any() || metadata.OfType<AuthorizeAttribute>().Any())
+            return true;
+
+        if (!metadata.OfType<ApiKeyAuthAttribute>().Any())
+            return true;
+
+        context.OperationDescription.Operation.Security ??= new List<OpenApiSecurityRequirement>();
+        context.OperationDescription.Operation.Security.Add(new OpenApiSecurityRequirement()
         {
-            if (metadata.OfType<AllowAnonymousAttribute>().Any() || metadata.OfType<AuthorizeAttribute>().Any())
-                return true;
-
-            if (!metadata.OfType<ApiKeyAuthAttribute>().Any())
-                return true;
-
-            if (context.OperationDescription.Operation.Security == null)
-                context.OperationDescription.Operation.Security ??= new List<OpenApiSecurityRequirement>();
-
-            context.OperationDescription.Operation.Security.Add(new OpenApiSecurityRequirement()
-            {
-                { "ApiKey", Enumerable.Empty<string>() }
-            });
-        }
+            { "ApiKey", Enumerable.Empty<string>() }
+        });
 
         return true;
     }

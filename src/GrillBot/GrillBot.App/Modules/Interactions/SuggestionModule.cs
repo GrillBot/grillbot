@@ -1,5 +1,6 @@
 ﻿using Discord.Interactions;
 using Discord.Net;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.App.Services.Suggestion;
@@ -9,7 +10,7 @@ namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("suggestion", "Podání návrhu")]
-public class SuggestionModule : Infrastructure.InteractionsModuleBase
+public class SuggestionModule : InteractionsModuleBase
 {
     private SuggestionService SuggestionService { get; }
 

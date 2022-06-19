@@ -3,6 +3,7 @@ using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Unverify;
+using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.Unverify;
@@ -11,7 +12,7 @@ namespace GrillBot.App.Modules.TextBased.Unverify;
 [Name("Selfunverify")]
 [Summary("Odebrání přístupu sebe sama.")]
 [RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]
-public class SelfUnverifyModule : Infrastructure.ModuleBase
+public class SelfUnverifyModule : ModuleBase
 {
     [Command("")]
     [TextCommandDeprecated(AlternativeCommand = "/selfunverify", AdditionalMessage = "Administrace pro ponechatelné přístupy byla přesunuta do webové administrace.")]
@@ -22,7 +23,7 @@ public class SelfUnverifyModule : Infrastructure.ModuleBase
     [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
     [RequireUserPerms(GuildPermission.ManageRoles)]
     [TextCommandDeprecated(AlternativeCommand = "/bot selfunverify list-keepables", AdditionalMessage = "Administrační metody byly přesunuty do webové administrace.")]
-    public class SelfunverifyKeepableSubModule : Infrastructure.ModuleBase
+    public class SelfunverifyKeepableSubModule : ModuleBase
     {
         [Command("add")]
         public Task AddAsync([Name("skupina")] string _, [Name("nazev")] string __) => Task.CompletedTask;

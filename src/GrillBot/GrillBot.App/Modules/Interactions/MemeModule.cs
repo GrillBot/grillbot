@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
 using GrillBot.Common.Extensions.Discord;
@@ -6,7 +7,7 @@ using GrillBot.Common.Extensions.Discord;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-public class MemeModule : Infrastructure.InteractionsModuleBase
+public class MemeModule : InteractionsModuleBase
 {
     private RandomizationService RandomizationService { get; }
     private IConfiguration Configuration { get; }

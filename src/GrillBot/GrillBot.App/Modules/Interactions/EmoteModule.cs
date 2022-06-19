@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.App.Services.Emotes;
@@ -8,7 +9,7 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("emote", "Správa emotů")]
 [RequireUserPerms]
-public class EmoteModule : Infrastructure.InteractionsModuleBase
+public class EmoteModule : InteractionsModuleBase
 {
     private EmotesCommandService EmotesCommandService { get; }
 

@@ -7,11 +7,7 @@ public class OperationIdProcessor : IOperationProcessor
 {
     public bool Process(OperationProcessorContext context)
     {
-        var controller = context.ControllerType.Name;
-        var action = context.MethodInfo.Name;
-
-        context.OperationDescription.Operation.OperationId = $"{controller}_{action}";
-
+        context.OperationDescription.Operation.OperationId = $"{context.ControllerType.Name}_{context.MethodInfo.Name}";
         return true;
     }
 }

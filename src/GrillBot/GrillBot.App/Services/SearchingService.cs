@@ -8,6 +8,7 @@ using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services;
@@ -120,12 +121,12 @@ public class SearchingService
         });
     }
 
-    private async Task<List<SearchingListItem>> GetListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser)
+    private async Task<List<SearchingListItem>> GetListAsync(GetSearchingListParams parameters, ApiRequestContext apiRequestContext)
     {
         // TODO: Use ApiRequestContext.
-        if (loggedUser?.HaveUserPermission() == true)
+        if (apiRequestContext?.IsPublic() == true)
         {
-            var loggedUserId = loggedUser.GetUserId();
+            var loggedUserId = apiRequestContext.GetUserId();
             var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
 
             if (!string.IsNullOrEmpty(parameters.GuildId) && mutualGuilds.All(o => o.Id.ToString() != parameters.GuildId))
@@ -177,15 +178,15 @@ public class SearchingService
         return results;
     }
 
-    public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser)
+    public async Task<PaginatedResponse<SearchingListItem>> GetPaginatedListAsync(GetSearchingListParams parameters, ApiRequestContext apiRequestContext)
     {
-        var results = await GetListAsync(parameters, loggedUser);
+        var results = await GetListAsync(parameters, apiRequestContext);
         return PaginatedResponse<SearchingListItem>.Create(results, parameters.Pagination);
     }
 
-    private async Task<int> GetItemsCountAsync(GetSearchingListParams parameters, ClaimsPrincipal loggedUser)
+    private async Task<int> GetItemsCountAsync(GetSearchingListParams parameters, ApiRequestContext apiRequestContext)
     {
-        var results = await GetListAsync(parameters, loggedUser);
+        var results = await GetListAsync(parameters, apiRequestContext);
         return results.Count;
     }
 

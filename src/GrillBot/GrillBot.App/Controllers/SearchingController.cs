@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services;
+using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,10 +15,12 @@ namespace GrillBot.App.Controllers;
 public class SearchingController : Controller
 {
     private SearchingService Service { get; }
+    private ApiRequestContext ApiRequestContext { get; }
 
-    public SearchingController(SearchingService searchingService)
+    public SearchingController(SearchingService searchingService, ApiRequestContext apiRequestContext)
     {
         Service = searchingService;
+        ApiRequestContext = apiRequestContext;
     }
 
     /// <summary>
@@ -31,7 +34,7 @@ public class SearchingController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters)
     {
-        var data = await Service.GetPaginatedListAsync(parameters, User);
+        var data = await Service.GetPaginatedListAsync(parameters, ApiRequestContext);
         return Ok(data);
     }
 

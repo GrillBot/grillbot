@@ -23,7 +23,7 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
         var discordClient = new ClientBuilder()
             .SetSelfUser(selfUser).Build();
 
-        return new RemindPostponeReactionHandler(DbFactory, discordClient);
+        return new RemindPostponeReactionHandler(DatabaseBuilder, discordClient);
     }
 
     [TestMethod]
@@ -52,7 +52,7 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
     {
         var message = new Mock<IUserMessage>();
         message.Setup(o => o.Channel).Returns(new Mock<IDMChannel>().Object);
-        message.Setup(o => o.Embeds).Returns(new List<IEmbed>() { new EmbedBuilder().Build() }.AsReadOnly());
+        message.Setup(o => o.Embeds).Returns(new List<IEmbed> { new EmbedBuilder().Build() }.AsReadOnly());
 
         var emote = Emote.Parse("<:LP_FeelsHighMan:895331837822500866>");
 
@@ -65,7 +65,7 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
     {
         var message = new Mock<IUserMessage>();
         message.Setup(o => o.Channel).Returns(new Mock<IDMChannel>().Object);
-        message.Setup(o => o.Embeds).Returns(new List<IEmbed>() { new EmbedBuilder().Build() }.AsReadOnly());
+        message.Setup(o => o.Embeds).Returns(new List<IEmbed> { new EmbedBuilder().Build() }.AsReadOnly());
 
         var result = await Handler.OnReactionAddedAsync(message.Object, Emojis.Ok, null);
         Assert.IsFalse(result);
@@ -128,7 +128,7 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
             .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
             .Build();
 
-        var remind = new RemindMessage()
+        var remind = new RemindMessage
         {
             At = DateTime.Now,
             FromUser = User.FromDiscord(user),
@@ -142,8 +142,8 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
             ToUserId = user.Id.ToString()
         };
 
-        await DbContext.AddAsync(remind);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(remind);
+        await Repository.CommitAsync();
 
         var result = await Handler.OnReactionAddedAsync(message, Emojis.One, selfUser);
         Assert.IsTrue(result);

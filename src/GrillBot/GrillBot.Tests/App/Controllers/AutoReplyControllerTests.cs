@@ -12,14 +12,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
 {
     protected override bool CanInitProvider() => false;
 
-    protected override AutoReplyController CreateController(IServiceProvider provider)
+    protected override AutoReplyController CreateController()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var service = new AutoReplyService(configuration, discordClient, DbFactory, initManager);
+        var service = new AutoReplyService(configuration, discordClient, DatabaseBuilder, initManager);
         var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new AutoReplyApiService(service, DbFactory, mapper);
+        var apiService = new AutoReplyApiService(service, DatabaseBuilder, mapper);
 
         return new AutoReplyController(apiService);
     }
@@ -27,7 +27,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task CreateAndGetAutoReplyListAsync()
     {
-        var createResult = await AdminController.CreateItemAsync(new AutoReplyItemParams()
+        var createResult = await AdminController.CreateItemAsync(new AutoReplyItemParams
         {
             Flags = 2,
             Reply = "Reply",
@@ -43,14 +43,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task GetItemAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.AutoReplyItem()
+        await Repository.AddAsync(new Database.Entity.AutoReplyItem
         {
             Id = 1,
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
         });
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
 
         var result = await AdminController.GetItemAsync(1);
         CheckResult<OkObjectResult, AutoReplyItem>(result);
@@ -66,16 +66,16 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task UpdateItemAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.AutoReplyItem()
+        await Repository.AddAsync(new Database.Entity.AutoReplyItem
         {
             Id = 1,
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
         });
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
 
-        var result = await AdminController.UpdateItemAsync(1, new AutoReplyItemParams()
+        var result = await AdminController.UpdateItemAsync(1, new AutoReplyItemParams
         {
             Flags = 2,
             Reply = "Reply",
@@ -88,7 +88,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task UpdateItemAsync_NotFound()
     {
-        var result = await AdminController.UpdateItemAsync(1, new AutoReplyItemParams()
+        var result = await AdminController.UpdateItemAsync(1, new AutoReplyItemParams
         {
             Flags = 2,
             Reply = "Reply",
@@ -101,14 +101,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task RemoveItemAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.AutoReplyItem()
+        await Repository.AddAsync(new Database.Entity.AutoReplyItem
         {
             Id = 1,
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
         });
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
 
         var result = await AdminController.RemoveItemAsync(1);
         CheckResult<OkResult>(result);

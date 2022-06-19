@@ -13,11 +13,11 @@ public class GuildControllerTests : ControllerTest<GuildController>
 {
     protected override bool CanInitProvider() => false;
 
-    protected override GuildController CreateController(IServiceProvider provider)
+    protected override GuildController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
         var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new GuildApiService(DbFactory, discordClient, mapper, CacheBuilder);
+        var apiService = new GuildApiService(DatabaseBuilder, discordClient, mapper, CacheBuilder);
 
         return new GuildController(apiService);
     }
@@ -25,42 +25,42 @@ public class GuildControllerTests : ControllerTest<GuildController>
     [TestMethod]
     public async Task GetGuildListAsync_WithFilter()
     {
-        var filter = new GetGuildListParams() { NameQuery = "Guild" };
-        var result = await AdminController.GetGuildListAsync(filter, CancellationToken.None);
+        var filter = new GetGuildListParams { NameQuery = "Guild" };
+        var result = await AdminController.GetGuildListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<Guild>>(result);
     }
 
     [TestMethod]
     public async Task GetGuildListAsync_WithoutFilter()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await Repository.CommitAsync();
 
-        var result = await AdminController.GetGuildListAsync(new GetGuildListParams(), CancellationToken.None);
+        var result = await AdminController.GetGuildListAsync(new GetGuildListParams());
         CheckResult<OkObjectResult, PaginatedResponse<Guild>>(result);
     }
 
     [TestMethod]
     public async Task GetGuildDetailAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
+        await Repository.CommitAsync();
 
-        var result = await AdminController.GetGuildDetailAsync(Consts.GuildId, CancellationToken.None);
+        var result = await AdminController.GetGuildDetailAsync(Consts.GuildId);
         CheckResult<OkObjectResult, GuildDetail>(result);
     }
 
     [TestMethod]
     public async Task GetGuildDetailAsync_NotFound()
     {
-        var result = await AdminController.GetGuildDetailAsync(Consts.GuildId, CancellationToken.None);
+        var result = await AdminController.GetGuildDetailAsync(Consts.GuildId);
         CheckResult<NotFoundObjectResult, GuildDetail>(result);
     }
 
     [TestMethod]
     public async Task UpdateGuildAsync_DiscordGuildNotFound()
     {
-        var parameters = new UpdateGuildParams()
+        var parameters = new UpdateGuildParams
         {
             AdminChannelId = Consts.ChannelId.ToString(),
             MuteRoleId = Consts.RoleId.ToString(),

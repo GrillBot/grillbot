@@ -17,17 +17,12 @@ public class InviteControllerTests : ControllerTest<InviteController>
 {
     protected override bool CanInitProvider() => false;
 
-    protected override InviteController CreateController(IServiceProvider provider)
+    protected override InviteController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        var fileStorage = new FileStorageMock(configuration);
         var mapper = AutoMapperHelper.CreateMapper();
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
-        var service = new InviteService(discordClient, DbFactory, auditLogService, mapper);
+        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var service = new InviteService(discordClient, DatabaseBuilder, mapper, auditLogWriter);
 
         return new InviteController(service);
     }
@@ -35,16 +30,16 @@ public class InviteControllerTests : ControllerTest<InviteController>
     [TestMethod]
     public async Task GetInviteListAsync_WithoutFilter()
     {
-        var guild = new Database.Entity.Guild() { Name = Consts.GuildName, Id = Consts.GuildId.ToString() };
-        guild.Users.Add(new Database.Entity.GuildUser() { User = new Database.Entity.User() { Username = Consts.Username, Id = Consts.UserId.ToString(), Discriminator = Consts.Discriminator } });
-        guild.Users.Add(new Database.Entity.GuildUser()
+        var guild = new Database.Entity.Guild { Name = Consts.GuildName, Id = Consts.GuildId.ToString() };
+        guild.Users.Add(new Database.Entity.GuildUser { User = new Database.Entity.User { Username = Consts.Username, Id = Consts.UserId.ToString(), Discriminator = Consts.Discriminator } });
+        guild.Users.Add(new Database.Entity.GuildUser
         {
-            User = new Database.Entity.User() { Username = Consts.Username, Id = (Consts.UserId + 1).ToString(), Discriminator = Consts.Discriminator },
-            UsedInvite = new Database.Entity.Invite() { Code = Consts.InviteCode, CreatorId = Consts.UserId.ToString(), GuildId = Consts.GuildId.ToString() }
+            User = new Database.Entity.User { Username = Consts.Username, Id = (Consts.UserId + 1).ToString(), Discriminator = Consts.Discriminator },
+            UsedInvite = new Database.Entity.Invite { Code = Consts.InviteCode, CreatorId = Consts.UserId.ToString(), GuildId = Consts.GuildId.ToString() }
         });
 
-        await DbContext.Guilds.AddAsync(guild);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(guild);
+        await Repository.CommitAsync();
 
         var result = await AdminController.GetInviteListAsync(new GetInviteListParams());
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
@@ -53,11 +48,11 @@ public class InviteControllerTests : ControllerTest<InviteController>
     [TestMethod]
     public async Task GetInviteListAsync_WithFilter()
     {
-        var filter = new GetInviteListParams()
+        var filter = new GetInviteListParams
         {
             Code = Consts.InviteCode,
-            CreatedFrom = System.DateTime.MinValue,
-            CreatedTo = System.DateTime.MaxValue,
+            CreatedFrom = DateTime.MinValue,
+            CreatedTo = DateTime.MaxValue,
             CreatorId = Consts.UserId.ToString(),
             GuildId = Consts.GuildId.ToString()
         };
@@ -79,6 +74,6 @@ public class InviteControllerTests : ControllerTest<InviteController>
         var result = AdminController.GetCurrentMetadataCount();
         CheckResult<OkObjectResult, int>(result);
 
-        Assert.AreEqual(0, ((OkObjectResult)result.Result).Value);
+        Assert.AreEqual(0, ((OkObjectResult)result.Result)?.Value);
     }
 }

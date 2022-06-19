@@ -25,7 +25,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
 {
     protected override bool CanInitProvider() => false;
 
-    protected override UsersController CreateController(IServiceProvider provider)
+    protected override UsersController CreateController()
     {
         var guild = new GuildBuilder()
             .SetId(Consts.GuildId).SetName(Consts.GuildName)
@@ -48,18 +48,15 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var counterManager = new CounterManager();
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var mapper = AutoMapperHelper.CreateMapper();
-        var channelsService = new ChannelService(discordClient, DbFactory, configuration, messageCache);
-        var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, provider, configuration);
+        var channelsService = new ChannelService(discordClient, DatabaseBuilder, configuration, messageCache);
+        var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, ServiceProvider, configuration);
         var directApi = new DirectApiService(discordClient, configuration, initManager, CacheBuilder);
-        var externalHelpService = new ExternalCommandsHelpService(directApi, configuration, provider);
-        var storage = new FileStorageMock(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
-        var unverifyProfileGenerator = new UnverifyProfileGenerator(DbFactory);
-        var apiRequestContext = new ApiRequestContext();
-        var apiService = new UsersApiService(DbFactory, mapper, dcClient, auditLogService, unverifyProfileGenerator, apiRequestContext);
+        var externalHelpService = new ExternalCommandsHelpService(directApi, configuration, ServiceProvider);
+        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var apiService = new UsersApiService(DatabaseBuilder, mapper, dcClient, AdminApiRequestContext, auditLogWriter);
         var rubbergodKarmaService = new RubbergodKarmaService(directApi, dcClient, mapper);
 
-        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService);
+        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService, AdminApiRequestContext);
     }
 
     [TestMethod]
@@ -101,16 +98,18 @@ public class UsersControllerTests : ControllerTest<UsersController>
             .SetUsername(Consts.Username).SetId(Consts.UserId + 2).SetGuild(guild)
             .SetDiscriminator(Consts.Discriminator).Build();
 
-        await DbContext.Users.AddRangeAsync(
+        await Repository.AddCollectionAsync(new[]
+        {
             Database.Entity.User.FromDiscord(user),
             Database.Entity.User.FromDiscord(anotherUser)
-        );
-        await DbContext.GuildUsers.AddRangeAsync(
+        });
+        await Repository.AddCollectionAsync(new[]
+        {
             Database.Entity.GuildUser.FromDiscord(guild, thirdUser),
             Database.Entity.GuildUser.FromDiscord(guild, anotherUser)
-        );
-        await DbContext.Guilds.AddAsync(Database.Entity.Guild.FromDiscord(guild));
-        await DbContext.Emotes.AddAsync(new Database.Entity.EmoteStatisticItem
+        });
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        await Repository.AddAsync(new Database.Entity.EmoteStatisticItem
         {
             EmoteId = Emote.Parse(Consts.FeelsHighManEmote).ToString(),
             FirstOccurence = DateTime.MinValue,
@@ -119,7 +118,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
             UseCount = 50,
             UserId = user.Id.ToString()
         });
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
 
         var filter = new GetUserListParams();
         var result = await AdminController.GetUsersListAsync(filter);
@@ -151,12 +150,12 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var channel = new ChannelBuilder()
             .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
 
-        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         var guildUserEntity = Database.Entity.GuildUser.FromDiscord(guild, guildUser);
         guildUserEntity.UsedInviteCode = "A";
-        await DbContext.GuildUsers.AddAsync(guildUserEntity);
-        await DbContext.Guilds.AddAsync(Database.Entity.Guild.FromDiscord(guild));
-        await DbContext.Emotes.AddAsync(new Database.Entity.EmoteStatisticItem
+        await Repository.AddAsync(guildUserEntity);
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        await Repository.AddAsync(new Database.Entity.EmoteStatisticItem
         {
             EmoteId = Emote.Parse(Consts.FeelsHighManEmote).ToString(),
             FirstOccurence = DateTime.MinValue,
@@ -165,8 +164,8 @@ public class UsersControllerTests : ControllerTest<UsersController>
             UseCount = 50,
             UserId = user.Id.ToString()
         });
-        await DbContext.Channels.AddAsync(Database.Entity.GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
-        await DbContext.UserChannels.AddAsync(new Database.Entity.GuildUserChannel
+        await Repository.AddAsync(Database.Entity.GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
+        await Repository.AddAsync(new Database.Entity.GuildUserChannel
         {
             ChannelId = channel.Id.ToString(),
             Count = 1,
@@ -175,14 +174,14 @@ public class UsersControllerTests : ControllerTest<UsersController>
             LastMessageAt = DateTime.MaxValue,
             UserId = user.Id.ToString()
         });
-        await DbContext.Invites.AddAsync(new Database.Entity.Invite
+        await Repository.AddAsync(new Database.Entity.Invite
         {
             Code = "A",
             CreatedAt = DateTime.MinValue,
             CreatorId = user.Id.ToString(),
             GuildId = guild.Id.ToString()
         });
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
 
         var result = await AdminController.GetUserDetailAsync(Consts.UserId);
         CheckResult<OkObjectResult, UserDetail>(result);
@@ -198,8 +197,8 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task UpdateUserAsync_Set()
     {
-        await DbContext.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
+        await Repository.CommitAsync();
 
         var parameters = new UpdateUserParams
         {
@@ -214,8 +213,8 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task UpdateUserAsync_UnSet()
     {
-        await DbContext.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
+        await Repository.CommitAsync();
 
         var parameters = new UpdateUserParams
         {
@@ -230,8 +229,8 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task HearthbeatAsync()
     {
-        await DbContext.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
+        await Repository.CommitAsync();
 
         CheckResult<OkResult>(await AdminController.HearthbeatAsync());
     }
@@ -239,8 +238,8 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task HearthbeatOffAsync()
     {
-        await DbContext.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
+        await Repository.CommitAsync();
 
         CheckResult<OkResult>(await AdminController.HearthbeatOffAsync());
     }
@@ -255,11 +254,11 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task GetCurrentUserDetailAsync_Found()
     {
-        await DbContext.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await DbContext.AddAsync(new Database.Entity.Guild { Id = "3", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser { GuildId = "3", UserId = Consts.UserId.ToString() });
-        await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem { EmoteId = "<:PepeLa:751183558126731274>", UserId = Consts.UserId.ToString(), GuildId = "3" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
+        await Repository.AddAsync(new Database.Entity.Guild { Id = "3", Name = "Guild" });
+        await Repository.AddAsync(new Database.Entity.GuildUser { GuildId = "3", UserId = Consts.UserId.ToString() });
+        await Repository.AddAsync(new Database.Entity.EmoteStatisticItem { EmoteId = "<:PepeLa:751183558126731274>", UserId = Consts.UserId.ToString(), GuildId = "3" });
+        await Repository.CommitAsync();
 
         var result = await UserController.GetCurrentUserDetailAsync();
         CheckResult<OkObjectResult, UserDetail>(result);
@@ -268,8 +267,8 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task HearthbeatAsync_AsUser()
     {
-        await DbContext.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
+        await Repository.CommitAsync();
 
         CheckResult<OkResult>(await UserController.HearthbeatAsync());
     }
@@ -277,8 +276,8 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task HearthbeatOffAsync_AsUser()
     {
-        await DbContext.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
+        await Repository.CommitAsync();
 
         CheckResult<OkResult>(await UserController.HearthbeatOffAsync());
     }
@@ -286,17 +285,17 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task GetAvailableCommandsAsync()
     {
-        var result = await UserController.GetAvailableCommandsAsync(CancellationToken.None);
+        var result = await UserController.GetAvailableCommandsAsync();
         CheckResult<OkObjectResult, List<CommandGroup>>(result);
     }
 
     [TestMethod]
     public async Task GetPointsBoardAsync_WithData()
     {
-        await DbContext.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await DbContext.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new Database.Entity.GuildUser { GuildId = "12345", UserId = Consts.UserId.ToString(), Points = 50 });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
+        await Repository.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Guild" });
+        await Repository.AddAsync(new Database.Entity.GuildUser { GuildId = "12345", UserId = Consts.UserId.ToString(), Points = 50 });
+        await Repository.CommitAsync();
 
         var result = await UserController.GetPointsLeaderboardAsync();
         CheckResult<OkObjectResult, List<UserPointsItem>>(result);

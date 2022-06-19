@@ -4,7 +4,6 @@ using GrillBot.App.Services.Logging;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Net;
 using System.Net.Http;
 
@@ -15,16 +14,16 @@ public class AuthControllerTests : ControllerTest<AuthController>
 {
     protected override bool CanInitProvider() => false;
 
-    protected override AuthController CreateController(IServiceProvider provider)
+    protected override AuthController CreateController()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactions);
+        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DatabaseBuilder, interactions);
         var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"access_token\": \"12345\"}") });
-        var service = new OAuth2Service(configuration, DbFactory, loggingService, httpClientFactory);
+        var service = new OAuth2Service(configuration, DatabaseBuilder, loggingService, httpClientFactory);
 
         return new AuthController(service);
     }

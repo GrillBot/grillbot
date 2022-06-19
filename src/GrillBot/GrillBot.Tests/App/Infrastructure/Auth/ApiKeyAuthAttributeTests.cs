@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Moq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace GrillBot.Tests.App.Infrastructure.Auth;
 
@@ -41,11 +42,13 @@ public class ApiKeyAuthAttributeTests
 
         return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), controller)
         {
-            ActionDescriptor = !noDescriptor ? new ControllerActionDescriptor()
-            {
-                ControllerTypeInfo = typeof(AuthController).GetTypeInfo(),
-                MethodInfo = typeof(AuthController).GetMethod("GetRedirectLink")
-            } : null
+            ActionDescriptor = !noDescriptor
+                ? new ControllerActionDescriptor
+                {
+                    ControllerTypeInfo = typeof(AuthController).GetTypeInfo(),
+                    MethodInfo = typeof(AuthController).GetMethod("GetRedirectLink")!
+                }
+                : new ActionDescriptor()
         };
     }
 
@@ -79,7 +82,7 @@ public class ApiKeyAuthAttributeTests
     [TestMethod]
     public async Task OnActionExecutionAsync_MissingConfiguration()
     {
-        var headers = new HeaderDictionary()
+        var headers = new HeaderDictionary
         {
             { "ApiKey", "12345" }
         };
@@ -95,7 +98,7 @@ public class ApiKeyAuthAttributeTests
     [TestMethod]
     public async Task OnActionExecutionAsync_NoAllowedMethods()
     {
-        var headers = new HeaderDictionary()
+        var headers = new HeaderDictionary
         {
             { "ApiKey", "963258740" }
         };
@@ -111,7 +114,7 @@ public class ApiKeyAuthAttributeTests
     [TestMethod]
     public async Task OnActionExecutionAsync_AllowAll()
     {
-        var headers = new HeaderDictionary()
+        var headers = new HeaderDictionary
         {
             { "ApiKey", "963258742" }
         };
@@ -126,7 +129,7 @@ public class ApiKeyAuthAttributeTests
     [TestMethod]
     public async Task OnActionExecutionAsync_NoDescriptor()
     {
-        var headers = new HeaderDictionary()
+        var headers = new HeaderDictionary
         {
             { "ApiKey", "963258743" }
         };
@@ -142,7 +145,7 @@ public class ApiKeyAuthAttributeTests
     [TestMethod]
     public async Task OnActionExecutionAsync_UnallowedMethod()
     {
-        var headers = new HeaderDictionary()
+        var headers = new HeaderDictionary
         {
             { "ApiKey", "963258743" }
         };
@@ -158,7 +161,7 @@ public class ApiKeyAuthAttributeTests
     [TestMethod]
     public async Task OnActionExecutionAsync_Success()
     {
-        var headers = new HeaderDictionary()
+        var headers = new HeaderDictionary
         {
             { "ApiKey", "963258741" }
         };

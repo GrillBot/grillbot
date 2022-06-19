@@ -7,10 +7,6 @@ using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -20,18 +16,13 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
 {
     protected override bool CanInitProvider() => false;
 
-    protected override EmotesController CreateController(IServiceProvider provider)
+    protected override EmotesController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
         var cacheService = new EmotesCacheService(discordClient);
         var mapper = AutoMapperHelper.CreateMapper();
-        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var fileStorage = new FileStorageMock(ConfigurationHelper.CreateConfiguration());
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
-        var apiRequestContext = new ApiRequestContext();
-        var apiService = new EmotesApiService(DbFactory, cacheService, mapper, auditLogService, apiRequestContext);
+        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var apiService = new EmotesApiService(DatabaseBuilder, cacheService, mapper, AdminApiRequestContext, auditLogWriter);
 
         return new EmotesController(apiService);
     }
@@ -68,8 +59,10 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     [TestMethod]
     public async Task GetStatsOfUnsupportedEmotesAsync()
     {
-        var @params = new EmotesListParams();
-        @params.Sort.OrderBy = "FirstOccurence";
+        var @params = new EmotesListParams
+        {
+            Sort = { OrderBy = "FirstOccurence" }
+        };
 
         var result = await AdminController.GetStatsOfUnsupportedEmotesAsync(@params);
         CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
@@ -78,7 +71,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     [TestMethod]
     public async Task MergeStatsToAnotherAsync()
     {
-        var @params = new MergeEmoteStatsParams()
+        var @params = new MergeEmoteStatsParams
         {
             SourceEmoteId = Consts.FeelsHighManEmote,
             DestinationEmoteId = Consts.PepeJamEmote
@@ -107,7 +100,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             .SetGuild(guild).SetDiscriminator(Consts.Discriminator)
             .Build();
 
-        await DbContext.AddAsync(new EmoteStatisticItem()
+        await Repository.AddAsync(new EmoteStatisticItem
         {
             EmoteId = Consts.PepeJamEmote,
             FirstOccurence = DateTime.MinValue,
@@ -118,7 +111,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             User = GuildUser.FromDiscord(guild, guildUser),
             UserId = Consts.UserId.ToString()
         });
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
 
         var result = await AdminController.RemoveStatisticsAsync(Consts.PepeJamEmote);
         CheckResult<OkObjectResult, int>(result);

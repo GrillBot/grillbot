@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
+using GrillBot.App.Services.AuditLog;
+using GrillBot.Common.Models;
+using GrillBot.Data.Models.AuditLog;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing;
 
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
 
@@ -17,15 +22,17 @@ public class ExceptionFilterTests : ServiceTest<ExceptionFilter>
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
         var loggingFactory = LoggingHelper.CreateLoggerFactory();
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var loggingService = new LoggingService(discordClient, commandService, loggingFactory, configuration, DbFactory, interactions);
+        var loggingService = new LoggingService(discordClient, commandService, loggingFactory, configuration, DatabaseBuilder, interactions);
+        var apiRequest = new ApiRequest();
+        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
 
-        return new ExceptionFilter(loggingService);
+        return new ExceptionFilter(loggingService, apiRequest, auditLogWriter, new ApiRequestContext());
     }
 
     private static ExceptionContext CreateContext(Exception exception)
     {
         var httpContext = new DefaultHttpContext();
-        var actionContext = new ActionContext(httpContext, new(), new());
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
         return new ExceptionContext(actionContext, new List<IFilterMetadata>()) { Exception = exception };
     }

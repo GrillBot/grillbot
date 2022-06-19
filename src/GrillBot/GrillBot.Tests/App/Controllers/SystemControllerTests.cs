@@ -12,7 +12,7 @@ public class SystemControllerTests : ControllerTest<SystemController>
 {
     protected override bool CanInitProvider() => false;
 
-    protected override SystemController CreateController(IServiceProvider provider)
+    protected override SystemController CreateController()
     {
         var environment = EnvironmentHelper.CreateEnv("Production");
         var client = DiscordHelper.CreateClient();

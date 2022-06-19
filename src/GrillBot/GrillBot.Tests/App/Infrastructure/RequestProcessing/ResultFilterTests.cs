@@ -9,6 +9,7 @@ using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using GrillBot.Common.Models;
 
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
 
@@ -26,25 +27,8 @@ public class ResultFilterTests : ActionFilterTest<ResultFilter>
     {
         ApiRequest = new ApiRequest();
 
-        var user = new UserBuilder()
-            .SetUsername(Consts.Username)
-            .SetDiscriminator(Consts.Discriminator)
-            .SetId(0)
-            .Build();
-
-        var client = new ClientBuilder()
-            .SetGetUserAction(user)
-            .Build();
-
-        var discordClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        var storage = new FileStorageMock(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
-
-        return new ResultFilter(ApiRequest, auditLogService, client);
+        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        return new ResultFilter(ApiRequest, auditLogWriter, new ApiRequestContext());
     }
 
     [TestMethod]

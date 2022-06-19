@@ -5,7 +5,6 @@ using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -14,16 +13,16 @@ public class DataControllerTests : ControllerTest<DataController>
 {
     protected override bool CanInitProvider() => true;
 
-    protected override DataController CreateController(IServiceProvider provider)
+    protected override DataController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var commandsService = DiscordHelper.CreateCommandsService(provider);
+        var commandsService = DiscordHelper.CreateCommandsService(ServiceProvider);
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var interactions = DiscordHelper.CreateInteractionService(discordClient, provider);
+        var interactions = DiscordHelper.CreateInteractionService(discordClient, ServiceProvider);
         var mapper = AutoMapperHelper.CreateMapper();
         var emotesCache = new EmotesCacheService(discordClient);
 
-        return new DataController(discordClient, DbContext, commandsService, configuration, interactions, emotesCache, mapper, DbFactory);
+        return new DataController(discordClient, commandsService, configuration, interactions, emotesCache, mapper, DatabaseBuilder, AdminApiRequestContext);
     }
 
     [TestMethod]
@@ -36,7 +35,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads()
     {
-        var result = await AdminController.GetChannelsAsync(Consts.GuildId, false);
+        var result = await AdminController.GetChannelsAsync(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -48,23 +47,23 @@ public class DataControllerTests : ControllerTest<DataController>
     }
 
     [TestMethod]
-    public void GetRoles_WithGuild()
+    public async Task GetRoles_WithGuild()
     {
-        var result = AdminController.GetRoles(Consts.GuildId);
+        var result = await AdminController.GetRolesAsync(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
-    public void GetRoles_WithoutGuild()
+    public async Task GetRoles_WithoutGuild()
     {
-        var result = AdminController.GetRoles(null);
+        var result = await AdminController.GetRolesAsync(null);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public async Task GetAvailableUsersAsync_All()
     {
-        var result = await AdminController.GetAvailableUsersAsync(null);
+        var result = await AdminController.GetAvailableUsersAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -82,8 +81,8 @@ public class DataControllerTests : ControllerTest<DataController>
             .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
             .Build();
 
-        await DbContext.AddAsync(User.FromDiscord(user));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(User.FromDiscord(user));
+        await Repository.CommitAsync();
 
         var result = await AdminController.GetAvailableUsersAsync(false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
@@ -99,7 +98,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads_AsUser()
     {
-        var result = await UserController.GetChannelsAsync(Consts.GuildId, false);
+        var result = await UserController.GetChannelsAsync(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -111,16 +110,16 @@ public class DataControllerTests : ControllerTest<DataController>
     }
 
     [TestMethod]
-    public void GetRoles_WithGuild_AsUser()
+    public async Task GetRoles_WithGuild_AsUser()
     {
-        var result = UserController.GetRoles(Consts.GuildId);
+        var result = await UserController.GetRolesAsync(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
-    public void GetRoles_WithoutGuild_AsUser()
+    public async Task GetRoles_WithoutGuild_AsUser()
     {
-        var result = UserController.GetRoles(null);
+        var result = await UserController.GetRolesAsync(null);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -134,7 +133,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableUsersAsync_All_AsUser()
     {
-        var result = await UserController.GetAvailableUsersAsync(null);
+        var result = await UserController.GetAvailableUsersAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -152,8 +151,8 @@ public class DataControllerTests : ControllerTest<DataController>
             .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
             .Build();
 
-        await DbContext.AddAsync(User.FromDiscord(user));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(User.FromDiscord(user));
+        await Repository.CommitAsync();
 
         var result = await UserController.GetAvailableUsersAsync(false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);

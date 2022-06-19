@@ -15,15 +15,15 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
 {
     protected override bool CanInitProvider() => false;
 
-    protected override SearchingController CreateController(IServiceProvider provider)
+    protected override SearchingController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var userService = new UserService(DbFactory, configuration);
+        var userService = new UserService(DatabaseBuilder, configuration);
         var mapper = AutoMapperHelper.CreateMapper();
-        var searchingService = new SearchingService(discordClient, DbFactory, userService, mapper);
+        var searchingService = new SearchingService(discordClient, DatabaseBuilder, userService, mapper);
 
-        return new SearchingController(searchingService);
+        return new SearchingController(searchingService, AdminApiRequestContext);
     }
 
     [TestMethod]
@@ -34,10 +34,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
             ChannelId = Consts.ChannelId.ToString(),
             GuildId = Consts.GuildId.ToString(),
             UserId = Consts.UserId.ToString(),
-            Sort =
-            {
-                Descending = true
-            }
+            Sort = { Descending = true }
         };
 
         var result = await AdminController.GetSearchListAsync(filter);
@@ -52,10 +49,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
             ChannelId = Consts.ChannelId.ToString(),
             GuildId = Consts.GuildId.ToString(),
             UserId = Consts.UserId.ToString(),
-            Sort =
-            {
-                Descending = true
-            }
+            Sort = { Descending = true }
         };
 
         var result = await UserController.GetSearchListAsync(filter);
@@ -79,8 +73,8 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
             Guild = new Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName }
         };
 
-        await DbContext.AddAsync(search);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(search);
+        await Repository.CommitAsync();
 
         var filter = new GetSearchingListParams();
         var result = await AdminController.GetSearchListAsync(filter);

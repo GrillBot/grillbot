@@ -33,6 +33,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public SuggestionRepository Suggestion => GetOrCreateRepository<SuggestionRepository>();
     public PermissionsRepository Permissions => GetOrCreateRepository<PermissionsRepository>();
     public AutoReplyRepository AutoReply => GetOrCreateRepository<AutoReplyRepository>();
+    public StatisticsRepository Statistics => GetOrCreateRepository<StatisticsRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {

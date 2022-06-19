@@ -37,7 +37,7 @@ public class AuditLogApiService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var data = await repository.AuditLog.GetSimpleDataForExtendedFiltersAsync(parameters);
+        var data = await repository.AuditLog.GetSimpleDataAsync(parameters);
         return data
             .Where(o => IsValidExtendedFilter(parameters, o))
             .Select(o => o.Id)

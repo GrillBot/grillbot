@@ -41,7 +41,6 @@ public class GuildController : Controller
     /// Gets detailed information about guild.
     /// </summary>
     /// <param name="id">Guild ID</param>
-    /// <param name="cancellationToken"></param>
     [HttpGet("{id}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -70,13 +69,10 @@ public class GuildController : Controller
         var result = await ApiService.UpdateGuildAsync(id, parameters, ModelState);
 
         if (result == null)
-        {
             return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
-        }
-        else if (!ModelState.IsValid)
-        {
+
+        if (!ModelState.IsValid)
             return BadRequest(new ValidationProblemDetails(ModelState));
-        }
 
         return Ok(result);
     }

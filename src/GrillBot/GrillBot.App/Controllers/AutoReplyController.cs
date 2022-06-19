@@ -29,7 +29,7 @@ public class AutoReplyController : Controller
     /// <response code="200">Success</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync()
     {
         var result = await AutoReplyApiService.GetListAsync();
         return Ok(result);
@@ -39,13 +39,12 @@ public class AutoReplyController : Controller
     /// Gets reply item
     /// </summary>
     /// <param name="id">Reply ID</param>
-    /// <param name="cancellationToken"></param>
     /// <response code="200">Success</response>
     /// <response code="404">Reply not found</response>
-    [HttpGet("{id}")]
+    [HttpGet("{id:long}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id)
     {
         var item = await AutoReplyApiService.GetItemAsync(id);
 
@@ -78,7 +77,7 @@ public class AutoReplyController : Controller
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
     /// <response code="404">Item not found</response>
-    [HttpPut("{id}")]
+    [HttpPut("{id:long}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
@@ -99,7 +98,7 @@ public class AutoReplyController : Controller
     /// <param name="id">Reply ID</param>
     /// <response code="200">Success</response>
     /// <response code="404">Item not found</response>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:long}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> RemoveItemAsync(long id)

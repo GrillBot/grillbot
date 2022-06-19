@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.Reminder;
+using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Reminder;
@@ -17,10 +18,12 @@ namespace GrillBot.App.Controllers;
 public class ReminderController : Controller
 {
     private RemindApiService ApiService { get; }
+    private ApiRequestContext ApiRequestContext { get; }
 
-    public ReminderController(RemindApiService apiService)
+    public ReminderController(RemindApiService apiService, ApiRequestContext apiRequestContext)
     {
         ApiService = apiService;
+        ApiRequestContext = apiRequestContext;
     }
 
     /// <summary>
@@ -34,9 +37,9 @@ public class ReminderController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromQuery] GetReminderListParams parameters)
     {
-        if (User.HaveUserPermission())
+        if (ApiRequestContext.IsPublic())
         {
-            parameters.ToUserId = User.GetUserId().ToString();
+            parameters.ToUserId = ApiRequestContext.GetUserId().ToString();
             parameters.OriginalMessageId = null;
 
             if (string.Equals(parameters.Sort.OrderBy, "ToUser", StringComparison.InvariantCultureIgnoreCase))
@@ -55,7 +58,7 @@ public class ReminderController : Controller
     /// <response code="200">Success</response>
     /// <response code="404">Remind not found.</response>
     /// <response code="410">Remind was notified or cancelled.</response>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:long}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]

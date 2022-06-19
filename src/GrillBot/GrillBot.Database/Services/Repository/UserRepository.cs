@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Discord;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Models;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace GrillBot.Database.Services.Repository;
 
@@ -86,11 +87,11 @@ public class UserRepository : RepositoryBase
         {
             var query = Context.Users.AsSplitQuery().AsNoTracking()
                 .Include(o => o.Guilds).ThenInclude(o => o.Guild)
-                .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite!.Creator!.User) // TODO UsedInvite is nullable, but ? cannot be used in lambda queries.
+                .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite!.Creator!.User)
                 .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(x => x.UsedUsers.Count > 0))
                 .Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(x => x.Count > 0)).ThenInclude(o => o.Channel)
                 .Include(o => o.Guilds).ThenInclude(o => o.EmoteStatistics.Where(x => x.UseCount > 0))
-                .Include(o => o.Guilds).ThenInclude(o => o.Unverify!.UnverifyLog); // TODO Unverify is nullable, but ? cannot be used in lambda queries.
+                .Include(o => o.Guilds).ThenInclude(o => o.Unverify!.UnverifyLog);
 
             return await query.FirstOrDefaultAsync(o => o.Id == id.ToString());
         }
@@ -104,6 +105,42 @@ public class UserRepository : RepositoryBase
 
             return await Context.Users.AsNoTracking()
                 .Where(o => o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
+                .ToListAsync();
+        }
+    }
+
+    public async Task<List<User>> FindAllUsersExceptBots()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.Users.AsNoTracking()
+                .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
+                .ToListAsync();
+        }
+    }
+
+    public async Task<List<User>> GetFullListOfUsers(bool? bots, IEnumerable<string>? mutualGuildIds)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = Context.Users.AsNoTracking();
+
+            switch (bots)
+            {
+                case true:
+                    query = query.Where(o => (o.Flags & (int)UserFlags.NotUser) != 0);
+                    break;
+                case false:
+                    query = query.Where(o => (o.Flags & (int)UserFlags.NotUser) == 0);
+                    break;
+            }
+
+            if (mutualGuildIds != null)
+                query = query.Where(o => o.Guilds.Any(x => mutualGuildIds.Contains(x.GuildId)));
+
+            return await query
+                .OrderBy(o => o.Username)
+                .ThenBy(o => o.Discriminator)
                 .ToListAsync();
         }
     }

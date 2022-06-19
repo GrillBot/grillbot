@@ -10,6 +10,7 @@ using GrillBot.App.Services.CommandsHelp;
 using GrillBot.Data.Exceptions;
 using GrillBot.App.Services.User;
 using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Common.Models;
 using GrillBot.Data.Extensions;
 using GrillBot.Database.Models;
 
@@ -24,14 +25,16 @@ public class UsersController : Controller
     private ExternalCommandsHelpService ExternalCommandsHelpService { get; }
     private UsersApiService ApiService { get; }
     private RubbergodKarmaService KarmaService { get; }
+    private ApiRequestContext ApiRequestContext { get; }
 
     public UsersController(CommandsHelpService helpService, ExternalCommandsHelpService externalCommandsHelpService,
-        UsersApiService apiService, RubbergodKarmaService karmaService)
+        UsersApiService apiService, RubbergodKarmaService karmaService, ApiRequestContext apiRequestContext)
     {
         HelpService = helpService;
         ExternalCommandsHelpService = externalCommandsHelpService;
         ApiService = apiService;
         KarmaService = karmaService;
+        ApiRequestContext = apiRequestContext;
     }
 
     /// <summary>
@@ -82,8 +85,8 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
     {
-        var currentUserId = User.GetUserId();
-        var user = await GetUserDetailAsync(currentUserId);
+        var loggedUserId = ApiRequestContext.GetUserId();
+        var user = await GetUserDetailAsync(loggedUserId);
 
         switch (user.Result)
         {
@@ -105,10 +108,10 @@ public class UsersController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ResponseCache(CacheProfileName = "BoardApi")]
-    public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync()
     {
-        var currentUserId = User.GetUserId();
-        var result = await HelpService.GetHelpAsync(currentUserId, cancellationToken);
+        var loggedUserId = ApiRequestContext.GetUserId();
+        var result = await HelpService.GetHelpAsync(loggedUserId);
         return Ok(result);
     }
 
@@ -122,13 +125,13 @@ public class UsersController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     [ResponseCache(CacheProfileName = "BoardApi")]
-    public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service, CancellationToken cancellationToken)
+    public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service)
     {
         try
         {
-            var currentUserId = User.GetUserId();
-            service = char.ToUpper(service[0]).ToString() + service[1..].ToLower();
-            var result = await ExternalCommandsHelpService.GetHelpAsync(service, currentUserId, cancellationToken);
+            var loggedUserId = ApiRequestContext.GetUserId();
+            service = char.ToUpper(service[0]) + service[1..].ToLower();
+            var result = await ExternalCommandsHelpService.GetHelpAsync(service, loggedUserId);
             return Ok(result);
         }
         catch (GrillBotException ex)
@@ -211,11 +214,11 @@ public class UsersController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     [ResponseCache(CacheProfileName = "BoardApi", VaryByQueryKeys = new[] { "*" })]
-    public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromQuery] KarmaListParams parameters, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromQuery] KarmaListParams parameters)
     {
         try
         {
-            var result = await KarmaService.GetUserKarmaAsync(parameters.Sort, parameters.Pagination, cancellationToken);
+            var result = await KarmaService.GetUserKarmaAsync(parameters.Sort, parameters.Pagination);
             return Ok(result);
         }
         catch (GrillBotException ex)

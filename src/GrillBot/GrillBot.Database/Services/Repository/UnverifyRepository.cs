@@ -124,4 +124,27 @@ public class UnverifyRepository : RepositoryBase
                 .FirstOrDefaultAsync(o => o.GuildId == guildId.ToString() && o.UserId == userId.ToString());
         }
     }
+
+    public async Task<Dictionary<UnverifyOperation, int>> GetStatisticsByTypeAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.UnverifyLogs.AsNoTracking()
+                .GroupBy(o => o.Operation)
+                .Select(o => new { Type = o.Key, Count = o.Count() })
+                .ToDictionaryAsync(o => o.Type, o => o.Count);
+        }
+    }
+
+    public async Task<Dictionary<string, int>> GetStatisticsByDateAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.UnverifyLogs.AsNoTracking()
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
+                .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })
+                .ToDictionaryAsync(o => o.Date, o => o.Count);
+        }
+    }
 }

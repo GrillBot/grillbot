@@ -18,15 +18,15 @@ namespace GrillBot.App.Controllers;
 [OpenApiTag("Permissions", Description = "Commands permissions management")]
 public class PermissionsController : Controller
 {
-    private GrillBotContext DbContext { get; }
     private DiscordSocketClient DiscordClient { get; }
     private IMapper Mapper { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public PermissionsController(GrillBotContext dbContext, DiscordSocketClient discordClient, IMapper mapper)
+    public PermissionsController(DiscordSocketClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
     {
-        DbContext = dbContext;
         DiscordClient = discordClient;
         Mapper = mapper;
+        DatabaseBuilder = databaseBuilder;
     }
 
     /// <summary>
@@ -42,8 +42,8 @@ public class PermissionsController : Controller
     public async Task<ActionResult> CreateExplicitPermissionAsync([FromBody] CreateExplicitPermissionParams parameters)
     {
         this.SetApiRequestData(parameters);
-        var exists = await DbContext.ExplicitPermissions.AsNoTracking()
-            .AnyAsync(o => o.Command == parameters.Command && o.TargetId == parameters.TargetId);
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var exists = await repository.Permissions.ExistsCommandForTargetAsync(parameters.Command, parameters.TargetId);
 
         if (exists)
             return Conflict(new MessageResponse($"Explicitní oprávnění pro příkaz {parameters.Command} ({parameters.TargetId}) již existuje."));
@@ -51,7 +51,7 @@ public class PermissionsController : Controller
         if (!char.IsLetter(parameters.Command[0]))
             parameters.Command = parameters.Command[1..];
 
-        var permission = new Database.Entity.ExplicitPermission()
+        var permission = new Database.Entity.ExplicitPermission
         {
             IsRole = parameters.IsRole,
             TargetId = parameters.TargetId,
@@ -59,8 +59,8 @@ public class PermissionsController : Controller
             State = parameters.State
         };
 
-        await DbContext.AddAsync(permission);
-        await DbContext.SaveChangesAsync();
+        await repository.AddAsync(permission);
+        await repository.CommitAsync();
         return Ok();
     }
 
@@ -76,14 +76,14 @@ public class PermissionsController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> RemoveExplicitPermissionAsync([Required] string command, [Required] string targetId)
     {
-        var permission = await DbContext.ExplicitPermissions.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
+        await using var repository = DatabaseBuilder.CreateRepository();
 
+        var permission = await repository.Permissions.FindPermissionForTargetAsync(command, targetId);
         if (permission == null)
             return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
 
-        DbContext.Remove(permission);
-        await DbContext.SaveChangesAsync();
+        repository.Remove(permission);
+        await repository.CommitAsync();
         return Ok();
     }
 
@@ -93,35 +93,28 @@ public class PermissionsController : Controller
     /// <response code="200">Success</response>
     [HttpGet("explicit")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<List<ExplicitPermission>>> GetExplicitPermissionsListAsync([FromQuery] string searchQuery,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<List<ExplicitPermission>>> GetExplicitPermissionsListAsync([FromQuery] string searchQuery)
     {
-        var query = DbContext.ExplicitPermissions.AsNoTracking();
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var permissions = await repository.Permissions.GetPermissionsListAsync(searchQuery);
 
-        if (!string.IsNullOrEmpty(searchQuery))
-            query = query.Where(o => o.Command.Contains(searchQuery));
-
-        var items = await query.ToListAsync(cancellationToken);
         var result = new List<ExplicitPermission>();
 
-        var userPermissions = items.Where(o => !o.IsRole);
-        if (userPermissions.Any())
+        var userPermissions = permissions.Where(o => !o.IsRole).ToList();
+        if (userPermissions.Count > 0)
         {
-            var users = await DbContext.Users.AsNoTracking()
-                .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
-                .Select(o => new Database.Entity.User() { Id = o.Id, Username = o.Username, Discriminator = o.Discriminator })
-                .ToListAsync(cancellationToken);
+            var users = await repository.User.FindAllUsersExceptBots();
 
             var userPerms = userPermissions
-                .Select(o => Mapper.Map<ExplicitPermission>(o, x => x.AfterMap((_, dst) => dst.User = Mapper.Map<User>(users.Find(x => x.Id == o.TargetId)))))
+                .Select(o => Mapper.Map<ExplicitPermission>(o, x => x.AfterMap((_, dst) => dst.User = Mapper.Map<User>(users.Find(t => t.Id == o.TargetId)))))
                 .OrderBy(o => o.User?.Username)
                 .ThenBy(o => o.Command);
 
             result.AddRange(userPerms);
         }
 
-        var rolePermissions = items.Where(o => o.IsRole);
-        if (rolePermissions.Any())
+        var rolePermissions = permissions.Where(o => o.IsRole).ToList();
+        if (rolePermissions.Count > 0)
         {
             var rolePerms = rolePermissions
                 .Select(o => Mapper.Map<ExplicitPermission>(o, x => x.AfterMap((_, dst) => dst.Role = Mapper.Map<Role>(DiscordClient.FindRole(o.TargetId)))))
@@ -144,14 +137,13 @@ public class PermissionsController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> SetExplicitPermissionStateAsync([Required] string command, [Required] string targetId, ExplicitPermissionState state)
     {
-        var permission = await DbContext.ExplicitPermissions.AsQueryable()
-            .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
-
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var permission = await repository.Permissions.FindPermissionForTargetAsync(command, targetId);
         if (permission == null)
             return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
 
         permission.State = state;
-        await DbContext.SaveChangesAsync();
+        await repository.CommitAsync();
         return Ok();
     }
 }

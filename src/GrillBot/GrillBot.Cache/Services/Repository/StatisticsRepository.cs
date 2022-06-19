@@ -9,15 +9,15 @@ public class StatisticsRepository : RepositoryBase
     {
     }
 
-    public async Task<Dictionary<string, int>> GetTableStatisticsAsync(CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, int>> GetTableStatisticsAsync()
     {
         using (Counter.Create("Cache"))
         {
             return new Dictionary<string, int>
             {
-                { nameof(Context.MessageIndex), await Context.MessageIndex.CountAsync(cancellationToken) },
-                { nameof(Context.DirectApiMessages), await Context.DirectApiMessages.CountAsync(cancellationToken) },
-                { nameof(Context.ProfilePictures), await Context.ProfilePictures.CountAsync(cancellationToken) }
+                { nameof(Context.MessageIndex), await Context.MessageIndex.CountAsync() },
+                { nameof(Context.DirectApiMessages), await Context.DirectApiMessages.CountAsync() },
+                { nameof(Context.ProfilePictures), await Context.ProfilePictures.CountAsync() }
             };
         }
     }

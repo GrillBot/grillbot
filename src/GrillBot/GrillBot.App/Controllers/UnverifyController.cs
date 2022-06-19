@@ -9,6 +9,7 @@ using GrillBot.Data.Exceptions;
 using AutoMapper;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Controllers;
@@ -22,14 +23,16 @@ public class UnverifyController : Controller
     private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
     private UnverifyApiService UnverifyApiService { get; }
+    private ApiRequestContext ApiRequestContext { get; }
 
     public UnverifyController(UnverifyService unverifyService, IDiscordClient discordClient,
-        IMapper mapper, UnverifyApiService unverifyApiService)
+        IMapper mapper, UnverifyApiService unverifyApiService, ApiRequestContext apiRequestContext)
     {
         UnverifyService = unverifyService;
         DiscordClient = discordClient;
         Mapper = mapper;
         UnverifyApiService = unverifyApiService;
+        ApiRequestContext = apiRequestContext;
     }
 
     /// <summary>
@@ -41,7 +44,7 @@ public class UnverifyController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync()
     {
-        var userId = User.HaveUserPermission() ? User.GetUserId() : (ulong?)null;
+        var userId = ApiRequestContext.IsPublic() ? ApiRequestContext.GetUserId() : (ulong?)null;
         var unverifies = await UnverifyService.GetAllUnverifiesAsync(userId);
         var result = Mapper.Map<List<UnverifyUserProfile>>(unverifies.Select(o => o.Item1));
 
@@ -77,8 +80,8 @@ public class UnverifyController : Controller
         if (toUser == null)
             return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
-        var fromUser = await guild.GetUserAsync(User.GetUserId());
-        var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, false);
+        var fromUser = await guild.GetUserAsync(ApiRequestContext.GetUserId());
+        var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser);
         return Ok(new MessageResponse(result));
     }
 
@@ -105,7 +108,7 @@ public class UnverifyController : Controller
         if (toUser == null)
             return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
-        var fromUser = await guild.GetUserAsync(User.GetUserId());
+        var fromUser = await guild.GetUserAsync(ApiRequestContext.GetUserId());
         var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser);
         return Ok(new MessageResponse(result));
     }
@@ -132,7 +135,7 @@ public class UnverifyController : Controller
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed.</response>
     /// <response code="404">Unverify, guild or users not found.</response>
-    [HttpPost("log/{logId}/recover")]
+    [HttpPost("log/{logId:long}/recover")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
@@ -141,8 +144,7 @@ public class UnverifyController : Controller
     {
         try
         {
-            var processedUserId = User.GetUserId();
-            await UnverifyService.RecoverUnverifyState(logId, processedUserId);
+            await UnverifyService.RecoverUnverifyState(logId, ApiRequestContext.GetUserId());
         }
         catch (NotFoundException ex)
         {

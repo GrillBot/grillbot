@@ -165,7 +165,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await DbContext.AddAsync(guild);
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetChannelUsersAsync(Consts.ChannelId, new PaginatedParams(), CancellationToken.None);
+        var result = await AdminController.GetChannelUsersAsync(Consts.ChannelId, new PaginatedParams());
         CheckResult<OkObjectResult, PaginatedResponse<ChannelUserStatItem>>(result);
     }
 

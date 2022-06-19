@@ -73,12 +73,12 @@ public class AuditLogRepository : RepositoryBase
             .Where(o => o.CreatedAt <= expiredAt);
     }
 
-    public async Task<List<AuditLogItem>> GetSimpleDataForExtendedFiltersAsync(IQueryableModel<AuditLogItem> model)
+    public async Task<List<AuditLogItem>> GetSimpleDataAsync(IQueryableModel<AuditLogItem> model)
     {
         using (Counter.Create("Database"))
         {
             return await CreateQuery(model, true)
-                .Select(o => new AuditLogItem { Id = o.Id, Type = o.Type, Data = o.Data })
+                .Select(o => new AuditLogItem { Id = o.Id, Type = o.Type, Data = o.Data, CreatedAt = o.CreatedAt })
                 .ToListAsync();
         }
     }
@@ -104,6 +104,42 @@ public class AuditLogRepository : RepositoryBase
                 query = query.Include(o => o.Files);
 
             return await query.FirstOrDefaultAsync(o => o.Id == id);
+        }
+    }
+
+    public async Task<Dictionary<AuditLogItemType, int>> GetStatisticsByTypeAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.AuditLogs.AsNoTracking()
+                .GroupBy(o => o.Type)
+                .Select(o => new { Type = o.Key, Count = o.Count() })
+                .ToDictionaryAsync(o => o.Type, o => o.Count);
+        }
+    }
+
+    public async Task<Dictionary<string, int>> GetStatisticsByDateAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.AuditLogs.AsNoTracking()
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
+                .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })
+                .ToDictionaryAsync(o => o.Date, o => o.Count);
+        }
+    }
+
+    public async Task<Dictionary<string, int>> GetApiRequestsByDateAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.AuditLogs.AsNoTracking()
+                .Where(o => o.Type == AuditLogItemType.Api)
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
+                .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })
+                .ToDictionaryAsync(o => o.Date, o => o.Count);
         }
     }
 }

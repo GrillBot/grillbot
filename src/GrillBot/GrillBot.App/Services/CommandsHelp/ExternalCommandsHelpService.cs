@@ -23,11 +23,11 @@ public class ExternalCommandsHelpService
         ParserInterfaceType = typeof(IHelpParser);
     }
 
-    public async Task<List<CommandGroup>> GetHelpAsync(string service, ulong loggedUserId, CancellationToken cancellationToken = default)
+    public async Task<List<CommandGroup>> GetHelpAsync(string service, ulong loggedUserId)
     {
         var configuration = Configuration.GetRequiredSection(service);
         var command = CommandBuilder.CreateHelpCommand(loggedUserId);
-        var jsonData = await DirectApi.SendCommandAsync(service, command, cancellationToken);
+        var jsonData = await DirectApi.SendCommandAsync(service, command);
         var data = JArray.Parse(jsonData);
 
         return FindParserAndParse(configuration, data);

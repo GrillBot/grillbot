@@ -94,7 +94,7 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
         await DbContext.SelfunverifyKeepables.AddAsync(new Database.Entity.SelfunverifyKeepable { GroupName = "1bit", Name = "izp" });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetKeepablesListAsync(CancellationToken.None);
+        var result = await AdminController.GetKeepablesListAsync();
         CheckResult<OkObjectResult, Dictionary<string, List<string>>>(result);
     }
 }

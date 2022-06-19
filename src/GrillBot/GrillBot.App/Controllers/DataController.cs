@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Database.Enums;
-using GrillBot.Database.Entity;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
 using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Models;
+using GrillBot.Data.Models.API.Guilds;
 using Microsoft.AspNetCore.Http;
 
 namespace GrillBot.App.Controllers;
@@ -23,26 +23,25 @@ namespace GrillBot.App.Controllers;
 public class DataController : Controller
 {
     private DiscordSocketClient DiscordClient { get; }
-    private GrillBotContext DbContext { get; }
     private CommandService CommandService { get; }
     private IConfiguration Configuration { get; }
     private InteractionService InteractionService { get; }
     private EmotesCacheService EmotesCacheService { get; }
     private IMapper Mapper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private ApiRequestContext ApiRequestContext { get; }
 
-    public DataController(DiscordSocketClient discordClient, GrillBotContext dbContext, CommandService commandService,
-        IConfiguration configuration, InteractionService interactionService, EmotesCacheService emotesCacheService,
-        IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
+    public DataController(DiscordSocketClient discordClient, CommandService commandService, IConfiguration configuration,
+        InteractionService interactionService, EmotesCacheService emotesCacheService, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext)
     {
         DiscordClient = discordClient;
-        DbContext = dbContext;
         CommandService = commandService;
         Configuration = configuration;
         InteractionService = interactionService;
         EmotesCacheService = emotesCacheService;
         Mapper = mapper;
         DatabaseBuilder = databaseBuilder;
+        ApiRequestContext = apiRequestContext;
     }
 
     /// <summary>
@@ -51,23 +50,26 @@ public class DataController : Controller
     [HttpGet("guilds")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync()
     {
-        var guildsQuery = DbContext.Guilds.AsNoTracking();
-
-        if (User.HaveUserPermission())
+        var guildsFilter = new GetGuildListParams
         {
-            var currentUserId = User.GetUserId();
-            var mutualGuilds = DiscordClient.FindMutualGuilds(currentUserId)
-                .Select(o => o.Id.ToString()).ToList();
+            Pagination = { Page = 1, PageSize = int.MaxValue },
+        };
 
-            guildsQuery = guildsQuery.Where(o => mutualGuilds.Contains(o.Id));
+        if (ApiRequestContext.IsPublic())
+        {
+            var loggedUserId = ApiRequestContext.GetUserId();
+            var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
+
+            guildsFilter.MutualGuildIds.AddRange(mutualGuilds.Select(o => o.Id.ToString()));
         }
 
-        var guilds = await guildsQuery
-            .Select(o => new { o.Id, o.Name })
-            .OrderBy(o => o.Name)
-            .ToDictionaryAsync(o => o.Id, o => o.Name, cancellationToken);
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var guildsData = await repository.Guild.GetGuildListAsync(guildsFilter, guildsFilter.Pagination);
+        var guilds = guildsData.Data
+            .ToDictionary(o => o.Id, o => o.Name);
 
         return Ok(guilds);
     }
@@ -77,24 +79,23 @@ public class DataController : Controller
     /// </summary>
     /// <param name="guildId">Optional guild ID</param>
     /// <param name="ignoreThreads">Flag that removes threads from list.</param>
-    /// <param name="cancellationToken"></param>
     [HttpGet("channels")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
     {
-        var currentUserId = User.GetUserId();
-        var guilds = User.HaveUserPermission() ? await DiscordClient.FindMutualGuildsAsync(currentUserId) : DiscordClient.Guilds.Select(o => o as IGuild).ToList();
+        var loggedUserId = ApiRequestContext.GetUserId();
+        var availableGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : DiscordClient.Guilds.OfType<IGuild>().ToList();
 
         if (guildId != null)
-            guilds = guilds.FindAll(o => o.Id == guildId.Value);
+            availableGuilds = availableGuilds.FindAll(o => o.Id == guildId.Value);
 
         var availableChannels = new List<IGuildChannel>();
-        foreach (var guild in guilds)
+        foreach (var guild in availableGuilds)
         {
-            if (User.HaveUserPermission())
+            if (ApiRequestContext.IsPublic())
             {
-                var guildUser = await guild.GetUserAsync(currentUserId);
+                var guildUser = await guild.GetUserAsync(loggedUserId);
                 availableChannels.AddRange(await guild.GetAvailableChannelsAsync(guildUser, !ignoreThreads));
             }
             else
@@ -109,7 +110,7 @@ public class DataController : Controller
             .Where(o => o.Type != null && o.Type != ChannelType.Category)
             .ToList();
 
-        var guildIds = guilds.Select(o => o.Id.ToString()).ToList();
+        var guildIds = availableChannels.Select(o => o.Id.ToString()).ToList();
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var dbChannels = await repository.Channel.GetAllChannelsAsync(guildIds, ignoreThreads, true);
@@ -119,7 +120,7 @@ public class DataController : Controller
         var result = channels
             .DistinctBy(o => o.Id)
             .OrderBy(o => o.Name)
-            .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type is ChannelType.PublicThread or ChannelType.PrivateThread ? "(Thread)" : "")}".Trim());
+            .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type is ChannelType.PublicThread or ChannelType.PrivateThread or ChannelType.NewsThread ? "(Thread)" : "")}".Trim());
 
         return Ok(result);
     }
@@ -130,18 +131,17 @@ public class DataController : Controller
     [HttpGet("roles")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public ActionResult<Dictionary<string, string>> GetRoles(ulong? guildId)
+    public async Task<ActionResult<Dictionary<string, string>>> GetRolesAsync(ulong? guildId)
     {
-        var currentUserId = User.GetUserId();
-        IEnumerable<SocketGuild> guilds;
-        if (User.HaveUserPermission())
-            guilds = DiscordClient.FindMutualGuilds(currentUserId);
-        else
-            guilds = DiscordClient.Guilds.AsEnumerable();
-        if (guildId != null) guilds = guilds.Where(o => o.Id == guildId.Value);
+        var loggedUserId = ApiRequestContext.GetUserId();
 
-        var roles = guilds.SelectMany(o => o.Roles)
-            .Where(o => !o.IsEveryone)
+        var availableGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : DiscordClient.Guilds.OfType<IGuild>().ToList();
+        if (guildId != null)
+            availableGuilds = availableGuilds.FindAll(o => o.Id == guildId.Value);
+
+        var roles = availableGuilds
+            .Select(o => o.Roles.Where(x => x.Id != o.EveryoneRole.Id))
+            .SelectMany(o => o)
             .OrderBy(o => o.Name)
             .ToDictionary(o => o.Id.ToString(), o => o.Name);
 
@@ -180,34 +180,18 @@ public class DataController : Controller
     [HttpGet("users")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null)
     {
-        var query = DbContext.Users.AsNoTracking().AsQueryable();
+        var loggedUserId = ApiRequestContext.GetUserId();
+        var mutualGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : null;
+        var mutualGuildIds = mutualGuilds?.ConvertAll(o => o.Id.ToString());
 
-        if (bots != null)
-        {
-            if (bots == true)
-                query = query.Where(o => (o.Flags & (int)UserFlags.NotUser) != 0);
-            else
-                query = query.Where(o => (o.Flags & (int)UserFlags.NotUser) == 0);
-        }
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        if (User.HaveUserPermission())
-        {
-            var currentUserId = User.GetUserId();
-            var mutualGuilds = DiscordClient.FindMutualGuilds(currentUserId)
-                .Select(o => o.Id.ToString()).ToList();
+        var data = await repository.User.GetFullListOfUsers(bots, mutualGuildIds);
+        var result = data.ToDictionary(o => o.Id, o => $"{o.Username}#{o.Discriminator}");
 
-            query = query.Where(o => o.Guilds.Any(x => mutualGuilds.Contains(x.GuildId)));
-        }
-
-        query = query
-            .Select(o => new User() { Id = o.Id, Username = o.Username, Discriminator = o.Discriminator })
-            .OrderBy(o => o.Username)
-            .ThenBy(o => o.Discriminator);
-
-        var dict = await query.ToDictionaryAsync(o => o.Id, o => $"{o.Username}#{o.Discriminator}", cancellationToken);
-        return Ok(dict);
+        return Ok(result);
     }
 
     /// <summary>

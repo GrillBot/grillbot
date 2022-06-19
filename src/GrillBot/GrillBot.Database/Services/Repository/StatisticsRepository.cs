@@ -1,0 +1,40 @@
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using GrillBot.Common.Managers.Counters;
+using Microsoft.EntityFrameworkCore;
+
+namespace GrillBot.Database.Services.Repository;
+
+public class StatisticsRepository : RepositoryBase
+{
+    public StatisticsRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    {
+    }
+
+    public async Task<Dictionary<string, int>> GetTablesStatusAsync()
+    {
+        using (Counter.Create("Database"))
+        {
+            return new Dictionary<string, int>
+            {
+                { nameof(Context.Users), await Context.Users.CountAsync() },
+                { nameof(Context.Guilds), await Context.Guilds.CountAsync() },
+                { nameof(Context.GuildUsers), await Context.GuildUsers.CountAsync() },
+                { nameof(Context.Channels), await Context.Channels.CountAsync() },
+                { nameof(Context.UserChannels), await Context.UserChannels.CountAsync() },
+                { nameof(Context.Invites), await Context.Invites.CountAsync() },
+                { nameof(Context.SearchItems), await Context.SearchItems.CountAsync() },
+                { nameof(Context.Unverifies), await Context.Unverifies.CountAsync() },
+                { nameof(Context.UnverifyLogs), await Context.UnverifyLogs.CountAsync() },
+                { nameof(Context.AuditLogs), await Context.AuditLogs.CountAsync() },
+                { nameof(Context.AuditLogFiles), await Context.AuditLogFiles.CountAsync() },
+                { nameof(Context.Emotes), await Context.Emotes.CountAsync() },
+                { nameof(Context.Reminders), await Context.Reminders.CountAsync() },
+                { nameof(Context.SelfunverifyKeepables), await Context.SelfunverifyKeepables.CountAsync() },
+                { nameof(Context.ExplicitPermissions), await Context.ExplicitPermissions.CountAsync() },
+                { nameof(Context.AutoReplies), await Context.AutoReplies.CountAsync() },
+                { nameof(Context.Suggestions), await Context.Suggestions.CountAsync() }
+            };
+        }
+    }
+}

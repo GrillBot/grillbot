@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.DirectApi;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
@@ -21,10 +20,10 @@ public class RubbergodKarmaService
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<UserKarma>> GetUserKarmaAsync(SortParams sort, PaginatedParams pagination, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<UserKarma>> GetUserKarmaAsync(SortParams sort, PaginatedParams pagination)
     {
         var command = CommandBuilder.CreateKarmaCommand(sort, pagination);
-        var jsonData = await DirectApi.SendCommandAsync("Rubbergod", command, cancellationToken);
+        var jsonData = await DirectApi.SendCommandAsync("Rubbergod", command);
         var data = JObject.Parse(jsonData);
 
         if (data["meta"] == null)

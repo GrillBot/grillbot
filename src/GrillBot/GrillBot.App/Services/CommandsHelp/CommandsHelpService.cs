@@ -30,9 +30,9 @@ public class CommandsHelpService
         Prefix = configuration.GetValue<string>("Discord:Commands:Prefix");
     }
 
-    public async Task<List<CommandGroup>> GetHelpAsync(ulong loggedUserId, CancellationToken cancellationToken)
+    public async Task<List<CommandGroup>> GetHelpAsync(ulong loggedUserId)
     {
-        var loggedUser = await DiscordClient.FindUserAsync(loggedUserId, cancellationToken);
+        var loggedUser = await DiscordClient.FindUserAsync(loggedUserId);
         var result = new List<CommandGroup>();
 
         foreach (var module in CommandService.Modules.Where(o => o.Commands.Count > 0))

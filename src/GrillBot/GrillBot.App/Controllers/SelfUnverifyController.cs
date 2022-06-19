@@ -28,7 +28,7 @@ public class SelfUnverifyController : Controller
     /// <response code="200">Success</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, List<string>>>> GetKeepablesListAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<Dictionary<string, List<string>>>> GetKeepablesListAsync()
     {
         var result = await SelfunverifyService.GetKeepablesAsync(null);
         return Ok(result);

@@ -33,4 +33,34 @@ public class PermissionsRepository : RepositoryBase
                 .AnyAsync(o => o.Command == commandName.Trim() && !o.IsRole && o.State == ExplicitPermissionState.Banned && o.TargetId == user.Id.ToString());
         }
     }
+
+    public async Task<bool> ExistsCommandForTargetAsync(string command, string targetId)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.ExplicitPermissions.AsNoTracking()
+                .AnyAsync(o => o.Command == command && o.TargetId == targetId);
+        }
+    }
+
+    public async Task<ExplicitPermission?> FindPermissionForTargetAsync(string command, string targetId)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.ExplicitPermissions
+                .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
+        }
+    }
+
+    public async Task<List<ExplicitPermission>> GetPermissionsListAsync(string? commandQuery)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = Context.ExplicitPermissions.AsNoTracking();
+            if (!string.IsNullOrEmpty(commandQuery))
+                query = query.Where(o => o.Command.Contains(commandQuery));
+
+            return await query.ToListAsync();
+        }
+    }
 }

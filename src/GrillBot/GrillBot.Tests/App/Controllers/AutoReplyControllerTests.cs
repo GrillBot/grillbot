@@ -34,7 +34,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
             Template = "Template"
         });
 
-        var listResult = await AdminController.GetAutoReplyListAsync(CancellationToken.None);
+        var listResult = await AdminController.GetAutoReplyListAsync();
 
         CheckResult<OkObjectResult, AutoReplyItem>(createResult);
         CheckResult<OkObjectResult, List<AutoReplyItem>>(listResult);
@@ -52,14 +52,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await DbContext.SaveChangesAsync();
 
-        var result = await AdminController.GetItemAsync(1, CancellationToken.None);
+        var result = await AdminController.GetItemAsync(1);
         CheckResult<OkObjectResult, AutoReplyItem>(result);
     }
 
     [TestMethod]
     public async Task GetItemAsync_NotFound()
     {
-        var result = await AdminController.GetItemAsync(1, CancellationToken.None);
+        var result = await AdminController.GetItemAsync(1);
         CheckResult<NotFoundObjectResult, AutoReplyItem>(result);
     }
 

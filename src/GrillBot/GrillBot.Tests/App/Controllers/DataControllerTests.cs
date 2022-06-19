@@ -29,7 +29,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableGuildsAsync()
     {
-        var result = await AdminController.GetAvailableGuildsAsync(CancellationToken.None);
+        var result = await AdminController.GetAvailableGuildsAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -92,7 +92,7 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableGuildsAsync_AsUser()
     {
-        var result = await UserController.GetAvailableGuildsAsync(CancellationToken.None);
+        var result = await UserController.GetAvailableGuildsAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 

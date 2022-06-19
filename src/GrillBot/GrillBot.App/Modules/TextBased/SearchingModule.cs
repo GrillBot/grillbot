@@ -9,5 +9,5 @@ public class SearchingModule : ModuleBase
 {
     [Command("")]
     [TextCommandDeprecated(AlternativeCommand = "/hledam", AdditionalMessage = "Všechny příkazy pro práci s hledáním byly přesunuty jako příkazy s lomítkem.")]
-    public Task CreateSearchAsync([Remainder][Name("obsah")] string _) => Task.CompletedTask;
+    public Task CreateSearchAsync([Remainder] [Name("obsah")] string _) => Task.CompletedTask;
 }

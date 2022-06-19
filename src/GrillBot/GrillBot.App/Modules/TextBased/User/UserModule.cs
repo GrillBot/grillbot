@@ -29,7 +29,7 @@ public class UserModule : ModuleBase
     [RequireUserPerms(GuildPermission.ViewAuditLog)]
     public async Task GetUserInfoAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
     {
-        if (user == null) user = Context.User;
+        user ??= Context.User;
         if (user is not SocketGuildUser guildUser) return;
 
         var embed = await UserService.CreateInfoEmbed(Context.User, Context.Guild, guildUser);
@@ -40,11 +40,9 @@ public class UserModule : ModuleBase
     [Summary("Získání seznamu přístupů uživatelů.")]
     [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění v kanálech.")]
     [RequireUserPerms(GuildPermission.ManageRoles)]
-    public async Task GetUsersAccessListAsync([Name("id/tagy/jmena_uzivatelu")] params IUser[] users)
+    public async Task GetUsersAccessListAsync([Name("id/tagy/jmena_uzivatelu")] params IGuildUser[] users)
     {
-        if (users == null || users.Length == 0) users = new[] { Context.User };
-        users = users.OfType<SocketGuildUser>().ToArray();
-        if (users.Length == 0) return;
+        if (users == null || users.Length == 0) users = new[] { (IGuildUser)Context.User };
 
         await Context.Guild.DownloadUsersAsync();
         if (users.Length > 1)
@@ -99,12 +97,15 @@ public class UserModule : ModuleBase
     public static IEnumerable<Tuple<string, List<string>>> GetUserVisibleChannels(SocketGuild guild, SocketGuildUser user)
     {
         var channels = guild.GetAvailableChannelsFor(user).GroupBy(o =>
-        {
-            if (o is SocketTextChannel text && !string.IsNullOrEmpty(text.Category?.Name)) return text.Category.Name;
-            else if (o is SocketVoiceChannel voice && !string.IsNullOrEmpty(voice.Category?.Name)) return voice.Category.Name;
-            return "Bez kategorie";
-        }).Select(o => new { Category = o.Key, ChannelGroups = o.SplitInParts(20).Select(x => x.OrderBy(o => o.Position).Select(t => t.GetMention())) })
-        .Select(o => new Tuple<string, IEnumerable<IEnumerable<string>>>(o.Category, o.ChannelGroups));
+            {
+                return o switch
+                {
+                    SocketTextChannel text when !string.IsNullOrEmpty(text.Category?.Name) => text.Category.Name,
+                    SocketVoiceChannel voice when !string.IsNullOrEmpty(voice.Category?.Name) => voice.Category.Name,
+                    _ => "Bez kategorie"
+                };
+            }).Select(o => new { Category = o.Key, ChannelGroups = o.SplitInParts(20).Select(x => x.OrderBy(o => o.Position).Select(t => t.GetMention())) })
+            .Select(o => new Tuple<string, IEnumerable<IEnumerable<string>>>(o.Category, o.ChannelGroups));
 
         return RegroupChannels(channels);
     }

@@ -40,7 +40,7 @@ public class MockingModule : ModuleBase
         await Context.Channel.SendMessageAsync(
             MockingService.CreateMockingString(message),
             options: RequestOptions.Default,
-            allowedMentions: new AllowedMentions() { MentionRepliedUser = true },
+            allowedMentions: new AllowedMentions { MentionRepliedUser = true },
             messageReference: new MessageReference(Context.Message.ReferencedMessage.Id, Context.Channel.Id, Context.Guild?.Id)
         );
 
@@ -50,5 +50,5 @@ public class MockingModule : ModuleBase
     [Command("mock")]
     [Summary("Mockuje zadanou zprávu.")]
     [TextCommandDeprecated(AlternativeCommand = "/mock")]
-    public Task MockAsync([Remainder][Name("zpráva")] string _) => Task.CompletedTask;
+    public Task MockAsync([Remainder] [Name("zpráva")] string _) => Task.CompletedTask;
 }

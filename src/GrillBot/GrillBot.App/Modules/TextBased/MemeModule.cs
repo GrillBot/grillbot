@@ -28,7 +28,7 @@ public class MemeModule : ModuleBase
     [Alias("love")]
     public async Task PeepoloveAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
     {
-        if (user == null) user = Context.User;
+        user ??= Context.User;
         using var renderer = new PeepoloveRenderer(FileStorageFactory, ProfilePictureManager);
         var path = await renderer.RenderAsync(user, Context);
 
@@ -44,7 +44,7 @@ public class MemeModule : ModuleBase
     [Summary("Naštvaně zírající peepo.")]
     public async Task PeepoangryAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
     {
-        if (user == null) user = Context.User;
+        user ??= Context.User;
         using var renderer = new PeepoangryRenderer(FileStorageFactory, ProfilePictureManager);
         var path = await renderer.RenderAsync(user, Context);
 
@@ -72,7 +72,7 @@ public class MemeModule : ModuleBase
     [Command("emojize")]
     [Summary("Znovu pošle zprávu jako emoji.")]
     [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění mazat zprávy.")]
-    public async Task EmojizeAsync([Remainder][Name("zprava")] string message = null)
+    public async Task EmojizeAsync([Remainder] [Name("zprava")] string message = null)
     {
         if (string.IsNullOrEmpty(message))
             message = Context.Message.ReferencedMessage?.Content;
@@ -99,14 +99,14 @@ public class MemeModule : ModuleBase
 
         if (!Context.IsPrivate)
             await Context.Message.DeleteAsync();
-        await ReplyAsync(string.Join(" ", emojized.Select(o => o.ToString())), false, null, null, null, null);
+        await ReplyAsync(string.Join(" ", emojized.Select(o => o.ToString())), false);
     }
 
     [Command("reactjize")]
     [Summary("Převede zprávu na emoji a zapíše jako reakce na zprávu v reply.")]
     [RequireBotPermission(ChannelPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění na přidávání reakcí.")]
     [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění na mazání zpráv.")]
-    public async Task ReactjizeAsync([Remainder][Name("zprava")] string msg = null)
+    public async Task ReactjizeAsync([Remainder] [Name("zprava")] string msg = null)
     {
         if (Context.Message.ReferencedMessage == null)
         {
@@ -122,7 +122,7 @@ public class MemeModule : ModuleBase
 
         try
         {
-            var emojis = Emojis.ConvertStringToEmoji(msg, false);
+            var emojis = Emojis.ConvertStringToEmoji(msg);
             if (emojis.Count == 0) return;
 
             await Context.Message.ReferencedMessage.AddReactionsAsync(emojis.ToArray());

@@ -24,15 +24,15 @@ public class UnverifyModule : ModuleBase
 
     [Command("")]
     [Summary("Dočasné odebrání přístupu na serveru.\n" +
-        "Datum konce se dá zapsat přímo jako datum, nebo jako časový posun. Např.: `30m`, nebo `2021-07-02T15:30:25`. Koncovky časového posunu jsou: **m**inuty, **h**odiny, **d**ny, **M**ěsíce, **r**oky.\n" +
-        "Dále je důvod, proč daná osoba přišla o přístup. Nakonec se zadávají uživatelé **formou tagů**.\n" +
-        "Celý příkaz pak vypadá např.: `{prefix}unverify 2h Odebral jsem ti přístup. @GrillBot`"
+             "Datum konce se dá zapsat přímo jako datum, nebo jako časový posun. Např.: `30m`, nebo `2021-07-02T15:30:25`. Koncovky časového posunu jsou: **m**inuty, **h**odiny, **d**ny, **M**ěsíce, **r**oky.\n" +
+             "Dále je důvod, proč daná osoba přišla o přístup. Nakonec se zadávají uživatelé **formou tagů**.\n" +
+             "Celý příkaz pak vypadá např.: `{prefix}unverify 2h Odebral jsem ti přístup. @GrillBot`"
     )]
     [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
     [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
-    public async Task SetUnverifyAsync([Name("datum konce")] DateTime end, [Remainder][Name("duvod a tagy")] string data)
+    public async Task SetUnverifyAsync([Name("datum konce")] DateTime end, [Remainder] [Name("duvod a tagy")] string data)
     {
-        bool success = true;
+        var success = true;
 
         try
         {
@@ -70,20 +70,20 @@ public class UnverifyModule : ModuleBase
 
     [Command("remove")]
     [Summary("Předčasné vrácení přístupu.\n" +
-        "Zadává se identifikace uživatele. To znamená ID uživatele, tag, nebo jméno\n" +
-        "Celý příkaz pak vypadá např.: {prefix}unverify remove @GrillBot")]
+             "Zadává se identifikace uživatele. To znamená ID uživatele, tag, nebo jméno\n" +
+             "Celý příkaz pak vypadá např.: {prefix}unverify remove @GrillBot")]
     [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
     [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
     public async Task RemoveUnverifyAsync([Name("kdo")] IGuildUser user)
     {
-        bool success = true;
+        var success = true;
 
         try
         {
             await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
 
             var fromUser = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
-            var message = await UnverifyService.RemoveUnverifyAsync(Context.Guild, fromUser, user, false);
+            var message = await UnverifyService.RemoveUnverifyAsync(Context.Guild, fromUser, user);
             await ReplyAsync(message);
         }
         catch (Exception)
@@ -102,9 +102,9 @@ public class UnverifyModule : ModuleBase
 
     [Command("update")]
     [Summary("Aktualizace času u záznamu o dočasném odebrání přístupu.\n" +
-        "Formát data o novém konci unverify je stejný jako při zadávání unverify.\n" +
-        "Identifikace uživatele je stejná jako u příkazu `{prefix}unverify remove`." +
-        "Celý příkaz vypadá např.: `{prefix}unverify update @GrillBot 1h`")]
+             "Formát data o novém konci unverify je stejný jako při zadávání unverify.\n" +
+             "Identifikace uživatele je stejná jako u příkazu `{prefix}unverify remove`." +
+             "Celý příkaz vypadá např.: `{prefix}unverify update @GrillBot 1h`")]
     public async Task UnverifyUpdateAsync([Name("kdo")] IGuildUser user, [Name("novy datum konce")] DateTime end)
     {
         try
@@ -115,13 +115,10 @@ public class UnverifyModule : ModuleBase
         }
         catch (Exception ex)
         {
-            if (ex is ValidationException || ex is NotFoundException)
-            {
-                await ReplyAsync(ex.Message);
-                return;
-            }
+            if (ex is not ValidationException && ex is not NotFoundException)
+                throw;
 
-            throw;
+            await ReplyAsync(ex.Message);
         }
     }
 

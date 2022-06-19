@@ -13,12 +13,12 @@ namespace GrillBot.App.Modules.TextBased;
 public class PointsModule : ModuleBase
 {
     private PointsService PointsService { get; }
-    private GrillBotDatabaseBuilder DbFactory { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public PointsModule(PointsService pointsService, GrillBotDatabaseBuilder dbFactory)
+    public PointsModule(PointsService pointsService, GrillBotDatabaseBuilder databaseBuilder)
     {
         PointsService = pointsService;
-        DbFactory = dbFactory;
+        DatabaseBuilder = databaseBuilder;
     }
 
     [Command("where")]
@@ -27,7 +27,7 @@ public class PointsModule : ModuleBase
     [Infrastructure.Preconditions.TextBased.RequireUserPerms(ContextType.Guild)]
     public async Task GetPointsStateAsync([Name("id/tag/jmeno_uzivatele")] SocketUser user = null)
     {
-        if (user == null) user = Context.User;
+        user ??= Context.User;
 
         try
         {
@@ -72,25 +72,17 @@ public class PointsModule : ModuleBase
     [Infrastructure.Preconditions.TextBased.RequireUserPerms(ContextType.Guild)]
     public async Task GetPointsLeaderboardAsync()
     {
-        using var dbContext = DbFactory.Create();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var query = dbContext.GuildUsers.AsNoTracking()
-            .Where(o => o.GuildId == Context.Guild.Id.ToString() && o.Points > 0)
-            .OrderByDescending(o => o.Points)
-            .Select(o => new KeyValuePair<string, long>(o.UserId, o.Points))
-            .Take(10);
-
-        if (!await query.AnyAsync())
+        var pointsBoard = await repository.GuildUser.GetPointsBoardDataAsync(new[] { Context.Guild.Id.ToString() }, 10);
+        if (pointsBoard.Count == 0)
         {
             await ReplyAsync("Ještě nebyly zachyceny žádné události ukazující aktivitu nějakého uživatele na serveru.");
             return;
         }
 
-        var data = await query.ToListAsync();
-
-        await Context.Guild.DownloadUsersAsync();
         var embed = new PointsBoardBuilder()
-            .WithBoard(Context.User, Context.Guild, data, id => Context.Guild.GetUser(id), 0);
+            .WithBoard(Context.User, Context.Guild, pointsBoard, id => Context.Guild.GetUser(id), 0);
 
         var message = await ReplyAsync(embed: embed.Build());
         await message.AddReactionsAsync(Emojis.PaginationEmojis);

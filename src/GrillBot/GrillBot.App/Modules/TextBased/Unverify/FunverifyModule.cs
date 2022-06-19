@@ -25,7 +25,7 @@ public class FunverifyModule : ModuleBase
     [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
     public async Task FunverifyAsync([Name("datum konce")] DateTime end, [Remainder][Name("duvod a tagy")] string data)
     {
-        bool success = true;
+        var success = true;
 
         try
         {

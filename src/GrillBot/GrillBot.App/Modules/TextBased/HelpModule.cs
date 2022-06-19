@@ -29,7 +29,7 @@ public class HelpModule : ModuleBase
 
     [Command("help")]
     [Summary("Zobrazí nápovědu pro zadaný příkaz.")]
-    public async Task HelpAsync([Remainder][Name("prikaz")] string query)
+    public async Task HelpAsync([Remainder] [Name("prikaz")] string query)
     {
         var availableModules = await CommandService.Modules
             .Where(o => o.Commands.Count > 0)

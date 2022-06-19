@@ -88,7 +88,7 @@ public class GuildUserRepository : RepositoryBase
         }
     }
 
-    public async Task<List<GuildUser>> GetPointsBoardDataAsync(IEnumerable<string> guildIds)
+    public async Task<List<GuildUser>> GetPointsBoardDataAsync(IEnumerable<string> guildIds, int? take = null)
     {
         using (Counter.Create("Database"))
         {
@@ -102,7 +102,13 @@ public class GuildUserRepository : RepositoryBase
                     !o.User.Username.StartsWith("Imported")
                 )
                 .OrderByDescending(o => o.Points)
-                .ThenBy(o => o.Nickname).ThenBy(o => o.User!.Username).ThenBy(o => o.User!.Discriminator);
+                .ThenBy(o => o.Nickname)
+                .ThenBy(o => o.User!.Username)
+                .ThenBy(o => o.User!.Discriminator)
+                .AsQueryable();
+
+            if (take != null)
+                query = query.Take(take.Value);
 
             return await query.ToListAsync();
         }

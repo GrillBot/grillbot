@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using System.Net.Http;
-using GrillBot.Data.Extensions;
 using System.Data;
 using ConsoleTableExt;
 using Microsoft.Extensions.Caching.Memory;
@@ -38,11 +37,11 @@ public class ServerModule : ModuleBase
 
         if (channel == null)
         {
-            channel = Context.Channel as ITextChannel;
+            channel = (ITextChannel)Context.Channel;
             take++;
         }
 
-        var options = new RequestOptions()
+        var options = new RequestOptions
         {
             AuditLogReason = $"Clean command from GrillBot. Executed {Context.User} in #{channel.Name}",
             RetryMode = RetryMode.AlwaysRetry,
@@ -50,19 +49,19 @@ public class ServerModule : ModuleBase
         };
 
         var messages = (await channel.GetMessagesAsync(take, options: options).FlattenAsync())
-            .Where(o => o.Id != Context.Message.Id);
+            .Where(o => o.Id != Context.Message.Id)
+            .ToList();
 
-        var older = messages.Where(o => (DateTime.UtcNow - o.CreatedAt).TotalDays >= 14.0);
-        var newer = messages.Where(o => (DateTime.UtcNow - o.CreatedAt).TotalDays < 14.0);
+        var older = messages.FindAll(o => (DateTime.UtcNow - o.CreatedAt).TotalDays >= 14.0);
+        var newer = messages.FindAll(o => (DateTime.UtcNow - o.CreatedAt).TotalDays < 14.0);
 
         await channel.DeleteMessagesAsync(newer, options);
-
         foreach (var msg in older)
         {
             await msg.DeleteAsync(options);
         }
 
-        await ReplyAsync($"Bylo úspěšně smazáno zpráv: **{messages.Count()}**\nStarších, než 2 týdny: **{older.Count()}**\nNovějších, než 2 týdny: **{newer.Count()}**");
+        await ReplyAsync($"Bylo úspěšně smazáno zpráv: **{messages.Count}**\nStarších, než 2 týdny: **{older.Count}**\nNovějších, než 2 týdny: **{newer.Count}**");
         await Context.Message.RemoveAllReactionsAsync();
         await Context.Message.AddReactionAsync(Emojis.Ok);
     }
@@ -87,9 +86,7 @@ public class ServerModule : ModuleBase
         public async Task PurgePinsAsync([Name("kanal")] ITextChannel channel = null, [Name("id_zprav")] params ulong[] messageIds)
         {
             await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-            if (channel == null)
-                channel = Context.Channel as ITextChannel;
+            channel ??= (ITextChannel)Context.Channel;
 
             uint unpinned = 0;
             uint unknown = 0;
@@ -124,9 +121,7 @@ public class ServerModule : ModuleBase
         public async Task PurgePinsAsync([Name("pocet")] int count, [Name("kanal")] ITextChannel channel = null)
         {
             await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-            if (channel == null)
-                channel = Context.Channel as ITextChannel;
+            channel ??= (ITextChannel)Context.Channel;
 
             var pins = await channel.GetPinnedMessagesAsync();
             count = Math.Min(pins.Count, count);
@@ -151,7 +146,7 @@ public class ServerModule : ModuleBase
         [Summary("Pošle zprávu (vč. příloh) do kanálu.")]
         [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu tenhle příkaz provést, protože nemám oprávnění mazat zprávy.")]
         [RequireUserPerms(GuildPermission.ManageMessages)]
-        public async Task SendAnonymousToChannelAsync([Name("kanal")] IMessageChannel channel, [Remainder][Name("volitelna_zprava")] string content = null)
+        public async Task SendAnonymousToChannelAsync([Name("kanal")] IMessageChannel channel, [Remainder] [Name("volitelna_zprava")] string content = null)
         {
             if (string.IsNullOrEmpty(content) && Context.Message.ReferencedMessage != null)
                 content = Context.Message.ReferencedMessage.Content;
@@ -169,7 +164,7 @@ public class ServerModule : ModuleBase
             {
                 using var httpClient = new HttpClient();
 
-                bool firstDone = string.IsNullOrEmpty(content);
+                var firstDone = string.IsNullOrEmpty(content);
                 foreach (var attachment in attachments)
                 {
                     var response = await httpClient.GetAsync(attachment.Url);
@@ -182,7 +177,7 @@ public class ServerModule : ModuleBase
 
                     if (firstDone)
                     {
-                        await channel.SendFileAsync(stream, attachment.Filename, null, false, null, null, spoiler, AllowedMentions, null);
+                        await channel.SendFileAsync(stream, attachment.Filename, null, false, null, null, spoiler, AllowedMentions);
                     }
                     else
                     {
@@ -225,7 +220,7 @@ public class ServerModule : ModuleBase
                 await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
                 await Context.Guild.DownloadUsersAsync();
 
-                var overwrites = channel.PermissionOverwrites.Where(o => o.TargetType == PermissionTarget.User && !excludedUsers.Any(x => x.Id == o.TargetId)).ToList();
+                var overwrites = channel.PermissionOverwrites.Where(o => o.TargetType == PermissionTarget.User && excludedUsers.All(x => x.Id != o.TargetId)).ToList();
                 var msg = await ReplyAsync($"Probíhá úklid oprávnění **0** / **{overwrites.Count}** (**0 %**)");
 
                 double removed = 0;
@@ -305,7 +300,8 @@ public class ServerModule : ModuleBase
 
                     Cache.Set(sessionId, uselessPermissions);
                     var channelsCount = uselessPermissions.Select(o => o.Channel.Id).Distinct().Count();
-                    var message = $"Kontrola zbytečných oprávnění dokončena.\nNalezeno zbytečných oprávnění: **{uselessPermissions.Count}**.\nPočet kanálů: **{channelsCount}**.\nTento výpočet je dostupný v cache pod klíčem `{sessionId}`";
+                    var message =
+                        $"Kontrola zbytečných oprávnění dokončena.\nNalezeno zbytečných oprávnění: **{uselessPermissions.Count}**.\nPočet kanálů: **{channelsCount}**.\nTento výpočet je dostupný v cache pod klíčem `{sessionId}`";
                     await ReplyAsync(message);
 
                     await Context.Message.RemoveAllReactionsAsync();
@@ -327,14 +323,14 @@ public class ServerModule : ModuleBase
                     var table = new DataTable();
                     table.Columns.AddRange(new[]
                     {
-                            new DataColumn("Důvod"),
-                            new DataColumn("Uživatelé")
-                        });
+                        new DataColumn("Důvod"),
+                        new DataColumn("Uživatelé")
+                    });
 
                     foreach (var group in permissions.GroupBy(o => o.Type).Where(o => o.Any()))
                     {
                         var items = group.ToList();
-                        for (int i = 0; i < items.Count; i++)
+                        for (var i = 0; i < items.Count; i++)
                         {
                             var item = items[i];
                             var value = $"{item.User.GetDisplayName()} (#{item.Channel.Name})";
@@ -508,14 +504,14 @@ public class ServerModule : ModuleBase
                 {
                     await Context.Guild.DownloadUsersAsync();
 
-                    var fields = new List<EmbedFieldBuilder>()
-                        {
-                            new EmbedFieldBuilder().WithIsInline(true).WithName("Vytvořeno").WithValue(role.CreatedAt.LocalDateTime.ToCzechFormat()),
-                            new EmbedFieldBuilder().WithIsInline(true).WithName("Everyone").WithValue(FormatHelper.FormatBooleanToCzech(role.IsEveryone)),
-                            new EmbedFieldBuilder().WithIsInline(true).WithName("Separovaná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsHoisted)),
-                            new EmbedFieldBuilder().WithIsInline(true).WithName("Nespravovatelná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsManaged)),
-                            new EmbedFieldBuilder().WithIsInline(true).WithName("Tagovatelná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsMentionable)),
-                        };
+                    var fields = new List<EmbedFieldBuilder>
+                    {
+                        new EmbedFieldBuilder().WithIsInline(true).WithName("Vytvořeno").WithValue(role.CreatedAt.LocalDateTime.ToCzechFormat()),
+                        new EmbedFieldBuilder().WithIsInline(true).WithName("Everyone").WithValue(FormatHelper.FormatBooleanToCzech(role.IsEveryone)),
+                        new EmbedFieldBuilder().WithIsInline(true).WithName("Separovaná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsHoisted)),
+                        new EmbedFieldBuilder().WithIsInline(true).WithName("Nespravovatelná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsManaged)),
+                        new EmbedFieldBuilder().WithIsInline(true).WithName("Tagovatelná").WithValue(FormatHelper.FormatBooleanToCzech(role.IsMentionable)),
+                    };
 
                     if (role.Tags?.BotId == null)
                         fields.Add(new EmbedFieldBuilder().WithIsInline(true).WithName("Počet členů").WithValue(FormatHelper.FormatMembersToCzech(role.Members.Count())));
@@ -534,7 +530,7 @@ public class ServerModule : ModuleBase
                         }
                     }
 
-                    var formatedPerms = role.Permissions.Administrator ? new List<string>() { "Administrator" } : role.Permissions.ToList().ConvertAll(o => o.ToString());
+                    var formatedPerms = role.Permissions.Administrator ? new List<string> { "Administrator" } : role.Permissions.ToList().ConvertAll(o => o.ToString());
                     fields.Add(new EmbedFieldBuilder().WithName("Oprávnění").WithValue(string.Join(", ", formatedPerms)).WithIsInline(false));
 
                     var embed = CreateRoleInfoEmbed(fields, role.Color, null)
@@ -545,8 +541,8 @@ public class ServerModule : ModuleBase
 
                 private string CreateRoleInfoSummary()
                 {
-                    var totalMembersWithRole = Context.Guild.Users.Count(o => o.Roles.Any(o => !o.IsEveryone)); // Count of users with some role.
-                    var membersWithoutRole = Context.Guild.Users.Count(o => o.Roles.All(o => o.IsEveryone)); // Count of users without some role.
+                    var totalMembersWithRole = Context.Guild.Users.Count(o => o.Roles.Any(x => !x.IsEveryone)); // Count of users with some role.
+                    var membersWithoutRole = Context.Guild.Users.Count(o => o.Roles.All(x => x.IsEveryone)); // Count of users without some role.
 
                     return $"Počet rolí: {Context.Guild.Roles.Count}\nPočet uživatelů s rolí: {totalMembersWithRole}\nPočet uživatelů bez role: {membersWithoutRole}";
                 }
@@ -557,18 +553,18 @@ public class ServerModule : ModuleBase
                     {
                         var info = string.Join(", ", new[]
                         {
-                                FormatHelper.FormatMembersToCzech(o.Members.Count()),
-                                $"vytvořeno {o.CreatedAt.LocalDateTime.ToCzechFormat()}",
-                                o.IsMentionable ? "tagovatelná" : "",
-                                o.IsManaged ? "spravuje Discord" : "",
-                                o.Tags?.IsPremiumSubscriberRole == true ? "booster" : ""
-                        }.Where(o => !string.IsNullOrEmpty(o)));
+                            FormatHelper.FormatMembersToCzech(o.Members.Count()),
+                            $"vytvořeno {o.CreatedAt.LocalDateTime.ToCzechFormat()}",
+                            o.IsMentionable ? "tagovatelná" : "",
+                            o.IsManaged ? "spravuje Discord" : "",
+                            o.Tags?.IsPremiumSubscriberRole == true ? "booster" : ""
+                        }.Where(x => !string.IsNullOrEmpty(x)));
 
                         return new EmbedFieldBuilder().WithName(o.Name).WithValue(info);
                     });
                 }
 
-                private EmbedBuilder CreateRoleInfoEmbed(List<EmbedFieldBuilder> fields, Color color, string summary)
+                private EmbedBuilder CreateRoleInfoEmbed(IEnumerable<EmbedFieldBuilder> fields, Color color, string summary)
                 {
                     return new EmbedBuilder()
                         .WithFooter(Context.User)

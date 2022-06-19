@@ -1,10 +1,7 @@
 ﻿#pragma warning disable IDE0060 // Remove unused parameter
 using Discord.Commands;
-using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
-using GrillBot.App.Services.Unverify;
 using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
-using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.Unverify;
 
@@ -21,7 +18,7 @@ public class SelfUnverifyModule : ModuleBase
     [Group("keep")]
     [Name("Ponechatelné přístupy pro selfunverify")]
     [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
-    [RequireUserPerms(GuildPermission.ManageRoles)]
+    [Infrastructure.Preconditions.TextBased.RequireUserPerms(GuildPermission.ManageRoles)]
     [TextCommandDeprecated(AlternativeCommand = "/bot selfunverify list-keepables", AdditionalMessage = "Administrační metody byly přesunuty do webové administrace.")]
     public class SelfunverifyKeepableSubModule : ModuleBase
     {

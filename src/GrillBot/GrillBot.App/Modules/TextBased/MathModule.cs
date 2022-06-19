@@ -8,5 +8,5 @@ public class MathModule : ModuleBase
 {
     [Command("solve")]
     [TextCommandDeprecated(AlternativeCommand = "/solve")]
-    public Task SolveExpressionAsync([Remainder][Name("vyraz")] string _) => Task.CompletedTask;
+    public Task SolveExpressionAsync([Remainder] [Name("vyraz")] string _) => Task.CompletedTask;
 }

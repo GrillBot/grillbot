@@ -17,7 +17,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     {
         var sesionService = new SuggestionSessionService();
 
-        return new EmoteSuggestionService(sesionService, DbFactory);
+        return new EmoteSuggestionService(sesionService, DatabaseBuilder);
     }
 
     [TestMethod]
@@ -42,13 +42,13 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
         guildEntity.EmoteSuggestionChannelId = "123456789";
 
-        await DbContext.Guilds.AddAsync(guildEntity);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(guildEntity);
+        await Repository.CommitAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-        var modalData = new EmoteSuggestionModal()
+        var modalData = new EmoteSuggestionModal
         {
             EmoteDescription = "Popis",
             EmoteName = "Name"
@@ -74,8 +74,8 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
         guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
 
-        await DbContext.Guilds.AddAsync(guildEntity);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(guildEntity);
+        await Repository.CommitAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
@@ -84,11 +84,10 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
             .SetUrl("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png")
             .Build();
 
-        var modalData = new EmoteSuggestionModal() { EmoteName = "Name" };
+        var modalData = new EmoteSuggestionModal { EmoteName = "Name" };
 
         Service.InitSession(suggestionId, attachment);
         await Service.ProcessSessionAsync(suggestionId, guild, user, modalData);
-        Assert.IsTrue(true);
     }
 
     [TestMethod]
@@ -108,13 +107,13 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
         guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
 
-        await DbContext.Guilds.AddAsync(guildEntity);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(guildEntity);
+        await Repository.CommitAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-        var modalData = new EmoteSuggestionModal() { EmoteName = "Name" };
+        var modalData = new EmoteSuggestionModal { EmoteName = "Name" };
 
         Service.InitSession(suggestionId, null);
         await Service.ProcessSessionAsync(suggestionId, guild, user, modalData);

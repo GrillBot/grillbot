@@ -74,7 +74,7 @@ public class UnverifyMessageGeneratorTests
     }
 
     [TestMethod]
-    public void CreateUpdatePMMessage()
+    public void CreateUpdatePmMessage()
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var end = new DateTime(2022, 02, 04);
@@ -102,7 +102,7 @@ public class UnverifyMessageGeneratorTests
     }
 
     [TestMethod]
-    public void CreateRemoveAccessManuallyPMMessage()
+    public void CreateRemoveAccessManuallyPmMessage()
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyPmMessage(guild);

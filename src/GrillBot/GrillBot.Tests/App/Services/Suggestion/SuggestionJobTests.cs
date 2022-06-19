@@ -23,19 +23,16 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
         var configuration = ConfigurationHelper.CreateConfiguration();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandService, loggerFactory, configuration, DbFactory, interactionService);
+        var loggingService = new LoggingService(discordClient, commandService, loggerFactory, configuration, DatabaseBuilder, interactionService);
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var fileStorage = new FileStorageMock(configuration);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
+        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         SessionService = new SuggestionSessionService();
-        var emoteSuggestionService = new EmoteSuggestionService(SessionService, DbFactory);
-        var featureSuggestionService = new FeatureSuggestionService(SessionService, configuration, DbFactory);
+        var emoteSuggestionService = new EmoteSuggestionService(SessionService, DatabaseBuilder);
+        var featureSuggestionService = new FeatureSuggestionService(SessionService, configuration, DatabaseBuilder);
         var suggestionService = new SuggestionService(emoteSuggestionService, featureSuggestionService, dcClient, SessionService);
 
         initManager.Set(true);
-        return new SuggestionJob(loggingService, auditLogService, discordClient, initManager, suggestionService, DbFactory);
+        return new SuggestionJob(loggingService, auditLogWriter, discordClient, initManager, suggestionService, DatabaseBuilder);
     }
 
     [TestMethod]
@@ -63,7 +60,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
-        await DbContext.Suggestions.AddAsync(new Database.Entity.Suggestion()
+        await Repository.AddAsync(new Database.Entity.Suggestion
         {
             BinaryData = new byte[] { 1, 2, 3, 4, 5 },
             BinaryDataFilename = "File.png",
@@ -76,8 +73,8 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
 
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
         guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
-        await DbContext.Guilds.AddAsync(guildEntity);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(guildEntity);
+        await Repository.CommitAsync();
 
         var context = CreateContext();
         await Job.Execute(context);
@@ -89,7 +86,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
-        await DbContext.Suggestions.AddAsync(new Database.Entity.Suggestion()
+        await Repository.AddAsync(new Database.Entity.Suggestion
         {
             BinaryData = new byte[] { 1, 2, 3, 4, 5 },
             BinaryDataFilename = "File.png",
@@ -99,8 +96,8 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
             Type = SuggestionType.Emote
         });
 
-        await DbContext.Guilds.AddAsync(Database.Entity.Guild.FromDiscord(guild));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        await Repository.CommitAsync();
 
         var context = CreateContext();
         await Job.Execute(context);

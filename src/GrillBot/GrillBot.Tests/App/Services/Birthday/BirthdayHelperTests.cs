@@ -13,7 +13,7 @@ public class BirthdayHelperTests
     public void Format_NoUsers()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var result = BirthdayHelper.Format(new(), configuration);
+        var result = BirthdayHelper.Format(new List<(IUser user, int? age)>(), configuration);
 
         Assert.AreEqual("Dnes nemá nikdo narozeniny :sadge:", result);
     }
@@ -24,7 +24,7 @@ public class BirthdayHelperTests
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var users = new List<Tuple<IUser, int?>>() { new(user, null), new(user, 1), new(user, 2) };
+        var users = new List<(IUser user, int? age)> { new(user, null), new(user, 1), new(user, 2) };
 
         var result = BirthdayHelper.Format(users, configuration);
         Assert.IsFalse(string.IsNullOrEmpty(result));
@@ -35,7 +35,7 @@ public class BirthdayHelperTests
     {
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var users = new List<Tuple<IUser, int?>>() { new(user, null), };
+        var users = new List<(IUser user, int? age)> { new(user, null), };
 
         var result = BirthdayHelper.Format(users, configuration);
         Assert.IsFalse(string.IsNullOrEmpty(result));

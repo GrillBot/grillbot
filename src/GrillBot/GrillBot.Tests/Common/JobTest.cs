@@ -6,6 +6,9 @@ using Moq;
 using Quartz;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using GrillBot.Database.Services.Repository;
+using GrillBot.Tests.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Tests.Common;
 
@@ -13,20 +16,21 @@ namespace GrillBot.Tests.Common;
 public abstract class JobTest<TJob> where TJob : IJob
 {
     protected TJob Job { get; set; }
-    protected GrillBotContext DbContext { get; set; }
-    protected GrillBotDatabaseBuilder DbFactory { get; set; }
-    protected GrillBotCacheBuilder CacheBuilder { get; set; }
-    protected GrillBotCacheRepository CacheRepository { get; set; }
+    protected TestDatabaseBuilder DatabaseBuilder { get; private set; }
+    protected TestCacheBuilder CacheBuilder { get; private set; }
+
+    protected GrillBotRepository Repository { get; private set; }
+    protected GrillBotCacheRepository CacheRepository { get; private set; }
 
     protected abstract TJob CreateJob();
 
     [TestInitialize]
     public void Initialize()
     {
-        DbFactory = new DbContextBuilder();
-        DbContext = DbFactory.Create();
-
+        DatabaseBuilder = new TestDatabaseBuilder();
         CacheBuilder = new TestCacheBuilder();
+
+        Repository = DatabaseBuilder.CreateRepository();
         CacheRepository = CacheBuilder.CreateRepository();
 
         Job = CreateJob();
@@ -37,13 +41,12 @@ public abstract class JobTest<TJob> where TJob : IJob
     [TestCleanup]
     public void TestClean()
     {
-        DbContext.ChangeTracker.Clear();
-        DatabaseHelper.ClearDatabase(DbContext);
-        TestCacheBuilder.ClearDatabase(CacheRepository);
-
         Cleanup();
 
-        DbContext.Dispose();
+        DatabaseBuilder.ClearDatabase();
+        CacheBuilder.ClearDatabase();
+
+        Repository.Dispose();
         CacheRepository.Dispose();
 
         if (Job is IDisposable disposable)

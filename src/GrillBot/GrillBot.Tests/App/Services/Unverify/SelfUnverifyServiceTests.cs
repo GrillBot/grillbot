@@ -7,7 +7,7 @@ public class SelfUnverifyServiceTests : ServiceTest<SelfunverifyService>
 {
     protected override SelfunverifyService CreateService()
     {
-        return new SelfunverifyService(null, DbFactory);
+        return new SelfunverifyService(null, DatabaseBuilder);
     }
 
     [TestMethod]

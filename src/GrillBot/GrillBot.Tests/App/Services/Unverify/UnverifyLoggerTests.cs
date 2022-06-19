@@ -14,7 +14,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
     protected override UnverifyLogger CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        return new UnverifyLogger(discordClient, DbFactory);
+        return new UnverifyLogger(discordClient, DatabaseBuilder);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
             .SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator)
             .SetGuild(guild).Build();
 
-        var returnedRoles = new List<IRole>() { new RoleBuilder().SetId(Consts.RoleId).Build() };
+        var returnedRoles = new List<IRole> { new RoleBuilder().SetId(Consts.RoleId).Build() };
         var returnedChannels = new List<ChannelOverride>();
 
         await Service.LogRemoveAsync(returnedRoles, returnedChannels, guild, fromUser, toUser);
@@ -87,7 +87,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
     [TestMethod]
     public async Task LogRecoverAsync()
     {
-        var returnedRoles = new List<IRole>() { new RoleBuilder().SetId(Consts.RoleId).Build() };
+        var returnedRoles = new List<IRole> { new RoleBuilder().SetId(Consts.RoleId).Build() };
         var returnedChannels = new List<ChannelOverride>();
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 

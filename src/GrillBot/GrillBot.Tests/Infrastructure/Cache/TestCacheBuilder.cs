@@ -3,17 +3,20 @@ using GrillBot.Cache.Services.Repository;
 using GrillBot.Common.Managers.Counters;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace GrillBot.Tests.Infrastructure.Cache;
 
 [ExcludeFromCodeCoverage]
 public class TestCacheBuilder : GrillBotCacheBuilder
 {
-    public TestCacheBuilder() : base(null)
+    private GrillBotCacheContext Context { get; set; }
+
+    public TestCacheBuilder() : base(DiHelper.CreateEmptyProvider())
     {
     }
 
-    public static GrillBotCacheContext CreateContext()
+    private static GrillBotCacheContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<GrillBotCacheContext>()
             .EnableDetailedErrors()
@@ -27,16 +30,16 @@ public class TestCacheBuilder : GrillBotCacheBuilder
 
     public override GrillBotCacheRepository CreateRepository()
     {
-        var context = CreateContext();
-        return new GrillBotCacheRepository(context, new CounterManager());
+        Context = CreateContext();
+        return new GrillBotCacheRepository(Context, new CounterManager());
     }
 
-    public static void ClearDatabase(GrillBotCacheRepository repository)
+    public void ClearDatabase()
     {
-        repository.RemoveCollection(repository.DirectApiRepository.GetAll());
-        repository.RemoveCollection(repository.MessageIndexRepository.GetMessagesAsync().Result);
-        repository.RemoveCollection(repository.ProfilePictureRepository.GetAll());
-
-        repository.Commit();
+        Context.ChangeTracker.Clear();
+        Context.RemoveRange(Context.DirectApiMessages.AsEnumerable());
+        Context.RemoveRange(Context.MessageIndex.AsEnumerable());
+        Context.RemoveRange(Context.ProfilePictures.AsEnumerable());
+        Context.SaveChanges();
     }
 }

@@ -20,11 +20,11 @@ public static class DiscordHelper
     {
         var service = new CommandService();
 
-        if (provider != null)
-        {
-            service.RegisterTypeReaders();
-            service.AddModulesAsync(typeof(Startup).Assembly, provider).Wait();
-        }
+        if (provider == null)
+            return service;
+
+        service.RegisterTypeReaders();
+        service.AddModulesAsync(typeof(Startup).Assembly, provider).Wait();
 
         return service;
     }
@@ -33,12 +33,11 @@ public static class DiscordHelper
     {
         var service = new InteractionService(discordClient);
 
-        if (provider != null)
-        {
-            service.RegisterTypeConverters();
-            service.AddModulesAsync(typeof(Startup).Assembly, provider).Wait();
-        }
+        if (provider == null)
+            return service;
 
+        service.RegisterTypeConverters();
+        service.AddModulesAsync(typeof(Startup).Assembly, provider).Wait();
         return service;
     }
 }

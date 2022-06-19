@@ -15,13 +15,6 @@ public class GrillBotDatabaseBuilder
         ServiceProvider = provider;
     }
 
-    [Obsolete("Use repository instead of context creating")]
-    public virtual GrillBotContext Create()
-    {
-        var options = ServiceProvider.GetRequiredService<DbContextOptions>();
-        return new GrillBotContext(options);
-    }
-
     public virtual GrillBotRepository CreateRepository()
     {
         var options = ServiceProvider.GetRequiredService<DbContextOptions>();

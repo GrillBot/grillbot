@@ -22,8 +22,8 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
             .SetGetGuildsAction(new[] { Guild })
             .Build();
 
-        var serviceProvider = DIHelper.CreateEmptyProvider();
-        return new EmotesCommandService(serviceProvider, DbFactory, dcClient);
+        var serviceProvider = DiHelper.CreateEmptyProvider();
+        return new EmotesCommandService(serviceProvider, DatabaseBuilder, dcClient);
     }
 
     [TestMethod]
@@ -42,7 +42,7 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
             .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(Guild).Build();
 
-        await DbContext.AddAsync(new Database.Entity.EmoteStatisticItem()
+        await Repository.AddAsync(new Database.Entity.EmoteStatisticItem
         {
             EmoteId = "<a:PepeJAMJAM:600070651814084629>",
             FirstOccurence = DateTime.MinValue,
@@ -53,7 +53,7 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
             User = Database.Entity.GuildUser.FromDiscord(Guild, user),
             UserId = user.Id.ToString()
         });
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
 
         var emote = Emote.Parse("<a:PepeJAMJAM:600070651814084629>");
         var result = await Service.GetInfoAsync(emote, user);

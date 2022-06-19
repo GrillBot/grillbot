@@ -25,13 +25,11 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DbFactory, interactionService);
+        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DatabaseBuilder, interactionService);
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var auditLogService = new AuditLogService(discordClient, DbFactory, messageCache, fileStorage, initManager);
+        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
 
-        return new AuditLogClearingJob(loggingService, auditLogService, client, DbFactory, fileStorage, initManager);
+        return new AuditLogClearingJob(loggingService, auditLogWriter, client, DatabaseBuilder, fileStorage, initManager);
     }
 
     [TestMethod]
@@ -45,7 +43,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
     [TestMethod]
     public async Task Execute_WithData_NoFiles()
     {
-        await DbContext.AddAsync(new AuditLogItem()
+        await Repository.AddAsync(new AuditLogItem
         {
             ChannelId = "12345",
             CreatedAt = DateTime.MinValue,
@@ -57,12 +55,12 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
             DiscordAuditLogItemId = "12345"
         });
 
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
-        await DbContext.AddAsync(new Invite() { Code = "ABCD", GuildId = "12345" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
+        await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
+        await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
+        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await Repository.AddAsync(new Invite { Code = "ABCD", GuildId = "12345" });
+        await Repository.CommitAsync();
 
         var context = CreateContext();
         await Job.Execute(context);
@@ -73,7 +71,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
     [TestMethod]
     public async Task Execute_WithData_WithFiles()
     {
-        var item = new AuditLogItem()
+        var item = new AuditLogItem
         {
             ChannelId = "12345",
             CreatedAt = DateTime.MinValue,
@@ -85,21 +83,21 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
             DiscordAuditLogItemId = "12345",
         };
 
-        File.WriteAllText("Temp.txt", "asdf");
-        item.Files.Add(new AuditLogFileMeta()
+        await File.WriteAllTextAsync("Temp.txt", "asdf");
+        item.Files.Add(new AuditLogFileMeta
         {
             Filename = "Temp.txt",
             Size = 4
         });
-        item.Files.Add(new AuditLogFileMeta() { Filename = "Temporary.txt" });
+        item.Files.Add(new AuditLogFileMeta { Filename = "Temporary.txt" });
 
-        await DbContext.AddAsync(item);
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
-        await DbContext.AddAsync(new Invite() { Code = "ABCD", GuildId = "12345" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(item);
+        await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
+        await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
+        await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
+        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await Repository.AddAsync(new Invite { Code = "ABCD", GuildId = "12345" });
+        await Repository.CommitAsync();
 
         var context = CreateContext();
         await Job.Execute(context);
@@ -111,7 +109,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
     public async Task Execute_WithData_Error()
     {
         await File.WriteAllBytesAsync("File.zip", new byte[] { 0, 1, 6, 8, 6 });
-        var item = new AuditLogItem()
+        var item = new AuditLogItem
         {
             ChannelId = "12345",
             CreatedAt = DateTime.MinValue,
@@ -122,14 +120,14 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
             Id = 12345,
             DiscordAuditLogItemId = "12345",
         };
-        item.Files.Add(new AuditLogFileMeta() { Filename = "ddddd.txt" });
+        item.Files.Add(new AuditLogFileMeta { Filename = "ddddd.txt" });
 
-        await DbContext.AddAsync(item);
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345", Nickname = "Test" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(item);
+        await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
+        await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
+        await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test" });
+        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await Repository.CommitAsync();
 
         var context = CreateContext();
         await Job.Execute(context);

@@ -13,7 +13,7 @@ public class UserServiteTests : ServiceTest<UserService>
     protected override UserService CreateService()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
-        return new UserService(DbFactory, configuration);
+        return new UserService(DatabaseBuilder, configuration);
     }
 
     [TestMethod]
@@ -29,8 +29,8 @@ public class UserServiteTests : ServiceTest<UserService>
     public async Task CheckUserFlagsAsync_Found_NotAdmin()
     {
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        await DbContext.InitUserAsync(user, CancellationToken.None);
-        await DbContext.SaveChangesAsync();
+        await Repository.User.GetOrCreateUserAsync(user);
+        await Repository.CommitAsync();
 
         var result = await Service.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
         Assert.IsFalse(result);
@@ -43,8 +43,8 @@ public class UserServiteTests : ServiceTest<UserService>
         var userEntity = Database.Entity.User.FromDiscord(user);
         userEntity.Flags |= (int)UserFlags.BotAdmin;
 
-        await DbContext.Users.AddAsync(userEntity);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(userEntity);
+        await Repository.CommitAsync();
 
         var result = await Service.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
         Assert.IsTrue(result);
@@ -66,8 +66,8 @@ public class UserServiteTests : ServiceTest<UserService>
         var userEntity = Database.Entity.User.FromDiscord(dcUser);
         userEntity.Flags |= (int)UserFlags.WebAdmin;
 
-        await DbContext.Users.AddAsync(userEntity);
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(userEntity);
+        await Repository.CommitAsync();
 
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 

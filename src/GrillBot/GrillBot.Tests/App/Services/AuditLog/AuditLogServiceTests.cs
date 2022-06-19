@@ -24,44 +24,14 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var configuration = ConfigurationHelper.CreateConfiguration();
         var storage = new FileStorageMock(configuration);
+        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
 
-        return new AuditLogService(discordClient, DbFactory, messageCache, storage, initManager);
-    }
-
-    [TestMethod]
-    public async Task StoreItemsAsync_Success()
-    {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-
-        var items = new List<AuditLogDataWrapper>()
-        {
-            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: user, discordAuditLogItemId: "12345"),
-            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", files: new List<AuditLogFileMeta>() { new() { Filename = "File", Size = 1 } }),
-            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, discordAuditLogItemId: "12345"),
-            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, discordAuditLogItemId: "12345", createdAt: DateTime.Now),
-            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: guildUser, discordAuditLogItemId: "12345", createdAt: DateTime.MinValue),
-            new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: guildUser, discordAuditLogItemId: "12345")
-        };
-
-        await Service.StoreItemsAsync(items);
-        Assert.IsTrue(true);
-    }
-
-    [TestMethod]
-    public async Task StoreItemAsync_Success()
-    {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-
-        await Service.StoreItemAsync(new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: user, discordAuditLogItemId: "12345"));
-        Assert.IsTrue(true);
+        return new AuditLogService(discordClient, DatabaseBuilder, messageCache, storage, initManager, auditLogWriter);
     }
 
     private async Task FillDataAsync()
     {
-        var item = new AuditLogItem()
+        var item = new AuditLogItem
         {
             ChannelId = "12345",
             CreatedAt = DateTime.UtcNow,
@@ -73,12 +43,12 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
             DiscordAuditLogItemId = "12345",
         };
 
-        await DbContext.AddAsync(item);
-        await DbContext.AddAsync(new Guild() { Id = "12345", Name = "Guild" });
-        await DbContext.AddAsync(new GuildChannel() { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
-        await DbContext.AddAsync(new GuildUser() { GuildId = "12345", UserId = "12345", Nickname = "Test" });
-        await DbContext.AddAsync(new Database.Entity.User() { Id = "12345", Username = "Username", Discriminator = "1234" });
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(item);
+        await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
+        await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
+        await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test" });
+        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await Repository.CommitAsync();
     }
 
     [TestMethod]

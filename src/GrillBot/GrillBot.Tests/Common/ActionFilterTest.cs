@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace GrillBot.Tests.Common;
 
@@ -22,9 +23,7 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
 
     protected override TFilter CreateService()
     {
-        Provider = CanInitProvider() ?
-            DIHelper.CreateInitializedProvider() :
-            DIHelper.CreateEmptyProvider();
+        Provider = CanInitProvider() ? DiHelper.CreateInitializedProvider() : DiHelper.CreateEmptyProvider();
 
         Controller = CreateController(Provider);
         return CreateFilter();
@@ -40,7 +39,7 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
         request.Setup(o => o.Headers).Returns(headers);
         request.Setup(o => o.Path).Returns("/api");
         request.Setup(o => o.Method).Returns("GET");
-        request.Setup(o => o.Query).Returns(new QueryCollection(new Dictionary<string, StringValues>() { { "X", "Y" } }));
+        request.Setup(o => o.Query).Returns(new QueryCollection(new Dictionary<string, StringValues> { { "X", "Y" } }));
 
         return request.Object;
     }
@@ -78,12 +77,14 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
 
         return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), Controller)
         {
-            ActionDescriptor = !noControllerDescriptor ? new ControllerActionDescriptor()
-            {
-                ControllerTypeInfo = Controller.GetType().GetTypeInfo(),
-                MethodInfo = Controller.GetType().GetMethod(methodName),
-                AttributeRouteInfo = new AttributeRouteInfo() { Template = "/api" }
-            } : null
+            ActionDescriptor = !noControllerDescriptor
+                ? new ControllerActionDescriptor
+                {
+                    ControllerTypeInfo = Controller.GetType().GetTypeInfo(),
+                    MethodInfo = Controller.GetType().GetMethod(methodName)!,
+                    AttributeRouteInfo = new AttributeRouteInfo { Template = "/api" }
+                }
+                : new ActionDescriptor()
         };
     }
 

@@ -10,7 +10,7 @@ public class GuildSynchronizationTests : ServiceTest<GuildSynchronization>
 {
     protected override GuildSynchronization CreateService()
     {
-        return new GuildSynchronization(DbFactory);
+        return new GuildSynchronization(DatabaseBuilder);
     }
 
     [TestMethod]
@@ -18,7 +18,7 @@ public class GuildSynchronizationTests : ServiceTest<GuildSynchronization>
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
-        await Service.GuildUpdatedAsync(null, guild);
+        await Service.GuildUpdatedAsync(guild);
         Assert.IsTrue(true);
     }
 
@@ -27,10 +27,10 @@ public class GuildSynchronizationTests : ServiceTest<GuildSynchronization>
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
-        await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Guild.FromDiscord(guild));
+        await Repository.CommitAsync();
 
-        await Service.GuildUpdatedAsync(guild, guild);
+        await Service.GuildUpdatedAsync(guild);
         Assert.IsTrue(true);
     }
 }

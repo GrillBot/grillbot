@@ -12,7 +12,7 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
 {
     protected override GuildUserSynchronization CreateService()
     {
-        return new GuildUserSynchronization(DbFactory);
+        return new GuildUserSynchronization(DatabaseBuilder);
     }
 
     [TestMethod]
@@ -21,7 +21,7 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
-        await Service.GuildMemberUpdatedAsync(null, user);
+        await Service.GuildMemberUpdatedAsync(user);
         Assert.IsTrue(true);
     }
 
@@ -31,13 +31,12 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
-        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
-        await DbContext.Guilds.AddAsync(Guild.FromDiscord(user.Guild));
-        await DbContext.GuildUsers.AddAsync(GuildUser.FromDiscord(user.Guild, user));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
+        await Repository.AddAsync(Guild.FromDiscord(user.Guild));
+        await Repository.AddAsync(GuildUser.FromDiscord(user.Guild, user));
+        await Repository.CommitAsync();
 
-        await Service.GuildMemberUpdatedAsync(null, user);
-        Assert.IsTrue(true);
+        await Service.GuildMemberUpdatedAsync(user);
     }
 
     [TestMethod]
@@ -46,12 +45,12 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).AsBot().Build();
 
-        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
-        await DbContext.Guilds.AddAsync(Guild.FromDiscord(user.Guild));
-        await DbContext.GuildUsers.AddAsync(GuildUser.FromDiscord(user.Guild, user));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
+        await Repository.AddAsync(Guild.FromDiscord(user.Guild));
+        await Repository.AddAsync(GuildUser.FromDiscord(user.Guild, user));
+        await Repository.CommitAsync();
 
-        await Service.GuildMemberUpdatedAsync(null, user);
+        await Service.GuildMemberUpdatedAsync(user);
         Assert.IsTrue(true);
     }
 }

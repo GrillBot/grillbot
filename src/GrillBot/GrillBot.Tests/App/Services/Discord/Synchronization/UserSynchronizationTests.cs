@@ -9,7 +9,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
 {
     protected override UserSynchronization CreateService()
     {
-        return new UserSynchronization(DbFactory);
+        return new UserSynchronization(DatabaseBuilder);
     }
 
     [TestMethod]
@@ -17,7 +17,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     {
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-        await Service.UserUpdatedAsync(user, user);
+        await Service.UserUpdatedAsync(user);
         Assert.IsTrue(true);
     }
 
@@ -26,11 +26,10 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     {
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(user));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
+        await Repository.CommitAsync();
 
-        await Service.UserUpdatedAsync(user, user);
-        Assert.IsTrue(true);
+        await Service.UserUpdatedAsync(user);
     }
 
     [TestMethod]
@@ -40,10 +39,10 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
             .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
             .AsBot().Build();
 
-        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(selfUser));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(selfUser));
+        await Repository.CommitAsync();
 
-        await Service.UserUpdatedAsync(selfUser, selfUser);
+        await Service.UserUpdatedAsync(selfUser);
         Assert.IsTrue(true);
     }
 
@@ -61,8 +60,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
             .SetOwner(owner)
             .Build();
 
-        await UserSynchronization.InitBotAdminAsync(DbContext, application);
-        Assert.IsTrue(true);
+        await UserSynchronization.InitBotAdminAsync(Repository, application);
     }
 
     [TestMethod]
@@ -75,14 +73,13 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
             .AsBot()
             .Build();
 
-        await DbContext.Users.AddAsync(Database.Entity.User.FromDiscord(owner));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(owner));
+        await Repository.CommitAsync();
 
         var application = new ApplicationBuilder()
             .SetOwner(owner)
             .Build();
 
-        await UserSynchronization.InitBotAdminAsync(DbContext, application);
-        Assert.IsTrue(true);
+        await UserSynchronization.InitBotAdminAsync(Repository, application);
     }
 }

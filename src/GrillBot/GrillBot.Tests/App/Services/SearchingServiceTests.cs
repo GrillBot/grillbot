@@ -17,10 +17,10 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var userService = new UserService(DbFactory, configuration);
+        var userService = new UserService(DatabaseBuilder, configuration);
         var mapper = AutoMapperHelper.CreateMapper();
 
-        return new SearchingService(discordClient, DbFactory, userService, mapper);
+        return new SearchingService(discordClient, DatabaseBuilder, userService, mapper);
     }
 
     [TestMethod]
@@ -72,7 +72,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var anotherUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
-        await DbContext.AddAsync(new SearchItem
+        await Repository.AddAsync(new SearchItem
         {
             Channel = GuildChannel.FromDiscord(guild, channel, global::Discord.ChannelType.Text),
             ChannelId = channel.Id.ToString(),
@@ -83,8 +83,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
             User = Database.Entity.User.FromDiscord(user),
             UserId = user.Id.ToString()
         });
-
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
         await Service.RemoveSearchAsync(42, anotherUser);
     }
 
@@ -96,7 +95,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var anotherUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
-        await DbContext.AddAsync(new SearchItem
+        await Repository.AddAsync(new SearchItem
         {
             Channel = GuildChannel.FromDiscord(guild, channel, global::Discord.ChannelType.Text),
             ChannelId = channel.Id.ToString(),
@@ -110,11 +109,10 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
 
         var userEntity = Database.Entity.User.FromDiscord(anotherUser);
         userEntity.Flags |= (int)UserFlags.BotAdmin;
-        await DbContext.AddAsync(userEntity);
+        await Repository.AddAsync(userEntity);
 
-        await DbContext.SaveChangesAsync();
+        await Repository.CommitAsync();
         await Service.RemoveSearchAsync(42, anotherUser);
-        Assert.IsTrue(true);
     }
 
     [TestMethod]
@@ -123,8 +121,6 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         await Service.RemoveSearchAsync(42, user);
-
-        Assert.IsTrue(true);
     }
 
     [TestMethod]
@@ -167,7 +163,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
 
         var userEntity = Database.Entity.User.FromDiscord(user);
         userEntity.Flags |= (int)UserFlags.BotAdmin;
-        await DbContext.AddAsync(userEntity);
+        await Repository.AddAsync(userEntity);
+        await Repository.CommitAsync();
 
         var suggestions = await Service.GenerateSuggestionsAsync(user, guild, channel);
         Assert.AreEqual(0, suggestions.Count);

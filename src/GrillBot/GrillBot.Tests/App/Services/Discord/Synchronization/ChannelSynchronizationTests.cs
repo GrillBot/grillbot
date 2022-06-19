@@ -11,7 +11,7 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
 {
     protected override ChannelSynchronization CreateService()
     {
-        return new ChannelSynchronization(DbFactory);
+        return new ChannelSynchronization(DatabaseBuilder);
     }
 
     [TestMethod]
@@ -30,9 +30,9 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
-        await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
-        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Guild.FromDiscord(guild));
+        await Repository.AddAsync(GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
+        await Repository.CommitAsync();
 
         await Service.ChannelDeletedAsync(channel);
         Assert.IsTrue(true);
@@ -50,10 +50,10 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
             .SetType(ThreadType.PrivateThread)
             .Build();
 
-        await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
-        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
-        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, thread, ChannelType.PrivateThread));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Guild.FromDiscord(guild));
+        await Repository.AddAsync(GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
+        await Repository.AddAsync(GuildChannel.FromDiscord(guild, thread, ChannelType.PrivateThread));
+        await Repository.CommitAsync();
 
         await Service.ChannelDeletedAsync(channel);
         Assert.IsTrue(true);
@@ -85,10 +85,10 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
             .SetGuild(guild)
             .Build();
 
-        await DbContext.Guilds.AddAsync(Guild.FromDiscord(guild));
-        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
-        await DbContext.Channels.AddAsync(GuildChannel.FromDiscord(guild, thread, ChannelType.PrivateThread));
-        await DbContext.SaveChangesAsync();
+        await Repository.AddAsync(Guild.FromDiscord(guild));
+        await Repository.AddAsync(GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
+        await Repository.AddAsync(GuildChannel.FromDiscord(guild, thread, ChannelType.PrivateThread));
+        await Repository.CommitAsync();
 
         await Service.ThreadDeletedAsync(thread);
         Assert.IsTrue(true);

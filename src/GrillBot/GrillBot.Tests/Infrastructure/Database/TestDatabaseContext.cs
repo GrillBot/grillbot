@@ -1,12 +1,12 @@
-﻿using GrillBot.Database.Entity;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using GrillBot.Database.Entity;
 using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
-namespace GrillBot.Tests.TestHelpers;
+namespace GrillBot.Tests.Infrastructure.Database;
 
 [ExcludeFromCodeCoverage]
 public class DatabaseContext : GrillBotContext

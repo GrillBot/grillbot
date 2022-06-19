@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace GrillBot.Tests.TestHelpers;
 
 [ExcludeFromCodeCoverage]
-public static class DIHelper
+public static class DiHelper
 {
     public static IServiceProvider CreateEmptyProvider()
     {

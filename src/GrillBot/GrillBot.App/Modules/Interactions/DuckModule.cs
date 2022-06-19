@@ -49,6 +49,8 @@ public class DuckModule : InteractionsModuleBase
             case Data.Enums.DuckState.OpenChillzone:
                 ProcessChillzone(titleBuilder, currentState, embed);
                 break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
         await SetResponseAsync(embed: embed.WithTitle(titleBuilder.ToString()).Build());
@@ -101,8 +103,7 @@ public class DuckModule : InteractionsModuleBase
         if (string.IsNullOrEmpty(state.Note))
         {
             embed.AddField("A co dál?",
-                            $"Další otvíračka není naplánovaná, ale tento stav má skončit {state.FollowingState.PlannedEnd:dd. MM. v HH:mm}. Co bude pak, to nikdo neví.",
-                            false);
+                $"Další otvíračka není naplánovaná, ale tento stav má skončit {state.FollowingState.PlannedEnd:dd. MM. v HH:mm}. Co bude pak, to nikdo neví.");
 
             return;
         }
@@ -130,7 +131,7 @@ public class DuckModule : InteractionsModuleBase
     {
         titleBuilder
             .Append("Kachna je otevřená v režimu chillzóna až do ")
-            .AppendFormat("{0:HH:mm}", state.PlannedEnd.Value)
+            .Append($"{state.PlannedEnd!.Value:HH:mm}")
             .Append('!');
 
         AddNoteToEmbed(embedBuilder, state.Note);
@@ -139,6 +140,6 @@ public class DuckModule : InteractionsModuleBase
     private static void AddNoteToEmbed(EmbedBuilder embed, string note, string title = "Poznámka")
     {
         if (!string.IsNullOrEmpty(note))
-            embed.AddField(title, note, false);
+            embed.AddField(title, note);
     }
 }

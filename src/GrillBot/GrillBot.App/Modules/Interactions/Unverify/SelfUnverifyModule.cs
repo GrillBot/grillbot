@@ -29,7 +29,7 @@ public class SelfUnverifyModule : InteractionsModuleBase
     )
     {
         var originalMessage = await Context.Interaction.GetOriginalResponseAsync();
-        bool success = true;
+        var success = true;
         keepables ??= "";
 
         try
@@ -37,7 +37,7 @@ public class SelfUnverifyModule : InteractionsModuleBase
             await originalMessage.AddReactionAsync(Emote.Parse(Configuration.GetValue<string>("Discord:Emotes:Loading")));
 
             end = end.AddMinutes(1); // Strinct checks are only in unverify.
-            var toKeep = keepables?.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(o => o.ToLower()).ToList();
+            var toKeep = keepables.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(o => o.ToLower()).ToList();
             var result = await SelfunverifyService.ProcessSelfUnverifyAsync(Context.User, end, Context.Guild, toKeep);
             await SetResponseAsync(result);
         }

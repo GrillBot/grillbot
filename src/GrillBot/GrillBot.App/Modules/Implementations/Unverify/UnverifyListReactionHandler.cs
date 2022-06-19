@@ -16,7 +16,7 @@ public class UnverifyListReactionHandler : ReactionEventHandler
 
     public override async Task<bool> OnReactionAddedAsync(IUserMessage message, IEmote emote, IUser user)
     {
-        if (!TryGetEmbedAndMetadata<UnverifyListMetadata>(message, emote, out IEmbed embed, out var metadata)) return false;
+        if (!TryGetEmbedAndMetadata<UnverifyListMetadata>(message, emote, out _, out var metadata)) return false;
 
         var guild = DiscordClient.GetGuild(metadata.GuildId);
         if (guild == null) return false;

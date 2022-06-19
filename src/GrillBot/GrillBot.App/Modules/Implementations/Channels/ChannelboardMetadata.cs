@@ -15,13 +15,11 @@ public class ChannelboardMetadata : PaginatedMetadataBase
 
     protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
-        if (values.TryGetValue(nameof(GuildId), out string _guildId) && ulong.TryParse(_guildId, out var guildId))
-        {
-            GuildId = guildId;
-            return true;
-        }
+        if (!values.TryGetValue(nameof(GuildId), out var guildIdData) || !ulong.TryParse(guildIdData, out var guildId))
+            return false;
 
-        return false;
+        GuildId = guildId;
+        return true;
     }
 
     protected override void Reset()

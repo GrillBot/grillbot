@@ -33,7 +33,7 @@ public class BirthdayModule : InteractionsModuleBase
 
         if (Context.Guild.CurrentUser.GuildPermissions.ManageMessages)
         {
-            await ReplyAsync($"{Context.User.Mention} Datum narození bylo úspěšně uloženo.", allowedMentions: new AllowedMentions() { AllowedTypes = AllowedMentionTypes.Users });
+            await ReplyAsync($"{Context.User.Mention} Datum narození bylo úspěšně uloženo.", allowedMentions: new AllowedMentions { AllowedTypes = AllowedMentionTypes.Users });
             await DeleteOriginalResponseAsync();
         }
         else

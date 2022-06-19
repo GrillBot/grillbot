@@ -18,7 +18,7 @@ public class UserMeModule : InteractionsModuleBase
     [SlashCommand("me", "Informace o mně")]
     public async Task GetInfoAboutMeAsync()
     {
-        var user = (Context.User as SocketGuildUser) ?? Context.Guild.GetUser(Context.User.Id);
+        var user = Context.User as SocketGuildUser ?? Context.Guild.GetUser(Context.User.Id);
         var embed = await UserService.CreateInfoEmbed(Context.User, Context.Guild, user);
 
         await SetResponseAsync(embed: embed);

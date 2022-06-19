@@ -20,17 +20,15 @@ public class UserAccessListMetadata : PaginatedMetadataBase
         ulong forUserId = 0;
         ulong guildId = 0;
 
-        var success = values.TryGetValue(nameof(ForUserId), out var _forUserId) && ulong.TryParse(_forUserId, out forUserId);
-        success &= values.TryGetValue(nameof(GuildId), out var _guildId) && ulong.TryParse(_guildId, out guildId);
+        var success = values.TryGetValue(nameof(ForUserId), out var forUserIdData) && ulong.TryParse(forUserIdData, out forUserId);
+        success &= values.TryGetValue(nameof(GuildId), out var guildIdData) && ulong.TryParse(guildIdData, out guildId);
 
-        if (success)
-        {
-            ForUserId = forUserId;
-            GuildId = guildId;
-            return true;
-        }
+        if (!success)
+            return false;
 
-        return false;
+        ForUserId = forUserId;
+        GuildId = guildId;
+        return true;
     }
 
     protected override void Reset()

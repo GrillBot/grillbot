@@ -9,7 +9,7 @@ public static class UserAccessListExtensions
     {
         embed.WithFooter(user);
         embed.WithAuthor($"Seznam přístupů pro uživatele {forUser.GetFullName()}", forUser.GetUserAvatarUrl());
-        embed.WithMetadata(new UserAccessListMetadata() { ForUserId = forUser.Id, GuildId = guild.Id, Page = page });
+        embed.WithMetadata(new UserAccessListMetadata { ForUserId = forUser.Id, GuildId = guild.Id, Page = page });
 
         embed.WithColor(Color.Blue);
         embed.WithCurrentTimestamp();

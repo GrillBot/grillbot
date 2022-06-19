@@ -21,15 +21,15 @@ public class HelpReactionHandler : ReactionEventHandler
 
     public override async Task<bool> OnReactionAddedAsync(IUserMessage message, IEmote emote, IUser user)
     {
-        if (!TryGetEmbedAndMetadata<HelpMetadata>(message, emote, out var embed, out var metadata)) return false;
+        if (!TryGetEmbedAndMetadata<HelpMetadata>(message, emote, out _, out var metadata)) return false;
 
         var context = new CommandContext(DiscordClient, message.ReferencedMessage);
         var availableModules = await CommandService.Modules
             .Where(o => o.Commands.Count > 0)
             .FindAllAsync(async mod => (await mod.GetExecutableCommandsAsync(context, Provider)).Count > 0);
 
-        int maxPages = Math.Min(metadata.PagesCount, availableModules.Count);
-        int newPage = GetNextPageNumber(metadata.Page, maxPages, emote);
+        var maxPages = Math.Min(metadata.PagesCount, availableModules.Count);
+        var newPage = GetNextPageNumber(metadata.Page, maxPages, emote);
         if (newPage == metadata.Page) return false;
 
         var module = availableModules[newPage];

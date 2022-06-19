@@ -36,6 +36,15 @@ public class RemindRepository : RepositoryBase
         }
     }
 
+    public async Task<RemindMessage?> FindRemindByRemindMessageAsync(string messageId)
+    {
+        using (Counter.Create("Database"))
+        {
+            return await Context.Reminders
+                .FirstOrDefaultAsync(o => o.RemindMessageId == messageId && o.At < DateTime.Now);
+        }
+    }
+
     public async Task<int> GetRemindersCountAsync(IUser forUser)
     {
         using (Counter.Create("Database"))

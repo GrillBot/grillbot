@@ -11,7 +11,7 @@ public static class ChannelBoardExtensions
         Func<ulong, ITextChannel> channelFinder, int skip, int page = 0)
     {
         builder.WithFooter(user);
-        builder.WithMetadata(new ChannelboardMetadata() { Page = page, GuildId = guild.Id });
+        builder.WithMetadata(new ChannelboardMetadata { Page = page, GuildId = guild.Id });
 
         builder.WithAuthor("Statistika aktivity v kanálech");
         builder.WithColor(Color.Blue);

@@ -7,9 +7,9 @@ using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Implementations.Help;
 
-static public class HelpExtensions
+public static class HelpExtensions
 {
-    static public async Task<EmbedBuilder> WithHelpModuleAsync(this EmbedBuilder embed, ModuleInfo module, ICommandContext context, IServiceProvider provider, int pagesCount, string prefix,
+    public static async Task<EmbedBuilder> WithHelpModuleAsync(this EmbedBuilder embed, ModuleInfo module, ICommandContext context, IServiceProvider provider, int pagesCount, string prefix,
         int page = 0)
     {
         embed
@@ -18,7 +18,7 @@ static public class HelpExtensions
             .WithCurrentTimestamp()
             .WithAuthor(o => o.WithName("Nápověda").WithIconUrl(context.Client.CurrentUser.GetUserAvatarUrl()).WithUrl("https://public.grillbot.cloud"))
             .WithFooter($"{page + 1}/{pagesCount}")
-            .WithMetadata(new HelpMetadata() { Page = page, PagesCount = pagesCount });
+            .WithMetadata(new HelpMetadata { Page = page, PagesCount = pagesCount });
 
         const string summaryTitle = "Kompletní seznam lze také najít ve veřejné administraci bota (https://public.grillbot.cloud). **Pokud některé příkazy nevidíte, tak je zkuste hledat jako příkaz s prefixem `/`**";
         if (!string.IsNullOrEmpty(module.Summary))

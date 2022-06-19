@@ -11,7 +11,7 @@ public static class EmoteListExtensions
         string orderBy, bool descending, int page = 0)
     {
         embed.WithFooter(user);
-        embed.WithMetadata(new EmoteListMetadata() { Page = page, GuildId = guild.Id, OfUserId = ofUser?.Id, OrderBy = orderBy, Descending = descending });
+        embed.WithMetadata(new EmoteListMetadata { Page = page, GuildId = guild.Id, OfUserId = ofUser?.Id, OrderBy = orderBy, Descending = descending });
 
         embed.WithAuthor("Statistika použivání emotů");
         embed.WithColor(Color.Blue);
@@ -19,22 +19,20 @@ public static class EmoteListExtensions
 
         if (data.Count == 0)
         {
-            if (ofUser != null)
-                embed.WithDescription($"Pro uživatele `{ofUser.GetDisplayName()}` ještě nebyla zaznamenáno žádné použití emotu.");
-            else
-                embed.WithDescription("Ještě nebylo zaznamenáno žádné použití emotu.");
+            embed.WithDescription(
+                ofUser != null ? $"Pro uživatele `{ofUser.GetDisplayName()}` ještě nebyla zaznamenáno žádné použití emotu." : "Ještě nebylo zaznamenáno žádné použití emotu."
+            );
         }
         else
         {
             foreach (var item in data)
             {
-                var formatted = string.Join("\n", new[]
-                {
+                var formatted = string.Join("\n",
                     $"Počet použití: **{item.UseCount}**",
                     $"Použilo uživatelů: **{item.UsedUsersCount}**",
                     $"První použití: **{item.FirstOccurence.ToCzechFormat()}**",
                     $"Poslední použití: **{item.LastOccurence.ToCzechFormat()}**"
-                });
+                );
 
                 embed.AddField(item.Emote.FullId, formatted, true);
             }

@@ -2,7 +2,6 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.Unverify;
 
 namespace GrillBot.App.Modules.Implementations.Unverify;
@@ -14,7 +13,7 @@ public static class UnverifyListExtensions
         embed.WithFooter(forUser);
 
         embed.WithAuthor(profile.Destination.GetFullName(), profile.Destination.GetUserAvatarUrl());
-        embed.WithMetadata(new UnverifyListMetadata() { Page = page, GuildId = guild.Id });
+        embed.WithMetadata(new UnverifyListMetadata { Page = page, GuildId = guild.Id });
 
         var color = new[] { profile.RolesToKeep, profile.RolesToRemove }.SelectMany(o => o)
             .Where(o => o.Color != Color.Default)
@@ -32,7 +31,7 @@ public static class UnverifyListExtensions
             .AddField("Selfunverify", FormatHelper.FormatBooleanToCzech(profile.IsSelfUnverify), true);
 
         if (!string.IsNullOrEmpty(profile.Reason))
-            embed.AddField("Důvod", profile.Reason, false);
+            embed.AddField("Důvod", profile.Reason);
 
         if (profile.RolesToKeep.Count > 0)
         {

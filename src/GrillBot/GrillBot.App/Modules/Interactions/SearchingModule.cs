@@ -26,7 +26,7 @@ public class SearchingModule : InteractionsModuleBase
         string query = null
     )
     {
-        if (channel == null) channel = (ITextChannel)Context.Channel;
+        channel ??= (ITextChannel)Context.Channel;
 
         var list = await SearchingService.GetSearchListAsync(Context.Guild, channel, query, 0);
         var count = await SearchingService.GetItemsCountAsync(Context.Guild, channel, query);
@@ -49,8 +49,7 @@ public class SearchingModule : InteractionsModuleBase
 
     [SlashCommand("nove", "Vytvoření nového hledání.")]
     public async Task CreateSearchAsync(
-        [Summary("zprava", "Zpráva")]
-        string message
+        [Summary("zprava", "Zpráva")] string message
     )
     {
         try
@@ -66,8 +65,7 @@ public class SearchingModule : InteractionsModuleBase
 
     [SlashCommand("smazat", "Smaže hledání")]
     public async Task RemoveRemindAsync(
-        [Autocomplete(typeof(SearchingAutoCompleteHandler))]
-        [Summary("ident", "Identifikace hledání")]
+        [Autocomplete(typeof(SearchingAutoCompleteHandler))] [Summary("ident", "Identifikace hledání")]
         long ident
     )
     {

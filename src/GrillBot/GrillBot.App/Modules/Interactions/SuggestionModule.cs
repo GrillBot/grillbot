@@ -36,11 +36,11 @@ public class SuggestionModule : InteractionsModuleBase
 
         var sessionId = Guid.NewGuid().ToString();
         var modal = new ModalBuilder("Podání návrhu na nový emote", $"suggestions_emote:{sessionId}")
-            .AddTextInput("Název emote", "suggestions_emote_name", minLength: 2, maxLength: 50, required: true, value: emote?.Name ?? Path.GetFileNameWithoutExtension(attachment.Filename))
+            .AddTextInput("Název emote", "suggestions_emote_name", minLength: 2, maxLength: 50, required: true, value: emote?.Name ?? Path.GetFileNameWithoutExtension(attachment!.Filename))
             .AddTextInput("Popis emote", "suggestions_emote_description", TextInputStyle.Paragraph, "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?", maxLength: 1500, required: false)
             .Build();
 
-        var suggestionData = (emote as object) ?? attachment;
+        var suggestionData = emote as object ?? attachment;
         SuggestionService.Emotes.InitSession(sessionId, suggestionData);
 
         await RespondWithModalAsync(modal);
@@ -60,19 +60,22 @@ public class SuggestionModule : InteractionsModuleBase
         }
         catch (Exception ex)
         {
-            if (ex is HttpException httpEx && httpEx.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-                return;
-
-            if (ex is ValidationException || ex is NotFoundException)
+            switch (ex)
             {
-                try
-                {
-                    await Context.User.SendMessageAsync(ex.Message);
-                }
-                catch (HttpException ex1) when (ex1.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-                {
-                    // User have blocked DMs from bots. User problem, not ours.
-                }
+                case HttpException { DiscordCode: DiscordErrorCode.CannotSendMessageToUser }:
+                    return;
+                case ValidationException:
+                case NotFoundException:
+                    try
+                    {
+                        await Context.User.SendMessageAsync(ex.Message);
+                    }
+                    catch (HttpException ex1) when (ex1.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
+                    {
+                        // User have blocked DMs from bots. User problem, not ours.
+                    }
+
+                    break;
             }
         }
         finally
@@ -104,19 +107,22 @@ public class SuggestionModule : InteractionsModuleBase
         }
         catch (Exception ex)
         {
-            if (ex is HttpException httpEx && httpEx.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-                return;
-
-            if (ex is ValidationException || ex is NotFoundException)
+            switch (ex)
             {
-                try
-                {
-                    await Context.User.SendMessageAsync(ex.Message);
-                }
-                catch (HttpException ex1) when (ex1.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-                {
-                    // User have blocked DMs from bots. User problem, not ours.
-                }
+                case HttpException { DiscordCode: DiscordErrorCode.CannotSendMessageToUser }:
+                    return;
+                case ValidationException:
+                case NotFoundException:
+                    try
+                    {
+                        await Context.User.SendMessageAsync(ex.Message);
+                    }
+                    catch (HttpException ex1) when (ex1.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
+                    {
+                        // User have blocked DMs from bots. User problem, not ours.
+                    }
+
+                    break;
             }
         }
         finally

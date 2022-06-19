@@ -24,19 +24,17 @@ public class SearchingMetadata : PaginatedMetadataBase
         ulong guildId = 0;
         ulong channelId = 0;
 
-        var success = values.TryGetValue(nameof(GuildId), out var _guildId) && ulong.TryParse(_guildId, out guildId);
-        success &= values.TryGetValue(nameof(ChannelId), out var _channelId) && ulong.TryParse(_channelId, out channelId);
+        var success = values.TryGetValue(nameof(GuildId), out var guildIdData) && ulong.TryParse(guildIdData, out guildId);
+        success &= values.TryGetValue(nameof(ChannelId), out var channelIdData) && ulong.TryParse(channelIdData, out channelId);
         values.TryGetValue(nameof(MessageQuery), out var messageQuery);
 
-        if (success)
-        {
-            GuildId = guildId;
-            ChannelId = channelId;
-            MessageQuery = messageQuery;
-            return true;
-        }
+        if (!success)
+            return false;
 
-        return false;
+        GuildId = guildId;
+        ChannelId = channelId;
+        MessageQuery = messageQuery;
+        return true;
     }
 
     protected override void Reset()

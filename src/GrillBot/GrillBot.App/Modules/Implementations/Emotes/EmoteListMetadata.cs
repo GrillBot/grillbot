@@ -27,26 +27,24 @@ public class EmoteListMetadata : PaginatedMetadataBase
     {
         ulong guildId = 0;
         ulong ofUserId = 0;
-        bool descending = false;
-        bool filterAnimated = false;
+        var descending = false;
+        var filterAnimated = false;
 
-        var success = values.TryGetValue(nameof(OrderBy), out string orderBy);
-        success &= values.TryGetValue(nameof(Descending), out string _descending) && bool.TryParse(_descending, out descending);
-        success &= values.TryGetValue(nameof(GuildId), out var _guildId) && ulong.TryParse(_guildId, out guildId);
-        success &= values.TryGetValue(nameof(FilterAnimated), out var _filterAnimated) && bool.TryParse(_filterAnimated, out filterAnimated);
-        success &= !values.TryGetValue(nameof(OfUserId), out var _ofUserId) || ulong.TryParse(_ofUserId, out ofUserId);
+        var success = values.TryGetValue(nameof(OrderBy), out var orderBy);
+        success &= values.TryGetValue(nameof(Descending), out var descendingData) && bool.TryParse(descendingData, out descending);
+        success &= values.TryGetValue(nameof(GuildId), out var guildIdData) && ulong.TryParse(guildIdData, out guildId);
+        success &= values.TryGetValue(nameof(FilterAnimated), out var filterAnimatedData) && bool.TryParse(filterAnimatedData, out filterAnimated);
+        success &= !values.TryGetValue(nameof(OfUserId), out var ofUserIdData) || ulong.TryParse(ofUserIdData, out ofUserId);
 
-        if (success)
-        {
-            GuildId = guildId;
-            OrderBy = orderBy;
-            Descending = descending;
-            OfUserId = ofUserId == 0 ? null : ofUserId;
-            FilterAnimated = filterAnimated;
-            return true;
-        }
+        if (!success)
+            return false;
 
-        return false;
+        GuildId = guildId;
+        OrderBy = orderBy;
+        Descending = descending;
+        OfUserId = ofUserId == 0 ? null : ofUserId;
+        FilterAnimated = filterAnimated;
+        return true;
     }
 
     protected override void Reset()

@@ -68,6 +68,7 @@ public class BotModule : InteractionsModuleBase
 
             foreach (var grp in data.GroupBy(o => string.Join("|", o.Value)))
             {
+                string fieldGroupResult;
                 var keys = string.Join(", ", grp.Select(o => o.Key == "_" ? "Ostatní" : o.Key));
 
                 var fieldGroupBuilder = new StringBuilder();
@@ -75,8 +76,8 @@ public class BotModule : InteractionsModuleBase
                 {
                     if (fieldGroupBuilder.Length + item.Length >= EmbedFieldBuilder.MaxFieldValueLength)
                     {
-                        var fieldGroupResult = fieldGroupBuilder.ToString().Trim();
-                        embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[0..^1] : fieldGroupResult, false);
+                        fieldGroupResult = fieldGroupBuilder.ToString().Trim();
+                        embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[..^1] : fieldGroupResult);
                         fieldGroupBuilder.Clear();
                     }
                     else
@@ -85,12 +86,12 @@ public class BotModule : InteractionsModuleBase
                     }
                 }
 
-                if (fieldGroupBuilder.Length > 0)
-                {
-                    var fieldGroupResult = fieldGroupBuilder.ToString().Trim();
-                    embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[0..^1] : fieldGroupResult, false);
-                    fieldGroupBuilder.Clear();
-                }
+                if (fieldGroupBuilder.Length <= 0)
+                    continue;
+
+                fieldGroupResult = fieldGroupBuilder.ToString().Trim();
+                embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[..^1] : fieldGroupResult);
+                fieldGroupBuilder.Clear();
             }
 
             await SetResponseAsync(embed: embed.Build());

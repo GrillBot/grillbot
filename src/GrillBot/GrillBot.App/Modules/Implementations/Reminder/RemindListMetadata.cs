@@ -16,15 +16,13 @@ public class RemindListMetadata : PaginatedMetadataBase
     protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
         ulong ofUser = 0;
-        var success = values.TryGetValue(nameof(OfUser), out var _ofUser) && ulong.TryParse(_ofUser, out ofUser);
+        var success = values.TryGetValue(nameof(OfUser), out var ofUserData) && ulong.TryParse(ofUserData, out ofUser);
 
-        if (success)
-        {
-            OfUser = ofUser;
-            return true;
-        }
+        if (!success)
+            return false;
 
-        return false;
+        OfUser = ofUser;
+        return true;
     }
 
     protected override void Reset()

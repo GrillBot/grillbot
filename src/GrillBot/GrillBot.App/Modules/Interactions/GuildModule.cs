@@ -51,16 +51,16 @@ public class GuildModule : InteractionsModuleBase
             .AddField("Počet emotů (běžných/animovaných)", $"{basicEmotesCount} / {animatedCount}", true)
             .AddField("Počet banů", banCount, true)
             .AddField("Vytvořen", guild.CreatedAt.LocalDateTime.ToCzechFormat(), true)
-            .AddField("Vlastník", guild.Owner.GetFullName(), false)
+            .AddField("Vlastník", guild.Owner.GetFullName())
             .AddField("Počet členů", guild.Users.Count, true)
             .AddField("Úroveň serveru", tier, true)
             .AddField("Počet boosterů", guild.PremiumSubscriptionCount, true);
 
         if (guild.Features.Value != GuildFeature.None)
-            embed.AddField("Vylepšení", string.Join("\n", guild.GetTranslatedFeatures()), false);
+            embed.AddField("Vylepšení", string.Join("\n", guild.GetTranslatedFeatures()));
 
         if (await UserService.CheckUserFlagsAsync(Context.User, UserFlags.WebAdmin))
-            embed.AddField("Podrobnosti", "Podrobné informace o serveru najdeš ve webové administraci (https://grillbot.cloud/)", false);
+            embed.AddField("Podrobnosti", "Podrobné informace o serveru najdeš ve webové administraci (https://grillbot.cloud/)");
 
         await SetResponseAsync(embed: embed.Build());
     }

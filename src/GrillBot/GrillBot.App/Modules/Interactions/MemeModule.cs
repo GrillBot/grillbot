@@ -38,9 +38,6 @@ public class MemeModule : InteractionsModuleBase
         var emote = Configuration.GetValue<string>("Discord:Emotes:FeelsWowMan");
         var msg = $"Ahoj {Context.User.GetDisplayName(false)} {emote}";
 
-        if (@base == null)
-            return SetResponseAsync(msg);
-        else
-            return SetResponseAsync(string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));
+        return SetResponseAsync(@base == null ? msg : string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));
     }
 }

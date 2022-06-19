@@ -10,7 +10,7 @@ public static class SearchingExtensions
         string messageQuery)
     {
         embed.WithFooter(user);
-        embed.WithMetadata(new SearchingMetadata() { ChannelId = channel.Id, GuildId = guild.Id, Page = page, MessageQuery = messageQuery });
+        embed.WithMetadata(new SearchingMetadata { ChannelId = channel.Id, GuildId = guild.Id, Page = page, MessageQuery = messageQuery });
 
         embed.WithAuthor($"Hledání v kanálu #{channel.Name}");
         embed.WithColor(Color.Blue);

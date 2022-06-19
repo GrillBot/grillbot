@@ -15,17 +15,15 @@ public class HelpMetadata : PaginatedMetadataBase
 
     protected override bool TryLoad(IReadOnlyDictionary<string, string> values)
     {
-        int pagesCount = 0;
+        var pagesCount = 0;
 
-        var success = values.TryGetValue(nameof(PagesCount), out string _pagesCount) && int.TryParse(_pagesCount, out pagesCount);
+        var success = values.TryGetValue(nameof(PagesCount), out var pagesCountData) && int.TryParse(pagesCountData, out pagesCount);
 
-        if (success)
-        {
-            PagesCount = pagesCount;
-            return true;
-        }
+        if (!success)
+            return false;
 
-        return false;
+        PagesCount = pagesCount;
+        return true;
     }
 
     protected override void Reset()

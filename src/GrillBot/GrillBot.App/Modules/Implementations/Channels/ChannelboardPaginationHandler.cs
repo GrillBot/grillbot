@@ -32,7 +32,13 @@ public class ChannelboardPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var user = context.User is IGuildUser guildUser ? guildUser : await DiscordClient.TryFindGuildUserAsync(guild.Id, context.User.Id);
+        var user = context.User as IGuildUser ?? await DiscordClient.TryFindGuildUserAsync(guild.Id, context.User.Id);
+        if (user == null)
+        {
+            await context.Interaction.DeferAsync();
+            return;
+        }
+
         var availableChannels = await guild.GetAvailableChannelsAsync(user, true);
         if (availableChannels.Count == 0)
         {
@@ -42,7 +48,7 @@ public class ChannelboardPaginationHandler : ComponentInteractionHandler
 
         var availableChannelIds = availableChannels.ConvertAll(o => o.Id.ToString());
 
-        using var repository = DatabaseBuilder.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var channels = await repository.Channel.GetVisibleChannelsAsync(guild.Id, availableChannelIds, true);
 
         if (channels.Count == 0)

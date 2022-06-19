@@ -23,9 +23,11 @@ public class ChannelModule : InteractionsModuleBase
     [SlashCommand("info", "Informace o kanálu")]
     public async Task GetChannelInfoAsync(SocketGuildChannel channel)
     {
-        var user = Context.User is IGuildUser guildUser ? guildUser : await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);
-        var haveAccess = await channel.HaveAccessAsync(user);
+        var user = Context.User as IGuildUser ?? await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);
+        if (user == null)
+            throw new InvalidOperationException("Nepodařilo se dohledat uživatele, která zavolal příkaz.");
 
+        var haveAccess = await channel.HaveAccessAsync(user);
         if (!haveAccess)
         {
             await SetResponseAsync("Informace o kanálu ti nemohu dát, protože tam nemáš přístup.");
@@ -33,7 +35,7 @@ public class ChannelModule : InteractionsModuleBase
         }
 
         var channelType = channel.GetChannelType();
-        var isThread = channelType == ChannelType.NewsThread || channelType == ChannelType.PrivateThread || channelType == ChannelType.PublicThread;
+        var isThread = channelType is ChannelType.NewsThread or ChannelType.PrivateThread or ChannelType.PublicThread;
         var isCategory = channelType == ChannelType.Category;
 
         var channelEmbed = new EmbedBuilder()
@@ -46,34 +48,55 @@ public class ChannelModule : InteractionsModuleBase
         if (!isCategory)
             channelEmbed.AddField("Uživatelů", FormatHelper.FormatMembersToCzech(channel.Users.Count), true);
 
-        if (channelType == ChannelType.News)
-            channelEmbed.WithAuthor("Informace o kanálu s novinkami");
-        else if (channelType == ChannelType.Voice)
-            channelEmbed.WithAuthor("Informace o hlasovém kanálu");
-        else if (isThread)
-            channelEmbed.WithAuthor("Informace o vláknu");
-        else if (channelType == ChannelType.Stage)
-            channelEmbed.WithAuthor("Informace o jevišti");
-        else if (channelType == ChannelType.Text)
-            channelEmbed.WithAuthor("Informace o textovém kanálu");
-        else if (isCategory)
-            channelEmbed.WithAuthor("Informace o kategorii");
-        else
-            channelEmbed.WithAuthor($"Informace o neznámém typu kanálu ({channelType})");
-
-        if (!isThread && !isCategory)
+        switch (channelType)
         {
-            var permissionGroups = channel.PermissionOverwrites.GroupBy(o => o.TargetType).ToDictionary(o => o.Key, o => o.Count());
-            var userPermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.User);
-            var rolePermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.Role);
-            var permsFormatted = $"Uživatelské: {FormatHelper.FormatPermissionstoCzech(userPermsCount)}\n" +
-                                 $"Role: {FormatHelper.FormatPermissionstoCzech(rolePermsCount)}";
+            case ChannelType.News:
+                channelEmbed.WithAuthor("Informace o kanálu s novinkami");
+                break;
+            case ChannelType.Voice:
+                channelEmbed.WithAuthor("Informace o hlasovém kanálu");
+                break;
+            default:
+            {
+                if (isThread)
+                    channelEmbed.WithAuthor("Informace o vláknu");
+                else
+                    switch (channelType)
+                    {
+                        case ChannelType.Stage:
+                            channelEmbed.WithAuthor("Informace o jevišti");
+                            break;
+                        case ChannelType.Text:
+                            channelEmbed.WithAuthor("Informace o textovém kanálu");
+                            break;
+                        default:
+                        {
+                            channelEmbed.WithAuthor(isCategory ? "Informace o kategorii" : $"Informace o neznámém typu kanálu ({channelType})");
+                            break;
+                        }
+                    }
 
-            channelEmbed.AddField("Počet oprávnění", permsFormatted);
+                break;
+            }
         }
 
-        if (isThread)
-            channelEmbed.AddField("Kanál", (channel as SocketThreadChannel)!.ParentChannel!.GetMention(), true);
+        switch (isThread)
+        {
+            case false when !isCategory:
+            {
+                var permissionGroups = channel.PermissionOverwrites.GroupBy(o => o.TargetType).ToDictionary(o => o.Key, o => o.Count());
+                var userPermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.User);
+                var rolePermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.Role);
+                var permsFormatted = $"Uživatelské: {FormatHelper.FormatPermissionstoCzech(userPermsCount)}\n" +
+                                     $"Role: {FormatHelper.FormatPermissionstoCzech(rolePermsCount)}";
+
+                channelEmbed.AddField("Počet oprávnění", permsFormatted);
+                break;
+            }
+            case true:
+                channelEmbed.AddField("Kanál", (channel as SocketThreadChannel)!.ParentChannel!.GetMention(), true);
+                break;
+        }
 
         await using var repository = DatabaseBuilder.CreateRepository();
         var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.Guild.Id, true, true);
@@ -100,9 +123,10 @@ public class ChannelModule : InteractionsModuleBase
                     ChannelFlags.StatsHidden => "Skryté statistiky",
                     _ => null
                 })
-                .Where(o => !string.IsNullOrEmpty(o));
+                .Where(o => !string.IsNullOrEmpty(o))
+                .ToList();
 
-            if (flagsData.Any())
+            if (flagsData.Count > 0)
                 channelEmbed.AddField("Konfigurace", string.Join("\n", flagsData));
 
             if (!channelData.HasFlag(ChannelFlags.StatsHidden))
@@ -120,9 +144,11 @@ public class ChannelModule : InteractionsModuleBase
     [SlashCommand("board", "TOP 10 statistik kanálů, kam máš přístup.")]
     public async Task GetChannelboardAsync()
     {
-        var user = Context.User is IGuildUser guildUser ? guildUser : await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);
-        var availableChannels = await Context.Guild.GetAvailableChannelsAsync(user, true);
+        var user = Context.User as IGuildUser ?? await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);
+        if (user == null)
+            throw new InvalidOperationException("Nepodařilo se dohledat uživatele, který zavolal příkaz.");
 
+        var availableChannels = await Context.Guild.GetAvailableChannelsAsync(user, true);
         if (availableChannels.Count == 0)
         {
             await SetResponseAsync("Nemáš přístup do žádného kanálu.");
@@ -131,7 +157,7 @@ public class ChannelModule : InteractionsModuleBase
 
         var availableChannelIds = availableChannels.ConvertAll(o => o.Id.ToString());
 
-        using var repository = DatabaseBuilder.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         var channels = await repository.Channel.GetVisibleChannelsAsync(Context.Guild.Id, availableChannelIds, true);
 
         if (channels.Count == 0)

@@ -17,15 +17,13 @@ public class PointsBoardMetadata : PaginatedMetadataBase
     {
         ulong guildId = 0;
 
-        var success = values.TryGetValue(nameof(GuildId), out string _guildId) && ulong.TryParse(_guildId, out guildId);
+        var success = values.TryGetValue(nameof(GuildId), out var guildIdData) && ulong.TryParse(guildIdData, out guildId);
 
-        if (success)
-        {
-            GuildId = guildId;
-            return true;
-        }
+        if (!success)
+            return false;
 
-        return false;
+        GuildId = guildId;
+        return true;
     }
 
     protected override void Reset()

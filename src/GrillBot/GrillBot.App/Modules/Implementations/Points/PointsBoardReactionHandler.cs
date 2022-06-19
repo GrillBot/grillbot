@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.App.Modules.Implementations.Points;
 
@@ -16,28 +15,23 @@ public class PointsBoardReactionHandler : ReactionEventHandler
 
     public override async Task<bool> OnReactionAddedAsync(IUserMessage message, IEmote emote, IUser user)
     {
-        if (!TryGetEmbedAndMetadata<PointsBoardMetadata>(message, emote, out var embed, out var metadata)) return false;
+        if (!TryGetEmbedAndMetadata<PointsBoardMetadata>(message, emote, out _, out var metadata)) return false;
 
         var guild = DiscordClient.GetGuild(metadata.GuildId);
         if (guild == null) return false;
 
-        var dbContext = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
+        var pointsBoardData = await repository.GuildUser.GetPointsBoardDataAsync(new[] { guild.Id.ToString() });
 
-        var query = dbContext.GuildUsers.AsNoTracking()
-            .Where(o => o.GuildId == guild.Id.ToString() && o.Points > 0)
-            .OrderByDescending(o => o.Points)
-            .Select(o => new KeyValuePair<string, long>(o.UserId, o.Points));
-
-        var pointsCount = await query.CountAsync();
+        var pointsCount = pointsBoardData.Count;
         if (pointsCount == 0) return false;
         var pagesCount = (int)Math.Ceiling(pointsCount / 10.0);
 
-        int newPage = GetNextPageNumber(metadata.Page, pagesCount, emote);
+        var newPage = GetNextPageNumber(metadata.Page, pagesCount, emote);
         if (newPage == metadata.Page) return false;
 
         var skip = (newPage == 0 ? 0 : newPage) * 10;
-        var filteredQuery = query.Skip(skip).Take(10);
-        var data = await filteredQuery.ToListAsync();
+        var data = pointsBoardData.Skip(skip).Take(10).ToList();
 
         await guild.DownloadUsersAsync();
         var resultEmbed = new PointsBoardBuilder()

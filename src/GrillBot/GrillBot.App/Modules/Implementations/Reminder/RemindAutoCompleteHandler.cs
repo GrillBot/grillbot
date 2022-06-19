@@ -6,7 +6,8 @@ namespace GrillBot.App.Modules.Implementations.Reminder;
 
 public class RemindAutoCompleteHandler : AutocompleteHandler
 {
-    public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
+    public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter,
+        IServiceProvider services)
     {
         var service = services.GetRequiredService<RemindService>();
         var suggestions = await service.GetRemindSuggestionsAsync(context.User);

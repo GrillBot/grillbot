@@ -25,30 +25,30 @@ public class MathModule : InteractionsModuleBase
     )
     {
         var client = HttpClientFactory.CreateClient("MathJS");
-        var requestJson = JsonConvert.SerializeObject(new MathJsRequest() { Expression = expression });
+        var requestJson = JsonConvert.SerializeObject(new MathJsRequest { Expression = expression });
         using var requestContent = new StringContent(requestJson);
 
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)
             .WithCurrentTimestamp()
-            .AddField("Výraz", $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength)}`", false);
+            .AddField("Výraz", $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength)}`");
 
         try
         {
             using var response = await client.PostAsync("", requestContent);
             var responseContent = await response.Content.ReadAsStringAsync();
-            var calcResult = JsonConvert.DeserializeObject<MathJsResult>(responseContent);
+            var calcResult = JsonConvert.DeserializeObject<MathJsResult>(responseContent)!;
 
             if (!response.IsSuccessStatusCode)
             {
                 embed.WithColor(Color.Red)
                     .WithTitle("Výpočet se nezdařil")
-                    .AddField("Hlášení", calcResult.Error, false);
+                    .AddField("Hlášení", calcResult.Error);
             }
             else
             {
                 embed.WithColor(Color.Green)
-                    .AddField("Výsledek", calcResult.Result, false);
+                    .AddField("Výsledek", calcResult.Result);
             }
         }
         catch (TaskCanceledException)

@@ -19,7 +19,7 @@ public class RemindPostponeReactionHandler : ReactionEventHandler
     {
         if (message.Channel is not IDMChannel) return false; // In DM
         if (message.Embeds.Count != 1) return false; // Contains embed
-        if (emote is not Emoji emoji) return false; // Is Emoji
+        if (emote is not Emoji) return false; // Is Emoji
 
         var hoursMove = Emojis.NumberToEmojiMap
             .Where(o => o.Key > 0)
@@ -29,11 +29,9 @@ public class RemindPostponeReactionHandler : ReactionEventHandler
         var reactions = await message.GetReactionUsersAsync(emote, 5).FlattenAsync();
         if (!reactions.Any(o => o.IsBot && o.Id == DiscordClient.CurrentUser.Id)) return false; // Message contains reaction from bot.
 
-        using var context = DbFactory.Create();
+        await using var repository = DbFactory.CreateRepository();
 
-        var remind = await context.Reminders.AsQueryable()
-            .FirstOrDefaultAsync(o => o.RemindMessageId == message.Id.ToString() && o.At < DateTime.Now);
-
+        var remind = await repository.Remind.FindRemindByRemindMessageAsync(message.Id.ToString());
         if (remind == null) return false; // Remind message not found or not triggered.
 
         remind.RemindMessageId = null;
@@ -41,7 +39,7 @@ public class RemindPostponeReactionHandler : ReactionEventHandler
         remind.Postpone++;
 
         await message.DeleteAsync();
-        await context.SaveChangesAsync();
+        await repository.CommitAsync();
         return true;
     }
 }

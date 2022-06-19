@@ -52,7 +52,7 @@ public class UnverifyMessageGeneratorTests
         var result = UnverifyMessageGenerator.CreateUnverifyPmMessage(profile, guild);
 
         Assert.AreEqual(
-            "Byly ti dočasně odebrány všechny práva na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. ",
+            "Byla ti dočasně odebrána všechna práva na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. ",
             result
         );
     }
@@ -68,7 +68,7 @@ public class UnverifyMessageGeneratorTests
         var result = UnverifyMessageGenerator.CreateUnverifyPmMessage(profile, guild);
 
         Assert.AreEqual(
-            "Byly ti dočasně odebrány všechny práva na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. Důvod: Duvod",
+            "Byla ti dočasně odebrána všechna práva na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. Důvod: Duvod",
             result
         );
     }
@@ -108,7 +108,7 @@ public class UnverifyMessageGeneratorTests
         var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyPmMessage(guild);
 
         Assert.AreEqual(
-           "Byl ti předčasně vrácen přístup na serveru **GrillBot-Guild-Name**",
+           "Byl ti předčasně vrácen přístup na serveru **GrillBot-Guild-Name**.",
            result
         );
     }

@@ -61,7 +61,7 @@ public abstract class ControllerTest<TController> where TController : Controller
     {
         Cleanup();
 
-        DatabaseBuilder.ClearDatabase();
+        TestDatabaseBuilder.ClearDatabase();
         CacheBuilder.ClearDatabase();
         Repository.Dispose();
         CacheRepository.Dispose();

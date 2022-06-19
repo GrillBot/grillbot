@@ -43,7 +43,7 @@ public abstract class JobTest<TJob> where TJob : IJob
     {
         Cleanup();
 
-        DatabaseBuilder.ClearDatabase();
+        TestDatabaseBuilder.ClearDatabase();
         CacheBuilder.ClearDatabase();
 
         Repository.Dispose();

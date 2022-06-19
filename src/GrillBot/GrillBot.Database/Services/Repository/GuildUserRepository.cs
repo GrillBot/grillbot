@@ -23,15 +23,8 @@ public class GuildUserRepository : RepositoryBase
             if (entity != null)
                 return entity;
 
-            var guildEntity = await Context.Guilds.FirstOrDefaultAsync(o => o.Id == user.GuildId.ToString()) ?? Guild.FromDiscord(user.Guild);
-            var userEntity = await Context.Users.FirstOrDefaultAsync(o => o.Id == user.Id.ToString()) ?? User.FromDiscord(user);
             entity = GuildUser.FromDiscord(user.Guild, user);
-            entity.Guild = guildEntity;
-            entity.User = userEntity;
-
-            if (!Context.IsEntityTracked<Guild>(entry => entry.Entity.Id == guildEntity.Id)) await Context.AddAsync(guildEntity);
-            if (!Context.IsEntityTracked<User>(entry => entry.Entity.Id == userEntity.Id)) await Context.AddAsync(userEntity);
-            if (!Context.IsEntityTracked<GuildUser>(entry => entry.Entity.UserId == entity.UserId && entry.Entity.GuildId == entity.GuildId)) await Context.AddAsync(entity);
+            await Context.AddAsync(entity);
 
             return entity;
         }

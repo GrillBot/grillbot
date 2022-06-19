@@ -41,7 +41,7 @@ public abstract class ServiceTest<TService> where TService : class
     {
         Cleanup();
 
-        DatabaseBuilder.ClearDatabase();
+        TestDatabaseBuilder.ClearDatabase();
         CacheBuilder.ClearDatabase();
 
         Repository.Dispose();

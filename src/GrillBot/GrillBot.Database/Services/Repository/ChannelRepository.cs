@@ -102,13 +102,8 @@ public class ChannelRepository : RepositoryBase
             if (entity != null)
                 return entity;
 
-            var guildEntity = await Context.Guilds.FirstOrDefaultAsync(o => o.Id == channel.GuildId.ToString()) ?? Guild.FromDiscord(channel.Guild);
-            if (!Context.IsEntityTracked<Guild>(entry => entry.Entity.Id == guildEntity.Id)) await Context.AddAsync(guildEntity);
-
             entity = GuildChannel.FromDiscord(channel.Guild, channel, channel.GetChannelType() ?? ChannelType.DM);
-            entity.Guild = guildEntity;
-            if (!Context.IsEntityTracked<GuildChannel>(entry => entry.Entity.ChannelId == entity.ChannelId && entry.Entity.GuildId == entity.GuildId))
-                await Context.AddAsync(entity);
+            await Context.AddAsync(entity);
 
             return entity;
         }

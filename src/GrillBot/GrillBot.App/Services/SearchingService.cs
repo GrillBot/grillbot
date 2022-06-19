@@ -36,15 +36,16 @@ public class SearchingService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var guildEntity = await repository.Guild.GetOrCreateRepositoryAsync(guild);
-        var userEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
-        var channelEntity = await repository.Channel.GetOrCreateChannelAsync(channel);
+        await repository.Guild.GetOrCreateRepositoryAsync(guild);
+        await repository.User.GetOrCreateUserAsync(user);
+        await repository.GuildUser.GetOrCreateGuildUserAsync(user);
+        await repository.Channel.GetOrCreateChannelAsync(channel);
 
         var entity = new SearchItem
         {
-            Channel = channelEntity,
-            Guild = guildEntity,
-            User = userEntity.User,
+            ChannelId = channel.Id.ToString(),
+            GuildId = guild.Id.ToString(),
+            UserId = user.Id.ToString(),
             MessageContent = content
         };
 

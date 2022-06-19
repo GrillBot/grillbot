@@ -23,8 +23,7 @@ public class GuildRepository : RepositoryBase
                 return entity;
 
             entity = Guild.FromDiscord(guild);
-            if (!Context.IsEntityTracked<Guild>(entry => entry.Entity.Id == entity.Id))
-                await Context.AddAsync(entity);
+            await Context.AddAsync(entity);
 
             return entity;
         }

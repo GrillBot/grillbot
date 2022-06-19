@@ -82,7 +82,7 @@ public class EmotesCommandService
         var topTenData = await repository.Emote.GetTopUsersOfUsage(emote, 10);
         var topTen = new List<string>();
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < Math.Min(10, topTenData.Count); i++)
         {
             var stat = topTenData[i];
             var user = await DiscordClient.FindUserAsync(stat.UserId.ToUlong());

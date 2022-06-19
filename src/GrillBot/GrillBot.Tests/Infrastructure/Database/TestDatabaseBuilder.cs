@@ -33,26 +33,32 @@ public class TestDatabaseBuilder : GrillBotDatabaseBuilder
         return new GrillBotRepository(Context, new CounterManager());
     }
 
-    public void ClearDatabase()
+    public static void ClearDatabase()
     {
-        Context.ChangeTracker.Clear();
-        Context.RemoveRange(Context.Users.AsEnumerable());
-        Context.RemoveRange(Context.Guilds.AsEnumerable());
-        Context.RemoveRange(Context.GuildUsers.AsEnumerable());
-        Context.RemoveRange(Context.Channels.AsEnumerable());
-        Context.RemoveRange(Context.UserChannels.AsEnumerable());
-        Context.RemoveRange(Context.Invites.AsEnumerable());
-        Context.RemoveRange(Context.SearchItems.AsEnumerable());
-        Context.RemoveRange(Context.Unverifies.AsEnumerable());
-        Context.RemoveRange(Context.UnverifyLogs.AsEnumerable());
-        Context.RemoveRange(Context.AuditLogs.AsEnumerable());
-        Context.RemoveRange(Context.AuditLogFiles.AsEnumerable());
-        Context.RemoveRange(Context.Emotes.AsEnumerable());
-        Context.RemoveRange(Context.Reminders.AsEnumerable());
-        Context.RemoveRange(Context.SelfunverifyKeepables.AsEnumerable());
-        Context.RemoveRange(Context.ExplicitPermissions.AsEnumerable());
-        Context.RemoveRange(Context.AutoReplies.AsEnumerable());
-        Context.RemoveRange(Context.Suggestions.AsEnumerable());
-        Context.SaveChanges();
+        var context = CreateContext();
+        ClearDatabase(context);
+    }
+
+    private static void ClearDatabase(GrillBotContext context)
+    {
+        context.ChangeTracker.Clear();
+        context.RemoveRange(context.Users.AsEnumerable());
+        context.RemoveRange(context.Guilds.AsEnumerable());
+        context.RemoveRange(context.GuildUsers.AsEnumerable());
+        context.RemoveRange(context.Channels.AsEnumerable());
+        context.RemoveRange(context.UserChannels.AsEnumerable());
+        context.RemoveRange(context.Invites.AsEnumerable());
+        context.RemoveRange(context.SearchItems.AsEnumerable());
+        context.RemoveRange(context.Unverifies.AsEnumerable());
+        context.RemoveRange(context.UnverifyLogs.AsEnumerable());
+        context.RemoveRange(context.AuditLogs.AsEnumerable());
+        context.RemoveRange(context.AuditLogFiles.AsEnumerable());
+        context.RemoveRange(context.Emotes.AsEnumerable());
+        context.RemoveRange(context.Reminders.AsEnumerable());
+        context.RemoveRange(context.SelfunverifyKeepables.AsEnumerable());
+        context.RemoveRange(context.ExplicitPermissions.AsEnumerable());
+        context.RemoveRange(context.AutoReplies.AsEnumerable());
+        context.RemoveRange(context.Suggestions.AsEnumerable());
+        context.SaveChanges();
     }
 }

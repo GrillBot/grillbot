@@ -387,3 +387,4 @@ FodyWeavers.xsd
 GrillBot.*.xml
 GrillBotData/
 environment.env
+.idea/

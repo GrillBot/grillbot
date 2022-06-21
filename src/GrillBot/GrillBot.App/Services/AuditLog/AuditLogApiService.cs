@@ -112,7 +112,7 @@ public class AuditLogApiService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var logItem = await repository.AuditLog.FindLogItemByIdAsync(logId);
+        var logItem = await repository.AuditLog.FindLogItemByIdAsync(logId, true);
 
         if (logItem == null)
             throw new NotFoundException("Požadovaný záznam v logu nebyl nalezen.");
@@ -133,7 +133,7 @@ public class AuditLogApiService
     public async Task<bool> RemoveItemAsync(long id)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-        var item = await repository.AuditLog.FindLogItemByIdAsync(id);
+        var item = await repository.AuditLog.FindLogItemByIdAsync(id, true);
 
         if (item == null) return false;
         if (item.Files.Count > 0)

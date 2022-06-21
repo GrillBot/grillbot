@@ -36,7 +36,7 @@ public class SelfUnverifyRepository : RepositoryBase
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(group))
-                query = query.Where(o => EF.Functions.ILike(o.GroupName, $"{group}%"));
+                query = query.Where(o => o.GroupName.StartsWith(group.ToLower()));
 
             return await query.ToListAsync();
         }

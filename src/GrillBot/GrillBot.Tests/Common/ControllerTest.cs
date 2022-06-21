@@ -62,7 +62,7 @@ public abstract class ControllerTest<TController> where TController : Controller
         Cleanup();
 
         TestDatabaseBuilder.ClearDatabase();
-        CacheBuilder.ClearDatabase();
+        TestCacheBuilder.ClearDatabase();
         Repository.Dispose();
         CacheRepository.Dispose();
         UserController.Dispose();
@@ -73,7 +73,7 @@ public abstract class ControllerTest<TController> where TController : Controller
     {
         return new ApiRequestContext
         {
-            LoggedUser = new UserBuilder().SetId(Consts.UserId).SetUsername(Consts.Username).Build(),
+            LoggedUser = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build(),
             LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Role, role),

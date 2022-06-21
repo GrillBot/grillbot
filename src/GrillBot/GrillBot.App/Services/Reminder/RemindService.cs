@@ -3,7 +3,6 @@ using GrillBot.App.Infrastructure;
 using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Extensions;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Services.Reminder;
@@ -52,7 +51,7 @@ public class RemindService
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var fromUser = await repository.User.GetOrCreateUserAsync(from);
-        var toUser = from != to ? await repository.User.GetOrCreateUserAsync(to) : fromUser;
+        var toUser = from.Id != to.Id ? await repository.User.GetOrCreateUserAsync(to) : fromUser;
 
         var remind = new RemindMessage
         {

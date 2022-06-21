@@ -91,14 +91,8 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     [TestMethod]
     public async Task RemoveStatisticsAsync_WithEmotes()
     {
-        var guild = new GuildBuilder()
-            .SetId(Consts.GuildId).SetName(Consts.GuildName)
-            .Build();
-
-        var guildUser = new GuildUserBuilder()
-            .SetId(Consts.UserId).SetUsername(Consts.Username)
-            .SetGuild(guild).SetDiscriminator(Consts.Discriminator)
-            .Build();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Repository.AddAsync(new EmoteStatisticItem
         {

@@ -4,17 +4,28 @@ using GrillBot.Tests.Infrastructure.Discord;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Discord;
 
 namespace GrillBot.Tests.App.Services.Reminder;
 
 [TestClass]
 public class RemindServiceTests : ServiceTest<RemindService>
 {
+    private static IUser User
+        => new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+
     protected override RemindService CreateService()
     {
-        var discordClient = DiscordHelper.CreateClient();
-        var configuration = ConfigurationHelper.CreateConfiguration();
+        var guild = new GuildBuilder()
+            .SetIdentity(Consts.GuildId, Consts.GuildName)
+            .Build();
 
+        var discordClient = new ClientBuilder()
+            .SetGetUserAction(User)
+            .SetGetGuildsAction(new[] { guild })
+            .Build();
+
+        var configuration = ConfigurationHelper.CreateConfiguration();
         return new RemindService(discordClient, DatabaseBuilder, configuration);
     }
 
@@ -47,39 +58,33 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task CreateRemindAsync_SameUser()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var at = DateTime.Now.AddDays(1);
 
-        await Service.CreateRemindAsync(user, user, at, "msg", 970428820521893889);
+        await Service.CreateRemindAsync(User, User, at, "msg", 970428820521893889);
         Assert.IsTrue(true);
     }
 
     [TestMethod]
     public async Task CreateRemindAsync_AnotherUser()
     {
-        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator.Replace("1", "5")).Build();
         var at = DateTime.Now.AddDays(1);
 
-        await Service.CreateRemindAsync(from, to, at, "msg", 970428820521893889);
+        await Service.CreateRemindAsync(User, to, at, "msg", 970428820521893889);
         Assert.IsTrue(true);
     }
 
     [TestMethod]
     public async Task GetRemindersCountAsync()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var result = await Service.GetRemindersCountAsync(user);
-
+        var result = await Service.GetRemindersCountAsync(User);
         Assert.AreEqual(0, result);
     }
 
     [TestMethod]
     public async Task GetRemindersAsync()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var result = await Service.GetRemindersAsync(user, 0);
-
+        var result = await Service.GetRemindersAsync(User, 0);
         Assert.AreEqual(0, result.Count);
     }
 
@@ -88,9 +93,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_NotFound()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-
-        await Service.CopyAsync(42, user);
+        await Service.CopyAsync(42, User);
     }
 
     [TestMethod]
@@ -98,11 +101,9 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_SameUser()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-
         var at = DateTime.Now.AddDays(1);
-        var id = await Service.CreateRemindAsync(user, user, at, "msg", 970428820521893889);
-        await Service.CopyAsync(id, user);
+        var id = await Service.CreateRemindAsync(User, User, at, "msg", 970428820521893889);
+        await Service.CopyAsync(id, User);
     }
 
     [TestMethod]
@@ -110,14 +111,13 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_Finished()
     {
-        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
         await Repository.User.GetOrCreateUserAsync(to);
-        await Repository.User.GetOrCreateUserAsync(from);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.AddAsync(new Database.Entity.RemindMessage
         {
             At = DateTime.MinValue,
-            FromUserId = from.Id.ToString(),
+            FromUserId = User.Id.ToString(),
             ToUserId = to.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
@@ -133,17 +133,18 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_UserNotFound()
     {
-        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
         var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
+        var third = new UserBuilder().SetIdentity(Consts.UserId + 3, Consts.Username + "XX", Consts.Discriminator).Build();
 
         await Repository.User.GetOrCreateUserAsync(to);
-        await Repository.User.GetOrCreateUserAsync(from);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.User.GetOrCreateUserAsync(middle);
+        await Repository.User.GetOrCreateUserAsync(third);
         await Repository.AddAsync(new Database.Entity.RemindMessage
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = from.Id.ToString(),
+            FromUserId = third.Id.ToString(),
             ToUserId = middle.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
@@ -159,15 +160,14 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_MultipleSame()
     {
-        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
 
         await Repository.User.GetOrCreateUserAsync(to);
-        await Repository.User.GetOrCreateUserAsync(from);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.AddAsync(new Database.Entity.RemindMessage
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = from.Id.ToString(),
+            FromUserId = User.Id.ToString(),
             ToUserId = to.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
@@ -191,21 +191,20 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CancelRemindAsync_Finished()
     {
-        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await Repository.User.GetOrCreateUserAsync(from);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.AddAsync(new Database.Entity.RemindMessage
         {
             At = DateTime.MinValue,
-            FromUserId = from.Id.ToString(),
-            ToUserId = from.Id.ToString(),
+            FromUserId = User.Id.ToString(),
+            ToUserId = User.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 1
         });
-        await Repository.CommitAsync();
 
+        await Repository.CommitAsync();
         await Service.CancelRemindAsync(1, middle);
     }
 
@@ -214,15 +213,14 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CancelRemindAsync_Finished2()
     {
-        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await Repository.User.GetOrCreateUserAsync(from);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.AddAsync(new Database.Entity.RemindMessage
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = from.Id.ToString(),
-            ToUserId = from.Id.ToString(),
+            FromUserId = User.Id.ToString(),
+            ToUserId = User.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 1,
@@ -237,15 +235,14 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CancelRemindAsync_NoPerms()
     {
-        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
 
-        await Repository.User.GetOrCreateUserAsync(from);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.AddAsync(new Database.Entity.RemindMessage
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = from.Id.ToString(),
-            ToUserId = from.Id.ToString(),
+            FromUserId = User.Id.ToString(),
+            ToUserId = User.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 1
@@ -257,22 +254,21 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task CancelRemindAsync_Success()
     {
-        var from = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
 
         await Repository.User.GetOrCreateUserAsync(to);
-        await Repository.User.GetOrCreateUserAsync(from);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.AddAsync(new Database.Entity.RemindMessage
         {
             At = DateTime.Now.AddDays(3),
-            FromUserId = from.Id.ToString(),
-            ToUserId = from.Id.ToString(),
+            FromUserId = User.Id.ToString(),
+            ToUserId = User.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
             Id = 1
         });
         await Repository.CommitAsync();
-        await Service.CancelRemindAsync(1, from);
+        await Service.CancelRemindAsync(1, User);
     }
 
     [TestMethod]
@@ -285,23 +281,21 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task GetRemindSuggestionsAsync()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-
         var remind = new Database.Entity.RemindMessage
         {
             At = DateTime.Now,
-            FromUser = Database.Entity.User.FromDiscord(user),
-            FromUserId = user.Id.ToString(),
+            FromUser = Database.Entity.User.FromDiscord(User),
+            FromUserId = User.Id.ToString(),
             Id = 12536358627,
             Message = "Message",
             OriginalMessageId = "12345",
-            ToUser = Database.Entity.User.FromDiscord(user),
-            ToUserId = user.Id.ToString()
+            ToUser = Database.Entity.User.FromDiscord(User),
+            ToUserId = User.Id.ToString()
         };
         await Repository.AddAsync(remind);
         await Repository.CommitAsync();
 
-        var suggestions = await Service.GetRemindSuggestionsAsync(user);
+        var suggestions = await Service.GetRemindSuggestionsAsync(User);
         Assert.AreEqual(1, suggestions.Count);
     }
 }

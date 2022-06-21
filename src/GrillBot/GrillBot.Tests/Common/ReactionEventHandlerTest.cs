@@ -45,7 +45,7 @@ public abstract class ReactionEventHandlerTest<THandler> where THandler : Reacti
         Cleanup();
 
         TestDatabaseBuilder.ClearDatabase();
-        CacheBuilder.ClearDatabase();
+        TestCacheBuilder.ClearDatabase();
 
         Repository.Dispose();
         CacheRepository.Dispose();

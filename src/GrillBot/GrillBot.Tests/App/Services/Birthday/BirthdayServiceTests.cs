@@ -1,17 +1,23 @@
 ﻿using GrillBot.App.Services.Birthday;
-using GrillBot.Database.Services;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using System;
+using Discord;
 
 namespace GrillBot.Tests.App.Services.Birthday;
 
 [TestClass]
 public class BirthdayServiceTests : ServiceTest<BirthdayService>
 {
+    private static IUser User =>
+        new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+
     protected override BirthdayService CreateService()
     {
-        var discordClient = DiscordHelper.CreateClient();
+        var discordClient = new ClientBuilder()
+            .SetGetUserAction(User)
+            .Build();
+
         return new BirthdayService(discordClient, DatabaseBuilder);
     }
 
@@ -77,13 +83,12 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task GetTodayBirthdaysAsync()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var dbUser = Database.Entity.User.FromDiscord(user);
+        var dbUser = Database.Entity.User.FromDiscord(User);
         dbUser.Birthday = DateTime.Today;
         await Repository.AddAsync(dbUser);
         await Repository.CommitAsync();
 
         var result = await Service.GetTodayBirthdaysAsync();
-        Assert.AreEqual(0, result.Count);
+        Assert.AreEqual(1, result.Count);
     }
 }

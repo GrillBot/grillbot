@@ -34,12 +34,18 @@ public class TestCacheBuilder : GrillBotCacheBuilder
         return new GrillBotCacheRepository(Context, new CounterManager());
     }
 
-    public void ClearDatabase()
+    public static void ClearDatabase()
     {
-        Context.ChangeTracker.Clear();
-        Context.RemoveRange(Context.DirectApiMessages.AsEnumerable());
-        Context.RemoveRange(Context.MessageIndex.AsEnumerable());
-        Context.RemoveRange(Context.ProfilePictures.AsEnumerable());
-        Context.SaveChanges();
+        var context = CreateContext();
+        ClearDatabase(context);
+    }
+
+    private static void ClearDatabase(GrillBotCacheContext context)
+    {
+        context.ChangeTracker.Clear();
+        context.RemoveRange(context.DirectApiMessages.AsEnumerable());
+        context.RemoveRange(context.MessageIndex.AsEnumerable());
+        context.RemoveRange(context.ProfilePictures.AsEnumerable());
+        context.SaveChanges();
     }
 }

@@ -191,7 +191,7 @@ public class StatisticsController : Controller
     public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByDateAsync()
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-        var data = repository.Unverify.GetStatisticsByDateAsync();
+        var data = await repository.Unverify.GetStatisticsByDateAsync();
         return Ok(data);
     }
 

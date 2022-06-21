@@ -531,7 +531,8 @@ public class ServerModule : ModuleBase
                     }
 
                     var formatedPerms = role.Permissions.Administrator ? new List<string> { "Administrator" } : role.Permissions.ToList().ConvertAll(o => o.ToString());
-                    fields.Add(new EmbedFieldBuilder().WithName("Oprávnění").WithValue(string.Join(", ", formatedPerms)).WithIsInline(false));
+                    if (formatedPerms.Count > 0)
+                        fields.Add(new EmbedFieldBuilder().WithName("Oprávnění").WithValue(string.Join(", ", formatedPerms)).WithIsInline(false));
 
                     var embed = CreateRoleInfoEmbed(fields, role.Color, null)
                         .WithTitle(role.Name);

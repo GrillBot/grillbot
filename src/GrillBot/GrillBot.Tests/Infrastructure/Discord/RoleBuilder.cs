@@ -6,6 +6,11 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class RoleBuilder : BuilderBase<IRole>
 {
+    public RoleBuilder SetIdentity(ulong id, string name)
+    {
+        return SetId(id).SetName(name);
+    }
+    
     public RoleBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);

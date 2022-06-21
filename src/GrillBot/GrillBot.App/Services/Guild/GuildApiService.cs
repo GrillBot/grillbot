@@ -17,7 +17,7 @@ public class GuildApiService
     private IMapper Mapper { get; }
     private GrillBotCacheBuilder CacheBuilder { get; }
 
-    public GuildApiService(GrillBotDatabaseBuilder databaseBuilder, DiscordSocketClient client, IMapper mapper,
+    public GuildApiService(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient client, IMapper mapper,
         GrillBotCacheBuilder cacheBuilder)
     {
         DatabaseBuilder = databaseBuilder;
@@ -117,7 +117,7 @@ public class GuildApiService
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var dbGuild = await repository.Guild.GetOrCreateRepositoryAsync(guild);
-        if (parameters.AdminChannelId != null && guild.GetTextChannelAsync(parameters.AdminChannelId.ToUlong()) == null)
+        if (parameters.AdminChannelId != null && await guild.GetTextChannelAsync(parameters.AdminChannelId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.AdminChannelId), "Nepodařilo se dohledat administrátorský kanál");
         else
             dbGuild.AdminChannelId = parameters.AdminChannelId;
@@ -127,12 +127,13 @@ public class GuildApiService
         else
             dbGuild.MuteRoleId = parameters.MuteRoleId;
 
-        if (parameters.EmoteSuggestionChannelId != null && guild.GetTextChannelAsync(parameters.EmoteSuggestionChannelId.ToUlong()) == null)
+        if (parameters.EmoteSuggestionChannelId != null && await guild.GetTextChannelAsync(parameters.EmoteSuggestionChannelId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.EmoteSuggestionChannelId), "Nepodařilo se dohledat kanál pro návrhy emotů.");
         else
             dbGuild.EmoteSuggestionChannelId = parameters.EmoteSuggestionChannelId;
 
-        await repository.CommitAsync();
+        if (modelState.IsValid)
+            await repository.CommitAsync();
         return await GetDetailAsync(id);
     }
 }

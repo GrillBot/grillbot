@@ -53,10 +53,10 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var directApi = new DirectApiService(discordClient, configuration, initManager, CacheBuilder);
         var externalHelpService = new ExternalCommandsHelpService(directApi, configuration, ServiceProvider);
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var apiService = new UsersApiService(DatabaseBuilder, mapper, dcClient, AdminApiRequestContext, auditLogWriter);
+        var apiService = new UsersApiService(DatabaseBuilder, mapper, dcClient, ApiRequestContext, auditLogWriter);
         var rubbergodKarmaService = new RubbergodKarmaService(directApi, dcClient, mapper);
 
-        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService, AdminApiRequestContext);
+        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService, ApiRequestContext);
     }
 
     [TestMethod]

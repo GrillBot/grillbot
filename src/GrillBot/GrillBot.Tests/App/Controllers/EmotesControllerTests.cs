@@ -22,7 +22,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
         var cacheService = new EmotesCacheService(discordClient);
         var mapper = AutoMapperHelper.CreateMapper();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var apiService = new EmotesApiService(DatabaseBuilder, cacheService, mapper, AdminApiRequestContext, auditLogWriter);
+        var apiService = new EmotesApiService(DatabaseBuilder, cacheService, mapper, ApiRequestContext, auditLogWriter);
 
         return new EmotesController(apiService);
     }
@@ -108,6 +108,97 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
         await Repository.CommitAsync();
 
         var result = await AdminController.RemoveStatisticsAsync(Consts.PepeJamEmote);
+        CheckResult<OkObjectResult, int>(result);
+    }
+
+    [TestMethod]
+    public async Task MergeStatsToAnotherAsync_Success()
+    {
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+
+        var guildEntity = Guild.FromDiscord(guild);
+        var guildUserEntity = GuildUser.FromDiscord(guild, guildUser);
+
+        await Repository.AddAsync(new EmoteStatisticItem
+        {
+            EmoteId = Consts.PepeJamEmote,
+            FirstOccurence = DateTime.MinValue,
+            Guild = guildEntity,
+            GuildId = guild.Id.ToString(),
+            LastOccurence = DateTime.MaxValue,
+            UseCount = 1,
+            User = guildUserEntity,
+            UserId = Consts.UserId.ToString()
+        });
+
+        await Repository.AddAsync(new EmoteStatisticItem
+        {
+            EmoteId = Consts.FeelsHighManEmote,
+            FirstOccurence = DateTime.MinValue,
+            Guild = guildEntity,
+            GuildId = guild.Id.ToString(),
+            LastOccurence = DateTime.MaxValue,
+            UseCount = 1,
+            User = guildUserEntity,
+            UserId = Consts.UserId.ToString()
+        });
+
+        await Repository.CommitAsync();
+
+        var mergeParams = new MergeEmoteStatsParams
+        {
+            DestinationEmoteId = Consts.FeelsHighManEmote,
+            SourceEmoteId = Consts.PepeJamEmote,
+            SuppressValidations = true
+        };
+
+        var result = await AdminController.MergeStatsToAnotherAsync(mergeParams);
+        CheckResult<OkObjectResult, int>(result);
+    }
+
+    [TestMethod]
+    public async Task MergeStatsToAnotherAsync_NothingToProcess()
+    {
+        var mergeParams = new MergeEmoteStatsParams
+        {
+            DestinationEmoteId = Consts.FeelsHighManEmote,
+            SourceEmoteId = Consts.PepeJamEmote,
+            SuppressValidations = true
+        };
+
+        var result = await AdminController.MergeStatsToAnotherAsync(mergeParams);
+        CheckResult<OkObjectResult, int>(result);
+    }
+
+    [TestMethod]
+    public async Task MergeStatsToAnotherAsync_NothingInDestination()
+    {
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+
+        await Repository.AddAsync(new EmoteStatisticItem
+        {
+            EmoteId = Consts.PepeJamEmote,
+            FirstOccurence = new DateTime(2022, 6, 21, 23, 30, 45),
+            Guild = Guild.FromDiscord(guild),
+            GuildId = guild.Id.ToString(),
+            LastOccurence = DateTime.MaxValue,
+            UseCount = 1,
+            User = GuildUser.FromDiscord(guild, guildUser),
+            UserId = Consts.UserId.ToString()
+        });
+
+        await Repository.CommitAsync();
+
+        var mergeParams = new MergeEmoteStatsParams
+        {
+            DestinationEmoteId = Consts.FeelsHighManEmote,
+            SourceEmoteId = Consts.PepeJamEmote,
+            SuppressValidations = true
+        };
+
+        var result = await AdminController.MergeStatsToAnotherAsync(mergeParams);
         CheckResult<OkObjectResult, int>(result);
     }
 }

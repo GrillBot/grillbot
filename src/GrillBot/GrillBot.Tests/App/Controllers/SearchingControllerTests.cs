@@ -23,7 +23,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         var mapper = AutoMapperHelper.CreateMapper();
         var searchingService = new SearchingService(discordClient, DatabaseBuilder, userService, mapper);
 
-        return new SearchingController(searchingService, AdminApiRequestContext);
+        return new SearchingController(searchingService, ApiRequestContext);
     }
 
     [TestMethod]

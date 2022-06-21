@@ -3,6 +3,7 @@
 public static class Consts
 {
     public const ulong RoleId = 461550034668748800;
+    public const string RoleName = "GrillBot-Role-Name";
     public const string OnlineEmoteId = "<:Online:856875667379585034>";
     public const string PepeJamEmote = "<a:PepeJAMJAM:600070651814084629>";
     public const string FeelsHighManEmote = "<:LP_FeelsHighMan:895331837822500866>";

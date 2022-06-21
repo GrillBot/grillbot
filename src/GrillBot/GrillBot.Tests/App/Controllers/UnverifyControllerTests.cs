@@ -59,7 +59,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var apiRequestContext = new ApiRequestContext();
         var unverifyApiService = new UnverifyApiService(DatabaseBuilder, mapper, dcClient, apiRequestContext);
 
-        return new UnverifyController(unverifyService, dcClient, mapper, unverifyApiService, AdminApiRequestContext);
+        return new UnverifyController(unverifyService, dcClient, mapper, unverifyApiService, ApiRequestContext);
     }
 
     [TestMethod]

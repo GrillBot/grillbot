@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Security.Claims;
 using GrillBot.Common.Models;
 using GrillBot.Database.Services.Repository;
@@ -20,8 +21,9 @@ public abstract class ControllerTest<TController> where TController : Controller
     protected TController AdminController { get; private set; }
     protected TController UserController { get; private set; }
 
-    protected ApiRequestContext UserApiRequestContext { get; private set; }
-    protected ApiRequestContext AdminApiRequestContext { get; private set; }
+    private ApiRequestContext UserApiRequestContext { get; set; }
+    private ApiRequestContext AdminApiRequestContext { get; set; }
+    protected ApiRequestContext ApiRequestContext { get; private set; }
 
     protected TestDatabaseBuilder DatabaseBuilder { get; private set; }
     protected TestCacheBuilder CacheBuilder { get; private set; }
@@ -43,6 +45,7 @@ public abstract class ControllerTest<TController> where TController : Controller
         CacheRepository = CacheBuilder.CreateRepository();
         UserApiRequestContext = CreateApiRequestContext("User");
         AdminApiRequestContext = CreateApiRequestContext("Admin");
+        SelectApiRequestContext(false);
         ServiceProvider = CreateProvider(CanInitProvider());
 
         AdminController = CreateController();
@@ -130,8 +133,23 @@ public abstract class ControllerTest<TController> where TController : Controller
         }
     }
 
+    protected void CheckForStatusCode(IActionResult result, int statusCode)
+    {
+        Assert.IsNotNull(result);
+        Assert.IsInstanceOfType(result, typeof(ObjectResult));
+
+        var statusCodeResult = (ObjectResult)result;
+        Assert.IsNotNull(statusCodeResult.StatusCode);
+        Assert.AreEqual(statusCode, statusCodeResult.StatusCode.Value);
+    }
+
     private static IServiceProvider CreateProvider(bool init = false)
     {
         return init ? DiHelper.CreateInitializedProvider() : DiHelper.CreateEmptyProvider();
+    }
+
+    protected void SelectApiRequestContext(bool selectPublic)
+    {
+        ApiRequestContext = selectPublic ? UserApiRequestContext : AdminApiRequestContext;
     }
 }

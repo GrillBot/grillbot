@@ -127,7 +127,7 @@ public class EmotesApiService
             {
                 destinationStatItem = new Database.Entity.EmoteStatisticItem
                 {
-                    EmoteId = item.EmoteId,
+                    EmoteId = @params.DestinationEmoteId,
                     GuildId = item.GuildId,
                     UserId = item.UserId
                 };
@@ -154,6 +154,7 @@ public class EmotesApiService
 
     private void ValidateMerge(MergeEmoteStatsParams @params)
     {
+        if (@params.SuppressValidations) return;
         var supportedEmotes = EmotesCacheService.GetSupportedEmotes().ConvertAll(o => o.Item1.ToString());
 
         if (!supportedEmotes.Contains(@params.DestinationEmoteId))

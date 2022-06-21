@@ -77,7 +77,7 @@ public static class ChannelExtensions
     public static bool HaveCategory(this IGuildChannel channel)
         => channel is INestedChannel { CategoryId: { } };
 
-    public static IChannel? GetCategory(this SocketGuildChannel channel)
+    public static IChannel? GetCategory(this IGuildChannel channel)
     {
         return channel switch
         {

@@ -5,6 +5,7 @@ using GrillBot.Data.Models.API.Reminder;
 using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Reflection;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -21,9 +22,9 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var remindService = new RemindService(discordClient, DatabaseBuilder, configuration);
         var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new RemindApiService(DatabaseBuilder, mapper, AdminApiRequestContext, remindService, auditLogWriter);
+        var apiService = new RemindApiService(DatabaseBuilder, mapper, ApiRequestContext, remindService, auditLogWriter);
 
-        return new ReminderController(apiService, AdminApiRequestContext);
+        return new ReminderController(apiService, ApiRequestContext);
     }
 
     [TestMethod]
@@ -40,6 +41,26 @@ public class RemindControllerTests : ControllerTest<ReminderController>
         await Repository.CommitAsync();
 
         var result = await AdminController.GetRemindMessagesListAsync(new GetReminderListParams());
+        CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetRemindMessagesListAsync_AsUser_WithoutFilter()
+    {
+        await Repository.AddAsync(new Database.Entity.RemindMessage
+        {
+            At = DateTime.Now,
+            FromUserId = Consts.UserId.ToString(),
+            ToUserId = Consts.UserId.ToString(),
+            Message = "Test"
+        });
+        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
+        await Repository.CommitAsync();
+
+        SelectApiRequestContext(true);
+        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
+
+        var result = await UserController.GetRemindMessagesListAsync(new GetReminderListParams { Sort = { OrderBy = "ToUser" } });
         CheckResult<OkObjectResult, PaginatedResponse<RemindMessage>>(result);
     }
 

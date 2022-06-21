@@ -22,12 +22,20 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
 
     protected override ChannelController CreateController()
     {
-        var guild = new GuildBuilder()
-            .SetId(Consts.GuildId).SetName(Consts.GuildName)
+        var guildBuilder = new GuildBuilder()
+            .SetIdentity(Consts.GuildId, Consts.GuildName);
+
+        var channel = new TextChannelBuilder()
+            .SetIdentity(Consts.ChannelId, Consts.ChannelName)
+            .SetGuild(guildBuilder.Build())
+            .Build();
+
+        var guild = guildBuilder
+            .SetGetTextChannelAction(channel)
             .Build();
 
         var user = new UserBuilder()
-            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
+            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
             .Build();
 
         var dcClient = new ClientBuilder()
@@ -44,7 +52,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var mapper = AutoMapperHelper.CreateMapper();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var autoReplyService = new AutoReplyService(configuration, discordClient, DatabaseBuilder, initManager);
-        var apiService = new ChannelApiService(DatabaseBuilder, mapper, dcClient, messageCache, autoReplyService, AdminApiRequestContext, auditLogWriter);
+        var apiService = new ChannelApiService(DatabaseBuilder, mapper, dcClient, messageCache, autoReplyService, ApiRequestContext, auditLogWriter);
 
         return new ChannelController(apiService);
     }
@@ -52,8 +60,23 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task SendMessageToChannelAsync_GuildNotFound()
     {
-        var result = await AdminController.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams());
+        var result = await AdminController.SendMessageToChannelAsync(Consts.GuildId + 1, Consts.ChannelId, new SendMessageToChannelParams());
         CheckResult<NotFoundObjectResult>(result);
+    }
+
+    [TestMethod]
+    public async Task SendMessageToChannelAsync_ChannelNotFound()
+    {
+        var result = await AdminController.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId + 1, new SendMessageToChannelParams());
+        CheckResult<NotFoundObjectResult>(result);
+    }
+
+    [TestMethod]
+    public async Task SendMessageToChannelAsync_Success()
+    {
+        var data = new SendMessageToChannelParams { Content = "Ahoj, toto je test." };
+        var result = await AdminController.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId, data);
+        CheckResult<OkResult>(result);
     }
 
     [TestMethod]
@@ -149,6 +172,21 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
 
         var result = await AdminController.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams { Flags = 42 });
         CheckResult<OkResult>(result);
+    }
+
+    [TestMethod]
+    public async Task UpdateChannelAsync_NothingChanged()
+    {
+        var guild = new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
+        guild.Users.Add(new Database.Entity.GuildUser { User = new Database.Entity.User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
+        guild.Channels.Add(new Database.Entity.GuildChannel { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() });
+
+        await Repository.AddAsync(guild);
+        await Repository.CommitAsync();
+
+        var result = await AdminController.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
+        CheckResult<ObjectResult>(result);
+        CheckForStatusCode(result, 500);
     }
 
     [TestMethod]

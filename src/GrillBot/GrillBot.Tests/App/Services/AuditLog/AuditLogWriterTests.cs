@@ -8,6 +8,7 @@ using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
 
+[TestClass]
 public class AuditLogWriterTests : ServiceTest<AuditLogWriter>
 {
     protected override AuditLogWriter CreateService()

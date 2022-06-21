@@ -9,7 +9,7 @@ public class ChannelsMappingProfile : AutoMapper.Profile
 {
     public ChannelsMappingProfile()
     {
-        CreateMap<SocketGuildChannel, Channel>()
+        CreateMap<IGuildChannel, Channel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
             .ForMember(dst => dst.Type, opt => opt.MapFrom(src => src.GetChannelType()))
             .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.HaveCategory() ? $"{src.Name} ({src.GetCategory().Name})" : src.Name));

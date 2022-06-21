@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.Emotes;
+using GrillBot.App.Services.User;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure;
@@ -15,6 +16,31 @@ public class DataControllerTests : ControllerTest<DataController>
 
     protected override DataController CreateController()
     {
+        var guildBuilder = new GuildBuilder()
+            .SetIdentity(Consts.GuildId, Consts.GuildName);
+
+        var user = new GuildUserBuilder()
+            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
+            .SetGuild(guildBuilder.Build())
+            .Build();
+
+        var channel = new TextChannelBuilder()
+            .SetIdentity(Consts.ChannelId, Consts.ChannelName)
+            .SetGuild(guildBuilder.Build())
+            .Build();
+
+        var guild = guildBuilder
+            .SetGetUsersAction(new[] { user })
+            .SetGetUserAction(user)
+            .SetGetTextChannelsAction(new[] { channel })
+            .SetGetChannelsAction(new[] { channel })
+            .Build();
+
+        var client = new ClientBuilder()
+            .SetGetGuildAction(guild)
+            .SetGetGuildsAction(new[] { guild })
+            .Build();
+
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService(ServiceProvider);
         var configuration = ConfigurationHelper.CreateConfiguration();
@@ -22,7 +48,7 @@ public class DataControllerTests : ControllerTest<DataController>
         var mapper = AutoMapperHelper.CreateMapper();
         var emotesCache = new EmotesCacheService(discordClient);
 
-        return new DataController(discordClient, commandsService, configuration, interactions, emotesCache, mapper, DatabaseBuilder, AdminApiRequestContext);
+        return new DataController(client, commandsService, configuration, interactions, emotesCache, mapper, DatabaseBuilder, ApiRequestContext);
     }
 
     [TestMethod]
@@ -33,9 +59,19 @@ public class DataControllerTests : ControllerTest<DataController>
     }
 
     [TestMethod]
+    public async Task GetAvailableGuildsAsync_Public()
+    {
+        SelectApiRequestContext(true);
+        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
+
+        var result = await UserController.GetAvailableGuildsAsync();
+        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
+    }
+
+    [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads()
     {
-        var result = await AdminController.GetChannelsAsync(Consts.GuildId);
+        var result = await AdminController.GetChannelsAsync(Consts.GuildId + 1);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -98,13 +134,19 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads_AsUser()
     {
-        var result = await UserController.GetChannelsAsync(Consts.GuildId);
+        SelectApiRequestContext(true);
+        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
+
+        var result = await UserController.GetChannelsAsync(Consts.GuildId + 1);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public async Task GetChannelsAsync_WithoutGuild_WithoutThreads_AsUser()
     {
+        SelectApiRequestContext(true);
+        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
+
         var result = await UserController.GetChannelsAsync(null, true);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }

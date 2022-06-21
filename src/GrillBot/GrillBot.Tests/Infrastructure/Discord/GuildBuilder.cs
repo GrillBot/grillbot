@@ -2,6 +2,7 @@
 using Moq;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
@@ -37,6 +38,12 @@ public class GuildBuilder : BuilderBase<IGuild>
         return this;
     }
 
+    public GuildBuilder SetGetRoleAction(IRole role)
+    {
+        Mock.Setup(o => o.GetRole(It.Is<ulong>(id => id == role.Id))).Returns(role);
+        return this;
+    }
+
     public GuildBuilder SetGetTextChannelAction(ITextChannel channel)
     {
         Mock.Setup(o => o.GetTextChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(channel));
@@ -49,12 +56,25 @@ public class GuildBuilder : BuilderBase<IGuild>
             .Returns(Task.FromResult(channels.ToList().AsReadOnly() as IReadOnlyCollection<ITextChannel>));
         return this;
     }
+    
+    public GuildBuilder SetGetChannelsAction(IEnumerable<ITextChannel> channels)
+    {
+        Mock.Setup(o => o.GetChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
+            .Returns(Task.FromResult(channels.ToList().AsReadOnly() as IReadOnlyCollection<IGuildChannel>));
+        return this;
+    }
 
     public GuildBuilder SetGetUsersAction(IEnumerable<IGuildUser> users)
     {
         Mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
             .Returns(Task.FromResult(users.ToList().AsReadOnly() as IReadOnlyCollection<IGuildUser>));
 
+        return this;
+    }
+
+    public GuildBuilder SetGetUserAction(IGuildUser user)
+    {
+        Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(id => id == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(user));
         return this;
     }
 }

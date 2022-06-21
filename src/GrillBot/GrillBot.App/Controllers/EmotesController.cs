@@ -71,7 +71,7 @@ public class EmotesController : Controller
         catch (ValidationException ex)
         {
             var result = ex.ValidationResult;
-            ModelState.AddModelError(result.MemberNames.First(), result.ErrorMessage);
+            ModelState.AddModelError(result.MemberNames.First(), result.ErrorMessage!);
 
             return BadRequest(new ValidationProblemDetails(ModelState));
         }

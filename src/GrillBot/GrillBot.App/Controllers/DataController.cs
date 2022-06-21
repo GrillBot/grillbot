@@ -22,7 +22,7 @@ namespace GrillBot.App.Controllers;
 [ResponseCache(CacheProfileName = "ConstsApi")]
 public class DataController : Controller
 {
-    private DiscordSocketClient DiscordClient { get; }
+    private IDiscordClient DiscordClient { get; }
     private CommandService CommandService { get; }
     private IConfiguration Configuration { get; }
     private InteractionService InteractionService { get; }
@@ -31,8 +31,8 @@ public class DataController : Controller
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ApiRequestContext ApiRequestContext { get; }
 
-    public DataController(DiscordSocketClient discordClient, CommandService commandService, IConfiguration configuration,
-        InteractionService interactionService, EmotesCacheService emotesCacheService, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext)
+    public DataController(IDiscordClient discordClient, CommandService commandService, IConfiguration configuration, InteractionService interactionService,
+        EmotesCacheService emotesCacheService, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext)
     {
         DiscordClient = discordClient;
         CommandService = commandService;
@@ -85,7 +85,7 @@ public class DataController : Controller
     public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
     {
         var loggedUserId = ApiRequestContext.GetUserId();
-        var availableGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : DiscordClient.Guilds.OfType<IGuild>().ToList();
+        var availableGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : (await DiscordClient.GetGuildsAsync()).ToList();
 
         if (guildId != null)
             availableGuilds = availableGuilds.FindAll(o => o.Id == guildId.Value);
@@ -96,12 +96,15 @@ public class DataController : Controller
             if (ApiRequestContext.IsPublic())
             {
                 var guildUser = await guild.GetUserAsync(loggedUserId);
-                availableChannels.AddRange(await guild.GetAvailableChannelsAsync(guildUser, !ignoreThreads));
+                availableChannels.AddRange(await guild.GetAvailableChannelsAsync(guildUser, ignoreThreads));
             }
             else
             {
                 // Get all channels (if wanted ignore threads, ignore it). 
-                availableChannels.AddRange((await guild.GetChannelsAsync()).Where(o => !ignoreThreads || o is not IThreadChannel));
+                var guildChannels = (await guild.GetChannelsAsync()).ToList();
+                if (ignoreThreads)
+                    guildChannels = guildChannels.FindAll(o => o is not IThreadChannel);
+                availableChannels.AddRange(guildChannels);
             }
         }
 
@@ -135,7 +138,7 @@ public class DataController : Controller
     {
         var loggedUserId = ApiRequestContext.GetUserId();
 
-        var availableGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : DiscordClient.Guilds.OfType<IGuild>().ToList();
+        var availableGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : (await DiscordClient.GetGuildsAsync()).ToList();
         if (guildId != null)
             availableGuilds = availableGuilds.FindAll(o => o.Id == guildId.Value);
 

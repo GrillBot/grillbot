@@ -27,7 +27,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         var fileStorage = new FileStorageMock(configuration);
         var mapper = AutoMapperHelper.CreateMapper();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var apiService = new AuditLogApiService(DatabaseBuilder, mapper, fileStorage, AdminApiRequestContext, auditLogWriter);
+        var apiService = new AuditLogApiService(DatabaseBuilder, mapper, fileStorage, ApiRequestContext, auditLogWriter);
 
         return new AuditLogController(apiService);
     }

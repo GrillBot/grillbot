@@ -1,3 +1,4 @@
+using System.Reflection;
 using Discord.Commands;
 using Discord.Interactions;
 using GrillBot.App.Handlers;
@@ -19,7 +20,6 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using Quartz;
 using GrillBot.App.Services.Suggestion;
-using GrillBot.Data.Extensions;
 using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.Data.Models.AuditLog;
@@ -27,7 +27,6 @@ using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Common;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Helpers;
 
 namespace GrillBot.App;
 
@@ -91,10 +90,18 @@ public class Startup
                 c.Filters.Add<RequestFilter>();
                 c.Filters.Add<ResultFilter>();
 
-                c.CacheProfiles.Add("BoardApi", new() { Duration = 60 }); // Response caching for boards (leaderboard, help, ...).
-                c.CacheProfiles.Add("ConstsApi", new() { Duration = 30 }); // Response caching for constants.
+                c.CacheProfiles.Add("BoardApi", new CacheProfile { Duration = 60 }); // Response caching for boards (leaderboard, help, ...).
+                c.CacheProfiles.Add("ConstsApi", new CacheProfile { Duration = 30 }); // Response caching for constants.
             })
             .AddNewtonsoftJson();
+
+        var currentAssembly = Assembly.GetExecutingAssembly();
+        var referencedAssemblies = currentAssembly
+            .GetReferencedAssemblies()
+            .Where(o => o.Name!.StartsWith("GrillBot"))
+            .Select(Assembly.Load)
+            .ToArray();
+        services.AddAutoMapper(new[] { new[] { currentAssembly }, referencedAssemblies }.SelectMany(o => o));
 
         services
             .AddSingleton<CommandHandler>()
@@ -225,7 +232,7 @@ public class Startup
         {
             settings.TransformToExternalPath = (route, request) =>
             {
-                string pathBase = request.Headers["X-Forwarded-PathBase"].FirstOrDefault();
+                var pathBase = request.Headers["X-Forwarded-PathBase"].FirstOrDefault();
                 return !string.IsNullOrEmpty(pathBase) ? pathBase + route : route;
             };
         });

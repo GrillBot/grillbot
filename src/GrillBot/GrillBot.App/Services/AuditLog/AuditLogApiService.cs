@@ -54,7 +54,12 @@ public class AuditLogApiService
             () => IsValidFilter(item, AuditLogItemType.Command, parameters.CommandFilter),
             () => IsValidFilter(item, AuditLogItemType.InteractionCommand, parameters.InteractionFilter),
             () => IsValidFilter(item, AuditLogItemType.JobCompleted, parameters.JobFilter),
-            () => IsValidFilter(item, AuditLogItemType.Api, parameters.ApiRequestFilter)
+            () => IsValidFilter(item, AuditLogItemType.Api, parameters.ApiRequestFilter),
+            () => IsValidFilter(item, AuditLogItemType.OverwriteCreated, parameters.TargetIdFilter),
+            () => IsValidFilter(item, AuditLogItemType.OverwriteDeleted, parameters.TargetIdFilter),
+            () => IsValidFilter(item, AuditLogItemType.OverwriteUpdated, parameters.TargetIdFilter),
+            () => IsValidFilter(item, AuditLogItemType.MemberUpdated, parameters.TargetIdFilter),
+            () => IsValidFilter(item, AuditLogItemType.MemberRoleUpdated, parameters.TargetIdFilter)
         };
 
         return conditions.Any(o => o());

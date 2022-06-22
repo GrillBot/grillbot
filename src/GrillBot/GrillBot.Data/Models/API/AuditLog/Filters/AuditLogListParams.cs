@@ -18,6 +18,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
 
     [DiscordId]
     public List<string> ProcessedUserIds { get; set; }
+
     public List<AuditLogItemType> Types { get; set; } = new();
     public List<AuditLogItemType> ExcludedTypes { get; set; } = new();
     public DateTime? CreatedFrom { get; set; }
@@ -34,6 +35,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
     public ExecutionFilter InteractionFilter { get; set; }
     public ExecutionFilter JobFilter { get; set; }
     public ApiRequestFilter ApiRequestFilter { get; set; }
+    public TargetIdFilter TargetIdFilter { get; set; }
 
     /// <summary>
     /// Ids of records. Only number values, separated by ";".
@@ -45,11 +47,12 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
     /// Default: CreatedAt.
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "CreatedAt" };
+
     public PaginatedParams Pagination { get; set; } = new();
 
     public bool AnyExtendedFilter()
     {
-        var conditions = new[]
+        var conditions = new Func<bool>[]
         {
             () => Types.Contains(AuditLogItemType.Info) && InfoFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.Warning) && WarningFilter?.IsSet() == true,
@@ -57,7 +60,12 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
             () => Types.Contains(AuditLogItemType.Command) && CommandFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.InteractionCommand) && InteractionFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.JobCompleted) && JobFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.Api) && ApiRequestFilter?.IsSet() == true
+            () => Types.Contains(AuditLogItemType.Api) && ApiRequestFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.OverwriteCreated) && TargetIdFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.OverwriteDeleted) && TargetIdFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.OverwriteUpdated) && TargetIdFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.MemberUpdated) && TargetIdFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.MemberRoleUpdated) && TargetIdFilter?.IsSet() == true
         };
 
         return conditions.Any(o => o());
@@ -99,18 +107,16 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
         if (!string.IsNullOrEmpty(ChannelId))
             query = query.Where(o => o.ChannelId == ChannelId);
 
-        if (!string.IsNullOrEmpty(Ids))
-        {
-            var ids = Ids
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(o => long.Parse(o))
-                .Where(o => o > 0)
-                .ToList();
+        if (string.IsNullOrEmpty(Ids))
+            return query;
 
-            query = query.Where(o => ids.Contains(o.Id));
-        }
+        var ids = Ids
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(long.Parse)
+            .Where(o => o > 0)
+            .ToList();
 
-        return query;
+        return query.Where(o => ids.Contains(o.Id));
     }
 
     public IQueryable<AuditLogItem> SetSort(IQueryable<AuditLogItem> query)
@@ -147,10 +153,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
             }
         };
 
-        if (Sort.Descending)
-            return sortQuery.ThenByDescending(o => o.Id);
-        else
-            return sortQuery.ThenBy(o => o.Id);
+        return Sort.Descending ? sortQuery.ThenByDescending(o => o.Id) : sortQuery.ThenBy(o => o.Id);
     }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -158,18 +161,18 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
         if (!string.IsNullOrEmpty(Ids))
         {
             var items = Ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            for (int i = 0; i < items.Length; i++)
+            for (var i = 0; i < items.Length; i++)
             {
-                if (!long.TryParse(items[i], out var _))
+                if (!long.TryParse(items[i], out _))
                     yield return new ValidationResult($"ID[{i}] is not number.", new[] { $"{nameof(Ids)}[{i}]" });
             }
         }
 
-        if (ExcludedTypes.Count > 0 && Types.Count > 0)
-        {
-            var intersectTypes = ExcludedTypes.Intersect(Types);
-            if (intersectTypes.Any())
-                yield return new ValidationResult("You cannot filter and exclude the same types at the same time.");
-        }
+        if (ExcludedTypes.Count <= 0 || Types.Count <= 0)
+            yield break;
+
+        var intersectTypes = ExcludedTypes.Intersect(Types);
+        if (intersectTypes.Any())
+            yield return new ValidationResult("You cannot filter and exclude the same types at the same time.");
     }
 }

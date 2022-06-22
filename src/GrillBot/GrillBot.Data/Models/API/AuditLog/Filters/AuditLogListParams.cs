@@ -35,7 +35,11 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
     public ExecutionFilter InteractionFilter { get; set; }
     public ExecutionFilter JobFilter { get; set; }
     public ApiRequestFilter ApiRequestFilter { get; set; }
-    public TargetIdFilter TargetIdFilter { get; set; }
+    public TargetIdFilter OverwriteCreatedFilter { get; set; }
+    public TargetIdFilter OverwriteDeletedFilter { get; set; }
+    public TargetIdFilter OverwriteUpdatedFilter { get; set; }
+    public TargetIdFilter MemberRolesUpdatedFilter { get; set; }
+    public TargetIdFilter MemberUpdatedFilter { get; set; }
 
     /// <summary>
     /// Ids of records. Only number values, separated by ";".
@@ -61,11 +65,11 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
             () => Types.Contains(AuditLogItemType.InteractionCommand) && InteractionFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.JobCompleted) && JobFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.Api) && ApiRequestFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.OverwriteCreated) && TargetIdFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.OverwriteDeleted) && TargetIdFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.OverwriteUpdated) && TargetIdFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.MemberUpdated) && TargetIdFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.MemberRoleUpdated) && TargetIdFilter?.IsSet() == true
+            () => Types.Contains(AuditLogItemType.OverwriteCreated) && OverwriteCreatedFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.OverwriteDeleted) && OverwriteDeletedFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.OverwriteUpdated) && OverwriteUpdatedFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.MemberUpdated) && MemberUpdatedFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.MemberRoleUpdated) && MemberRolesUpdatedFilter?.IsSet() == true
         };
 
         return conditions.Any(o => o());

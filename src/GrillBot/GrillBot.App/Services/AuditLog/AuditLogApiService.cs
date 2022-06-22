@@ -55,11 +55,11 @@ public class AuditLogApiService
             () => IsValidFilter(item, AuditLogItemType.InteractionCommand, parameters.InteractionFilter),
             () => IsValidFilter(item, AuditLogItemType.JobCompleted, parameters.JobFilter),
             () => IsValidFilter(item, AuditLogItemType.Api, parameters.ApiRequestFilter),
-            () => IsValidFilter(item, AuditLogItemType.OverwriteCreated, parameters.TargetIdFilter),
-            () => IsValidFilter(item, AuditLogItemType.OverwriteDeleted, parameters.TargetIdFilter),
-            () => IsValidFilter(item, AuditLogItemType.OverwriteUpdated, parameters.TargetIdFilter),
-            () => IsValidFilter(item, AuditLogItemType.MemberUpdated, parameters.TargetIdFilter),
-            () => IsValidFilter(item, AuditLogItemType.MemberRoleUpdated, parameters.TargetIdFilter)
+            () => IsValidFilter(item, AuditLogItemType.OverwriteCreated, parameters.OverwriteCreatedFilter),
+            () => IsValidFilter(item, AuditLogItemType.OverwriteDeleted, parameters.OverwriteDeletedFilter),
+            () => IsValidFilter(item, AuditLogItemType.OverwriteUpdated, parameters.OverwriteUpdatedFilter),
+            () => IsValidFilter(item, AuditLogItemType.MemberUpdated, parameters.MemberUpdatedFilter),
+            () => IsValidFilter(item, AuditLogItemType.MemberRoleUpdated, parameters.MemberRolesUpdatedFilter)
         };
 
         return conditions.Any(o => o());

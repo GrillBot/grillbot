@@ -179,9 +179,12 @@ public class PointsService
         return new MagickImage(profilePicture.Data);
     }
 
-    public async Task IncrementPointsAsync(SocketGuildUser toUser, int amount)
+    public async Task IncrementPointsAsync(IGuildUser toUser, int amount)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
+
+        await repository.Guild.GetOrCreateRepositoryAsync(toUser.Guild);
+        await repository.User.GetOrCreateUserAsync(toUser);
         var guildUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
         guildUserEntity.Points += amount;
@@ -190,7 +193,7 @@ public class PointsService
 
     public async Task TransferPointsAsync(IGuildUser fromUser, IGuildUser toUser, long amount)
     {
-        if (fromUser == toUser)
+        if (fromUser.Id == toUser.Id)
             throw new InvalidOperationException("Nelze převést body mezi stejnými účty.");
 
         if (!fromUser.IsUser())
@@ -208,6 +211,8 @@ public class PointsService
         if (fromGuildUser.Points < amount)
             throw new InvalidOperationException($"Nelze převést body od uživatele `{fromUser.GetDisplayName()}`, protože jich nemá dostatek.");
 
+        await repository.User.GetOrCreateUserAsync(toUser);
+        await repository.Guild.GetOrCreateRepositoryAsync(toUser.Guild);
         var toGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
         toGuildUser.Points += amount;

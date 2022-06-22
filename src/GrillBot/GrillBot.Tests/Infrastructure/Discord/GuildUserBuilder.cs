@@ -78,12 +78,14 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
 
     public GuildUserBuilder AsBot(bool isBot = true)
     {
+        Mock.Setup(o => o.IsWebhook).Returns(false);
         Mock.Setup(o => o.IsBot).Returns(isBot);
         return this;
     }
 
     public GuildUserBuilder AsWebhook(bool isWebhook = true)
     {
+        Mock.Setup(o => o.IsBot).Returns(false);
         Mock.Setup(o => o.IsWebhook).Returns(isWebhook);
         return this;
     }

@@ -76,6 +76,11 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
         }
     }
 
+    public void ClearChangeTracker()
+    {
+        Context.ChangeTracker.Clear();
+    }
+
     public void ProcessMigrations()
     {
         using (CounterManager.Create("Database"))

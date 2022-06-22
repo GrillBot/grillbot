@@ -33,16 +33,12 @@ public class AuditLogWriter
 
         foreach (var item in items.Where(o => o.ProcessedUser != null).DistinctBy(o => o.ProcessedUser.Id))
         {
-            if (item.Guild != null)
-            {
-                var guildUser = item.ProcessedUser as IGuildUser ?? await item.Guild.GetUserAsync(item.ProcessedUser.Id);
-                if (guildUser != null)
-                    await repository.GuildUser.GetOrCreateGuildUserAsync(guildUser);
-            }
-            else
-            {
-                await repository.User.GetOrCreateUserAsync(item.ProcessedUser);
-            }
+            await repository.User.GetOrCreateUserAsync(item.ProcessedUser);
+            if (item.Guild == null) continue;
+
+            var guildUser = item.ProcessedUser as IGuildUser ?? await item.Guild.GetUserAsync(item.ProcessedUser.Id);
+            if (guildUser != null)
+                await repository.GuildUser.GetOrCreateGuildUserAsync(guildUser);
         }
 
         await repository.AddCollectionAsync(items.Select(o => o.ToEntity(SerializerSettings)));

@@ -135,24 +135,6 @@ public class UsersApiService
         await repository.CommitAsync();
     }
 
-    public async Task SetHearthbeatStatusAsync(bool online)
-    {
-        var isPublic = ApiRequestContext.IsPublic();
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var user = await repository.User.FindUserAsync(ApiRequestContext.LoggedUser!);
-        if (user == null)
-            throw new NotFoundException();
-
-        if (online)
-            user.Flags |= (int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
-        else
-            user.Flags &= ~(int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
-
-        await repository.CommitAsync();
-    }
-
     public async Task<List<UserPointsItem>> GetPointsBoardAsync()
     {
         var result = new List<UserPointsItem>();

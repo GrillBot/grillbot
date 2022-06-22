@@ -75,7 +75,8 @@ public static class Extensions
             .AddSingleton<User.UserService>()
             .AddSingleton<User.PointsService>()
             .AddScoped<User.RubbergodKarmaService>()
-            .AddScoped<User.UsersApiService>();
+            .AddScoped<User.UsersApiService>()
+            .AddScoped<User.UserHearthbeatService>();
 
         services
             .AddSingleton<BoosterService>()

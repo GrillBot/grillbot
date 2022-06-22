@@ -55,8 +55,9 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var apiService = new UsersApiService(DatabaseBuilder, mapper, dcClient, ApiRequestContext, auditLogWriter);
         var rubbergodKarmaService = new RubbergodKarmaService(directApi, dcClient, mapper);
+        var userHearthbeatService = new UserHearthbeatService(DatabaseBuilder);
 
-        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService, ApiRequestContext);
+        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService, ApiRequestContext, userHearthbeatService);
     }
 
     [TestMethod]
@@ -69,10 +70,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
             HaveBirthday = true,
             UsedInviteCode = "ASDF",
             Username = Consts.Username,
-            Sort =
-            {
-                Descending = true
-            }
+            Sort = { Descending = true }
         };
 
         var result = await AdminController.GetUsersListAsync(filter);
@@ -82,21 +80,10 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task GetUsersListAsync_WithoutFilter()
     {
-        var guild = new GuildBuilder()
-            .SetId(Consts.GuildId).SetName(Consts.GuildName)
-            .Build();
-
-        var user = new UserBuilder()
-            .SetUsername(Consts.Username).SetId(Consts.UserId)
-            .SetDiscriminator(Consts.Discriminator).Build();
-
-        var anotherUser = new GuildUserBuilder()
-            .SetUsername(Consts.Username).SetId(Consts.UserId + 1).SetGuild(guild)
-            .SetDiscriminator(Consts.Discriminator).Build();
-
-        var thirdUser = new GuildUserBuilder()
-            .SetUsername(Consts.Username).SetId(Consts.UserId + 2).SetGuild(guild)
-            .SetDiscriminator(Consts.Discriminator).Build();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var anotherUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var thirdUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Repository.AddCollectionAsync(new[]
         {
@@ -135,20 +122,10 @@ public class UsersControllerTests : ControllerTest<UsersController>
     [TestMethod]
     public async Task GetUserDetailAsync_Found()
     {
-        var guild = new GuildBuilder()
-            .SetId(Consts.GuildId).SetName(Consts.GuildName)
-            .Build();
-
-        var user = new UserBuilder()
-            .SetDiscriminator(Consts.Discriminator).SetUsername(Consts.Username)
-            .SetId(Consts.UserId).Build();
-
-        var guildUser = new GuildUserBuilder()
-            .SetDiscriminator(Consts.Discriminator).SetUsername(Consts.Username)
-            .SetId(Consts.UserId).SetGuild(guild).Build();
-
-        var channel = new ChannelBuilder()
-            .SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var channel = new ChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         var guildUserEntity = Database.Entity.GuildUser.FromDiscord(guild, guildUser);
@@ -227,15 +204,6 @@ public class UsersControllerTests : ControllerTest<UsersController>
     }
 
     [TestMethod]
-    public async Task HearthbeatAsync()
-    {
-        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await Repository.CommitAsync();
-
-        CheckResult<OkResult>(await AdminController.HearthbeatAsync());
-    }
-
-    [TestMethod]
     public async Task HearthbeatOffAsync()
     {
         await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
@@ -262,15 +230,6 @@ public class UsersControllerTests : ControllerTest<UsersController>
 
         var result = await UserController.GetCurrentUserDetailAsync();
         CheckResult<OkObjectResult, UserDetail>(result);
-    }
-
-    [TestMethod]
-    public async Task HearthbeatAsync_AsUser()
-    {
-        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await Repository.CommitAsync();
-
-        CheckResult<OkResult>(await UserController.HearthbeatAsync());
     }
 
     [TestMethod]

@@ -4,6 +4,7 @@ using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
+using GrillBot.App.Services.User;
 using GrillBot.Common.Models;
 using GrillBot.Tests.Infrastructure.Discord;
 
@@ -27,8 +28,9 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
         
         ApiRequest = new ApiRequest();
         ApiRequestContext = new ApiRequestContext();
+        var userHearthbeatService = new UserHearthbeatService(DatabaseBuilder);
 
-        return new RequestFilter(ApiRequest, ApiRequestContext, discordClient);
+        return new RequestFilter(ApiRequest, ApiRequestContext, discordClient, userHearthbeatService);
     }
 
     [TestMethod]

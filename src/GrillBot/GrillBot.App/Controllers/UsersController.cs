@@ -26,15 +26,18 @@ public class UsersController : Controller
     private UsersApiService ApiService { get; }
     private RubbergodKarmaService KarmaService { get; }
     private ApiRequestContext ApiRequestContext { get; }
+    private UserHearthbeatService UserHearthbeatService { get; }
 
     public UsersController(CommandsHelpService helpService, ExternalCommandsHelpService externalCommandsHelpService,
-        UsersApiService apiService, RubbergodKarmaService karmaService, ApiRequestContext apiRequestContext)
+        UsersApiService apiService, RubbergodKarmaService karmaService, ApiRequestContext apiRequestContext,
+        UserHearthbeatService userHearthbeatService)
     {
         HelpService = helpService;
         ExternalCommandsHelpService = externalCommandsHelpService;
         ApiService = apiService;
         KarmaService = karmaService;
         ApiRequestContext = apiRequestContext;
+        UserHearthbeatService = userHearthbeatService;
     }
 
     /// <summary>
@@ -166,27 +169,17 @@ public class UsersController : Controller
     }
 
     /// <summary>
-    /// Heartbeat event to set the user to be logged in to the administration.
-    /// </summary>
-    /// <response code="200">Success</response>
-    [HttpPost("hearthbeat")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult> HearthbeatAsync()
-    {
-        await ApiService.SetHearthbeatStatusAsync(true);
-        return Ok();
-    }
-
-    /// <summary>
     /// Heartbeat event to set that the user is no longer logged in to the administration.
     /// </summary>
+    /// <remarks>
+    /// Every API call will reenable information about logged state in to the administration.
+    /// </remarks>
     [HttpDelete("hearthbeat")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatOffAsync()
     {
-        await ApiService.SetHearthbeatStatusAsync(false);
+        await UserHearthbeatService.UpdateHearthbeatAsync(false, ApiRequestContext);
         return Ok();
     }
 

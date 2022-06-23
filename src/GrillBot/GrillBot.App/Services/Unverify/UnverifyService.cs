@@ -253,9 +253,10 @@ public class UnverifyService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var guildUser = await guild.GetUserAsync(user.Id);
-        var dbUser = await repository.GuildUser.FindGuildUserAsync(guildUser);
+        var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
+        if (guildUser == null) return;
 
+        var dbUser = await repository.GuildUser.FindGuildUserAsync(guildUser);
         if (dbUser?.Unverify != null)
         {
             dbUser.Unverify = null;

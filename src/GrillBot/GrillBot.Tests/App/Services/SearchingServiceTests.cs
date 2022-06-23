@@ -68,13 +68,13 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     public async Task RemoveSearchAsync_NotValidUser()
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var channel = new ChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var anotherUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Repository.AddAsync(new SearchItem
         {
-            Channel = GuildChannel.FromDiscord(guild, channel, global::Discord.ChannelType.Text),
+            Channel = GuildChannel.FromDiscord(channel, global::Discord.ChannelType.Text),
             ChannelId = channel.Id.ToString(),
             Guild = Guild.FromDiscord(guild),
             GuildId = guild.Id.ToString(),
@@ -91,13 +91,13 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     public async Task RemoveSearchAsync_Admin()
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var channel = new ChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).Build();
+        var channel = new TextChannelBuilder().SetId(Consts.ChannelId).SetName(Consts.ChannelName).SetGuild(guild).Build();
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var anotherUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Repository.AddAsync(new SearchItem
         {
-            Channel = GuildChannel.FromDiscord(guild, channel, global::Discord.ChannelType.Text),
+            Channel = GuildChannel.FromDiscord(channel, global::Discord.ChannelType.Text),
             ChannelId = channel.Id.ToString(),
             Guild = Guild.FromDiscord(guild),
             GuildId = guild.Id.ToString(),

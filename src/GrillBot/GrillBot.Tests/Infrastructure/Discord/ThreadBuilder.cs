@@ -7,6 +7,11 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class ThreadBuilder : BuilderBase<IThreadChannel>
 {
+    public ThreadBuilder SetIdentity(ulong id, string name)
+    {
+        return SetId(id).SetName(name);
+    }
+    
     public ThreadBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);

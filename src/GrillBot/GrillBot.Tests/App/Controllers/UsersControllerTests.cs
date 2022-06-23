@@ -14,8 +14,6 @@ using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using GrillBot.App.Services.Unverify;
-using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -125,7 +123,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var channel = new ChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         var guildUserEntity = Database.Entity.GuildUser.FromDiscord(guild, guildUser);
@@ -141,7 +139,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
             UseCount = 50,
             UserId = user.Id.ToString()
         });
-        await Repository.AddAsync(Database.Entity.GuildChannel.FromDiscord(guild, channel, ChannelType.Text));
+        await Repository.AddAsync(Database.Entity.GuildChannel.FromDiscord(channel, ChannelType.Text));
         await Repository.AddAsync(new Database.Entity.GuildUserChannel
         {
             ChannelId = channel.Id.ToString(),

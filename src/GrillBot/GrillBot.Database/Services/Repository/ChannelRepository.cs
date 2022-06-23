@@ -36,11 +36,11 @@ public class ChannelRepository : RepositoryBase
     }
 
     public async Task<GuildChannel?> FindChannelByIdAsync(ulong channelId, ulong? guildId = null, bool disableTracking = false,
-        bool includeUsers = false, bool includeParent = false)
+        bool includeUsers = false, bool includeParent = false, bool includeDeleted = false)
     {
         using (Counter.Create("Database"))
         {
-            var query = GetBaseQuery(false, disableTracking, includeUsers);
+            var query = GetBaseQuery(includeDeleted, disableTracking, includeUsers);
             if (guildId != null)
                 query = query.Where(o => o.GuildId == guildId.ToString());
             if (includeParent)

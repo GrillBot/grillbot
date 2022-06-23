@@ -69,7 +69,7 @@ public class ChannelApiService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, true, true);
+        var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, true, true, true);
         if (channel == null) return null;
 
         var result = Mapper.Map<ChannelDetail>(channel);
@@ -78,6 +78,9 @@ public class ChannelApiService
             var threads = await repository.Channel.GetChildChannelsAsync(id);
             result.Threads = Mapper.Map<List<Channel>>(threads);
         }
+
+        if (channel.HasFlag(ChannelFlags.Deleted))
+            return result;
 
         var guild = await DiscordClient.GetGuildAsync(channel.GuildId.ToUlong());
         var guildChannel = guild != null ? await guild.GetChannelAsync(channel.ChannelId.ToUlong()) : null;

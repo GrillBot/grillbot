@@ -18,7 +18,7 @@ public class InviteRepository : RepositoryBase
         using (Counter.Create("Database"))
         {
             return await Context.Invites
-                .FirstOrDefaultAsync(o => o.GuildId == guild.ToString() && o.Code == code);
+                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.Code == code);
         }
     }
 

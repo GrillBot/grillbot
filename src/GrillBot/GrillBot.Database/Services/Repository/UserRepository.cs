@@ -46,14 +46,9 @@ public class UserRepository : RepositoryBase
     {
         using (Counter.Create("Database"))
         {
-            var entity = await Context.Users
-                .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
-
+            var entity = await FindUserAsync(user);
             if (entity != null)
-            {
-                entity.Update(user);
                 return entity;
-            }
 
             entity = User.FromDiscord(user);
             await Context.AddAsync(entity);

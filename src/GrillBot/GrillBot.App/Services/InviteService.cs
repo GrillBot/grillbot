@@ -114,34 +114,37 @@ public class InviteService
 
     private async Task SetInviteToUserAsync(IGuildUser user, IGuild guild, InviteMetadata usedInvite, List<InviteMetadata> latestInvites)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var joinedUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
-
         if (usedInvite == null)
         {
             var item = new AuditLogDataWrapper(AuditLogItemType.Warning, $"User {user.GetFullName()} ({user.Id}) used unknown invite.", guild, processedUser: user);
             await AuditLogWriter.StoreAsync(item);
+            return;
         }
-        else
+
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        await repository.Guild.GetOrCreateRepositoryAsync(guild);
+        await repository.User.GetOrCreateUserAsync(user);
+
+        var joinedUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
+        if (usedInvite.CreatorId != null)
         {
-            if (usedInvite.CreatorId != null)
+            var creatorUser = await guild.GetUserAsync(usedInvite.CreatorId.Value);
+            if (creatorUser != null)
             {
-                var creatorUser = await guild.GetUserAsync(usedInvite.CreatorId.Value);
-                if (creatorUser != null)
-                {
-                    await repository.GuildUser.GetOrCreateGuildUserAsync(creatorUser);
-                }
+                await repository.User.GetOrCreateUserAsync(creatorUser);
+                await repository.GuildUser.GetOrCreateGuildUserAsync(creatorUser);
             }
-
-            var invite = await repository.Invite.FindInviteByCodeAsync(guild, usedInvite.Code);
-            if (invite == null)
-            {
-                invite = usedInvite.ToEntity();
-                await repository.AddAsync(invite);
-            }
-
-            joinedUserEntity.UsedInviteCode = usedInvite.Code;
         }
+
+        var invite = await repository.Invite.FindInviteByCodeAsync(guild, usedInvite.Code);
+        if (invite == null)
+        {
+            invite = usedInvite.ToEntity();
+            await repository.AddAsync(invite);
+        }
+
+        joinedUserEntity.UsedInviteCode = usedInvite.Code;
 
         await repository.CommitAsync();
         UpdateInvitesCache(latestInvites, guild);

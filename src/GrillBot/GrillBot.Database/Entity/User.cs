@@ -75,7 +75,9 @@ public class User
         Discriminator = user.Discriminator;
         Status = user.GetStatus();
 
-        if (!user.IsUser())
+        if (user.IsUser())
+            Flags &= ~(int)UserFlags.NotUser;
+        else
             Flags |= (int)UserFlags.NotUser;
     }
 }

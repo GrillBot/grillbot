@@ -55,12 +55,10 @@ public class Guild
 
     public static Guild FromDiscord(IGuild guild)
     {
-        return new Guild
-        {
-            Id = guild.Id.ToString(),
-            Name = guild.Name,
-            BoosterRoleId = guild.Roles.FirstOrDefault(o => o.Tags?.IsPremiumSubscriberRole == true)?.Id.ToString()
-        };
+        var entity = new Guild { Id = guild.Id.ToString() };
+        entity.Update(guild);
+
+        return entity;
     }
 
     public void Update(IGuild guild)

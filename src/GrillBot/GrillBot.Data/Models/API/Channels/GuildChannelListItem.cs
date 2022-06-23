@@ -12,6 +12,6 @@ public class GuildChannelListItem : Channel
     public long MessagesCount { get; set; }
     public int CachedMessagesCount { get; set; }
 
-    public int? RolePermissionCount { get; set; }
-    public int? UserPermissionCount { get; set; }
+    public int? RolePermissionsCount { get; set; }
+    public int? UserPermissionsCount { get; set; }
 }

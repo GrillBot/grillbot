@@ -21,7 +21,7 @@ namespace GrillBot.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.4")
+                .HasAnnotation("ProductVersion", "6.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -227,6 +227,12 @@ namespace GrillBot.Database.Migrations
                     b.Property<string>("ParentChannelId")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
+
+                    b.Property<int>("RolePermissionsCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserPermissionsCount")
+                        .HasColumnType("integer");
 
                     b.HasKey("GuildId", "ChannelId");
 

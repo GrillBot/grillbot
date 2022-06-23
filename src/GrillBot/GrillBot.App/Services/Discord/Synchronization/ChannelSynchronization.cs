@@ -15,7 +15,9 @@ public class ChannelSynchronization : SynchronizationBase
         var dbChannel = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.Guild.Id);
         if (dbChannel == null) return;
 
+        dbChannel.Update(channel);
         dbChannel.MarkDeleted(true);
+
         if (channel is not IThreadChannel)
         {
             var threads = await repository.Channel.GetChildChannelsAsync(channel.Id, channel.Guild.Id);
@@ -32,6 +34,7 @@ public class ChannelSynchronization : SynchronizationBase
         var thread = await repository.Channel.FindThreadAsync(threadChannel);
         if (thread == null) return;
 
+        thread.Update(threadChannel);
         thread.MarkDeleted(true);
         await repository.CommitAsync();
     }
@@ -43,9 +46,7 @@ public class ChannelSynchronization : SynchronizationBase
         var thread = await repository.Channel.FindThreadAsync(after);
         if (thread == null) return;
 
-        thread.Name = after.Name;
-        thread.MarkDeleted(after.IsArchived);
-
+        thread.Update(after);
         await repository.CommitAsync();
     }
 
@@ -56,9 +57,7 @@ public class ChannelSynchronization : SynchronizationBase
         var channel = await repository.Channel.FindChannelByIdAsync(after.Id, after.GuildId);
         if (channel == null) return;
 
-        channel.MarkDeleted(false);
-        channel.Name = after.Name;
-
+        channel.Update(after);
         await repository.CommitAsync();
     }
 

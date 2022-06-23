@@ -19,7 +19,7 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>
     public bool HideDeleted { get; set; }
 
     /// <summary>
-    /// Available: Name, Type, MessageCount
+    /// Available: Name, Type, MessageCount,RolePermissions,UserPermissions
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "Name" };
     public PaginatedParams Pagination { get; } = new();
@@ -28,7 +28,7 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>
     {
         return query
             .Include(o => o.Guild)
-            .Include(o => o.Users.Where(o => o.Count > 0)).ThenInclude(o => o.User.User);
+            .Include(o => o.Users.Where(x => x.Count > 0)).ThenInclude(o => o.User.User);
     }
 
     public IQueryable<GuildChannel> SetQuery(IQueryable<GuildChannel> query)
@@ -61,6 +61,16 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>
             {
                 true => query.OrderByDescending(o => o.Users.Sum(x => x.Count)).ThenByDescending(o => o.Name),
                 _ => query.OrderBy(o => o.Users.Sum(x => x.Count)).ThenBy(o => o.Name)
+            },
+            "RolePermissions" => Sort.Descending switch
+            {
+                true => query.OrderByDescending(o => o.RolePermissionsCount).ThenByDescending(o => o.Name),
+                _ => query.OrderBy(o => o.RolePermissionsCount)
+            },
+            "UserPermissions" => Sort.Descending switch
+            {
+                true => query.OrderByDescending(o => o.UserPermissionsCount).ThenByDescending(o => o.Name),
+                _ => query.OrderBy(o => o.UserPermissionsCount).ThenBy(o => o.Name)
             },
             _ => Sort.Descending switch
             {

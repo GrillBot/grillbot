@@ -102,7 +102,7 @@ public class ChannelRepository : RepositoryBase
             if (entity != null)
                 return entity;
 
-            entity = GuildChannel.FromDiscord(channel.Guild, channel, channel.GetChannelType() ?? ChannelType.DM);
+            entity = GuildChannel.FromDiscord(channel, channel.GetChannelType() ?? ChannelType.DM);
             await Context.AddAsync(entity);
 
             return entity;

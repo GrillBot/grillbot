@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
+using System.Linq;
 
 namespace GrillBot.Database.Entity;
 
@@ -37,25 +38,28 @@ public class GuildChannel
     public ISet<SearchItem> SearchItems { get; set; }
     public ISet<GuildUserChannel> Users { get; set; }
 
+    public int UserPermissionsCount { get; set; }
+    public int RolePermissionsCount { get; set; }
+
     public GuildChannel()
     {
         SearchItems = new HashSet<SearchItem>();
         Users = new HashSet<GuildUserChannel>();
     }
 
-    public static GuildChannel FromDiscord(IGuild guild, IChannel channel, ChannelType channelType)
+    public static GuildChannel FromDiscord(IGuildChannel channel, ChannelType channelType)
     {
         var guildChannel = new GuildChannel
         {
             ChannelId = channel.Id.ToString(),
-            GuildId = guild.Id.ToString(),
-            Name = channel.Name,
+            GuildId = channel.Guild.Id.ToString(),
             ChannelType = channelType
         };
 
         if (channel is IThreadChannel { CategoryId: { } } thread)
             guildChannel.ParentChannelId = thread.CategoryId.Value.ToString();
 
+        guildChannel.Update(channel);
         return guildChannel;
     }
 
@@ -87,6 +91,12 @@ public class GuildChannel
     public void Update(IGuildChannel channel)
     {
         Name = channel.Name;
-        MarkDeleted(false);
+        MarkDeleted(channel is IThreadChannel { IsArchived: true });
+
+        if (IsThread() || channel is IThreadChannel || channel.PermissionOverwrites == null)
+            return;
+
+        RolePermissionsCount = channel.PermissionOverwrites.Count(o => o.TargetType == PermissionTarget.Role && o.TargetId != channel.Guild.EveryoneRole.Id);
+        UserPermissionsCount = channel.PermissionOverwrites.Count(o => o.TargetType == PermissionTarget.User);
     }
 }

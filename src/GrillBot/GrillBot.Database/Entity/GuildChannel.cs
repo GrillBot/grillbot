@@ -73,11 +73,20 @@ public class GuildChannel
     public bool IsStage()
         => ChannelType == ChannelType.Stage;
 
+    public bool IsCategory()
+        => ChannelType == ChannelType.Category;
+
     public void MarkDeleted(bool deleted)
     {
         if (deleted)
             Flags |= (long)ChannelFlags.Deleted;
         else
             Flags &= ~(long)ChannelFlags.Deleted;
+    }
+
+    public void Update(IGuildChannel channel)
+    {
+        Name = channel.Name;
+        MarkDeleted(false);
     }
 }

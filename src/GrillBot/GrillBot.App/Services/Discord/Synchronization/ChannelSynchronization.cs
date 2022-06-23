@@ -66,40 +66,39 @@ public class ChannelSynchronization : SynchronizationBase
     {
         var guildChannels = databaseChannels.FindAll(o => o.GuildId == guild.Id.ToString());
 
+        foreach (var categoryChannel in await guild.GetCategoriesAsync())
+        {
+            var category = guildChannels.Find(o => o.IsCategory() && o.ChannelId == categoryChannel.Id.ToString());
+
+            category?.Update(categoryChannel);
+        }
+
         foreach (var textChannel in await guild.GetTextChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsText() && o.ChannelId == textChannel.Id.ToString());
-            if (channel == null) continue;
 
-            channel.Name = textChannel.Name;
-            channel.MarkDeleted(false);
+            channel?.Update(textChannel);
         }
 
         foreach (var voiceChannel in await guild.GetVoiceChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsVoice() && o.ChannelId == voiceChannel.Id.ToString());
-            if (channel == null) continue;
 
-            channel.Name = voiceChannel.Name;
-            channel.MarkDeleted(false);
+            channel?.Update(voiceChannel);
         }
 
         foreach (var stageChannel in await guild.GetStageChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsStage() && o.ChannelId == stageChannel.Id.ToString());
-            if (channel == null) continue;
 
-            channel.Name = stageChannel.Name;
-            channel.MarkDeleted(false);
+            channel?.Update(stageChannel);
         }
 
         foreach (var threadChannel in await guild.GetThreadChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsThread() && o.ChannelId == threadChannel.Id.ToString() && o.ParentChannelId == threadChannel.CategoryId.ToString());
-            if (channel == null) continue;
 
-            channel.Name = threadChannel.Name;
-            channel.MarkDeleted(threadChannel.IsArchived);
+            channel?.Update(threadChannel);
         }
     }
 }

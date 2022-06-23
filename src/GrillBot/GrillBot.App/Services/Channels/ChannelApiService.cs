@@ -54,7 +54,9 @@ public class ChannelApiService
         if (guildChannel != null)
         {
             result = Mapper.Map(guildChannel, result);
-            result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
+
+            if (entity.IsText() || entity.IsThread() || entity.IsVoice())
+                result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
         }
 
         if (result.FirstMessageAt == DateTime.MinValue) result.FirstMessageAt = null;
@@ -83,7 +85,8 @@ public class ChannelApiService
             return result;
 
         result = Mapper.Map(guildChannel, result);
-        result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
+        if (channel.IsText() || channel.IsThread() || channel.IsVoice())
+            result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
         return result;
     }
 

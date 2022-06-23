@@ -22,17 +22,17 @@ public class ChannelsMappingProfile : AutoMapper.Profile
             .IncludeBase<Database.Entity.GuildChannel, Channel>()
             .ForMember(dst => dst.FirstMessageAt, opt =>
             {
-                opt.PreCondition(src => src.Users.Count > 0);
+                opt.PreCondition(src => !src.IsCategory() && src.Users.Count > 0);
                 opt.MapFrom(src => src.Users.Min(o => o.FirstMessageAt));
             })
             .ForMember(dst => dst.LastMessageAt, opt =>
             {
-                opt.PreCondition(src => src.Users.Count > 0);
+                opt.PreCondition(src => !src.IsCategory() && src.Users.Count > 0);
                 opt.MapFrom(src => src.Users.Min(o => o.LastMessageAt));
             })
             .ForMember(dst => dst.MessagesCount, opt =>
             {
-                opt.PreCondition(src => src.Users.Count > 0);
+                opt.PreCondition(src => !src.IsCategory() && src.Users.Count > 0);
                 opt.MapFrom(src => src.Users.Sum(o => o.Count));
             });
 

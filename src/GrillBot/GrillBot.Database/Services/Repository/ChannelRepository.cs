@@ -32,8 +32,7 @@ public class ChannelRepository : RepositoryBase
         if (!includeDeleted)
             query = query.Where(o => (o.Flags & (long)ChannelFlags.Deleted) == 0);
 
-        return query
-            .Where(o => o.ChannelType != ChannelType.Category);
+        return query;
     }
 
     public async Task<GuildChannel?> FindChannelByIdAsync(ulong channelId, ulong? guildId = null, bool disableTracking = false,
@@ -60,7 +59,8 @@ public class ChannelRepository : RepositoryBase
                 .Where(o =>
                     o.GuildId == guildId.ToString() &&
                     channelIds.Contains(o.ChannelId) &&
-                    o.Users.Count > 0
+                    o.Users.Count > 0 &&
+                    o.ChannelType != ChannelType.Category
                 );
 
             if (!showInvisible)
@@ -119,7 +119,8 @@ public class ChannelRepository : RepositoryBase
                     o.GuildId == user.GuildId.ToString() &&
                     o.UserId == user.Id.ToString() &&
                     (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
-                    (o.Channel.Flags & (long)ChannelFlags.Deleted) == 0
+                    (o.Channel.Flags & (long)ChannelFlags.Deleted) == 0 &&
+                    o.Channel.ChannelType != ChannelType.Category
                 );
 
             return await query.SumAsync(o => o.Count);

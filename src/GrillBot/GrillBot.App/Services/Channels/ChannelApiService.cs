@@ -11,6 +11,7 @@ using System.Security.Claims;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Models;
+using GrillBot.Database.Enums.Internal;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Channels;
@@ -69,7 +70,7 @@ public class ChannelApiService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, true, true, true);
+        var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, ChannelsIncludeUsersMode.IncludeExceptInactive, true, true);
         if (channel == null) return null;
 
         var result = Mapper.Map<ChannelDetail>(channel);

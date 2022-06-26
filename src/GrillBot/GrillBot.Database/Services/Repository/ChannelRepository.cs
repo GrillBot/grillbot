@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using GrillBot.Database.Enums.Internal;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Database.Services.Repository;
@@ -17,14 +18,19 @@ public class ChannelRepository : RepositoryBase
     {
     }
 
-    private IQueryable<GuildChannel> GetBaseQuery(bool includeDeleted, bool disableTracking, bool includeUsers)
+    private IQueryable<GuildChannel> GetBaseQuery(bool includeDeleted, bool disableTracking, ChannelsIncludeUsersMode includeUsersMode)
     {
         var query = Context.Channels
             .Include(o => o.Guild)
             .AsQueryable();
 
-        if (includeUsers)
-            query = query.Include(o => o.Users.Where(x => x.Count > 0 && (x.User!.User!.Flags & (long)UserFlags.NotUser) == 0)).ThenInclude(o => o.User!.User);
+        query = includeUsersMode switch
+        {
+            ChannelsIncludeUsersMode.IncludeAll => query.Include(o => o.Users).ThenInclude(o => o.User!.User),
+            ChannelsIncludeUsersMode.IncludeExceptInactive =>
+                query.Include(o => o.Users.Where(x => x.Count > 0 && (x.User!.User!.Flags & (long)UserFlags.NotUser) == 0)).ThenInclude(o => o.User!.User),
+            _ => query
+        };
 
         if (disableTracking)
             query = query.AsNoTracking();
@@ -36,11 +42,11 @@ public class ChannelRepository : RepositoryBase
     }
 
     public async Task<GuildChannel?> FindChannelByIdAsync(ulong channelId, ulong? guildId = null, bool disableTracking = false,
-        bool includeUsers = false, bool includeParent = false, bool includeDeleted = false)
+        ChannelsIncludeUsersMode includeUsersMode = ChannelsIncludeUsersMode.None, bool includeParent = false, bool includeDeleted = false)
     {
         using (Counter.Create("Database"))
         {
-            var query = GetBaseQuery(includeDeleted, disableTracking, includeUsers);
+            var query = GetBaseQuery(includeDeleted, disableTracking, includeUsersMode);
             if (guildId != null)
                 query = query.Where(o => o.GuildId == guildId.ToString());
             if (includeParent)
@@ -55,7 +61,7 @@ public class ChannelRepository : RepositoryBase
     {
         using (Counter.Create("Database"))
         {
-            var query = GetBaseQuery(false, disableTracking, true)
+            var query = GetBaseQuery(false, disableTracking, ChannelsIncludeUsersMode.IncludeExceptInactive)
                 .Where(o =>
                     o.GuildId == guildId.ToString() &&
                     channelIds.Contains(o.ChannelId) &&
@@ -74,7 +80,7 @@ public class ChannelRepository : RepositoryBase
     {
         using (Counter.Create("Database"))
         {
-            return await GetBaseQuery(includeDeleted, disableTracking, false).ToListAsync();
+            return await GetBaseQuery(includeDeleted, disableTracking, ChannelsIncludeUsersMode.None).ToListAsync();
         }
     }
 
@@ -82,7 +88,7 @@ public class ChannelRepository : RepositoryBase
     {
         using (Counter.Create("Database"))
         {
-            var query = GetBaseQuery(false, disableTracking, false)
+            var query = GetBaseQuery(false, disableTracking, ChannelsIncludeUsersMode.None)
                 .Where(o => guildIds.Contains(o.GuildId));
 
             if (ignoreThreads)
@@ -92,11 +98,11 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<GuildChannel> GetOrCreateChannelAsync(IGuildChannel channel, bool includeUsers = false)
+    public async Task<GuildChannel> GetOrCreateChannelAsync(IGuildChannel channel, ChannelsIncludeUsersMode includeUsersMode = ChannelsIncludeUsersMode.None)
     {
         using (Counter.Create("Database"))
         {
-            var entity = await GetBaseQuery(true, false, includeUsers)
+            var entity = await GetBaseQuery(true, false, includeUsersMode)
                 .FirstOrDefaultAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString());
 
             if (entity != null)

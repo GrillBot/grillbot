@@ -2,6 +2,7 @@
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Database.Enums.Internal;
 
 namespace GrillBot.App.Services.Channels;
 
@@ -36,11 +37,13 @@ public class ChannelService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var channel = await repository.Channel.GetOrCreateChannelAsync(textChannel, true);
+        await repository.Guild.GetOrCreateRepositoryAsync(textChannel.Guild);
+        await repository.User.GetOrCreateUserAsync(author);
+
+        var channel = await repository.Channel.GetOrCreateChannelAsync(textChannel, ChannelsIncludeUsersMode.IncludeAll);
         var user = await repository.GuildUser.GetOrCreateGuildUserAsync(author);
 
         var userChannel = channel.Users.FirstOrDefault(o => o.UserId == user.UserId);
-
         if (userChannel == null)
         {
             userChannel = new Database.Entity.GuildUserChannel

@@ -6,6 +6,7 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Enums.Internal;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -99,7 +100,7 @@ public class ChannelModule : InteractionsModuleBase
         }
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.Guild.Id, true, true);
+        var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.Guild.Id, true, ChannelsIncludeUsersMode.IncludeExceptInactive);
 
         if (channelData != null)
         {

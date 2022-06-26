@@ -120,9 +120,8 @@ public class EmoteService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        if (reactionUser != null)
-            await repository.GuildUser.GetOrCreateGuildUserAsync(reactionUser);
-        await repository.GuildUser.GetOrCreateGuildUserAsync(author);
+        var reactionUserEntity = reactionUser != null ? await repository.GuildUser.GetOrCreateGuildUserAsync(reactionUser) : null;
+        var authorUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(author);
 
         switch (@event)
         {
@@ -131,7 +130,7 @@ public class EmoteService
                 if (reactionUser != null)
                 {
                     await EmoteStats_OnReactionAddedAsync(repository, reactionUser, emote, textChannel.Guild);
-                    await Guild_OnReactionAddedAsync(repository, reactionUser, author);
+                    Guild_OnReactionAdded(reactionUserEntity, authorUserEntity);
                 }
 
                 break;
@@ -141,7 +140,7 @@ public class EmoteService
                 if (reactionUser != null)
                 {
                     await EmoteStats_OnReactionRemovedAsync(repository, reactionUser, emote, textChannel.Guild);
-                    await Guild_OnReactionRemovedAsync(repository, textChannel.Guild, reactionUser, author);
+                    await Guild_OnReactionRemovedAsync(repository, textChannel.Guild, reactionUserEntity, authorUserEntity);
                 }
 
                 break;
@@ -189,26 +188,21 @@ public class EmoteService
 
     #region GivenAndObtainedEmotes
 
-    private static async Task Guild_OnReactionAddedAsync(GrillBotRepository repository, IGuildUser user, IGuildUser messageAuthor)
+    private static void Guild_OnReactionAdded(GuildUser reactingUserEntity, GuildUser messageAuthorEntity)
     {
-        var reactingUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
-        var authorUser = await repository.GuildUser.GetOrCreateGuildUserAsync(messageAuthor);
-
-        authorUser.ObtainedReactions++;
-        reactingUser.GivenReactions++;
+        messageAuthorEntity.ObtainedReactions++;
+        reactingUserEntity.GivenReactions++;
     }
 
-    private static async Task Guild_OnReactionRemovedAsync(GrillBotRepository repository, IGuild guild, IGuildUser user, IGuildUser messageAuthor)
+    private static async Task Guild_OnReactionRemovedAsync(GrillBotRepository repository, IGuild guild, GuildUser reactingUserEntity, GuildUser messageAuthorEntity)
     {
         if (!await repository.Guild.ExistsAsync(guild)) return;
 
-        var reactingUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
-        if (reactingUser.GivenReactions > 0)
-            reactingUser.GivenReactions--;
+        if (reactingUserEntity.GivenReactions > 0)
+            reactingUserEntity.GivenReactions--;
 
-        var authorUser = await repository.GuildUser.GetOrCreateGuildUserAsync(messageAuthor);
-        if (authorUser.ObtainedReactions > 0)
-            authorUser.ObtainedReactions--;
+        if (messageAuthorEntity.ObtainedReactions > 0)
+            messageAuthorEntity.ObtainedReactions--;
     }
 
     #endregion

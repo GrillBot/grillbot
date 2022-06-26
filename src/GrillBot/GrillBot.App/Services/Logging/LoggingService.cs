@@ -134,10 +134,13 @@ public class LoggingService
         }
         else
         {
-            embed.WithTitle("Došlo k neočekávané chybě.")
+            var msg = (message.Message ?? "") + "\n" + (message.Exception != null ? message.Exception.Message : "");
+            var title = message.Source == "App Commands" ? "Při provádění integrovaného příkazu došlo k chybě." : "Došlo k neočekávané chybě.";
+            
+            embed.WithTitle(title)
                 .AddField("Zdroj", message.Source, true)
                 .AddField("Typ", message.Exception?.GetType().Name, true)
-                .AddField("Zpráva chyby", message.Message ?? "");
+                .AddField("Zpráva chyby", msg.Trim());
         }
 
         return embed.Build();

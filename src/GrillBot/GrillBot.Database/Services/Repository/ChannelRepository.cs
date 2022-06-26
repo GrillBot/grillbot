@@ -137,7 +137,8 @@ public class ChannelRepository : RepositoryBase
                     (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
                     o.Channel.ChannelType == ChannelType.Text &&
                     o.Count > 0 &&
-                    (o.Channel.Flags & (long)ChannelFlags.Deleted) == 0
+                    (o.Channel.Flags & (long)ChannelFlags.Deleted) == 0 &&
+                    o.UserId == user.Id.ToString()
                 );
 
             var lastActive = await baseQuery.OrderByDescending(o => o.LastMessageAt).FirstOrDefaultAsync();

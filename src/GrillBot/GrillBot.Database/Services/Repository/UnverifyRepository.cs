@@ -38,8 +38,8 @@ public class UnverifyRepository : RepositoryBase
             var baseQuery = Context.UnverifyLogs.AsNoTracking()
                 .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString());
 
-            var unverify = await baseQuery.CountAsync(o => o.Operation == UnverifyOperation.Selfunverify);
-            var selfunverify = await baseQuery.CountAsync(o => o.Operation == UnverifyOperation.Unverify);
+            var unverify = await baseQuery.CountAsync(o => o.Operation == UnverifyOperation.Unverify);
+            var selfunverify = await baseQuery.CountAsync(o => o.Operation == UnverifyOperation.Selfunverify);
 
             return (unverify, selfunverify);
         }

@@ -120,6 +120,11 @@ public class EmoteService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
+        await repository.Guild.GetOrCreateRepositoryAsync(textChannel.Guild);
+        await repository.User.GetOrCreateUserAsync(author);
+        if (reactionUser != null)
+            await repository.User.GetOrCreateUserAsync(reactionUser);
+
         var reactionUserEntity = reactionUser != null ? await repository.GuildUser.GetOrCreateGuildUserAsync(reactionUser) : null;
         var authorUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(author);
 

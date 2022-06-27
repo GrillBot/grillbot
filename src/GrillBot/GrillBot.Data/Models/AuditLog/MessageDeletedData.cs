@@ -19,5 +19,5 @@ public class MessageDeletedData
         Data = data;
     }
 
-    public MessageDeletedData(IUserMessage message) : this(message != null ? new MessageData(message) : null) { }
+    public MessageDeletedData(IMessage message) : this(message != null ? new MessageData(message) : null) { }
 }

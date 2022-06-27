@@ -47,6 +47,6 @@ public class InteractionCommandParameter
     {
         Name = data.Name;
         Type = "Message";
-        Value = new MessageData(data.Message.Author, data.Message.CreatedAt.LocalDateTime, data.Message.Content);
+        Value = new MessageData(data.Message);
     }
 }

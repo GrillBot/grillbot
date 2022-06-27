@@ -106,7 +106,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
             query = query.Where(o => o.CreatedAt <= CreatedTo);
 
         if (IgnoreBots)
-            query = query.Where(o => o.ProcessedUserId == null || (o.ProcessedGuildUser.User.Flags & (int)UserFlags.NotUser) == 0);
+            query = query.Where(o => o.ProcessedUserId == null || (o.ProcessedUser.Flags & (int)UserFlags.NotUser) == 0);
 
         if (!string.IsNullOrEmpty(ChannelId))
             query = query.Where(o => o.ChannelId == ChannelId);

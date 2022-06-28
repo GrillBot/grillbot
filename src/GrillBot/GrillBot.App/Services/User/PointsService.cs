@@ -6,6 +6,7 @@ using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
 using ImageMagick;
 
 namespace GrillBot.App.Services.User;
@@ -49,7 +50,15 @@ public class PointsService
         var guildUserEntity = message.Author as IGuildUser ?? textChannel.Guild.GetUser(message.Author.Id);
 
         await using var repository = DatabaseBuilder.CreateRepository();
+
+        await repository.Guild.GetOrCreateRepositoryAsync(textChannel.Guild);
+        var userEntity = await repository.User.GetOrCreateUserAsync(guildUserEntity);
         var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(guildUserEntity);
+        var guildChannel = await repository.Channel.GetOrCreateChannelAsync(textChannel);
+
+        var userPointsDisabled = (guildUser.User ?? userEntity).HaveFlags(UserFlags.PointsDisabled);
+        if (guildChannel.HasFlag(ChannelFlags.PointsDeactivated) || userPointsDisabled)
+            return;
 
         IncrementPoints(
             guildUser,
@@ -67,6 +76,7 @@ public class PointsService
         var argPos = 0;
 
         if (message == null) return false;
+        if (!message.Author.IsUser()) return false;
         if (string.IsNullOrEmpty(message.Content)) return false;
         if (message.Content.Length < Configuration.GetValue<int>("MessageMinLength")) return false;
         return !message.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix);
@@ -81,12 +91,20 @@ public class PointsService
         if (user?.IsUser() != true) return;
 
         var argPos = 0;
-        var msg = message.HasValue ? message.Value : (await MessageCache.GetAsync(message.Id, textChannel)) as IUserMessage;
+        var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, textChannel) as IUserMessage;
         if (!CanIncrement(msg)) return;
         if (msg!.ReferencedMessage?.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix) == true) return;
 
         await using var repository = DatabaseBuilder.CreateRepository();
+
+        await repository.Guild.GetOrCreateRepositoryAsync(user.Guild);
+        var userEntity = await repository.User.GetOrCreateUserAsync(user);
         var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
+        var channelEntity = await repository.Channel.GetOrCreateChannelAsync(textChannel);
+
+        var userPointsDeactivated = (guildUser.User ?? userEntity).HaveFlags(UserFlags.PointsDisabled);
+        if (channelEntity.HasFlag(ChannelFlags.PointsDeactivated) || userPointsDeactivated)
+            return;
 
         IncrementPoints(
             guildUser,

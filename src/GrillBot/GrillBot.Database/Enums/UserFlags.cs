@@ -43,5 +43,10 @@ public enum UserFlags
     /// <summary>
     /// All commands for user is disabled.
     /// </summary>
-    CommandsDisabled = 64
+    CommandsDisabled = 64,
+    
+    /// <summary>
+    /// Points counting is disabled for the user.
+    /// </summary>
+    PointsDisabled = 128
 }

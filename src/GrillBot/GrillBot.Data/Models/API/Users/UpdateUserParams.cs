@@ -1,5 +1,6 @@
 ﻿using GrillBot.Database.Enums;
 using System;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.Data.Models.API.Users;
 
@@ -11,23 +12,15 @@ public class UpdateUserParams
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
     public bool PublicAdminBlocked { get; set; }
     public bool CommandsDisabled { get; set; }
+    public bool PointsDisabled { get; set; }
 
     public int GetNewFlags(int currentFlags)
     {
-        int newFlags = currentFlags;
-
-        if (BotAdmin) newFlags |= (int)UserFlags.BotAdmin;
-        else newFlags &= ~(int)UserFlags.BotAdmin;
-
-        if (WebAdminAllowed) newFlags |= (int)UserFlags.WebAdmin;
-        else newFlags &= ~(int)UserFlags.WebAdmin;
-
-        if (PublicAdminBlocked) newFlags |= (int)UserFlags.PublicAdministrationBlocked;
-        else newFlags &= ~(int)UserFlags.PublicAdministrationBlocked;
-
-        if (CommandsDisabled) newFlags |= (int)UserFlags.CommandsDisabled;
-        else newFlags &= ~(int)UserFlags.CommandsDisabled;
-
-        return newFlags;
+        return currentFlags
+            .UpdateFlags((int)UserFlags.BotAdmin, BotAdmin)
+            .UpdateFlags((int)UserFlags.WebAdmin, WebAdminAllowed)
+            .UpdateFlags((int)UserFlags.PublicAdministrationBlocked, PublicAdminBlocked)
+            .UpdateFlags((int)UserFlags.CommandsDisabled, CommandsDisabled)
+            .UpdateFlags((int)UserFlags.PointsDisabled, PointsDisabled);
     }
 }

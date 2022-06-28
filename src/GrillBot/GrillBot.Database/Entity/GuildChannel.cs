@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.Database.Entity;
 
@@ -82,10 +83,7 @@ public class GuildChannel
 
     public void MarkDeleted(bool deleted)
     {
-        if (deleted)
-            Flags |= (long)ChannelFlags.Deleted;
-        else
-            Flags &= ~(long)ChannelFlags.Deleted;
+        Flags = Flags.UpdateFlags((long)ChannelFlags.Deleted, deleted);
     }
 
     public void Update(IGuildChannel channel)

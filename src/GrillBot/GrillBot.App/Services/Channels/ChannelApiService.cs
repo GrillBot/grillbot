@@ -11,6 +11,7 @@ using System.Security.Claims;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Models;
+using GrillBot.Data.Models;
 using GrillBot.Database.Enums.Internal;
 using GrillBot.Database.Models;
 
@@ -102,15 +103,26 @@ public class ChannelApiService
         if (channel == null)
             throw new NotFoundException();
 
+        var before = new AuditChannelInfo(channel);
         var reloadAutoReply = channel.HasFlag(ChannelFlags.AutoReplyDeactivated) != ((parameters.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0);
 
         channel.Flags = parameters.Flags;
         var success = await repository.CommitAsync() > 0;
 
-        if (reloadAutoReply && success)
+        if (!success) 
+            return false;
+        
+        if (reloadAutoReply)
             await AutoReplyService.InitAsync();
 
-        return success;
+        var auditLogItem = new AuditLogDataWrapper(
+            AuditLogItemType.ChannelUpdated,
+            new Diff<AuditChannelInfo>(before, new AuditChannelInfo(channel)),
+            processedUser: ApiRequestContext.LoggedUser
+        );
+        await AuditLogWriter.StoreAsync(auditLogItem);
+
+        return true;
     }
 
     public async Task PostMessageAsync(ulong guildId, ulong channelId, SendMessageToChannelParams parameters)

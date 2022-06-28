@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Rest;
+using GrillBot.Database.Entity;
 
 namespace GrillBot.Data.Models.AuditLog;
 
@@ -9,6 +10,7 @@ public class AuditChannelInfo : AuditChannelBaseInfo
     public bool? IsNsfw { get; set; }
     public int? Bitrate { get; set; }
     public string Topic { get; set; }
+    public long Flags { get; set; }
 
     public AuditChannelInfo() { }
 
@@ -34,4 +36,9 @@ public class AuditChannelInfo : AuditChannelBaseInfo
         : this(channel.Id, channel.Name, channel is IVoiceChannel ? ChannelType.Voice : ChannelType.Text, (channel as ITextChannel)?.IsNsfw,
             (channel as IVoiceChannel)?.Bitrate, (channel as ITextChannel)?.SlowModeInterval, (channel as ITextChannel)?.Topic)
     { }
+
+    public AuditChannelInfo(GuildChannel channel)
+    {
+        Flags = channel.Flags;
+    }
 }

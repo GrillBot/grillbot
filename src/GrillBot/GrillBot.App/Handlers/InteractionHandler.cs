@@ -93,8 +93,11 @@ public class InteractionHandler
                 else
                 {
                     var originalMessage = await context.Interaction.GetOriginalResponseAsync();
-                    await originalMessage.ReplyAsync($"{context.User.Mention} {reply}",
-                        allowedMentions: new AllowedMentions(AllowedMentionTypes.Users) { MentionRepliedUser = true });
+                    if (originalMessage != null)
+                    {
+                        await originalMessage.ReplyAsync($"{context.User.Mention} {reply}",
+                            allowedMentions: new AllowedMentions(AllowedMentionTypes.Users) { MentionRepliedUser = true });
+                    }
                 }
             }
         }

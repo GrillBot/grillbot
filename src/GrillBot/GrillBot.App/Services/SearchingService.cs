@@ -59,8 +59,10 @@ public class SearchingService
             throw new ValidationException("Obsah zprávy nesmí být prázdný.");
 
         message = message.Trim();
-        if (message.Length > EmbedFieldBuilder.MaxFieldValueLength)
-            throw new ValidationException($"Zpráva nesmí být delší, než {EmbedFieldBuilder.MaxFieldValueLength} znaků.");
+
+        const int limit = EmbedFieldBuilder.MaxFieldValueLength - 3;
+        if (message.Length > limit)
+            throw new ValidationException($"Zpráva nesmí být delší, než {limit} znaků.");
 
         return message;
     }
@@ -124,7 +126,6 @@ public class SearchingService
 
     private async Task<List<SearchingListItem>> GetListAsync(GetSearchingListParams parameters, ApiRequestContext apiRequestContext)
     {
-        // TODO: Use ApiRequestContext.
         if (apiRequestContext?.IsPublic() == true)
         {
             var loggedUserId = apiRequestContext.GetUserId();

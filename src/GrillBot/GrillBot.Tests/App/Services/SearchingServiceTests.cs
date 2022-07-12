@@ -44,11 +44,8 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     [ExpectedException(typeof(ValidationException))]
     public async Task CreateAsync_LongMessage()
     {
-        var message = new UserMessageBuilder()
-            .SetContent(new string('c', 5000))
-            .Build();
-
-        await Service.CreateAsync(null, null, null, message.Content);
+        var content = new string('c', 5000);
+        await Service.CreateAsync(null, null, null, content);
     }
 
     [TestMethod]

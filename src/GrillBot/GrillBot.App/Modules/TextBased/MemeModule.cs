@@ -99,7 +99,17 @@ public class MemeModule : ModuleBase
 
         if (!Context.IsPrivate)
             await Context.Message.DeleteAsync();
-        await ReplyAsync(string.Join(" ", emojized.Select(o => o.ToString())), false);
+
+        var messageBuilder = new StringBuilder();
+        foreach (var emoji in emojized.Select(o => o.ToString()))
+        {
+            if (messageBuilder.Length + emoji.Length + 1 > DiscordConfig.MaxMessageSize)
+                break;
+
+            messageBuilder.Append(emoji).Append(' ');
+        }
+        
+        await ReplyAsync(messageBuilder.ToString(), false);
     }
 
     [Command("reactjize")]

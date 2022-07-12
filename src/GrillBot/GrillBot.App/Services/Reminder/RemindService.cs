@@ -48,6 +48,10 @@ public class RemindService
         if (string.IsNullOrEmpty(message))
             throw new ValidationException("Text upozornění je povinný.");
 
+        message = message.Trim();
+        if (message.Length >= EmbedFieldBuilder.MaxFieldValueLength)
+            throw new ValidationException($"Maximální délka zprávy může být {EmbedFieldBuilder.MaxFieldValueLength} znaků.");
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var fromUser = await repository.User.GetOrCreateUserAsync(from);

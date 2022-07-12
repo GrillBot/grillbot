@@ -56,6 +56,15 @@ public class RemindServiceTests : ServiceTest<RemindService>
     }
 
     [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
+    public async Task CreateRemindAsync_LongMessage()
+    {
+        var at = DateTime.Now.AddHours(12);
+        await Service.CreateRemindAsync(null, null, at, new string('-', 2048), 0);
+    }
+
+    [TestMethod]
     public async Task CreateRemindAsync_SameUser()
     {
         var at = DateTime.Now.AddDays(1);

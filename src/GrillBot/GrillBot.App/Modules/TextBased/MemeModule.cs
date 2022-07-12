@@ -132,10 +132,10 @@ public class MemeModule : ModuleBase
 
         try
         {
-            var emojis = Emojis.ConvertStringToEmoji(msg);
-            if (emojis.Count == 0) return;
+            var emojis = Emojis.ConvertStringToEmoji(msg).Take(20).ToArray();
+            if (emojis.Length == 0) return;
 
-            await Context.Message.ReferencedMessage.AddReactionsAsync(emojis.ToArray());
+            await Context.Message.ReferencedMessage.AddReactionsAsync(emojis);
             await Context.Message.DeleteAsync();
         }
         catch (ArgumentException ex)

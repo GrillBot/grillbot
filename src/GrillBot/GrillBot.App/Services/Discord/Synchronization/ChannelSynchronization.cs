@@ -75,29 +75,41 @@ public class ChannelSynchronization : SynchronizationBase
         foreach (var textChannel in await guild.GetTextChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsText() && o.ChannelId == textChannel.Id.ToString());
+            if (channel == null) continue;
 
-            channel?.Update(textChannel);
+            channel.Update(textChannel);
+            foreach (var userStatistics in channel.Users.Where(o => o.FirstMessageAt == DateTime.MinValue))
+                userStatistics.FirstMessageAt = textChannel.CreatedAt.LocalDateTime;
         }
 
         foreach (var voiceChannel in await guild.GetVoiceChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsVoice() && o.ChannelId == voiceChannel.Id.ToString());
+            if (channel == null) continue;
 
-            channel?.Update(voiceChannel);
+            channel.Update(voiceChannel);
+            foreach (var userStatistics in channel.Users.Where(o => o.FirstMessageAt == DateTime.MinValue))
+                userStatistics.FirstMessageAt = voiceChannel.CreatedAt.LocalDateTime;
         }
 
         foreach (var stageChannel in await guild.GetStageChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsStage() && o.ChannelId == stageChannel.Id.ToString());
+            if (channel == null) continue;
 
-            channel?.Update(stageChannel);
+            channel.Update(stageChannel);
+            foreach (var userStatistics in channel.Users.Where(o => o.FirstMessageAt == DateTime.MinValue))
+                userStatistics.FirstMessageAt = stageChannel.CreatedAt.LocalDateTime;
         }
 
         foreach (var threadChannel in await guild.GetThreadChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsThread() && o.ChannelId == threadChannel.Id.ToString() && o.ParentChannelId == threadChannel.CategoryId.ToString());
+            if(channel == null) continue;
 
-            channel?.Update(threadChannel);
+            channel.Update(threadChannel);
+            foreach (var userStatistics in channel.Users.Where(o => o.FirstMessageAt == DateTime.MinValue))
+                userStatistics.FirstMessageAt = threadChannel.CreatedAt.LocalDateTime;
         }
     }
 }

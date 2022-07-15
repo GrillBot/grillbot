@@ -19,4 +19,5 @@ public class GuildUserDetail
     public bool IsUserInGuild { get; set; }
     public List<Emotes.EmoteStatItem> Emotes { get; set; }
     public UnverifyInfo Unverify { get; set; }
+    public List<string> NicknameHistory { get; set; }
 }

@@ -8,8 +8,10 @@ using GrillBot.Database.Enums;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Models;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Services.User;
 
@@ -99,6 +101,8 @@ public class UsersApiService
                     var unverifyUserProfile = UnverifyProfileGenerator.Reconstruct(guildUserEntity.Unverify, guildUser, guild);
                     guildUserDetail.Unverify = Mapper.Map<UnverifyInfo>(unverifyUserProfile);
                 }
+
+                guildUserDetail.NicknameHistory = await GetUserNicknameHistoryAsync(repository, guildUser);
             }
 
             result.Guilds.Add(guildUserDetail);
@@ -110,6 +114,34 @@ public class UsersApiService
             .ToList();
 
         return result;
+    }
+
+    private static async Task<List<string>> GetUserNicknameHistoryAsync(GrillBotRepository repository, IGuildUser user)
+    {
+        var parameters = new AuditLogListParams
+        {
+            GuildId = user.GuildId.ToString(),
+            Sort = { Descending = true },
+            Types = new List<AuditLogItemType> { AuditLogItemType.MemberUpdated },
+            IgnoreBots = true
+        };
+
+        var auditLogs = await repository.AuditLog.GetSimpleDataAsync(parameters);
+        var result = new List<string>();
+
+        foreach (var log in auditLogs)
+        {
+            var logData = JsonConvert.DeserializeObject<MemberUpdatedData>(log.Data, AuditLogWriter.SerializerSettings);
+            if (logData == null || logData.Target.Id != user.Id || logData.Nickname == null) continue;
+
+            if (!string.IsNullOrEmpty(logData.Nickname.Before)) result.Add(logData.Nickname.Before);
+            if (!string.IsNullOrEmpty(logData.Nickname.After)) result.Add(logData.Nickname.After);
+        }
+
+        if (!string.IsNullOrEmpty(user.Nickname))
+            result = result.FindAll(o => o != user.Nickname);
+
+        return result.Distinct().ToList();
     }
 
     public async Task UpdateUserAsync(ulong id, UpdateUserParams parameters)

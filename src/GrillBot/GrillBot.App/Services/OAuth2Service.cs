@@ -98,12 +98,16 @@ public class OAuth2Service
         return client.CurrentUser;
     }
 
-    public async Task<OAuth2LoginToken> CreateTokenAsync(string sessionId, bool isPublic, CancellationToken cancellationToken)
+    public async Task<OAuth2LoginToken> CreateTokenAsync(string sessionId, bool isPublic)
     {
         var user = await GetUserAsync(sessionId);
+        return await CreateTokenAsync(user, isPublic);
+    }
 
+    public async Task<OAuth2LoginToken> CreateTokenAsync(IUser user, bool isPublic)
+    {
         await using var repository = DbFactory.CreateRepository();
-        var dbUser = await repository.User.FindUserAsync(user);
+        var dbUser = await repository.User.FindUserAsync(user, true);
 
         if (dbUser == null)
             return new OAuth2LoginToken($"Uživatel {user.Username} nebyl nalezen.");

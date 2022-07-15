@@ -27,17 +27,22 @@ public class UserRepository : RepositoryBase
         }
     }
 
-    public async Task<User?> FindUserAsync(IUser user)
+    public async Task<User?> FindUserAsync(IUser user, bool disableTracking = false)
     {
         using (Counter.Create("Database"))
         {
-            var entity = await Context.Users
+            var query = Context.Users.AsQueryable();
+            if (disableTracking)
+                query = query.AsNoTracking();
+
+            var entity = await query
                 .FirstOrDefaultAsync(o => o.Id == user.Id.ToString());
 
             if (entity == null)
                 return null;
 
-            entity.Update(user);
+            if (!disableTracking)
+                entity.Update(user);
             return entity;
         }
     }

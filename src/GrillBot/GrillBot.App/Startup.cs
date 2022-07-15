@@ -152,6 +152,7 @@ public class Startup
             doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
             doc.OperationProcessors.Add(new OperationIdProcessor());
             doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
+            doc.OperationProcessors.Add(new OnlyDevelopmentProcessor());
 
             doc.PostProcess = document =>
             {

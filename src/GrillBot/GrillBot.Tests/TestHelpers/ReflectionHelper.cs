@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace GrillBot.Tests.TestHelpers;
 
+[ExcludeFromCodeCoverage]
 public static class AutoPropertyExtensions
 {
     private const string Prefix = "<";
@@ -25,6 +27,7 @@ public static class AutoPropertyExtensions
     }
 }
 
+[ExcludeFromCodeCoverage]
 public class ReflectionHelper
 {
     public static void SetPrivateReadonlyPropertyValue(object instance, string propertyName, object value)

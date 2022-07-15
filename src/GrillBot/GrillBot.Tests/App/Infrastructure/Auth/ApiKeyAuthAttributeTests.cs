@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Moq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing;
 
 namespace GrillBot.Tests.App.Infrastructure.Auth;
 
@@ -37,8 +38,8 @@ public class ApiKeyAuthAttributeTests
         httpContext.Setup(o => o.Request).Returns(request.Object);
         httpContext.Setup(o => o.RequestServices).Returns(serviceProvider);
 
-        var actionContext = new ActionContext(httpContext.Object, new(), new());
-        var controller = new AuthController(null);
+        var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+        var controller = new AuthController(null, null);
 
         return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), controller)
         {

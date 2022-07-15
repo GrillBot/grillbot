@@ -89,20 +89,23 @@ public class UsersApiService
                 .ToList();
 
             var guild = await DiscordClient.GetGuildAsync(guildUserDetail.Guild.Id.ToUlong());
-
-            guildUserDetail.IsGuildKnown = guild != null;
             if (guild != null)
             {
+                guildUserDetail.IsGuildKnown = true;
+
                 var guildUser = await guild.GetUserAsync(result.Id.ToUlong());
                 guildUserDetail.IsUserInGuild = guildUserDetail.IsGuildKnown && guildUser != null;
 
-                if (guildUserEntity.Unverify != null && guildUser != null)
+                if (guildUser != null)
                 {
-                    var unverifyUserProfile = UnverifyProfileGenerator.Reconstruct(guildUserEntity.Unverify, guildUser, guild);
-                    guildUserDetail.Unverify = Mapper.Map<UnverifyInfo>(unverifyUserProfile);
-                }
+                    if (guildUserEntity.Unverify != null)
+                    {
+                        var unverifyUserProfile = UnverifyProfileGenerator.Reconstruct(guildUserEntity.Unverify, guildUser, guild);
+                        guildUserDetail.Unverify = Mapper.Map<UnverifyInfo>(unverifyUserProfile);
+                    }
 
-                guildUserDetail.NicknameHistory = await GetUserNicknameHistoryAsync(repository, guildUser);
+                    guildUserDetail.NicknameHistory = await GetUserNicknameHistoryAsync(repository, guildUser);
+                }
             }
 
             result.Guilds.Add(guildUserDetail);

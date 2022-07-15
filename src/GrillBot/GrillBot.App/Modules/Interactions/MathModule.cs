@@ -31,7 +31,7 @@ public class MathModule : InteractionsModuleBase
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)
             .WithCurrentTimestamp()
-            .AddField("Výraz", $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength)}`");
+            .AddField("Výraz", $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength - 2)}`");
 
         try
         {

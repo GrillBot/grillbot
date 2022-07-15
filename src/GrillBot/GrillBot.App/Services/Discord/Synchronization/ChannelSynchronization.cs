@@ -75,31 +75,22 @@ public class ChannelSynchronization : SynchronizationBase
         foreach (var textChannel in await guild.GetTextChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsText() && o.ChannelId == textChannel.Id.ToString());
-            if (channel == null) continue;
 
-            channel.Update(textChannel);
-            foreach (var userStatistics in channel.Users.Where(o => o.FirstMessageAt == DateTime.MinValue))
-                userStatistics.FirstMessageAt = textChannel.CreatedAt.LocalDateTime;
+            channel?.Update(textChannel);
         }
 
         foreach (var voiceChannel in await guild.GetVoiceChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsVoice() && o.ChannelId == voiceChannel.Id.ToString());
-            if (channel == null) continue;
 
-            channel.Update(voiceChannel);
-            foreach (var userStatistics in channel.Users.Where(o => o.FirstMessageAt == DateTime.MinValue))
-                userStatistics.FirstMessageAt = voiceChannel.CreatedAt.LocalDateTime;
+            channel?.Update(voiceChannel);
         }
 
         foreach (var stageChannel in await guild.GetStageChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsStage() && o.ChannelId == stageChannel.Id.ToString());
-            if (channel == null) continue;
 
-            channel.Update(stageChannel);
-            foreach (var userStatistics in channel.Users.Where(o => o.FirstMessageAt == DateTime.MinValue))
-                userStatistics.FirstMessageAt = stageChannel.CreatedAt.LocalDateTime;
+            channel?.Update(stageChannel);
         }
 
         foreach (var threadChannel in await guild.GetThreadChannelsAsync())

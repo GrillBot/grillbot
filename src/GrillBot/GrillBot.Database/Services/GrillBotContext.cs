@@ -104,6 +104,12 @@ public class GrillBotContext : DbContext
         modelBuilder.Entity<SelfunverifyKeepable>(builder => builder.HasKey(o => new { o.GroupName, o.Name }));
         modelBuilder.Entity<ExplicitPermission>(builder => builder.HasKey(o => new { o.Command, o.TargetId }));
 
+        modelBuilder.Entity<GuildEvent>(builder =>
+        {
+            builder.HasKey(o => new { o.Id, o.GuildId });
+            builder.HasOne(o => o.Guild).WithMany(o => o.GuildEvents);
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -124,6 +130,7 @@ public class GrillBotContext : DbContext
     public DbSet<ExplicitPermission> ExplicitPermissions => Set<ExplicitPermission>();
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<Suggestion> Suggestions => Set<Suggestion>();
+    public DbSet<GuildEvent> GuildEvents => Set<GuildEvent>();
 
     /// <summary>
     /// Checks if same entity is currently tracked.

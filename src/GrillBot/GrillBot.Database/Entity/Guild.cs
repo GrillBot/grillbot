@@ -43,6 +43,7 @@ public class Guild
     public ISet<UnverifyLog> UnverifyLogs { get; set; }
     public ISet<AuditLogItem> AuditLogs { get; set; }
     public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
+    public ISet<GuildEvent> GuildEvents { get; set; }
 
     public Guild()
     {
@@ -54,6 +55,7 @@ public class Guild
         Searches = new HashSet<SearchItem>();
         AuditLogs = new HashSet<AuditLogItem>();
         EmoteStatistics = new HashSet<EmoteStatisticItem>();
+        GuildEvents = new HashSet<GuildEvent>();
     }
 
     public static Guild FromDiscord(IGuild guild)

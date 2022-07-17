@@ -49,7 +49,7 @@ public class GuildApiService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbGuild = await repository.Guild.FindGuildByIdAsync(id);
+        var dbGuild = await repository.Guild.FindGuildByIdAsync(id, true);
         if (dbGuild == null) return null;
 
         var detail = Mapper.Map<GuildDetail>(dbGuild);
@@ -139,9 +139,34 @@ public class GuildApiService
             modelState.AddModelError(nameof(parameters.VoteChannelId), "Nepodařilo se dohledat kanál pro veřejná hlasování.");
         else
             dbGuild.VoteChannelId = parameters.VoteChannelId;
-
+        
+        UpdateGuildEvents(dbGuild, parameters);
+        
         if (modelState.IsValid)
             await repository.CommitAsync();
         return await GetDetailAsync(id);
+    }
+
+    private static void UpdateGuildEvents(Database.Entity.Guild guild, UpdateGuildParams parameters)
+    {
+        const string id = "EmoteSuggestions";
+        
+        var guildEvent = guild.GuildEvents.FirstOrDefault(o => o.Id == id);
+        if (parameters.EmoteSuggestionsValidity == null)
+        {
+            if (guildEvent != null)
+                guild.GuildEvents.Remove(guildEvent);
+        }
+        else
+        {
+            if (guildEvent == null)
+            {
+                guildEvent = new Database.Entity.GuildEvent { Id = id };
+                guild.GuildEvents.Add(guildEvent);
+            }
+
+            guildEvent.From = parameters.EmoteSuggestionsValidity.From;
+            guildEvent.To = parameters.EmoteSuggestionsValidity.To;
+        }
     }
 }

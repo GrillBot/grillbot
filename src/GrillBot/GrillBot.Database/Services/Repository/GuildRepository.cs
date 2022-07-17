@@ -33,7 +33,9 @@ public class GuildRepository : RepositoryBase
     {
         using (Counter.Create("Database"))
         {
-            var query = Context.Guilds.AsQueryable();
+            var query = Context.Guilds
+                .Include(o => o.GuildEvents)
+                .AsQueryable();
             if (disableTracking)
                 query = query.AsNoTracking();
 
@@ -51,7 +53,9 @@ public class GuildRepository : RepositoryBase
     {
         using (Counter.Create("Database"))
         {
-            var query = Context.Guilds.AsQueryable();
+            var query = Context.Guilds
+                .Include(o => o.GuildEvents)
+                .AsQueryable();
             if (disableTracking)
                 query = query.AsNoTracking();
 

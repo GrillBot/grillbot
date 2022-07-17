@@ -30,7 +30,7 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
-        await Repository.AddAsync(Guild.FromDiscord(guild));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
         await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
         await Repository.CommitAsync();
 
@@ -45,7 +45,7 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
         var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
         var thread = new ThreadBuilder().SetIdentity(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).SetType(ThreadType.PrivateThread).Build();
 
-        await Repository.AddAsync(Guild.FromDiscord(guild));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
         await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
         await Repository.AddAsync(GuildChannel.FromDiscord(thread, ChannelType.PrivateThread));
         await Repository.CommitAsync();
@@ -77,7 +77,7 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
         var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
         var thread = new ThreadBuilder().SetIdentity(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).Build();
 
-        await Repository.AddAsync(Guild.FromDiscord(guild));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
         await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
         await Repository.AddAsync(GuildChannel.FromDiscord(thread, ChannelType.PrivateThread));
         await Repository.CommitAsync();

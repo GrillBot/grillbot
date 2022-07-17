@@ -32,7 +32,7 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
-        await Repository.AddAsync(Guild.FromDiscord(user.Guild));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(user.Guild));
         await Repository.AddAsync(GuildUser.FromDiscord(user.Guild, user));
         await Repository.CommitAsync();
 
@@ -46,7 +46,7 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).AsBot().Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
-        await Repository.AddAsync(Guild.FromDiscord(user.Guild));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(user.Guild));
         await Repository.AddAsync(GuildUser.FromDiscord(user.Guild, user));
         await Repository.CommitAsync();
 

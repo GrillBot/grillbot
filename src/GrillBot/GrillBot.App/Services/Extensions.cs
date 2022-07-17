@@ -40,6 +40,7 @@ public static class Extensions
             .AddSingleton<FileStorageFactory>();
 
         services
+            .AddSingleton<Guild.GuildEventsService>()
             .AddScoped<Guild.GuildApiService>();
 
         services

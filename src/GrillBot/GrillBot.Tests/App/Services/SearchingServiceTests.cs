@@ -73,7 +73,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
         {
             Channel = GuildChannel.FromDiscord(channel, global::Discord.ChannelType.Text),
             ChannelId = channel.Id.ToString(),
-            Guild = Guild.FromDiscord(guild),
+            Guild = Database.Entity.Guild.FromDiscord(guild),
             GuildId = guild.Id.ToString(),
             Id = 42,
             MessageContent = "Ahoj",
@@ -96,7 +96,7 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
         {
             Channel = GuildChannel.FromDiscord(channel, global::Discord.ChannelType.Text),
             ChannelId = channel.Id.ToString(),
-            Guild = Guild.FromDiscord(guild),
+            Guild = Database.Entity.Guild.FromDiscord(guild),
             GuildId = guild.Id.ToString(),
             Id = 42,
             MessageContent = "Ahoj",

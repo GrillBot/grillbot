@@ -27,7 +27,7 @@ public class GuildSynchronizationTests : ServiceTest<GuildSynchronization>
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
-        await Repository.AddAsync(Guild.FromDiscord(guild));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
         await Repository.CommitAsync();
 
         await Service.GuildUpdatedAsync(guild);

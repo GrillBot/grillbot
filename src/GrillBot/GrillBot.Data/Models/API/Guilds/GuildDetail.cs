@@ -89,4 +89,5 @@ public class GuildDetail : Guild
     public Dictionary<UserStatus, int> UserStatusReport { get; set; }
     public Dictionary<ClientType, int> ClientTypeReport { get; set; }
     public GuildDatabaseReport DatabaseReport { get; set; }
+    public List<GuildEvent> GuildEvents { get; set; }
 }

@@ -44,7 +44,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         };
 
         await Repository.AddAsync(item);
-        await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
+        await Repository.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Guild" });
         await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test" });
         await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });

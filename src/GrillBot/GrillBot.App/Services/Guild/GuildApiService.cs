@@ -72,6 +72,9 @@ public class GuildApiService
         if (!string.IsNullOrEmpty(dbGuild.MuteRoleId))
             detail.MutedRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.MuteRoleId.ToUlong()));
 
+        if (!string.IsNullOrEmpty(dbGuild.VoteChannelId))
+            detail.VoteChannel = Mapper.Map<Channel>(await discordGuild.GetChannelAsync(dbGuild.VoteChannelId.ToUlong()));
+
         var guildUsers = await discordGuild.GetUsersAsync();
         detail.UserStatusReport = guildUsers
             .GroupBy(o => o.GetStatus())
@@ -117,20 +120,25 @@ public class GuildApiService
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var dbGuild = await repository.Guild.GetOrCreateRepositoryAsync(guild);
-        if (parameters.AdminChannelId != null && await guild.GetTextChannelAsync(parameters.AdminChannelId.ToUlong()) == null)
+        if (!string.IsNullOrEmpty(parameters.AdminChannelId) && await guild.GetTextChannelAsync(parameters.AdminChannelId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.AdminChannelId), "Nepodařilo se dohledat administrátorský kanál");
         else
             dbGuild.AdminChannelId = parameters.AdminChannelId;
 
-        if (parameters.MuteRoleId != null && guild.GetRole(parameters.MuteRoleId.ToUlong()) == null)
+        if (!string.IsNullOrEmpty(parameters.MuteRoleId) && guild.GetRole(parameters.MuteRoleId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.MuteRoleId), "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.");
         else
             dbGuild.MuteRoleId = parameters.MuteRoleId;
 
-        if (parameters.EmoteSuggestionChannelId != null && await guild.GetTextChannelAsync(parameters.EmoteSuggestionChannelId.ToUlong()) == null)
+        if (!string.IsNullOrEmpty(parameters.EmoteSuggestionChannelId) && await guild.GetTextChannelAsync(parameters.EmoteSuggestionChannelId.ToUlong()) == null)
             modelState.AddModelError(nameof(parameters.EmoteSuggestionChannelId), "Nepodařilo se dohledat kanál pro návrhy emotů.");
         else
             dbGuild.EmoteSuggestionChannelId = parameters.EmoteSuggestionChannelId;
+
+        if (!string.IsNullOrEmpty(parameters.VoteChannelId) && await guild.GetTextChannelAsync(parameters.VoteChannelId.ToUlong()) == null)
+            modelState.AddModelError(nameof(parameters.VoteChannelId), "Nepodařilo se dohledat kanál pro veřejná hlasování.");
+        else
+            dbGuild.VoteChannelId = parameters.VoteChannelId;
 
         if (modelState.IsValid)
             await repository.CommitAsync();

@@ -55,6 +55,11 @@ public class GuildDetail : Guild
     /// Channel for emote suggestions.
     /// </summary>
     public Channel EmoteSuggestionChannel { get; set; }
+    
+    /// <summary>
+    /// Channel for public votes.
+    /// </summary>
+    public Channel VoteChannel { get; set; }
 
     /// <summary>
     /// Maximum count of members.

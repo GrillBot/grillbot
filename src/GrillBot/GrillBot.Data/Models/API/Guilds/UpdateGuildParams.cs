@@ -12,4 +12,7 @@ public class UpdateGuildParams
 
     [DiscordId]
     public string EmoteSuggestionChannelId { get; set; }
+    
+    [DiscordId]
+    public string VoteChannelId { get; set; }
 }

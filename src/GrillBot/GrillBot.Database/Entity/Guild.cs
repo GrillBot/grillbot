@@ -31,6 +31,9 @@ public class Guild
 
     [StringLength(30)]
     public string? EmoteSuggestionChannelId { get; set; }
+    
+    [StringLength(30)]
+    public string? VoteChannelId { get; set; }
 
     public ISet<GuildUser> Users { get; set; }
     public ISet<Invite> Invites { get; set; }

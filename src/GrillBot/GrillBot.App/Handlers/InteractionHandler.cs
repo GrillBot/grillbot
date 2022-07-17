@@ -73,31 +73,19 @@ public class InteractionHandler
 
             if (!string.IsNullOrEmpty(reply))
             {
-                if (context.Interaction is SocketMessageComponent)
+                if (!context.Interaction.HasResponded)
                 {
-                    if (!context.Interaction.HasResponded)
-                    {
-                        await context.Interaction.RespondAsync(reply, ephemeral: true);
-                        return;
-                    }
-
-                    try
-                    {
-                        await context.User.SendMessageAsync(reply);
-                    }
-                    catch (HttpException ex) when (ex.DiscordCode != DiscordErrorCode.CannotSendMessageToUser)
-                    {
-                        throw;
-                    }
+                    await context.Interaction.RespondAsync(reply, ephemeral: true);
+                    return;
                 }
-                else
+
+                try
                 {
-                    var originalMessage = await context.Interaction.GetOriginalResponseAsync();
-                    if (originalMessage != null)
-                    {
-                        await originalMessage.ReplyAsync($"{context.User.Mention} {reply}",
-                            allowedMentions: new AllowedMentions(AllowedMentionTypes.Users) { MentionRepliedUser = true });
-                    }
+                    await context.User.SendMessageAsync(reply);
+                }
+                catch (HttpException ex) when (ex.DiscordCode != DiscordErrorCode.CannotSendMessageToUser)
+                {
+                    throw;
                 }
             }
         }

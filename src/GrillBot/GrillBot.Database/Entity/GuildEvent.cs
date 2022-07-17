@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GrillBot.Database.Entity;
 
+[Table(nameof(GuildEvent))]
 public class GuildEvent
 {
     public string Id { get; set; } = null!;

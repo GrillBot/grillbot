@@ -87,6 +87,12 @@ public class SuggestionModule : InteractionsModuleBase
         }
     }
 
+    [ComponentInteraction("emote_suggestion_approve:*", ignoreGroupNames: true)]
+    public async Task EmoteSuggestionApproved(bool approved)
+    {
+        await SuggestionService.Emotes.SetApprovalStateAsync((IComponentInteraction)Context.Interaction, approved);
+    }
+
     [SlashCommand("feature", "Podání návrhu na novou feature do GrillBot.")]
     public Task SuggestFeatureAsync()
     {

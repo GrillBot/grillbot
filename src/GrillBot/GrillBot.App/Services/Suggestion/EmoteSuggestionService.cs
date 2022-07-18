@@ -12,11 +12,14 @@ public class EmoteSuggestionService
 {
     private SuggestionSessionService SessionService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IDiscordClient DiscordClient { get; }
 
-    public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotDatabaseBuilder databaseBuilder)
+    public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotDatabaseBuilder databaseBuilder,
+        IDiscordClient discordClient)
     {
         SessionService = sessionService;
         DatabaseBuilder = databaseBuilder;
+        DiscordClient = discordClient;
     }
 
     public void InitSession(string suggestionId, object data)
@@ -86,8 +89,8 @@ public class EmoteSuggestionService
         using (var ms = new MemoryStream(entity.ImageData))
         {
             var components = new ComponentBuilder()
-                .WithButton("Schválit", "emote_suggestion:approve", ButtonStyle.Success)
-                .WithButton("Zamítnout", "emote_suggestion:decline", ButtonStyle.Danger)
+                .WithButton("Schválit", "emote_suggestion_approve:true", ButtonStyle.Success)
+                .WithButton("Zamítnout", "emote_suggestion_approve:false", ButtonStyle.Danger)
                 .Build();
             var embed = BuildSuggestionEmbed(entity, author);
             var attachment = new FileAttachment(ms, entity.Filename);
@@ -117,5 +120,24 @@ public class EmoteSuggestionService
 
         return builder
             .Build();
+    }
+
+    public async Task SetApprovalStateAsync(IComponentInteraction interaction, bool approved)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var suggestion = await repository.EmoteSuggestion.FindSuggestionByMessageId(interaction.Message.Id);
+        if (suggestion == null)
+        {
+            await interaction.UpdateAsync(msg => msg.Components = null);
+            return;
+        }
+
+        suggestion.ApprovedForVote = approved;
+        await repository.CommitAsync();
+
+        var user = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());
+        var embed = BuildSuggestionEmbed(suggestion, user);
+        await interaction.UpdateAsync(msg => msg.Embed = embed);
     }
 }

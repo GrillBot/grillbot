@@ -38,7 +38,8 @@ public class SuggestionModule : InteractionsModuleBase
         var sessionId = Guid.NewGuid().ToString();
         var modal = new ModalBuilder("Podání návrhu na nový emote", $"suggestions_emote:{sessionId}")
             .AddTextInput("Název emote", "suggestions_emote_name", minLength: 2, maxLength: 50, required: true, value: emote?.Name ?? Path.GetFileNameWithoutExtension(attachment!.Filename))
-            .AddTextInput("Popis emote", "suggestions_emote_description", TextInputStyle.Paragraph, "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?", maxLength: 1500, required: false)
+            .AddTextInput("Popis emote", "suggestions_emote_description", TextInputStyle.Paragraph, "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?",
+                maxLength: EmbedFieldBuilder.MaxFieldValueLength, required: false)
             .Build();
 
         var suggestionData = emote as object ?? attachment;
@@ -52,7 +53,8 @@ public class SuggestionModule : InteractionsModuleBase
     {
         try
         {
-            await SuggestionService.Emotes.ProcessSessionAsync(sessionId, Context.Guild, Context.User, modal);
+            var user = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
+            await SuggestionService.Emotes.ProcessSessionAsync(sessionId, Context.Guild, user, modal);
             await Context.User.SendMessageAsync("Tvůj návrh na přidání emote byl úspěšně zpracován.");
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)

@@ -110,6 +110,12 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.Guild).WithMany(o => o.GuildEvents);
         });
 
+        modelBuilder.Entity<EmoteSuggestion>(builder =>
+        {
+            builder.HasOne(o => o.Guild).WithMany();
+            builder.HasOne(o => o.FromUser).WithMany().HasForeignKey(o => new { o.GuildId, o.FromUserId });
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -131,13 +137,5 @@ public class GrillBotContext : DbContext
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<Suggestion> Suggestions => Set<Suggestion>();
     public DbSet<GuildEvent> GuildEvents => Set<GuildEvent>();
-
-    /// <summary>
-    /// Checks if same entity is currently tracked.
-    /// </summary>
-    public bool IsEntityTracked<TEntity>(TEntity entity, Func<EntityEntry<TEntity>, bool> comparer) where TEntity : class
-    {
-        var entry = Entry(entity);
-        return comparer(entry) && entry.State != EntityState.Detached;
-    }
+    public DbSet<EmoteSuggestion> EmoteSuggestions => Set<EmoteSuggestion>();
 }

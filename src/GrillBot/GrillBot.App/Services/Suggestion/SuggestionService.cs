@@ -21,11 +21,13 @@ public class SuggestionService
 
     public async Task ProcessPendingSuggestion(Database.Entity.Suggestion suggestion)
     {
+        // TODO Rewrite
+        return;
         switch (suggestion.Type)
         {
-            case SuggestionType.Emote:
+            case SuggestionType.VotableEmote:
                 var guild = await DiscordClient.GetGuildAsync(suggestion.GuildId.ToUlong());
-                await Emotes.TrySendSuggestionAsync(guild, suggestion);
+                //await Emotes.TrySendSuggestionAsync(guild, suggestion);
                 break;
             case SuggestionType.FeatureRequest:
                 await Features.TrySendSuggestionAsync(suggestion);

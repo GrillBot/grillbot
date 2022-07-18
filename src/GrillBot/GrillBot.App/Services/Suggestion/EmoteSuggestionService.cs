@@ -2,7 +2,6 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.Suggestion;
 using GrillBot.Database.Enums;
 using System.Net.Http;
@@ -21,34 +20,28 @@ public class EmoteSuggestionService
     }
 
     public void InitSession(string suggestionId, object data)
-        => SessionService.InitSuggestion(suggestionId, SuggestionType.Emote, data);
+        => SessionService.InitSuggestion(suggestionId, SuggestionType.VotableEmote, data);
 
-    public async Task ProcessSessionAsync(string suggestionId, IGuild guild, IUser user, EmoteSuggestionModal modalData)
+    public async Task ProcessSessionAsync(string suggestionId, IGuild guild, IGuildUser user, EmoteSuggestionModal modalData)
     {
-        var metadata = SessionService.PopMetadata(SuggestionType.Emote, suggestionId);
+        var metadata = SessionService.PopMetadata(SuggestionType.VotableEmote, suggestionId);
         if (metadata == null)
             throw new NotFoundException("Nepodařilo se dohledat všechna data k tomuto návrhu. Podej prosím návrh znovu.");
 
-        var dataBuilder = new StringBuilder()
-            .Append("Nový návrh na emote od uživatele **").Append(user.GetFullName()).AppendLine("**")
-            .Append("Název: **").Append(modalData.EmoteName).AppendLine("**");
-
-        if (!string.IsNullOrEmpty(modalData.EmoteDescription))
-            dataBuilder.AppendLine("Popis:").AppendLine("```").AppendLine(modalData.EmoteDescription).AppendLine("```");
-
-        var entity = new Database.Entity.Suggestion
+        var entity = new Database.Entity.EmoteSuggestion
         {
             CreatedAt = DateTime.Now,
-            Data = dataBuilder.ToString(),
-            Type = SuggestionType.Emote,
-            GuildId = guild.Id.ToString()
+            EmoteName = modalData.EmoteName,
+            FromUserId = user.Id.ToString(),
+            GuildId = guild.Id.ToString(),
+            Description = modalData.EmoteDescription
         };
 
         await SetEmoteDataAsync(metadata, entity);
-        await TrySendSuggestionAsync(guild, entity);
+        await TrySendSuggestionAsync(guild, entity, user);
     }
 
-    private static async Task SetEmoteDataAsync(SuggestionMetadata metadata, Database.Entity.Suggestion suggestion)
+    private static async Task SetEmoteDataAsync(SuggestionMetadata metadata, Database.Entity.EmoteSuggestion entity)
     {
         switch (metadata.Data)
         {
@@ -56,56 +49,73 @@ public class EmoteSuggestionService
             {
                 using var httpClient = new HttpClient();
 
-                suggestion.BinaryDataFilename = emote.Name + Path.GetExtension(Path.GetFileName(emote.Url));
-                suggestion.BinaryData = await httpClient.GetByteArrayAsync(emote.Url);
+                entity.Filename = emote.Name + Path.GetExtension(Path.GetFileName(emote.Url));
+                entity.ImageData = await httpClient.GetByteArrayAsync(emote.Url);
                 break;
             }
             case IAttachment attachment:
-                suggestion.BinaryDataFilename = attachment.Filename;
-                suggestion.BinaryData = await attachment.DownloadAsync();
+                entity.Filename = attachment.Filename;
+
+                var imageData = await attachment.DownloadAsync();
+                if (imageData == null)
+                    throw new GrillBotException($"Nepodařilo se stáhnout potřebná data pro emote.");
+
+                entity.ImageData = imageData;
                 break;
         }
     }
 
-    public async Task TrySendSuggestionAsync(IGuild guild, Database.Entity.Suggestion suggestion)
+    private async Task TrySendSuggestionAsync(IGuild guild, Database.Entity.EmoteSuggestion entity, IGuildUser author)
     {
-        var data = suggestion.Data +
-                   (suggestion.Id != default ? $"\nTenhle návrh vznikl {suggestion.CreatedAt.ToCzechFormat()}, ale nepovedlo se ho poslat." : "");
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var guildData = await repository.Guild.FindGuildAsync(guild);
+        if (guildData == null) return;
 
-        try
+        await repository.User.GetOrCreateUserAsync(author);
+        await repository.GuildUser.GetOrCreateGuildUserAsync(author);
+
+        if (string.IsNullOrEmpty(guildData.EmoteSuggestionChannelId))
+            throw new ValidationException("Tvůj návrh na nelze nyní zpracovat, protože není určen kanál pro návrhy.");
+
+        var channel = await guild.GetTextChannelAsync(guildData.EmoteSuggestionChannelId.ToUlong());
+
+        if (channel == null)
+            throw new ValidationException("Tvůj návrh na emote nelze nyní kvůli technickým důvodům zpracovat.");
+
+        // ReSharper disable once ConvertToUsingDeclaration
+        using (var ms = new MemoryStream(entity.ImageData))
         {
-            await using var repository = DatabaseBuilder.CreateRepository();
-            var guildData = await repository.Guild.FindGuildAsync(guild);
-            if (guildData == null) return;
+            var components = new ComponentBuilder()
+                .WithButton("Schválit", "emote_suggestion:approve", ButtonStyle.Success)
+                .WithButton("Zamítnout", "emote_suggestion:decline", ButtonStyle.Danger)
+                .Build();
+            var embed = BuildSuggestionEmbed(entity, author);
+            var attachment = new FileAttachment(ms, entity.Filename);
+            var message = await channel.SendFileAsync(attachment, embed: embed, components: components);
 
-            if (string.IsNullOrEmpty(guildData.EmoteSuggestionChannelId))
-                throw new ValidationException("Tvůj návrh na emote byl zařazen ke zpracování, ale kvůli technickým důvodům jej nelze nyní zpracovat.");
-
-            var channel = await guild.GetTextChannelAsync(guildData.EmoteSuggestionChannelId.ToUlong());
-
-            if (channel == null)
-                throw new ValidationException("Tvůj návrh na emote byl zařazen ke zpracování, ale kvůli technickým důvodům jej nelze nyní zpracovat.");
-
-            if (suggestion.BinaryData == null)
-                throw new GrillBotException("Nepodařilo se stáhnout požadovaný emote. Zkus to prosím znovu.");
-
-            // ReSharper disable once ConvertToUsingDeclaration
-            using (var ms = new MemoryStream(suggestion.BinaryData))
-            {
-                var attachment = new FileAttachment(ms, suggestion.BinaryDataFilename);
-                await channel.SendFileAsync(attachment, data);
-            }
+            entity.SuggestionMessageId = message.Id.ToString();
         }
-        catch (Exception ex) when (ex is not GrillBotException)
-        {
-            if (suggestion.Id != default)
-                throw;
 
-            await using var repository = DatabaseBuilder.CreateRepository();
-            await repository.AddAsync(suggestion);
-            await repository.CommitAsync();
+        await repository.AddAsync(entity);
+        await repository.CommitAsync();
+    }
 
-            throw;
-        }
+    private static Embed BuildSuggestionEmbed(Database.Entity.EmoteSuggestion entity, IUser author)
+    {
+        var builder = new EmbedBuilder()
+            .WithAuthor(author)
+            .WithColor(Color.Blue)
+            .WithTitle("Nový návrh na emote")
+            .WithTimestamp(entity.CreatedAt)
+            .AddField("Název emote", entity.EmoteName);
+
+        if (!string.IsNullOrEmpty(entity.Description))
+            builder = builder.AddField("Popis", entity.Description);
+
+        if (entity.ApprovedForVote != null)
+            builder.WithDescription(entity.ApprovedForVote.Value ? "Schválen k hlasování" : "Zamítnut k hlasování");
+
+        return builder
+            .Build();
     }
 }

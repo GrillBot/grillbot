@@ -10,7 +10,7 @@ public class SuggestionSessionService
 
     public void InitSuggestion(string suggestionId, SuggestionType type, object data)
     {
-        var metadata = new SuggestionMetadata()
+        var metadata = new SuggestionMetadata
         {
             Data = data,
             Type = type,

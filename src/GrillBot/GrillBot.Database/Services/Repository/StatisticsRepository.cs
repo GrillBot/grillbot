@@ -33,8 +33,8 @@ public class StatisticsRepository : RepositoryBase
                 { nameof(Context.SelfunverifyKeepables), await Context.SelfunverifyKeepables.CountAsync() },
                 { nameof(Context.ExplicitPermissions), await Context.ExplicitPermissions.CountAsync() },
                 { nameof(Context.AutoReplies), await Context.AutoReplies.CountAsync() },
-                { nameof(Context.Suggestions), await Context.Suggestions.CountAsync() },
-                { nameof(Context.GuildEvents), await Context.GuildEvents.CountAsync() }
+                { nameof(Context.GuildEvents), await Context.GuildEvents.CountAsync() },
+                { nameof(Context.EmoteSuggestions), await Context.EmoteSuggestions.CountAsync() }
             };
         }
     }

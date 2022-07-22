@@ -11,20 +11,17 @@ public class FeatureSuggestionService
 {
     private SuggestionSessionService SessionService { get; }
     private IConfiguration Configuration { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public FeatureSuggestionService(SuggestionSessionService sessionService, IConfiguration configuration,
-        GrillBotDatabaseBuilder databaseBuilder)
+    public FeatureSuggestionService(SuggestionSessionService sessionService, IConfiguration configuration)
     {
         SessionService = sessionService;
         Configuration = configuration.GetSection("Services:Trello");
-        DatabaseBuilder = databaseBuilder;
     }
 
     public void InitSession(string suggestionId)
         => SessionService.InitSuggestion(suggestionId, SuggestionType.FeatureRequest, null);
 
-    public async Task ProcessSessionAsync(string suggestionId, IGuild guild, IUser user, FeatureSuggestionModal modalData)
+    public async Task ProcessSessionAsync(string suggestionId, IUser user, FeatureSuggestionModal modalData)
     {
         var metadata = SessionService.PopMetadata(SuggestionType.FeatureRequest, suggestionId);
         if (metadata == null)
@@ -32,55 +29,26 @@ public class FeatureSuggestionService
 
         modalData.User = user.GetFullName();
 
-        var entity = new Database.Entity.Suggestion
-        {
-            CreatedAt = DateTime.Now,
-            Data = JsonConvert.SerializeObject(modalData),
-            Type = SuggestionType.FeatureRequest,
-            GuildId = guild.Id.ToString()
-        };
-
-        await TrySendSuggestionAsync(entity);
+        await TrySendSuggestionAsync(modalData);
     }
 
-    public async Task TrySendSuggestionAsync(Database.Entity.Suggestion suggestion)
+    private async Task TrySendSuggestionAsync(FeatureSuggestionModal modalData)
     {
-        try
-        {
-            var modalData = JsonConvert.DeserializeObject<FeatureSuggestionModal>(suggestion.Data);
-            if (modalData == null)
-                return;
+        var dataBuilder = new StringBuilder()
+            .Append("Návrh od uživatele: **").Append(modalData.User).AppendLine("**")
+            .AppendLine()
+            .AppendLine(modalData.Description);
 
-            var dataBuilder = new StringBuilder()
-                .Append("Návrh od uživatele: **").Append(modalData.User).AppendLine("**")
-                .AppendLine()
-                .AppendLine(modalData.Description);
+        var sender = new MailboxAddress("GrillBot", Configuration.GetValue<string>("Mail:Sender"));
+        var receiver = new MailboxAddress("GrillBot-Suggestions", Configuration.GetValue<string>("BoardAddress"));
+        var body = new BodyBuilder { TextBody = dataBuilder.ToString() };
 
-            var sender = new MailboxAddress("GrillBot", Configuration.GetValue<string>("Mail:Sender"));
-            var receiver = new MailboxAddress("GrillBot-Suggestions", Configuration.GetValue<string>("BoardAddress"));
-            var body = new BodyBuilder { TextBody = dataBuilder.ToString() };
+        using var message = new MimeMessage(new[] { sender }, new[] { receiver }, modalData.Name, body.ToMessageBody());
+        using var smtp = new SmtpClient();
 
-            using var message = new MimeMessage(new[] { sender }, new[] { receiver }, modalData.Name, body.ToMessageBody());
-            using var smtp = new SmtpClient();
-
-            await smtp.ConnectAsync(Configuration.GetValue<string>("Mail:Server"), Configuration.GetValue<int>("Mail:Port"), true);
-            await smtp.AuthenticateAsync(Configuration.GetValue<string>("Mail:Username"), Configuration.GetValue<string>("Mail:Password"));
-            await smtp.SendAsync(message);
-            await smtp.DisconnectAsync(true);
-        }
-        catch (Exception ex)
-        {
-            if (ex is GrillBotException)
-                return;
-
-            if (suggestion.Id != default)
-                throw;
-
-            await using var repository = DatabaseBuilder.CreateRepository();
-            await repository.AddAsync(suggestion);
-            await repository.CommitAsync();
-
-            throw;
-        }
+        await smtp.ConnectAsync(Configuration.GetValue<string>("Mail:Server"), Configuration.GetValue<int>("Mail:Port"), true);
+        await smtp.AuthenticateAsync(Configuration.GetValue<string>("Mail:Username"), Configuration.GetValue<string>("Mail:Password"));
+        await smtp.SendAsync(message);
+        await smtp.DisconnectAsync(true);
     }
 }

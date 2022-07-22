@@ -1,10 +1,6 @@
 ﻿using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace GrillBot.Database.Services;
 
@@ -135,7 +131,6 @@ public class GrillBotContext : DbContext
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
     public DbSet<ExplicitPermission> ExplicitPermissions => Set<ExplicitPermission>();
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
-    public DbSet<Suggestion> Suggestions => Set<Suggestion>();
     public DbSet<GuildEvent> GuildEvents => Set<GuildEvent>();
     public DbSet<EmoteSuggestion> EmoteSuggestions => Set<EmoteSuggestion>();
 }

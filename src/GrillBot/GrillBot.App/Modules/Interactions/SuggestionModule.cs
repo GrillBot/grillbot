@@ -124,7 +124,7 @@ public class SuggestionModule : InteractionsModuleBase
     {
         try
         {
-            await FeatureSuggestions.ProcessSessionAsync(sessionId, Context.Guild, Context.User, modal);
+            await FeatureSuggestions.ProcessSessionAsync(sessionId, Context.User, modal);
             await Context.User.SendMessageAsync("Tvůj návrh na přidání feature byl úspěšně zpracován.");
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)

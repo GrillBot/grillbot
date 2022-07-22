@@ -61,7 +61,8 @@ public static class Extensions
         services
             .AddSingleton<Suggestion.SuggestionSessionService>()
             .AddSingleton<Suggestion.EmoteSuggestionService>()
-            .AddSingleton<Suggestion.FeatureSuggestionService>();
+            .AddSingleton<Suggestion.FeatureSuggestionService>()
+            .AddScoped<Suggestion.EmoteSuggestionApiService>();
 
         services
             .AddSingleton<Unverify.UnverifyChecker>()

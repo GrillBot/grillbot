@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
@@ -59,6 +60,15 @@ public class EmoteSuggestionRepository : RepositoryBase
                 .Where(o => !o.VoteFinished && o.ApprovedForVote == true && o.VoteMessageId != null && o.VoteEndsAt != null && o.VoteEndsAt.Value < DateTime.Now);
 
             return await query.ToListAsync();
+        }
+    }
+
+    public async Task<PaginatedResponse<EmoteSuggestion>> GetSuggestionListAsync(IQueryableModel<EmoteSuggestion> model, PaginatedParams pagination)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = CreateQuery(model, true);
+            return await PaginatedResponse<EmoteSuggestion>.CreateWithEntityAsync(query, pagination);
         }
     }
 }

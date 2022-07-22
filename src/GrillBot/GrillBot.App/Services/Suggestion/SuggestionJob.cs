@@ -10,54 +10,20 @@ namespace GrillBot.App.Services.Suggestion;
 [DisallowUninitialized]
 public class SuggestionJob : Job
 {
-    private SuggestionService SuggestionService { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private EmoteSuggestionService EmoteSuggestions { get; }
+    private SuggestionSessionService SessionService { get; }
 
     public SuggestionJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
-        InitManager initManager, SuggestionService suggestionService, GrillBotDatabaseBuilder databaseBuilder)
+        InitManager initManager, EmoteSuggestionService emoteSuggestionService, SuggestionSessionService sessionService)
         : base(loggingService, auditLogWriter, discordClient, initManager)
     {
-        SuggestionService = suggestionService;
-        DatabaseBuilder = databaseBuilder;
+        EmoteSuggestions = emoteSuggestionService;
+        SessionService = sessionService;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        await ProcessPendingSuggestions(context);
-        SuggestionService.Sessions.PurgeExpired();
-    }
-
-    private async Task ProcessPendingSuggestions(IJobExecutionContext context)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var pendingSuggestions = await repository.Suggestion.GetSuggestionsAsync();
-
-        if (pendingSuggestions.Count == 0)
-            return;
-
-        var resultBuilder = new List<string>();
-
-        foreach (var suggestion in pendingSuggestions)
-        {
-            var result = $"{suggestion.Id} ({suggestion.Type}/{suggestion.GuildId}/{suggestion.CreatedAt}) - ";
-
-            try
-            {
-                await SuggestionService.ProcessPendingSuggestion(suggestion);
-
-                repository.Remove(suggestion);
-                result += "Success";
-            }
-            catch (Exception ex)
-            {
-                result += ex.Message;
-                await LoggingService.ErrorAsync(JobName, ex.Message, ex);
-            }
-
-            resultBuilder.Add(result);
-        }
-
-        await repository.CommitAsync();
-        context.Result = string.Join("\n", resultBuilder);
+        SessionService.PurgeExpired();
+        await EmoteSuggestions.ProcessJobAsync();
     }
 }

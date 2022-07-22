@@ -10,12 +10,12 @@ namespace GrillBot.App.Infrastructure.Jobs;
 
 public abstract class Job : IJob
 {
-    protected LoggingService LoggingService { get; }
+    private LoggingService LoggingService { get; }
     private AuditLogWriter AuditLogWriter { get; }
     protected IDiscordClient DiscordClient { get; }
     private InitManager InitManager { get; }
 
-    protected string JobName => GetType().Name;
+    private string JobName => GetType().Name;
 
     private bool RequireInitialization
         => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;

@@ -41,6 +41,12 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         MessageComponent components = default, MessageFlags? flags = default, IEnumerable<FileAttachment> attachments = default,
         RequestOptions requestOptions = null, bool secret = false)
     {
+        if (!Context.Interaction.HasResponded)
+        {
+            await RespondAsync(content, embeds, false, secret, null, requestOptions, components, embed);
+            return await Context.Interaction.GetOriginalResponseAsync();
+        }
+
         if (Context.Interaction.IsValidToken)
             return await FollowupAsync(content, embeds, false, secret, null, requestOptions, components, embed);
 

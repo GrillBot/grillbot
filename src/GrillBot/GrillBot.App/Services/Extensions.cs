@@ -59,7 +59,6 @@ public static class Extensions
             .AddScoped<Reminder.RemindApiService>();
 
         services
-            .AddSingleton<Suggestion.SuggestionService>()
             .AddSingleton<Suggestion.SuggestionSessionService>()
             .AddSingleton<Suggestion.EmoteSuggestionService>()
             .AddSingleton<Suggestion.FeatureSuggestionService>();

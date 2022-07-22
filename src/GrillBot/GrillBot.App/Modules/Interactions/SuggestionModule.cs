@@ -12,12 +12,14 @@ namespace GrillBot.App.Modules.Interactions;
 [Group("suggestion", "Podání návrhu")]
 public class SuggestionModule : InteractionsModuleBase
 {
-    private SuggestionService SuggestionService { get; }
+    private EmoteSuggestionService EmoteSuggestions { get; }
+    private FeatureSuggestionService FeatureSuggestions { get; }
 
-    public SuggestionModule(SuggestionService suggestionService)
+    public SuggestionModule(EmoteSuggestionService emoteSuggestionService, FeatureSuggestionService featureSuggestions)
     {
-        SuggestionService = suggestionService;
+        EmoteSuggestions = emoteSuggestionService;
         CanDefer = false;
+        FeatureSuggestions = featureSuggestions;
     }
 
     [SlashCommand("emote", "Podání návrhu na přidání nového emote.")]
@@ -43,7 +45,7 @@ public class SuggestionModule : InteractionsModuleBase
             .Build();
 
         var suggestionData = emote as object ?? attachment;
-        SuggestionService.Emotes.InitSession(sessionId, suggestionData);
+        EmoteSuggestions.InitSession(sessionId, suggestionData);
 
         await RespondWithModalAsync(modal);
     }
@@ -54,7 +56,7 @@ public class SuggestionModule : InteractionsModuleBase
         try
         {
             var user = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
-            await SuggestionService.Emotes.ProcessSessionAsync(sessionId, Context.Guild, user, modal);
+            await EmoteSuggestions.ProcessSessionAsync(sessionId, Context.Guild, user, modal);
             await Context.User.SendMessageAsync("Tvůj návrh na přidání emote byl úspěšně zpracován.");
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
@@ -90,14 +92,29 @@ public class SuggestionModule : InteractionsModuleBase
     [ComponentInteraction("emote_suggestion_approve:*", ignoreGroupNames: true)]
     public async Task EmoteSuggestionApproved(bool approved)
     {
-        await SuggestionService.Emotes.SetApprovalStateAsync((IComponentInteraction)Context.Interaction, approved);
+        await EmoteSuggestions.SetApprovalStateAsync((IComponentInteraction)Context.Interaction, approved, Context.Channel);
+    }
+
+    [SlashCommand("process_emote_suggestions", "Zpracování schválených návrhů na emoty.", true)]
+    public async Task ProcessEmoteSuggestionsAsync()
+    {
+        try
+        {
+            await DeferAsync();
+            await EmoteSuggestions.ProcessSuggestionsToVoteAsync(Context.Guild);
+            await SetResponseAsync("Hlasování pro schválené emoty bylo spuštěno");
+        }
+        catch (GrillBotException ex)
+        {
+            await SetResponseAsync(ex.Message);
+        }
     }
 
     [SlashCommand("feature", "Podání návrhu na novou feature do GrillBot.")]
     public Task SuggestFeatureAsync()
     {
         var suggestionId = Guid.NewGuid().ToString();
-        SuggestionService.Features.InitSession(suggestionId);
+        FeatureSuggestions.InitSession(suggestionId);
 
         return RespondWithModalAsync<FeatureSuggestionModal>($"suggestions_feature:{suggestionId}");
     }
@@ -107,7 +124,7 @@ public class SuggestionModule : InteractionsModuleBase
     {
         try
         {
-            await SuggestionService.Features.ProcessSessionAsync(sessionId, Context.Guild, Context.User, modal);
+            await FeatureSuggestions.ProcessSessionAsync(sessionId, Context.Guild, Context.User, modal);
             await Context.User.SendMessageAsync("Tvůj návrh na přidání feature byl úspěšně zpracován.");
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)

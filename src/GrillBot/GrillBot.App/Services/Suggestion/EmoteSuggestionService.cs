@@ -5,6 +5,8 @@ using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.Suggestion;
 using GrillBot.Database.Enums;
 using System.Net.Http;
+using GrillBot.Cache.Services.Managers;
+using GrillBot.Common;
 
 namespace GrillBot.App.Services.Suggestion;
 
@@ -13,13 +15,15 @@ public class EmoteSuggestionService
     private SuggestionSessionService SessionService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
+    private MessageCacheManager MessageCacheManager { get; }
 
     public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotDatabaseBuilder databaseBuilder,
-        IDiscordClient discordClient)
+        IDiscordClient discordClient, MessageCacheManager messageCacheManager)
     {
         SessionService = sessionService;
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
+        MessageCacheManager = messageCacheManager;
     }
 
     public void InitSession(string suggestionId, object data)
@@ -77,21 +81,12 @@ public class EmoteSuggestionService
         await repository.User.GetOrCreateUserAsync(author);
         await repository.GuildUser.GetOrCreateGuildUserAsync(author);
 
-        if (string.IsNullOrEmpty(guildData.EmoteSuggestionChannelId))
-            throw new ValidationException("Tvůj návrh na nelze nyní zpracovat, protože není určen kanál pro návrhy.");
-
-        var channel = await guild.GetTextChannelAsync(guildData.EmoteSuggestionChannelId.ToUlong());
-
-        if (channel == null)
-            throw new ValidationException("Tvůj návrh na emote nelze nyní kvůli technickým důvodům zpracovat.");
+        var channel = await FindEmoteSuggestionsChannelAsync(guild, guildData);
 
         // ReSharper disable once ConvertToUsingDeclaration
         using (var ms = new MemoryStream(entity.ImageData))
         {
-            var components = new ComponentBuilder()
-                .WithButton("Schválit", "emote_suggestion_approve:true", ButtonStyle.Success)
-                .WithButton("Zamítnout", "emote_suggestion_approve:false", ButtonStyle.Danger)
-                .Build();
+            var components = BuildApprovalButtons();
             var embed = BuildSuggestionEmbed(entity, author);
             var attachment = new FileAttachment(ms, entity.Filename);
             var message = await channel.SendFileAsync(attachment, embed: embed, components: components);
@@ -101,6 +96,27 @@ public class EmoteSuggestionService
 
         await repository.AddAsync(entity);
         await repository.CommitAsync();
+    }
+
+    private static MessageComponent BuildApprovalButtons()
+    {
+        return new ComponentBuilder()
+            .WithButton("Schválit", "emote_suggestion_approve:true", ButtonStyle.Success)
+            .WithButton("Zamítnout", "emote_suggestion_approve:false", ButtonStyle.Danger)
+            .Build();
+    }
+
+    private static async Task<ITextChannel> FindEmoteSuggestionsChannelAsync(IGuild guild, Database.Entity.Guild dbGuild)
+    {
+        if (string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
+            throw new ValidationException("Tvůj návrh na nelze nyní zpracovat, protože není určen kanál pro návrhy.");
+
+        var channel = await guild.GetTextChannelAsync(dbGuild.EmoteSuggestionChannelId.ToUlong());
+
+        if (channel == null)
+            throw new ValidationException("Tvůj návrh na emote nelze nyní kvůli technickým důvodům zpracovat.");
+
+        return channel;
     }
 
     private static Embed BuildSuggestionEmbed(Database.Entity.EmoteSuggestion entity, IUser author)
@@ -115,29 +131,119 @@ public class EmoteSuggestionService
         if (!string.IsNullOrEmpty(entity.Description))
             builder = builder.AddField("Popis", entity.Description);
 
-        if (entity.ApprovedForVote != null)
+        if (entity.VoteMessageId != null)
+        {
+            builder.WithDescription(
+                (entity.VoteFinished ? "Hlasování skončilo " : "Hlasování běží, skončí ") + entity.VoteEndsAt!.Value.ToCzechFormat()
+            );
+        }
+        else if (entity.ApprovedForVote != null)
+        {
             builder.WithDescription(entity.ApprovedForVote.Value ? "Schválen k hlasování" : "Zamítnut k hlasování");
+        }
 
-        return builder
-            .Build();
+        return builder.Build();
     }
 
-    public async Task SetApprovalStateAsync(IComponentInteraction interaction, bool approved)
+    public async Task SetApprovalStateAsync(IComponentInteraction interaction, bool approved, ISocketMessageChannel channel)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var suggestion = await repository.EmoteSuggestion.FindSuggestionByMessageId(interaction.Message.Id);
+        var suggestion = await repository.EmoteSuggestion.FindSuggestionByMessageId(interaction.GuildId!.Value, interaction.Message.Id);
         if (suggestion == null)
         {
             await interaction.UpdateAsync(msg => msg.Components = null);
+            await interaction.DeferAsync();
             return;
         }
 
-        suggestion.ApprovedForVote = approved;
+        await SetApprovalStateAsync(new List<Database.Entity.EmoteSuggestion> { suggestion }, approved, channel);
         await repository.CommitAsync();
+        await interaction.DeferAsync();
+    }
 
-        var user = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());
-        var embed = BuildSuggestionEmbed(suggestion, user);
-        await interaction.UpdateAsync(msg => msg.Embed = embed);
+    private async Task SetApprovalStateAsync(IEnumerable<Database.Entity.EmoteSuggestion> suggestions, bool approved, IMessageChannel channel)
+    {
+        foreach (var suggestion in suggestions)
+        {
+            suggestion.ApprovedForVote ??= approved;
+
+            var user = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());
+            if (await MessageCacheManager.GetAsync(suggestion.SuggestionMessageId.ToUlong(), channel) is IUserMessage message)
+            {
+                await message.ModifyAsync(msg =>
+                {
+                    msg.Embed = BuildSuggestionEmbed(suggestion, user);
+                    msg.Components = suggestion.ApprovedForVote == true ? null : BuildApprovalButtons();
+                });
+            }
+        }
+    }
+
+    public async Task ProcessSuggestionsToVoteAsync(IGuild guild)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var guildData = await repository.Guild.FindGuildAsync(guild);
+        var channel = await FindEmoteSuggestionsChannelAsync(guild, guildData);
+
+        if (string.IsNullOrEmpty(guildData!.VoteChannelId))
+            throw new GrillBotException("Nelze spustit hlasování o nových emotech, protože není definován kanál pro hlasování.");
+        var voteChannel = await guild.GetTextChannelAsync(guildData.VoteChannelId.ToUlong());
+        if (voteChannel == null)
+            throw new GrillBotException("Nelze spustit hlasování o nových emotech, protože nebyl nalezen kanál pro hlasování.");
+
+        var suggestions = await repository.EmoteSuggestion.FindSuggestionsForProcessingAsync(guild);
+        if (suggestions.Count == 0)
+            throw new GrillBotException("Neexistuje žádný schválený/zamítnutý návrh ke zpracování.");
+
+        var approvedSuggestions = suggestions.FindAll(o => o.ApprovedForVote == true);
+        if (approvedSuggestions.Count == 0)
+            throw new ValidationException("Není žádný schválený návrh ke zpracování.");
+
+        foreach (var suggestion in approvedSuggestions)
+        {
+            await ProcessSuggestionToVoteAsync(suggestion, voteChannel);
+
+            // Once the command is executed, all proposals marked as approved cannot be changed.
+            // Rejected proposals can be changed.
+            if (await MessageCacheManager.GetAsync(suggestion.SuggestionMessageId.ToUlong(), channel) is not IUserMessage message)
+                continue;
+
+            var fromUser = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());
+            await message.ModifyAsync(msg =>
+            {
+                msg.Embed = BuildSuggestionEmbed(suggestion, fromUser);
+                msg.Components = null;
+            });
+        }
+
+        await repository.CommitAsync();
+    }
+
+    private static async Task ProcessSuggestionToVoteAsync(Database.Entity.EmoteSuggestion suggestion, IMessageChannel voteChannel)
+    {
+        suggestion.VoteEndsAt = DateTime.Now.AddDays(7);
+
+        var msg = new StringBuilder("Hlasování o novém emote s návem **").Append(suggestion.EmoteName).AppendLine("**")
+            .Append("Hlasování skončí **").Append(suggestion.VoteEndsAt!.Value.ToCzechFormat()).AppendLine("**")
+            .ToString();
+
+        using (var ms = new MemoryStream(suggestion.ImageData))
+        {
+            var attachment = new FileAttachment(ms, suggestion.Filename);
+            var reactions = Emojis.VoteEmojis;
+            var allowedMentions = new AllowedMentions(AllowedMentionTypes.None);
+
+            var message = await voteChannel.SendFileAsync(attachment, msg, allowedMentions: allowedMentions);
+            suggestion.VoteMessageId = message.Id.ToString();
+
+            await message.AddReactionsAsync(reactions);
+        }
+    }
+
+    public async Task ProcessJobAsync()
+    {
+        // TODO
     }
 }

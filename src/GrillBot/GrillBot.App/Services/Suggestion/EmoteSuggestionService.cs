@@ -7,6 +7,8 @@ using GrillBot.Database.Enums;
 using System.Net.Http;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common;
+using GrillBot.Common.Helpers;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Services.Suggestion;
 
@@ -81,7 +83,7 @@ public class EmoteSuggestionService
         await repository.User.GetOrCreateUserAsync(author);
         await repository.GuildUser.GetOrCreateGuildUserAsync(author);
 
-        var channel = await FindEmoteSuggestionsChannelAsync(guild, guildData);
+        var channel = await FindEmoteSuggestionsChannelAsync(guild, guildData, false);
 
         // ReSharper disable once ConvertToUsingDeclaration
         using (var ms = new MemoryStream(entity.ImageData))
@@ -106,15 +108,23 @@ public class EmoteSuggestionService
             .Build();
     }
 
-    private static async Task<ITextChannel> FindEmoteSuggestionsChannelAsync(IGuild guild, Database.Entity.Guild dbGuild)
+    private static async Task<ITextChannel> FindEmoteSuggestionsChannelAsync(IGuild guild, Database.Entity.Guild dbGuild, bool isFinish)
     {
         if (string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
-            throw new ValidationException("Tvůj návrh na nelze nyní zpracovat, protože není určen kanál pro návrhy.");
+        {
+            throw new ValidationException(isFinish
+                ? $"Nepodařilo se najít kanál pro návrhy ({dbGuild.EmoteSuggestionChannelId})."
+                : "Tvůj návrh na nelze nyní zpracovat, protože není určen kanál pro návrhy.");
+        }
 
         var channel = await guild.GetTextChannelAsync(dbGuild.EmoteSuggestionChannelId.ToUlong());
 
         if (channel == null)
-            throw new ValidationException("Tvůj návrh na emote nelze nyní kvůli technickým důvodům zpracovat.");
+        {
+            throw new ValidationException(isFinish
+                ? $"Nepodařilo se najít kanál pro návrhy ({dbGuild.EmoteSuggestionChannelId})."
+                : "Tvůj návrh na emote nelze nyní kvůli technickým důvodům zpracovat.");
+        }
 
         return channel;
     }
@@ -136,6 +146,15 @@ public class EmoteSuggestionService
             builder.WithDescription(
                 (entity.VoteFinished ? "Hlasování skončilo " : "Hlasování běží, skončí ") + entity.VoteEndsAt!.Value.ToCzechFormat()
             );
+
+            if (entity.VoteFinished)
+            {
+                builder
+                    .WithTitle("Dokončeno hlasování o novém emote")
+                    .AddField("Komunitou schválen", FormatHelper.FormatBooleanToCzech(entity.CommunityApproved), true)
+                    .AddField(Emojis.ThumbsUp.ToString(), entity.UpVotes, true)
+                    .AddField(Emojis.ThumbsDown.ToString(), entity.DownVotes, true);
+            }
         }
         else if (entity.ApprovedForVote != null)
         {
@@ -185,7 +204,7 @@ public class EmoteSuggestionService
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var guildData = await repository.Guild.FindGuildAsync(guild);
-        var channel = await FindEmoteSuggestionsChannelAsync(guild, guildData);
+        var channel = await FindEmoteSuggestionsChannelAsync(guild, guildData, false);
 
         if (string.IsNullOrEmpty(guildData!.VoteChannelId))
             throw new GrillBotException("Nelze spustit hlasování o nových emotech, protože není definován kanál pro hlasování.");
@@ -229,21 +248,80 @@ public class EmoteSuggestionService
             .Append("Hlasování skončí **").Append(suggestion.VoteEndsAt!.Value.ToCzechFormat()).AppendLine("**")
             .ToString();
 
+        var message = await SendSuggestionWithEmbedAsync(suggestion, voteChannel, msg);
+        await message.AddReactionsAsync(Emojis.VoteEmojis);
+        suggestion.VoteMessageId = message.Id.ToString();
+    }
+
+    private static async Task<IUserMessage> SendSuggestionWithEmbedAsync(Database.Entity.EmoteSuggestion suggestion, IMessageChannel channel, string msg = null, Embed embed = null)
+    {
         using (var ms = new MemoryStream(suggestion.ImageData))
         {
             var attachment = new FileAttachment(ms, suggestion.Filename);
-            var reactions = Emojis.VoteEmojis;
             var allowedMentions = new AllowedMentions(AllowedMentionTypes.None);
 
-            var message = await voteChannel.SendFileAsync(attachment, msg, allowedMentions: allowedMentions);
-            suggestion.VoteMessageId = message.Id.ToString();
-
-            await message.AddReactionsAsync(reactions);
+            return await channel.SendFileAsync(attachment, msg, embed: embed, allowedMentions: allowedMentions);
         }
     }
 
-    public async Task ProcessJobAsync()
+    public async Task<string> ProcessJobAsync()
     {
-        // TODO
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var report = new StringBuilder();
+        foreach (var guild in await DiscordClient.GetGuildsAsync())
+        {
+            var suggestions = await repository.EmoteSuggestion.FindSuggestionsForFinishAsync(guild);
+            if (suggestions.Count == 0)
+                continue;
+
+            foreach (var suggestion in suggestions)
+            {
+                var suggestionReport = await FinishVoteForSuggestionAsync(guild, repository, suggestion);
+                report.AppendLine(suggestionReport);
+            }
+
+            await repository.CommitAsync();
+        }
+
+        return report.ToString();
     }
+
+    private async Task<string> FinishVoteForSuggestionAsync(IGuild guild, GrillBotRepository repository, Database.Entity.EmoteSuggestion suggestion)
+    {
+        try
+        {
+            var guildData = await repository.Guild.FindGuildAsync(guild);
+            var suggestionsChannel = await FindEmoteSuggestionsChannelAsync(guild, guildData, true);
+
+            if (string.IsNullOrEmpty(guildData!.VoteChannelId))
+                throw new ValidationException($"Není nastaven kanál pro hlasování ({guildData.VoteChannelId})");
+            var voteChannel = await guild.GetTextChannelAsync(guildData.VoteChannelId.ToUlong());
+            if (voteChannel == null)
+                throw new ValidationException($"Nepodařilo se najít kanál pro hlasování ({guildData.VoteChannelId})");
+
+            if (await MessageCacheManager.GetAsync(suggestion.VoteMessageId!.ToUlong(), voteChannel, forceReload: true) is not IUserMessage message)
+                return CreateJobReport(suggestion, "Nepodařilo se najít hlasovací zprávu.");
+
+            var thumbsUpReactions = await message.GetReactionUsersAsync(Emojis.ThumbsUp, int.MaxValue).FlattenAsync();
+            var thumbsDownReactions = await message.GetReactionUsersAsync(Emojis.ThumbsDown, int.MaxValue).FlattenAsync();
+
+            suggestion.UpVotes = thumbsUpReactions.Count(o => o.IsUser());
+            suggestion.DownVotes = thumbsDownReactions.Count(o => o.IsUser());
+            suggestion.CommunityApproved = suggestion.UpVotes > suggestion.DownVotes;
+            suggestion.VoteFinished = true;
+
+            var fromUser = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());
+            await SendSuggestionWithEmbedAsync(suggestion, suggestionsChannel, embed: BuildSuggestionEmbed(suggestion, fromUser));
+            await message.DeleteAsync();
+            return CreateJobReport(suggestion, $"Úspěšně dokončen. ({suggestion.UpVotes}/{suggestion.DownVotes})");
+        }
+        catch (ValidationException ex)
+        {
+            return CreateJobReport(suggestion, ex.Message);
+        }
+    }
+
+    private static string CreateJobReport(Database.Entity.EmoteSuggestion suggestion, string result)
+        => $"Id:{suggestion.Id}, Guild:{suggestion.Guild!.Name}, FromUser:{suggestion.FromUser!.User!.Username}, EmoteName:{suggestion.EmoteName}, Result:{result}";
 }

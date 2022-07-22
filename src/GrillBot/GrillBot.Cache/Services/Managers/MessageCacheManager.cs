@@ -222,7 +222,7 @@ public class MessageCacheManager
         return await cache.MessageIndexRepository.GetMessagesCountAsync(channelId: channel.Id);
     }
 
-    public async Task<IMessage?> GetAsync(ulong messageId, IMessageChannel? channel, bool includeRemoved = false)
+    public async Task<IMessage?> GetAsync(ulong messageId, IMessageChannel? channel, bool includeRemoved = false, bool forceReload = false)
     {
         await Semaphore.WaitAsync();
 
@@ -231,7 +231,7 @@ public class MessageCacheManager
             if (!includeRemoved && DeletedMessages.Contains(messageId))
                 return null;
 
-            if (Messages.ContainsKey(messageId))
+            if (Messages.ContainsKey(messageId) && !forceReload)
                 return Messages[messageId];
 
             if (channel == null)

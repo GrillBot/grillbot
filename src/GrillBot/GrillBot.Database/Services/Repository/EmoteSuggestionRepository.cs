@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -45,6 +46,17 @@ public class EmoteSuggestionRepository : RepositoryBase
             var query = GetBaseQuery(guild.Id)
                 .Where(o => o.ApprovedForVote != null && o.VoteMessageId == null)
                 .Take(25);
+
+            return await query.ToListAsync();
+        }
+    }
+
+    public async Task<List<EmoteSuggestion>> FindSuggestionsForFinishAsync(IGuild guild)
+    {
+        using (Counter.Create("Database"))
+        {
+            var query = GetBaseQuery(guild.Id)
+                .Where(o => !o.VoteFinished && o.ApprovedForVote == true && o.VoteMessageId != null && o.VoteEndsAt != null && o.VoteEndsAt.Value < DateTime.Now);
 
             return await query.ToListAsync();
         }

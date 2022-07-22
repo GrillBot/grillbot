@@ -24,6 +24,6 @@ public class SuggestionJob : Job
     protected override async Task RunAsync(IJobExecutionContext context)
     {
         SessionService.PurgeExpired();
-        await EmoteSuggestions.ProcessJobAsync();
+        context.Result = await EmoteSuggestions.ProcessJobAsync();
     }
 }

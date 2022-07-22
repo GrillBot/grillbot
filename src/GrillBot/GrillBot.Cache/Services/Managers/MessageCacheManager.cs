@@ -174,8 +174,17 @@ public class MessageCacheManager
         }
     }
 
-    private async Task ProcessDownloadedMessages(List<IMessage> messages)
+    private async Task ProcessDownloadedMessages(List<IMessage> messages, bool forceDelete = false)
     {
+        if (forceDelete)
+        {
+            foreach (var msg in messages)
+            {
+                await RemoveIndexAsync(msg);
+                Messages.Remove(msg.Id);
+            }
+        }
+
         var newMessages = messages.FindAll(o => !Messages.ContainsKey(o.Id));
 
         if (newMessages.Count > 0)
@@ -241,7 +250,7 @@ public class MessageCacheManager
             if (message == null)
                 return null;
 
-            await ProcessDownloadedMessages(new List<IMessage> { message });
+            await ProcessDownloadedMessages(new List<IMessage> { message }, forceReload);
             return message;
         }
         finally

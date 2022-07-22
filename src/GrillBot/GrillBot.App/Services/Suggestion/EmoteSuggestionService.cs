@@ -153,7 +153,8 @@ public class EmoteSuggestionService
                     .WithTitle("Dokončeno hlasování o novém emote")
                     .AddField("Komunitou schválen", FormatHelper.FormatBooleanToCzech(entity.CommunityApproved), true)
                     .AddField(Emojis.ThumbsUp.ToString(), entity.UpVotes, true)
-                    .AddField(Emojis.ThumbsDown.ToString(), entity.DownVotes, true);
+                    .AddField(Emojis.ThumbsDown.ToString(), entity.DownVotes, true)
+                    .WithColor(entity.CommunityApproved ? Color.Green : Color.Red);
             }
         }
         else if (entity.ApprovedForVote != null)

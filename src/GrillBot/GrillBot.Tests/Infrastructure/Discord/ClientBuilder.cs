@@ -6,15 +6,8 @@ using System.Linq;
 namespace GrillBot.Tests.Infrastructure.Discord;
 
 [ExcludeFromCodeCoverage]
-public class ClientBuilder
+public class ClientBuilder : BuilderBase<IDiscordClient>
 {
-    private Mock<IDiscordClient> Mock { get; }
-
-    public ClientBuilder()
-    {
-        Mock = new Mock<IDiscordClient>();
-    }
-
     public ClientBuilder SetSelfUser(ISelfUser user)
     {
         Mock.Setup(o => o.CurrentUser).Returns(user);
@@ -44,6 +37,4 @@ public class ClientBuilder
         Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(x => x == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(user));
         return this;
     }
-
-    public IDiscordClient Build() => Mock.Object;
 }

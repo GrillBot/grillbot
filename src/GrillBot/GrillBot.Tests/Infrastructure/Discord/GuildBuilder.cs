@@ -52,8 +52,12 @@ public class GuildBuilder : BuilderBase<IGuild>
 
     public GuildBuilder SetGetTextChannelsAction(IEnumerable<ITextChannel> channels)
     {
+        var channelsData = channels.ToList();
+        
         Mock.Setup(o => o.GetTextChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.FromResult(channels.ToList().AsReadOnly() as IReadOnlyCollection<ITextChannel>));
+            .Returns(Task.FromResult(channelsData.AsReadOnly() as IReadOnlyCollection<ITextChannel>));
+        foreach (var channel in channelsData)
+            SetGetTextChannelAction(channel);
         return this;
     }
     

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using System.Diagnostics.CodeAnalysis;
+using Moq;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
@@ -32,6 +33,20 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
     {
         Mock.Setup(o => o.Guild).Returns(guild);
         Mock.Setup(o => o.GuildId).Returns(guild.Id);
+        return this;
+    }
+
+    public TextChannelBuilder SetSendFileAction(string filename, IUserMessage message)
+    {
+        Mock.Setup(o => o.SendFileAsync(It.Is<FileAttachment>(x => x.FileName == filename), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(), It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(), It.IsAny<MessageFlags>()))
+            .Returns(Task.FromResult(message));
+        return this;
+    }
+
+    public TextChannelBuilder SetGetMessageAsync(IMessage message)
+    {
+        Mock.Setup(o => o.GetMessageAsync(It.Is<ulong>(o => o == message.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(message));
         return this;
     }
 }

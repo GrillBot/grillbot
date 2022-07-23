@@ -58,7 +58,7 @@ public class TestDatabaseBuilder : GrillBotDatabaseBuilder
         context.RemoveRange(context.SelfunverifyKeepables.AsEnumerable());
         context.RemoveRange(context.ExplicitPermissions.AsEnumerable());
         context.RemoveRange(context.AutoReplies.AsEnumerable());
-        context.RemoveRange(context.Suggestions.AsEnumerable());
+        context.RemoveRange(context.EmoteSuggestions.AsEnumerable());
         context.RemoveRange(context.GuildEvents.AsEnumerable());
         context.SaveChanges();
     }

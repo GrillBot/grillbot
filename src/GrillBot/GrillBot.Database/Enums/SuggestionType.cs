@@ -4,6 +4,5 @@ public enum SuggestionType
 {
     FeatureRequest = 0,
     
-    VotableEmote,
-    VotableEmoteVisible
+    VotableEmote = 1
 }

@@ -50,6 +50,9 @@ public partial class EmoteSuggestionService
 
     private static async Task SetEmoteDataAsync(SuggestionMetadata metadata, Database.Entity.EmoteSuggestion entity)
     {
+        if (metadata.Data == null)
+            throw new GrillBotException("Nebyly poskytnuty data pro návrh emotu.");
+        
         switch (metadata.Data)
         {
             case Emote emote:
@@ -65,7 +68,7 @@ public partial class EmoteSuggestionService
 
                 var imageData = await attachment.DownloadAsync();
                 if (imageData == null)
-                    throw new GrillBotException($"Nepodařilo se stáhnout potřebná data pro emote.");
+                    throw new GrillBotException("Nepodařilo se stáhnout potřebná data pro emote.");
 
                 entity.ImageData = imageData;
                 break;

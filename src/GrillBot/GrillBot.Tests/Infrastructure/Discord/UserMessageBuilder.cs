@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using Moq;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,6 +12,9 @@ public class UserMessageBuilder : BuilderBase<IUserMessage>
     public UserMessageBuilder()
     {
         Mock.Setup(o => o.DeleteAsync(It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
+        Mock.Setup(o => o.ModifyAsync(It.IsAny<Action<MessageProperties>>(), It.IsAny<RequestOptions>()))
+            .Callback<Action<MessageProperties>, RequestOptions>((func, _) => func(new MessageProperties()))
+            .Returns(Task.CompletedTask);
     }
 
     public UserMessageBuilder SetId(ulong id)

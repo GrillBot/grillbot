@@ -5,7 +5,7 @@ namespace GrillBot.App.Services.Suggestion;
 
 public partial class EmoteSuggestionService
 {
-    public async Task SetApprovalStateAsync(IComponentInteraction interaction, bool approved, ISocketMessageChannel channel)
+    public async Task SetApprovalStateAsync(IComponentInteraction interaction, bool approved, IMessageChannel channel)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 

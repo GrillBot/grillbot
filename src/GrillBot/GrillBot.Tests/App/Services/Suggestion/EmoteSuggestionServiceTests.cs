@@ -19,40 +19,29 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
 {
     private IGuild Guild { get; set; }
     private IGuildUser User { get; set; }
+    private ITextChannel VoteChannel { get; set; }
+    private ITextChannel SuggestionChannel { get; set; }
+    private IUserMessage SuggestionMessage { get; set; }
+    private IUserMessage VoteMessage { get; set; }
 
     protected override EmoteSuggestionService CreateService()
     {
         var guildBuilder = new GuildBuilder()
             .SetIdentity(Consts.GuildId, Consts.GuildName);
 
-        User = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guildBuilder.Build())
-            .Build();
+        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
 
-        var voteChannelBuilder = new TextChannelBuilder()
-            .SetIdentity(Consts.ChannelId + 1, Consts.ChannelName)
-            .SetGuild(guildBuilder.Build());
+        var voteChannelBuilder = new TextChannelBuilder().SetIdentity(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(guildBuilder.Build());
+        VoteMessage = new UserMessageBuilder().SetId(Consts.MessageId + 1).SetGetReactionUsersAction(new[] { User }).SetAuthor(User).SetChannel(voteChannelBuilder.Build()).Build();
+        var suggestionChannelBuilder = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build());
+        SuggestionMessage = new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(User).SetChannel(suggestionChannelBuilder.Build()).Build();
 
-        var voteMessage = new UserMessageBuilder()
-            .SetId(Consts.MessageId + 1)
-            .SetGetReactionUsersAction(new[] { User })
-            .SetAuthor(User)
-            .SetChannel(voteChannelBuilder.Build())
-            .Build();
+        SuggestionChannel = suggestionChannelBuilder.SetGetMessageAsync(SuggestionMessage).Build();
+        VoteChannel = voteChannelBuilder.SetGetMessageAsync(VoteMessage).SetSendFileAction("VoteStartedFile.png", VoteMessage).Build();
 
-        var suggestionChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
-        var voteChannel = voteChannelBuilder.SetGetMessageAsync(voteMessage).Build();
+        Guild = guildBuilder.SetGetTextChannelsAction(new[] { VoteChannel, SuggestionChannel }).Build();
 
-        Guild = guildBuilder
-            .SetGetTextChannelsAction(new[] { voteChannel, suggestionChannel })
-            .Build();
-
-        var discordClient = new ClientBuilder()
-            .SetGetGuildsAction(new[] { Guild })
-            .SetGetUserAction(User)
-            .Build();
-
+        var discordClient = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).SetGetUserAction(User).Build();
         var sesionService = new SuggestionSessionService();
         var discordSocketClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
@@ -70,14 +59,9 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     public async Task ProcessSessionAsync_NoMetadata()
     {
         var suggestionId = Guid.NewGuid().ToString();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild)
-            .Build();
         var modalData = new EmoteSuggestionModal();
 
-        await Service.ProcessSessionAsync(suggestionId, guild, user, modalData);
+        await Service.ProcessSessionAsync(suggestionId, Guild, User, modalData);
     }
 
     [TestMethod]
@@ -85,19 +69,13 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     [ExpectedException(typeof(ValidationException))]
     public async Task ProcessSessionAsync_WithDescription_InvalidChannel()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildEntity = Database.Entity.Guild.FromDiscord(guild);
+        var guildEntity = Database.Entity.Guild.FromDiscord(Guild);
         guildEntity.EmoteSuggestionChannelId = "123456789";
 
         await Repository.AddAsync(guildEntity);
         await Repository.CommitAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild)
-            .Build();
-
         var modalData = new EmoteSuggestionModal
         {
             EmoteDescription = "Popis",
@@ -105,8 +83,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         };
 
         Service.InitSession(suggestionId, Emote.Parse(Consts.OnlineEmoteId));
-        await Service.ProcessSessionAsync(suggestionId, guild, user, modalData);
-        Assert.IsTrue(true);
+        await Service.ProcessSessionAsync(suggestionId, Guild, User, modalData);
     }
 
     [TestMethod]
@@ -114,20 +91,9 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     {
         const string filename = "File.png";
 
-        var message = new UserMessageBuilder()
-            .SetId(Consts.MessageId)
-            .SetContent("Content")
-            .Build();
-
-        var channel = new TextChannelBuilder()
-            .SetIdentity(Consts.ChannelId, Consts.ChannelName)
-            .SetSendFileAction(filename, message)
-            .Build();
-
-        var guild = new GuildBuilder()
-            .SetId(Consts.GuildId).SetName(Consts.GuildName)
-            .SetGetTextChannelAction(channel)
-            .Build();
+        var message = new UserMessageBuilder().SetId(Consts.MessageId).SetContent("Content").Build();
+        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetSendFileAction(filename, message).Build();
+        var guild = new GuildBuilder().SetId(Consts.GuildId).SetName(Consts.GuildName).SetGetTextChannelAction(channel).Build();
 
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
         guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
@@ -136,14 +102,8 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         await Repository.CommitAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild)
-            .Build();
-        var attachment = new AttachmentBuilder()
-            .SetFilename(filename)
-            .SetUrl("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png")
-            .Build();
+        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var attachment = new AttachmentBuilder().SetFilename(filename).SetUrl("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png").Build();
 
         var modalData = new EmoteSuggestionModal { EmoteName = "Name" };
 
@@ -156,33 +116,163 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     [ExpectedException(typeof(GrillBotException))]
     public async Task ProcessSessionAsync_NoBinaryData()
     {
-        var channel = new TextChannelBuilder()
-            .SetIdentity(Consts.ChannelId, Consts.ChannelName)
-            .Build();
-
-        var guild = new GuildBuilder()
-            .SetId(Consts.GuildId).SetName(Consts.GuildName)
-            .SetGetTextChannelAction(channel)
-            .Build();
-
-        var guildEntity = Database.Entity.Guild.FromDiscord(guild);
+        var guildEntity = Database.Entity.Guild.FromDiscord(Guild);
         guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
 
         await Repository.AddAsync(guildEntity);
         await Repository.CommitAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild)
-            .Build();
-
         var modalData = new EmoteSuggestionModal { EmoteName = "Name" };
 
         Service.InitSession(suggestionId, null);
-        await Service.ProcessSessionAsync(suggestionId, guild, user, modalData);
+        await Service.ProcessSessionAsync(suggestionId, Guild, User, modalData);
         Assert.IsTrue(true);
     }
+
+    [TestMethod]
+    [ExcludeFromCodeCoverage]
+    [ExpectedException(typeof(GrillBotException))]
+    public async Task ProcessSessionAsync_NoBinaryDataFromAttachment()
+    {
+        var guildEntity = Database.Entity.Guild.FromDiscord(Guild);
+        guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
+
+        await Repository.AddAsync(guildEntity);
+        await Repository.CommitAsync();
+
+        var suggestionId = Guid.NewGuid().ToString();
+        var modalData = new EmoteSuggestionModal { EmoteName = "Name" };
+
+        var attachment = new AttachmentBuilder()
+            .SetFilename("File.png")
+            .SetUrl("https://ThisUrlIsRefused:8080")
+            .Build();
+
+        Service.InitSession(suggestionId, attachment);
+        await Service.ProcessSessionAsync(suggestionId, Guild, User, modalData);
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public async Task ProcessSessionAsync_NoGuildData()
+    {
+        var suggestionId = Guid.NewGuid().ToString();
+        var modalData = new EmoteSuggestionModal
+        {
+            EmoteDescription = "Popis",
+            EmoteName = "Name"
+        };
+
+        Service.InitSession(suggestionId, Emote.Parse(Consts.OnlineEmoteId));
+        await Service.ProcessSessionAsync(suggestionId, Guild, User, modalData);
+    }
+
+    #region ProcessSuggestionsToVoteAsync
+
+    [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
+    public async Task ProcessSuggestionsToVoteAsync_NotSetSuggestionChannel()
+    {
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
+        await Repository.CommitAsync();
+
+        await Service.ProcessSuggestionsToVoteAsync(Guild);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(GrillBotException))]
+    [ExcludeFromCodeCoverage]
+    public async Task ProcessSuggestionsToVoteAsync_NoVoteChannel()
+    {
+        var guildData = Database.Entity.Guild.FromDiscord(Guild);
+        guildData.EmoteSuggestionChannelId = SuggestionChannel.Id.ToString();
+
+        await Repository.AddAsync(guildData);
+        await Repository.CommitAsync();
+
+        await Service.ProcessSuggestionsToVoteAsync(Guild);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(GrillBotException))]
+    [ExcludeFromCodeCoverage]
+    public async Task ProcessSuggestionsToVoteAsync_MissingVoteChannel()
+    {
+        var guildData = Database.Entity.Guild.FromDiscord(Guild);
+        guildData.EmoteSuggestionChannelId = SuggestionChannel.Id.ToString();
+        guildData.VoteChannelId = (VoteChannel.Id + 3).ToString();
+
+        await Repository.AddAsync(guildData);
+        await Repository.CommitAsync();
+
+        await Service.ProcessSuggestionsToVoteAsync(Guild);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(GrillBotException))]
+    [ExcludeFromCodeCoverage]
+    public async Task ProcessSuggestionsToVoteAsync_NoSuggestion()
+    {
+        var guildData = Database.Entity.Guild.FromDiscord(Guild);
+        guildData.EmoteSuggestionChannelId = SuggestionChannel.Id.ToString();
+        guildData.VoteChannelId = VoteChannel.Id.ToString();
+
+        await Repository.AddAsync(guildData);
+        await Repository.CommitAsync();
+
+        await Service.ProcessSuggestionsToVoteAsync(Guild);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
+    public async Task ProcessSuggestionsToVoteAsync_NoApproved()
+    {
+        var guildData = Database.Entity.Guild.FromDiscord(Guild);
+        guildData.EmoteSuggestionChannelId = SuggestionChannel.Id.ToString();
+        guildData.VoteChannelId = VoteChannel.Id.ToString();
+
+        await Repository.AddAsync(CreateEntity(approvedForVote: false, guildData: guildData));
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(guildData);
+        await Repository.CommitAsync();
+
+        await Service.ProcessSuggestionsToVoteAsync(Guild);
+    }
+
+    [TestMethod]
+    public async Task ProcessSuggestionsToVoteAsync_Finished_ButNoMessage()
+    {
+        var guildData = Database.Entity.Guild.FromDiscord(Guild);
+        guildData.EmoteSuggestionChannelId = SuggestionChannel.Id.ToString();
+        guildData.VoteChannelId = VoteChannel.Id.ToString();
+
+        await Repository.AddAsync(CreateEntity(approvedForVote: true, guildData: guildData, filename: "VoteStartedFile.png", suggestionMessageId: Consts.MessageId + 1));
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(guildData);
+        await Repository.CommitAsync();
+
+        await Service.ProcessSuggestionsToVoteAsync(Guild);
+    }
+
+    [TestMethod]
+    public async Task ProcessSuggestionsToVoteAsync_Finished()
+    {
+        var guildData = Database.Entity.Guild.FromDiscord(Guild);
+        guildData.EmoteSuggestionChannelId = SuggestionChannel.Id.ToString();
+        guildData.VoteChannelId = VoteChannel.Id.ToString();
+
+        await Repository.AddAsync(CreateEntity(approvedForVote: true, guildData: guildData, filename: "VoteStartedFile.png", suggestionMessageId: Consts.MessageId));
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(guildData);
+        await Repository.CommitAsync();
+
+        await Service.ProcessSuggestionsToVoteAsync(Guild);
+    }
+
+    #endregion
 
     #endregion
 
@@ -198,36 +288,13 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     [TestMethod]
     public async Task ProcessJobAsync_NoVoteChannel()
     {
-        var random = new Random();
-        var buffer = new byte[100];
-        random.NextBytes(buffer);
-
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .Build();
-
         var guildData = Database.Entity.Guild.FromDiscord(Guild);
         guildData.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
 
         await Repository.AddAsync(guildData);
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
-        await Repository.AddAsync(new EmoteSuggestion
-        {
-            Guild = guildData,
-            VoteFinished = false,
-            ApprovedForVote = true,
-            VoteMessageId = (Consts.MessageId + 1).ToString(),
-            VoteEndsAt = DateTime.Now.AddDays(-1),
-            SuggestionMessageId = Consts.MessageId.ToString(),
-            CreatedAt = DateTime.Now,
-            ImageData = buffer,
-            GuildId = guildData.Id,
-            FromUserId = user.Id.ToString(),
-            FromUser = GuildUser.FromDiscord(Guild, user),
-            Filename = "File",
-            EmoteName = Emote.Parse(Consts.PepeJamEmote).Name
-        });
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
 
+        await Repository.AddAsync(CreateEntity(Consts.MessageId + 1, false, true, DateTime.Now.AddDays(-1), guildData: guildData));
         await Repository.CommitAsync();
 
         var report = await Service.ProcessJobAsync();
@@ -237,37 +304,14 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     [TestMethod]
     public async Task ProcessJobAsync_MissingVoteChannel()
     {
-        var random = new Random();
-        var buffer = new byte[100];
-        random.NextBytes(buffer);
-
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .Build();
-
         var guildData = Database.Entity.Guild.FromDiscord(Guild);
         guildData.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
         guildData.VoteChannelId = (Consts.ChannelId + 2).ToString();
 
         await Repository.AddAsync(guildData);
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
-        await Repository.AddAsync(new EmoteSuggestion
-        {
-            Guild = guildData,
-            VoteFinished = false,
-            ApprovedForVote = true,
-            VoteMessageId = (Consts.MessageId + 1).ToString(),
-            VoteEndsAt = DateTime.Now.AddDays(-1),
-            SuggestionMessageId = Consts.MessageId.ToString(),
-            CreatedAt = DateTime.Now,
-            ImageData = buffer,
-            GuildId = guildData.Id,
-            FromUserId = user.Id.ToString(),
-            FromUser = GuildUser.FromDiscord(Guild, user),
-            Filename = "File",
-            EmoteName = Emote.Parse(Consts.PepeJamEmote).Name
-        });
-
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(CreateEntity(guildData: guildData, voteFinished: false, approvedForVote: true, voteEndsAt: DateTime.Now.AddDays(-1),
+            voteMessageId: Consts.MessageId + 1));
         await Repository.CommitAsync();
 
         var report = await Service.ProcessJobAsync();
@@ -281,33 +325,13 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         var buffer = new byte[100];
         random.NextBytes(buffer);
 
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .Build();
-
         var guildData = Database.Entity.Guild.FromDiscord(Guild);
         guildData.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
         guildData.VoteChannelId = (Consts.ChannelId + 1).ToString();
 
         await Repository.AddAsync(guildData);
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
-        await Repository.AddAsync(new EmoteSuggestion
-        {
-            Guild = guildData,
-            VoteFinished = false,
-            ApprovedForVote = true,
-            VoteMessageId = (Consts.MessageId + 3).ToString(),
-            VoteEndsAt = DateTime.Now.AddDays(-1),
-            SuggestionMessageId = Consts.MessageId.ToString(),
-            CreatedAt = DateTime.Now,
-            ImageData = buffer,
-            GuildId = guildData.Id,
-            FromUserId = user.Id.ToString(),
-            FromUser = GuildUser.FromDiscord(Guild, user),
-            Filename = "File",
-            EmoteName = Emote.Parse(Consts.PepeJamEmote).Name
-        });
-
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(CreateEntity(guildData: guildData, voteFinished: false, approvedForVote: true, voteMessageId: Consts.MessageId + 3, voteEndsAt: DateTime.Now.AddDays(-1)));
         await Repository.CommitAsync();
 
         var report = await Service.ProcessJobAsync();
@@ -317,37 +341,85 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     [TestMethod]
     public async Task ProcessJobAsync_Finish()
     {
-        var random = new Random();
-        var buffer = new byte[100];
-        random.NextBytes(buffer);
-
         var guildData = Database.Entity.Guild.FromDiscord(Guild);
         guildData.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
         guildData.VoteChannelId = (Consts.ChannelId + 1).ToString();
 
         await Repository.AddAsync(guildData);
         await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(new EmoteSuggestion
-        {
-            Guild = guildData,
-            VoteFinished = false,
-            ApprovedForVote = true,
-            VoteMessageId = (Consts.MessageId + 1).ToString(),
-            VoteEndsAt = DateTime.Now.AddDays(-1),
-            SuggestionMessageId = Consts.MessageId.ToString(),
-            CreatedAt = DateTime.Now,
-            ImageData = buffer,
-            GuildId = guildData.Id,
-            FromUserId = User.Id.ToString(),
-            FromUser = GuildUser.FromDiscord(Guild, User),
-            Filename = "File",
-            EmoteName = Emote.Parse(Consts.PepeJamEmote).Name
-        });
-
+        await Repository.AddAsync(CreateEntity(guildData: guildData, voteFinished: false, approvedForVote: true, voteMessageId: Consts.MessageId + 1, voteEndsAt: DateTime.Now.AddDays(-1)));
         await Repository.CommitAsync();
 
         var report = await Service.ProcessJobAsync();
         Assert.IsFalse(string.IsNullOrEmpty(report));
+    }
+
+    #endregion
+
+    #region Approval
+
+    [TestMethod]
+    public async Task SetApprovalStateAsync_NoSuggestion()
+    {
+        var interaction = new ComponentInteractionBuilder().SetGuild(Guild).SetMessage(SuggestionMessage).Build();
+
+        await Service.SetApprovalStateAsync(interaction, true, SuggestionChannel);
+    }
+
+    [TestMethod]
+    public async Task SetApprovalState_AlreadyApproved()
+    {
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(CreateEntity(approvedForVote: true));
+        await Repository.CommitAsync();
+
+        var interaction = new ComponentInteractionBuilder().SetGuild(Guild).SetMessage(SuggestionMessage).Build();
+        await Service.SetApprovalStateAsync(interaction, false, SuggestionChannel);
+
+        var suggestion = await Repository.EmoteSuggestion.FindSuggestionByMessageId(Guild.Id, SuggestionMessage.Id);
+        Assert.IsNotNull(suggestion);
+        Assert.IsTrue(suggestion.ApprovedForVote);
+    }
+
+    [TestMethod]
+    public async Task SetApprovalState_Approved_NoMessage()
+    {
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(CreateEntity(suggestionMessageId: VoteMessage.Id));
+        await Repository.CommitAsync();
+
+        var interaction = new ComponentInteractionBuilder().SetGuild(Guild).SetMessage(VoteMessage).Build();
+        await Service.SetApprovalStateAsync(interaction, false, SuggestionChannel);
+
+        Repository.ClearChangeTracker();
+        var suggestion = await Repository.EmoteSuggestion.FindSuggestionByMessageId(Guild.Id, VoteMessage.Id);
+        Assert.IsNotNull(suggestion);
+        Assert.IsFalse(suggestion.ApprovedForVote);
+    }
+
+    #endregion
+
+    #region Misc
+
+    private EmoteSuggestion CreateEntity(ulong? voteMessageId = default, bool voteFinished = default, bool? approvedForVote = default, DateTime? voteEndsAt = default,
+        string filename = "File", Database.Entity.Guild guildData = null, ulong suggestionMessageId = 0)
+    {
+        return new EmoteSuggestion
+        {
+            ApprovedForVote = approvedForVote,
+            Filename = filename,
+            Guild = guildData ?? Database.Entity.Guild.FromDiscord(Guild),
+            CreatedAt = DateTime.Now,
+            EmoteName = Emote.Parse(Consts.PepeJamEmote).Name,
+            FromUser = GuildUser.FromDiscord(Guild, User),
+            GuildId = Guild.Id.ToString(),
+            ImageData = new byte[] { 1 },
+            FromUserId = User.Id.ToString(),
+            SuggestionMessageId = suggestionMessageId > 0 ? suggestionMessageId.ToString() : Consts.MessageId.ToString(),
+            VoteMessageId = voteMessageId?.ToString(),
+            VoteFinished = voteFinished,
+            VoteEndsAt = voteEndsAt
+        };
     }
 
     #endregion

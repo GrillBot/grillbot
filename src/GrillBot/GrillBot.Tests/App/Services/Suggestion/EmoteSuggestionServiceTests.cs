@@ -367,10 +367,10 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     }
 
     [TestMethod]
-    public async Task SetApprovalState_AlreadyApproved()
+    public async Task SetApprovalState_VoteFinished()
     {
         await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(CreateEntity(approvedForVote: true));
+        await Repository.AddAsync(CreateEntity(approvedForVote: true, voteFinished: true, voteEndsAt: DateTime.MaxValue));
         await Repository.CommitAsync();
 
         var interaction = new ComponentInteractionBuilder().SetGuild(Guild).SetMessage(SuggestionMessage).Build();

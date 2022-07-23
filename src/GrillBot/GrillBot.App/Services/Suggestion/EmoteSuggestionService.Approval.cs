@@ -26,7 +26,7 @@ public partial class EmoteSuggestionService
     {
         foreach (var suggestion in suggestions)
         {
-            if (!suggestion.VoteFinished)
+            if (!suggestion.VoteFinished && suggestion.VoteEndsAt == null)
                 suggestion.ApprovedForVote = approved;
 
             var user = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());

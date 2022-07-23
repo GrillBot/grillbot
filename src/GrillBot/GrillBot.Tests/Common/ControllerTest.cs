@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Security.Claims;
 using GrillBot.Common.Models;
 using GrillBot.Database.Services.Repository;
@@ -105,6 +104,7 @@ public abstract class ControllerTest<TController> where TController : Controller
         switch (result)
         {
             case NotFoundObjectResult notFound:
+                Assert.IsNotNull(notFound.Value);
                 Assert.IsInstanceOfType(notFound.Value, typeof(MessageResponse));
                 break;
             case FileContentResult fileContent:
@@ -122,12 +122,15 @@ public abstract class ControllerTest<TController> where TController : Controller
         switch (result.Result)
         {
             case OkObjectResult ok:
+                Assert.IsNotNull(ok.Value);
                 Assert.IsInstanceOfType(ok.Value, typeof(TOkModel));
                 break;
             case NotFoundObjectResult notFound:
+                Assert.IsNotNull(notFound.Value);
                 Assert.IsInstanceOfType(notFound.Value, typeof(MessageResponse));
                 break;
             case BadRequestObjectResult badRequest:
+                Assert.IsNotNull(badRequest.Value);
                 Assert.IsInstanceOfType(badRequest.Value, typeof(ValidationProblemDetails));
                 break;
         }

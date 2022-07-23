@@ -48,7 +48,7 @@ public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSug
             query = query.Where(o => o.ApprovedForVote == true);
 
         if (OnlyUnfinishedVotes)
-            query = query.Where(o => !o.VoteFinished);
+            query = query.Where(o => o.ApprovedForVote == true && !o.VoteFinished && o.VoteEndsAt != null);
 
         if (OnlyCommunityApproved)
             query = query.Where(o => o.CommunityApproved);

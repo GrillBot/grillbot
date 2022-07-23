@@ -26,7 +26,8 @@ public partial class EmoteSuggestionService
     {
         foreach (var suggestion in suggestions)
         {
-            suggestion.ApprovedForVote ??= approved;
+            if (!suggestion.VoteFinished)
+                suggestion.ApprovedForVote = approved;
 
             var user = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());
             if (await MessageCacheManager.GetAsync(suggestion.SuggestionMessageId.ToUlong(), channel) is IUserMessage message)
@@ -34,7 +35,7 @@ public partial class EmoteSuggestionService
                 await message.ModifyAsync(msg =>
                 {
                     msg.Embed = new EmoteSuggestionEmbedBuilder(suggestion, user).Build();
-                    msg.Components = suggestion.ApprovedForVote == true ? null : BuildApprovalButtons();
+                    msg.Components = suggestion.ApprovedForVote == true && suggestion.VoteFinished ? null : BuildApprovalButtons();
                 });
             }
         }

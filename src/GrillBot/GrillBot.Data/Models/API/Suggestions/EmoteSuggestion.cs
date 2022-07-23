@@ -15,7 +15,7 @@ public class EmoteSuggestion
     public GuildUser FromUser { get; set; }
     public string EmoteName { get; set; }
     public string Description { get; set; }
-    public bool ApprovedForVote { get; set; }
+    public bool? ApprovedForVote { get; set; }
     public bool VoteFinished { get; set; }
     public bool CommunityApproved { get; set; }
     public int UpVotes { get; set; }

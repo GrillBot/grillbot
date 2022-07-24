@@ -22,8 +22,7 @@ public class PointsModule : InteractionsModuleBase
         try
         {
             using var img = await PointsService.GetPointsOfUserImageAsync(Context.Guild, user);
-            await ReplyFileAsync(img.Path, false, Context.User.Mention, noReply: true);
-            await DeleteOriginalResponseAsync();
+            await FollowupWithFileAsync(img.Path);
         }
         catch (NotFoundException ex)
         {

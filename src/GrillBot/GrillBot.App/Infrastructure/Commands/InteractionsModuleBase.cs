@@ -66,11 +66,4 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             msg.Embed = embed;
         }, requestOptions);
     }
-
-    protected async Task<RestUserMessage> ReplyFileAsync(string filepath, bool spoiler, string text = null, Embed embed = null, bool noReply = false)
-    {
-        var originalMessage = await Context.Interaction.GetOriginalResponseAsync();
-        var reference = !noReply ? new MessageReference(originalMessage.Id, Context.Channel.Id, Context.Guild.Id) : null;
-        return await Context.Channel.SendFileAsync(filepath, text, false, embed, null, spoiler, new(AllowedMentionTypes.Users), reference);
-    }
 }

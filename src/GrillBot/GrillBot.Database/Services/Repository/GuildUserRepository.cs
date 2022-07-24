@@ -62,7 +62,6 @@ public class GuildUserRepository : RepositoryBase
                 .Where(o =>
                     o.GuildId == user.GuildId.ToString() &&
                     o.UserId == user.Id.ToString() &&
-                    (o.User!.Flags & (int)UserFlags.NotUser) == 0 &&
                     !o.User!.Username.StartsWith("Imported")
                 )
                 .Select(o => o.Points)
@@ -71,8 +70,7 @@ public class GuildUserRepository : RepositoryBase
                         .Where(o =>
                             o.GuildId == user.GuildId.ToString() &&
                             o.Points > pts &&
-                            (o.User!.Flags & (int)UserFlags.NotUser) == 0 &&
-                            !o.User.Username.StartsWith("Imported")
+                            !o.User!.Username.StartsWith("Imported")
                         )
                 );
 

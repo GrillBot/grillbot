@@ -20,4 +20,5 @@ public class GuildUserDetail
     public List<Emotes.EmoteStatItem> Emotes { get; set; }
     public UnverifyInfo Unverify { get; set; }
     public List<string> NicknameHistory { get; set; }
+    public List<Channel> VisibleChannels { get; set; }
 }

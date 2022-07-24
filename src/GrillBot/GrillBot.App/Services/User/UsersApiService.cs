@@ -9,6 +9,7 @@ using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
+using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Models;
 using GrillBot.Database.Services.Repository;
@@ -105,6 +106,13 @@ public class UsersApiService
                     }
 
                     guildUserDetail.NicknameHistory = await GetUserNicknameHistoryAsync(repository, guildUser);
+
+                    var visibleChannels = await guild.GetAvailableChannelsAsync(guildUser);
+                    guildUserDetail.VisibleChannels = visibleChannels
+                        .Where(o => o is not ICategoryChannel)
+                        .Select(o => Mapper.Map<Channel>(o))
+                        .OrderBy(o => o.Name)
+                        .ToList();
                 }
             }
 

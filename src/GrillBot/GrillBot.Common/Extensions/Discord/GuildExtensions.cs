@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 
 namespace GrillBot.Common.Extensions.Discord;
 
@@ -62,23 +61,6 @@ public static class GuildExtensions
 
     public static int CalculateFileUploadLimit(this IGuild guild)
         => Convert.ToInt32(guild.MaxUploadLimit / 1000000);
-
-    private static IEnumerable<SocketTextChannel> GetAvailableTextChannelsFor(this SocketGuild guild, IGuildUser user, bool includeThreads = false)
-    {
-        var query = guild.TextChannels.AsEnumerable();
-
-        if (!includeThreads)
-            query = query.Where(o => o is not SocketThreadChannel);
-
-        return query.Where(o => o.HaveAccessAsync(user).Result);
-    }
-
-    public static IEnumerable<SocketGuildChannel> GetAvailableChannelsFor(this SocketGuild guild, SocketGuildUser user, bool includeThreads = false)
-    {
-        return GetAvailableTextChannelsFor(guild, user, includeThreads)
-            .OfType<SocketGuildChannel>()
-            .Concat(guild.VoiceChannels.Where(o => o.HaveAccessAsync(user).Result));
-    }
 
     public static async Task<List<IGuildChannel>> GetAvailableChannelsAsync(this IGuild guild, IGuildUser user, bool onlyText = false)
     {

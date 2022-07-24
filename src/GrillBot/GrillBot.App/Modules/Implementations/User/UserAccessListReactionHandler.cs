@@ -32,11 +32,11 @@ public class UserAccessListReactionHandler : ReactionEventHandler
             .ToList();
         if (channels.Count == 0) return false;
 
-        var resultEmbed = new EmbedBuilder()
+        /*var resultEmbed = new EmbedBuilder()
             .WithUserAccessList(channels, forUser, user, guild, newPage);
 
         await message.ModifyAsync(o => o.Embed = resultEmbed.Build());
-        await message.RemoveReactionAsync(emote, user);
+        await message.RemoveReactionAsync(emote, user);*/
 
         return true;
     }

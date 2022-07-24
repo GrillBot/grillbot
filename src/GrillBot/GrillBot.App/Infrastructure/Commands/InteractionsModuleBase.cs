@@ -19,6 +19,9 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         if (command.Module.ComponentCommands.Any(c => c.Name == command.Name))
             return false;
 
+        if (command.Attributes.OfType<SuppressDeferAttribute>().Any())
+            return false;
+
         return !command.Parameters.Any(c => c.Name is "secret" or "tajne") && CanDefer;
     }
 

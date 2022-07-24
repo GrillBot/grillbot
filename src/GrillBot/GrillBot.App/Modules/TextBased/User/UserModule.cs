@@ -68,13 +68,13 @@ public class UserModule : ModuleBase
         }
         else
         {
-            var guildUser = users[0] as SocketGuildUser;
+            /*var guildUser = users[0] as SocketGuildUser;
             var visibleChannels = GetUserVisibleChannels(Context.Guild, guildUser).Take(UserAccessMaxCountPerPage).ToList();
             var embed = new EmbedBuilder().WithUserAccessList(visibleChannels, guildUser, Context.User, Context.Guild, 0);
 
             var message = await ReplyAsync(embed: embed.Build());
             if (visibleChannels.Count >= UserAccessMaxCountPerPage)
-                await message.AddReactionsAsync(new[] { Emojis.MoveToPrev, Emojis.MoveToNext });
+                await message.AddReactionsAsync(new[] { Emojis.MoveToPrev, Emojis.MoveToNext });*/
         }
     }
 

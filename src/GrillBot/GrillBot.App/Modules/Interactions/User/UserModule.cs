@@ -33,7 +33,6 @@ public class UserModule : Infrastructure.Commands.InteractionsModuleBase
 
     [UserCommand("Seznam oprávnění")]
     [SuppressDefer]
-    [DefaultMemberPermissions(GuildPermission.ManageRoles)]
     public async Task GetAccessListFromContextMenuAsync(IGuildUser user)
     {
         await GetAccessListAsync(user, true);
@@ -41,7 +40,6 @@ public class UserModule : Infrastructure.Commands.InteractionsModuleBase
 
     [RequireSameUserAsAuthor]
     [ComponentInteraction("user_access:*", ignoreGroupNames: true)]
-    [DefaultMemberPermissions(GuildPermission.ManageRoles)]
     public async Task HandleAccessListPaginationAsync(int page)
     {
         var handler = new UserAccessListHandler(Context.Client, page);

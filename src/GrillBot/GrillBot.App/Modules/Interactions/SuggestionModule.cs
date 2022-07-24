@@ -31,10 +31,14 @@ public class SuggestionModule : InteractionsModuleBase
         IAttachment attachment = null
     )
     {
-        if (emote == null && attachment == null)
+        switch (emote)
         {
-            await SetResponseAsync("Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.");
-            return;
+            case null when attachment == null:
+                await SetResponseAsync("Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.");
+                return;
+            case Emote emoteData when Context.Guild.Emotes.Any(o => o.Id == emoteData.Id):
+                await SetResponseAsync("Nelze podat návrh na emote, který je již na tomto serveru.");
+                return;
         }
 
         var sessionId = Guid.NewGuid().ToString();

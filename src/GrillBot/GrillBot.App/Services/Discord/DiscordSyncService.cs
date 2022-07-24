@@ -99,7 +99,12 @@ public class DiscordSyncService
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var channels = await repository.Channel.GetAllChannelsAsync(includeUsers: true);
-        channels.ForEach(o => o.Flags |= (long)ChannelFlags.Deleted);
+        foreach (var channel in channels)
+        {
+            channel.MarkDeleted(true);
+            channel.RolePermissionsCount = 0;
+            channel.UserPermissionsCount = 0;
+        }
 
         var dbUsers = await repository.GuildUser.GetAllUsersAsync();
         dbUsers.ForEach(o => o.User!.Status = UserStatus.Offline);

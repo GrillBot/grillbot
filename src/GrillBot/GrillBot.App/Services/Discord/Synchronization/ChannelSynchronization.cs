@@ -17,6 +17,8 @@ public class ChannelSynchronization : SynchronizationBase
 
         dbChannel.Update(channel);
         dbChannel.MarkDeleted(true);
+        dbChannel.RolePermissionsCount = 0;
+        dbChannel.UserPermissionsCount = 0;
 
         if (channel is not IThreadChannel)
         {

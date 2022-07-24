@@ -96,6 +96,7 @@ public class SuggestionModule : InteractionsModuleBase
     }
 
     [SlashCommand("process_emote_suggestions", "Zpracování schválených návrhů na emoty.", true)]
+    [RequireEmoteSuggestionChannel]
     public async Task ProcessEmoteSuggestionsAsync()
     {
         try

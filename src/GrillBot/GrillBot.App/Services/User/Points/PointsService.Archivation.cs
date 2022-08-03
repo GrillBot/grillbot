@@ -27,7 +27,7 @@ public partial class PointsService
                 new XAttribute("GuildId", item.GuildId),
                 new XAttribute("UserId", item.UserId),
                 new XAttribute("MessageId", item.MessageId),
-                new XAttribute("IsReaction", item.IsReaction.ToString()),
+                new XAttribute("ReactionId", item.ReactionId),
                 new XAttribute("AssignedAt", item.AssingnedAt.ToString("o")),
                 new XAttribute("Points", item.Points.ToString())
             );

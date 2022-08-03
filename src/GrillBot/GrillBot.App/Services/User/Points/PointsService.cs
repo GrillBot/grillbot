@@ -55,8 +55,9 @@ public partial class PointsService
         return message.Type != MessageType.ApplicationCommand && message.Type != MessageType.ContextMenuCommand;
     }
 
-    private PointsTransaction CreateTransaction(GuildUser user, bool isReaction, ulong messageId, bool ignoreCooldown)
+    private PointsTransaction CreateTransaction(GuildUser user, string reactionId, ulong messageId, bool ignoreCooldown)
     {
+        var isReaction = !string.IsNullOrEmpty(reactionId);
         var cooldown = Configuration.GetValue<int>($"Cooldown:{(isReaction ? "Reaction" : "Message")}");
         var range = Configuration.GetSection($"Range:{(isReaction ? "Reaction" : "Message")}");
 
@@ -69,7 +70,7 @@ public partial class PointsService
             GuildId = user.GuildId,
             Points = Random.Next(range.GetValue<int>("From"), range.GetValue<int>("To")),
             AssingnedAt = DateTime.Now,
-            IsReaction = isReaction,
+            ReactionId = reactionId ?? "",
             MessageId = messageId > 0 ? messageId.ToString() : SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
             UserId = user.UserId
         };

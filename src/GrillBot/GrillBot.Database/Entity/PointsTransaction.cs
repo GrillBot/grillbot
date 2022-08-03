@@ -23,12 +23,15 @@ public class PointsTransaction
     [StringLength(30)]
     public string MessageId { get; set; } = null!;
 
-    [Required]
-    public bool IsReaction { get; set; }
+    [StringLength(255)]
+    public string ReactionId { get; set; } = null!;
 
     [Required]
     public DateTime AssingnedAt { get; set; } = DateTime.Now;
 
     [Required]
     public int Points { get; set; }
+
+    public bool IsReaction()
+        => !string.IsNullOrEmpty(ReactionId);
 }

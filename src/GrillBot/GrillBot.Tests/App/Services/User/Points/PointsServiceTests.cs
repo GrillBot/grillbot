@@ -152,7 +152,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
             AssingnedAt = DateTime.MinValue,
             GuildId = Guild.Id.ToString(),
             GuildUser = Database.Entity.GuildUser.FromDiscord(Guild, GuildUser),
-            IsReaction = false,
+            ReactionId = "",
             MessageId = Consts.MessageId.ToString(),
             UserId = User.Id.ToString()
         });

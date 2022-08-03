@@ -51,8 +51,8 @@ public partial class PointsService
                 GuildId = o.Key.GuildId,
                 UserId = o.Key.UserId,
                 Day = o.Key.Date,
-                MessagePoints = o.Where(x => !x.IsReaction).Sum(x => x.Points),
-                ReactionPoints = o.Where(x => x.IsReaction).Sum(x => x.Points)
+                MessagePoints = o.Where(x => !x.IsReaction()).Sum(x => x.Points),
+                ReactionPoints = o.Where(x => x.IsReaction()).Sum(x => x.Points)
             })
             .ToList();
 

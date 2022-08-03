@@ -24,7 +24,7 @@ public partial class PointsService
         if (guildChannel.HasFlag(ChannelFlags.PointsDeactivated) || userPointsDisabled)
             return;
 
-        var transaction = CreateTransaction(guildUser, false, message.Id, false);
+        var transaction = CreateTransaction(guildUser, null, message.Id, false);
         if (transaction == null) return;
 
         var migrated = CreateMigratedTransaction(guildUser, transaction);
@@ -83,7 +83,8 @@ public partial class PointsService
         var userPointsDeactivated = (guildUser.User ?? userEntity).HaveFlags(UserFlags.PointsDisabled);
         if (channelEntity.HasFlag(ChannelFlags.PointsDeactivated) || userPointsDeactivated) return;
 
-        var transaction = CreateTransaction(guildUser, true, msg.Id, false);
+        var reactionId = $"{reaction.Emote}_{reaction.UserId}";
+        var transaction = CreateTransaction(guildUser, reactionId, msg.Id, false);
         if (transaction == null) return;
 
         var migrated = CreateMigratedTransaction(guildUser, transaction);

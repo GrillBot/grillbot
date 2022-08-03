@@ -69,7 +69,12 @@ public class PointsRepository : RepositoryBase
         using (CreateCounter())
         {
             var query = Context.PointsTransactions
-                .Where(o => o.MessageId == messageId.ToString() && o.IsReaction == isReaction);
+                .Where(o => o.MessageId == messageId.ToString());
+
+            if (isReaction)
+                query = query.Where(o => o.ReactionId != "");
+            else
+                query = query.Where(o => o.ReactionId == "");
 
             if (guild != null)
                 query = query.Where(o => o.GuildId == guild.Id.ToString());

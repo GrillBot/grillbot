@@ -12,7 +12,7 @@ public partial class PointsService
         await repository.User.GetOrCreateUserAsync(toUser);
         var guildUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
-        var transaction = CreateTransaction(guildUserEntity, false, 0, true);
+        var transaction = CreateTransaction(guildUserEntity, null, 0, true);
         transaction.Points = amount;
 
         await repository.AddAsync(transaction);
@@ -45,11 +45,11 @@ public partial class PointsService
         await repository.Guild.GetOrCreateRepositoryAsync(toUser.Guild);
         var toGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
-        var fromUserTransaction = CreateTransaction(fromGuildUser, false, 0, true);
+        var fromUserTransaction = CreateTransaction(fromGuildUser, null, 0, true);
         fromUserTransaction.Points = -amount;
         await repository.AddAsync(fromUserTransaction);
 
-        var toUserTransaction = CreateTransaction(toGuildUser, false, 0, true);
+        var toUserTransaction = CreateTransaction(toGuildUser, null, 0, true);
         toUserTransaction.Points = amount;
         await repository.AddAsync(toUserTransaction);
 

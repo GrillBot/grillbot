@@ -5,7 +5,6 @@ using GrillBot.App.Services.User.Points;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Models;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 
@@ -49,7 +48,7 @@ public class PointsControllerTests : ControllerTest<PointsController>
             AssingnedAt = DateTime.Now,
             GuildId = Guild.Id.ToString(),
             GuildUser = Database.Entity.GuildUser.FromDiscord(Guild, User),
-            IsReaction = false,
+            ReactionId = "",
             MessageId = Consts.MessageId.ToString(),
             UserId = User.Id.ToString()
         });

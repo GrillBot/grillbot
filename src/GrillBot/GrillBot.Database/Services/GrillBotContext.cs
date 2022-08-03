@@ -114,7 +114,7 @@ public class GrillBotContext : DbContext
 
         modelBuilder.Entity<PointsTransaction>(builder =>
         {
-            builder.HasKey(o => new { o.GuildId, o.UserId, o.MessageId, o.IsReaction });
+            builder.HasKey(o => new { o.GuildId, o.UserId, o.MessageId, o.ReactionId });
             builder.HasOne(o => o.GuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.UserId });
         });
 

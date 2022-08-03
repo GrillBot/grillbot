@@ -8,7 +8,7 @@ public partial class PointsService
     {
         if (guildUser.Points <= 0) return null;
 
-        var transaction = CreateTransaction(guildUser, false, 0, true);
+        var transaction = CreateTransaction(guildUser, referenceTransaction.ReactionId, 0, true);
         transaction.Points = referenceTransaction.Points * 2;
 
         guildUser.Points -= transaction.Points;

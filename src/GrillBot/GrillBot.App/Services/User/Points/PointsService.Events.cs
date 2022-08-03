@@ -83,7 +83,7 @@ public partial class PointsService
         var userPointsDeactivated = (guildUser.User ?? userEntity).HaveFlags(UserFlags.PointsDisabled);
         if (channelEntity.HasFlag(ChannelFlags.PointsDeactivated) || userPointsDeactivated) return;
 
-        var reactionId = $"{reaction.Emote}_{reaction.UserId}";
+        var reactionId = CreateReactionId(reaction);
         var transaction = CreateTransaction(guildUser, reactionId, msg.Id, false);
         if (transaction == null) return;
 
@@ -106,7 +106,8 @@ public partial class PointsService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var transaction = await repository.Points.FindTransactionAsync(guildChannel.Guild, message.Id, true, user);
+        var reactionId = CreateReactionId(reaction);
+        var transaction = await repository.Points.FindTransactionAsync(guildChannel.Guild, message.Id, reactionId, user);
         if (transaction == null) return;
 
         repository.Remove(transaction);
@@ -115,4 +116,7 @@ public partial class PointsService
         var onlyToday = transaction.AssingnedAt.Date == DateTime.Now.Date;
         await RecalculatePointsSummaryAsync(repository, onlyToday, new List<IGuildUser> { user });
     }
+
+    private static string CreateReactionId(SocketReaction reaction)
+        => $"{reaction.Emote}_{reaction.UserId}";
 }

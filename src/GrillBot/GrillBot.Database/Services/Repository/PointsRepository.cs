@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -64,15 +63,15 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<PointsTransaction?> FindTransactionAsync(IGuild? guild, ulong messageId, bool isReaction, IUser? user)
+    public async Task<PointsTransaction?> FindTransactionAsync(IGuild? guild, ulong messageId, string? reactionId, IUser? user)
     {
         using (CreateCounter())
         {
             var query = Context.PointsTransactions
                 .Where(o => o.MessageId == messageId.ToString());
 
-            if (isReaction)
-                query = query.Where(o => o.ReactionId != "");
+            if (!string.IsNullOrEmpty(reactionId))
+                query = query.Where(o => o.ReactionId == reactionId);
             else
                 query = query.Where(o => o.ReactionId == "");
 
@@ -184,19 +183,6 @@ public class PointsRepository : RepositoryBase
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<PointsTransactionSummary>.CreateWithEntityAsync(query, parameters);
-        }
-    }
-
-    public async Task<List<ulong>> GetTransactionMessageIds()
-    {
-        using (CreateCounter())
-        {
-            var data = await Context.PointsTransactions.AsNoTracking()
-                .Select(o => o.MessageId)
-                .Distinct()
-                .ToListAsync();
-
-            return data.ConvertAll(o => o.ToUlong());
         }
     }
 

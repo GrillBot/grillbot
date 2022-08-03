@@ -19,8 +19,6 @@ public class PointsJob : Job
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        // await PointsService.ProcessMigrationAsync();
-        
         var report = new List<string>
         {
             await PointsService.ArchiveOldTransactionsAsync(),

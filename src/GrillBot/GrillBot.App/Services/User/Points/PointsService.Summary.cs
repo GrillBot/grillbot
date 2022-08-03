@@ -56,10 +56,6 @@ public partial class PointsService
             })
             .ToList();
 
-        // Remove old summaries.
-        foreach (var oldSummary in summaries.Where(oldSummary => !newSummaries.Exists(o => o.Equals(oldSummary))))
-            repository.Remove(oldSummary);
-
         // Check and set new summaries.
         foreach (var summary in newSummaries)
         {

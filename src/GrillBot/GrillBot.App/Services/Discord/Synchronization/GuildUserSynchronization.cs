@@ -1,6 +1,4 @@
 ﻿using GrillBot.Database.Entity;
-using GrillBot.Database.Enums;
-using GrillBot.Database.Extensions;
 
 namespace GrillBot.App.Services.Discord.Synchronization;
 

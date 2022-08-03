@@ -2,7 +2,6 @@
 using GrillBot.App.Services.Logging;
 using GrillBot.Common.Managers;
 using Quartz;
-using System.IO.Compression;
 using System.Xml.Linq;
 using GrillBot.Common.FileStorage;
 
@@ -12,14 +11,14 @@ namespace GrillBot.App.Services.AuditLog;
 public class AuditLogClearingJob : Job
 {
     private GrillBotDatabaseBuilder DbFactory { get; }
-    private FileStorageFactory FileStorage { get; }
+    private AuditClearingHelper Helper { get; }
 
     public AuditLogClearingJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
-        GrillBotDatabaseBuilder dbFactory, FileStorageFactory fileStorage, InitManager initManager)
+        GrillBotDatabaseBuilder dbFactory, InitManager initManager, AuditClearingHelper helper)
         : base(loggingService, auditLogWriter, discordClient, initManager)
     {
-        FileStorage = fileStorage;
         DbFactory = dbFactory;
+        Helper = helper;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
@@ -34,80 +33,15 @@ public class AuditLogClearingJob : Job
         var data = await repository.AuditLog.GetExpiredDataAsync(expirationDate);
         var logRoot = new XElement("AuditLogBackup");
 
-        logRoot.Add(
-            new XAttribute("CreatedAt", DateTime.Now.ToString("o")),
-            new XAttribute("Count", data.Count)
-        );
+        logRoot.Add(AuditClearingHelper.CreateMetadata(data.Count));
+        logRoot.Add(AuditClearingHelper.TransformGuilds(data.Select(o => o.Guild)));
 
-        var guilds = data.Select(o => o.Guild)
-            .Where(o => o != null)
-            .GroupBy(o => o.Id)
-            .Select(o => o.First())
-            .Select(o => new XElement("Guild", new XAttribute("Id", o.Id), new XAttribute("Name", o.Name)));
+        var guildUsers = data.Select(o => o.ProcessedGuildUser).Where(o => o != null).DistinctBy(o => $"{o.UserId}/{o.GuildId}").ToList();
+        var users = data.Select(o => o.ProcessedUser).Where(o => o != null && guildUsers.All(x => x.UserId != o.Id)).DistinctBy(o => o.Id).ToList();
 
-        logRoot.Add(guilds);
-
-        var guildUsers = data.Select(o => o.ProcessedGuildUser).Where(o => o != null).GroupBy(o => o.UserId).Select(o => o.First()).ToList();
-        var users = data.Select(o => o.ProcessedUser).Where(o => o != null && guildUsers.All(x => x.UserId != o.Id)).GroupBy(o => o.Id)
-            .Select(o => o.First()).ToList();
-
-        logRoot.Add(
-            guildUsers.Select(o =>
-            {
-                var user = new XElement("ProcessedGuildUser");
-
-                user.Add(
-                    new XAttribute("Id", o.UserId),
-                    new XAttribute("GuildId", o.GuildId),
-                    new XAttribute("UserFlags", o.User!.Flags),
-                    new XAttribute("Username", o.User!.Username),
-                    new XAttribute("Discriminator", o.User!.Discriminator)
-                );
-
-                if (!string.IsNullOrEmpty(o.UsedInviteCode))
-                    user.Add(new XAttribute("UsedInviteCode", o.UsedInviteCode));
-
-                if (!string.IsNullOrEmpty(o.Nickname))
-                    user.Add(new XAttribute("Nickname", o.Nickname));
-
-                return user;
-            }),
-            users.Select(o =>
-            {
-                var user = new XElement("ProcessedUser");
-
-                user.Add(
-                    new XAttribute("Id", o.Id),
-                    new XAttribute("UserFlags", o.Flags),
-                    new XAttribute("Username", o.Username),
-                    new XAttribute("Discriminator", o.Discriminator)
-                );
-
-                return user;
-            })
-        );
-
-        var channels = data.Select(o => o.GuildChannel)
-            .Where(o => o != null)
-            .GroupBy(o => o.ChannelId)
-            .Select(o => o.First())
-            .Select(o =>
-            {
-                var channel = new XElement("Channel");
-
-                channel.Add(
-                    new XAttribute("Id", o.ChannelId),
-                    new XAttribute("Name", o.Name),
-                    new XAttribute("Type", o.ChannelType.ToString())
-                );
-
-                if (!string.IsNullOrEmpty(o.ParentChannelId))
-                    channel.Add(new XAttribute("ParentChannelId", o.ParentChannelId));
-
-                return channel;
-            });
-
-        logRoot.Add(channels);
+        logRoot.Add(AuditClearingHelper.TransformGuildUsers(guildUsers));
+        logRoot.Add(AuditClearingHelper.TransformUsers(users));
+        logRoot.Add(AuditClearingHelper.TransformChannels(data.Select(o => o.GuildChannel)));
 
         foreach (var item in data)
         {
@@ -159,35 +93,7 @@ public class AuditLogClearingJob : Job
         }
 
         context.Result = $"Items: {data.Count}, Files: {data.Sum(o => o.Files.Count)} ({data.Sum(o => o.Files.Sum(x => x.Size))} B), XmlSize: {Encoding.UTF8.GetBytes(logRoot.ToString()).Length} B";
-        await StoreDataAsync(logRoot, data.SelectMany(o => o.Files), context.CancellationToken);
+        await Helper.StoreDataAsync(logRoot, data.SelectMany(o => o.Files), "AuditLog");
         await repository.CommitAsync();
-    }
-
-    private async Task StoreDataAsync(XElement logRoot, IEnumerable<Database.Entity.AuditLogFileMeta> files, CancellationToken cancellationToken)
-    {
-        var storage = FileStorage.Create("Audit");
-        var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
-        var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
-
-        await using (var stream = fileinfo.OpenWrite())
-        {
-            await logRoot.SaveAsync(stream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, cancellationToken);
-        }
-
-        var zipFilename = Path.ChangeExtension(fileinfo.FullName, ".zip");
-        if (File.Exists(zipFilename)) File.Delete(zipFilename);
-        using var archive = ZipFile.Open(zipFilename, ZipArchiveMode.Create);
-        archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
-
-        foreach (var file in files.Select(o => o.Filename))
-        {
-            var attachmentFile = await storage.GetFileInfoAsync("DeletedAttachments", file);
-            if (!attachmentFile.Exists) continue;
-
-            archive.CreateEntryFromFile(attachmentFile.FullName, file, CompressionLevel.Optimal);
-            attachmentFile.Delete();
-        }
-
-        File.Delete(fileinfo.FullName);
     }
 }

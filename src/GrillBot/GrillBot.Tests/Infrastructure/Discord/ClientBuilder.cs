@@ -28,7 +28,12 @@ public class ClientBuilder : BuilderBase<IDiscordClient>
 
     public ClientBuilder SetGetGuildsAction(IEnumerable<IGuild> guilds)
     {
-        Mock.Setup(o => o.GetGuildsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(guilds.ToList().AsReadOnly() as IReadOnlyCollection<IGuild>));
+        var guildList = guilds.ToList().AsReadOnly();
+        
+        Mock.Setup(o => o.GetGuildsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult((IReadOnlyCollection<IGuild>)guildList));
+        foreach (var guild in guildList)
+            SetGetGuildAction(guild);
+            
         return this;
     }
 

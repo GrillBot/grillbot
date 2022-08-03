@@ -112,6 +112,18 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.FromUser).WithMany().HasForeignKey(o => new { o.GuildId, o.FromUserId });
         });
 
+        modelBuilder.Entity<PointsTransaction>(builder =>
+        {
+            builder.HasKey(o => new { o.GuildId, o.UserId, o.MessageId, o.IsReaction });
+            builder.HasOne(o => o.GuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.UserId });
+        });
+
+        modelBuilder.Entity<PointsTransactionSummary>(builder =>
+        {
+            builder.HasKey(o => new { o.GuildId, o.UserId, o.Day });
+            builder.HasOne(o => o.GuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.UserId });
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -133,4 +145,6 @@ public class GrillBotContext : DbContext
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<GuildEvent> GuildEvents => Set<GuildEvent>();
     public DbSet<EmoteSuggestion> EmoteSuggestions => Set<EmoteSuggestion>();
+    public DbSet<PointsTransaction> PointsTransactions => Set<PointsTransaction>();
+    public DbSet<PointsTransactionSummary> PointsTransactionSummaries => Set<PointsTransactionSummary>();
 }

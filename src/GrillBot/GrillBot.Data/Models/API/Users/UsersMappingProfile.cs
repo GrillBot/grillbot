@@ -22,7 +22,10 @@ public class UsersMappingProfile : AutoMapper.Profile
             .ForMember(o => o.Discriminator, opt => opt.MapFrom(src => src.User.Discriminator))
             .ForMember(o => o.IsBot, opt => opt.MapFrom(src => src.User.HaveFlags(UserFlags.NotUser)));
 
-        CreateMap<Database.Entity.GuildUser, UserPointsItem>();
+        CreateMap<Database.Models.Points.PointBoardItem, UserPointsItem>()
+            .ForMember(o => o.Guild, opt => opt.MapFrom(src => src.GuildUser.Guild))
+            .ForMember(o => o.User, opt => opt.MapFrom(src => src.GuildUser.User))
+            .ForMember(o => o.Nickname, opt => opt.MapFrom(src => src.GuildUser.Nickname));
 
         CreateMap<Database.Entity.User, UserListItem>()
             .ForMember(dst => dst.HaveBirthday, opt => opt.MapFrom(src => src.Birthday != null))
@@ -44,6 +47,7 @@ public class UsersMappingProfile : AutoMapper.Profile
 
         CreateMap<Database.Entity.GuildUser, GuildUserDetail>()
             .ForMember(dst => dst.Emotes, opt => opt.MapFrom(src => src.EmoteStatistics))
-            .ForMember(dst => dst.Unverify, opt => opt.Ignore());
+            .ForMember(dst => dst.Unverify, opt => opt.Ignore())
+            .ForMember(dst => dst.Points, opt => opt.Ignore());
     }
 }

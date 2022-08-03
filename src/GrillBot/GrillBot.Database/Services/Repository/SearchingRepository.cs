@@ -15,7 +15,7 @@ public class SearchingRepository : RepositoryBase
 
     public async Task<SearchItem?> FindSearchItemByIdAsync(long id)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.SearchItems
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -24,7 +24,7 @@ public class SearchingRepository : RepositoryBase
 
     public async Task<List<SearchItem>> FindSearchesByIdsAsync(IEnumerable<long> ids)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.SearchItems
                 .Where(o => ids.Contains(o.Id))
@@ -34,7 +34,7 @@ public class SearchingRepository : RepositoryBase
 
     public async Task<List<SearchItem>> FindSearchesAsync(IQueryableModel<SearchItem> model)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model);
             return await query.ToListAsync();

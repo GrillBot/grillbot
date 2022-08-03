@@ -13,7 +13,7 @@ public class StatisticsRepository : RepositoryBase
 
     public async Task<Dictionary<string, int>> GetTablesStatusAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return new Dictionary<string, int>
             {
@@ -34,7 +34,9 @@ public class StatisticsRepository : RepositoryBase
                 { nameof(Context.ExplicitPermissions), await Context.ExplicitPermissions.CountAsync() },
                 { nameof(Context.AutoReplies), await Context.AutoReplies.CountAsync() },
                 { nameof(Context.GuildEvents), await Context.GuildEvents.CountAsync() },
-                { nameof(Context.EmoteSuggestions), await Context.EmoteSuggestions.CountAsync() }
+                { nameof(Context.EmoteSuggestions), await Context.EmoteSuggestions.CountAsync() },
+                { nameof(Context.PointsTransactions), await Context.PointsTransactions.CountAsync() },
+                { nameof(Context.PointsTransactionSummaries), await Context.PointsTransactionSummaries.CountAsync() }
             };
         }
     }

@@ -439,6 +439,58 @@ namespace GrillBot.Database.Migrations
                     b.ToTable("Invites");
                 });
 
+            modelBuilder.Entity("GrillBot.Database.Entity.PointsTransaction", b =>
+                {
+                    b.Property<string>("GuildId")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("MessageId")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<bool>("IsReaction")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("AssingnedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GuildId", "UserId", "MessageId", "IsReaction");
+
+                    b.ToTable("PointsTransactions");
+                });
+
+            modelBuilder.Entity("GrillBot.Database.Entity.PointsTransactionSummary", b =>
+                {
+                    b.Property<string>("GuildId")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("Day")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<long>("MessagePoints")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ReactionPoints")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("GuildId", "UserId", "Day");
+
+                    b.ToTable("PointsTransactionSummaries");
+                });
+
             modelBuilder.Entity("GrillBot.Database.Entity.RemindMessage", b =>
                 {
                     b.Property<long>("Id")
@@ -829,6 +881,44 @@ namespace GrillBot.Database.Migrations
                     b.Navigation("Creator");
 
                     b.Navigation("Guild");
+                });
+
+            modelBuilder.Entity("GrillBot.Database.Entity.PointsTransaction", b =>
+                {
+                    b.HasOne("GrillBot.Database.Entity.Guild", "Guild")
+                        .WithMany()
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GrillBot.Database.Entity.GuildUser", "GuildUser")
+                        .WithMany()
+                        .HasForeignKey("GuildId", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guild");
+
+                    b.Navigation("GuildUser");
+                });
+
+            modelBuilder.Entity("GrillBot.Database.Entity.PointsTransactionSummary", b =>
+                {
+                    b.HasOne("GrillBot.Database.Entity.Guild", "Guild")
+                        .WithMany()
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GrillBot.Database.Entity.GuildUser", "GuildUser")
+                        .WithMany()
+                        .HasForeignKey("GuildId", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guild");
+
+                    b.Navigation("GuildUser");
                 });
 
             modelBuilder.Entity("GrillBot.Database.Entity.RemindMessage", b =>

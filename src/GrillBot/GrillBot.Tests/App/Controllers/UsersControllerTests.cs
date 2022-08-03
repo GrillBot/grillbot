@@ -245,23 +245,4 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var result = await UserController.GetAvailableCommandsAsync();
         CheckResult<OkObjectResult, List<CommandGroup>>(result);
     }
-
-    [TestMethod]
-    public async Task GetPointsBoardAsync_WithData()
-    {
-        await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
-        await Repository.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Guild" });
-        await Repository.AddAsync(new Database.Entity.GuildUser { GuildId = "12345", UserId = Consts.UserId.ToString(), Points = 50 });
-        await Repository.CommitAsync();
-
-        var result = await UserController.GetPointsLeaderboardAsync();
-        CheckResult<OkObjectResult, List<UserPointsItem>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetPointsBoardAsync_WithoutData()
-    {
-        var result = await UserController.GetPointsLeaderboardAsync();
-        CheckResult<OkObjectResult, List<UserPointsItem>>(result);
-    }
 }

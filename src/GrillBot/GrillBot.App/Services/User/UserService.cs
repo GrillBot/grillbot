@@ -1,7 +1,6 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Database.Enums;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Database.Extensions;
 
 namespace GrillBot.App.Services.User;
 

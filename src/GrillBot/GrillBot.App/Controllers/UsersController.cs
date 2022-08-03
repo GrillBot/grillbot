@@ -184,20 +184,6 @@ public class UsersController : Controller
     }
 
     /// <summary>
-    /// Gets complete list of user points.
-    /// </summary>
-    /// <response code="200">Returns full points board.</response>
-    [HttpGet("points/board")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ResponseCache(CacheProfileName = "BoardApi")]
-    public async Task<ActionResult<List<UserPointsItem>>> GetPointsLeaderboardAsync()
-    {
-        var result = await ApiService.GetPointsBoardAsync();
-        return Ok(result);
-    }
-
-    /// <summary>
     /// Get rubbergod karma leaderboard.
     /// </summary>
     /// <response code="200">Returns paginated response of karma leaderboard</response>

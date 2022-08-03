@@ -31,4 +31,7 @@ public abstract class RepositoryBase
 
         return query;
     }
+
+    protected CounterItem CreateCounter()
+        => Counter.Create($"Database.{GetType().Name.Replace("Repository", "")}");
 }

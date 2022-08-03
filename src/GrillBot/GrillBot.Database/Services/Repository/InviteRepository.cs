@@ -15,7 +15,7 @@ public class InviteRepository : RepositoryBase
 
     public async Task<Invite?> FindInviteByCodeAsync(IGuild guild, string code)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Invites
                 .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.Code == code);
@@ -24,7 +24,7 @@ public class InviteRepository : RepositoryBase
 
     public async Task<PaginatedResponse<Invite>> GetInviteListAsync(IQueryableModel<Invite> model, PaginatedParams pagination)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<Invite>.CreateWithEntityAsync(query, pagination);

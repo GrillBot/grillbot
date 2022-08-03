@@ -1,8 +1,7 @@
-﻿using GrillBot.App.Controllers;
+﻿using Discord;
+using GrillBot.App.Controllers;
 using GrillBot.App.Services.Emotes;
-using GrillBot.App.Services.User;
 using GrillBot.Data.Models.API.Emotes;
-using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +11,8 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class DataControllerTests : ControllerTest<DataController>
 {
+    private IGuild Guild { get; set; }
+    
     protected override bool CanInitProvider() => true;
 
     protected override DataController CreateController()
@@ -29,16 +30,16 @@ public class DataControllerTests : ControllerTest<DataController>
             .SetGuild(guildBuilder.Build())
             .Build();
 
-        var guild = guildBuilder
+        var role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).SetPosition(1).Build();
+
+        Guild = guildBuilder
             .SetGetUsersAction(new[] { user })
-            .SetGetUserAction(user)
-            .SetGetTextChannelsAction(new[] { channel })
             .SetGetChannelsAction(new[] { channel })
+            .SetRoles(new[] { role })
             .Build();
 
         var client = new ClientBuilder()
-            .SetGetGuildAction(guild)
-            .SetGetGuildsAction(new[] { guild })
+            .SetGetGuildsAction(new[] { Guild })
             .Build();
 
         var discordClient = DiscordHelper.CreateClient();
@@ -48,12 +49,16 @@ public class DataControllerTests : ControllerTest<DataController>
         var mapper = AutoMapperHelper.CreateMapper();
         var emotesCache = new EmotesCacheService(discordClient);
 
-        return new DataController(client, commandsService, configuration, interactions, emotesCache, mapper, DatabaseBuilder, ApiRequestContext);
+        return new DataController(client, commandsService, configuration, interactions, emotesCache, mapper,
+            DatabaseBuilder, ApiRequestContext);
     }
 
     [TestMethod]
     public async Task GetAvailableGuildsAsync()
     {
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
+        await Repository.CommitAsync();
+                
         var result = await AdminController.GetAvailableGuildsAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
@@ -113,14 +118,22 @@ public class DataControllerTests : ControllerTest<DataController>
     [TestMethod]
     public async Task GetAvailableUsersAsync_Users()
     {
-        var user = new UserBuilder()
-            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
-            .Build();
+        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-        await Repository.AddAsync(User.FromDiscord(user));
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();
 
         var result = await AdminController.GetAvailableUsersAsync(false);
+        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetAvailableUsersAsync_WithMutualGuilds()
+    {
+        SelectApiRequestContext(true);
+        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
+
+        var result = await UserController.GetAvailableUsersAsync(false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -193,7 +206,7 @@ public class DataControllerTests : ControllerTest<DataController>
             .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
             .Build();
 
-        await Repository.AddAsync(User.FromDiscord(user));
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();
 
         var result = await UserController.GetAvailableUsersAsync(false);

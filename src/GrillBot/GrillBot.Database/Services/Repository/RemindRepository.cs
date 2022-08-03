@@ -18,7 +18,7 @@ public class RemindRepository : RepositoryBase
 
     public async Task<List<long>> GetRemindIdsForProcessAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Reminders.AsNoTracking()
                 .Where(o => o.RemindMessageId == null && o.At <= DateTime.Now)
@@ -29,7 +29,7 @@ public class RemindRepository : RepositoryBase
 
     public async Task<RemindMessage?> FindRemindByIdAsync(long id)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Reminders
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -38,7 +38,7 @@ public class RemindRepository : RepositoryBase
 
     public async Task<RemindMessage?> FindRemindByRemindMessageAsync(string messageId)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Reminders
                 .FirstOrDefaultAsync(o => o.RemindMessageId == messageId && o.At < DateTime.Now);
@@ -47,7 +47,7 @@ public class RemindRepository : RepositoryBase
 
     public async Task<int> GetRemindersCountAsync(IUser forUser)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Reminders.AsNoTracking()
                 .CountAsync(o => o.ToUserId == forUser.Id.ToString() && o.RemindMessageId == null);
@@ -56,7 +56,7 @@ public class RemindRepository : RepositoryBase
 
     public async Task<List<RemindMessage>> GetRemindersPageAsync(IUser forUser, int page)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Reminders.AsNoTracking()
                 .Where(o => o.ToUserId == forUser.Id.ToString() && o.RemindMessageId == null)
@@ -70,7 +70,7 @@ public class RemindRepository : RepositoryBase
     public async Task<PaginatedResponse<RemindMessage>> GetRemindListAsync(IQueryableModel<RemindMessage> model,
         PaginatedParams pagination)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<RemindMessage>.CreateWithEntityAsync(query, pagination);
@@ -79,7 +79,7 @@ public class RemindRepository : RepositoryBase
 
     public async Task<bool> ExistsCopyAsync(string? originalMessageId, IUser toUser)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Reminders.AsNoTracking()
                 .AnyAsync(o => o.OriginalMessageId == originalMessageId && o.ToUserId == toUser.Id.ToString());
@@ -88,7 +88,7 @@ public class RemindRepository : RepositoryBase
 
     public async Task<List<RemindMessage>> GetRemindSuggestionsAsync(IUser user)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var userId = user.Id.ToString();
 

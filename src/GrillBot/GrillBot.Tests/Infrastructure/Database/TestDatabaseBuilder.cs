@@ -60,6 +60,8 @@ public class TestDatabaseBuilder : GrillBotDatabaseBuilder
         context.RemoveRange(context.AutoReplies.AsEnumerable());
         context.RemoveRange(context.EmoteSuggestions.AsEnumerable());
         context.RemoveRange(context.GuildEvents.AsEnumerable());
+        context.RemoveRange(context.PointsTransactionSummaries.AsEnumerable());
+        context.RemoveRange(context.PointsTransactions.AsEnumerable());
         context.SaveChanges();
     }
 }

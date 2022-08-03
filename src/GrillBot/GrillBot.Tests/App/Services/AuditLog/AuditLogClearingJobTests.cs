@@ -28,8 +28,9 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DatabaseBuilder, interactionService);
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditClearingHelper = new AuditClearingHelper(fileStorage);
 
-        return new AuditLogClearingJob(loggingService, auditLogWriter, client, DatabaseBuilder, fileStorage, initManager);
+        return new AuditLogClearingJob(loggingService, auditLogWriter, client, DatabaseBuilder, initManager, auditClearingHelper);
     }
 
     [TestMethod]

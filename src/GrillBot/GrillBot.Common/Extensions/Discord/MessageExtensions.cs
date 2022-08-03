@@ -12,12 +12,18 @@ public static class MessageExtensions
         return IsCommand(message, ref argPos, user, prefix);
     }
 
-    public static bool IsCommand(this IUserMessage message, ref int argumentPosition, IUser user, string prefix)
+    public static bool IsCommand(this IMessage message, ref int argumentPosition, IUser user, string prefix)
     {
-        if (message.HasMentionPrefix(user, ref argumentPosition))
+        if (message.Content.Length < prefix.Length)
+            return false;
+
+        var isInteractionCommand = message.Type is MessageType.ApplicationCommand or MessageType.ContextMenuCommand;
+
+        if (message is not IUserMessage msg) return isInteractionCommand;
+        if (msg.HasMentionPrefix(user, ref argumentPosition) || msg.HasStringPrefix(prefix, ref argumentPosition))
             return true;
 
-        return message.Content.Length > prefix.Length && message.HasStringPrefix(prefix, ref argumentPosition);
+        return isInteractionCommand;
     }
 
     public static bool TryLoadMessage(this SocketMessage message, out SocketUserMessage? userMessage)

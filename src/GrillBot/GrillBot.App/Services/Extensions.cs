@@ -10,7 +10,8 @@ public static class Extensions
         services
             .AddSingleton<AuditLog.AuditLogService>()
             .AddScoped<AuditLog.AuditLogApiService>()
-            .AddSingleton<AuditLog.AuditLogWriter>();
+            .AddSingleton<AuditLog.AuditLogWriter>()
+            .AddSingleton<AuditLog.AuditClearingHelper>();
 
         services
             .AddSingleton<AutoReply.AutoReplyService>()
@@ -74,8 +75,11 @@ public static class Extensions
             .AddScoped<Unverify.UnverifyApiService>();
 
         services
+            .AddSingleton<User.Points.PointsService>()
+            .AddScoped<User.Points.PointsApiService>();
+        
+        services
             .AddSingleton<User.UserService>()
-            .AddSingleton<User.PointsService>()
             .AddScoped<User.RubbergodKarmaService>()
             .AddScoped<User.UsersApiService>()
             .AddScoped<User.UserHearthbeatService>();

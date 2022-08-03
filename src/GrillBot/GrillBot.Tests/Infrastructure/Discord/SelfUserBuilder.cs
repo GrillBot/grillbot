@@ -38,12 +38,20 @@ public class SelfUserBuilder : BuilderBase<ISelfUser>
     public SelfUserBuilder AsBot(bool isBot = true)
     {
         Mock.Setup(o => o.IsBot).Returns(isBot);
+
+        if (isBot)
+            Mock.Setup(o => o.IsWebhook).Returns(false);
+
         return this;
     }
 
     public SelfUserBuilder AsWebhook(bool isWebhook = true)
     {
         Mock.Setup(o => o.IsWebhook).Returns(isWebhook);
+
+        if (isWebhook)
+            Mock.Setup(o => o.IsBot).Returns(false);
+
         return this;
     }
 

@@ -74,4 +74,10 @@ public class GuildUser
         Nickname = user.Nickname;
         User?.Update(user);
     }
+
+    public string FullName(bool noDiscriminator = false)
+    {
+        var username = User?.FullName(noDiscriminator) ?? "";
+        return string.IsNullOrEmpty(Nickname) ? username : $"{Nickname} ({username})";
+    }
 }

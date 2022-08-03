@@ -17,7 +17,7 @@ public class PermissionsRepository : RepositoryBase
 
     public async Task<List<ExplicitPermission>> GetAllowedPermissionsForCommand(string commandName)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.ExplicitPermissions.AsNoTracking()
                 .Where(o => o.Command == commandName.Trim() && o.State == ExplicitPermissionState.Allowed)
@@ -27,7 +27,7 @@ public class PermissionsRepository : RepositoryBase
 
     public async Task<bool> ExistsBannedCommandForUser(string commandName, IUser user)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.ExplicitPermissions.AsNoTracking()
                 .AnyAsync(o => o.Command == commandName.Trim() && !o.IsRole && o.State == ExplicitPermissionState.Banned && o.TargetId == user.Id.ToString());
@@ -36,7 +36,7 @@ public class PermissionsRepository : RepositoryBase
 
     public async Task<bool> ExistsCommandForTargetAsync(string command, string targetId)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.ExplicitPermissions.AsNoTracking()
                 .AnyAsync(o => o.Command == command && o.TargetId == targetId);
@@ -45,7 +45,7 @@ public class PermissionsRepository : RepositoryBase
 
     public async Task<ExplicitPermission?> FindPermissionForTargetAsync(string command, string targetId)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.ExplicitPermissions
                 .FirstOrDefaultAsync(o => o.Command == command && o.TargetId == targetId);
@@ -54,7 +54,7 @@ public class PermissionsRepository : RepositoryBase
 
     public async Task<List<ExplicitPermission>> GetPermissionsListAsync(string? commandQuery)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.ExplicitPermissions.AsNoTracking();
             if (!string.IsNullOrEmpty(commandQuery))

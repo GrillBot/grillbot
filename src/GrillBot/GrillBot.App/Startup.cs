@@ -22,6 +22,7 @@ using Quartz;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.App.Infrastructure.RequestProcessing;
+using GrillBot.App.Services.User.Points;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;
@@ -182,6 +183,7 @@ public class Startup
             q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
             q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
             q.AddTriggeredJob<SuggestionJob>(Configuration, "SuggestionsCleaningInterval");
+            q.AddTriggeredJob<PointsJob>(Configuration, "Points:JobInterval");
         });
 
         services.AddQuartzHostedService();

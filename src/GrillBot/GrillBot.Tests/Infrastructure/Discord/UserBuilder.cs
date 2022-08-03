@@ -34,12 +34,20 @@ public class UserBuilder : BuilderBase<IUser>
     public UserBuilder AsBot(bool isBot = true)
     {
         Mock.Setup(o => o.IsBot).Returns(isBot);
+
+        if (isBot)
+            Mock.Setup(o => o.IsWebhook).Returns(false);
+
         return this;
     }
 
     public UserBuilder AsWebhook(bool isWebhook = true)
     {
         Mock.Setup(o => o.IsWebhook).Returns(isWebhook);
+
+        if (isWebhook)
+            Mock.Setup(o => o.IsBot).Returns(false);
+
         return this;
     }
 
@@ -61,6 +69,12 @@ public class UserBuilder : BuilderBase<IUser>
     public UserBuilder SetStatus(UserStatus status)
     {
         Mock.Setup(o => o.Status).Returns(status);
+        return this;
+    }
+
+    public UserBuilder SetAvatar(string avatarId)
+    {
+        Mock.Setup(o => o.AvatarId).Returns(avatarId);
         return this;
     }
 }

@@ -13,18 +13,27 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     {
         Mock.Setup(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
         Mock.Setup(o => o.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
-        Mock.Setup(o => o.AddRolesAsync(It.IsAny<IEnumerable<IRole>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
-        Mock.Setup(o => o.AddRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
+        Mock.Setup(o => o.AddRolesAsync(It.IsAny<IEnumerable<IRole>>(), It.IsAny<RequestOptions>()))
+            .Returns(Task.CompletedTask);
+        Mock.Setup(o => o.AddRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>()))
+            .Returns(Task.CompletedTask);
 
         Mock.Setup(o => o.RemoveRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
         Mock.Setup(o => o.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
-        Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<IRole>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
-        Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
+        Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<IRole>>(), It.IsAny<RequestOptions>()))
+            .Returns(Task.CompletedTask);
+        Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>()))
+            .Returns(Task.CompletedTask);
     }
 
     public GuildUserBuilder SetIdentity(ulong id, string username, string discriminator)
     {
         return SetId(id).SetUsername(username).SetDiscriminator(discriminator);
+    }
+
+    public GuildUserBuilder SetIdentity(IUser user)
+    {
+        return SetIdentity(user.Id, user.Username, user.Discriminator);
     }
 
     public GuildUserBuilder SetJoinDate(DateTimeOffset joinedAt)
@@ -58,6 +67,9 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
         return this;
     }
 
+    public GuildUserBuilder SetRoles(IEnumerable<IRole> roles)
+        => SetRoles(roles.Select(o => o.Id));
+
     public GuildUserBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);
@@ -78,15 +90,21 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
 
     public GuildUserBuilder AsBot(bool isBot = true)
     {
-        Mock.Setup(o => o.IsWebhook).Returns(false);
         Mock.Setup(o => o.IsBot).Returns(isBot);
+
+        if (isBot)
+            Mock.Setup(o => o.IsWebhook).Returns(false);
+
         return this;
     }
 
     public GuildUserBuilder AsWebhook(bool isWebhook = true)
     {
-        Mock.Setup(o => o.IsBot).Returns(false);
         Mock.Setup(o => o.IsWebhook).Returns(isWebhook);
+
+        if (isWebhook)
+            Mock.Setup(o => o.IsBot).Returns(false);
+
         return this;
     }
 
@@ -102,6 +120,13 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
             format != null ? It.Is<ImageFormat>(x => x == format.Value) : It.IsAny<ImageFormat>(),
             size != null ? It.Is<ushort>(x => x == size.Value) : It.IsAny<ushort>()
         )).Returns(avatarUrl);
+        return this;
+    }
+
+    public GuildUserBuilder SetAvatar(string avatarId)
+    {
+        Mock.Setup(o => o.AvatarId).Returns(avatarId);
+        Mock.Setup(o => o.DisplayAvatarId).Returns(avatarId);
         return this;
     }
 }

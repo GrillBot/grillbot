@@ -2,8 +2,6 @@
 using GrillBot.App.Services.Discord.Synchronization;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
-using GrillBot.Database.Enums;
-using GrillBot.Database.Extensions;
 
 namespace GrillBot.App.Services.Discord;
 

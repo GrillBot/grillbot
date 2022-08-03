@@ -21,7 +21,7 @@ public class PointsBoardReactionHandler : ReactionEventHandler
         if (guild == null) return false;
 
         await using var repository = DbFactory.CreateRepository();
-        var pointsBoardData = await repository.GuildUser.GetPointsBoardDataAsync(new[] { guild.Id.ToString() });
+        var pointsBoardData = await repository.Points.GetPointsBoardDataAsync(new[] { guild.Id.ToString() });
 
         var pointsCount = pointsBoardData.Count;
         if (pointsCount == 0) return false;
@@ -34,8 +34,7 @@ public class PointsBoardReactionHandler : ReactionEventHandler
         var data = pointsBoardData.Skip(skip).Take(10).ToList();
 
         await guild.DownloadUsersAsync();
-        var resultEmbed = new PointsBoardBuilder()
-            .WithBoard(user, guild, data, id => guild.GetUser(id), skip, newPage);
+        var resultEmbed = new PointsBoardBuilder().WithBoard(user, guild, data, skip, newPage);
 
         await message.ModifyAsync(o => o.Embed = resultEmbed.Build());
         await message.RemoveReactionAsync(emote, user);

@@ -20,7 +20,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<User?> FindUserByIdAsync(ulong id)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Users
                 .FirstOrDefaultAsync(o => o.Id == id.ToString());
@@ -29,7 +29,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<User?> FindUserAsync(IUser user, bool disableTracking = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Users.AsQueryable();
             if (disableTracking)
@@ -49,7 +49,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<User> GetOrCreateUserAsync(IUser user)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var entity = await FindUserAsync(user);
             if (entity != null)
@@ -64,7 +64,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<List<User>> GetOnlineUsersAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Users
                 .Where(o => (o.Flags & (int)UserFlags.PublicAdminOnline) != 0 || (o.Flags & (int)UserFlags.WebAdminOnline) != 0)
@@ -74,7 +74,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<PaginatedResponse<User>> GetUsersListAsync(IQueryableModel<User> model, PaginatedParams pagination)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<User>.CreateWithEntityAsync(query, pagination);
@@ -83,7 +83,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<User?> FindUserWithDetailsByIdAsync(ulong id)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Users.AsSplitQuery().AsNoTracking()
                 .Include(o => o.Guilds).ThenInclude(o => o.Guild)
@@ -99,7 +99,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<List<User>> GetUsersWithTodayBirthday()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var today = DateTime.Now;
 
@@ -111,7 +111,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<List<User>> FindAllUsersExceptBots()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Users.AsNoTracking()
                 .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
@@ -121,7 +121,7 @@ public class UserRepository : RepositoryBase
 
     public async Task<List<User>> GetFullListOfUsers(bool? bots, IEnumerable<string>? mutualGuildIds)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Users.AsNoTracking();
 

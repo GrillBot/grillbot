@@ -20,7 +20,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<List<ulong>> GetUserIdsWithUnverify(IGuild guild)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var ids = await Context.Unverifies.AsNoTracking()
                 .Where(o => o.GuildId == guild.Id.ToString())
@@ -33,7 +33,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<(int unverify, int selfunverify)> GetUserStatsAsync(IGuildUser user)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var baseQuery = Context.UnverifyLogs.AsNoTracking()
                 .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString());
@@ -47,7 +47,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<PaginatedResponse<UnverifyLog>> GetLogsAsync(IQueryableModel<UnverifyLog> model, PaginatedParams pagination)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<UnverifyLog>.CreateWithEntityAsync(query, pagination);
@@ -56,7 +56,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<List<(ulong guildId, ulong userId)>> GetPendingUnverifyIdsAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var data = await Context.Unverifies.AsNoTracking()
                 .Where(o => o.EndAt <= DateTime.Now)
@@ -69,7 +69,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<UnverifyLog?> FindUnverifyLogByIdAsync(long id)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.UnverifyLogs.AsNoTracking()
                 .Include(o => o.Guild)
@@ -80,7 +80,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<List<Unverify>> GetUnverifiesAsync(ulong? userId = null)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Unverifies
                 .Include(o => o.UnverifyLog)
@@ -95,7 +95,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<Unverify?> FindUnverifyPageAsync(IGuild guild, int page)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Unverifies.AsNoTracking()
                 .Include(o => o.UnverifyLog)
@@ -109,7 +109,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<int> GetUnverifyCountsAsync(IGuild guild)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Unverifies.AsNoTracking()
                 .CountAsync(o => o.GuildId == guild.Id.ToString());
@@ -118,7 +118,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<Unverify?> FindUnverifyAsync(ulong guildId, ulong userId)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Unverifies
                 .FirstOrDefaultAsync(o => o.GuildId == guildId.ToString() && o.UserId == userId.ToString());
@@ -127,7 +127,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<Dictionary<UnverifyOperation, int>> GetStatisticsByTypeAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.UnverifyLogs.AsNoTracking()
                 .GroupBy(o => o.Operation)
@@ -138,7 +138,7 @@ public class UnverifyRepository : RepositoryBase
 
     public async Task<Dictionary<string, int>> GetStatisticsByDateAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.UnverifyLogs.AsNoTracking()
                 .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })

@@ -51,7 +51,7 @@ public class UserMessageBuilder : BuilderBase<IUserMessage>
     public UserMessageBuilder SetGetReactionUsersAction(IEnumerable<IUser> users)
     {
         Mock.Setup(o => o.GetReactionUsersAsync(It.IsAny<IEmote>(), It.IsAny<int>(), It.IsAny<RequestOptions>()))
-            .Returns(new List<IReadOnlyCollection<IUser>>() { users.ToList().AsReadOnly() }.ToAsyncEnumerable());
+            .Returns(new List<IReadOnlyCollection<IUser>> { users.ToList().AsReadOnly() }.ToAsyncEnumerable());
         return this;
     }
 }

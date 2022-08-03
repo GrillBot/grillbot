@@ -47,7 +47,13 @@ public class ChannelModule : InteractionsModuleBase
             .AddField("Založeno", channel.CreatedAt.LocalDateTime.ToCzechFormat(), true);
 
         if (!isCategory)
-            channelEmbed.AddField("Uživatelů", FormatHelper.FormatMembersToCzech(channel.Users.Count), true);
+        {
+            channelEmbed.AddField(
+                "Počet členů",
+                isThread ? FormatHelper.FormatMembersToCzech(((IThreadChannel)channel).MemberCount) : FormatHelper.FormatMembersToCzech(channel.Users.Count),
+                true
+            );
+        }
 
         switch (channelType)
         {

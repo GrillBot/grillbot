@@ -89,6 +89,8 @@ public class UsersApiService
                 .ThenBy(o => o.Emote.Name)
                 .ToList();
 
+            guildUserDetail.Points = await repository.Points.ComputePointsOfUserAsync(guildUserEntity.GuildId.ToUlong(), guildUserEntity.UserId.ToUlong());
+
             var guild = await DiscordClient.GetGuildAsync(guildUserDetail.Guild.Id.ToUlong());
             if (guild != null)
             {
@@ -176,19 +178,5 @@ public class UsersApiService
 
         await AuditLogWriter.StoreAsync(auditLogItem);
         await repository.CommitAsync();
-    }
-
-    public async Task<List<UserPointsItem>> GetPointsBoardAsync()
-    {
-        var result = new List<UserPointsItem>();
-        var mutualGuilds = (await DiscordClient.FindMutualGuildsAsync(ApiRequestContext.LoggedUser!.Id)).ConvertAll(o => o.Id.ToString());
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.GuildUser.GetPointsBoardDataAsync(mutualGuilds);
-        if (data.Count > 0)
-            result.AddRange(Mapper.Map<List<UserPointsItem>>(data));
-
-        return result;
     }
 }

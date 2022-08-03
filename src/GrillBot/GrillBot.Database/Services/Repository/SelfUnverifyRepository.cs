@@ -15,7 +15,7 @@ public class SelfUnverifyRepository : RepositoryBase
 
     public async Task<bool> KeepableExistsAsync(string group, string? name = null)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.SelfunverifyKeepables.AsNoTracking()
                 .Where(o => o.GroupName == group.ToLower());
@@ -29,7 +29,7 @@ public class SelfUnverifyRepository : RepositoryBase
 
     public async Task<List<SelfunverifyKeepable>> GetKeepablesAsync(string? group = null)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.SelfunverifyKeepables
                 .OrderBy(o => o.GroupName).ThenBy(o => o.Name)
@@ -44,7 +44,7 @@ public class SelfUnverifyRepository : RepositoryBase
 
     public async Task<SelfunverifyKeepable?> FindKeepableAsync(string group, string name)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.SelfunverifyKeepables
                 .FirstOrDefaultAsync(o => o.GroupName == group.ToLower() && o.Name == name.ToLower());

@@ -1,6 +1,5 @@
 ﻿using Discord;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -80,4 +79,7 @@ public class User
         else
             Flags |= (int)UserFlags.NotUser;
     }
+
+    public string FullName(bool noDiscriminator = false)
+        => $"{Username}{(noDiscriminator ? "" : $"#{Discriminator}")}";
 }

@@ -25,7 +25,7 @@ public partial class PointsService
             return;
 
         var transaction = CreateTransaction(guildUser, null, message.Id, false);
-        if (transaction == null) return;
+        if (transaction == null || transaction.Points == 0) return;
 
         var migrated = CreateMigratedTransaction(guildUser, transaction);
         if (migrated != null)
@@ -85,7 +85,7 @@ public partial class PointsService
 
         var reactionId = CreateReactionId(reaction);
         var transaction = CreateTransaction(guildUser, reactionId, msg.Id, false);
-        if (transaction == null) return;
+        if (transaction == null || transaction.Points == 0) return;
 
         var migrated = CreateMigratedTransaction(guildUser, transaction);
         if (migrated != null)

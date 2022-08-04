@@ -75,6 +75,8 @@ public partial class PointsService
             UserId = user.UserId
         };
 
+        if (transaction.Points == 0)
+            return null;
         if (ignoreCooldown || messageId == 0)
             return transaction;
 

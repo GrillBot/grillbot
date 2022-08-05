@@ -18,12 +18,11 @@ public partial class PointsService
     private ProfilePictureManager ProfilePictureManager { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditClearingHelper ClearingHelper { get; }
 
     private MagickImage TrophyImage { get; }
 
     public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
-        MessageCacheManager messageCache, RandomizationService randomizationService, ProfilePictureManager profilePictureManager, AuditClearingHelper clearingHelper)
+        MessageCacheManager messageCache, RandomizationService randomizationService, ProfilePictureManager profilePictureManager)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         Configuration = configuration.GetSection("Points");
@@ -32,7 +31,6 @@ public partial class PointsService
         ProfilePictureManager = profilePictureManager;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
-        ClearingHelper = clearingHelper;
 
         DiscordClient.MessageReceived += message => message.TryLoadMessage(out var msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
         DiscordClient.ReactionAdded += OnReactionAddedAsync;

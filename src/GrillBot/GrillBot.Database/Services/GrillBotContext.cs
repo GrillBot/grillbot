@@ -120,7 +120,7 @@ public class GrillBotContext : DbContext
 
         modelBuilder.Entity<PointsTransactionSummary>(builder =>
         {
-            builder.HasKey(o => new { o.GuildId, o.UserId, o.Day });
+            builder.HasKey(o => new { o.GuildId, o.UserId, o.Day, o.IsMerged });
             builder.HasOne(o => o.GuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.UserId });
         });
 

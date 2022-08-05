@@ -21,8 +21,8 @@ public class PointsJob : Job
     {
         var report = new List<string>
         {
-            await PointsService.ArchiveOldTransactionsAsync(),
-            await PointsService.ArchiveOldSummariesAsync(),
+            await PointsService.MergeOldTransactionsAsync(),
+            await PointsService.MergeSummariesAsync(),
             await PointsService.RecalculatePointsSummaryAsync()
         };
 

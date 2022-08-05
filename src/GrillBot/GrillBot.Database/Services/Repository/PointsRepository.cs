@@ -25,7 +25,7 @@ public class PointsRepository : RepositoryBase
             var yearBack = DateTime.Now.AddYears(-1);
 
             return await Context.PointsTransactionSummaries.AsNoTracking()
-                .Where(o => o.Day >= yearBack && o.GuildId == guildId.ToString() && o.UserId == userId.ToString())
+                .Where(o => !o.IsMerged && o.Day >= yearBack && o.GuildId == guildId.ToString() && o.UserId == userId.ToString())
                 .SumAsync(o => o.MessagePoints + o.ReactionPoints);
         }
     }
@@ -34,7 +34,8 @@ public class PointsRepository : RepositoryBase
     {
         using (CreateCounter())
         {
-            var query = Context.PointsTransactions.AsNoTracking();
+            var query = Context.PointsTransactions.AsNoTracking()
+                .Where(o => o.MergedItemsCount == 0);
 
             if (onlyToday)
             {
@@ -58,7 +59,7 @@ public class PointsRepository : RepositoryBase
         using (CreateCounter())
         {
             var query = Context.PointsTransactionSummaries
-                .Where(o => o.Day >= from && o.Day <= to && guilds.Contains(o.GuildId) && users.Contains(o.UserId));
+                .Where(o => !o.IsMerged && o.Day >= from && o.Day <= to && guilds.Contains(o.GuildId) && users.Contains(o.UserId));
             return await query.ToListAsync();
         }
     }
@@ -68,7 +69,7 @@ public class PointsRepository : RepositoryBase
         using (CreateCounter())
         {
             var query = Context.PointsTransactions
-                .Where(o => o.MessageId == messageId.ToString());
+                .Where(o => o.MergedItemsCount == 0 && o.MessageId == messageId.ToString());
 
             if (!string.IsNullOrEmpty(reactionId))
                 query = query.Where(o => o.ReactionId == reactionId);
@@ -89,7 +90,7 @@ public class PointsRepository : RepositoryBase
         using (CreateCounter())
         {
             var query = Context.PointsTransactions
-                .Where(o => o.MessageId == messageId.ToString());
+                .Where(o => o.MergedItemsCount == 0 && o.MessageId == messageId.ToString());
 
             if (guild != null)
                 query = query.Where(o => o.GuildId == guild.Id.ToString());
@@ -107,7 +108,7 @@ public class PointsRepository : RepositoryBase
             var yearBack = DateTime.Now.AddYears(-1);
 
             var query = Context.PointsTransactionSummaries.AsNoTracking()
-                .Where(o => o.GuildId == user.GuildId.ToString() && o.Day >= yearBack)
+                .Where(o => !o.IsMerged && o.GuildId == user.GuildId.ToString() && o.Day >= yearBack)
                 .GroupBy(o => o.UserId)
                 .Where(o => o.Sum(x => x.MessagePoints + x.ReactionPoints) > userPoints);
 
@@ -128,18 +129,23 @@ public class PointsRepository : RepositoryBase
             var baseQuery = Context.PointsTransactionSummaries.AsNoTracking()
                 .Where(o =>
                     (o.GuildUser.User!.Flags & (int)UserFlags.NotUser) == 0 &&
-                    guildIdData.Contains(o.GuildId)
+                    guildIdData.Contains(o.GuildId) &&
+                    !o.IsMerged
                 );
 
             var query = baseQuery
                 .GroupBy(o => new { o.GuildId, o.UserId })
                 .Select(o => new PointBoardItem
                 {
-                    Points = o.Sum(x => x.MessagePoints + x.ReactionPoints),
+                    PointsToday = o.Where(x => x.Day == DateTime.Now.Date).Sum(x => x.MessagePoints + x.ReactionPoints),
+                    TotalPoints = o.Sum(x => x.MessagePoints + x.ReactionPoints),
+                    PointsMonthBack = o.Where(x => x.Day == DateTime.Now.AddMonths(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
+                    PointsYearBack = o.Where(x => x.Day == DateTime.Now.AddYears(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
                     GuildId = o.Key.GuildId,
                     UserId = o.Key.UserId
                 })
-                .OrderByDescending(o => o.Points)
+                .Where(o => o.PointsYearBack > 0)
+                .OrderByDescending(o => o.PointsYearBack)
                 .AsQueryable();
 
             if (take != null)
@@ -162,7 +168,7 @@ public class PointsRepository : RepositoryBase
             }
 
             return data
-                .OrderByDescending(o => o.Points)
+                .OrderByDescending(o => o.PointsYearBack)
                 .ThenBy(o => o.GuildUser.FullName())
                 .ToList();
         }
@@ -209,7 +215,7 @@ public class PointsRepository : RepositoryBase
         return Context.PointsTransactions
             .Include(o => o.GuildUser.User)
             .Include(o => o.Guild)
-            .Where(o => o.AssingnedAt <= expirationDate);
+            .Where(o => o.AssingnedAt <= expirationDate && o.MergedItemsCount == 0); // Select only expired and non merged records.
     }
 
     public async Task<bool> ExistsExpiredItemsAsync()
@@ -234,7 +240,7 @@ public class PointsRepository : RepositoryBase
         return Context.PointsTransactionSummaries
             .Include(o => o.Guild)
             .Include(o => o.GuildUser.User)
-            .Where(o => o.Day <= expirationDate);
+            .Where(o => o.Day <= expirationDate && !o.IsMerged);
     }
 
     public async Task<bool> ExistsExpiredSummariesAsync()

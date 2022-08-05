@@ -19,7 +19,7 @@ public class PointsBoardBuilder : EmbedBuilder
         WithDescription(
             string.Join(
                 "\n",
-                data.Select((o, i) => $"**{i + skip + 1,2}.** {o.GuildUser.FullName()} ({FormatHelper.FormatPointsToCzech(o.Points)})")
+                data.Select((o, i) => $"**{i + skip + 1,2}.** {o.GuildUser.FullName()} ({FormatHelper.FormatPointsToCzech(o.PointsYearBack)})")
             )
         );
 

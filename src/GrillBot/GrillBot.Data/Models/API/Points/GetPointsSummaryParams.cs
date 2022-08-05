@@ -8,6 +8,11 @@ namespace GrillBot.Data.Models.API.Points;
 
 public class GetPointsSummaryParams : IQueryableModel<Database.Entity.PointsTransactionSummary>
 {
+    /// <summary>
+    /// Show merged or non-merged items.
+    /// </summary>
+    public bool Merged { get; set; }
+
     public string GuildId { get; set; }
     public string UserId { get; set; }
     public RangeParams<DateTime?> Days { get; set; }
@@ -29,6 +34,8 @@ public class GetPointsSummaryParams : IQueryableModel<Database.Entity.PointsTran
 
     public IQueryable<Database.Entity.PointsTransactionSummary> SetQuery(IQueryable<Database.Entity.PointsTransactionSummary> query)
     {
+        query = query.Where(o => o.IsMerged == Merged);
+
         if (!string.IsNullOrEmpty(GuildId))
             query = query.Where(o => o.GuildId == GuildId);
 

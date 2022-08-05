@@ -27,6 +27,11 @@ public class PointsTransactionSummary
 
     [Required]
     public long ReactionPoints { get; set; }
+    
+    public DateTime? MergeRangeFrom { get; set; }
+    public DateTime? MergeRangeTo { get; set; }
+    public int MergedItemsCount { get; set; }
+    public bool IsMerged { get; set; }
 
     public override int GetHashCode()
     {

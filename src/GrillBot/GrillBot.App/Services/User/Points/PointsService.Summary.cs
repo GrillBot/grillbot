@@ -14,30 +14,28 @@ public partial class PointsService
 
     private static async Task<string> RecalculatePointsSummaryAsync(GrillBotRepository repository, bool onlyToday, List<IGuildUser> users = null)
     {
-        var reportData = new StringBuilder();
-        
+        var toProcess = new List<PointsTransaction>();
+
         if (users != null)
         {
             foreach (var user in users)
-            {
-                var transactions = await repository.Points.GetAllTransactionsAsync(onlyToday, user);
-                var report = await RecalculatePointsSummaryAsync(repository, transactions);
-                reportData.AppendLine(report);
-            }
+                toProcess.AddRange(await repository.Points.GetAllTransactionsAsync(onlyToday, user));
         }
         else
         {
-            var transactions = await repository.Points.GetAllTransactionsAsync(false, null);
-            var report = await RecalculatePointsSummaryAsync(repository, transactions);
-            reportData.AppendLine(report);
+            toProcess.AddRange(await repository.Points.GetAllTransactionsAsync(false, null));
         }
 
+        var report = await RecalculatePointsSummaryAsync(repository, toProcess);
+
         await repository.CommitAsync();
-        return reportData.ToString();
+        return report;
     }
 
     private static async Task<string> RecalculatePointsSummaryAsync(GrillBotRepository repository, IReadOnlyCollection<PointsTransaction> transactions)
     {
+        if (transactions.Count == 0) return null; // Nothing to process.
+
         var dateFrom = transactions.Count == 0 ? DateTime.Now.AddYears(-1) : transactions.Min(o => o.AssingnedAt).AddDays(-1);
         var dateTo = transactions.Count == 0 ? DateTime.Now.AddYears(1) : transactions.Max(o => o.AssingnedAt).AddDays(1);
         var guilds = transactions.Select(o => o.GuildId).Distinct().ToList();
@@ -57,20 +55,29 @@ public partial class PointsService
             .ToList();
 
         // Check and set new summaries.
+        var updated = 0;
+        var inserted = 0;
         foreach (var summary in newSummaries)
         {
             var oldSummary = summaries.Find(o => o.Equals(summary));
             if (oldSummary != null)
             {
+                var itemChanged = oldSummary.MessagePoints != summary.MessagePoints || oldSummary.ReactionPoints != summary.ReactionPoints;
+                if (itemChanged) updated++;
+
                 oldSummary.MessagePoints = summary.MessagePoints;
                 oldSummary.ReactionPoints = summary.ReactionPoints;
             }
             else
             {
                 await repository.AddAsync(summary);
+                inserted++;
             }
         }
 
-        return summaries.Count == newSummaries.Count ? null : $"Summaries:{summaries.Count}, NewSummaries:{newSummaries.Count}";
+        if (inserted == 0 && updated == 0) return null; // Nothing to report, nothing was changed.
+
+        var daysCount = Math.Round((dateTo - dateFrom).TotalDays);
+        return $"RecalculatePoints(Days:{daysCount}, Created:{inserted}, Updated:{updated})";
     }
 }

@@ -9,6 +9,12 @@ namespace GrillBot.Data.Models.API.Points;
 
 public class GetPointTransactionsParams : IQueryableModel<Database.Entity.PointsTransaction>
 {
+    /// <summary>
+    /// Show or ignore merged items.
+    /// Default: false
+    /// </summary>
+    public bool Merged { get; set; }
+
     [DiscordId]
     public string GuildId { get; set; }
 
@@ -37,6 +43,9 @@ public class GetPointTransactionsParams : IQueryableModel<Database.Entity.Points
 
     public IQueryable<Database.Entity.PointsTransaction> SetQuery(IQueryable<Database.Entity.PointsTransaction> query)
     {
+        // Show only merged or non-merged transactions.
+        query = Merged ? query.Where(o => o.MergedItemsCount > 0) : query.Where(o => o.MergedItemsCount == 0);
+
         if (!string.IsNullOrEmpty(GuildId))
             query = query.Where(o => o.GuildId == GuildId);
 

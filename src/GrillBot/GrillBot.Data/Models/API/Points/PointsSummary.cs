@@ -8,4 +8,5 @@ public class PointsSummary : PointsSummaryBase
 {
     public Guild Guild { get; set; }
     public User User { get; set; }
+    public PointsMergeInfo MergeInfo { get; set; }
 }

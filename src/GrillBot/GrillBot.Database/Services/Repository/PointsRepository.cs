@@ -186,6 +186,23 @@ public class PointsRepository : RepositoryBase
         }
     }
 
+    public async Task<List<PointsTransactionSummary>> GetGraphDataAsync(IQueryableModel<PointsTransactionSummary> model)
+    {
+        using (CreateCounter())
+        {
+            var query = CreateQuery(model, true);
+
+            var groupedQuery = query.GroupBy(o => o.Day).Select(o => new PointsTransactionSummary
+            {
+                Day = o.Key,
+                MessagePoints = o.Sum(x => x.MessagePoints),
+                ReactionPoints = o.Sum(x => x.ReactionPoints)
+            }).OrderBy(o => o.Day);
+
+            return await groupedQuery.ToListAsync();
+        }
+    }
+
     private IQueryable<PointsTransaction> GetExpiredTransactionsBaseQuery()
     {
         var expirationDate = DateTime.Now.AddYears(-1).AddMonths(-6);

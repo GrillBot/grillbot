@@ -40,15 +40,13 @@ public class PointsApiService
 
     public async Task<List<PointsSummaryBase>> GetGraphDataAsync(GetPointsSummaryParams parameters)
     {
-        parameters.Pagination.Page = 1;
-        parameters.Pagination.PageSize = int.MaxValue;
         parameters.Sort.OrderBy = "Day";
         parameters.Sort.Descending = false;
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var data = await repository.Points.GetSummaryListAsync(parameters, parameters.Pagination);
-        return data.Data.ConvertAll(entity => Mapper.Map<PointsSummaryBase>(entity));
+        var data = await repository.Points.GetGraphDataAsync(parameters);
+        return data.ConvertAll(o => Mapper.Map<PointsSummaryBase>(o));
     }
 
     public async Task<List<UserPointsItem>> GetPointsBoardAsync()

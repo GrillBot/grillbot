@@ -36,9 +36,9 @@ public partial class PointsService
                 {
                     GuildId = transaction.GuildId,
                     ReactionId = transaction.IsReaction() ? reactionId : "",
-                    AssingnedAt = DateTime.Now,
                     UserId = transaction.UserId,
-                    MessageId = SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString()
+                    MessageId = SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
+                    AssingnedAt = DateTime.MaxValue
                 };
 
                 result.Add(mergedItem);
@@ -50,6 +50,7 @@ public partial class PointsService
                 mergedItem.MergeRangeFrom = transaction.AssingnedAt;
             if (transaction.AssingnedAt > (mergedItem.MergeRangeTo ?? DateTime.MinValue))
                 mergedItem.MergeRangeTo = transaction.AssingnedAt;
+            mergedItem.AssingnedAt = mergedItem.MergeRangeFrom.GetValueOrDefault();
             mergedItem.MergedItemsCount++;
         }
 
@@ -84,7 +85,6 @@ public partial class PointsService
             {
                 mergedItem = new PointsTransactionSummary
                 {
-                    Day = DateTime.Now.Date,
                     GuildId = summary.GuildId,
                     UserId = summary.UserId,
                     IsMerged = true
@@ -100,6 +100,7 @@ public partial class PointsService
                 mergedItem.MergeRangeFrom = summary.Day;
             if (summary.Day > (mergedItem.MergeRangeTo ?? DateTime.MinValue.Date))
                 mergedItem.MergeRangeTo = summary.Day;
+            mergedItem.Day = mergedItem.MergeRangeFrom.GetValueOrDefault().Date;
             mergedItem.MergedItemsCount++;
         }
 

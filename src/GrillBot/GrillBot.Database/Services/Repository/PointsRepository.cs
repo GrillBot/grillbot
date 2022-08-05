@@ -129,8 +129,7 @@ public class PointsRepository : RepositoryBase
             var baseQuery = Context.PointsTransactionSummaries.AsNoTracking()
                 .Where(o =>
                     (o.GuildUser.User!.Flags & (int)UserFlags.NotUser) == 0 &&
-                    guildIdData.Contains(o.GuildId) &&
-                    !o.IsMerged
+                    guildIdData.Contains(o.GuildId)
                 );
 
             var query = baseQuery
@@ -139,12 +138,12 @@ public class PointsRepository : RepositoryBase
                 {
                     PointsToday = o.Where(x => x.Day == DateTime.Now.Date).Sum(x => x.MessagePoints + x.ReactionPoints),
                     TotalPoints = o.Sum(x => x.MessagePoints + x.ReactionPoints),
-                    PointsMonthBack = o.Where(x => x.Day == DateTime.Now.AddMonths(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
-                    PointsYearBack = o.Where(x => x.Day == DateTime.Now.AddYears(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
+                    PointsMonthBack = o.Where(x => x.Day >= DateTime.Now.AddMonths(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
+                    PointsYearBack = o.Where(x => x.Day >= DateTime.Now.AddYears(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
                     GuildId = o.Key.GuildId,
                     UserId = o.Key.UserId
                 })
-                .Where(o => o.PointsYearBack > 0)
+                .Where(o => o.TotalPoints > 0)
                 .OrderByDescending(o => o.PointsYearBack)
                 .AsQueryable();
 

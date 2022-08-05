@@ -36,11 +36,9 @@ public class PointsServiceTests : ServiceTest<PointsService>
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var randomization = new RandomizationService();
         var profilePicture = new ProfilePictureManager(CacheBuilder, counterManager);
-        var fileStorage = new FileStorageMock(configuration);
-        var auditClearingHelper = new AuditClearingHelper(fileStorage);
 
         return new PointsService(discordClient, DatabaseBuilder, configuration, messageCache, randomization,
-            profilePicture, auditClearingHelper);
+            profilePicture);
     }
 
     public override void Cleanup()
@@ -135,57 +133,6 @@ public class PointsServiceTests : ServiceTest<PointsService>
 
         Assert.AreEqual(50, fromUserPoints);
         Assert.AreEqual(50, toUserPoints);
-    }
-
-    #endregion
-
-    #region Archivation
-
-    [TestMethod]
-    public async Task ArchiveOldTransactionsAsync()
-    {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(new Database.Entity.PointsTransaction
-        {
-            Guild = Database.Entity.Guild.FromDiscord(Guild),
-            Points = 50,
-            AssingnedAt = DateTime.MinValue,
-            GuildId = Guild.Id.ToString(),
-            GuildUser = Database.Entity.GuildUser.FromDiscord(Guild, GuildUser),
-            ReactionId = "",
-            MessageId = Consts.MessageId.ToString(),
-            UserId = User.Id.ToString()
-        });
-        await Repository.CommitAsync();
-        Assert.IsTrue(await Repository.Points.ExistsExpiredItemsAsync());
-
-        var result = await Service.ArchiveOldTransactionsAsync();
-
-        Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.IsFalse(await Repository.Points.ExistsExpiredItemsAsync());
-    }
-
-    [TestMethod]
-    public async Task ArchiveOldSummariesAsync()
-    {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(new Database.Entity.PointsTransactionSummary
-        {
-            Guild = Database.Entity.Guild.FromDiscord(Guild),
-            MessagePoints = 50,
-            ReactionPoints = 50,
-            Day = DateTime.MinValue,
-            GuildId = Guild.Id.ToString(),
-            GuildUser = Database.Entity.GuildUser.FromDiscord(Guild, GuildUser),
-            UserId = User.Id.ToString()
-        });
-        await Repository.CommitAsync();
-        Assert.IsTrue(await Repository.Points.ExistsExpiredSummariesAsync());
-
-        var result = await Service.ArchiveOldSummariesAsync();
-
-        Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.IsFalse(await Repository.Points.ExistsExpiredSummariesAsync());
     }
 
     #endregion

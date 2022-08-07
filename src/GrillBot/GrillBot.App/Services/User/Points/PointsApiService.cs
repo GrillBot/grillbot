@@ -27,7 +27,13 @@ public class PointsApiService
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var transactions = await repository.Points.GetTransactionListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions, entity => Task.FromResult(Mapper.Map<PointsTransaction>(entity)));
+        return await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions, entity =>
+        {
+            var item = Mapper.Map<PointsTransaction>(entity);
+            if (entity.MergedItemsCount > 0)
+                item.MergeInfo = Mapper.Map<PointsMergeInfo>(entity);
+            return Task.FromResult(item);
+        });
     }
 
     public async Task<PaginatedResponse<PointsSummary>> GetSummariesAsync(GetPointsSummaryParams parameters)
@@ -35,7 +41,13 @@ public class PointsApiService
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var summaries = await repository.Points.GetSummaryListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<PointsSummary>.CopyAndMapAsync(summaries, entity => Task.FromResult(Mapper.Map<PointsSummary>(entity)));
+        return await PaginatedResponse<PointsSummary>.CopyAndMapAsync(summaries, entity =>
+        {
+            var item = Mapper.Map<PointsSummary>(entity);
+            if (entity.IsMerged)
+                item.MergeInfo = Mapper.Map<PointsMergeInfo>(entity);
+            return Task.FromResult(item);
+        });
     }
 
     public async Task<List<PointsSummaryBase>> GetGraphDataAsync(GetPointsSummaryParams parameters)

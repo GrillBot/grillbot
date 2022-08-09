@@ -27,6 +27,7 @@ public partial class PointsService
         }
 
         var report = await RecalculatePointsSummaryAsync(repository, toProcess);
+        if (report == null) return null; // Nothing to process.
 
         await repository.CommitAsync();
         return report;

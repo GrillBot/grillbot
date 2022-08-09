@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using Discord;
 using GrillBot.App.Services;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
-using GrillBot.Tests.Infrastructure;
+using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.User.Points;
@@ -41,12 +39,78 @@ public class PointsServiceTests : ServiceTest<PointsService>
             profilePicture);
     }
 
-    public override void Cleanup()
+    private async Task InitDataAsync()
     {
-        base.Cleanup();
+        await Repository.Guild.GetOrCreateRepositoryAsync(Guild);
+        await Repository.User.GetOrCreateUserAsync(GuildUser);
+        await Repository.GuildUser.GetOrCreateGuildUserAsync(GuildUser);
+        await Repository.CommitAsync();
+    }
 
-        if (File.Exists("File.zip"))
-            File.Delete("File.zip");
+    private async Task InitTransactionsAsync()
+    {
+        await InitDataAsync();
+        await Service.IncrementPointsAsync(GuildUser, 100);
+        await Service.IncrementPointsAsync(GuildUser, 1100);
+
+        await Repository.AddAsync(new PointsTransaction
+        {
+            Points = 10,
+            AssingnedAt = DateTime.MinValue,
+            GuildId = Consts.GuildId.ToString(),
+            MessageId = Consts.MessageId.ToString(),
+            ReactionId = Consts.PepeJamEmote,
+            UserId = Consts.UserId.ToString()
+        });
+
+        await Repository.AddAsync(new PointsTransaction
+        {
+            Points = 100,
+            AssingnedAt = DateTime.MinValue,
+            GuildId = Consts.GuildId.ToString(),
+            MessageId = Consts.MessageId.ToString(),
+            ReactionId = Consts.OnlineEmoteId,
+            UserId = Consts.UserId.ToString()
+        });
+
+        await Repository.CommitAsync();
+        Repository.ClearChangeTracker();
+
+        foreach (var transaction in Repository.Points.GetAll())
+            transaction.AssingnedAt = DateTime.MinValue;
+        await Repository.CommitAsync();
+    }
+
+    private async Task InitSummariesAsync()
+    {
+        await InitTransactionsAsync();
+        Repository.ClearChangeTracker();
+
+        foreach (var summary in Repository.Points.GetAllSummaries())
+        {
+            await Repository.AddAsync(new PointsTransactionSummary
+            {
+                Day = DateTime.Now.AddYears(-5).Date,
+                GuildId = summary.GuildId,
+                IsMerged = false,
+                MessagePoints = summary.MessagePoints,
+                ReactionPoints = summary.ReactionPoints,
+                UserId = summary.UserId
+            });
+            
+            await Repository.AddAsync(new PointsTransactionSummary
+            {
+                Day = DateTime.Now.AddYears(-3).Date,
+                GuildId = summary.GuildId,
+                IsMerged = false,
+                MessagePoints = summary.MessagePoints,
+                ReactionPoints = summary.ReactionPoints,
+                UserId = summary.UserId
+            });
+        }
+
+        await Repository.CommitAsync();
+        Repository.ClearChangeTracker();
     }
 
     #region ServiceActions
@@ -74,10 +138,12 @@ public class PointsServiceTests : ServiceTest<PointsService>
     [ExcludeFromCodeCoverage]
     public async Task TransferPointsAsync_FromBot()
     {
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator)
+        var fromUser = new GuildUserBuilder().SetIdentity(GuildUser).SetGuild(Guild).AsBot().Build();
+        var toUser = new GuildUserBuilder()
+            .SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator)
             .SetGuild(Guild).Build();
 
-        await Service.TransferPointsAsync(GuildUser, toUser, 50);
+        await Service.TransferPointsAsync(fromUser, toUser, 50);
     }
 
     [TestMethod]
@@ -110,9 +176,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
         var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator)
             .SetGuild(Guild).Build();
 
-        await Repository.Guild.GetOrCreateRepositoryAsync(Guild);
-        await Repository.User.GetOrCreateUserAsync(GuildUser);
-        await Repository.GuildUser.GetOrCreateGuildUserAsync(GuildUser);
+        await InitDataAsync();
         await Repository.CommitAsync();
 
         await Service.TransferPointsAsync(GuildUser, toUser, 50);
@@ -133,6 +197,71 @@ public class PointsServiceTests : ServiceTest<PointsService>
 
         Assert.AreEqual(50, fromUserPoints);
         Assert.AreEqual(50, toUserPoints);
+    }
+
+    #endregion
+
+    #region Recalculation
+
+    [TestMethod]
+    public async Task RecalculatePointsSummaryAsync_NoTransactions()
+    {
+        var result = await Service.RecalculatePointsSummaryAsync();
+
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public async Task RecalculatePointsSummaryAsync_NothingToReport()
+    {
+        await Service.IncrementPointsAsync(GuildUser, 100);
+
+        var result = await Service.RecalculatePointsSummaryAsync();
+
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public async Task RecalculatePointsSummaryAsync_WithReaction()
+    {
+        await Service.IncrementPointsAsync(GuildUser, 100);
+        await Repository.AddAsync(new PointsTransaction
+        {
+            Points = 1,
+            AssingnedAt = DateTime.Now,
+            GuildId = Consts.GuildId.ToString(),
+            MessageId = Consts.MessageId.ToString(),
+            ReactionId = Consts.PepeJamEmote,
+            UserId = Consts.UserId.ToString()
+        });
+        await Repository.CommitAsync();
+
+        var result = await Service.RecalculatePointsSummaryAsync();
+        Assert.IsNotNull(result);
+    }
+
+    #endregion
+
+    #region Merge
+
+    [TestMethod]
+    public async Task MergeOldTransactionsAsync()
+    {
+        await InitTransactionsAsync();
+
+        var result = await Service.MergeOldTransactionsAsync();
+        Assert.IsFalse(string.IsNullOrEmpty(result));
+        Assert.IsTrue(result.StartsWith("MergeTransactions"));
+    }
+
+    [TestMethod]
+    public async Task MergeSummariesAsync()
+    {
+        await InitSummariesAsync();
+
+        var result = await Service.MergeSummariesAsync();
+        Assert.IsFalse(string.IsNullOrEmpty(result));
+        Assert.IsTrue(result.StartsWith("MergeSummaries"));
     }
 
     #endregion

@@ -46,9 +46,9 @@ public partial class PointsService
 
             mergedItem.Points += transaction.Points;
 
-            if (transaction.AssingnedAt < (mergedItem.MergeRangeFrom ?? DateTime.MaxValue))
+            if (transaction.AssingnedAt <= (mergedItem.MergeRangeFrom ?? DateTime.MaxValue))
                 mergedItem.MergeRangeFrom = transaction.AssingnedAt;
-            if (transaction.AssingnedAt > (mergedItem.MergeRangeTo ?? DateTime.MinValue))
+            if (transaction.AssingnedAt >= (mergedItem.MergeRangeTo ?? DateTime.MinValue))
                 mergedItem.MergeRangeTo = transaction.AssingnedAt;
             mergedItem.AssingnedAt = mergedItem.MergeRangeFrom.GetValueOrDefault();
             mergedItem.MergedItemsCount++;

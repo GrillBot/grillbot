@@ -18,6 +18,10 @@ public class PointsRepository : RepositoryBase
     {
     }
 
+    // Only for testing purposes.
+    public IEnumerable<PointsTransaction> GetAll() => Context.PointsTransactions.AsEnumerable();
+    public IEnumerable<PointsTransactionSummary> GetAllSummaries() => Context.PointsTransactionSummaries.AsEnumerable();
+
     public async Task<long> ComputePointsOfUserAsync(ulong guildId, ulong userId)
     {
         using (CreateCounter())

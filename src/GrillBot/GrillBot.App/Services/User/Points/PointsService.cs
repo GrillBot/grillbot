@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Resources.Misc;

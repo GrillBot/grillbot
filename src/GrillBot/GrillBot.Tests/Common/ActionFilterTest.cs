@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing;
 
 namespace GrillBot.Tests.Common;
 
@@ -23,7 +23,7 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
 
     protected override TFilter CreateService()
     {
-        Provider = CanInitProvider() ? DiHelper.CreateInitializedProvider() : DiHelper.CreateEmptyProvider();
+        Provider = CanInitProvider() ? TestServices.InitializedProvider.Value : TestServices.EmptyProvider.Value;
 
         Controller = CreateController(Provider);
         return CreateFilter();
@@ -68,7 +68,7 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
     private ActionContext CreateActionContext(IHeaderDictionary headers = null, int statusCode = 0, ModelStateDictionary modelState = null)
     {
         modelState = modelState == null ? new ModelStateDictionary() : new ModelStateDictionary(modelState);
-        return new ActionContext(CreateHttpContext(headers, statusCode), new(), new(), modelState);
+        return new ActionContext(CreateHttpContext(headers, statusCode), new RouteData(), new ActionDescriptor(), modelState);
     }
 
     protected ActionExecutingContext CreateContext(string methodName, IHeaderDictionary headers = null, bool noControllerDescriptor = false, ModelStateDictionary modelState = null)

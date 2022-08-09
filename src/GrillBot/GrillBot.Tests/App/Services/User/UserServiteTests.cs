@@ -1,8 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Services.User;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.User;
@@ -12,8 +10,7 @@ public class UserServiteTests : ServiceTest<UserService>
 {
     protected override UserService CreateService()
     {
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        return new UserService(DatabaseBuilder, configuration);
+        return new UserService(DatabaseBuilder, TestServices.Configuration.Value);
     }
 
     [TestMethod]

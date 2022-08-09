@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Services.Unverify;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
@@ -24,7 +23,7 @@ public class UnverifyCheckerTests
     [ExpectedException(typeof(ValidationException))]
     public void ValidateUnverifyData_NotMinimal_Selfunverify()
     {
-        var configuration = ConfigurationHelper.CreateConfiguration(new()
+        var configuration = ConfigurationHelper.CreateConfiguration(new Dictionary<string, string>
         {
             { "Unverify:MinimalTimes:Selfunverify", (12 * 60).ToString() }
         });
@@ -40,7 +39,7 @@ public class UnverifyCheckerTests
     [ExpectedException(typeof(ValidationException))]
     public void ValidateUnverifyData_NotMinimal_Unverify()
     {
-        var configuration = ConfigurationHelper.CreateConfiguration(new()
+        var configuration = ConfigurationHelper.CreateConfiguration(new Dictionary<string, string>
         {
             { "Unverify:MinimalTimes:Unverify", (12 * 60).ToString() }
         });
@@ -56,7 +55,7 @@ public class UnverifyCheckerTests
     [ExpectedException(typeof(ValidationException))]
     public void ValidateUnverifyData_UsersMinimal_Selfunverify()
     {
-        var configuration = ConfigurationHelper.CreateConfiguration(new()
+        var configuration = ConfigurationHelper.CreateConfiguration(new Dictionary<string, string>
         {
             { "Unverify:MinimalTimes:Selfunverify", (12 * 60).ToString() }
         });

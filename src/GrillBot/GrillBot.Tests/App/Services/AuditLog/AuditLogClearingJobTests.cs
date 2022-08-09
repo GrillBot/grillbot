@@ -1,12 +1,8 @@
 ﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Logging;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
-using System;
 using System.IO;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
@@ -19,7 +15,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var selfUser = new SelfUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var client = new ClientBuilder().SetSelfUser(selfUser).Build();
 
-        var configuration = ConfigurationHelper.CreateConfiguration();
+        var configuration = TestServices.Configuration.Value;
         var fileStorage = new FileStorageMock(configuration);
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();

@@ -3,23 +3,18 @@ using GrillBot.App.Services.AutoReply;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.AutoReply;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override AutoReplyController CreateController()
     {
-        var configuration = ConfigurationHelper.CreateConfiguration();
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var service = new AutoReplyService(configuration, discordClient, DatabaseBuilder, initManager);
-        var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new AutoReplyApiService(service, DatabaseBuilder, mapper);
+        var service = new AutoReplyService(TestServices.Configuration.Value, discordClient, DatabaseBuilder, initManager);
+        var apiService = new AutoReplyApiService(service, DatabaseBuilder, TestServices.AutoMapper.Value);
 
         return new AutoReplyController(apiService);
     }
@@ -27,14 +22,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task CreateAndGetAutoReplyListAsync()
     {
-        var createResult = await AdminController.CreateItemAsync(new AutoReplyItemParams
+        var createResult = await Controller.CreateItemAsync(new AutoReplyItemParams
         {
             Flags = 2,
             Reply = "Reply",
             Template = "Template"
         });
 
-        var listResult = await AdminController.GetAutoReplyListAsync();
+        var listResult = await Controller.GetAutoReplyListAsync();
 
         CheckResult<OkObjectResult, AutoReplyItem>(createResult);
         CheckResult<OkObjectResult, List<AutoReplyItem>>(listResult);
@@ -52,14 +47,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetItemAsync(1);
+        var result = await Controller.GetItemAsync(1);
         CheckResult<OkObjectResult, AutoReplyItem>(result);
     }
 
     [TestMethod]
     public async Task GetItemAsync_NotFound()
     {
-        var result = await AdminController.GetItemAsync(1);
+        var result = await Controller.GetItemAsync(1);
         CheckResult<NotFoundObjectResult, AutoReplyItem>(result);
     }
 
@@ -75,7 +70,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.UpdateItemAsync(1, new AutoReplyItemParams
+        var result = await Controller.UpdateItemAsync(1, new AutoReplyItemParams
         {
             Flags = 2,
             Reply = "Reply",
@@ -88,7 +83,7 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
     [TestMethod]
     public async Task UpdateItemAsync_NotFound()
     {
-        var result = await AdminController.UpdateItemAsync(1, new AutoReplyItemParams
+        var result = await Controller.UpdateItemAsync(1, new AutoReplyItemParams
         {
             Flags = 2,
             Reply = "Reply",
@@ -110,14 +105,14 @@ public class AutoReplyControllerTests : ControllerTest<AutoReplyController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.RemoveItemAsync(1);
+        var result = await Controller.RemoveItemAsync(1);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task RemoveItemAsync_NotFound()
     {
-        var result = await AdminController.RemoveItemAsync(1);
+        var result = await Controller.RemoveItemAsync(1);
         CheckResult<NotFoundObjectResult>(result);
     }
 }

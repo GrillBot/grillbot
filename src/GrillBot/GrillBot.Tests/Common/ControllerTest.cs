@@ -1,60 +1,76 @@
 ﻿using GrillBot.Cache.Services.Repository;
 using GrillBot.Data.Models.API;
-using GrillBot.Tests.Infrastructure;
-using GrillBot.Tests.Infrastructure.Cache;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Security.Claims;
-using GrillBot.Common.Models;
 using GrillBot.Database.Services.Repository;
-using GrillBot.Tests.Infrastructure.Database;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.Common;
 
-[ExcludeFromCodeCoverage]
-public abstract class ControllerTest<TController> where TController : Controller
+public abstract class ControllerTest : TestBase
 {
-    protected TController AdminController { get; private set; }
-    protected TController UserController { get; private set; }
+    protected static readonly Lazy<ApiRequestContext> UserApiRequestContext
+        = new(() => CreateApiRequestContext("User"), LazyThreadSafetyMode.ExecutionAndPublication);
 
-    private ApiRequestContext UserApiRequestContext { get; set; }
-    private ApiRequestContext AdminApiRequestContext { get; set; }
+    protected static readonly Lazy<ApiRequestContext> AdminApiRequestContext
+        = new(() => CreateApiRequestContext("Admin"), LazyThreadSafetyMode.ExecutionAndPublication);
+
+    private ControllerTestConfiguration TestConfiguration
+        => GetMethod().GetCustomAttribute<ControllerTestConfiguration>();
+
+    protected bool IsPublic() => TestConfiguration?.IsPublic ?? false;
+    protected bool CanInitProvider() => TestConfiguration?.CanInitProvider ?? false;
+
+    private static ApiRequestContext CreateApiRequestContext(string role)
+    {
+        return new ApiRequestContext
+        {
+            LoggedUser = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username + "-" + role, Consts.Discriminator).Build(),
+            LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.NameIdentifier, Consts.UserId.ToString())
+            }))
+        };
+    }
+}
+
+[ExcludeFromCodeCoverage]
+public abstract class ControllerTest<TController> : ControllerTest where TController : Controller
+{
+    protected TController Controller { get; private set; }
     protected ApiRequestContext ApiRequestContext { get; private set; }
-
     protected TestDatabaseBuilder DatabaseBuilder { get; private set; }
     protected TestCacheBuilder CacheBuilder { get; private set; }
-
     protected GrillBotRepository Repository { get; private set; }
     protected GrillBotCacheRepository CacheRepository { get; private set; }
-
     protected IServiceProvider ServiceProvider { get; private set; }
 
-    protected abstract bool CanInitProvider();
+    private static bool ContainsApiRequestContext
+        => typeof(TController).GetProperty("ApiRequestContext", BindingFlags.Instance | BindingFlags.NonPublic) != null;
+
     protected abstract TController CreateController();
 
     [TestInitialize]
-    public void Initialize()
+    public void TestInitialization()
     {
-        DatabaseBuilder = new TestDatabaseBuilder();
-        CacheBuilder = new TestCacheBuilder();
+        DatabaseBuilder = TestServices.DatabaseBuilder.Value;
+        CacheBuilder = TestServices.CacheBuilder.Value;
         Repository = DatabaseBuilder.CreateRepository();
         CacheRepository = CacheBuilder.CreateRepository();
-        UserApiRequestContext = CreateApiRequestContext("User");
-        AdminApiRequestContext = CreateApiRequestContext("Admin");
-        SelectApiRequestContext(false);
         ServiceProvider = CreateProvider(CanInitProvider());
 
-        AdminController = CreateController();
-        AdminController.ControllerContext = CreateContext(AdminApiRequestContext);
-
-        UserController = CreateController();
-        UserController.ControllerContext = CreateContext(UserApiRequestContext);
+        ApiRequestContext = IsPublic() ? UserApiRequestContext.Value : AdminApiRequestContext.Value;
+        Controller = CreateController();
+        Controller.ControllerContext = CreateContext(ApiRequestContext);
+        if (ContainsApiRequestContext)
+            ReflectionHelper.SetPrivateReadonlyPropertyValue(Controller, nameof(ApiRequestContext), ApiRequestContext);
     }
 
-    public virtual void Cleanup()
+    protected virtual void Cleanup()
     {
     }
 
@@ -67,21 +83,7 @@ public abstract class ControllerTest<TController> where TController : Controller
         TestCacheBuilder.ClearDatabase();
         Repository.Dispose();
         CacheRepository.Dispose();
-        UserController.Dispose();
-        AdminController.Dispose();
-    }
-
-    private static ApiRequestContext CreateApiRequestContext(string role)
-    {
-        return new ApiRequestContext
-        {
-            LoggedUser = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build(),
-            LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Role, role),
-                new Claim(ClaimTypes.NameIdentifier, Consts.UserId.ToString())
-            }))
-        };
+        Controller.Dispose();
     }
 
     private ControllerContext CreateContext(ApiRequestContext context)
@@ -148,11 +150,6 @@ public abstract class ControllerTest<TController> where TController : Controller
 
     private static IServiceProvider CreateProvider(bool init = false)
     {
-        return init ? DiHelper.CreateInitializedProvider() : DiHelper.CreateEmptyProvider();
-    }
-
-    protected void SelectApiRequestContext(bool selectPublic)
-    {
-        ApiRequestContext = selectPublic ? UserApiRequestContext : AdminApiRequestContext;
+        return init ? TestServices.InitializedProvider.Value : TestServices.EmptyProvider.Value;
     }
 }

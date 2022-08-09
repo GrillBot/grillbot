@@ -2,19 +2,15 @@
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class StatisticsControllerTests : ControllerTest<StatisticsController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override StatisticsController CreateController()
     {
         return new StatisticsController(DatabaseBuilder, CacheBuilder);
@@ -23,14 +19,14 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
     [TestMethod]
     public async Task GetDbStatusAsync()
     {
-        var result = await AdminController.GetDbStatusAsync();
+        var result = await Controller.GetDbStatusAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
     [TestMethod]
     public async Task GetDbCacheStatusAsync()
     {
-        var result = await AdminController.GetDbCacheStatusAsync();
+        var result = await Controller.GetDbCacheStatusAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
@@ -45,7 +41,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetAuditLogsStatisticsByTypeAsync();
+        var result = await Controller.GetAuditLogsStatisticsByTypeAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
@@ -60,7 +56,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetAuditLogsStatisticsByDateAsync();
+        var result = await Controller.GetAuditLogsStatisticsByDateAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
@@ -75,7 +71,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetTextCommandStatisticsAsync();
+        var result = await Controller.GetTextCommandStatisticsAsync();
         CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
 
@@ -90,7 +86,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetInteractionsStatusAsync();
+        var result = await Controller.GetInteractionsStatusAsync();
         CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
 
@@ -118,7 +114,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetUnverifyLogsStatisticsByOperationAsync();
+        var result = await Controller.GetUnverifyLogsStatisticsByOperationAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
@@ -146,7 +142,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetUnverifyLogsStatisticsByDateAsync();
+        var result = await Controller.GetUnverifyLogsStatisticsByDateAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
@@ -160,14 +156,14 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetJobStatisticsAsync();
+        var result = await Controller.GetJobStatisticsAsync();
         CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
 
     [TestMethod]
     public async Task GetApiRequestsByDateAsync()
     {
-        var result = await AdminController.GetApiRequestsByDateAsync();
+        var result = await Controller.GetApiRequestsByDateAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
@@ -192,7 +188,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetApiRequestsByEndpointAsync();
+        var result = await Controller.GetApiRequestsByEndpointAsync();
         CheckResult<OkObjectResult, List<StatisticItem>>(result);
     }
 
@@ -217,7 +213,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetApiRequestsByStatusCodeAsync();
+        var result = await Controller.GetApiRequestsByStatusCodeAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 }

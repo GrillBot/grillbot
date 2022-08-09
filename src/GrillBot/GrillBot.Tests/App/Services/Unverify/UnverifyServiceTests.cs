@@ -1,8 +1,6 @@
 ﻿using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.Unverify;
@@ -13,7 +11,7 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
     protected override UnverifyService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var configuration = ConfigurationHelper.CreateConfiguration();
+        var configuration = TestServices.Configuration.Value;
         var environment = EnvironmentHelper.CreateEnv("Production");
         var checker = new UnverifyChecker(DatabaseBuilder, configuration, environment);
         var profileGenerator = new UnverifyProfileGenerator(DatabaseBuilder);
@@ -22,9 +20,8 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DatabaseBuilder, interactionService);
-        var counter = new CounterManager();
         var logging = LoggingHelper.CreateLogger<PermissionsCleaner>();
-        var permissionsCleaner = new PermissionsCleaner(counter, logging);
+        var permissionsCleaner = new PermissionsCleaner(TestServices.CounterManager.Value, logging);
 
         return new UnverifyService(discordClient, checker, profileGenerator, logger, DatabaseBuilder, loggingService, permissionsCleaner);
     }

@@ -148,7 +148,7 @@ public class ChannelApiService
         if (channel == null)
             return;
 
-        var clearedCount = MessageCache.ClearAllMessagesFromChannel(channel);
+        var clearedCount = await MessageCache.ClearAllMessagesFromChannel(channel);
 
         var auditLogItem = new AuditLogDataWrapper(
             AuditLogItemType.Info,

@@ -3,14 +3,10 @@ using GrillBot.App.Controllers;
 using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -18,8 +14,6 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class UnverifyControllerTests : ControllerTest<UnverifyController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override UnverifyController CreateController()
     {
         var guild = new GuildBuilder()
@@ -42,7 +36,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             .Build();
 
         var discordClient = DiscordHelper.CreateClient();
-        var configuration = ConfigurationHelper.CreateConfiguration();
+        var configuration = TestServices.Configuration.Value;
         var webHostEnv = EnvironmentHelper.CreateEnv("Production");
         var unverifyChecker = new UnverifyChecker(DatabaseBuilder, configuration, webHostEnv);
         var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder);
@@ -51,13 +45,11 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DatabaseBuilder, interactionService);
-        var counter = new CounterManager();
         var logging = LoggingHelper.CreateLogger<PermissionsCleaner>();
-        var permissionsCleaner = new PermissionsCleaner(counter, logging);
+        var permissionsCleaner = new PermissionsCleaner(TestServices.CounterManager.Value, logging);
         var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DatabaseBuilder, loggingService, permissionsCleaner);
-        var mapper = AutoMapperHelper.CreateMapper();
-        var apiRequestContext = new ApiRequestContext();
-        var unverifyApiService = new UnverifyApiService(DatabaseBuilder, mapper, dcClient, apiRequestContext);
+        var mapper = TestServices.AutoMapper.Value;
+        var unverifyApiService = new UnverifyApiService(DatabaseBuilder, mapper, dcClient, ApiRequestContext);
 
         return new UnverifyController(unverifyService, dcClient, mapper, unverifyApiService, ApiRequestContext);
     }
@@ -65,7 +57,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
     [TestMethod]
     public async Task GetCurrentUnverifiesAsync_NotFound()
     {
-        var result = await AdminController.GetCurrentUnverifiesAsync();
+        var result = await Controller.GetCurrentUnverifiesAsync();
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
@@ -88,21 +80,21 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         await Repository.AddAsync(new Database.Entity.Unverify { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetCurrentUnverifiesAsync();
+        var result = await Controller.GetCurrentUnverifiesAsync();
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
     [TestMethod]
     public async Task RemoveUnverifyAsync_GuildNotFound()
     {
-        var result = await AdminController.RemoveUnverifyAsync(1, 1);
+        var result = await Controller.RemoveUnverifyAsync(1, 1);
         CheckResult<NotFoundObjectResult, MessageResponse>(result);
     }
 
     [TestMethod]
     public async Task UpdateUnverifyTimeAsync_GuildNotFound()
     {
-        var result = await AdminController.UpdateUnverifyTimeAsync(1, 1, DateTime.MaxValue);
+        var result = await Controller.UpdateUnverifyTimeAsync(1, 1, DateTime.MaxValue);
         CheckResult<NotFoundObjectResult, MessageResponse>(result);
     }
 
@@ -126,7 +118,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             }
         };
 
-        var result = await AdminController.GetUnverifyLogsAsync(filter);
+        var result = await Controller.GetUnverifyLogsAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 
@@ -149,14 +141,14 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         await Repository.CommitAsync();
 
         var filter = new UnverifyLogParams();
-        var result = await AdminController.GetUnverifyLogsAsync(filter);
+        var result = await Controller.GetUnverifyLogsAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 
     [TestMethod]
     public async Task RecoverUnverifyAsync_ItemNotFound()
     {
-        var result = await AdminController.RecoverUnverifyAsync(1);
+        var result = await Controller.RecoverUnverifyAsync(1);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -178,7 +170,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         });
         await Repository.AddAsync(new Database.Entity.Unverify { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await Repository.CommitAsync();
-        var result = await AdminController.RecoverUnverifyAsync(1);
+        var result = await Controller.RecoverUnverifyAsync(1);
         CheckResult<BadRequestObjectResult>(result);
     }
 
@@ -200,18 +192,20 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.RecoverUnverifyAsync(1);
+        var result = await Controller.RecoverUnverifyAsync(1);
         CheckResult<NotFoundObjectResult>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetCurrentUnverifiesAsync_NotFound_AsUser()
     {
-        var result = await UserController.GetCurrentUnverifiesAsync();
+        var result = await Controller.GetCurrentUnverifiesAsync();
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetCurrentUnverifiesAsync_Found_AsUser()
     {
         await Repository.AddAsync(new Database.Entity.Guild { Id = "1", Name = "Guild" });
@@ -230,11 +224,12 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         await Repository.AddAsync(new Database.Entity.Unverify { GuildId = "1", UserId = "1", StartAt = DateTime.Now, EndAt = DateTime.MaxValue, SetOperationId = 1 });
         await Repository.CommitAsync();
 
-        var result = await UserController.GetCurrentUnverifiesAsync();
+        var result = await Controller.GetCurrentUnverifiesAsync();
         CheckResult<OkObjectResult, List<UnverifyUserProfile>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetUnverifyLogsAsync_WithFilter_AsUser()
     {
         var filter = new UnverifyLogParams
@@ -254,11 +249,12 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
             }
         };
 
-        var result = await UserController.GetUnverifyLogsAsync(filter);
+        var result = await Controller.GetUnverifyLogsAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetUnverifyLogsAsync_WithoutFilter_AsUser()
     {
         await Repository.AddAsync(new Database.Entity.Guild { Id = "1", Name = "Guild" });
@@ -277,7 +273,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         await Repository.CommitAsync();
 
         var filter = new UnverifyLogParams();
-        var result = await UserController.GetUnverifyLogsAsync(filter);
+        var result = await Controller.GetUnverifyLogsAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UnverifyLogItem>>(result);
     }
 }

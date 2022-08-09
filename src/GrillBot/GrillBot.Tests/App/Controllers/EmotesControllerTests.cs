@@ -2,10 +2,8 @@
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Database.Models;
 
@@ -14,15 +12,12 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class EmotesControllerTests : ControllerTest<EmotesController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override EmotesController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
         var cacheService = new EmotesCacheService(discordClient);
-        var mapper = AutoMapperHelper.CreateMapper();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var apiService = new EmotesApiService(DatabaseBuilder, cacheService, mapper, ApiRequestContext, auditLogWriter);
+        var apiService = new EmotesApiService(DatabaseBuilder, cacheService, TestServices.AutoMapper.Value, ApiRequestContext, auditLogWriter);
 
         return new EmotesController(apiService);
     }
@@ -31,7 +26,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
     public async Task GetStatsOfSupportedEmotesAsync_WithoutFilter()
     {
         var @params = new EmotesListParams();
-        var result = await AdminController.GetStatsOfSupportedEmotesAsync(@params);
+        var result = await Controller.GetStatsOfSupportedEmotesAsync(@params);
 
         CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
     }
@@ -52,7 +47,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             EmoteName = "Emote"
         };
 
-        var result = await AdminController.GetStatsOfSupportedEmotesAsync(@params);
+        var result = await Controller.GetStatsOfSupportedEmotesAsync(@params);
         CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
     }
 
@@ -64,7 +59,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             Sort = { OrderBy = "FirstOccurence" }
         };
 
-        var result = await AdminController.GetStatsOfUnsupportedEmotesAsync(@params);
+        var result = await Controller.GetStatsOfUnsupportedEmotesAsync(@params);
         CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
     }
 
@@ -77,14 +72,14 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             DestinationEmoteId = Consts.PepeJamEmote
         };
 
-        var result = await AdminController.MergeStatsToAnotherAsync(@params);
+        var result = await Controller.MergeStatsToAnotherAsync(@params);
         CheckResult<BadRequestObjectResult, int>(result);
     }
 
     [TestMethod]
     public async Task RemoveStatisticsAsync_NoEmotes()
     {
-        var result = await AdminController.RemoveStatisticsAsync(Consts.PepeJamEmote);
+        var result = await Controller.RemoveStatisticsAsync(Consts.PepeJamEmote);
         CheckResult<OkObjectResult, int>(result);
     }
 
@@ -107,7 +102,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.RemoveStatisticsAsync(Consts.PepeJamEmote);
+        var result = await Controller.RemoveStatisticsAsync(Consts.PepeJamEmote);
         CheckResult<OkObjectResult, int>(result);
     }
 
@@ -153,7 +148,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             SuppressValidations = true
         };
 
-        var result = await AdminController.MergeStatsToAnotherAsync(mergeParams);
+        var result = await Controller.MergeStatsToAnotherAsync(mergeParams);
         CheckResult<OkObjectResult, int>(result);
     }
 
@@ -167,7 +162,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             SuppressValidations = true
         };
 
-        var result = await AdminController.MergeStatsToAnotherAsync(mergeParams);
+        var result = await Controller.MergeStatsToAnotherAsync(mergeParams);
         CheckResult<OkObjectResult, int>(result);
     }
 
@@ -198,7 +193,7 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
             SuppressValidations = true
         };
 
-        var result = await AdminController.MergeStatsToAnotherAsync(mergeParams);
+        var result = await Controller.MergeStatsToAnotherAsync(mergeParams);
         CheckResult<OkObjectResult, int>(result);
     }
 }

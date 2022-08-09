@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http;
 using Discord;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -16,8 +15,6 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class AuthControllerTests : ControllerTest<AuthController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override AuthController CreateController()
     {
         var user = new UserBuilder()
@@ -28,8 +25,8 @@ public class AuthControllerTests : ControllerTest<AuthController>
             .SetGetUserAction(user)
             .SetGetGuildsAction(Enumerable.Empty<IGuild>())
             .Build();
-    
-        var configuration = ConfigurationHelper.CreateConfiguration();
+
+        var configuration = TestServices.Configuration.Value;
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var loggerFactory = LoggingHelper.CreateLoggerFactory();
@@ -45,7 +42,7 @@ public class AuthControllerTests : ControllerTest<AuthController>
     public void GetRedirectLink()
     {
         var state = new AuthState();
-        var link = AdminController.GetRedirectLink(state);
+        var link = Controller.GetRedirectLink(state);
         CheckResult<OkObjectResult, OAuth2GetLink>(link);
     }
 
@@ -53,21 +50,21 @@ public class AuthControllerTests : ControllerTest<AuthController>
     public async Task OnOAuth2CallBackAsync()
     {
         var encodedState = new AuthState().Encode();
-        var result = await AdminController.OnOAuth2CallbackAsync("code", encodedState, CancellationToken.None);
+        var result = await Controller.OnOAuth2CallbackAsync("code", encodedState, CancellationToken.None);
         CheckResult<RedirectResult>(result);
     }
 
     [TestMethod]
     public async Task CreateLoginTokenFromIdAsync_UserNotFound()
     {
-        var result = await AdminController.CreateLoginTokenFromIdAsync(Consts.UserId + 1, true);
+        var result = await Controller.CreateLoginTokenFromIdAsync(Consts.UserId + 1, true);
         CheckResult<BadRequestObjectResult, OAuth2LoginToken>(result);
     }
 
     [TestMethod]
     public async Task CreateLoginTokenFromIdAsync_UserFound()
     {
-        var result = await AdminController.CreateLoginTokenFromIdAsync(Consts.UserId, true);
+        var result = await Controller.CreateLoginTokenFromIdAsync(Consts.UserId, true);
         CheckResult<OkObjectResult, OAuth2LoginToken>(result);
     }
 }

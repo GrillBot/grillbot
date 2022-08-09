@@ -1,9 +1,7 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.Guild;
 using GrillBot.Data.Models.API.Guilds;
-using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using Discord;
 using GrillBot.Database.Models;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -13,8 +11,6 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class GuildControllerTests : ControllerTest<GuildController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override GuildController CreateController()
     {
         var guildBuilder = new GuildBuilder()
@@ -38,10 +34,8 @@ public class GuildControllerTests : ControllerTest<GuildController>
         var client = new ClientBuilder()
             .SetGetGuildAction(guild)
             .Build();
-
-        var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new GuildApiService(DatabaseBuilder, client, mapper, CacheBuilder);
-
+        
+        var apiService = new GuildApiService(DatabaseBuilder, client, TestServices.AutoMapper.Value, CacheBuilder);
         return new GuildController(apiService);
     }
 
@@ -49,7 +43,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
     public async Task GetGuildListAsync_WithFilter()
     {
         var filter = new GetGuildListParams { NameQuery = "Guild" };
-        var result = await AdminController.GetGuildListAsync(filter);
+        var result = await Controller.GetGuildListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<Guild>>(result);
     }
 
@@ -59,7 +53,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
         await Repository.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetGuildListAsync(new GetGuildListParams());
+        var result = await Controller.GetGuildListAsync(new GetGuildListParams());
         CheckResult<OkObjectResult, PaginatedResponse<Guild>>(result);
     }
 
@@ -69,14 +63,14 @@ public class GuildControllerTests : ControllerTest<GuildController>
         await Repository.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetGuildDetailAsync(Consts.GuildId);
+        var result = await Controller.GetGuildDetailAsync(Consts.GuildId);
         CheckResult<OkObjectResult, GuildDetail>(result);
     }
 
     [TestMethod]
     public async Task GetGuildDetailAsync_NotFound()
     {
-        var result = await AdminController.GetGuildDetailAsync(Consts.GuildId);
+        var result = await Controller.GetGuildDetailAsync(Consts.GuildId);
         CheckResult<NotFoundObjectResult, GuildDetail>(result);
     }
 
@@ -89,7 +83,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
             MuteRoleId = Consts.RoleId.ToString(),
         };
 
-        var result = await AdminController.UpdateGuildAsync(Consts.GuildId + 1, parameters);
+        var result = await Controller.UpdateGuildAsync(Consts.GuildId + 1, parameters);
         CheckResult<NotFoundObjectResult, GuildDetail>(result);
     }
 
@@ -106,7 +100,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
             EmoteSuggestionChannelId = Consts.ChannelId.ToString()
         };
 
-        var result = await AdminController.UpdateGuildAsync(Consts.GuildId, parameters);
+        var result = await Controller.UpdateGuildAsync(Consts.GuildId, parameters);
         CheckResult<OkObjectResult, GuildDetail>(result);
     }
 
@@ -123,7 +117,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
             EmoteSuggestionChannelId = (Consts.ChannelId + 1).ToString()
         };
 
-        var result = await AdminController.UpdateGuildAsync(Consts.GuildId, parameters);
+        var result = await Controller.UpdateGuildAsync(Consts.GuildId, parameters);
         CheckResult<BadRequestObjectResult, GuildDetail>(result);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using GrillBot.Cache.Services;
 using GrillBot.Cache.Services.Repository;
-using GrillBot.Common.Managers.Counters;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -12,7 +11,7 @@ public class TestCacheBuilder : GrillBotCacheBuilder
 {
     private GrillBotCacheContext Context { get; set; }
 
-    public TestCacheBuilder() : base(DiHelper.CreateEmptyProvider())
+    public TestCacheBuilder() : base(null!)
     {
     }
 
@@ -31,7 +30,7 @@ public class TestCacheBuilder : GrillBotCacheBuilder
     public override GrillBotCacheRepository CreateRepository()
     {
         Context = CreateContext();
-        return new GrillBotCacheRepository(Context, new CounterManager());
+        return new GrillBotCacheRepository(Context, TestServices.CounterManager.Value);
     }
 
     public static void ClearDatabase()

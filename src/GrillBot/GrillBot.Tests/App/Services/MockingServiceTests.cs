@@ -7,10 +7,9 @@ public class MockingServiceTests : ServiceTest<MockingService>
 {
     protected override MockingService CreateService()
     {
-        var configuration = ConfigurationHelper.CreateConfiguration();
         var randomization = new RandomizationService();
 
-        return new MockingService(configuration, randomization);
+        return new MockingService(TestServices.Configuration.Value, randomization);
     }
 
     [TestMethod]

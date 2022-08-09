@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GrillBot.Tests.Common;
+﻿namespace GrillBot.Tests.Common;
 
 public abstract class AttributeTest<TAttribute> where TAttribute : Attribute
 {

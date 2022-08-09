@@ -1,5 +1,4 @@
-﻿using System;
-using Discord;
+﻿using Discord;
 using GrillBot.App.Controllers;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Data.Models.API.Points;
@@ -16,13 +15,13 @@ public class PointsControllerTests : ControllerTest<PointsController>
     private IGuild Guild { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override bool CanInitProvider() => false;
 
     protected override PointsController CreateController()
     {
         var userBuilder = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator);
 
-        Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName)
+        Guild = new GuildBuilder()
+            .SetIdentity(Consts.GuildId, Consts.GuildName)
             .SetGetUserAction(userBuilder.Build()).Build();
         User = userBuilder.SetGuild(Guild).Build();
 
@@ -30,10 +29,8 @@ public class PointsControllerTests : ControllerTest<PointsController>
             .SetGetGuildsAction(new[] { Guild })
             .SetGetUserAction(User)
             .Build();
-
-        var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new PointsApiService(DatabaseBuilder, mapper, client, ApiRequestContext);
-
+        
+        var apiService = new PointsApiService(DatabaseBuilder, TestServices.AutoMapper.Value, client, ApiRequestContext);
         return new PointsController(apiService);
     }
 
@@ -58,7 +55,7 @@ public class PointsControllerTests : ControllerTest<PointsController>
         {
             Sort = { Descending = false }
         };
-        var result = await AdminController.GetTransactionListAsync(filter);
+        var result = await Controller.GetTransactionListAsync(filter);
 
         CheckResult<OkObjectResult, PaginatedResponse<PointsTransaction>>(result);
     }
@@ -75,7 +72,7 @@ public class PointsControllerTests : ControllerTest<PointsController>
             UserId = User.Id.ToString()
         };
 
-        var result = await AdminController.GetTransactionListAsync(filter);
+        var result = await Controller.GetTransactionListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<PointsTransaction>>(result);
     }
 
@@ -96,7 +93,7 @@ public class PointsControllerTests : ControllerTest<PointsController>
         await Repository.CommitAsync();
 
         var filter = new GetPointsSummaryParams();
-        var result = await AdminController.GetSummariesAsync(filter);
+        var result = await Controller.GetSummariesAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<PointsSummary>>(result);
     }
 
@@ -110,7 +107,7 @@ public class PointsControllerTests : ControllerTest<PointsController>
             GuildId = Guild.Id.ToString(),
             UserId = User.Id.ToString()
         };
-        var result = await AdminController.GetSummariesAsync(filter);
+        var result = await Controller.GetSummariesAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<PointsSummary>>(result);
     }
 
@@ -131,14 +128,14 @@ public class PointsControllerTests : ControllerTest<PointsController>
         await Repository.CommitAsync();
 
         var filter = new GetPointsSummaryParams();
-        var result = await AdminController.GetGraphDataAsync(filter);
+        var result = await Controller.GetGraphDataAsync(filter);
         CheckResult<OkObjectResult, List<PointsSummaryBase>>(result);
     }
 
     [TestMethod]
     public async Task GetPointsLeaderboardAsync_WithoutData()
     {
-        var result = await UserController.GetPointsLeaderboardAsync();
+        var result = await Controller.GetPointsLeaderboardAsync();
         CheckResult<OkObjectResult, List<UserPointsItem>>(result);
     }
 
@@ -158,7 +155,7 @@ public class PointsControllerTests : ControllerTest<PointsController>
         });
         await Repository.CommitAsync();
 
-        var result = await UserController.GetPointsLeaderboardAsync();
+        var result = await Controller.GetPointsLeaderboardAsync();
         CheckResult<OkObjectResult, List<UserPointsItem>>(result);
     }
 }

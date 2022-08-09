@@ -1,11 +1,9 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Services;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Discord;
 
@@ -28,15 +26,13 @@ public class PointsServiceTests : ServiceTest<PointsService>
         GuildUser = userBuilder.SetGuild(Guild).Build();
 
         var discordClient = DiscordHelper.CreateClient();
-        var configuration = ConfigurationHelper.CreateConfiguration();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
+        var counterManager = TestServices.CounterManager.Value;
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var randomization = new RandomizationService();
         var profilePicture = new ProfilePictureManager(CacheBuilder, counterManager);
 
-        return new PointsService(discordClient, DatabaseBuilder, configuration, messageCache, randomization,
-            profilePicture);
+        return new PointsService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, messageCache, randomization, profilePicture);
     }
 
     private async Task InitDataAsync()
@@ -97,7 +93,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
                 ReactionPoints = summary.ReactionPoints,
                 UserId = summary.UserId
             });
-            
+
             await Repository.AddAsync(new PointsTransactionSummary
             {
                 Day = DateTime.Now.AddYears(-3).Date,

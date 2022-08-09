@@ -1,10 +1,8 @@
-﻿using System;
-using GrillBot.App.Controllers;
+﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Models.API.Suggestions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using EmoteSuggestion = GrillBot.Data.Models.API.Suggestions.EmoteSuggestion;
@@ -14,13 +12,9 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class EmoteSuggestionControllerTests : ControllerTest<EmoteSuggestionController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override EmoteSuggestionController CreateController()
     {
-        var mapper = AutoMapperHelper.CreateMapper();
-        var apiService = new EmoteSuggestionApiService(DatabaseBuilder, mapper);
-
+        var apiService = new EmoteSuggestionApiService(DatabaseBuilder, TestServices.AutoMapper.Value);
         return new EmoteSuggestionController(apiService);
     }
 
@@ -47,7 +41,7 @@ public class EmoteSuggestionControllerTests : ControllerTest<EmoteSuggestionCont
         await Repository.CommitAsync();
 
         var filter = new GetSuggestionsListParams();
-        var result = await AdminController.GetSuggestionListAsync(filter);
+        var result = await Controller.GetSuggestionListAsync(filter);
 
         CheckResult<OkObjectResult, PaginatedResponse<EmoteSuggestion>>(result);
     }
@@ -67,7 +61,7 @@ public class EmoteSuggestionControllerTests : ControllerTest<EmoteSuggestionCont
             Sort = { Descending = true }
         };
 
-        var result = await AdminController.GetSuggestionListAsync(filter);
+        var result = await Controller.GetSuggestionListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<EmoteSuggestion>>(result);
     }
 }

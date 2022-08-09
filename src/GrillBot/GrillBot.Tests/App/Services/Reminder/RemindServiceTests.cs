@@ -1,7 +1,5 @@
 ﻿using GrillBot.App.Services.Reminder;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Discord;
@@ -11,11 +9,11 @@ namespace GrillBot.Tests.App.Services.Reminder;
 [TestClass]
 public class RemindServiceTests : ServiceTest<RemindService>
 {
-    private static IUser User
-        => new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+    private static IUser User { get; set; }
 
     protected override RemindService CreateService()
     {
+        User = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var guild = new GuildBuilder()
             .SetIdentity(Consts.GuildId, Consts.GuildName)
             .Build();
@@ -25,8 +23,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
             .SetGetGuildsAction(new[] { guild })
             .Build();
 
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        return new RemindService(discordClient, DatabaseBuilder, configuration);
+        return new RemindService(discordClient, DatabaseBuilder, TestServices.Configuration.Value);
     }
 
     [TestMethod]

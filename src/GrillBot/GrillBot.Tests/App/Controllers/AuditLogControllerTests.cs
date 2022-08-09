@@ -5,10 +5,8 @@ using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
@@ -19,20 +17,17 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class AuditLogControllerTests : ControllerTest<AuditLogController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override AuditLogController CreateController()
     {
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        var fileStorage = new FileStorageMock(configuration);
-        var mapper = AutoMapperHelper.CreateMapper();
+        var fileStorage = new FileStorageMock(TestServices.Configuration.Value);
+        var mapper = TestServices.AutoMapper.Value;
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var apiService = new AuditLogApiService(DatabaseBuilder, mapper, fileStorage, ApiRequestContext, auditLogWriter);
 
         return new AuditLogController(apiService);
     }
 
-    public override void Cleanup()
+    protected override void Cleanup()
     {
         if (File.Exists("Temp.txt"))
             File.Delete("Temp.txt");
@@ -50,14 +45,14 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.RemoveItemAsync(12345);
+        var result = await Controller.RemoveItemAsync(12345);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task RemoveItemAsync_NotFound()
     {
-        var result = await AdminController.RemoveItemAsync(12345);
+        var result = await Controller.RemoveItemAsync(12345);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -90,7 +85,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await Repository.AddAsync(item);
         await Repository.CommitAsync();
 
-        var result = await AdminController.RemoveItemAsync(12345);
+        var result = await Controller.RemoveItemAsync(12345);
         CheckResult<OkResult>(result);
     }
 
@@ -124,7 +119,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await Repository.AddAsync(item);
         await Repository.CommitAsync();
 
-        var result = await AdminController.RemoveItemAsync(12345);
+        var result = await Controller.RemoveItemAsync(12345);
         CheckResult<OkResult>(result);
         Assert.IsFalse(File.Exists("Temp.txt"));
     }
@@ -132,7 +127,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     [TestMethod]
     public async Task GetAuditLogListAsync_WithoutFilter_WithoutData()
     {
-        var result = await AdminController.GetAuditLogListAsync(new AuditLogListParams());
+        var result = await Controller.GetAuditLogListAsync(new AuditLogListParams());
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
@@ -175,7 +170,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await Repository.AddAsync(new User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetAuditLogListAsync(filter);
+        var result = await Controller.GetAuditLogListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
@@ -219,7 +214,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await Repository.AddAsync(new User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetAuditLogListAsync(filter);
+        var result = await Controller.GetAuditLogListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
@@ -273,14 +268,14 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await Repository.AddAsync(new User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetAuditLogListAsync(filter);
+        var result = await Controller.GetAuditLogListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
     [TestMethod]
     public async Task GetFileContentAsync_ItemNotFound()
     {
-        var result = await AdminController.GetFileContentAsync(1, 1);
+        var result = await Controller.GetFileContentAsync(1, 1);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -304,7 +299,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await Repository.AddAsync(new User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetFileContentAsync(12345, 123);
+        var result = await Controller.GetFileContentAsync(12345, 123);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -337,7 +332,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await Repository.AddAsync(item);
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetFileContentAsync(12345, 123);
+        var result = await Controller.GetFileContentAsync(12345, 123);
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -371,7 +366,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
         await Repository.AddAsync(item);
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetFileContentAsync(12345, 123);
+        var result = await Controller.GetFileContentAsync(12345, 123);
         CheckResult<FileContentResult>(result);
     }
 
@@ -402,7 +397,7 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
         foreach (var request in requests)
         {
-            var result = await AdminController.HandleClientAppMessageAsync(request);
+            var result = await Controller.HandleClientAppMessageAsync(request);
             CheckResult<OkResult>(result);
         }
     }

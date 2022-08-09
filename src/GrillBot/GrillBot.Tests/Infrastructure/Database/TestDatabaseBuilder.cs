@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Services;
 using GrillBot.Database.Services.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +11,7 @@ public class TestDatabaseBuilder : GrillBotDatabaseBuilder
 {
     private GrillBotContext Context { get; set; }
 
-    public TestDatabaseBuilder() : base(DiHelper.CreateEmptyProvider())
+    public TestDatabaseBuilder() : base(null!)
     {
     }
 
@@ -30,7 +29,7 @@ public class TestDatabaseBuilder : GrillBotDatabaseBuilder
     public override GrillBotRepository CreateRepository()
     {
         Context = CreateContext();
-        return new GrillBotRepository(Context, new CounterManager());
+        return new GrillBotRepository(Context, TestServices.CounterManager.Value);
     }
 
     public static void ClearDatabase()

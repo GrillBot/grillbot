@@ -3,9 +3,7 @@ using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System;
 using GrillBot.App.Services.User;
-using GrillBot.Common.Models;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
@@ -23,9 +21,8 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
 
     protected override RequestFilter CreateFilter()
     {
-        var discordClient = new ClientBuilder()
-            .Build();
-        
+        var discordClient = new ClientBuilder().Build();
+
         ApiRequest = new ApiRequest();
         ApiRequestContext = new ApiRequestContext();
         var userHearthbeatService = new UserHearthbeatService(DatabaseBuilder);
@@ -40,7 +37,6 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
         var @delegate = GetDelegate();
 
         await Filter.OnActionExecutionAsync(context, @delegate);
-
         Assert.AreNotEqual(DateTime.MinValue, ApiRequest.StartAt);
     }
 

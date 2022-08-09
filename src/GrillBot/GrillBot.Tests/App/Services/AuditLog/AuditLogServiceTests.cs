@@ -2,14 +2,10 @@
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Moq;
-using System;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
 
@@ -20,10 +16,8 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        var storage = new FileStorageMock(configuration);
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, TestServices.CounterManager.Value);
+        var storage = new FileStorageMock(TestServices.Configuration.Value);
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
 
         return new AuditLogService(discordClient, DatabaseBuilder, messageCache, storage, initManager, auditLogWriter);

@@ -33,7 +33,7 @@ public class ApiKeyAuthAttributeTests
         var request = new Mock<HttpRequest>();
         request.Setup(o => o.Headers).Returns(headers);
 
-        var serviceProvider = DiHelper.CreateInitializedProvider();
+        var serviceProvider = TestServices.InitializedProvider.Value;
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(o => o.Request).Returns(request.Object);
         httpContext.Setup(o => o.RequestServices).Returns(serviceProvider);

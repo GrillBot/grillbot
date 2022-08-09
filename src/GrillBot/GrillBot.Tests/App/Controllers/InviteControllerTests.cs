@@ -1,13 +1,8 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.Invites;
-using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -15,14 +10,11 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class InviteControllerTests : ControllerTest<InviteController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override InviteController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var mapper = AutoMapperHelper.CreateMapper();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var service = new InviteService(discordClient, DatabaseBuilder, mapper, auditLogWriter);
+        var service = new InviteService(discordClient, DatabaseBuilder, TestServices.AutoMapper.Value, auditLogWriter);
 
         return new InviteController(service);
     }
@@ -41,7 +33,7 @@ public class InviteControllerTests : ControllerTest<InviteController>
         await Repository.AddAsync(guild);
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetInviteListAsync(new GetInviteListParams());
+        var result = await Controller.GetInviteListAsync(new GetInviteListParams());
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
     }
 
@@ -57,21 +49,21 @@ public class InviteControllerTests : ControllerTest<InviteController>
             GuildId = Consts.GuildId.ToString()
         };
 
-        var result = await AdminController.GetInviteListAsync(filter);
+        var result = await Controller.GetInviteListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<GuildInvite>>(result);
     }
 
     [TestMethod]
     public async Task RefreshMetadataAsync()
     {
-        var result = await AdminController.RefreshMetadataCacheAsync();
+        var result = await Controller.RefreshMetadataCacheAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
 
     [TestMethod]
     public void GetCurrentMetadataCount()
     {
-        var result = AdminController.GetCurrentMetadataCount();
+        var result = Controller.GetCurrentMetadataCount();
         CheckResult<OkObjectResult, int>(result);
 
         Assert.AreEqual(0, ((OkObjectResult)result.Result)?.Value);

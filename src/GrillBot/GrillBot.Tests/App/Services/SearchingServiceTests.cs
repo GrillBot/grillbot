@@ -2,9 +2,7 @@
 using GrillBot.App.Services.User;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
@@ -16,11 +14,9 @@ public class SearchingServiceTests : ServiceTest<SearchingService>
     protected override SearchingService CreateService()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        var userService = new UserService(DatabaseBuilder, configuration);
-        var mapper = AutoMapperHelper.CreateMapper();
+        var userService = new UserService(DatabaseBuilder, TestServices.Configuration.Value);
 
-        return new SearchingService(discordClient, DatabaseBuilder, userService, mapper);
+        return new SearchingService(discordClient, DatabaseBuilder, userService, TestServices.AutoMapper.Value);
     }
 
     [TestMethod]

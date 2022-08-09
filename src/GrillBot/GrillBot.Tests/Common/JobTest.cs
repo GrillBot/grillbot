@@ -1,21 +1,15 @@
-﻿using GrillBot.Cache.Services;
-using GrillBot.Cache.Services.Repository;
-using GrillBot.Database.Services;
-using GrillBot.Tests.Infrastructure.Cache;
+﻿using GrillBot.Cache.Services.Repository;
 using Moq;
 using Quartz;
-using System;
 using System.Diagnostics.CodeAnalysis;
 using GrillBot.Database.Services.Repository;
-using GrillBot.Tests.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Tests.Common;
 
 [ExcludeFromCodeCoverage]
 public abstract class JobTest<TJob> where TJob : IJob
 {
-    protected TJob Job { get; set; }
+    protected TJob Job { get; private set; }
     protected TestDatabaseBuilder DatabaseBuilder { get; private set; }
     protected TestCacheBuilder CacheBuilder { get; private set; }
 
@@ -27,22 +21,17 @@ public abstract class JobTest<TJob> where TJob : IJob
     [TestInitialize]
     public void Initialize()
     {
-        DatabaseBuilder = new TestDatabaseBuilder();
-        CacheBuilder = new TestCacheBuilder();
-
+        DatabaseBuilder = TestServices.DatabaseBuilder.Value;
+        CacheBuilder = TestServices.CacheBuilder.Value;
         Repository = DatabaseBuilder.CreateRepository();
         CacheRepository = CacheBuilder.CreateRepository();
 
         Job = CreateJob();
     }
 
-    public virtual void Cleanup() { }
-
     [TestCleanup]
     public void TestClean()
     {
-        Cleanup();
-
         TestDatabaseBuilder.ClearDatabase();
         TestCacheBuilder.ClearDatabase();
 
@@ -51,9 +40,6 @@ public abstract class JobTest<TJob> where TJob : IJob
 
         if (Job is IDisposable disposable)
             disposable.Dispose();
-
-        if (Job is IAsyncDisposable asyncDisposable)
-            asyncDisposable.DisposeAsync().AsTask().Wait();
     }
 
     protected IJobExecutionContext CreateContext()

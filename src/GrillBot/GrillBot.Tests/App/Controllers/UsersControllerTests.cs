@@ -7,13 +7,10 @@ using GrillBot.App.Services.DirectApi;
 using GrillBot.App.Services.User;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -21,8 +18,6 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class UsersControllerTests : ControllerTest<UsersController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override UsersController CreateController()
     {
         var guild = new GuildBuilder()
@@ -41,11 +36,10 @@ public class UsersControllerTests : ControllerTest<UsersController>
 
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
-        var configuration = ConfigurationHelper.CreateConfiguration();
+        var configuration = TestServices.Configuration.Value;
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var mapper = AutoMapperHelper.CreateMapper();
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, TestServices.CounterManager.Value);
+        var mapper = TestServices.AutoMapper.Value;
         var channelsService = new ChannelService(discordClient, DatabaseBuilder, configuration, messageCache);
         var helpService = new CommandsHelpService(discordClient, commandsService, channelsService, ServiceProvider, configuration);
         var directApi = new DirectApiService(discordClient, configuration, initManager, CacheBuilder);
@@ -71,7 +65,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
             Sort = { Descending = true }
         };
 
-        var result = await AdminController.GetUsersListAsync(filter);
+        var result = await Controller.GetUsersListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UserListItem>>(result);
     }
 
@@ -106,14 +100,14 @@ public class UsersControllerTests : ControllerTest<UsersController>
         await Repository.CommitAsync();
 
         var filter = new GetUserListParams();
-        var result = await AdminController.GetUsersListAsync(filter);
+        var result = await Controller.GetUsersListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<UserListItem>>(result);
     }
 
     [TestMethod]
     public async Task GetUserDetailAsync_NotFound()
     {
-        var result = await AdminController.GetUserDetailAsync(Consts.UserId);
+        var result = await Controller.GetUserDetailAsync(Consts.UserId);
         CheckResult<NotFoundObjectResult, UserDetail>(result);
     }
 
@@ -158,14 +152,14 @@ public class UsersControllerTests : ControllerTest<UsersController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetUserDetailAsync(Consts.UserId);
+        var result = await Controller.GetUserDetailAsync(Consts.UserId);
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
     [TestMethod]
     public async Task UpdateUserAsync_NotFound()
     {
-        var result = await AdminController.UpdateUserAsync(1, new UpdateUserParams());
+        var result = await Controller.UpdateUserAsync(1, new UpdateUserParams());
         CheckResult<NotFoundObjectResult, UserDetail>(result);
     }
 
@@ -181,7 +175,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
             PublicAdminBlocked = true,
             WebAdminAllowed = true
         };
-        var result = await AdminController.UpdateUserAsync(Consts.UserId, parameters);
+        var result = await Controller.UpdateUserAsync(Consts.UserId, parameters);
         CheckResult<OkResult>(result);
     }
 
@@ -197,7 +191,7 @@ public class UsersControllerTests : ControllerTest<UsersController>
             PublicAdminBlocked = false,
             WebAdminAllowed = false
         };
-        var result = await AdminController.UpdateUserAsync(Consts.UserId, parameters);
+        var result = await Controller.UpdateUserAsync(Consts.UserId, parameters);
         CheckResult<OkResult>(result);
     }
 
@@ -207,17 +201,19 @@ public class UsersControllerTests : ControllerTest<UsersController>
         await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
         await Repository.CommitAsync();
 
-        CheckResult<OkResult>(await AdminController.HearthbeatOffAsync());
+        CheckResult<OkResult>(await Controller.HearthbeatOffAsync());
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetCurrentUserDetailAsync_NotFound()
     {
-        var result = await UserController.GetCurrentUserDetailAsync();
+        var result = await Controller.GetCurrentUserDetailAsync();
         CheckResult<NotFoundObjectResult, UserDetail>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetCurrentUserDetailAsync_Found()
     {
         await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
@@ -226,23 +222,25 @@ public class UsersControllerTests : ControllerTest<UsersController>
         await Repository.AddAsync(new Database.Entity.EmoteStatisticItem { EmoteId = "<:PepeLa:751183558126731274>", UserId = Consts.UserId.ToString(), GuildId = "3" });
         await Repository.CommitAsync();
 
-        var result = await UserController.GetCurrentUserDetailAsync();
+        var result = await Controller.GetCurrentUserDetailAsync();
         CheckResult<OkObjectResult, UserDetail>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task HearthbeatOffAsync_AsUser()
     {
         await Repository.AddAsync(new Database.Entity.User { Id = Consts.UserId.ToString(), Username = "User", Discriminator = "1" });
         await Repository.CommitAsync();
 
-        CheckResult<OkResult>(await UserController.HearthbeatOffAsync());
+        CheckResult<OkResult>(await Controller.HearthbeatOffAsync());
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetAvailableCommandsAsync()
     {
-        var result = await UserController.GetAvailableCommandsAsync();
+        var result = await Controller.GetAvailableCommandsAsync();
         CheckResult<OkObjectResult, List<CommandGroup>>(result);
     }
 }

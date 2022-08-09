@@ -2,7 +2,6 @@
 using GrillBot.App.Controllers;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,8 +11,6 @@ namespace GrillBot.Tests.App.Controllers;
 public class DataControllerTests : ControllerTest<DataController>
 {
     private IGuild Guild { get; set; }
-    
-    protected override bool CanInitProvider() => true;
 
     protected override DataController CreateController()
     {
@@ -43,14 +40,12 @@ public class DataControllerTests : ControllerTest<DataController>
             .Build();
 
         var discordClient = DiscordHelper.CreateClient();
-        var commandsService = DiscordHelper.CreateCommandsService(ServiceProvider);
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        var interactions = DiscordHelper.CreateInteractionService(discordClient, ServiceProvider);
-        var mapper = AutoMapperHelper.CreateMapper();
+        var provider = CanInitProvider() ? ServiceProvider : null;
+        var commandsService = DiscordHelper.CreateCommandsService(provider);
+        var interactions = DiscordHelper.CreateInteractionService(discordClient, provider);
         var emotesCache = new EmotesCacheService(discordClient);
 
-        return new DataController(client, commandsService, configuration, interactions, emotesCache, mapper,
-            DatabaseBuilder, ApiRequestContext);
+        return new DataController(client, commandsService, TestServices.Configuration.Value, interactions, emotesCache, TestServices.AutoMapper.Value, DatabaseBuilder, ApiRequestContext);
     }
 
     [TestMethod]
@@ -58,60 +53,58 @@ public class DataControllerTests : ControllerTest<DataController>
     {
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
         await Repository.CommitAsync();
-                
-        var result = await AdminController.GetAvailableGuildsAsync();
+
+        var result = await Controller.GetAvailableGuildsAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetAvailableGuildsAsync_Public()
     {
-        SelectApiRequestContext(true);
-        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
-
-        var result = await UserController.GetAvailableGuildsAsync();
+        var result = await Controller.GetAvailableGuildsAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public async Task GetChannelsAsync_WithGuild_WithThreads()
     {
-        var result = await AdminController.GetChannelsAsync(Consts.GuildId + 1);
+        var result = await Controller.GetChannelsAsync(Consts.GuildId + 1);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public async Task GetChannelsAsync_WithoutGuild_WithoutThreads()
     {
-        var result = await AdminController.GetChannelsAsync(null, true);
+        var result = await Controller.GetChannelsAsync(null, true);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public async Task GetRoles_WithGuild()
     {
-        var result = await AdminController.GetRolesAsync(Consts.GuildId);
+        var result = await Controller.GetRolesAsync(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public async Task GetRoles_WithoutGuild()
     {
-        var result = await AdminController.GetRolesAsync(null);
+        var result = await Controller.GetRolesAsync(null);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public async Task GetAvailableUsersAsync_All()
     {
-        var result = await AdminController.GetAvailableUsersAsync();
+        var result = await Controller.GetAvailableUsersAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public async Task GetAvailableUsersAsync_Bots()
     {
-        var result = await AdminController.GetAvailableUsersAsync(true);
+        var result = await Controller.GetAvailableUsersAsync(true);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
@@ -123,83 +116,84 @@ public class DataControllerTests : ControllerTest<DataController>
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetAvailableUsersAsync(false);
+        var result = await Controller.GetAvailableUsersAsync(false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetAvailableUsersAsync_WithMutualGuilds()
     {
-        SelectApiRequestContext(true);
-        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
-
-        var result = await UserController.GetAvailableUsersAsync(false);
+        var result = await Controller.GetAvailableUsersAsync(false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetAvailableGuildsAsync_AsUser()
     {
-        var result = await UserController.GetAvailableGuildsAsync();
+        var result = await Controller.GetAvailableGuildsAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetChannelsAsync_WithGuild_WithThreads_AsUser()
     {
-        SelectApiRequestContext(true);
-        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
-
-        var result = await UserController.GetChannelsAsync(Consts.GuildId + 1);
+        var result = await Controller.GetChannelsAsync(Consts.GuildId + 1);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetChannelsAsync_WithoutGuild_WithoutThreads_AsUser()
     {
-        SelectApiRequestContext(true);
-        ReflectionHelper.SetPrivateReadonlyPropertyValue(UserController, nameof(ApiRequestContext), ApiRequestContext);
-
-        var result = await UserController.GetChannelsAsync(null, true);
+        var result = await Controller.GetChannelsAsync(null, true);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetRoles_WithGuild_AsUser()
     {
-        var result = await UserController.GetRolesAsync(Consts.GuildId);
+        var result = await Controller.GetRolesAsync(Consts.GuildId);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetRoles_WithoutGuild_AsUser()
     {
-        var result = await UserController.GetRolesAsync(null);
+        var result = await Controller.GetRolesAsync(null);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true, true)]
     public void GetCommandsList()
     {
-        var result = UserController.GetCommandsList();
+        var result = Controller.GetCommandsList();
         CheckResult<OkObjectResult, List<string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetAvailableUsersAsync_All_AsUser()
     {
-        var result = await UserController.GetAvailableUsersAsync();
+        var result = await Controller.GetAvailableUsersAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetAvailableUsersAsync_Bots_AsUser()
     {
-        var result = await UserController.GetAvailableUsersAsync(true);
+        var result = await Controller.GetAvailableUsersAsync(true);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetAvailableUsersAsync_Users_AsUser()
     {
         var user = new UserBuilder()
@@ -209,14 +203,14 @@ public class DataControllerTests : ControllerTest<DataController>
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();
 
-        var result = await UserController.GetAvailableUsersAsync(false);
+        var result = await Controller.GetAvailableUsersAsync(false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
     public void GetSupportedEmotes()
     {
-        var result = AdminController.GetSupportedEmotes();
+        var result = Controller.GetSupportedEmotes();
         CheckResult<OkObjectResult, List<EmoteItem>>(result);
     }
 }

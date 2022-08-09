@@ -1,7 +1,5 @@
 ﻿using GrillBot.App.Services.Birthday;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
-using System;
 using Discord;
 
 namespace GrillBot.Tests.App.Services.Birthday;
@@ -9,11 +7,11 @@ namespace GrillBot.Tests.App.Services.Birthday;
 [TestClass]
 public class BirthdayServiceTests : ServiceTest<BirthdayService>
 {
-    private static IUser User =>
-        new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+    private static IUser User { get; set; }
 
     protected override BirthdayService CreateService()
     {
+        User = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var discordClient = new ClientBuilder()
             .SetGetUserAction(User)
             .Build();
@@ -24,59 +22,53 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     [TestMethod]
     public async Task AddBirthayAsync_WithInit()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        await Service.AddBirthdayAsync(user, new DateTime(2022, 02, 04));
+        await Service.AddBirthdayAsync(User, new DateTime(2022, 02, 04));
         Assert.IsTrue(true);
     }
 
     [TestMethod]
     public async Task AddBirthdayAsync_WithoutInit()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        await Repository.User.GetOrCreateUserAsync(user);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.CommitAsync();
 
-        await Service.AddBirthdayAsync(user, new DateTime(2022, 02, 04));
+        await Service.AddBirthdayAsync(User, new DateTime(2022, 02, 04));
         Assert.IsTrue(true);
     }
 
     [TestMethod]
     public async Task RemoveBirthdayAsync_NotFound()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        await Service.RemoveBirthdayAsync(user);
+        await Service.RemoveBirthdayAsync(User);
         Assert.IsTrue(true);
     }
 
     [TestMethod]
     public async Task RemoveBirthdayAsync_Found()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        await Repository.User.GetOrCreateUserAsync(user);
+        await Repository.User.GetOrCreateUserAsync(User);
         await Repository.CommitAsync();
 
-        await Service.RemoveBirthdayAsync(user);
+        await Service.RemoveBirthdayAsync(User);
         Assert.IsTrue(true);
     }
 
     [TestMethod]
     public async Task HaveBirthdayAsync_Yes()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var dbUser = Database.Entity.User.FromDiscord(user);
+        var dbUser = Database.Entity.User.FromDiscord(User);
         dbUser.Birthday = DateTime.MaxValue;
         await Repository.AddAsync(dbUser);
         await Repository.CommitAsync();
 
-        var result = await Service.HaveBirthdayAsync(user);
+        var result = await Service.HaveBirthdayAsync(User);
         Assert.IsTrue(result);
     }
 
     [TestMethod]
     public async Task HaveBirthdayAsync_No()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var result = await Service.HaveBirthdayAsync(user);
+        var result = await Service.HaveBirthdayAsync(User);
         Assert.IsFalse(result);
     }
 

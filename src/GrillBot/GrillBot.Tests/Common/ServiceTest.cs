@@ -1,16 +1,13 @@
 ﻿using GrillBot.Cache.Services.Repository;
-using GrillBot.Tests.Infrastructure.Cache;
-using System;
 using System.Diagnostics.CodeAnalysis;
 using GrillBot.Database.Services.Repository;
-using GrillBot.Tests.Infrastructure.Database;
 
 namespace GrillBot.Tests.Common;
 
 [ExcludeFromCodeCoverage]
 public abstract class ServiceTest<TService> where TService : class
 {
-    protected TService Service { get; set; }
+    protected TService Service { get; private set; }
 
     protected TestDatabaseBuilder DatabaseBuilder { get; private set; }
     protected TestCacheBuilder CacheBuilder { get; private set; }
@@ -23,24 +20,17 @@ public abstract class ServiceTest<TService> where TService : class
     [TestInitialize]
     public void Initialize()
     {
-        DatabaseBuilder = new TestDatabaseBuilder();
-        CacheBuilder = new TestCacheBuilder();
-
+        DatabaseBuilder = TestServices.DatabaseBuilder.Value;
+        CacheBuilder = TestServices.CacheBuilder.Value;
         Repository = DatabaseBuilder.CreateRepository();
         CacheRepository = CacheBuilder.CreateRepository();
 
         Service = CreateService();
     }
 
-    public virtual void Cleanup()
-    {
-    }
-
     [TestCleanup]
     public void TestClean()
     {
-        Cleanup();
-
         TestDatabaseBuilder.ClearDatabase();
         TestCacheBuilder.ClearDatabase();
 

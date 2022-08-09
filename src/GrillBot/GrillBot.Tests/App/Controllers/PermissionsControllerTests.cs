@@ -1,21 +1,16 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.Data.Models.API.Permissions;
-using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace GrillBot.Tests.App.Controllers;
 
 [TestClass]
 public class PermissionsControllerTests : ControllerTest<PermissionsController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override PermissionsController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var mapper = AutoMapperHelper.CreateMapper();
-        return new PermissionsController(discordClient, mapper, DatabaseBuilder);
+        return new PermissionsController(discordClient, TestServices.AutoMapper.Value, DatabaseBuilder);
     }
 
     [TestMethod]
@@ -29,7 +24,7 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
             TargetId = Consts.UserId.ToString()
         };
 
-        var result = await AdminController.CreateExplicitPermissionAsync(parameters);
+        var result = await Controller.CreateExplicitPermissionAsync(parameters);
         CheckResult<OkResult>(result);
     }
 
@@ -44,14 +39,14 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
             TargetId = Consts.UserId.ToString()
         };
 
-        CheckResult<OkResult>(await AdminController.CreateExplicitPermissionAsync(parameters));
-        CheckResult<ConflictObjectResult>(await AdminController.CreateExplicitPermissionAsync(parameters));
+        CheckResult<OkResult>(await Controller.CreateExplicitPermissionAsync(parameters));
+        CheckResult<ConflictObjectResult>(await Controller.CreateExplicitPermissionAsync(parameters));
     }
 
     [TestMethod]
     public async Task RemoveExplicitPermissionAsync_NotFound()
     {
-        var result = await AdminController.RemoveExplicitPermissionAsync("unverify", Consts.UserId.ToString());
+        var result = await Controller.RemoveExplicitPermissionAsync("unverify", Consts.UserId.ToString());
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -66,8 +61,8 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
             TargetId = Consts.UserId.ToString()
         };
 
-        CheckResult<OkResult>(await AdminController.CreateExplicitPermissionAsync(parameters));
-        CheckResult<OkResult>(await AdminController.RemoveExplicitPermissionAsync("unverify", Consts.UserId.ToString()));
+        CheckResult<OkResult>(await Controller.CreateExplicitPermissionAsync(parameters));
+        CheckResult<OkResult>(await Controller.RemoveExplicitPermissionAsync("unverify", Consts.UserId.ToString()));
     }
 
     [TestMethod]
@@ -81,14 +76,14 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
         await Repository.AddAsync(new Database.Entity.User { Username = Consts.Username, Discriminator = Consts.Discriminator, Id = Consts.UserId.ToString() });
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetExplicitPermissionsListAsync(null);
+        var result = await Controller.GetExplicitPermissionsListAsync(null);
         CheckResult<OkObjectResult, List<ExplicitPermission>>(result);
     }
 
     [TestMethod]
     public async Task GetExplicitPermissionsListAsync_WithFilter()
     {
-        var result = await AdminController.GetExplicitPermissionsListAsync("selfunverify");
+        var result = await Controller.GetExplicitPermissionsListAsync("selfunverify");
         CheckResult<OkObjectResult, List<ExplicitPermission>>(result);
     }
 
@@ -104,14 +99,14 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
         });
         await Repository.CommitAsync();
 
-        var result = await AdminController.SetExplicitPermissionStateAsync("unverify", Consts.UserId.ToString(), Database.Enums.ExplicitPermissionState.Allowed);
+        var result = await Controller.SetExplicitPermissionStateAsync("unverify", Consts.UserId.ToString(), Database.Enums.ExplicitPermissionState.Allowed);
         CheckResult<OkResult>(result);
     }
 
     [TestMethod]
     public async Task SetExplicitPermissionState_NotFound()
     {
-        var result = await AdminController.SetExplicitPermissionStateAsync("unverify", Consts.UserId.ToString(), Database.Enums.ExplicitPermissionState.Allowed);
+        var result = await Controller.SetExplicitPermissionStateAsync("unverify", Consts.UserId.ToString(), Database.Enums.ExplicitPermissionState.Allowed);
         CheckResult<NotFoundObjectResult>(result);
     }
 }

@@ -3,9 +3,7 @@ using GrillBot.App.Services;
 using GrillBot.App.Services.User;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -13,15 +11,11 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class SearchingControllerTests : ControllerTest<SearchingController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override SearchingController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        var userService = new UserService(DatabaseBuilder, configuration);
-        var mapper = AutoMapperHelper.CreateMapper();
-        var searchingService = new SearchingService(discordClient, DatabaseBuilder, userService, mapper);
+        var userService = new UserService(DatabaseBuilder, TestServices.Configuration.Value);
+        var searchingService = new SearchingService(discordClient, DatabaseBuilder, userService, TestServices.AutoMapper.Value);
 
         return new SearchingController(searchingService, ApiRequestContext);
     }
@@ -37,11 +31,12 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
             Sort = { Descending = true }
         };
 
-        var result = await AdminController.GetSearchListAsync(filter);
+        var result = await Controller.GetSearchListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetSearchListAsync_WithFilter_AsUser()
     {
         var filter = new GetSearchingListParams
@@ -52,7 +47,7 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
             Sort = { Descending = true }
         };
 
-        var result = await UserController.GetSearchListAsync(filter);
+        var result = await Controller.GetSearchListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
     }
 
@@ -77,14 +72,14 @@ public class SearchingControllerTests : ControllerTest<SearchingController>
         await Repository.CommitAsync();
 
         var filter = new GetSearchingListParams();
-        var result = await AdminController.GetSearchListAsync(filter);
+        var result = await Controller.GetSearchListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<SearchingListItem>>(result);
     }
 
     [TestMethod]
     public async Task RemoveSearchesAsync()
     {
-        var result = await AdminController.RemoveSearchesAsync(new[] { 1L });
+        var result = await Controller.RemoveSearchesAsync(new[] { 1L });
         CheckResult<OkResult>(result);
     }
 }

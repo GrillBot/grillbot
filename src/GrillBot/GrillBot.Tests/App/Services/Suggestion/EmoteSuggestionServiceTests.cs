@@ -2,14 +2,11 @@
 using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Exceptions;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.Tests.App.Services.Suggestion;
@@ -45,8 +42,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         var sesionService = new SuggestionSessionService();
         var discordSocketClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordSocketClient, initManager, CacheBuilder, counterManager);
+        var messageCache = new MessageCacheManager(discordSocketClient, initManager, CacheBuilder, TestServices.CounterManager.Value);
 
         return new EmoteSuggestionService(sesionService, DatabaseBuilder, discordClient, messageCache);
     }

@@ -5,12 +5,9 @@ using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Channels;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -18,8 +15,6 @@ namespace GrillBot.Tests.App.Controllers;
 [TestClass]
 public class ChannelControllerTests : ControllerTest<ChannelController>
 {
-    protected override bool CanInitProvider() => false;
-
     protected override ChannelController CreateController()
     {
         var guildBuilder = new GuildBuilder()
@@ -46,13 +41,10 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
 
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var counterManager = new CounterManager();
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var configuration = ConfigurationHelper.CreateConfiguration();
-        var mapper = AutoMapperHelper.CreateMapper();
+        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, TestServices.CounterManager.Value);
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var autoReplyService = new AutoReplyService(configuration, discordClient, DatabaseBuilder, initManager);
-        var apiService = new ChannelApiService(DatabaseBuilder, mapper, dcClient, messageCache, autoReplyService, ApiRequestContext, auditLogWriter);
+        var autoReplyService = new AutoReplyService(TestServices.Configuration.Value, discordClient, DatabaseBuilder, initManager);
+        var apiService = new ChannelApiService(DatabaseBuilder, TestServices.AutoMapper.Value, dcClient, messageCache, autoReplyService, ApiRequestContext, auditLogWriter);
 
         return new ChannelController(apiService);
     }
@@ -60,14 +52,14 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task SendMessageToChannelAsync_GuildNotFound()
     {
-        var result = await AdminController.SendMessageToChannelAsync(Consts.GuildId + 1, Consts.ChannelId, new SendMessageToChannelParams());
+        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId + 1, Consts.ChannelId, new SendMessageToChannelParams());
         CheckResult<NotFoundObjectResult>(result);
     }
 
     [TestMethod]
     public async Task SendMessageToChannelAsync_ChannelNotFound()
     {
-        var result = await AdminController.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId + 1, new SendMessageToChannelParams());
+        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId + 1, new SendMessageToChannelParams());
         CheckResult<NotFoundObjectResult>(result);
     }
 
@@ -75,7 +67,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     public async Task SendMessageToChannelAsync_Success()
     {
         var data = new SendMessageToChannelParams { Content = "Ahoj, toto je test." };
-        var result = await AdminController.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId, data);
+        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId, data);
         CheckResult<OkResult>(result);
     }
 
@@ -89,7 +81,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
             NameContains = Consts.ChannelName[..5]
         };
 
-        var result = await AdminController.GetChannelsListAsync(filter);
+        var result = await Controller.GetChannelsListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<GuildChannelListItem>>(result);
     }
 
@@ -104,14 +96,14 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await Repository.CommitAsync();
 
         var filter = new GetChannelListParams();
-        var result = await AdminController.GetChannelsListAsync(filter);
+        var result = await Controller.GetChannelsListAsync(filter);
         CheckResult<OkObjectResult, PaginatedResponse<GuildChannelListItem>>(result);
     }
 
     [TestMethod]
     public async Task ClearChannelCacheAsync()
     {
-        var result = await AdminController.ClearChannelCacheAsync(Consts.GuildId, Consts.ChannelId);
+        var result = await Controller.ClearChannelCacheAsync(Consts.GuildId, Consts.ChannelId);
         CheckResult<OkResult>(result);
     }
 
@@ -128,7 +120,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await Repository.AddAsync(guild);
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetChannelDetailAsync(Consts.ChannelId);
+        var result = await Controller.GetChannelDetailAsync(Consts.ChannelId);
         CheckResult<OkObjectResult, ChannelDetail>(result);
     }
 
@@ -142,21 +134,21 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await Repository.AddAsync(guild);
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetChannelDetailAsync(Consts.ChannelId);
+        var result = await Controller.GetChannelDetailAsync(Consts.ChannelId);
         CheckResult<OkObjectResult, ChannelDetail>(result);
     }
 
     [TestMethod]
     public async Task GetChannelDetailAsync_NotFound()
     {
-        var result = await AdminController.GetChannelDetailAsync(Consts.ChannelId);
+        var result = await Controller.GetChannelDetailAsync(Consts.ChannelId);
         CheckResult<NotFoundObjectResult, ChannelDetail>(result);
     }
 
     [TestMethod]
     public async Task UpdateChannelAsync_NotFound()
     {
-        var result = await AdminController.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
+        var result = await Controller.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
         CheckResult<NotFoundObjectResult, ChannelDetail>(result);
     }
 
@@ -170,7 +162,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await Repository.AddAsync(guild);
         await Repository.CommitAsync();
 
-        var result = await AdminController.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams { Flags = 42 });
+        var result = await Controller.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams { Flags = 42 });
         CheckResult<OkResult>(result);
     }
 
@@ -184,7 +176,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await Repository.AddAsync(guild);
         await Repository.CommitAsync();
 
-        var result = await AdminController.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
+        var result = await Controller.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
         CheckResult<ObjectResult>(result);
         CheckForStatusCode(result, 500);
     }
@@ -202,14 +194,15 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         await Repository.AddAsync(guild);
         await Repository.CommitAsync();
 
-        var result = await AdminController.GetChannelUsersAsync(Consts.ChannelId, new PaginatedParams());
+        var result = await Controller.GetChannelUsersAsync(Consts.ChannelId, new PaginatedParams());
         CheckResult<OkObjectResult, PaginatedResponse<ChannelUserStatItem>>(result);
     }
 
     [TestMethod]
+    [ControllerTestConfiguration(true)]
     public async Task GetChannelboardAsync()
     {
-        var result = await AdminController.GetChannelboardAsync();
+        var result = await Controller.GetChannelboardAsync();
         CheckResult<OkObjectResult, List<ChannelboardItem>>(result);
     }
 }

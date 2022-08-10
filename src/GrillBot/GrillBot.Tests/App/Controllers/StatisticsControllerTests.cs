@@ -176,7 +176,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         {
             Data = JsonConvert.SerializeObject(new ApiRequest
             {
-                StatusCode = "200 OK",
+                StatusCode = "200 (OK)",
                 Method = "GET",
                 TemplatePath = "/test",
                 EndAt = now.AddMinutes(1),
@@ -201,7 +201,7 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         {
             Data = JsonConvert.SerializeObject(new ApiRequest
             {
-                StatusCode = "200 OK",
+                StatusCode = "200 (OK)",
                 Method = "GET",
                 TemplatePath = "/test",
                 EndAt = now.AddMinutes(1),

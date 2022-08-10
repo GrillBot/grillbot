@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace GrillBot.Data.Models.AuditLog;
 
@@ -27,4 +29,17 @@ public class ApiRequest
 
     public void SetParams(object data)
         => BodyContent = JsonConvert.SerializeObject(data);
+
+    public string GetStatusCode()
+    {
+        if (string.IsNullOrEmpty(StatusCode)) return null;
+        
+        // Valid format of status code.
+        if (Regex.IsMatch(StatusCode, @"\d+\s+\([^\)]+\)"))
+            return StatusCode;
+
+        // Reformat status code to valid format.
+        var statusCodeData = StatusCode.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return $"{statusCodeData[0]} ({string.Concat(statusCodeData.Skip(1))})";
+    }
 }

@@ -291,7 +291,12 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByStatusCodeAsync()
     {
-        var filterModel = new AuditLogListParams { Types = new List<AuditLogItemType> { AuditLogItemType.Api } };
+        var filterModel = new AuditLogListParams
+        {
+            Types = new List<AuditLogItemType> { AuditLogItemType.Api },
+            Sort = null
+        };
+
         await using var repository = DatabaseBuilder.CreateRepository();
         var dbData = await repository.AuditLog.GetSimpleDataAsync(filterModel);
 
@@ -302,9 +307,15 @@ public class StatisticsController : Controller
                 Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)
             })
             .Where(o => !string.IsNullOrEmpty(o.Data!.StatusCode))
-            .GroupBy(o => o.Data.StatusCode)
+            .Select(o => new
+            {
+                o.CreatedAt,
+                o.Data,
+                StatusCode = o.Data!.GetStatusCode()
+            })
+            .GroupBy(o => o.StatusCode)
             .Select(o => new { o.Key, Count = o.Count() })
-            .OrderBy(o => o.Key)
+            .OrderByDescending(o => o.Count).ThenBy(o => o.Key)
             .ToDictionary(o => o.Key, o => o.Count);
 
         return Ok(data);

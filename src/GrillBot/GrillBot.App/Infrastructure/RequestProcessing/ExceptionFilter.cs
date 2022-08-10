@@ -31,11 +31,11 @@ public class ExceptionFilter : IAsyncExceptionFilter
         {
             context.ExceptionHandled = true;
             context.Result = new StatusCodeResult(400);
-            ApiRequest.StatusCode = "400 Bad Request";
+            ApiRequest.StatusCode = "400 (BadRequest)";
             return;
         }
 
-        ApiRequest.StatusCode = "500 Internal Server Error";
+        ApiRequest.StatusCode = "500 (InternalServerError)";
 
         var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, ApiRequestContext.LoggedUser);
         await AuditLogWriter.StoreAsync(wrapper);

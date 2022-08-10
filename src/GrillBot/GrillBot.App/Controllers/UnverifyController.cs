@@ -81,7 +81,7 @@ public class UnverifyController : Controller
             return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
         var fromUser = await guild.GetUserAsync(ApiRequestContext.GetUserId());
-        var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser);
+        var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, fromWeb: true);
         return Ok(new MessageResponse(result));
     }
 

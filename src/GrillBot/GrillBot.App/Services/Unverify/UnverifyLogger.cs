@@ -40,12 +40,13 @@ public class UnverifyLogger
         await SaveAsync(UnverifyOperation.Autoremove, data, currentUser, guild, toUser);
     }
 
-    public Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to)
+    public Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to, bool fromWeb)
     {
         var data = new UnverifyLogRemove
         {
             ReturnedOverwrites = returnedChannels,
-            ReturnedRoles = returnedRoles.ConvertAll(o => o.Id)
+            ReturnedRoles = returnedRoles.ConvertAll(o => o.Id),
+            FromWeb = fromWeb
         };
 
         return SaveAsync(UnverifyOperation.Remove, data, from, guild, to);

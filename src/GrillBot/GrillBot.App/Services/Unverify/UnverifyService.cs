@@ -154,7 +154,7 @@ public class UnverifyService
         return UnverifyMessageGenerator.CreateUpdateChannelMessage(user, newEnd);
     }
 
-    public async Task<string> RemoveUnverifyAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false)
+    public async Task<string> RemoveUnverifyAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false, bool fromWeb = false)
     {
         try
         {
@@ -165,7 +165,7 @@ public class UnverifyService
                 return UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser);
 
             var profile = UnverifyProfileGenerator.Reconstruct(dbUser.Unverify, toUser, guild);
-            await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto);
+            await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto, fromWeb);
 
             var muteRole = await GetMutedRoleAsync(guild);
             if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id))
@@ -207,9 +207,9 @@ public class UnverifyService
     }
 
     private Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> channels, IGuildUser user, IGuild guild,
-        IGuildUser fromUser, bool isAuto)
+        IGuildUser fromUser, bool isAuto, bool fromWeb)
     {
-        return isAuto ? Logger.LogAutoremoveAsync(returnedRoles, channels, user, guild) : Logger.LogRemoveAsync(returnedRoles, channels, guild, fromUser, user);
+        return isAuto ? Logger.LogAutoremoveAsync(returnedRoles, channels, user, guild) : Logger.LogRemoveAsync(returnedRoles, channels, guild, fromUser, user, fromWeb);
     }
 
     public async Task UnverifyAutoremoveAsync(ulong guildId, ulong userId)

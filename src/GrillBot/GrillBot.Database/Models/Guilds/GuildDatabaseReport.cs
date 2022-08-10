@@ -1,4 +1,4 @@
-﻿namespace GrillBot.Data.Models.API.Guilds;
+﻿namespace GrillBot.Database.Models.Guilds;
 
 public class GuildDatabaseReport
 {
@@ -10,4 +10,8 @@ public class GuildDatabaseReport
     public int UnverifyLogs { get; set; }
     public int AuditLogs { get; set; }
     public int CacheIndexes { get; set; }
+    public int EmoteStats { get; set; }
+    public int EmoteSuggestions { get; set; }
+    public int PointTransactions { get; set; }
+    public int PointTransactionSummaries { get; set; }
 }

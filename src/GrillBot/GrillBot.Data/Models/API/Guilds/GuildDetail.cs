@@ -3,6 +3,7 @@ using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Users;
 using System;
 using System.Collections.Generic;
+using GrillBot.Database.Models.Guilds;
 
 namespace GrillBot.Data.Models.API.Guilds;
 

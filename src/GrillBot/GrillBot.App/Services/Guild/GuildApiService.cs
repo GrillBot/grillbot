@@ -6,6 +6,7 @@ using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models;
+using GrillBot.Database.Models.Guilds;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GrillBot.App.Services.Guild;
@@ -92,18 +93,7 @@ public class GuildApiService
     private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.Guild.GetDatabaseReportDataAsync(guildId);
-
-        var report = new GuildDatabaseReport
-        {
-            Channels = data.channels,
-            Invites = data.invites,
-            Searches = data.searches,
-            Unverifies = data.unverify,
-            Users = data.users,
-            AuditLogs = data.auditLogs,
-            UnverifyLogs = data.unverifyLogs
-        };
+        var report = await repository.Guild.GetDatabaseReportDataAsync(guildId);
 
         await using var cache = CacheBuilder.CreateRepository();
         report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
@@ -139,9 +129,9 @@ public class GuildApiService
             modelState.AddModelError(nameof(parameters.VoteChannelId), "Nepodařilo se dohledat kanál pro veřejná hlasování.");
         else
             dbGuild.VoteChannelId = parameters.VoteChannelId;
-        
+
         UpdateGuildEvents(dbGuild, parameters);
-        
+
         if (modelState.IsValid)
             await repository.CommitAsync();
         return await GetDetailAsync(id);
@@ -150,7 +140,7 @@ public class GuildApiService
     private static void UpdateGuildEvents(Database.Entity.Guild guild, UpdateGuildParams parameters)
     {
         const string id = "EmoteSuggestions";
-        
+
         var guildEvent = guild.GuildEvents.FirstOrDefault(o => o.Id == id);
         if (parameters.EmoteSuggestionsValidity == null)
         {

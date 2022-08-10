@@ -4,6 +4,7 @@ using Discord;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models;
+using GrillBot.Database.Models.Guilds;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
@@ -72,13 +73,13 @@ public class GuildRepository : RepositoryBase
         }
     }
 
-    public async Task<(int auditLogs, int channels, int invites, int searches, int unverify, int unverifyLogs, int users)> GetDatabaseReportDataAsync(ulong guildId)
+    public async Task<GuildDatabaseReport> GetDatabaseReportDataAsync(ulong guildId)
     {
         using (Counter.Create("Database"))
         {
             var query = Context.Guilds.AsNoTracking()
                 .Where(o => o.Id == guildId.ToString())
-                .Select(g => new
+                .Select(g => new GuildDatabaseReport
                 {
                     AuditLogs = g.AuditLogs.Count,
                     Channels = g.Channels.Count,
@@ -86,11 +87,15 @@ public class GuildRepository : RepositoryBase
                     Searches = g.Searches.Count,
                     Unverifies = g.Unverifies.Count,
                     UnverifyLogs = g.UnverifyLogs.Count,
-                    Users = g.Users.Count
+                    Users = g.Users.Count,
+                    EmoteStats = g.EmoteStatistics.Count,
+                    EmoteSuggestions = Context.EmoteSuggestions.Count(o => o.GuildId == g.Id),
+                    PointTransactions = Context.PointsTransactions.Count(o => o.GuildId == g.Id),
+                    PointTransactionSummaries = Context.PointsTransactionSummaries.Count(o => o.GuildId == g.Id)
                 });
 
             var data = await query.FirstOrDefaultAsync();
-            return data == null ? (0, 0, 0, 0, 0, 0, 0) : (data.AuditLogs, data.Channels, data.Invites, data.Searches, data.Unverifies, data.UnverifyLogs, data.Users);
+            return data ?? new GuildDatabaseReport();
         }
     }
 

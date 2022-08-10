@@ -12,8 +12,7 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = TestServices.Configuration.Value;
-        var environment = EnvironmentHelper.CreateEnv("Production");
-        var checker = new UnverifyChecker(DatabaseBuilder, configuration, environment);
+        var checker = new UnverifyChecker(DatabaseBuilder, configuration, TestServices.ProductionEnvironment.Value);
         var profileGenerator = new UnverifyProfileGenerator(DatabaseBuilder);
         var logger = new UnverifyLogger(discordClient, DatabaseBuilder);
         var commandsService = DiscordHelper.CreateCommandsService();

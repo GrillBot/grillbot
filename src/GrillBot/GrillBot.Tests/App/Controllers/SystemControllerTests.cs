@@ -10,11 +10,10 @@ public class SystemControllerTests : ControllerTest<SystemController>
 {
     protected override SystemController CreateController()
     {
-        var environment = EnvironmentHelper.CreateEnv("Production");
         var client = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
 
-        return new SystemController(environment, client, initManager, TestServices.CounterManager.Value);
+        return new SystemController(TestServices.ProductionEnvironment.Value, client, initManager, TestServices.CounterManager.Value);
     }
 
     [TestMethod]

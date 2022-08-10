@@ -22,7 +22,7 @@ public static class DiHelper
         var startup = new Startup(configuration);
         var services = new ServiceCollection()
             .AddSingleton(configuration)
-            .AddSingleton(EnvironmentHelper.CreateEnv("Testing"));
+            .AddSingleton(TestServices.TestingEnvironment.Value);
 
         startup.ConfigureServices(services);
         return services.BuildServiceProvider();

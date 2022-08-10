@@ -37,8 +37,7 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
 
         var discordClient = DiscordHelper.CreateClient();
         var configuration = TestServices.Configuration.Value;
-        var webHostEnv = EnvironmentHelper.CreateEnv("Production");
-        var unverifyChecker = new UnverifyChecker(DatabaseBuilder, configuration, webHostEnv);
+        var unverifyChecker = new UnverifyChecker(DatabaseBuilder, configuration, TestServices.ProductionEnvironment.Value);
         var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder);
         var logger = new UnverifyLogger(discordClient, DatabaseBuilder);
         var commandsService = DiscordHelper.CreateCommandsService();

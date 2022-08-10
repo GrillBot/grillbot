@@ -1,7 +1,7 @@
-﻿using Moq;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using Moq;
 
-namespace GrillBot.Tests.Infrastructure.Discord;
+namespace GrillBot.Tests.Infrastructure;
 
 [ExcludeFromCodeCoverage]
 public abstract class BuilderBase<T> where T : class

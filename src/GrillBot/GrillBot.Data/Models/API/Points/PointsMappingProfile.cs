@@ -6,11 +6,19 @@ public class PointsMappingProfile : AutoMapper.Profile
     {
         CreateMap<Database.Entity.PointsTransaction, PointsMergeInfo>()
             .ForMember(dst => dst.MergeRangeFrom, opt => opt.MapFrom(src => src.MergeRangeFrom.GetValueOrDefault()))
-            .ForMember(dst => dst.MergeRangeTo, opt => opt.MapFrom(src => src.MergeRangeTo.GetValueOrDefault()));
+            .ForMember(dst => dst.MergeRangeTo, opt =>
+            {
+                opt.PreCondition(src => src.MergeRangeFrom.GetValueOrDefault() != src.MergeRangeTo.GetValueOrDefault());
+                opt.MapFrom(src => src.MergeRangeTo.GetValueOrDefault());
+            });
 
         CreateMap<Database.Entity.PointsTransactionSummary, PointsMergeInfo>()
             .ForMember(dst => dst.MergeRangeFrom, opt => opt.MapFrom(src => src.MergeRangeFrom.GetValueOrDefault()))
-            .ForMember(dst => dst.MergeRangeTo, opt => opt.MapFrom(src => src.MergeRangeTo.GetValueOrDefault()));
+            .ForMember(dst => dst.MergeRangeTo, opt =>
+            {
+                opt.PreCondition(src => src.MergeRangeFrom.GetValueOrDefault() != src.MergeRangeTo.GetValueOrDefault());
+                opt.MapFrom(src => src.MergeRangeTo.GetValueOrDefault());
+            });
 
         CreateMap<Database.Entity.PointsTransaction, PointsTransaction>()
             .ForMember(dst => dst.MergeInfo, opt => opt.Ignore())

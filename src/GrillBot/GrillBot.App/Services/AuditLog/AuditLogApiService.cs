@@ -8,6 +8,7 @@ using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Models;
+using GrillBot.Data.Models.API.System;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.AuditLog;
@@ -73,6 +74,7 @@ public class AuditLogApiService
 
     public async Task<PaginatedResponse<AuditLogListItem>> GetListAsync(AuditLogListParams parameters)
     {
+        parameters.UpdateStartDate(new DiagnosticsInfo().StartAt);
         var logIds = await GetLogIdsAsync(parameters);
 
         await using var repository = DatabaseBuilder.CreateRepository();

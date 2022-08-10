@@ -40,6 +40,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
     public TargetIdFilter OverwriteUpdatedFilter { get; set; }
     public TargetIdFilter MemberRolesUpdatedFilter { get; set; }
     public TargetIdFilter MemberUpdatedFilter { get; set; }
+    public bool OnlyFromStart { get; set; }
 
     /// <summary>
     /// Ids of records. Only number values, separated by ";".
@@ -178,5 +179,14 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
         var intersectTypes = ExcludedTypes.Intersect(Types);
         if (intersectTypes.Any())
             yield return new ValidationResult("You cannot filter and exclude the same types at the same time.");
+    }
+
+    public void UpdateStartDate(DateTime startAt)
+    {
+        if (!OnlyFromStart) return;
+
+        CreatedFrom = startAt;
+        if (CreatedTo <= startAt)
+            CreatedTo = null;
     }
 }

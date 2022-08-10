@@ -65,7 +65,7 @@ public class GetPointTransactionsParams : IQueryableModel<Database.Entity.Points
             query = query.Where(o => o.ReactionId != "");
         if (OnlyMessages)
             query = query.Where(o => o.ReactionId == "");
-        if (!string.IsNullOrEmpty(MessageId))
+        if (!Merged && !string.IsNullOrEmpty(MessageId))
             query = query.Where(o => o.MessageId == MessageId);
 
         return query;

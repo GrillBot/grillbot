@@ -54,12 +54,11 @@ public class GuildApiService
         if (dbGuild == null) return null;
 
         var detail = Mapper.Map<GuildDetail>(dbGuild);
-        detail.DatabaseReport = await CreateDatabaseReportAsync(id);
-
         var discordGuild = await DiscordClient.GetGuildAsync(id);
         if (discordGuild == null)
             return detail;
 
+        detail.DatabaseReport = await CreateDatabaseReportAsync(id);
         detail = Mapper.Map(discordGuild, detail);
         if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
             detail.AdminChannel = Mapper.Map<Channel>(await discordGuild.GetChannelAsync(dbGuild.AdminChannelId.ToUlong()));

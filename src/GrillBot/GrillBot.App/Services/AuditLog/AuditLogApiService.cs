@@ -69,7 +69,8 @@ public class AuditLogApiService
     private static bool IsValidFilter(AuditLogItem item, AuditLogItemType type, IExtendedFilter filter)
     {
         if (item.Type != type) return false; // Invalid type.
-        return filter?.IsSet() != true || filter.IsValid(item, AuditLogWriter.SerializerSettings);
+        if (filter == null || !filter.IsSet()) return true;
+        return filter.IsValid(item, AuditLogWriter.SerializerSettings);
     }
 
     public async Task<PaginatedResponse<AuditLogListItem>> GetListAsync(AuditLogListParams parameters)

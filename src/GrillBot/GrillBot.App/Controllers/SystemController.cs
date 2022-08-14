@@ -4,6 +4,7 @@ using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 
@@ -19,14 +20,16 @@ public class SystemController : Controller
     private DiscordSocketClient DiscordClient { get; }
     private InitManager InitManager { get; }
     private CounterManager CounterManager { get; }
+    private EventManager EventManager { get; }
 
     public SystemController(IWebHostEnvironment environment, DiscordSocketClient discordClient,
-        InitManager initManager, CounterManager counterManager)
+        InitManager initManager, CounterManager counterManager, EventManager eventManager)
     {
         Environment = environment;
         DiscordClient = discordClient;
         InitManager = initManager;
         CounterManager = counterManager;
+        EventManager = eventManager;
     }
 
     /// <summary>
@@ -54,5 +57,17 @@ public class SystemController : Controller
     {
         InitManager.Set(isActive);
         return Ok();
+    }
+
+    /// <summary>
+    /// Gets list of discord event logs.
+    /// </summary>
+    /// <response code="200">Returns last 1000 events from discord.</response>
+    [HttpGet("eventLog")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<string[]> GetEventLog()
+    {
+        var data = EventManager.GetData();
+        return Ok(data);
     }
 }

@@ -12,8 +12,11 @@ public class SystemControllerTests : ControllerTest<SystemController>
     {
         var client = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
+        var interactionService = DiscordHelper.CreateInteractionService(client);
+        var commandService = DiscordHelper.CreateCommandsService();
+        var eventManager = new EventManager(client, interactionService, commandService);
 
-        return new SystemController(TestServices.ProductionEnvironment.Value, client, initManager, TestServices.CounterManager.Value);
+        return new SystemController(TestServices.ProductionEnvironment.Value, client, initManager, TestServices.CounterManager.Value, eventManager);
     }
 
     [TestMethod]
@@ -28,5 +31,12 @@ public class SystemControllerTests : ControllerTest<SystemController>
     {
         var result = Controller.ChangeBotStatus(true);
         CheckResult<OkResult>(result);
+    }
+
+    [TestMethod]
+    public void GetEventLog()
+    {
+        var result = Controller.GetEventLog();
+        CheckResult<OkObjectResult, string[]>(result);
     }
 }

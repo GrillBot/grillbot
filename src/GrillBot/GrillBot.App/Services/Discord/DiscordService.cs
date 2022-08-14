@@ -30,7 +30,7 @@ public class DiscordService : IHostedService
 
     public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
         LoggingService loggingService, IWebHostEnvironment webHostEnvironment, InitManager initManager, InteractionService interactionService,
-        AuditLogWriter auditLogWriter)
+        AuditLogWriter auditLogWriter, EventManager _)
     {
         DiscordSocketClient = client;
         Configuration = configuration;

@@ -12,6 +12,7 @@ public static class ManagersExtensions
         return services
             .AddSingleton<InitManager>()
             .AddSingleton<CounterManager>()
-            .AddScoped<ApiRequestContext>();
+            .AddScoped<ApiRequestContext>()
+            .AddSingleton<EventManager>();
     }
 }

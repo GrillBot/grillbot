@@ -108,6 +108,7 @@ public abstract class ControllerTest<TController> : ControllerTest where TContro
             case NotFoundObjectResult notFound:
                 Assert.IsNotNull(notFound.Value);
                 Assert.IsInstanceOfType(notFound.Value, typeof(MessageResponse));
+                Assert.IsFalse(string.IsNullOrEmpty(((MessageResponse)notFound.Value).Message));
                 break;
             case FileContentResult fileContent:
                 Assert.IsNotNull(fileContent.FileContents);
@@ -130,10 +131,12 @@ public abstract class ControllerTest<TController> : ControllerTest where TContro
             case NotFoundObjectResult notFound:
                 Assert.IsNotNull(notFound.Value);
                 Assert.IsInstanceOfType(notFound.Value, typeof(MessageResponse));
+                Assert.IsFalse(string.IsNullOrEmpty(((MessageResponse)notFound.Value).Message));
                 break;
             case BadRequestObjectResult badRequest:
                 Assert.IsNotNull(badRequest.Value);
                 Assert.IsInstanceOfType(badRequest.Value, typeof(ValidationProblemDetails));
+                Assert.IsTrue(((ValidationProblemDetails)badRequest.Value).Errors.Count > 0);
                 break;
         }
     }

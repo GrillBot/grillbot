@@ -25,83 +25,83 @@ public class EventManager
         CommandService = commandService;
         EventLog = new CircularBuffer<string>(1000);
 
-        DiscordClient.InteractionCreated += OnInteractionCreated;
-        InteractionService.InteractionExecuted += OnInteractionExecuted;
-        CommandService.CommandExecuted += OnCommandExecuted;
-        DiscordClient.MessageReceived += OnMessageReceived;
-        DiscordClient.ReactionAdded += (_, _, reaction) => OnReaction(reaction, true);
-        DiscordClient.ReactionRemoved += (_, _, reaction) => OnReaction(reaction, false);
-        DiscordClient.UserLeft += OnUserLeft;
-        DiscordClient.UserJoined += OnUserJoined;
-        DiscordClient.Ready += OnReady;
-        DiscordClient.UserUnbanned += OnUserUnbanned;
-        DiscordClient.MessageUpdated += (_, msg, channel) => OnMessageUpdated(msg, channel);
-        DiscordClient.MessageDeleted += (msg, channel) => OnMessageDeleted(msg.Id, channel.Id);
-        DiscordClient.ChannelCreated += OnChannelCreated;
-        DiscordClient.ChannelDestroyed += OnChannelDeleted;
-        DiscordClient.ChannelUpdated += (_, channel) => OnChannelUpdated(channel);
-        DiscordClient.GuildUpdated += (_, guild) => OnGuildUpdated(guild);
-        DiscordClient.GuildMemberUpdated += (_, user) => OnGuildMemberUpdated(user);
-        DiscordClient.ThreadDeleted += thread => OnThreadDeleted(thread.Id);
-        DiscordClient.InviteCreated += OnInviteCreated;
-        DiscordClient.JoinedGuild += OnJoinedGuild;
-        DiscordClient.GuildAvailable += OnGuildAvailable;
-        DiscordClient.ThreadUpdated += (_, thread) => OnThreadUpdated(thread);
-        DiscordClient.PresenceUpdated += (user, _, presence) => OnPresenceUpdated(user, presence);
+        DiscordClient.InteractionCreated += InteractionCreated;
+        InteractionService.InteractionExecuted += InteractionExecuted;
+        CommandService.CommandExecuted += CommandExecuted;
+        DiscordClient.MessageReceived += MessageReceived;
+        DiscordClient.ReactionAdded += (_, _, reaction) => Reaction(reaction, true);
+        DiscordClient.ReactionRemoved += (_, _, reaction) => Reaction(reaction, false);
+        DiscordClient.UserLeft += UserLeft;
+        DiscordClient.UserJoined += UserJoined;
+        DiscordClient.Ready += Ready;
+        DiscordClient.UserUnbanned += UserUnbanned;
+        DiscordClient.MessageUpdated += (_, msg, channel) => MessageUpdated(msg, channel);
+        DiscordClient.MessageDeleted += (msg, channel) => MessageDeleted(msg.Id, channel.Id);
+        DiscordClient.ChannelCreated += ChannelCreated;
+        DiscordClient.ChannelDestroyed += ChannelDeleted;
+        DiscordClient.ChannelUpdated += (_, channel) => ChannelUpdated(channel);
+        DiscordClient.GuildUpdated += (_, guild) => GuildUpdated(guild);
+        DiscordClient.GuildMemberUpdated += (_, user) => GuildMemberUpdated(user);
+        DiscordClient.ThreadDeleted += thread => ThreadDeleted(thread.Id);
+        DiscordClient.InviteCreated += InviteCreated;
+        DiscordClient.JoinedGuild += JoinedGuild;
+        DiscordClient.GuildAvailable += GuildAvailable;
+        DiscordClient.ThreadUpdated += (_, thread) => ThreadUpdated(thread);
+        DiscordClient.PresenceUpdated += (user, _, presence) => PresenceUpdated(user, presence);
     }
 
-    private Task OnPresenceUpdated(IUser user, IPresence presence)
-        => AddToLog(nameof(OnPresenceUpdated), user.GetFullName(), presence.Status.ToString());
+    private Task PresenceUpdated(IUser user, IPresence presence)
+        => AddToLog(nameof(PresenceUpdated), user.GetFullName(), presence.Status.ToString());
 
-    private Task OnThreadUpdated(SocketGuildChannel thread)
-        => AddToLog(nameof(OnThreadUpdated), thread.Name);
+    private Task ThreadUpdated(SocketGuildChannel thread)
+        => AddToLog(nameof(ThreadUpdated), thread.Name);
 
-    private Task OnGuildAvailable(SocketGuild guild)
-        => AddToLog(nameof(OnGuildAvailable), guild.Name);
+    private Task GuildAvailable(SocketGuild guild)
+        => AddToLog(nameof(GuildAvailable), guild.Name);
 
-    private Task OnJoinedGuild(IGuild guild)
-        => AddToLog(nameof(OnJoinedGuild), guild.Name);
+    private Task JoinedGuild(IGuild guild)
+        => AddToLog(nameof(JoinedGuild), guild.Name);
 
-    private Task OnInviteCreated(SocketInvite invite)
-        => AddToLog(nameof(OnInviteCreated), invite.Code);
+    private Task InviteCreated(SocketInvite invite)
+        => AddToLog(nameof(InviteCreated), invite.Code);
 
-    private Task OnThreadDeleted(ulong threadId)
-        => AddToLog(nameof(OnThreadDeleted), threadId.ToString());
+    private Task ThreadDeleted(ulong threadId)
+        => AddToLog(nameof(ThreadDeleted), threadId.ToString());
 
-    private Task OnGuildMemberUpdated(IUser user)
-        => AddToLog(nameof(OnGuildMemberUpdated), user.GetFullName());
+    private Task GuildMemberUpdated(IUser user)
+        => AddToLog(nameof(GuildMemberUpdated), user.GetFullName());
 
-    private Task OnGuildUpdated(IGuild guild)
-        => AddToLog(nameof(OnGuildUpdated), guild.Name);
+    private Task GuildUpdated(IGuild guild)
+        => AddToLog(nameof(GuildUpdated), guild.Name);
 
-    private Task OnChannelUpdated(IChannel channel)
-        => AddToLog(nameof(OnChannelDeleted), channel.Name);
+    private Task ChannelUpdated(IChannel channel)
+        => AddToLog(nameof(ChannelDeleted), channel.Name);
 
-    private Task OnChannelDeleted(SocketChannel channel)
-        => AddToLog(nameof(OnChannelDeleted), ((IChannel)channel).Name);
+    private Task ChannelDeleted(SocketChannel channel)
+        => AddToLog(nameof(ChannelDeleted), ((IChannel)channel).Name);
 
-    private Task OnChannelCreated(SocketChannel channel)
-        => AddToLog(nameof(OnChannelCreated), ((IChannel)channel).Name);
+    private Task ChannelCreated(SocketChannel channel)
+        => AddToLog(nameof(ChannelCreated), ((IChannel)channel).Name);
 
-    private Task OnMessageDeleted(ulong msgId, ulong channelId)
-        => AddToLog(nameof(OnMessageDeleted), $"MessageId:{msgId}", $"ChannelId:{channelId}");
+    private Task MessageDeleted(ulong msgId, ulong channelId)
+        => AddToLog(nameof(MessageDeleted), $"MessageId:{msgId}", $"ChannelId:{channelId}");
 
-    private Task OnMessageUpdated(SocketMessage message, IChannel channel)
-        => AddToLog(nameof(OnMessageUpdated), $"MessageId:{message.Id}", $"Channel:{channel.Name}", $"Author:{message.Author.GetFullName()}");
+    private Task MessageUpdated(SocketMessage message, IChannel channel)
+        => AddToLog(nameof(MessageUpdated), $"MessageId:{message.Id}", $"Channel:{channel.Name}", $"Author:{message.Author.GetFullName()}");
 
-    private Task OnUserUnbanned(SocketUser user, SocketGuild guild)
-        => AddToLog(nameof(OnUserUnbanned), $"Guild:{guild.Name}", user.GetFullName());
+    private Task UserUnbanned(SocketUser user, SocketGuild guild)
+        => AddToLog(nameof(UserUnbanned), $"Guild:{guild.Name}", user.GetFullName());
 
-    private Task OnReady()
-        => AddToLog(nameof(OnReady));
+    private Task Ready()
+        => AddToLog(nameof(Ready));
 
-    private Task OnUserJoined(SocketGuildUser user)
-        => AddToLog(nameof(OnUserJoined), $"Guild:{user.Guild.Name}", user.GetFullName());
+    private Task UserJoined(SocketGuildUser user)
+        => AddToLog(nameof(UserJoined), $"Guild:{user.Guild.Name}", user.GetFullName());
 
-    private Task OnUserLeft(SocketGuild guild, SocketUser user)
-        => AddToLog(nameof(OnUserLeft), $"Guild:{guild.Name}", user.GetFullName());
+    private Task UserLeft(SocketGuild guild, SocketUser user)
+        => AddToLog(nameof(UserLeft), $"Guild:{guild.Name}", user.GetFullName());
 
-    private Task OnReaction(SocketReaction reaction, bool added)
+    private Task Reaction(SocketReaction reaction, bool added)
     {
         var parameters = new[]
         {
@@ -112,28 +112,28 @@ public class EventManager
             $"IsAdded:{added}"
         };
 
-        return AddToLog(nameof(OnReaction), parameters);
+        return AddToLog(nameof(Reaction), parameters);
     }
 
-    private Task OnMessageReceived(SocketMessage msg) =>
-        AddToLog(nameof(OnMessageReceived), msg.Id.ToString(), msg.Author.GetFullName(), $"#{msg.Channel.Name}", $"ContentLength:{msg.Content.Length}", $"Attachments:{msg.Attachments.Count}");
+    private Task MessageReceived(SocketMessage msg) =>
+        AddToLog(nameof(MessageReceived), msg.Id.ToString(), msg.Author.GetFullName(), $"#{msg.Channel.Name}", $"ContentLength:{msg.Content.Length}", $"Attachments:{msg.Attachments.Count}");
 
-    private Task OnCommandExecuted(Optional<CommandInfo> command, ICommandContext context, Discord.Commands.IResult result)
+    private Task CommandExecuted(Optional<CommandInfo> command, ICommandContext context, Discord.Commands.IResult result)
     {
         if (!command.IsSpecified) return Task.CompletedTask;
 
-        return AddToLog(nameof(OnCommandExecuted), command.Value.Name, command.Value.Module.Name, context.User.GetFullName(), $"Guild:{context.Guild?.Name ?? "NoGuild"}",
+        return AddToLog(nameof(CommandExecuted), command.Value.Name, command.Value.Module.Name, context.User.GetFullName(), $"Guild:{context.Guild?.Name ?? "NoGuild"}",
             $"Channel:{context.Channel.Name}", result.IsSuccess.ToString(), result.ErrorReason);
     }
 
-    private Task OnInteractionExecuted(ICommandInfo command, IInteractionContext context, IResult result)
+    private Task InteractionExecuted(ICommandInfo command, IInteractionContext context, IResult result)
     {
-        return AddToLog(nameof(OnInteractionExecuted), command.Name, command.MethodName, command.Module.Name, context.User.GetFullName(), $"Guild:{context.Guild?.Name ?? "NoGuild"}",
+        return AddToLog(nameof(InteractionExecuted), command.Name, command.MethodName, command.Module.Name, context.User.GetFullName(), $"Guild:{context.Guild?.Name ?? "NoGuild"}",
             $"Channel:{context.Channel.Name}", result.IsSuccess.ToString(), result.ErrorReason);
     }
 
-    private Task OnInteractionCreated(SocketInteraction interaction)
-        => AddToLog(nameof(OnInteractionCreated), interaction.User.GetFullName(), interaction.Type.ToString(), $"Guild:{interaction.GuildId}");
+    private Task InteractionCreated(SocketInteraction interaction)
+        => AddToLog(nameof(InteractionCreated), interaction.User.GetFullName(), interaction.Type.ToString(), $"Guild:{interaction.GuildId}");
 
     private Task AddToLog(string method, params string[] parameters)
     {

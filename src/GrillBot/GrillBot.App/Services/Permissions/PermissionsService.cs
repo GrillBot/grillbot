@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.Permissions.Models;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
 using Commands = Discord.Commands;
@@ -22,7 +23,7 @@ public class PermissionsService
         request.FixImplicitPermissions();
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var user = await repository.User.FindUserAsync(request.User);
+        var user = await repository.User.FindUserAsync(request.User, true);
 
         return new PermsCheckResult
         {
@@ -43,7 +44,7 @@ public class PermissionsService
             ? thread.CategoryId.Value
             : request.Channel.Id;
 
-        var channel = await repository.Channel.FindChannelByIdAsync(channelId, request.Guild?.Id);
+        var channel = await repository.Channel.FindChannelByIdAsync(channelId, request.Guild?.Id, true);
         return channel?.HasFlag(ChannelFlags.CommandsDisabled) ?? false;
     }
 
@@ -121,7 +122,7 @@ public class PermissionsService
     {
         if (!request.AllowBooster) return null;
 
-        return request.User is SocketGuildUser user && user.Roles.Any(o => o.Tags?.IsPremiumSubscriberRole == true);
+        return request.User is IGuildUser user && user.GetRoles().Any(o => o.Tags?.IsPremiumSubscriberRole == true);
     }
 
     private static async Task<bool?> CheckExplicitAllowAsync(GrillBotRepository repository, CheckRequestBase request)

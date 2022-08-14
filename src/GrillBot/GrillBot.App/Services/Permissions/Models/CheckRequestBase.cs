@@ -24,10 +24,10 @@ public abstract class CheckRequestBase
     /// <summary>
     /// Kontrola, zda lze nastaveno nějaké pravidlo.
     /// </summary>
-    protected virtual bool AnySet()
+    private bool AnySet()
     {
         var notSet = (GuildPermissions == null || GuildPermissions.Length == 0) &&
-            (ChannelPermissions == null || GuildPermissions.Length == 0) &&
+            (ChannelPermissions == null || ChannelPermissions.Length == 0) &&
             !AllowBooster;
 
         return !notSet;

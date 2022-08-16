@@ -5,6 +5,7 @@ using GrillBot.Common.FileStorage;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services.AuditLog.Events;
 
@@ -15,13 +16,13 @@ public class MessageDeletedEvent : AuditEventBase
     private MessageCacheManager MessageCache { get; }
     private FileStorageFactory FileStorageFactory { get; }
 
-    public MessageDeletedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel,
-        MessageCacheManager messageCache, FileStorageFactory fileStorageFactory) : base(auditLogService, auditLogWriter)
+    public MessageDeletedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, IServiceProvider serviceProvider, Cacheable<IMessage, ulong> message,
+        Cacheable<IMessageChannel, ulong> channel) : base(auditLogService, auditLogWriter)
     {
         Message = message;
         Channel = channel;
-        MessageCache = messageCache;
-        FileStorageFactory = fileStorageFactory;
+        MessageCache = serviceProvider.GetRequiredService<MessageCacheManager>();
+        FileStorageFactory = serviceProvider.GetRequiredService<FileStorageFactory>();
     }
 
     public override Task<bool> CanProcessAsync() =>

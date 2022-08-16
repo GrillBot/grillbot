@@ -16,11 +16,10 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, TestServices.CounterManager.Value);
-        var storage = new FileStorageMock(TestServices.Configuration.Value);
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var serviceProvider = TestServices.EmptyProvider.Value;
 
-        return new AuditLogService(discordClient, DatabaseBuilder, messageCache, storage, initManager, auditLogWriter);
+        return new AuditLogService(discordClient, DatabaseBuilder, initManager, auditLogWriter, serviceProvider);
     }
 
     private async Task FillDataAsync()

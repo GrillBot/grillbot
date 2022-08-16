@@ -2,9 +2,7 @@
 using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Enums;
 
@@ -13,30 +11,27 @@ namespace GrillBot.App.Services.AuditLog;
 [Initializable]
 public class AuditLogService
 {
-    private MessageCacheManager MessageCache { get; }
-    private FileStorageFactory FileStorageFactory { get; }
     private InitManager InitManager { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriter AuditLogWriter { get; }
+    private IServiceProvider ServiceProvider { get; }
 
     private Dictionary<ulong, DateTime> NextAllowedChannelUpdateEvent { get; } = new();
     private DateTime NextAllowedRoleUpdateEvent { get; set; }
 
-    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, MessageCacheManager messageCache, FileStorageFactory storageFactory,
-        InitManager initManager, AuditLogWriter auditLogWriter)
+    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, InitManager initManager, AuditLogWriter auditLogWriter, IServiceProvider serviceProvider)
     {
-        MessageCache = messageCache;
-        FileStorageFactory = storageFactory;
         InitManager = initManager;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
         AuditLogWriter = auditLogWriter;
+        ServiceProvider = serviceProvider;
 
         DiscordClient.UserLeft += (guild, user) => HandleEventAsync(new UserLeftEvent(this, AuditLogWriter, guild, user));
         DiscordClient.UserJoined += user => HandleEventAsync(new UserJoinedEvent(this, AuditLogWriter, user));
-        DiscordClient.MessageUpdated += (before, after, channel) => HandleEventAsync(new MessageEditedEvent(this, AuditLogWriter, before, after, channel, MessageCache, DiscordClient));
-        DiscordClient.MessageDeleted += (message, channel) => HandleEventAsync(new MessageDeletedEvent(this, AuditLogWriter, message, channel, MessageCache, FileStorageFactory));
+        DiscordClient.MessageUpdated += (before, after, channel) => HandleEventAsync(new MessageEditedEvent(this, AuditLogWriter, ServiceProvider, before, after, channel));
+        DiscordClient.MessageDeleted += (message, channel) => HandleEventAsync(new MessageDeletedEvent(this, AuditLogWriter, ServiceProvider, message, channel));
         DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, AuditLogWriter, channel));
         DiscordClient.ChannelDestroyed += channel => HandleEventAsync(new ChannelDeletedEvent(this, AuditLogWriter, channel));
         DiscordClient.ChannelUpdated += (before, after) => HandleEventAsync(new ChannelUpdatedEvent(this, AuditLogWriter, before, after));

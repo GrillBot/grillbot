@@ -2,6 +2,7 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services.AuditLog.Events;
 
@@ -15,14 +16,14 @@ public class MessageEditedEvent : AuditEventBase
 
     private SocketTextChannel TextChannel => Channel as SocketTextChannel;
 
-    public MessageEditedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, Cacheable<IMessage, ulong> before, SocketMessage after,
-        ISocketMessageChannel channel, MessageCacheManager messageCache, IDiscordClient discordClient) : base(auditLogService, auditLogWriter)
+    public MessageEditedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, IServiceProvider serviceProvider,
+        Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel) : base(auditLogService, auditLogWriter)
     {
         Before = before;
         After = after;
         Channel = channel;
-        MessageCache = messageCache;
-        DiscordClient = discordClient;
+        MessageCache = serviceProvider.GetRequiredService<MessageCacheManager>();
+        DiscordClient = serviceProvider.GetRequiredService<IDiscordClient>();
     }
 
     public override async Task<bool> CanProcessAsync()

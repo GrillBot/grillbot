@@ -42,4 +42,9 @@ public class ApiRequest
         var statusCodeData = StatusCode.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         return $"{statusCodeData[0]} ({string.Concat(statusCodeData.Skip(1))})";
     }
+
+    public bool IsCorrupted()
+    {
+        return string.IsNullOrEmpty(StatusCode) || StartAt == DateTime.MinValue || string.IsNullOrEmpty(Method) || string.IsNullOrEmpty(TemplatePath);
+    }
 }

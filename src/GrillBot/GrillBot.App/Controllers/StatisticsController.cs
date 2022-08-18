@@ -255,18 +255,24 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<StatisticItem>>> GetApiRequestsByEndpointAsync()
     {
-        var filterModel = new AuditLogListParams { Types = new List<AuditLogItemType> { AuditLogItemType.Api } };
+        var filterModel = new AuditLogListParams
+        {
+            Types = new List<AuditLogItemType> { AuditLogItemType.Api },
+            Sort = null
+        };
         await using var repository = DatabaseBuilder.CreateRepository();
-        var dbData = await repository.AuditLog.GetSimpleDataAsync(filterModel);
 
-        var data = dbData
+        var dbData = await repository.AuditLog.GetSimpleDataAsync(filterModel);
+        var toProcess = dbData
             .Select(o => new
             {
                 o.CreatedAt,
                 Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)
             })
-            .Where(o => !string.IsNullOrEmpty(o.Data!.StatusCode))
-            .GroupBy(o => $"{o.Data.Method} {o.Data.TemplatePath}")
+            .Where(o => !o.Data!.IsCorrupted());
+
+        var data = toProcess
+            .GroupBy(o => $"{o.Data!.Method} {o.Data.TemplatePath}")
             .Select(o => new StatisticItem
             {
                 Key = o.Key,
@@ -277,7 +283,7 @@ public class StatisticsController : Controller
                 SuccessCount = o.Count(x => Convert.ToInt32(x.Data!.StatusCode.Split(' ')[0]) < 400),
                 TotalDuration = o.Sum(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds))
             })
-            .OrderBy(o => o.Key)
+            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
             .ToList();
 
         return Ok(data);
@@ -298,15 +304,17 @@ public class StatisticsController : Controller
         };
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var dbData = await repository.AuditLog.GetSimpleDataAsync(filterModel);
 
-        var data = dbData
+        var dbData = await repository.AuditLog.GetSimpleDataAsync(filterModel);
+        var toProcess = dbData
             .Select(o => new
             {
                 o.CreatedAt,
                 Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)
             })
-            .Where(o => !string.IsNullOrEmpty(o.Data!.StatusCode))
+            .Where(o => !o.Data!.IsCorrupted());
+
+        var data = toProcess
             .Select(o => new
             {
                 o.CreatedAt,

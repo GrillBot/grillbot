@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GrillBot.Database.Entity;
 
 [Index(nameof(MergedItemsCount), IsUnique = false, Name = "IX_PointsTransactions_MergedItemsCount")]
+[Index(nameof(AssingnedAt), IsUnique = false, Name = "IX_PointsTransactions_AssignedAt")]
 public class PointsTransaction
 {
     [Required]

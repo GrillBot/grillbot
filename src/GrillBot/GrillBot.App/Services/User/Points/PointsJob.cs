@@ -26,6 +26,6 @@ public class PointsJob : Job
             await PointsService.RecalculatePointsSummaryAsync()
         };
 
-        context.Result = string.Join("\n\n", report.Where(o => o != null)).Trim();
+        context.Result = string.Join("\n", report.Where(o => o != null)).Trim();
     }
 }

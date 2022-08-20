@@ -6,6 +6,8 @@ public partial class PointsService
 {
     public async Task<string> MergeOldTransactionsAsync()
     {
+        var startAt = DateTime.Now;
+
         await using var repository = DatabaseBuilder.CreateRepository();
         if (!await repository.Points.ExistsExpiredItemsAsync())
             return null;
@@ -17,7 +19,7 @@ public partial class PointsService
         await repository.AddCollectionAsync(mergedTransactions);
         await repository.CommitAsync();
 
-        return $"MergeTransactions(Expired:{expiredTransactions.Count}, Merged:{mergedTransactions.Count})";
+        return $"MergeTransactions(Expired:{expiredTransactions.Count}, Merged:{mergedTransactions.Count}, {DateTime.Now - startAt:c})";
     }
 
     private static List<PointsTransaction> MergeTransactions(List<PointsTransaction> transactions)
@@ -59,6 +61,8 @@ public partial class PointsService
 
     public async Task<string> MergeSummariesAsync()
     {
+        var startAt = DateTime.Now;
+
         await using var repository = DatabaseBuilder.CreateRepository();
         if (!await repository.Points.ExistsExpiredSummariesAsync())
             return null;
@@ -70,7 +74,7 @@ public partial class PointsService
         await repository.AddCollectionAsync(mergedSummaries);
         await repository.CommitAsync();
 
-        return $"MergeSummaries(Expired:{expiredItems.Count}, Merged:{mergedSummaries.Count})";
+        return $"MergeSummaries(Expired:{expiredItems.Count}, Merged:{mergedSummaries.Count}, {DateTime.Now - startAt:c})";
     }
 
     private static List<PointsTransactionSummary> MergeSummariesAsync(List<PointsTransactionSummary> summaries)

@@ -14,6 +14,7 @@ public partial class PointsService
 
     private static async Task<string> RecalculatePointsSummaryAsync(GrillBotRepository repository, bool onlyToday, List<IGuildUser> users = null)
     {
+        var startAt = DateTime.Now;
         var toProcess = new List<PointsTransaction>();
 
         if (users != null)
@@ -30,7 +31,7 @@ public partial class PointsService
         if (report == null) return null; // Nothing to process.
 
         await repository.CommitAsync();
-        return report;
+        return report.Replace("%DURATION%", (DateTime.Now - startAt).ToString("c"));
     }
 
     private static async Task<string> RecalculatePointsSummaryAsync(GrillBotRepository repository, IReadOnlyCollection<PointsTransaction> transactions)
@@ -52,22 +53,22 @@ public partial class PointsService
                 Day = o.Key.Date,
                 MessagePoints = o.Where(x => !x.IsReaction()).Sum(x => x.Points),
                 ReactionPoints = o.Where(x => x.IsReaction()).Sum(x => x.Points)
-            })
-            .ToList();
+            });
 
         // Check and set new summaries.
         var updated = 0;
         var inserted = 0;
         foreach (var summary in newSummaries)
         {
-            var oldSummary = summaries.Find(o => o.Equals(summary));
-            if (oldSummary != null)
+            if (summaries.ContainsKey(summary.SummaryId))
             {
+                var oldSummary = summaries[summary.SummaryId];
                 var itemChanged = oldSummary.MessagePoints != summary.MessagePoints || oldSummary.ReactionPoints != summary.ReactionPoints;
-                if (itemChanged) updated++;
+                if (!itemChanged) continue;
 
                 oldSummary.MessagePoints = summary.MessagePoints;
                 oldSummary.ReactionPoints = summary.ReactionPoints;
+                updated++;
             }
             else
             {
@@ -79,6 +80,6 @@ public partial class PointsService
         if (inserted == 0 && updated == 0) return null; // Nothing to report, nothing was changed.
 
         var daysCount = Math.Round((dateTo - dateFrom).TotalDays);
-        return $"RecalculatePoints(Days:{daysCount}, Created:{inserted}, Updated:{updated})";
+        return $"RecalculatePoints(Days:{daysCount}, Created:{inserted}, Updated:{updated}, %DURATION%)";
     }
 }

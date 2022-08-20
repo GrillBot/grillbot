@@ -47,7 +47,7 @@ public class PointsRepository : RepositoryBase
             }
             else
             {
-                var yearBack = DateTime.Now.AddYears(-1);
+                var yearBack = DateTime.Now.AddYears(-1).AddMonths(-1);
                 query = query.Where(o => o.AssingnedAt >= yearBack);
             }
 
@@ -58,13 +58,14 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<List<PointsTransactionSummary>> GetSummariesAsync(DateTime from, DateTime to, List<string> guilds, List<string> users)
+    public async Task<Dictionary<string, PointsTransactionSummary>> GetSummariesAsync(DateTime from, DateTime to, List<string> guilds, List<string> users)
     {
         using (CreateCounter())
         {
             var query = Context.PointsTransactionSummaries
                 .Where(o => !o.IsMerged && o.Day >= from && o.Day <= to && guilds.Contains(o.GuildId) && users.Contains(o.UserId));
-            return await query.ToListAsync();
+            var data = await query.ToListAsync();
+            return data.ToDictionary(o => o.SummaryId, o => o);
         }
     }
 

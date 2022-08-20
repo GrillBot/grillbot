@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Logging;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Logging;
 using Quartz;
 
 namespace GrillBot.App.Services.Suggestion;
@@ -13,9 +13,8 @@ public class SuggestionJob : Job
     private EmoteSuggestionService EmoteSuggestions { get; }
     private SuggestionSessionService SessionService { get; }
 
-    public SuggestionJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
-        InitManager initManager, EmoteSuggestionService emoteSuggestionService, SuggestionSessionService sessionService)
-        : base(loggingService, auditLogWriter, discordClient, initManager)
+    public SuggestionJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager, EmoteSuggestionService emoteSuggestionService, SuggestionSessionService sessionService,
+        LoggingManager loggingManager) : base(auditLogWriter, discordClient, initManager, loggingManager)
     {
         EmoteSuggestions = emoteSuggestionService;
         SessionService = sessionService;

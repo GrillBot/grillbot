@@ -19,9 +19,6 @@ public class AuditLogDataWrapper
     public DateTime CreatedAt { get; set; }
     public List<AuditLogFileMeta> Files { get; set; }
 
-    public ChannelType? ChannelType
-        => Channel?.GetChannelType();
-
     public AuditLogDataWrapper(AuditLogItemType type, object data, IGuild guild = null, IGuildChannel channel = null, IUser processedUser = null,
         string discordAuditLogItemId = null, DateTime? createdAt = null, IEnumerable<AuditLogFileMeta> files = null)
     {

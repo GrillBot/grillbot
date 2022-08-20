@@ -1,9 +1,9 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Logging;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Logging;
 
 namespace GrillBot.App.Handlers;
 
@@ -13,22 +13,20 @@ public class ReactionHandler
 {
     private IEnumerable<ReactionEventHandler> EventHandlers { get; }
     private MessageCacheManager MessageCache { get; }
-    private LoggingService LoggingService { get; }
     private InitManager InitManager { get; }
     private DiscordSocketClient DiscordClient { get; }
+    private LoggingManager LoggingManager { get; }
 
-    public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers,
-        MessageCacheManager messageCacheManager, InitManager initManager, LoggingService loggingService)
+    public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers, MessageCacheManager messageCacheManager, InitManager initManager, LoggingManager loggingManager)
     {
         DiscordClient = client;
+        EventHandlers = eventHandlers;
+        MessageCache = messageCacheManager;
+        InitManager = initManager;
+        LoggingManager = loggingManager;
 
         DiscordClient.ReactionAdded += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Added, channel);
         DiscordClient.ReactionRemoved += (message, channel, reaction) => OnReactionChangedAsync(message, reaction, ReactionEvents.Removed, channel);
-
-        EventHandlers = eventHandlers;
-        MessageCache = messageCacheManager;
-        LoggingService = loggingService;
-        InitManager = initManager;
     }
 
     private async Task OnReactionChangedAsync(Cacheable<IUserMessage, ulong> message, SocketReaction reaction, ReactionEvents @event, Cacheable<IMessageChannel, ulong> channel)
@@ -88,7 +86,7 @@ public class ReactionHandler
             catch (Exception ex)
             {
                 var exMessage = $"Reaction handler threw an exception when handling reaction {reaction.Emote.Name} added to message {message.ToString()}.";
-                await LoggingService.ErrorAsync(handler.GetType().Name, exMessage, ex);
+                await LoggingManager.ErrorAsync(handler.GetType().Name, exMessage, ex);
             }
         }
     }

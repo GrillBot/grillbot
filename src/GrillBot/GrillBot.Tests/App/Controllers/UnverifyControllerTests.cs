@@ -1,8 +1,8 @@
 ﻿using Discord;
 using GrillBot.App.Controllers;
-using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -41,12 +41,11 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
         var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder);
         var logger = new UnverifyLogger(discordClient, DatabaseBuilder);
         var commandsService = DiscordHelper.CreateCommandsService();
-        var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DatabaseBuilder, interactionService);
         var logging = LoggingHelper.CreateLogger<PermissionsCleaner>();
         var permissionsCleaner = new PermissionsCleaner(TestServices.CounterManager.Value, logging);
-        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DatabaseBuilder, loggingService, permissionsCleaner);
+        var loggingManager = new LoggingManager(discordClient, commandsService, interactionService, TestServices.EmptyProvider.Value);
+        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DatabaseBuilder, permissionsCleaner, loggingManager);
         var mapper = TestServices.AutoMapper.Value;
         var unverifyApiService = new UnverifyApiService(DatabaseBuilder, mapper, dcClient, ApiRequestContext);
 

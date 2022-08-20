@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Logging;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Database.Enums;
 using Quartz;
 
@@ -12,8 +12,8 @@ public class OnlineUsersCleanJob : Job
 {
     private GrillBotDatabaseBuilder DbFactory { get; }
 
-    public OnlineUsersCleanJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
-        GrillBotDatabaseBuilder dbFactory, InitManager initManager) : base(loggingService, auditLogWriter, discordClient, initManager)
+    public OnlineUsersCleanJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, GrillBotDatabaseBuilder dbFactory, InitManager initManager, LoggingManager loggingManager) : base(
+        auditLogWriter, discordClient, initManager, loggingManager)
     {
         DbFactory = dbFactory;
     }

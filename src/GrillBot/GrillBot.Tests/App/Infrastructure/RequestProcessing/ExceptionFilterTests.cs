@@ -1,9 +1,9 @@
 ﻿using GrillBot.App.Infrastructure.RequestProcessing;
-using GrillBot.App.Services.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
@@ -18,12 +18,11 @@ public class ExceptionFilterTests : ServiceTest<ExceptionFilter>
         var discordClient = DiscordHelper.CreateClient();
         var commandService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingFactory = LoggingHelper.CreateLoggerFactory();
-        var loggingService = new LoggingService(discordClient, commandService, loggingFactory, TestServices.Configuration.Value, DatabaseBuilder, interactions);
         var apiRequest = new ApiRequest();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var loggingManager = new LoggingManager(discordClient, commandService, interactions, TestServices.EmptyProvider.Value);
 
-        return new ExceptionFilter(loggingService, apiRequest, auditLogWriter, new ApiRequestContext());
+        return new ExceptionFilter(apiRequest, auditLogWriter, new ApiRequestContext(), loggingManager);
     }
 
     private static ExceptionContext CreateContext(Exception exception)

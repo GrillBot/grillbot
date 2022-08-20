@@ -1,9 +1,8 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.App.Services.Logging;
 using GrillBot.Common.Managers;
 using Quartz;
 using System.Xml.Linq;
-using GrillBot.Common.FileStorage;
+using GrillBot.Common.Managers.Logging;
 
 namespace GrillBot.App.Services.AuditLog;
 
@@ -13,9 +12,8 @@ public class AuditLogClearingJob : Job
     private GrillBotDatabaseBuilder DbFactory { get; }
     private AuditClearingHelper Helper { get; }
 
-    public AuditLogClearingJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient,
-        GrillBotDatabaseBuilder dbFactory, InitManager initManager, AuditClearingHelper helper)
-        : base(loggingService, auditLogWriter, discordClient, initManager)
+    public AuditLogClearingJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, GrillBotDatabaseBuilder dbFactory, InitManager initManager, AuditClearingHelper helper,
+        LoggingManager loggingManager) : base(auditLogWriter, discordClient, initManager, loggingManager)
     {
         DbFactory = dbFactory;
         Helper = helper;

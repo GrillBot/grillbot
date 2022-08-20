@@ -11,8 +11,8 @@ public static class ConfigurationHelper
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string>()
             {
-                { "Discord:Logging:GuildId", "12345" },
-                { "Discord:Logging:ChannelId", "12345" },
+                { "Discord:Logging:GuildId", Consts.GuildId.ToString() },
+                { "Discord:Logging:ChannelId", Consts.ChannelId.ToString() },
                 { "Discord:Logging:Enabled", "true" },
                 { "Auth:OAuth2:ClientRedirectUrl", "https://client" },
                 { "Auth:OAuth2:AdminRedirectUrl", "https://admin" },

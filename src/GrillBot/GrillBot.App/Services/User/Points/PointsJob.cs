@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Logging;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Logging;
 using Quartz;
 
 namespace GrillBot.App.Services.User.Points;
@@ -11,8 +11,8 @@ public class PointsJob : Job
 {
     private PointsService PointsService { get; }
 
-    public PointsJob(LoggingService loggingService, AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager,
-        PointsService pointsService) : base(loggingService, auditLogWriter, discordClient, initManager)
+    public PointsJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager, PointsService pointsService, LoggingManager loggingManager) : base(auditLogWriter,
+        discordClient, initManager, loggingManager)
     {
         PointsService = pointsService;
     }

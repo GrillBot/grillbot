@@ -1,8 +1,8 @@
 using Discord.Net;
-using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.Permissions;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
@@ -16,21 +16,21 @@ public class UnverifyService
     private UnverifyChecker Checker { get; }
     private UnverifyProfileGenerator ProfileGenerator { get; }
     private UnverifyLogger Logger { get; }
-    private LoggingService Logging { get; }
     private PermissionsCleaner PermissionsCleaner { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private LoggingManager LoggingManager { get; }
 
     public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator,
-        UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder, LoggingService logging, PermissionsCleaner permissionsCleaner)
+        UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder, PermissionsCleaner permissionsCleaner, LoggingManager loggingManager)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
         Logger = logger;
-        Logging = logging;
         PermissionsCleaner = permissionsCleaner;
         DatabaseBuilder = databaseBuilder;
         DiscordClient = client;
+        LoggingManager = loggingManager;
 
         DiscordClient.UserLeft += OnUserLeftAsync;
     }
@@ -106,7 +106,7 @@ public class UnverifyService
             await profile.Destination.TryRemoveRoleAsync(muteRole);
             await profile.ReturnRolesAsync();
             await profile.ReturnChannelsAsync(guild);
-            await Logging.ErrorAsync("Unverify", $"An error occured when unverify removing access to {user.GetFullName()}", ex);
+            await LoggingManager.ErrorAsync("Unverify", $"An error occured when unverify removing access to {user.GetFullName()}", ex);
             return UnverifyMessageGenerator.CreateUnverifyFailedToChannel(profile.Destination);
         }
     }
@@ -201,7 +201,7 @@ public class UnverifyService
         }
         catch (Exception ex) when (!isAuto)
         {
-            await Logging.ErrorAsync("Unverify/Remove", "An error occured when unverify returning access.", ex);
+            await LoggingManager.ErrorAsync("Unverify/Remove", "An error occured when unverify returning access.", ex);
             return UnverifyMessageGenerator.CreateRemoveAccessManuallyFailed(toUser, ex);
         }
     }
@@ -241,7 +241,7 @@ public class UnverifyService
         }
         catch (Exception ex)
         {
-            await Logging.ErrorAsync("Unverify/Autoremove", $"An error occured when unverify returning access ({guildId}/{userId}).", ex);
+            await LoggingManager.ErrorAsync("Unverify/Autoremove", $"An error occured when unverify returning access ({guildId}/{userId}).", ex);
         }
         finally
         {

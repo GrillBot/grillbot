@@ -49,9 +49,6 @@ public static class Extensions
             .AddScoped<Channels.ChannelApiService>();
 
         services
-            .AddSingleton<Logging.LoggingService>();
-
-        services
             .AddSingleton<Permissions.PermissionsCleaner>()
             .AddSingleton<Permissions.PermissionsService>();
 

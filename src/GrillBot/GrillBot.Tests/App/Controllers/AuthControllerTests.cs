@@ -1,13 +1,13 @@
 ﻿using System.Linq;
 using GrillBot.App.Controllers;
 using GrillBot.App.Services;
-using GrillBot.App.Services.Logging;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http;
 using Discord;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -29,11 +29,10 @@ public class AuthControllerTests : ControllerTest<AuthController>
         var configuration = TestServices.Configuration.Value;
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
-        var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DatabaseBuilder, interactions);
         var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"access_token\": \"12345\"}") });
-        var service = new OAuth2Service(configuration, DatabaseBuilder, loggingService, httpClientFactory);
+        var loggingManager = new LoggingManager(discordClient, commandsService, interactions, ServiceProvider);
+        var service = new OAuth2Service(configuration, DatabaseBuilder, httpClientFactory, loggingManager);
 
         return new AuthController(service, client);
     }

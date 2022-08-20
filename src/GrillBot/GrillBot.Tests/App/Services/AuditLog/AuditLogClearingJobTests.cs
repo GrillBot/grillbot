@@ -1,9 +1,9 @@
 ﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Logging;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Discord;
 using System.IO;
+using GrillBot.Common.Managers.Logging;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
 
@@ -19,14 +19,13 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var fileStorage = new FileStorageMock(configuration);
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
-        var loggerFactory = LoggingHelper.CreateLoggerFactory();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggerFactory, configuration, DatabaseBuilder, interactionService);
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var auditClearingHelper = new AuditClearingHelper(fileStorage);
+        var loggingManager = new LoggingManager(discordClient, commandsService, interactionService, TestServices.EmptyProvider.Value);
 
-        return new AuditLogClearingJob(loggingService, auditLogWriter, client, DatabaseBuilder, initManager, auditClearingHelper);
+        return new AuditLogClearingJob(auditLogWriter, client, DatabaseBuilder, initManager, auditClearingHelper, loggingManager);
     }
 
     [TestMethod]

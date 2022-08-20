@@ -1,9 +1,9 @@
 ﻿using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Logging;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.User.Points;
@@ -26,10 +26,9 @@ public class PointsJobTests : JobTest<PointsJob>
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var commandsService = DiscordHelper.CreateCommandsService();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingService = new LoggingService(discordClient, commandsService, loggingFactory, configuration,
-            DatabaseBuilder, interactionService);
+        var loggingManager = new LoggingManager(discordClient, commandsService, interactionService, TestServices.EmptyProvider.Value);
 
-        return new PointsJob(loggingService, auditLogWriter, client, initManager, pointsService);
+        return new PointsJob(auditLogWriter, client, initManager, pointsService, loggingManager);
     }
 
     [TestMethod]

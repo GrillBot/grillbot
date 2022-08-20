@@ -4,7 +4,6 @@ using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Logging;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using System.Reflection;
+using GrillBot.Common.Managers.Logging;
 
 namespace GrillBot.App.Services.Discord;
 
@@ -24,13 +24,12 @@ public class DiscordService : IHostedService
     private CommandService CommandService { get; }
     private IWebHostEnvironment Environment { get; }
     private InitManager InitManager { get; }
-    private LoggingService LoggingService { get; }
     private InteractionService InteractionService { get; }
     private AuditLogWriter AuditLogWriter { get; }
+    private LoggingManager LoggingManager { get; }
 
     public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-        LoggingService loggingService, IWebHostEnvironment webHostEnvironment, InitManager initManager, InteractionService interactionService,
-        AuditLogWriter auditLogWriter, EventManager _)
+        IWebHostEnvironment webHostEnvironment, InitManager initManager, InteractionService interactionService, AuditLogWriter auditLogWriter, EventManager _, LoggingManager loggingManager)
     {
         DiscordSocketClient = client;
         Configuration = configuration;
@@ -38,9 +37,9 @@ public class DiscordService : IHostedService
         CommandService = commandService;
         Environment = webHostEnvironment;
         InitManager = initManager;
-        LoggingService = loggingService;
         InteractionService = interactionService;
         AuditLogWriter = auditLogWriter;
+        LoggingManager = loggingManager;
 
         DiscordSocketClient.Log += OnLogAsync;
         CommandService.Log += OnLogAsync;
@@ -63,7 +62,7 @@ public class DiscordService : IHostedService
                     }
                     catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.MissingOAuth2Scope)
                     {
-                        await LoggingService.ErrorAsync("Event(Ready)", $"Guild {guild.Name} not have OAuth2 scope for interaction registration.", ex);
+                        await LoggingManager.ErrorAsync("Event(Ready)", $"Guild {guild.Name} not have OAuth2 scope for interaction registration.", ex);
                     }
                 }
             }

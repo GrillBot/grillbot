@@ -1,5 +1,4 @@
 ﻿#pragma warning disable S1075 // URIs should not be hardcoded
-using GrillBot.App.Services.Logging;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Enums;
@@ -7,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Security.Claims;
+using GrillBot.Common.Managers.Logging;
 
 namespace GrillBot.App.Services;
 
@@ -14,16 +14,15 @@ public class OAuth2Service
 {
     private IConfiguration Configuration { get; }
     private GrillBotDatabaseBuilder DbFactory { get; }
-    private LoggingService LoggingService { get; }
     private HttpClient HttpClient { get; }
+    private LoggingManager LoggingManager { get; }
 
-    public OAuth2Service(IConfiguration configuration, GrillBotDatabaseBuilder dbFactory, LoggingService loggingService,
-        IHttpClientFactory httpClientFactory)
+    public OAuth2Service(IConfiguration configuration, GrillBotDatabaseBuilder dbFactory, IHttpClientFactory httpClientFactory, LoggingManager loggingManager)
     {
         Configuration = configuration.GetSection("Auth:OAuth2");
         DbFactory = dbFactory;
-        LoggingService = loggingService;
         HttpClient = httpClientFactory.CreateClient();
+        LoggingManager = loggingManager;
     }
 
     public OAuth2GetLink GetRedirectLink(AuthState state)
@@ -92,7 +91,7 @@ public class OAuth2Service
         };
 
         await using var client = new DiscordRestClient(config);
-        client.Log += LoggingService.OnLogAsync;
+        client.Log += LoggingManager.InvokeAsync;
         await client.LoginAsync(TokenType.Bearer, token);
 
         return client.CurrentUser;

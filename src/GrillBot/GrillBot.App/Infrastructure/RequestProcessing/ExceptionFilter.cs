@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Logging;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
@@ -10,17 +10,17 @@ namespace GrillBot.App.Infrastructure.RequestProcessing;
 
 public class ExceptionFilter : IAsyncExceptionFilter
 {
-    private LoggingService LoggingService { get; }
     private ApiRequest ApiRequest { get; }
     private AuditLogWriter AuditLogWriter { get; }
     private ApiRequestContext ApiRequestContext { get; }
+    private LoggingManager LoggingManager { get; }
 
-    public ExceptionFilter(LoggingService loggingService, ApiRequest apiRequest, AuditLogWriter auditLogWriter, ApiRequestContext apiRequestContext)
+    public ExceptionFilter(ApiRequest apiRequest, AuditLogWriter auditLogWriter, ApiRequestContext apiRequestContext, LoggingManager loggingManager)
     {
-        LoggingService = loggingService;
         ApiRequest = apiRequest;
         AuditLogWriter = auditLogWriter;
         ApiRequestContext = apiRequestContext;
+        LoggingManager = loggingManager;
     }
 
     public async Task OnExceptionAsync(ExceptionContext context)
@@ -41,6 +41,6 @@ public class ExceptionFilter : IAsyncExceptionFilter
         await AuditLogWriter.StoreAsync(wrapper);
 
         var path = context.HttpContext.Request.Path;
-        await LoggingService.ErrorAsync("API", $"An error occured while request processing ({path})", context.Exception);
+        await LoggingManager.ErrorAsync("API", $"An error occured while request processing ({path})", context.Exception);
     }
 }

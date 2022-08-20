@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ public static class ManagersExtensions
             .AddSingleton<InitManager>()
             .AddSingleton<CounterManager>()
             .AddScoped<ApiRequestContext>()
-            .AddSingleton<EventManager>();
+            .AddSingleton<EventManager>()
+            .AddLoggingServices();
     }
 }

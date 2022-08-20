@@ -109,9 +109,9 @@ public class ChannelApiService
         channel.Flags = parameters.Flags;
         var success = await repository.CommitAsync() > 0;
 
-        if (!success) 
+        if (!success)
             return false;
-        
+
         if (reloadAutoReply)
             await AutoReplyService.InitAsync();
 
@@ -136,6 +136,9 @@ public class ChannelApiService
             throw new NotFoundException($"Nepodařilo se najít kanál na serveru {guild.Name}");
 
         var reference = MessageHelper.CreateMessageReference(parameters.Reference, channelId, guildId);
+        if (reference != null && await channel.GetMessageAsync(reference.MessageId.Value) == null)
+            reference = null;
+
         await channel.SendMessageAsync(parameters.Content, messageReference: reference);
     }
 

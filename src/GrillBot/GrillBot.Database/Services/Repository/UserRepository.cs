@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Discord;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Models;
-using Microsoft.EntityFrameworkCore.Query;
+using Npgsql;
 
 namespace GrillBot.Database.Services.Repository;
 
@@ -142,6 +142,18 @@ public class UserRepository : RepositoryBase
                 .OrderBy(o => o.Username)
                 .ThenBy(o => o.Discriminator)
                 .ToListAsync();
+        }
+    }
+
+    public async Task UpdateStatusAsync(ulong userId, UserStatus status)
+    {
+        using (CreateCounter())
+        {
+            await Context.Database.ExecuteSqlRawAsync(
+                "UPDATE public.\"Users\" SET \"Status\"=@status WHERE \"Id\"=@userId",
+                new NpgsqlParameter("@status", (int)status),
+                new NpgsqlParameter("@userId", userId.ToString())
+            );
         }
     }
 }

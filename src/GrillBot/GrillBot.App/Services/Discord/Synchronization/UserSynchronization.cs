@@ -30,11 +30,6 @@ public class UserSynchronization : SynchronizationBase
     public async Task PresenceUpdatedAsync(IUser user, SocketPresence after)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-
-        var dbUser = await repository.User.FindUserAsync(user);
-        if (dbUser == null) return;
-
-        dbUser.Status = after.GetStatus();
-        await repository.CommitAsync();
+        await repository.User.UpdateStatusAsync(user.Id, after.GetStatus());
     }
 }

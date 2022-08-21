@@ -22,6 +22,7 @@ public class InteractionCommandExecuted
     public InteractionCommandError? CommandError { get; set; }
     public string ErrorReason { get; set; }
     public int Duration { get; set; }
+    public string Exception { get; set; }
 
     [JsonIgnore]
     public string FullName => $"{Name} ({ModuleName}/{MethodName})";
@@ -37,12 +38,15 @@ public class InteractionCommandExecuted
         MethodName = commandInfo.MethodName.Replace("Async", "", StringComparison.InvariantCultureIgnoreCase);
         Duration = duration;
 
-        if (result != null)
-        {
-            IsSuccess = result.IsSuccess;
-            CommandError = result.Error;
-            ErrorReason = result.ErrorReason;
-        }
+        if (result == null)
+            return;
+
+        IsSuccess = result.IsSuccess;
+        CommandError = result.Error;
+        ErrorReason = result.ErrorReason;
+
+        if (!result.IsSuccess && result is ExecuteResult { Exception: { } } executeResult)
+            Exception = executeResult.Exception.ToString();
     }
 
     public InteractionCommandExecuted(ICommandInfo commandInfo, SocketSlashCommand interaction, IResult result, int duration)

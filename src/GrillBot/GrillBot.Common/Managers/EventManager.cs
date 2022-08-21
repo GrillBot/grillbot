@@ -101,16 +101,16 @@ public class EventManager
     private Task UserLeft(SocketGuild guild, SocketUser user)
         => AddToLog(nameof(UserLeft), $"Guild:{guild.Name}", user.GetFullName());
 
-    private Task Reaction(SocketReaction reaction, bool added)
+    private Task Reaction(SocketReaction? reaction, bool added)
     {
-        var parameters = new[]
+        var parameters = reaction == null ? new[]
         {
-            $"MessageId:{reaction.MessageId}",
-            $"Channel:{reaction.Channel.Name}",
-            $"Emote:{reaction.Emote}",
-            reaction.User.IsSpecified ? reaction.User.Value.GetFullName() : $"UserId:{reaction.UserId}",
+            $"MessageId:{reaction?.MessageId}",
+            $"Channel:{reaction?.Channel?.Name ?? "null"}",
+            $"Emote:{reaction?.Emote}",
+            reaction?.User.IsSpecified == true ? reaction.User.Value.GetFullName() : $"UserId:{reaction?.UserId}",
             $"IsAdded:{added}"
-        };
+        } : Array.Empty<string>();
 
         return AddToLog(nameof(Reaction), parameters);
     }
@@ -140,7 +140,7 @@ public class EventManager
         lock (_locker)
         {
             var paramsData = parameters.Length == 0 ? "" : $" - {string.Join(", ", parameters)}";
-            EventLog.PushFront($"{method} - {DateTime.Now.ToCzechFormat(withMiliseconds:true)}{paramsData}");
+            EventLog.PushFront($"{method} - {DateTime.Now.ToCzechFormat(withMiliseconds: true)}{paramsData}");
             return Task.CompletedTask;
         }
     }

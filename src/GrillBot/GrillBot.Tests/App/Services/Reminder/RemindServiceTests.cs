@@ -3,6 +3,7 @@ using GrillBot.Tests.Infrastructure.Discord;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Discord;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.Reminder;
 

@@ -1,6 +1,6 @@
-﻿using System;
-using GrillBot.App.Controllers;
+﻿using GrillBot.App.Controllers;
 using GrillBot.App.Infrastructure.OpenApi;
+using GrillBot.Tests.Infrastructure.Common;
 using NSwag.Generation.Processors.Contexts;
 
 namespace GrillBot.Tests.App.Infrastructure.OpenApi;

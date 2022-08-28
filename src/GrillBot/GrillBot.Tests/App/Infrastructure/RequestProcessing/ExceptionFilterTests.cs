@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Models.AuditLog;
+using GrillBot.Tests.Infrastructure.Common;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 

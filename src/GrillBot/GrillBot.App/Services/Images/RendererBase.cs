@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Entity;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
@@ -17,7 +18,15 @@ public abstract class RendererBase
         ProfilePictureManager = profilePictureManager;
     }
 
-    public abstract Task<string> RenderAsync(IUser user, ICommandContext commandContext);
+    public virtual Task<string> RenderAsync(IUser user, ICommandContext commandContext)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual Task<TemporaryFile> RenderAsync(IUser user, IGuild guild, IChannel channel, IMessage message, IDiscordInteraction interaction)
+    {
+        throw new NotImplementedException();
+    }
 
     protected static bool CanProcessGif(ProfilePicture profilePicture, IGuild guild)
         => profilePicture.Data.Length <= 2 * (guild.CalculateFileUploadLimit() * 1024 * 1024 / 3);

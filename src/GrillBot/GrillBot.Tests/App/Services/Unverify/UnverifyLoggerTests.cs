@@ -2,9 +2,8 @@
 using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
-using System;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.Unverify;
 

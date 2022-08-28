@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.Common.Managers.Logging.Handlers;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.Common.Managers.Logging.Handlers;
 

@@ -1,9 +1,9 @@
 ﻿using Discord;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 using Moq;
 

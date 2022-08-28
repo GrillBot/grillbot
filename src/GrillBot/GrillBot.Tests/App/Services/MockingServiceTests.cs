@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services;
 

@@ -5,10 +5,12 @@ using System.Net.WebSockets;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
-using GrillBot.Common.Managers.Logging.Handlers;
+using GrillBot.App.Services;
+using GrillBot.Cache.Services.Managers;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
-namespace GrillBot.Tests.Common.Managers.Logging.Handlers;
+namespace GrillBot.Tests.App.Services;
 
 [TestClass]
 public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
@@ -38,7 +40,16 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
             .SetSelfUser((ISelfUser)User)
             .Build();
 
-        return new DiscordExceptionHandler(client, Configuration);
+        var fileStorage = new FileStorageMock(Configuration);
+        var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
+
+        return new DiscordExceptionHandler(client, Configuration, fileStorage, profilePictureManager);
+    }
+
+    public override void Cleanup()
+    {
+        if (File.Exists("LastErrorDateTest.txt"))
+            File.Delete("LastErrorDateTest.txt");
     }
 
     [TestMethod]

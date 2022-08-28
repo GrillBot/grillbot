@@ -2,6 +2,7 @@
 using GrillBot.App.Controllers;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.App.Infrastructure.OpenApi;
+using GrillBot.Tests.Infrastructure.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;

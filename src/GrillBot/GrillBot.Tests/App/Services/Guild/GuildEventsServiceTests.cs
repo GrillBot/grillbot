@@ -1,6 +1,5 @@
-﻿using System;
-using GrillBot.App.Services.Guild;
-using GrillBot.Tests.Infrastructure;
+﻿using GrillBot.App.Services.Guild;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.Guild;

@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Services.Discord.Synchronization;
-using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.Discord.Synchronization;

@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Infrastructure.OpenApi;
+using GrillBot.Tests.Infrastructure.Common;
 using NSwag;
 using NSwag.Generation.Processors.Contexts;
 

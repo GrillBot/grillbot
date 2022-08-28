@@ -1,18 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Routing;
 
-namespace GrillBot.Tests.Common;
+namespace GrillBot.Tests.Infrastructure.Common;
 
 [ExcludeFromCodeCoverage]
 public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFilter : class

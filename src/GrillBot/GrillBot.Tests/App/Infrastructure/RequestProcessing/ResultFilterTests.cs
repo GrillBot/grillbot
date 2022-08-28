@@ -3,8 +3,7 @@ using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using GrillBot.Common.Models;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
 

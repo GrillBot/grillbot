@@ -5,6 +5,7 @@ using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.User.Points;

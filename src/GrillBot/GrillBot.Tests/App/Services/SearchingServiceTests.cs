@@ -5,6 +5,7 @@ using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Discord;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services;
 

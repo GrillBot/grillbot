@@ -1,5 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
 

@@ -1,9 +1,7 @@
-﻿using Discord;
-using GrillBot.App.Services.Discord.Synchronization;
+﻿using GrillBot.App.Services.Discord.Synchronization;
 using GrillBot.Database.Entity;
-using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
-using Moq;
 
 namespace GrillBot.Tests.App.Services.Discord.Synchronization;
 

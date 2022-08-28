@@ -4,6 +4,7 @@ using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using GrillBot.App.Services.User;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;

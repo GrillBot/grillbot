@@ -1,12 +1,19 @@
 ﻿using System.IO;
 using GrillBot.Common.FileStorage;
-using Microsoft.Extensions.Configuration;
 using Moq;
 
 namespace GrillBot.Tests.Infrastructure;
 
 public class FileStorageMock : FileStorageFactory
 {
+    private List<(string category, string filename, FileInfo info)> Files { get; } = new()
+    {
+        ("DeletedAttachments", "Temp.txt", new FileInfo("Temp.txt")),
+        ("DeletedAttachments", "Temporary.txt", new FileInfo("Temporary.txt")),
+        ("Clearing", null, new FileInfo("File.xml")),
+        ("Common", "LastErrorDate.txt", new FileInfo("LastErrorDateTest.txt"))
+    };
+
     public FileStorageMock(IConfiguration configuration) : base(configuration)
     {
     }
@@ -14,9 +21,14 @@ public class FileStorageMock : FileStorageFactory
     public override IFileStorage Create(string categoryName)
     {
         var mock = new Mock<IFileStorage>();
-        mock.Setup(o => o.GetFileInfoAsync(It.Is<string>(c => c == "DeletedAttachments"), It.Is<string>(c => c == "Temp.txt"))).ReturnsAsync(new FileInfo("Temp.txt"));
-        mock.Setup(o => o.GetFileInfoAsync(It.Is<string>(c => c == "DeletedAttachments"), It.Is<string>(c => c == "Temporary.txt"))).ReturnsAsync(new FileInfo("Temporary.txt"));
-        mock.Setup(o => o.GetFileInfoAsync(It.Is<string>(c => c == "Clearing"), It.IsAny<string>())).ReturnsAsync(new FileInfo("File.xml"));
+
+        foreach (var file in Files)
+        {
+            if (string.IsNullOrEmpty(file.filename))
+                mock.Setup(o => o.GetFileInfoAsync(It.Is<string>(c => c == file.category), It.IsAny<string>())).ReturnsAsync(file.info);
+            else
+                mock.Setup(o => o.GetFileInfoAsync(It.Is<string>(c => c == file.category), It.Is<string>(f => f == file.filename))).ReturnsAsync(file.info);
+        }
 
         return mock.Object;
     }

@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.Suggestion;
 

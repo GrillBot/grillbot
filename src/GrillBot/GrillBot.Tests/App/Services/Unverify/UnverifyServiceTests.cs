@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Managers.Logging;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.Unverify;

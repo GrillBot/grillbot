@@ -1,6 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Services.User;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.User;

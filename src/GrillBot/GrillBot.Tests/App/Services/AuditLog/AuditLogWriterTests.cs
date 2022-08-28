@@ -1,9 +1,8 @@
-﻿using System;
-using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.AuditLog;

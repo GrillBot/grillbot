@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Services.Birthday;
 using GrillBot.Tests.Infrastructure.Discord;
 using Discord;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.Birthday;
 

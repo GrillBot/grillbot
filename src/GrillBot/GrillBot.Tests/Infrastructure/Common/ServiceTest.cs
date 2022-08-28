@@ -1,8 +1,8 @@
-﻿using GrillBot.Cache.Services.Repository;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.Cache.Services.Repository;
 using GrillBot.Database.Services.Repository;
 
-namespace GrillBot.Tests.Common;
+namespace GrillBot.Tests.Infrastructure.Common;
 
 [ExcludeFromCodeCoverage]
 public abstract class ServiceTest<TService> where TService : class
@@ -28,9 +28,15 @@ public abstract class ServiceTest<TService> where TService : class
         Service = CreateService();
     }
 
+    public virtual void Cleanup()
+    {
+    }
+
     [TestCleanup]
     public void TestClean()
     {
+        Cleanup();
+
         TestDatabaseBuilder.ClearDatabase();
         TestCacheBuilder.ClearDatabase();
 

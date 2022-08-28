@@ -1,27 +1,36 @@
-﻿using System.Net.Sockets;
+﻿using System.Net.Http;
+using System.Net.Sockets;
 using System.Net.WebSockets;
-using Discord;
 using Discord.Commands;
 using Discord.Net;
-using Discord.WebSocket;
+using GrillBot.App.Infrastructure.IO;
+using GrillBot.App.Services.Images;
+using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using Microsoft.Extensions.Configuration;
+using GrillBot.Common.FileStorage;
+using GrillBot.Common.Managers.Logging;
 
-namespace GrillBot.Common.Managers.Logging.Handlers;
+namespace GrillBot.App.Services;
 
 public class DiscordExceptionHandler : ILoggingHandler
 {
     private IDiscordClient DiscordClient { get; }
     private IConfiguration Configuration { get; }
-    private ITextChannel? LogChannel { get; set; }
+    private FileStorageFactory FileStorage { get; }
+    private ProfilePictureManager ProfilePictureManager { get; }
+    private ITextChannel LogChannel { get; set; }
 
-    public DiscordExceptionHandler(IDiscordClient discordClient, IConfiguration configuration)
+    public DiscordExceptionHandler(IDiscordClient discordClient, IConfiguration configuration, FileStorageFactory fileStorage,
+        ProfilePictureManager profilePictureManager)
     {
         DiscordClient = discordClient;
         Configuration = configuration.GetSection("Discord:Logging");
+        FileStorage = fileStorage;
+        ProfilePictureManager = profilePictureManager;
     }
 
-    public async Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception? exception = null)
+    public async Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception exception = null)
     {
         if (exception == null || !Configuration.GetValue<bool>("Enabled")) return false;
         if (severity != LogSeverity.Critical && severity != LogSeverity.Error && severity != LogSeverity.Warning) return false;
@@ -62,16 +71,25 @@ public class DiscordExceptionHandler : ILoggingHandler
 
     public Task InfoAsync(string source, string message) => Task.CompletedTask;
 
-    public Task WarningAsync(string source, string message, Exception? exception = null)
+    public Task WarningAsync(string source, string message, Exception exception = null)
         => ErrorAsync(source, message, exception!);
 
     public async Task ErrorAsync(string source, string message, Exception exception)
     {
-        var embed = CreateErrorEmbed(source, message, exception);
-        await LogChannel!.SendMessageAsync(embed: embed);
+        var (embed, withoutErrorsImage) = await CreateErrorDataAsync(source, message, exception);
+
+        try
+        {
+            await StoreLastErrorDateAsync();
+            await LogChannel!.SendFileAsync(withoutErrorsImage.Path, embed: embed);
+        }
+        finally
+        {
+            withoutErrorsImage.Dispose();
+        }
     }
 
-    private Embed CreateErrorEmbed(string source, string? message, Exception exception)
+    private async Task<(Embed, TemporaryFile)> CreateErrorDataAsync(string source, string message, Exception exception)
     {
         var embed = new EmbedBuilder()
             .WithColor(Color.Red)
@@ -97,6 +115,25 @@ public class DiscordExceptionHandler : ILoggingHandler
                 .AddField("Zpráva chyby", msg.Trim());
         }
 
-        return embed.Build();
+        var withoutErrorsImage = await CreateWithoutErrorsImage(exception);
+        embed.WithImageUrl($"attachment://{Path.GetFileName(withoutErrorsImage.Path)}");
+
+        return (embed.Build(), withoutErrorsImage);
+    }
+
+    private async Task<TemporaryFile> CreateWithoutErrorsImage(Exception exception)
+    {
+        var user = exception.GetUser(DiscordClient);
+
+        using var renderer = new WithoutAccidentRenderer(FileStorage, ProfilePictureManager);
+        return await renderer.RenderAsync(user, null, null, null, null);
+    }
+
+    private async Task StoreLastErrorDateAsync()
+    {
+        var cache = FileStorage.Create("Cache");
+        var lastErrorInfo = await cache.GetFileInfoAsync("Common", "LastErrorDate.txt");
+
+        await File.WriteAllTextAsync(lastErrorInfo.FullName, $"{DateTime.Now:o}\n");
     }
 }

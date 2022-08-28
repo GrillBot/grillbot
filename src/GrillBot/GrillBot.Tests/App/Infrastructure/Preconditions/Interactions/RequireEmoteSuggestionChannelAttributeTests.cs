@@ -1,7 +1,6 @@
-﻿using System;
-using GrillBot.App.Infrastructure.Preconditions.Interactions;
+﻿using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Database.Services;
-using GrillBot.Tests.Infrastructure;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.Extensions.DependencyInjection;
 

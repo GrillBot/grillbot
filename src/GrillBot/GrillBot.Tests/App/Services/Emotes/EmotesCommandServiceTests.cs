@@ -3,6 +3,7 @@ using GrillBot.App.Services.Emotes;
 using GrillBot.Tests.Infrastructure.Discord;
 using System.Diagnostics.CodeAnalysis;
 using GrillBot.Common;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.Emotes;
 

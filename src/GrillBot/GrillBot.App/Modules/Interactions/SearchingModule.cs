@@ -23,6 +23,7 @@ public class SearchingModule : InteractionsModuleBase
         [Summary("kanal", "Kanál, ve kterém chcete něco najít.")]
         ITextChannel channel = null,
         [Summary("podretezec", "Vyhledávací podřetězec")]
+        [Discord.Interactions.MaxLength(50)]
         string query = null
     )
     {

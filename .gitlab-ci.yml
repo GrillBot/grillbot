@@ -27,6 +27,9 @@ tests:
   image: mcr.microsoft.com/dotnet/sdk:6.0
   stage: Unit tests
   script:
+    - apt install -y --no-install-recommends tzdata ttf-mscorefonts-installer fontconfig libc6-dev libgdiplus libx11-dev
+    - ln -s /usr/lib/libgdiplus.so /usr/lib/gdiplus.dll
+    - fc-cache -fv
     - "dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY"
     - 'dotnet test $SOURCE_CODE_PATH --no-restore --test-adapter-path:. --logger:"junit;LogFilePath=..\artifacts\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"'
   artifacts:

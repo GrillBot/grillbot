@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Tests.Infrastructure.Common;
 
@@ -43,6 +44,20 @@ public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>
     public async Task CanHandleAsync_InvalidSeverity()
     {
         var result = await Service.CanHandleAsync(LogSeverity.Debug, "", new Exception());
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task CanHandleAsync_GatewayReconnectException()
+    {
+        var result = await Service.CanHandleAsync(LogSeverity.Critical, "", new GatewayReconnectException(""));
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task CanHandleAsync_GatewayReconnectInnerException()
+    {
+        var result = await Service.CanHandleAsync(LogSeverity.Critical, "", new Exception("", new GatewayReconnectException("")));
         Assert.IsFalse(result);
     }
 

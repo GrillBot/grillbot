@@ -18,6 +18,7 @@ public class AuditLogLoggingHandler : ILoggingHandler
     public Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception exception = null)
     {
         if (exception == null || !Configuration.GetValue<bool>("Enabled")) return Task.FromResult(false);
+        if (exception is GatewayReconnectException || exception.InnerException is GatewayReconnectException) return Task.FromResult(false);
 
         return Task.FromResult(severity is LogSeverity.Critical or LogSeverity.Error or LogSeverity.Warning);
     }

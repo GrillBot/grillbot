@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
+using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Tests.Infrastructure.Common;
@@ -19,6 +20,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
     private ITextChannel Channel { get; set; }
     private IUser User { get; set; }
+    private TemporaryFile TemporaryFile { get; set; }
 
     protected override DiscordExceptionHandler CreateService()
     {
@@ -40,16 +42,21 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
             .SetSelfUser((ISelfUser)User)
             .Build();
 
-        var fileStorage = new FileStorageMock(Configuration);
-        var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
+        TemporaryFile = new TemporaryFile("png");
+        File.WriteAllBytes(TemporaryFile.Path, new byte[] { 1, 2, 3 });
 
-        return new DiscordExceptionHandler(client, Configuration, fileStorage, profilePictureManager);
+        var fileStorage = new FileStorageMock(Configuration);
+        var rendererFactory = new RendererFactoryMock(TemporaryFile, fileStorage);
+
+        return new DiscordExceptionHandler(client, Configuration, fileStorage, rendererFactory);
     }
 
     public override void Cleanup()
     {
         if (File.Exists("LastErrorDateTest.txt"))
             File.Delete("LastErrorDateTest.txt");
+
+        TemporaryFile.Dispose();
     }
 
     [TestMethod]

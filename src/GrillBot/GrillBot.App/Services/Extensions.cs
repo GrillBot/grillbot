@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.FileStorage;
+﻿using GrillBot.App.Services.Images;
+using GrillBot.Common.FileStorage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services;
@@ -43,6 +44,9 @@ public static class Extensions
         services
             .AddSingleton<Guild.GuildEventsService>()
             .AddScoped<Guild.GuildApiService>();
+
+        services
+            .AddSingleton<RendererFactory>();
 
         services
             .AddSingleton<Channels.ChannelService>()

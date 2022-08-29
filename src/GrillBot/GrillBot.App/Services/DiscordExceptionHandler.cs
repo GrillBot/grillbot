@@ -5,7 +5,6 @@ using Discord.Commands;
 using Discord.Net;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services.Images;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.FileStorage;
@@ -18,16 +17,16 @@ public class DiscordExceptionHandler : ILoggingHandler
     private IDiscordClient DiscordClient { get; }
     private IConfiguration Configuration { get; }
     private FileStorageFactory FileStorage { get; }
-    private ProfilePictureManager ProfilePictureManager { get; }
     private ITextChannel LogChannel { get; set; }
+    private RendererFactory RendererFactory { get; }
 
     public DiscordExceptionHandler(IDiscordClient discordClient, IConfiguration configuration, FileStorageFactory fileStorage,
-        ProfilePictureManager profilePictureManager)
+        RendererFactory rendererFactory)
     {
         DiscordClient = discordClient;
         Configuration = configuration.GetSection("Discord:Logging");
         FileStorage = fileStorage;
-        ProfilePictureManager = profilePictureManager;
+        RendererFactory = rendererFactory;
     }
 
     public async Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception exception = null)
@@ -125,8 +124,16 @@ public class DiscordExceptionHandler : ILoggingHandler
     {
         var user = exception.GetUser(DiscordClient);
 
-        using var renderer = new WithoutAccidentRenderer(FileStorage, ProfilePictureManager);
-        return await renderer.RenderAsync(user, null, null, null, null);
+        var renderer = RendererFactory.Create<WithoutAccidentRenderer>();
+        try
+        {
+            return await renderer!.RenderAsync(user, null, null, null, null);
+        }
+        finally
+        {
+            if (renderer is IDisposable disposable)
+                disposable.Dispose();
+        }
     }
 
     private async Task StoreLastErrorDateAsync()

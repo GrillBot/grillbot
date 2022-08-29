@@ -8,12 +8,16 @@ namespace GrillBot.App.Services.Images;
 
 public sealed class WithoutAccidentRenderer : RendererBase, IDisposable
 {
-    private MagickImage Template { get; }
+    private MagickImage Background { get; }
+    private MagickImage Head { get; }
+    private MagickImage Pliers { get; }
 
     public WithoutAccidentRenderer(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
         : base(fileStorageFactory, profilePictureManager)
     {
-        Template = new MagickImage(MiscResources.xDays);
+        Background = new MagickImage(MiscResources.xDaysBackground);
+        Head = new MagickImage(MiscResources.xDaysHead);
+        Pliers = new MagickImage(MiscResources.xDaysPliers);
     }
 
     public override async Task<TemporaryFile> RenderAsync(IUser user, IGuild guild, IChannel channel, IMessage message, IDiscordInteraction interaction)
@@ -33,22 +37,38 @@ public sealed class WithoutAccidentRenderer : RendererBase, IDisposable
 
     private IMagickImage<byte> RenderImage(IMagickImage<byte> avatar, int daysCount)
     {
-        var drawables = new Drawables()
+        var drawables = new Drawables();
+
+        DrawNumber(drawables, daysCount);
+        DrawAvatar(drawables, avatar);
+
+        drawables
+            .Composite(0, 0, CompositeOperator.Over, Head)
+            .Composite(0, 0, CompositeOperator.Over, Pliers);
+
+        var template = Background.Clone();
+        drawables.Draw(template);
+        return template;
+    }
+
+    private static void DrawNumber(Drawables drawables, int daysCount)
+    {
+        drawables
             .StrokeAntialias(true)
             .TextAntialias(true)
             .FillColor(MagickColors.Black)
             .TextAlignment(TextAlignment.Center)
             .Font("Open Sans")
-            .FontPointSize(80)
-            .Text(1085, 260, daysCount.ToString());
+            .FontPointSize(100)
+            .Text(1090, 280, daysCount.ToString());
+    }
 
-        avatar.Resize(300, 300);
+    private static void DrawAvatar(Drawables drawables, IMagickImage<byte> avatar)
+    {
+        avatar.Resize(230, 230);
         avatar.RoundImage();
-        drawables.Composite(540, 170, CompositeOperator.Over, avatar);
-
-        var template = Template.Clone();
-        drawables.Draw(template);
-        return template;
+        avatar.Crop(230, 200);
+        drawables.Composite(560, 270, CompositeOperator.Over, avatar);
     }
 
     private async Task<int> GetLastErrorDays()
@@ -66,6 +86,8 @@ public sealed class WithoutAccidentRenderer : RendererBase, IDisposable
 
     public void Dispose()
     {
-        Template.Dispose();
+        Background.Dispose();
+        Head.Dispose();
+        Pliers.Dispose();
     }
 }

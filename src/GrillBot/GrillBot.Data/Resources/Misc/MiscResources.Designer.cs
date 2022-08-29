@@ -73,9 +73,29 @@ namespace GrillBot.Data.Resources.Misc {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] xDays {
+        public static byte[] xDaysBackground {
             get {
-                object obj = ResourceManager.GetObject("xDays", resourceCulture);
+                object obj = ResourceManager.GetObject("xDaysBackground", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] xDaysHead {
+            get {
+                object obj = ResourceManager.GetObject("xDaysHead", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] xDaysPliers {
+            get {
+                object obj = ResourceManager.GetObject("xDaysPliers", resourceCulture);
                 return ((byte[])(obj));
             }
         }

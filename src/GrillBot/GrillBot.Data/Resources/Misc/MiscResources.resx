@@ -121,7 +121,13 @@
   <data name="trophy" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>trophy.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="xDays" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>xDays.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="xDaysBackground" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>xDaysBackground.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="xDaysHead" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>xDaysHead.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="xDaysPliers" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>xDaysPliers.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

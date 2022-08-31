@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Security.Claims;
+using Discord.Net;
 using GrillBot.Common.Managers.Logging;
 
 namespace GrillBot.App.Services;
@@ -85,16 +86,23 @@ public class OAuth2Service
 
     private async Task<IUser> GetUserAsync(string token)
     {
-        var config = new DiscordRestConfig
+        try
         {
-            LogLevel = LogSeverity.Verbose
-        };
+            var config = new DiscordRestConfig
+            {
+                LogLevel = LogSeverity.Verbose
+            };
 
-        await using var client = new DiscordRestClient(config);
-        client.Log += LoggingManager.InvokeAsync;
-        await client.LoginAsync(TokenType.Bearer, token);
+            await using var client = new DiscordRestClient(config);
+            client.Log += LoggingManager.InvokeAsync;
+            await client.LoginAsync(TokenType.Bearer, token);
 
-        return client.CurrentUser;
+            return client.CurrentUser;
+        }
+        catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.Unauthorized)
+        {
+            return null;
+        }
     }
 
     public async Task<OAuth2LoginToken> CreateTokenAsync(string sessionId, bool isPublic)
@@ -105,6 +113,9 @@ public class OAuth2Service
 
     public async Task<OAuth2LoginToken> CreateTokenAsync(IUser user, bool isPublic)
     {
+        if (user == null)
+            return new OAuth2LoginToken("Proveden pokus s neplatným tokenem. Opakujte přihlášení.");
+
         await using var repository = DbFactory.CreateRepository();
         var dbUser = await repository.User.FindUserAsync(user, true);
 

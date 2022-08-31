@@ -10,7 +10,7 @@ public static class ChannelExtensions
     public static async Task<bool> HaveAccessAsync(this IGuildChannel channel, IGuildUser user)
     {
         if (channel is IThreadChannel { CategoryId: { } } thread)
-            return await HaveAccessAsync(await channel.Guild.GetTextChannelAsync(thread.CategoryId.Value), user);
+            return await HaveAccessAsync(await channel.Guild.GetChannelAsync(thread.CategoryId.Value), user);
 
         if (channel.PermissionOverwrites == null || channel.PermissionOverwrites.Count == 0)
             return true;

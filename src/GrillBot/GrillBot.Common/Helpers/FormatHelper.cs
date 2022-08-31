@@ -12,7 +12,7 @@ public static class FormatHelper
     public static string FormatPermissionstoCzech(long count) => Format(count, "oprávnění", "oprávnění", "oprávnění");
     public static string FormatPointsToCzech(long count) => Format(count, "bod", "body", "bodů");
 
-    private static string Format(long count, string oneSuffix, string twoToFour, string fiveAndMore)
+    public static string Format(long count, string oneSuffix, string twoToFour, string fiveAndMore)
     {
         return count switch
         {

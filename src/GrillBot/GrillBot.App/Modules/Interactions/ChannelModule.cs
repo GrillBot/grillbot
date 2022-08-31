@@ -35,7 +35,9 @@ public class ChannelModule : InteractionsModuleBase
             return;
         }
 
+        var forum = channel as IForumChannel;
         var channelType = channel.GetChannelType();
+        if (channelType == null && forum != null) channelType = ChannelType.Forum;
         var isThread = channelType is ChannelType.NewsThread or ChannelType.PrivateThread or ChannelType.PublicThread;
         var isCategory = channelType == ChannelType.Category;
 
@@ -46,7 +48,7 @@ public class ChannelModule : InteractionsModuleBase
             .WithTitle((isThread ? "" : "#") + channel.Name)
             .AddField("Založeno", channel.CreatedAt.LocalDateTime.ToCzechFormat(), true);
 
-        if (!isCategory)
+        if (!isCategory && channelType != ChannelType.Forum)
         {
             channelEmbed.AddField(
                 "Počet členů",
@@ -76,6 +78,9 @@ public class ChannelModule : InteractionsModuleBase
                         case ChannelType.Text:
                             channelEmbed.WithAuthor("Informace o textovém kanálu");
                             break;
+                        case ChannelType.Forum:
+                            channelEmbed.WithAuthor("Informace o fóru");
+                            break;
                         default:
                         {
                             channelEmbed.WithAuthor(isCategory ? "Informace o kategorii" : $"Informace o neznámém typu kanálu ({channelType})");
@@ -103,6 +108,25 @@ public class ChannelModule : InteractionsModuleBase
             case true:
                 channelEmbed.AddField("Kanál", (channel as SocketThreadChannel)!.ParentChannel!.GetMention(), true);
                 break;
+        }
+
+        if (channelType == ChannelType.Forum)
+        {
+            if (!string.IsNullOrEmpty(forum!.Topic))
+                channelEmbed.WithDescription(forum.Topic.Cut(EmbedBuilder.MaxDescriptionLength));
+
+            channelEmbed.AddField("Počet tagů", FormatHelper.Format(forum.Tags.Count, "tag", "tagy", "tagů"), true);
+
+            var activeThreads = (await forum.GetActiveThreadsAsync()).Where(o => o.CategoryId == forum.Id).ToList();
+            var privateThreadsCount = activeThreads.Count(o => o.Type == ThreadType.PrivateThread);
+            var publicThreadsCount = activeThreads.Count(o => o.Type == ThreadType.PublicThread);
+            var threadsFormatBuilder = new StringBuilder();
+            if (publicThreadsCount > 0)
+                threadsFormatBuilder.AppendLine(FormatHelper.Format(publicThreadsCount, "veřejné vlákno", "veřejné vlákna", "veřejných vláken"));
+            if (privateThreadsCount > 0)
+                threadsFormatBuilder.AppendLine(FormatHelper.Format(privateThreadsCount, "soukromé vlákno", "soukromé vlákna", "soukromých vláken"));
+            if (threadsFormatBuilder.Length > 0)
+                channelEmbed.AddField("Počet vláken", threadsFormatBuilder.ToString());
         }
 
         await using var repository = DatabaseBuilder.CreateRepository();

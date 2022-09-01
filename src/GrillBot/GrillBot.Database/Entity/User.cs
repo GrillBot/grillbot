@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.Database.Entity;
@@ -70,7 +71,7 @@ public class User
 
     public void Update(IUser user)
     {
-        Username = user.Username;
+        Username = user.IsUser() ? user.Username : user.Username.Cut(32, true)!;
         Discriminator = user.Discriminator;
         Status = user.GetStatus();
 

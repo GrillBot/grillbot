@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.Database.Entity;
 
@@ -61,17 +63,19 @@ public class GuildUser
 
     public static GuildUser FromDiscord(IGuild guild, IGuildUser user)
     {
-        return new GuildUser
+        var entity = new GuildUser
         {
             GuildId = guild.Id.ToString(),
-            UserId = user.Id.ToString(),
-            Nickname = user.Nickname
+            UserId = user.Id.ToString()
         };
+        entity.Update(user);
+
+        return entity;
     }
 
     public void Update(IGuildUser user)
     {
-        Nickname = user.Nickname;
+        Nickname = user.IsUser() ? user.Nickname : user.Nickname?.Cut(32, true);
         User?.Update(user);
     }
 

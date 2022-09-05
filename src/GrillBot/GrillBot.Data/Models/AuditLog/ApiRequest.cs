@@ -18,14 +18,11 @@ public class ApiRequest
     public string Path { get; set; }
     public string LoggedUserRole { get; set; }
     public string StatusCode { get; set; }
-    public Dictionary<string, string> QueryParams { get; set; } = new(); // TODO Remove
-    public string BodyContent { get; set; } // TODO Remove
     public Dictionary<string, string> Parameters { get; set; } = new();
 
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)
     {
-        if (QueryParams?.Count == 0) QueryParams = null;
         if (Parameters?.Count == 0) Parameters = null;
     }
 

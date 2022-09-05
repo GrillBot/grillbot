@@ -2,6 +2,7 @@
 using GrillBot.Common.Managers;
 using Quartz;
 using System.Xml.Linq;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.AuditLog;
@@ -25,7 +26,6 @@ public class AuditLogClearingJob : Job
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        //await FixApiRequestsAsync();
         var expirationDate = DateTime.Now.AddYears(-1);
 
         await using var repository = DbFactory.CreateRepository();
@@ -98,34 +98,5 @@ public class AuditLogClearingJob : Job
         context.Result = $"Items: {data.Count}, Files: {data.Sum(o => o.Files.Count)} ({data.Sum(o => o.Files.Sum(x => x.Size))} B), XmlSize: {Encoding.UTF8.GetBytes(logRoot.ToString()).Length} B";
         await Helper.StoreDataAsync(logRoot, data.SelectMany(o => o.Files), "AuditLog");
         await repository.CommitAsync();
-    }
-
-    private async Task FixApiRequestsAsync()
-    {
-        await using var repository = DbFactory.CreateRepository();
-
-        var items = await repository.AuditLog.GetAllApiLogsAsync();
-        foreach (var item in items)
-        {
-            var data = JsonConvert.DeserializeObject<ApiRequest>(item.Data, AuditLogWriter.SerializerSettings)!;
-            if (data.QueryParams.Count == 0 && string.IsNullOrEmpty(data.BodyContent)) continue;
-
-            if (data.QueryParams.Count > 0)
-            {
-                foreach (var param in data.QueryParams)
-                    data.AddParameter(param.Key, param.Value);
-
-                data.QueryParams.Clear();
-            }
-
-            if (!string.IsNullOrEmpty(data.BodyContent))
-            {
-                data.AddParameter("JsonData", data.BodyContent);
-                data.BodyContent = null;
-            }
-
-            item.Data = JsonConvert.SerializeObject(data, AuditLogWriter.SerializerSettings);
-            await repository.CommitAsync();
-        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using GrillBot.Common.Infrastructure;
 using NSwag.Annotations;
 
 namespace GrillBot.Database.Models;
@@ -6,7 +8,7 @@ namespace GrillBot.Database.Models;
 /// <summary>
 /// Parameters for pagination.
 /// </summary>
-public class PaginatedParams
+public class PaginatedParams : IApiObject
 {
     /// <summary>
     /// Page.
@@ -22,4 +24,13 @@ public class PaginatedParams
 
     [OpenApiIgnore]
     public int Skip => (Page == 0 ? 0 : Page - 1) * PageSize;
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        return new Dictionary<string, string>
+        {
+            { nameof(Page), Page.ToString() },
+            { nameof(PageSize), PageSize.ToString() }
+        };
+    }
 }

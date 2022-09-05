@@ -1,15 +1,23 @@
-﻿using GrillBot.Data.Models.AuditLog;
+﻿using GrillBot.Common.Infrastructure;
+using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GrillBot.Data.Extensions;
+namespace GrillBot.App.Extensions;
 
 public static class ControllerExtensions
 {
-    public static void SetApiRequestData(this Controller controller, object request)
+    public static void StoreParameters(this Controller controller, IApiObject apiObject)
     {
-        var apiRequest = controller.HttpContext.RequestServices.GetRequiredService<ApiRequest>();
+        controller.HttpContext.RequestServices
+            .GetRequiredService<ApiRequest>()
+            .AddParameters(apiObject);
+    }
 
-        apiRequest.SetParams(request);
+    public static void StoreParameters(this Controller controller, IApiObject[] apiObjects)
+    {
+        controller.HttpContext.RequestServices
+            .GetRequiredService<ApiRequest>()
+            .AddParameters(apiObjects);
     }
 }

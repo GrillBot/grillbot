@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database;
 using GrillBot.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Data.Models.API.Points;
 
-public class GetPointsSummaryParams : IQueryableModel<Database.Entity.PointsTransactionSummary>
+public class GetPointsSummaryParams : IQueryableModel<Database.Entity.PointsTransactionSummary>, IApiObject
 {
     /// <summary>
     /// Show merged or non-merged items.
@@ -62,5 +65,20 @@ public class GetPointsSummaryParams : IQueryableModel<Database.Entity.PointsTran
             "ReactionPoints" => Sort.Descending ? query.OrderByDescending(o => o.ReactionPoints).ThenByDescending(o => o.Day) : query.OrderBy(o => o.ReactionPoints).ThenBy(o => o.Day),
             _ => Sort.Descending ? query.OrderByDescending(o => o.Day) : query.OrderBy(o => o.Day)
         };
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(Merged), Merged.ToString() },
+            { nameof(GuildId), GuildId },
+            { nameof(UserId), UserId },
+        };
+
+        result.AddApiObject(Days, nameof(Days));
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

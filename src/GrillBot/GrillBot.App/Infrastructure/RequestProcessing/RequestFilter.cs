@@ -63,6 +63,8 @@ public class RequestFilter : IAsyncActionFilter
         ApiRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
         ApiRequest.Method = context.HttpContext.Request.Method;
         ApiRequest.LoggedUserRole = ApiRequestContext.GetUserRole();
-        ApiRequest.QueryParams = context.HttpContext.Request.Query.ToDictionary(o => o.Key, o => o.Value.ToString());
+
+        foreach (var item in context.HttpContext.Request.Query)
+            ApiRequest.AddParameter(item.Key, item.Value.ToString());
     }
 }

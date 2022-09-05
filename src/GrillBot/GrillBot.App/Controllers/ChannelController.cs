@@ -4,17 +4,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 using GrillBot.App.Services.Channels;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/channel")]
-[OpenApiTag("Channels", Description = "Channel management")]
 public class ChannelController : Controller
 {
     private ChannelApiService ApiService { get; }
@@ -22,6 +19,23 @@ public class ChannelController : Controller
     public ChannelController(ChannelApiService apiService)
     {
         ApiService = apiService;
+    }
+    
+    /// <summary>
+    /// Get paginated list of user statistics in channel.
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <response code="400">Validation failed</response>
+    [HttpPost("{id}/userStats")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromBody] PaginatedParams pagination)
+    {
+        this.StoreParameters(pagination);
+
+        var result = await ApiService.GetChannelUsersAsync(id, pagination);
+        return Ok(result);
     }
 
     /// <summary>
@@ -42,7 +56,8 @@ public class ChannelController : Controller
     {
         try
         {
-            this.SetApiRequestData(parameters);
+            this.StoreParameters(parameters);
+
             await ApiService.PostMessageAsync(guildId, channelId, parameters);
             return Ok();
         }
@@ -55,12 +70,14 @@ public class ChannelController : Controller
     /// <summary>
     /// Get paginated list of channels.
     /// </summary>
-    [HttpGet]
+    [HttpPost("list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<GuildChannelListItem>>> GetChannelsListAsync([FromQuery] GetChannelListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<GuildChannelListItem>>> GetChannelsListAsync([FromBody] GetChannelListParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
@@ -114,7 +131,7 @@ public class ChannelController : Controller
     {
         try
         {
-            this.SetApiRequestData(parameters);
+            this.StoreParameters(parameters);
             var result = await ApiService.UpdateChannelAsync(id, parameters);
 
             if (result)
@@ -126,21 +143,6 @@ public class ChannelController : Controller
         {
             return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
         }
-    }
-
-    /// <summary>
-    /// Get paginated list of user statistics in channel.
-    /// </summary>
-    /// <response code="200">Success</response>
-    /// <response code="400">Validation failed</response>
-    [HttpGet("{id}/userStats")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromQuery] PaginatedParams pagination)
-    {
-        var result = await ApiService.GetChannelUsersAsync(id, pagination);
-        return Ok(result);
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Services.Emotes;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Models;
@@ -7,14 +6,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/emotes")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-[OpenApiTag("Emotes", Description = "Emote statistics")]
 public class EmotesController : Controller
 {
     private EmotesApiService EmotesApiService { get; }
@@ -29,11 +26,13 @@ public class EmotesController : Controller
     /// </summary>
     /// <response code="200">Return paginated list with statistics of supported emotes.</response>
     /// <response code="400">Validation of parameters failed.</response>
-    [HttpGet("stats/supported")]
+    [HttpPost("stats/supported/list")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfSupportedEmotesAsync([FromQuery] EmotesListParams @params)
+    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfSupportedEmotesAsync([FromBody] EmotesListParams @params)
     {
+        this.StoreParameters(@params);
+
         var result = await EmotesApiService.GetStatsOfEmotesAsync(@params, false);
         return Ok(result);
     }
@@ -43,11 +42,13 @@ public class EmotesController : Controller
     /// </summary>
     /// <response code="200">Return paginated list with statistics of unsupported emotes.</response>
     /// <response code="400">Validation of parameters failed.</response>
-    [HttpGet("stats/unsupported")]
+    [HttpPost("stats/unsupported/list")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfUnsupportedEmotesAsync([FromQuery] EmotesListParams @params)
+    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfUnsupportedEmotesAsync([FromBody] EmotesListParams @params)
     {
+        this.StoreParameters(@params);
+
         var result = await EmotesApiService.GetStatsOfEmotesAsync(@params, true);
         return Ok(result);
     }
@@ -64,7 +65,7 @@ public class EmotesController : Controller
     {
         try
         {
-            this.SetApiRequestData(@params);
+            this.StoreParameters(@params);
             var result = await EmotesApiService.MergeStatsToAnotherAsync(@params);
             return Ok(result);
         }
@@ -86,8 +87,7 @@ public class EmotesController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> RemoveStatisticsAsync(
-        [Required(ErrorMessage = "Pro smazání je vyžadováno EmoteId.")]
-        [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
+        [Required(ErrorMessage = "Pro smazání je vyžadováno EmoteId.")] [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
         string emoteId
     )
     {

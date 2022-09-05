@@ -95,7 +95,8 @@ public class StatisticsController : Controller
         var filterModel = new AuditLogListParams
         {
             Types = new List<AuditLogItemType> { AuditLogItemType.Command },
-            IgnoreBots = true
+            IgnoreBots = true,
+            Sort = null
         };
 
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -119,7 +120,7 @@ public class StatisticsController : Controller
                 MaxDuration = o.Max(x => x.Data!.Duration),
                 TotalDuration = o.Sum(x => x.Data!.Duration)
             })
-            .OrderBy(o => o.Key)
+            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
             .ToList();
 
         return Ok(groupedData);
@@ -135,7 +136,8 @@ public class StatisticsController : Controller
         var filterModel = new AuditLogListParams
         {
             Types = new List<AuditLogItemType> { AuditLogItemType.InteractionCommand },
-            IgnoreBots = true
+            IgnoreBots = true,
+            Sort = null
         };
 
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -157,7 +159,8 @@ public class StatisticsController : Controller
                 MinDuration = o.Min(x => x.Data!.Duration),
                 MaxDuration = o.Max(x => x.Data!.Duration),
                 TotalDuration = o.Sum(x => x.Data!.Duration)
-            }).OrderBy(o => o.Key)
+            })
+            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
             .ToList();
 
         return Ok(groupedData);
@@ -205,7 +208,8 @@ public class StatisticsController : Controller
     {
         var filterModel = new AuditLogListParams
         {
-            Types = new List<AuditLogItemType> { AuditLogItemType.JobCompleted }
+            Types = new List<AuditLogItemType> { AuditLogItemType.JobCompleted },
+            Sort = null
         };
 
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -228,7 +232,7 @@ public class StatisticsController : Controller
                 SuccessCount = o.Count(x => !x.Data!.WasError),
                 TotalDuration = o.Sum(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds))
             })
-            .OrderBy(o => o.Key)
+            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
             .ToList();
 
         return Ok(data);

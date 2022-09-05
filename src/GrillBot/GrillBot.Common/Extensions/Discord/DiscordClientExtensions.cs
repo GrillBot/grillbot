@@ -70,13 +70,11 @@ public static class DiscordClientExtensions
         return await guild.GetUserAsync(userId);
     }
 
-    public static IRole? FindRole(this BaseSocketClient client, string id)
-        => FindRole(client, id.ToUlong());
-
-    private static IRole? FindRole(this BaseSocketClient client, ulong id)
+    public static async Task<List<IRole>> GetRolesAsync(this IDiscordClient client)
     {
-        return client.Guilds.SelectMany(o => o.Roles)
-            .FirstOrDefault(o => !o.IsEveryone && o.Id == id);
+        return (await client.GetGuildsAsync())
+            .SelectMany(o => o.Roles)
+            .ToList();
     }
 
     public static async Task<List<IGuild>> FindMutualGuildsAsync(this IDiscordClient client, ulong userId)

@@ -49,7 +49,7 @@ public class AuthControllerTests : ControllerTest<AuthController>
     public async Task OnOAuth2CallBackAsync()
     {
         var encodedState = new AuthState().Encode();
-        var result = await Controller.OnOAuth2CallbackAsync("code", encodedState, CancellationToken.None);
+        var result = await Controller.OnOAuth2CallbackAsync("code", encodedState);
         CheckResult<RedirectResult>(result);
     }
 

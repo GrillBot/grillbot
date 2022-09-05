@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Database;
 using GrillBot.Database.Models;
@@ -7,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Data.Models.API.Suggestions;
 
-public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSuggestion>
+public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSuggestion>, IApiObject
 {
     public RangeParams<DateTime?> CreatedAt { get; set; }
 
@@ -42,7 +45,7 @@ public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSug
             query = query.Where(o => o.FromUserId == FromUserId);
 
         if (!string.IsNullOrEmpty(EmoteName))
-            query = query.Where(o => o.EmoteName.Contains(EmoteName, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(o => o.EmoteName.ToLower().Contains(EmoteName.ToLower()));
 
         if (OnlyApprovedToVote)
             query = query.Where(o => o.ApprovedForVote == true);
@@ -66,5 +69,23 @@ public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSug
     public IQueryable<Database.Entity.EmoteSuggestion> SetSort(IQueryable<Database.Entity.EmoteSuggestion> query)
     {
         return Sort.Descending ? query.OrderByDescending(o => o.CreatedAt).ThenByDescending(o => o.Id) : query.OrderBy(o => o.CreatedAt).ThenBy(o => o.Id);
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(GuildId), GuildId },
+            { nameof(FromUserId), FromUserId },
+            { nameof(EmoteName), EmoteName },
+            { nameof(OnlyApprovedToVote), OnlyApprovedToVote.ToString() },
+            { nameof(OnlyUnfinishedVotes), OnlyUnfinishedVotes.ToString() },
+            { nameof(OnlyCommunityApproved), OnlyCommunityApproved.ToString() },
+        };
+
+        result.AddApiObject(CreatedAt, nameof(CreatedAt));
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

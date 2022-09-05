@@ -6,14 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/system")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-[OpenApiTag("System", Description = "Internal system management, ...")]
 public class SystemController : Controller
 {
     private IWebHostEnvironment Environment { get; }

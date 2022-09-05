@@ -7,17 +7,19 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObject
+public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObject, IApiObject
 {
     [DiscordId]
     public string GuildId { get; set; }
 
     [DiscordId]
-    public List<string> ProcessedUserIds { get; set; }
+    public List<string> ProcessedUserIds { get; set; } = new();
 
     public List<AuditLogItemType> Types { get; set; } = new();
     public List<AuditLogItemType> ExcludedTypes { get; set; } = new();
@@ -97,7 +99,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
         if (!string.IsNullOrEmpty(GuildId))
             query = query.Where(o => o.GuildId == GuildId);
 
-        if (ProcessedUserIds?.Count > 0)
+        if (ProcessedUserIds.Count > 0)
             query = query.Where(o => ProcessedUserIds.Contains(o.ProcessedUserId));
 
         if (CreatedFrom != null)
@@ -188,5 +190,42 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
         CreatedFrom = startAt;
         if (CreatedTo <= startAt)
             CreatedTo = null;
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(GuildId), GuildId },
+            { nameof(CreatedFrom), CreatedFrom?.ToString("o") },
+            { nameof(CreatedTo), CreatedTo?.ToString("o") },
+            { nameof(IgnoreBots), IgnoreBots.ToString() },
+            { nameof(ChannelId), ChannelId },
+            { nameof(OnlyFromStart), OnlyFromStart.ToString() },
+            { nameof(Ids), Ids }
+        };
+
+        for (var i = 0; i < ProcessedUserIds.Count; i++)
+            result.Add($"{nameof(ProcessedUserIds)}[{i}]", ProcessedUserIds[i]);
+        for (var i = 0; i < Types.Count; i++)
+            result.Add($"{nameof(Types)}[{i}]", $"{Types[i]} ({(int)Types[i]})");
+        for (var i = 0; i < ExcludedTypes.Count; i++)
+            result.Add($"{nameof(ExcludedTypes)}[{i}]", $"{ExcludedTypes[i]} ({(int)ExcludedTypes[i]})");
+
+        result.AddApiObject(InfoFilter, nameof(InfoFilter));
+        result.AddApiObject(WarningFilter, nameof(WarningFilter));
+        result.AddApiObject(ErrorFilter, nameof(ErrorFilter));
+        result.AddApiObject(CommandFilter, nameof(CommandFilter));
+        result.AddApiObject(InteractionFilter, nameof(InteractionFilter));
+        result.AddApiObject(JobFilter, nameof(JobFilter));
+        result.AddApiObject(ApiRequestFilter, nameof(ApiRequestFilter));
+        result.AddApiObject(OverwriteCreatedFilter, nameof(OverwriteCreatedFilter));
+        result.AddApiObject(OverwriteDeletedFilter, nameof(OverwriteDeletedFilter));
+        result.AddApiObject(OverwriteUpdatedFilter, nameof(OverwriteUpdatedFilter));
+        result.AddApiObject(MemberUpdatedFilter, nameof(MemberUpdatedFilter));
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+
+        return result;
     }
 }

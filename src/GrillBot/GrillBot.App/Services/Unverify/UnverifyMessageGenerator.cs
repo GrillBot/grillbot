@@ -1,6 +1,5 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.Unverify;
 
 namespace GrillBot.App.Services.Unverify;

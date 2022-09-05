@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Emotes;
@@ -18,7 +17,6 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/data")]
-[OpenApiTag("Data", Description = "Support for form fields, ...")]
 [ResponseCache(CacheProfileName = "ConstsApi")]
 public class DataController : Controller
 {

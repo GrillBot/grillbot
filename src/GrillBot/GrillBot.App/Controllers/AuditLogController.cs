@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -10,13 +9,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/auditlog")]
-[OpenApiTag("Audit log", Description = "Logging")]
 public class AuditLogController : Controller
 {
     private AuditLogApiService ApiService { get; }
@@ -47,16 +44,18 @@ public class AuditLogController : Controller
     }
 
     /// <summary>
-    /// Gets paginated list of audit logs.
+    /// Get paginated list of audit logs.
     /// </summary>
     /// <response code="200">Returns paginated list of audit log items.</response>
     /// <response code="400">Validation of parameters failed.</response>
-    [HttpGet]
+    [HttpPost("list")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromQuery] AuditLogListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromBody] AuditLogListParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
@@ -94,9 +93,10 @@ public class AuditLogController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    public async Task<ActionResult> HandleClientAppMessageAsync(ClientLogItemRequest request)
+    public async Task<ActionResult> HandleClientAppMessageAsync([FromBody] ClientLogItemRequest request)
     {
-        this.SetApiRequestData(request);
+        this.StoreParameters(request);
+
         await ApiService.HandleClientAppMessageAsync(request);
         return Ok();
     }

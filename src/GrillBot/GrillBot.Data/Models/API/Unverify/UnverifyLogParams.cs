@@ -8,6 +8,8 @@ using NSwag.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Unverify;
@@ -15,10 +17,10 @@ namespace GrillBot.Data.Models.API.Unverify;
 /// <summary>
 /// Paginated params of unverify logs
 /// </summary>
-public class UnverifyLogParams : IQueryableModel<UnverifyLog>
+public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
 {
     /// <summary>
-    /// Selected operations.
+    /// Selected operation.
     /// </summary>
     public UnverifyOperation? Operation { get; set; }
 
@@ -54,6 +56,7 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>
     /// Default: CreatedAt.
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "CreatedAt" };
+
     public PaginatedParams Pagination { get; set; } = new();
 
     public IQueryable<UnverifyLog> SetIncludes(IQueryable<UnverifyLog> query)
@@ -128,5 +131,22 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>
             return sortQuery.ThenByDescending(o => o.Id);
         else
             return sortQuery.ThenBy(o => o.Id);
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(GuildId), GuildId },
+            { nameof(FromUserId), FromUserId },
+            { nameof(ToUserId), ToUserId },
+        };
+
+        if (Operation != null)
+            result[nameof(Operation)] = $"{Operation} ({(int)Operation.Value})";
+        result.AddApiObject(Created, nameof(Created));
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

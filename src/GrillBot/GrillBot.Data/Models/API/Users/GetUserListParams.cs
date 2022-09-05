@@ -4,11 +4,13 @@ using GrillBot.Database;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Users;
 
-public class GetUserListParams : IQueryableModel<Database.Entity.User>
+public class GetUserListParams : IQueryableModel<Database.Entity.User>, IApiObject
 {
     /// <summary>
     /// Username.
@@ -87,5 +89,23 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>
             UserStatus.AFK => UserStatus.Idle,
             _ => Status
         };
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(Username), Username },
+            { nameof(GuildId), GuildId },
+            { nameof(Flags), (Flags ?? 0).ToString() },
+            { nameof(HaveBirthday), HaveBirthday.ToString() },
+            { nameof(UsedInviteCode), UsedInviteCode },
+        };
+
+        if (Status != null)
+            result[nameof(Status)] = $"{Status} ({(int)Status.Value})";
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

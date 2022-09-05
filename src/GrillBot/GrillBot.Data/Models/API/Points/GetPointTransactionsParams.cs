@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Database;
 using GrillBot.Database.Models;
@@ -7,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Data.Models.API.Points;
 
-public class GetPointTransactionsParams : IQueryableModel<Database.Entity.PointsTransaction>
+public class GetPointTransactionsParams : IQueryableModel<Database.Entity.PointsTransaction>, IApiObject
 {
     /// <summary>
     /// Show or ignore merged items.
@@ -82,5 +85,23 @@ public class GetPointTransactionsParams : IQueryableModel<Database.Entity.Points
             "Points" => Sort.Descending ? query.OrderByDescending(o => o.Points).ThenByDescending(o => o.AssingnedAt) : query.OrderBy(o => o.Points).ThenBy(o => o.AssingnedAt),
             _ => Sort.Descending ? query.OrderByDescending(o => o.AssingnedAt) : query.OrderBy(o => o.AssingnedAt)
         };
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(Merged), Merged.ToString() },
+            { nameof(GuildId), GuildId },
+            { nameof(UserId), UserId },
+            { nameof(OnlyReactions), OnlyReactions.ToString() },
+            { nameof(OnlyMessages), OnlyMessages.ToString() },
+            { nameof(MessageId), MessageId }
+        };
+
+        result.AddApiObject(AssignedAt, nameof(AssignedAt));
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

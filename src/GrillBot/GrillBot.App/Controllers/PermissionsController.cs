@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Permissions;
 using GrillBot.Data.Models.API.Users;
@@ -8,21 +7,19 @@ using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/permissions")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-[OpenApiTag("Permissions", Description = "Commands permissions management")]
 public class PermissionsController : Controller
 {
-    private DiscordSocketClient DiscordClient { get; }
+    private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public PermissionsController(DiscordSocketClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
+    public PermissionsController(IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
     {
         DiscordClient = discordClient;
         Mapper = mapper;
@@ -41,7 +38,7 @@ public class PermissionsController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Conflict)]
     public async Task<ActionResult> CreateExplicitPermissionAsync([FromBody] CreateExplicitPermissionParams parameters)
     {
-        this.SetApiRequestData(parameters);
+        this.StoreParameters(parameters);
         await using var repository = DatabaseBuilder.CreateRepository();
         var exists = await repository.Permissions.ExistsCommandForTargetAsync(parameters.Command, parameters.TargetId);
 
@@ -116,8 +113,9 @@ public class PermissionsController : Controller
         var rolePermissions = permissions.Where(o => o.IsRole).ToList();
         if (rolePermissions.Count > 0)
         {
+            var roles = await DiscordClient.GetRolesAsync();
             var rolePerms = rolePermissions
-                .Select(o => Mapper.Map<ExplicitPermission>(o, x => x.AfterMap((_, dst) => dst.Role = Mapper.Map<Role>(DiscordClient.FindRole(o.TargetId)))))
+                .Select(o => Mapper.Map<ExplicitPermission>(o, x => x.AfterMap((_, dst) => dst.Role = Mapper.Map<Role>(roles.Find(t => t.Id.ToString() == o.TargetId)))))
                 .OrderBy(o => o.Role?.Name)
                 .ThenBy(o => o.Command);
 

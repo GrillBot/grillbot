@@ -7,11 +7,13 @@ using Newtonsoft.Json;
 using NSwag.Annotations;
 using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Searching;
 
-public class GetSearchingListParams : IQueryableModel<SearchItem>
+public class GetSearchingListParams : IQueryableModel<SearchItem>, IApiObject
 {
     [DiscordId]
     public string UserId { get; set; }
@@ -33,6 +35,7 @@ public class GetSearchingListParams : IQueryableModel<SearchItem>
     /// Default: Id
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "Id" };
+
     public PaginatedParams Pagination { get; set; } = new();
 
     public IQueryable<SearchItem> SetIncludes(IQueryable<SearchItem> query)
@@ -90,5 +93,20 @@ public class GetSearchingListParams : IQueryableModel<SearchItem>
                 _ => query.OrderBy(o => o.Id)
             }
         };
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(UserId), UserId },
+            { nameof(GuildId), GuildId },
+            { nameof(ChannelId), ChannelId },
+            { nameof(MessageQuery), MessageQuery }
+        };
+
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

@@ -5,14 +5,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/invite")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-[OpenApiTag("Invites", Description = "Invite management")]
 public class InviteController : Controller
 {
     private InviteService InviteService { get; }
@@ -27,11 +25,13 @@ public class InviteController : Controller
     /// </summary>
     /// <response code="200">Returns paginated list of created and used invites.</response>
     /// <response code="400">Validation of parameters failed.</response>
-    [HttpGet]
+    [HttpPost("list")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromQuery] GetInviteListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromBody] GetInviteListParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var result = await InviteService.GetInviteListAsync(parameters);
         return Ok(result);
     }

@@ -1,17 +1,15 @@
 ﻿using GrillBot.App.Services.Unverify;
-using GrillBot.Data.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/selfunverify/keep")]
-[OpenApiTag("SelfUnverify", Description = "SelfUnverify management")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 public class SelfUnverifyController : Controller
 {
@@ -46,7 +44,7 @@ public class SelfUnverifyController : Controller
     {
         try
         {
-            this.SetApiRequestData(parameters);
+            this.StoreParameters(parameters.OfType<IApiObject>().ToArray());
             await SelfunverifyService.AddKeepablesAsync(parameters);
             return Ok();
         }

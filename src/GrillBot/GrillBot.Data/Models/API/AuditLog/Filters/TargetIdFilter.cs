@@ -1,11 +1,13 @@
-﻿using GrillBot.Data.Models.AuditLog;
+﻿using System.Collections.Generic;
+using GrillBot.Common.Infrastructure;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Newtonsoft.Json;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class TargetIdFilter : IExtendedFilter
+public class TargetIdFilter : IExtendedFilter, IApiObject
 {
     public string TargetId { get; set; }
 
@@ -33,4 +35,12 @@ public class TargetIdFilter : IExtendedFilter
 
     private bool IsValidOverwrite(AuditOverwriteInfo overwriteInfo)
         => overwriteInfo.TargetId.ToString() == TargetId;
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        return new Dictionary<string, string>
+        {
+            { nameof(TargetId), TargetId }
+        };
+    }
 }

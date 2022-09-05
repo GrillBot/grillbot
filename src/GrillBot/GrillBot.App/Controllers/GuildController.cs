@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Services.Guild;
-using GrillBot.Data.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models;
@@ -13,7 +12,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/guild")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-[OpenApiTag("Guilds", Description = "Guild management")]
 public class GuildController : Controller
 {
     private GuildApiService ApiService { get; }
@@ -28,11 +26,13 @@ public class GuildController : Controller
     /// </summary>
     /// <response code="200">Return paginated list of guilds in DB.</response>
     /// <response code="400">Validation of parameters failed.</response>
-    [HttpGet]
+    [HttpPost("list")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromQuery] GetGuildListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromBody] GetGuildListParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
@@ -54,7 +54,7 @@ public class GuildController : Controller
     }
 
     /// <summary>
-    /// Updates guild
+    /// Update guild
     /// </summary>
     /// <response code="200">Return guild detail.</response>
     /// <response code="400">Validation of parameters failed.</response>
@@ -65,7 +65,7 @@ public class GuildController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams parameters)
     {
-        this.SetApiRequestData(parameters);
+        this.StoreParameters(parameters);
         var result = await ApiService.UpdateGuildAsync(id, parameters, ModelState);
 
         if (result == null)

@@ -1,18 +1,22 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using Discord;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Database;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Channels;
 
-public class GetChannelListParams : IQueryableModel<GuildChannel>
+public class GetChannelListParams : IQueryableModel<GuildChannel>, IApiObject
 {
     [DiscordId]
     public string GuildId { get; set; }
+
     public string NameContains { get; set; }
     public ChannelType? ChannelType { get; set; }
 
@@ -22,6 +26,7 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>
     /// Available: Name, Type, MessageCount,RolePermissions,UserPermissions
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "Name" };
+
     public PaginatedParams Pagination { get; } = new();
 
     public IQueryable<GuildChannel> SetIncludes(IQueryable<GuildChannel> query)
@@ -78,5 +83,20 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>
                 _ => query.OrderBy(o => o.Name)
             }
         };
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(GuildId), GuildId },
+            { nameof(NameContains), NameContains },
+            { nameof(ChannelType), ChannelType?.ToString() ?? "" },
+            { nameof(HideDeleted), HideDeleted.ToString() }
+        };
+
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

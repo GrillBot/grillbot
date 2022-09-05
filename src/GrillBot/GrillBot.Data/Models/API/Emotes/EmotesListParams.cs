@@ -4,12 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using NSwag.Annotations;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Emotes;
 
-public class EmotesListParams : IQueryableModel<EmoteStatisticItem>
+public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IApiObject
 {
     public string GuildId { get; set; }
 
@@ -29,6 +32,7 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>
     /// Default: UseCount
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "UseCount" };
+
     public PaginatedParams Pagination { get; set; } = new();
 
     public IQueryable<EmoteStatisticItem> SetIncludes(IQueryable<EmoteStatisticItem> query)
@@ -56,4 +60,19 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>
     }
 
     public IQueryable<EmoteStatisticItem> SetSort(IQueryable<EmoteStatisticItem> query) => query;
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(GuildId), GuildId },
+            { nameof(FilterAnimated), FilterAnimated.ToString() },
+            { nameof(EmoteName), EmoteName }
+        };
+
+        result.AddApiObject(UseCount, nameof(UseCount));
+        result.AddApiObject(FirstOccurence, nameof(FirstOccurence));
+        result.AddApiObject(LastOccurence, nameof(LastOccurence));
+        return result;
+    }
 }

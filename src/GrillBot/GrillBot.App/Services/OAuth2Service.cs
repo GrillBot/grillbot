@@ -43,10 +43,10 @@ public class OAuth2Service
         return new OAuth2GetLink(builder.ToString());
     }
 
-    public async Task<string> CreateRedirectUrlAsync(string code, string encodedState, CancellationToken cancellationToken)
+    public async Task<string> CreateRedirectUrlAsync(string code, string encodedState)
     {
         var state = AuthState.Decode(encodedState);
-        var accessToken = await CreateAccessTokenAsync(code, cancellationToken);
+        var accessToken = await CreateAccessTokenAsync(code);
         var redirectUrl = GetReturnUrl(state);
 
         var uriBuilder = new UriBuilder(redirectUrl)
@@ -60,7 +60,7 @@ public class OAuth2Service
     private string GetReturnUrl(AuthState state)
         => !string.IsNullOrEmpty(state.ReturnUrl) ? state.ReturnUrl : Configuration[state.IsPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"];
 
-    private async Task<string> CreateAccessTokenAsync(string code, CancellationToken cancellationToken)
+    private async Task<string> CreateAccessTokenAsync(string code)
     {
         using var message = new HttpRequestMessage(HttpMethod.Post, "https://discord.com/api/oauth2/token")
         {
@@ -75,8 +75,8 @@ public class OAuth2Service
             })
         };
 
-        using var response = await HttpClient.SendAsync(message, cancellationToken);
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var response = await HttpClient.SendAsync(message);
+        var json = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
             throw new WebException(json);

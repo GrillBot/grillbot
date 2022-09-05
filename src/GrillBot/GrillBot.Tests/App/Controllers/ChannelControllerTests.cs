@@ -52,14 +52,14 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     [TestMethod]
     public async Task SendMessageToChannelAsync_GuildNotFound()
     {
-        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId + 1, Consts.ChannelId, new SendMessageToChannelParams());
+        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId + 1, Consts.ChannelId, new SendMessageToChannelParams() { Content = "Content" });
         CheckResult<NotFoundObjectResult>(result);
     }
 
     [TestMethod]
     public async Task SendMessageToChannelAsync_ChannelNotFound()
     {
-        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId + 1, new SendMessageToChannelParams());
+        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId + 1, new SendMessageToChannelParams { Content = "Content" });
         CheckResult<NotFoundObjectResult>(result);
     }
 

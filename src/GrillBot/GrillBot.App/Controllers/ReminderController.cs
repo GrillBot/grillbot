@@ -8,13 +8,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/remind")]
-[OpenApiTag("Reminder", Description = "Reminder management")]
 public class ReminderController : Controller
 {
     private RemindApiService ApiService { get; }
@@ -31,11 +29,11 @@ public class ReminderController : Controller
     /// </summary>
     /// <response code="200">Returns paginated list of reminders.</response>
     /// <response code="400">Validation of parameters failed.</response>
-    [HttpGet]
+    [HttpPost("list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromQuery] GetReminderListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromBody] GetReminderListParams parameters)
     {
         if (ApiRequestContext.IsPublic())
         {
@@ -46,6 +44,7 @@ public class ReminderController : Controller
                 parameters.Sort.OrderBy = "Id";
         }
 
+        this.StoreParameters(parameters);
         var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }

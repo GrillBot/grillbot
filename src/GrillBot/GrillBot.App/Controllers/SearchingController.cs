@@ -5,13 +5,11 @@ using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/search")]
-[OpenApiTag("Searching", Description = "Searching for team, service, ...")]
 public class SearchingController : Controller
 {
     private SearchingService Service { get; }
@@ -28,12 +26,14 @@ public class SearchingController : Controller
     /// </summary>
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
-    [HttpGet]
+    [HttpPost("list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromQuery] GetSearchingListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromBody] GetSearchingListParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var data = await Service.GetPaginatedListAsync(parameters, ApiRequestContext);
         return Ok(data);
     }

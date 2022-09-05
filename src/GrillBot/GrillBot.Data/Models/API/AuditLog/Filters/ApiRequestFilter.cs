@@ -2,11 +2,14 @@
 using GrillBot.Database.Entity;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class ApiRequestFilter : IExtendedFilter
+public class ApiRequestFilter : IExtendedFilter, IApiObject
 {
     public string ControllerName { get; set; }
     public string ActionName { get; set; }
@@ -18,13 +21,13 @@ public class ApiRequestFilter : IExtendedFilter
     public bool IsSet()
     {
         return !string.IsNullOrEmpty(ControllerName) || !string.IsNullOrEmpty(ActionName)
-            || !string.IsNullOrEmpty(PathTemplate) || Duration != null || !string.IsNullOrEmpty(Method)
-            || !string.IsNullOrEmpty(LoggedUserRole);
+                                                     || !string.IsNullOrEmpty(PathTemplate) || Duration != null || !string.IsNullOrEmpty(Method)
+                                                     || !string.IsNullOrEmpty(LoggedUserRole);
     }
 
     public bool IsValid(AuditLogItem item, JsonSerializerSettings settings)
     {
-        var request = JsonConvert.DeserializeObject<ApiRequest>(item.Data, settings);
+        var request = JsonConvert.DeserializeObject<ApiRequest>(item.Data, settings)!;
 
         if (!string.IsNullOrEmpty(ControllerName) && !request.ControllerName.Contains(ControllerName))
             return false;
@@ -49,4 +52,19 @@ public class ApiRequestFilter : IExtendedFilter
 
     private bool IsDurationValid(int duration)
         => Duration == null || (duration >= Duration.From && duration <= Duration.To);
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(ControllerName), ControllerName },
+            { nameof(ActionName), ActionName },
+            { nameof(PathTemplate), PathTemplate },
+            { nameof(Method), Method },
+            { nameof(LoggedUserRole), LoggedUserRole }
+        };
+
+        result.AddApiObject(Duration, nameof(Duration));
+        return result;
+    }
 }

@@ -11,7 +11,6 @@ using GrillBot.Data.Exceptions;
 using GrillBot.App.Services.User;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Common.Models;
-using GrillBot.Data.Extensions;
 using GrillBot.Database.Models;
 
 namespace GrillBot.App.Controllers;
@@ -45,13 +44,14 @@ public class UsersController : Controller
     /// </summary>
     /// <response code="200">Returns paginated list of users.</response>
     /// <response code="400">Validation of parameters failed.</response>
-    [HttpGet]
+    [HttpPost("list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromQuery] GetUserListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromBody] GetUserListParams parameters)
     {
         parameters.FixStatus();
+        this.StoreParameters(parameters);
 
         var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
@@ -158,7 +158,8 @@ public class UsersController : Controller
     {
         try
         {
-            this.SetApiRequestData(parameters);
+            this.StoreParameters(parameters);
+
             await ApiService.UpdateUserAsync(id, parameters);
             return Ok();
         }
@@ -189,14 +190,15 @@ public class UsersController : Controller
     /// <response code="200">Returns paginated response of karma leaderboard</response>
     /// <response code="500">Something is wrong.</response>
     [ApiKeyAuth]
-    [HttpGet("karma")]
+    [HttpPost("karma")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    [ResponseCache(CacheProfileName = "BoardApi", VaryByQueryKeys = new[] { "*" })]
-    public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromQuery] KarmaListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
     {
         try
         {
+            this.StoreParameters(parameters);
+
             var result = await KarmaService.GetUserKarmaAsync(parameters.Sort, parameters.Pagination);
             return Ok(result);
         }

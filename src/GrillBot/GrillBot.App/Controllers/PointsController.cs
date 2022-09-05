@@ -6,13 +6,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/user/points")]
-[OpenApiTag("Points")]
 public class PointsController : Controller
 {
     private PointsApiService ApiService { get; }
@@ -41,12 +39,14 @@ public class PointsController : Controller
     /// </summary>
     /// <response code="200">Returns paginated list of transactions.</response>
     /// <response code="400">Validation failed.</response>
-    [HttpGet("transactions")]
+    [HttpPost("transactions/list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<PointsTransaction>>> GetTransactionListAsync([FromQuery] GetPointTransactionsParams parameters)
+    public async Task<ActionResult<PaginatedResponse<PointsTransaction>>> GetTransactionListAsync([FromBody] GetPointTransactionsParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var result = await ApiService.GetTransactionListAsync(parameters);
         return Ok(result);
     }
@@ -56,12 +56,14 @@ public class PointsController : Controller
     /// </summary>
     /// <response code="200">Returns paginated list of summaries.</response>
     /// <response code="400">Validation failed.</response>
-    [HttpGet("summaries")]
+    [HttpPost("summaries/list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<PointsSummary>>> GetSummariesAsync([FromQuery] GetPointsSummaryParams parameters)
+    public async Task<ActionResult<PaginatedResponse<PointsSummary>>> GetSummariesAsync([FromBody] GetPointsSummaryParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var result = await ApiService.GetSummariesAsync(parameters);
         return Ok(result);
     }
@@ -71,12 +73,14 @@ public class PointsController : Controller
     /// </summary>
     /// <response code="200">Returns data for graphs.</response>
     /// <response code="400">Validation failed.</response>
-    [HttpGet("graph")]
+    [HttpPost("graph/data")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<PointsSummaryBase>>> GetGraphDataAsync([FromQuery] GetPointsSummaryParams parameters)
+    public async Task<ActionResult<List<PointsSummaryBase>>> GetGraphDataAsync([FromBody] GetPointsSummaryParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var result = await ApiService.GetGraphDataAsync(parameters);
         return Ok(result);
     }

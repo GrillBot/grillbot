@@ -2,18 +2,22 @@
 using GrillBot.Database;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Invites;
 
-public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>
+public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApiObject
 {
     [DiscordId]
     public string GuildId { get; set; }
 
     [DiscordId]
     public string CreatorId { get; set; }
+
     public string Code { get; set; }
     public DateTime? CreatedFrom { get; set; }
     public DateTime? CreatedTo { get; set; }
@@ -23,6 +27,7 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>
     /// Default: Code
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "Code" };
+
     public PaginatedParams Pagination { get; set; } = new();
 
     public IQueryable<Database.Entity.Invite> SetIncludes(IQueryable<Database.Entity.Invite> query)
@@ -75,5 +80,21 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>
                 _ => query.OrderBy(o => o.Code)
             }
         };
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(GuildId), GuildId },
+            { nameof(CreatorId), CreatorId },
+            { nameof(Code), Code },
+            { nameof(CreatedFrom), CreatedFrom?.ToString("o") },
+            { nameof(CreatedTo), CreatedTo?.ToString("o") }
+        };
+
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

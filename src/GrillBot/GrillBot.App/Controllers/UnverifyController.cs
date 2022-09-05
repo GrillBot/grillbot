@@ -2,7 +2,6 @@
 using GrillBot.Data.Models.API.Unverify;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Exceptions;
@@ -16,7 +15,6 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/unverify")]
-[OpenApiTag("Unverify", Description = "Unverify management.")]
 public class UnverifyController : Controller
 {
     private UnverifyService UnverifyService { get; }
@@ -118,18 +116,20 @@ public class UnverifyController : Controller
     /// </summary>
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
-    [HttpGet("log")]
+    [HttpPost("log")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromQuery] UnverifyLogParams parameters)
+    public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromBody] UnverifyLogParams parameters)
     {
+        this.StoreParameters(parameters);
+
         var result = await UnverifyApiService.GetLogsAsync(parameters);
         return Ok(result);
     }
 
     /// <summary>
-    /// Recovers state before specific unverify.
+    /// Recover state before specific unverify.
     /// </summary>
     /// <param name="logId">ID of log.</param>
     /// <response code="200">Success</response>

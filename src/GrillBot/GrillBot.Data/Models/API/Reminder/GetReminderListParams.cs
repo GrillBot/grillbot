@@ -2,12 +2,15 @@
 using GrillBot.Database;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Reminder;
 
-public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessage>
+public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessage>, IApiObject
 {
     [DiscordId]
     public string FromUserId { get; set; }
@@ -31,6 +34,7 @@ public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessa
     /// Default: Id
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "Id" };
+
     public PaginatedParams Pagination { get; set; } = new();
 
     public IQueryable<Database.Entity.RemindMessage> SetIncludes(IQueryable<Database.Entity.RemindMessage> query)
@@ -91,5 +95,23 @@ public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessa
                 _ => query.OrderBy(o => o.Id)
             }
         };
+    }
+
+    public Dictionary<string, string> SerializeForLog()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(FromUserId), FromUserId },
+            { nameof(ToUserId), ToUserId },
+            { nameof(OriginalMessageId), OriginalMessageId },
+            { nameof(MessageContains), MessageContains },
+            { nameof(CreatedFrom), CreatedFrom?.ToString("o") },
+            { nameof(CreatedTo), CreatedTo?.ToString("o") },
+            { nameof(OnlyWaiting), OnlyWaiting.ToString() }
+        };
+
+        result.AddApiObject(Sort, nameof(Sort));
+        result.AddApiObject(Pagination, nameof(Pagination));
+        return result;
     }
 }

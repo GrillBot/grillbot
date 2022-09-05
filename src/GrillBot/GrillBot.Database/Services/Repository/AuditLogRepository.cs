@@ -142,4 +142,11 @@ public class AuditLogRepository : RepositoryBase
                 .ToDictionaryAsync(o => o.Date, o => o.Count);
         }
     }
+
+    public async Task<List<AuditLogItem>> GetAllApiLogsAsync()
+    {
+        return await Context.AuditLogs
+            .Where(o => o.Type == AuditLogItemType.Api)
+            .ToListAsync();
+    }
 }

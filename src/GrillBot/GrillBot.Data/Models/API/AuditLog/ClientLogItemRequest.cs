@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using GrillBot.Common.Infrastructure;
 
 namespace GrillBot.Data.Models.API.AuditLog;
 
-public class ClientLogItemRequest : IValidatableObject
+public class ClientLogItemRequest : IValidatableObject, IApiObject
 {
     public bool IsInfo { get; set; }
     public bool IsError { get; set; }
@@ -26,8 +27,17 @@ public class ClientLogItemRequest : IValidatableObject
     public AuditLogItemType GetAuditLogType()
     {
         if (IsError) return AuditLogItemType.Error;
-        if (IsWarning) return AuditLogItemType.Warning;
+        return IsWarning ? AuditLogItemType.Warning : AuditLogItemType.Info;
+    }
 
-        return AuditLogItemType.Info;
+    public Dictionary<string, string> SerializeForLog()
+    {
+        return new Dictionary<string, string>
+        {
+            { nameof(IsInfo), IsInfo.ToString() },
+            { nameof(IsError), IsError.ToString() },
+            { nameof(IsWarning), IsWarning.ToString() },
+            { nameof(Content), Content }
+        };
     }
 }

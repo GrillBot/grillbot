@@ -5,6 +5,7 @@ using Discord.Commands;
 using Discord.Net;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services.Images;
+using GrillBot.Common.Exceptions;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.FileStorage;
@@ -95,23 +96,39 @@ public class DiscordExceptionHandler : ILoggingHandler
             .WithCurrentTimestamp()
             .WithFooter(DiscordClient.CurrentUser);
 
-        if (exception is CommandException ce)
+        switch (exception)
         {
-            embed.WithTitle("Při provádění příkazu došlo k chybě")
-                .AddField("Kanál", ce.Context.Channel.GetMention(), true)
-                .AddField("Uživatel", ce.Context.User.Mention, true)
-                .AddField("Zpráva", $"```{(ce.Context.Message.Content.Length < DiscordConfig.MaxMessageSize ? ce.Context.Message.Content : $"{ce.Context.Message.Content[..^6]}...")}```")
-                .AddField("Skok na zprávu", ce.Context.Message.GetJumpUrl());
-        }
-        else
-        {
-            var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
-            var title = source == "App Commands" ? "Při provádění integrovaného příkazu došlo k chybě." : "Došlo k neočekávané chybě.";
+            case CommandException ce:
+                embed.WithTitle("Při provádění příkazu došlo k chybě")
+                    .AddField("Kanál", ce.Context.Channel.GetMention(), true)
+                    .AddField("Uživatel", ce.Context.User.Mention, true)
+                    .AddField("Zpráva", $"```{(ce.Context.Message.Content.Length < DiscordConfig.MaxMessageSize ? ce.Context.Message.Content : $"{ce.Context.Message.Content[..^6]}...")}```")
+                    .AddField("Skok na zprávu", ce.Context.Message.GetJumpUrl());
+                break;
+            case ApiException apiException:
+            {
+                embed.WithTitle("Při zpracování požadavku na API došlo k chybě")
+                    .AddField("Adresa", apiException.Path)
+                    .AddField("Controller", apiException.ControllerInfo);
 
-            embed.WithTitle(title)
-                .AddField("Zdroj", source, true)
-                .AddField("Typ", exception.GetType().Name, true)
-                .AddField("Zpráva chyby", msg.Trim());
+                if (apiException.LoggedUser != null)
+                    embed.AddField("Přihlášený uživatel", apiException.LoggedUser.GetFullName());
+
+                var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
+                embed.AddField("Obsah chyby", msg);
+                break;
+            }
+            default:
+            {
+                var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
+                var title = source == "App Commands" ? "Při provádění integrovaného příkazu došlo k chybě." : "Došlo k neočekávané chybě.";
+
+                embed.WithTitle(title)
+                    .AddField("Zdroj", source, true)
+                    .AddField("Typ", exception.GetType().Name, true)
+                    .AddField("Obsah chyby", msg.Trim());
+                break;
+            }
         }
 
         var withoutErrorsImage = await CreateWithoutErrorsImage(exception);

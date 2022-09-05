@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Managers.Logging;
+﻿using GrillBot.Common.Exceptions;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -33,7 +34,7 @@ public class AuditLogLoggingHandler : ILoggingHandler
 
     public async Task ErrorAsync(string source, string message, Exception exception)
     {
-        var data = CreateWrapper(false, source, message, exception);
+        var data = CreateWrapper(false, source, message, exception is ApiException apiException ? apiException.InnerException : exception);
         await AuditLogWriter.StoreAsync(data);
     }
 

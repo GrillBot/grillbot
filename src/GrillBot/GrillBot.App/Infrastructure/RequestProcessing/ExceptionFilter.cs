@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.AuditLog;
+using GrillBot.Common.Exceptions;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.AuditLog;
@@ -40,7 +41,9 @@ public class ExceptionFilter : IAsyncExceptionFilter
         var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, ApiRequestContext.LoggedUser);
         await AuditLogWriter.StoreAsync(wrapper);
 
-        var path = context.HttpContext.Request.Path;
-        await LoggingManager.ErrorAsync("API", $"An error occured while request processing ({path})", context.Exception);
+        var path = $"{ApiRequest.Method} {ApiRequest.Path}";
+        var controllerInfo = $"{ApiRequest.ControllerName}.{ApiRequest.ActionName}";
+        var exception = new ApiException(context.Exception.Message, context.Exception, ApiRequestContext.LoggedUser, path, controllerInfo);
+        await LoggingManager.ErrorAsync("API", "An error occured while request processing API request", exception);
     }
 }

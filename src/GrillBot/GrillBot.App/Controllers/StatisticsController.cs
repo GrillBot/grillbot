@@ -121,7 +121,8 @@ public class StatisticsController : Controller
                 SuccessCount = o.Count(x => x.Data!.IsSuccess),
                 MinDuration = o.Min(x => x.Data!.Duration),
                 MaxDuration = o.Max(x => x.Data!.Duration),
-                TotalDuration = o.Sum(x => x.Data!.Duration)
+                TotalDuration = o.Sum(x => x.Data!.Duration),
+                LastRunDuration = o.OrderByDescending(x => x.CreatedAt).Select(x => x.Data!.Duration).FirstOrDefault()
             })
             .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
             .ToList();
@@ -161,7 +162,8 @@ public class StatisticsController : Controller
                 SuccessCount = o.Count(x => x.Data!.IsSuccess),
                 MinDuration = o.Min(x => x.Data!.Duration),
                 MaxDuration = o.Max(x => x.Data!.Duration),
-                TotalDuration = o.Sum(x => x.Data!.Duration)
+                TotalDuration = o.Sum(x => x.Data!.Duration),
+                LastRunDuration = o.OrderByDescending(x => x.CreatedAt).Select(x => x.Data!.Duration).FirstOrDefault()
             })
             .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
             .ToList();
@@ -233,7 +235,8 @@ public class StatisticsController : Controller
                 MaxDuration = o.Max(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
                 MinDuration = o.Min(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
                 SuccessCount = o.Count(x => !x.Data!.WasError),
-                TotalDuration = o.Sum(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds))
+                TotalDuration = o.Sum(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
+                LastRunDuration = o.OrderByDescending(x => x.CreatedAt).Select(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)).FirstOrDefault()
             })
             .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
             .ToList();
@@ -288,7 +291,8 @@ public class StatisticsController : Controller
                 MaxDuration = o.Max(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
                 MinDuration = o.Min(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
                 SuccessCount = o.Count(x => Convert.ToInt32(x.Data!.StatusCode.Split(' ')[0]) < 400),
-                TotalDuration = o.Sum(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds))
+                TotalDuration = o.Sum(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
+                LastRunDuration = o.OrderByDescending(x => x.CreatedAt).Select(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)).FirstOrDefault()
             })
             .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
             .ToList();

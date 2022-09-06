@@ -41,6 +41,11 @@ public class StatisticItem
     /// Total duration time.
     /// </summary>
     public int TotalDuration { get; set; }
+    
+    /// <summary>
+    /// Execution time of last run.
+    /// </summary>
+    public int LastRunDuration { get; set; }
 
     /// <summary>
     /// Rate of success.

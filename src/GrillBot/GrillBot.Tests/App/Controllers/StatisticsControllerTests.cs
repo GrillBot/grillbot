@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Controllers;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
@@ -13,7 +14,12 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
 {
     protected override StatisticsController CreateController()
     {
-        return new StatisticsController(DatabaseBuilder, CacheBuilder);
+        var discordClient = DiscordHelper.CreateClient();
+        var commandsService = DiscordHelper.CreateCommandsService();
+        var interactions = DiscordHelper.CreateInteractionService(discordClient);
+        var eventManager = new EventManager(discordClient, interactions, commandsService);
+
+        return new StatisticsController(DatabaseBuilder, CacheBuilder, eventManager);
     }
 
     [TestMethod]

@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Data.Models.AuditLog;
@@ -18,11 +19,13 @@ public class StatisticsController : Controller
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private GrillBotCacheBuilder CacheBuilder { get; }
+    private EventManager EventManager { get; }
 
-    public StatisticsController(GrillBotDatabaseBuilder databaseBuilder, GrillBotCacheBuilder cacheBuilder)
+    public StatisticsController(GrillBotDatabaseBuilder databaseBuilder, GrillBotCacheBuilder cacheBuilder, EventManager eventManager)
     {
         DatabaseBuilder = databaseBuilder;
         CacheBuilder = cacheBuilder;
+        EventManager = eventManager;
     }
 
     /// <summary>
@@ -331,5 +334,17 @@ public class StatisticsController : Controller
             .ToDictionary(o => o.Key, o => o.Count);
 
         return Ok(data);
+    }
+
+    /// <summary>
+    /// Get Discord event statistics.
+    /// </summary>
+    /// <response code="200">Returns dictionary of Discord event statistics (EventName, Count).</response>
+    [HttpGet("events")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<Dictionary<string, ulong>> GetEventLogStatistics()
+    {
+        var statistics = EventManager.GetStatistics();
+        return Ok(statistics);
     }
 }

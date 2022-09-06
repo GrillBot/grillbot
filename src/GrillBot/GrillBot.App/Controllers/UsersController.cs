@@ -3,7 +3,6 @@ using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
 using GrillBot.Data.Models.API.Help;
 using Microsoft.AspNetCore.Http;
 using GrillBot.App.Services.CommandsHelp;
@@ -17,7 +16,6 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[OpenApiTag("Users", Description = "User management")]
 public class UsersController : Controller
 {
     private CommandsHelpService HelpService { get; }

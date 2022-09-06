@@ -16,7 +16,9 @@ public class EventManager
     private DiscordSocketClient DiscordClient { get; }
     private InteractionService InteractionService { get; }
     private CommandService CommandService { get; }
+
     private CircularBuffer<string> EventLog { get; }
+    private Dictionary<string, ulong> Statistics { get; }
 
     public EventManager(DiscordSocketClient discordClient, InteractionService interactionService, CommandService commandService)
     {
@@ -24,6 +26,7 @@ public class EventManager
         InteractionService = interactionService;
         CommandService = commandService;
         EventLog = new CircularBuffer<string>(1000);
+        Statistics = new Dictionary<string, ulong>();
 
         DiscordClient.InteractionCreated += InteractionCreated;
         InteractionService.InteractionExecuted += InteractionExecuted;
@@ -140,15 +143,30 @@ public class EventManager
         {
             var paramsData = parameters.Length == 0 ? "" : $" - {string.Join(", ", parameters)}";
             EventLog.PushFront($"{method} - {DateTime.Now.ToCzechFormat(withMiliseconds: true)}{paramsData}");
+
+            if (!Statistics.ContainsKey(method))
+                Statistics.Add(method, 0);
+            Statistics[method]++;
+
             return Task.CompletedTask;
         }
     }
 
-    public string[] GetData()
+    public string[] GetEventLog()
     {
         lock (_locker)
         {
             return EventLog.ToArray();
+        }
+    }
+
+    public Dictionary<string, ulong> GetStatistics()
+    {
+        lock (_locker)
+        {
+            return Statistics
+                .OrderByDescending(o => o.Value).ThenBy(o => o.Key)
+                .ToDictionary(o => o.Key, o => o.Value);
         }
     }
 }

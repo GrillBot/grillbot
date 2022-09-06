@@ -65,7 +65,7 @@ public class SystemController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<string[]> GetEventLog()
     {
-        var data = EventManager.GetData();
+        var data = EventManager.GetEventLog();
         return Ok(data);
     }
 }

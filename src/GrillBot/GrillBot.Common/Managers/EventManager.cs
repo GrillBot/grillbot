@@ -75,7 +75,7 @@ public class EventManager
         => AddToLog(nameof(GuildUpdated), guild.Name);
 
     private Task ChannelUpdated(IChannel channel)
-        => AddToLog(nameof(ChannelDeleted), channel.Name);
+        => AddToLog(nameof(ChannelUpdated), channel.Name);
 
     private Task ChannelDeleted(SocketChannel channel)
         => AddToLog(nameof(ChannelDeleted), ((IChannel)channel).Name);
@@ -103,16 +103,15 @@ public class EventManager
 
     private Task Reaction(SocketReaction? reaction, bool added)
     {
-        var parameters = reaction == null ? new[]
-        {
-            $"MessageId:{reaction?.MessageId}",
-            $"Channel:{reaction?.Channel?.Name ?? "null"}",
-            $"Emote:{reaction?.Emote}",
-            reaction?.User.IsSpecified == true ? reaction.User.Value.GetFullName() : $"UserId:{reaction?.UserId}",
-            $"IsAdded:{added}"
-        } : Array.Empty<string>();
+        var paramsBuilder = new List<string> { $"IsAdded:{added}" };
+        if (reaction == null)
+            return AddToLog(nameof(Reaction), paramsBuilder.ToArray());
 
-        return AddToLog(nameof(Reaction), parameters);
+        paramsBuilder.Add($"MessageId:{reaction.MessageId}");
+        paramsBuilder.Add($"Channel:{reaction.Channel?.Name ?? "null"}");
+        paramsBuilder.Add($"Emote:{reaction.Emote}");
+        paramsBuilder.Add(reaction.User.IsSpecified ? reaction.User.Value.GetFullName() : $"UserId:{reaction.UserId}");
+        return AddToLog(nameof(Reaction), paramsBuilder.ToArray());
     }
 
     private Task MessageReceived(SocketMessage msg) =>

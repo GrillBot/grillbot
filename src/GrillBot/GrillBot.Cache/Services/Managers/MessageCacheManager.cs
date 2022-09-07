@@ -49,7 +49,8 @@ public class MessageCacheManager
 
         try
         {
-            if (!InitManager.Get() || LoadedChannels.Contains(message.Channel.Id)) return;
+            if (!InitManager.Get() || LoadedChannels.Contains(message.Channel.Id) || message.Channel is IDMChannel) 
+                return;
 
             await DownloadMessagesAsync(message.Channel); // Download 100 latest messages.
             LoadedChannels.Add(message.Channel.Id);
@@ -83,6 +84,9 @@ public class MessageCacheManager
 
         try
         {
+            if (channel is IDMChannel)
+                return;
+            
             await using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id);
@@ -114,12 +118,15 @@ public class MessageCacheManager
         }
     }
 
-    private async Task OnMessageUpdatedAsync(Cacheable<IMessage, ulong> _, SocketMessage after, ISocketMessageChannel __)
+    private async Task OnMessageUpdatedAsync(Cacheable<IMessage, ulong> _, SocketMessage after, ISocketMessageChannel channel)
     {
         await Semaphore.WaitAsync();
 
         try
         {
+            if (channel is IDMChannel)
+                return;
+            
             MessagesForUpdate.Add(after.Id);
         }
         finally

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Discord;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Enums.Internal;
 using GrillBot.Database.Models;
 using Npgsql;
 
@@ -16,15 +17,6 @@ public class UserRepository : RepositoryBase
 {
     public UserRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
     {
-    }
-
-    public async Task<User?> FindUserByIdAsync(ulong id)
-    {
-        using (CreateCounter())
-        {
-            return await Context.Users
-                .FirstOrDefaultAsync(o => o.Id == id.ToString());
-        }
     }
 
     public async Task<User?> FindUserAsync(IUser user, bool disableTracking = false)
@@ -81,17 +73,23 @@ public class UserRepository : RepositoryBase
         }
     }
 
-    public async Task<User?> FindUserWithDetailsByIdAsync(ulong id)
+    public async Task<User?> FindUserByIdAsync(ulong id, UserIncludeOptions includeOptions = UserIncludeOptions.None)
     {
         using (CreateCounter())
         {
-            var query = Context.Users.AsSplitQuery().AsNoTracking()
-                .Include(o => o.Guilds).ThenInclude(o => o.Guild)
-                .Include(o => o.Guilds).ThenInclude(o => o.UsedInvite!.Creator!.User)
-                .Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(x => x.UsedUsers.Count > 0))
-                .Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(x => x.Count > 0)).ThenInclude(o => o.Channel)
-                .Include(o => o.Guilds).ThenInclude(o => o.EmoteStatistics.Where(x => x.UseCount > 0))
-                .Include(o => o.Guilds).ThenInclude(o => o.Unverify!.UnverifyLog);
+            var query = Context.Users.AsSplitQuery().AsNoTracking();
+            if (includeOptions.HasFlag(UserIncludeOptions.Guilds))
+                query = query.Include(o => o.Guilds).ThenInclude(o => o.Guild);
+            if (includeOptions.HasFlag(UserIncludeOptions.UsedInvite))
+                query = query.Include(o => o.Guilds).ThenInclude(o => o.UsedInvite!.Creator!.User);
+            if (includeOptions.HasFlag(UserIncludeOptions.CreatedInvites))
+                query = query.Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(x => x.UsedUsers.Count > 0));
+            if (includeOptions.HasFlag(UserIncludeOptions.Channels))
+                query = query.Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(x => x.Count > 0)).ThenInclude(o => o.Channel);
+            if (includeOptions.HasFlag(UserIncludeOptions.EmoteStatistics))
+                query = query.Include(o => o.Guilds).ThenInclude(o => o.EmoteStatistics.Where(x => x.UseCount > 0));
+            if (includeOptions.HasFlag(UserIncludeOptions.Unverify))
+                query = query.Include(o => o.Guilds).ThenInclude(o => o.Unverify!.UnverifyLog);
 
             return await query.FirstOrDefaultAsync(o => o.Id == id.ToString());
         }

@@ -15,7 +15,7 @@ using GrillBot.Database.Models;
 namespace GrillBot.App.Controllers;
 
 [ApiController]
-[Route("api/users")]
+[Route("api/user")]
 public class UsersController : Controller
 {
     private CommandsHelpService HelpService { get; }

@@ -11,6 +11,7 @@ using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Unverify;
+using GrillBot.Database.Enums.Internal;
 using GrillBot.Database.Models;
 using GrillBot.Database.Services.Repository;
 
@@ -61,7 +62,7 @@ public class UsersApiService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var entity = await repository.User.FindUserWithDetailsByIdAsync(id);
+        var entity = await repository.User.FindUserByIdAsync(id, UserIncludeOptions.All);
         if (entity == null)
             return null;
 
@@ -88,8 +89,6 @@ public class UsersApiService
                 .ThenByDescending(o => o.LastOccurence)
                 .ThenBy(o => o.Emote.Name)
                 .ToList();
-
-            guildUserDetail.Points = await repository.Points.ComputePointsOfUserAsync(guildUserEntity.GuildId.ToUlong(), guildUserEntity.UserId.ToUlong());
 
             var guild = await DiscordClient.GetGuildAsync(guildUserDetail.Guild.Id.ToUlong());
             if (guild != null)
@@ -140,21 +139,13 @@ public class UsersApiService
         };
 
         var auditLogs = await repository.AuditLog.GetSimpleDataAsync(parameters);
-        var result = new List<string>();
-
-        foreach (var log in auditLogs)
-        {
-            var logData = JsonConvert.DeserializeObject<MemberUpdatedData>(log.Data, AuditLogWriter.SerializerSettings);
-            if (logData == null || logData.Target.Id != user.Id || logData.Nickname == null) continue;
-
-            if (!string.IsNullOrEmpty(logData.Nickname.Before)) result.Add(logData.Nickname.Before);
-            if (!string.IsNullOrEmpty(logData.Nickname.After)) result.Add(logData.Nickname.After);
-        }
-
-        if (!string.IsNullOrEmpty(user.Nickname))
-            result = result.FindAll(o => o != user.Nickname);
-
-        return result.Distinct().ToList();
+        return auditLogs
+            .Select(o => JsonConvert.DeserializeObject<MemberUpdatedData>(o.Data, AuditLogWriter.SerializerSettings))
+            .Where(o => o != null && o.Target.Id == user.Id && o.Nickname != null)
+            .SelectMany(o => new[] { o.Nickname.Before, o.Nickname.After })
+            .Where(o => !string.IsNullOrEmpty(o) && (string.IsNullOrEmpty(user.Nickname) || user.Nickname != o))
+            .Distinct()
+            .ToList();
     }
 
     public async Task UpdateUserAsync(ulong id, UpdateUserParams parameters)

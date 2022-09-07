@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.User.Points;
+using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Models;
@@ -14,10 +15,12 @@ namespace GrillBot.App.Controllers;
 public class PointsController : Controller
 {
     private PointsApiService ApiService { get; }
+    private ApiRequestContext Context { get; }
 
-    public PointsController(PointsApiService apiService)
+    public PointsController(PointsApiService apiService, ApiRequestContext context)
     {
         ApiService = apiService;
+        Context = context;
     }
 
     /// <summary>
@@ -82,6 +85,33 @@ public class PointsController : Controller
         this.StoreParameters(parameters);
 
         var result = await ApiService.GetGraphDataAsync(parameters);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Compute current points status of user.
+    /// </summary>
+    /// <response code="200">Returns points state of user. Grouped per guilds.</response>
+    [HttpGet("{userId}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<UserPointsItem>>> ComputeUserPointsAsync(ulong userId)
+    {
+        var result = await ApiService.ComputeUserPointsAsync(userId, false);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Compute current points status of user.
+    /// </summary>
+    /// <response code="200">Returns points state of user. Grouped per guilds.</response>
+    [HttpGet("me")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<UserPointsItem>>> ComputeLoggedUserPointsAsync()
+    {
+        var userId = Context.GetUserId();
+        var result = await ApiService.ComputeUserPointsAsync(userId, true);
         return Ok(result);
     }
 }

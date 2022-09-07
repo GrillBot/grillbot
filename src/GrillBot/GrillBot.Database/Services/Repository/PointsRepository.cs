@@ -122,7 +122,7 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<List<PointBoardItem>> GetPointsBoardDataAsync(IEnumerable<string> guildIds, int? take = null)
+    public async Task<List<PointBoardItem>> GetPointsBoardDataAsync(IEnumerable<string> guildIds, int? take = null, ulong userId = 0)
     {
         var guildIdData = guildIds.ToList();
 
@@ -136,6 +136,9 @@ public class PointsRepository : RepositoryBase
                     (o.GuildUser.User!.Flags & (int)UserFlags.NotUser) == 0 &&
                     guildIdData.Contains(o.GuildId)
                 );
+
+            if (userId > 0)
+                baseQuery = baseQuery.Where(o => o.UserId == userId.ToString());
 
             var query = baseQuery
                 .GroupBy(o => new { o.GuildId, o.UserId })

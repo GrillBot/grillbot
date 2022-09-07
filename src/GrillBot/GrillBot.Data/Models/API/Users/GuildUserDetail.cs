@@ -8,7 +8,6 @@ namespace GrillBot.Data.Models.API.Users;
 public class GuildUserDetail
 {
     public Guild Guild { get; set; }
-    public long Points { get; set; }
     public long GivenReactions { get; set; }
     public long ObtainedReactions { get; set; }
     public string Nickname { get; set; }

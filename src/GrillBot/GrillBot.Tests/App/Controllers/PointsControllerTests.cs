@@ -15,7 +15,6 @@ public class PointsControllerTests : ControllerTest<PointsController>
     private IGuild Guild { get; set; }
     private IGuildUser User { get; set; }
 
-
     protected override PointsController CreateController()
     {
         var userBuilder = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator);
@@ -29,9 +28,9 @@ public class PointsControllerTests : ControllerTest<PointsController>
             .SetGetGuildsAction(new[] { Guild })
             .SetGetUserAction(User)
             .Build();
-        
+
         var apiService = new PointsApiService(DatabaseBuilder, TestServices.AutoMapper.Value, client, ApiRequestContext);
-        return new PointsController(apiService);
+        return new PointsController(apiService, ApiRequestContext);
     }
 
     [TestMethod]
@@ -156,6 +155,32 @@ public class PointsControllerTests : ControllerTest<PointsController>
         await Repository.CommitAsync();
 
         var result = await Controller.GetPointsLeaderboardAsync();
+        CheckResult<OkObjectResult, List<UserPointsItem>>(result);
+    }
+
+    [TestMethod]
+    public async Task ComputeUserPointsAsync_WithoutUser()
+    {
+        var result = await Controller.ComputeUserPointsAsync(Consts.UserId);
+        CheckResult<OkObjectResult, List<UserPointsItem>>(result);
+    }
+
+    [TestMethod]
+    public async Task ComputeUserPointsAsync_WithUser()
+    {
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
+        await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(Guild, User));
+        await Repository.CommitAsync();
+
+        var result = await Controller.ComputeUserPointsAsync(User.Id);
+        CheckResult<OkObjectResult, List<UserPointsItem>>(result);
+    }
+
+    [TestMethod]
+    public async Task ComputeLoggedUserPointsAsync()
+    {
+        var result = await Controller.ComputeLoggedUserPointsAsync();
         CheckResult<OkObjectResult, List<UserPointsItem>>(result);
     }
 }

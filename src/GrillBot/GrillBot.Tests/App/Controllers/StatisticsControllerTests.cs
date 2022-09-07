@@ -222,4 +222,11 @@ public class StatisticsControllerTests : ControllerTest<StatisticsController>
         var result = await Controller.GetApiRequestsByStatusCodeAsync();
         CheckResult<OkObjectResult, Dictionary<string, int>>(result);
     }
+
+    [TestMethod]
+    public void GetEventLogStatistics()
+    {
+        var result = Controller.GetEventLogStatistics();
+        CheckResult<OkObjectResult, Dictionary<string, ulong>>(result);
+    }
 }

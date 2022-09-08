@@ -156,53 +156,6 @@ public class Startup
             doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
         });
 
-        /*services.AddOpenApiDocument(doc =>
-        {
-            doc.Version = "v1";
-            doc.ApiGroupNames = new[] { "v1" };
-
-            doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
-            {
-                BearerFormat = "JWT",
-                Description = "JWT Authentication token",
-                Name = "JWT",
-                Scheme = JwtBearerDefaults.AuthenticationScheme,
-                Type = OpenApiSecuritySchemeType.Http,
-                In = OpenApiSecurityApiKeyLocation.Header
-            });
-
-            doc.AddSecurity("ApiKey", new OpenApiSecurityScheme()
-            {
-                Name = "ApiKey",
-                Scheme = "ApiKey",
-                Type = OpenApiSecuritySchemeType.ApiKey,
-                In = OpenApiSecurityApiKeyLocation.Header
-            });
-
-            doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
-            doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
-            doc.OperationProcessors.Add(new OnlyDevelopmentProcessor());
-
-            doc.UseRouteNameAsOperationId = true;
-            doc.UseControllerSummaryAsTagDescription = true;
-
-            doc.PostProcess = document =>
-            {
-                document.Info = new OpenApiInfo
-                {
-                    Title = "GrillBot",
-                    Description = "Discord bot primarly for VUT FIT Discord server",
-                    Version = "v1",
-
-                    License = new OpenApiLicense
-                    {
-                        Name = "All rights reserved",
-                        Url = "https://gist.github.com/Techcable/e7bbc22ecbc0050efbcc"
-                    }
-                };
-            };
-        });*/
-
         services.AddQuartz(q =>
         {
             q.UseMicrosoftDependencyInjectionJobFactory();

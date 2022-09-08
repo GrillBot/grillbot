@@ -16,6 +16,7 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/user")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class UsersController : Controller
 {
     private CommandsHelpService HelpService { get; }
@@ -188,6 +189,7 @@ public class UsersController : Controller
     /// <response code="200">Returns paginated response of karma leaderboard</response>
     /// <response code="500">Something is wrong.</response>
     [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
     [HttpPost("karma")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]

@@ -11,6 +11,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/autoreply")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class AutoReplyController : Controller
 {
     private AutoReplyApiService AutoReplyApiService { get; }

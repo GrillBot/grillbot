@@ -11,6 +11,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/selfunverify/keep")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class SelfUnverifyController : Controller
 {
     private SelfunverifyService SelfunverifyService { get; }

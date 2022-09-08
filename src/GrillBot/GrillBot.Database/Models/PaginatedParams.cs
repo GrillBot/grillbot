@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using GrillBot.Common.Infrastructure;
+using Newtonsoft.Json;
 using NSwag.Annotations;
 
 namespace GrillBot.Database.Models;
@@ -23,6 +24,7 @@ public class PaginatedParams : IApiObject
     public int PageSize { get; set; } = 25;
 
     [OpenApiIgnore]
+    [JsonIgnore]
     public int Skip => (Page == 0 ? 0 : Page - 1) * PageSize;
 
     public Dictionary<string, string> SerializeForLog()

@@ -12,6 +12,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/guild")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class GuildController : Controller
 {
     private GuildApiService ApiService { get; }

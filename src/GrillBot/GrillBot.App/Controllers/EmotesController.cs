@@ -12,6 +12,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/emotes")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class EmotesController : Controller
 {
     private EmotesApiService EmotesApiService { get; }

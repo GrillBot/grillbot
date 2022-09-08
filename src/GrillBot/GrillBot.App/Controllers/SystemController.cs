@@ -12,6 +12,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/system")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class SystemController : Controller
 {
     private IWebHostEnvironment Environment { get; }

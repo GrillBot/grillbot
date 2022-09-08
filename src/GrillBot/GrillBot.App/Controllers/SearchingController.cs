@@ -10,6 +10,7 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/search")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class SearchingController : Controller
 {
     private SearchingService Service { get; }

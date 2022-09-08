@@ -14,6 +14,7 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/auditlog")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class AuditLogController : Controller
 {
     private AuditLogApiService ApiService { get; }

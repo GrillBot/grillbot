@@ -12,6 +12,7 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/channel")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class ChannelController : Controller
 {
     private ChannelApiService ApiService { get; }

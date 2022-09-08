@@ -15,6 +15,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/stats")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class StatisticsController : Controller
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }

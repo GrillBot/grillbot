@@ -12,6 +12,7 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/user/points")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class PointsController : Controller
 {
     private PointsApiService ApiService { get; }

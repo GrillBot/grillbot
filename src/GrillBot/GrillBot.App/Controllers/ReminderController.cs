@@ -13,6 +13,7 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/remind")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class ReminderController : Controller
 {
     private RemindApiService ApiService { get; }

@@ -11,6 +11,7 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+[ApiExplorerSettings(GroupName = "v1")]
 public class AuthController : Controller
 {
     private OAuth2Service Service { get; }

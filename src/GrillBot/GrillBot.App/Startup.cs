@@ -130,8 +130,37 @@ public class Startup
 
         services.AddHostedService<DiscordService>();
 
-        services.AddOpenApiDocument(doc =>
+        services.AddOpenApiDoc("v1", "WebAdmin API", "API for web administrations", doc =>
         {
+            doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+            {
+                BearerFormat = "JWT",
+                Description = "JWT Authentication token",
+                Name = "JWT",
+                Scheme = JwtBearerDefaults.AuthenticationScheme,
+                Type = OpenApiSecuritySchemeType.Http,
+                In = OpenApiSecurityApiKeyLocation.Header
+            });
+
+            doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
+        }).AddOpenApiDoc("v2", "Third-party API", "API for third party application with ApiKey authentication.", doc =>
+        {
+            doc.AddSecurity("ApiKey", new OpenApiSecurityScheme()
+            {
+                Name = "ApiKey",
+                Scheme = "ApiKey",
+                Type = OpenApiSecuritySchemeType.ApiKey,
+                In = OpenApiSecurityApiKeyLocation.Header
+            });
+            
+            doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
+        });
+
+        /*services.AddOpenApiDocument(doc =>
+        {
+            doc.Version = "v1";
+            doc.ApiGroupNames = new[] { "v1" };
+
             doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
             {
                 BearerFormat = "JWT",
@@ -172,7 +201,7 @@ public class Startup
                     }
                 };
             };
-        });
+        });*/
 
         services.AddQuartz(q =>
         {

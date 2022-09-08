@@ -9,6 +9,7 @@ using GrillBot.App.Services.CommandsHelp;
 using GrillBot.Data.Exceptions;
 using GrillBot.App.Services.User;
 using GrillBot.App.Infrastructure.Auth;
+using GrillBot.App.Services.Birthday;
 using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
@@ -25,10 +26,11 @@ public class UsersController : Controller
     private RubbergodKarmaService KarmaService { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private UserHearthbeatService UserHearthbeatService { get; }
+    private BirthdayService BirthdayService { get; }
+    private IConfiguration Configuration { get; }
 
-    public UsersController(CommandsHelpService helpService, ExternalCommandsHelpService externalCommandsHelpService,
-        UsersApiService apiService, RubbergodKarmaService karmaService, ApiRequestContext apiRequestContext,
-        UserHearthbeatService userHearthbeatService)
+    public UsersController(CommandsHelpService helpService, ExternalCommandsHelpService externalCommandsHelpService, UsersApiService apiService, RubbergodKarmaService karmaService,
+        ApiRequestContext apiRequestContext, UserHearthbeatService userHearthbeatService, BirthdayService birthdayService, IConfiguration configuration)
     {
         HelpService = helpService;
         ExternalCommandsHelpService = externalCommandsHelpService;
@@ -36,6 +38,8 @@ public class UsersController : Controller
         KarmaService = karmaService;
         ApiRequestContext = apiRequestContext;
         UserHearthbeatService = userHearthbeatService;
+        BirthdayService = birthdayService;
+        Configuration = configuration;
     }
 
     /// <summary>
@@ -206,5 +210,20 @@ public class UsersController : Controller
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new MessageResponse(ex.Message));
         }
+    }
+
+    /// <summary>
+    /// Get birthday info for today.
+    /// </summary>
+    /// <response code="200">Returns formated string with birthdays.</response>
+    [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
+    [HttpGet("birthday/today")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<MessageResponse>> GetTodayBirthdayInfoAsync()
+    {
+        var todayBirthdays = await BirthdayService.GetTodayBirthdaysAsync();
+        var result = BirthdayHelper.Format(todayBirthdays, Configuration);
+        return Ok(new MessageResponse(result));
     }
 }

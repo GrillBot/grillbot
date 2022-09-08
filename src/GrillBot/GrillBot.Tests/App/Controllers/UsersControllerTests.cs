@@ -1,12 +1,14 @@
 ﻿using Discord;
 using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Services.Birthday;
 using GrillBot.App.Services.Channels;
 using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.DirectApi;
 using GrillBot.App.Services.User;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -48,8 +50,9 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var apiService = new UsersApiService(DatabaseBuilder, mapper, dcClient, ApiRequestContext, auditLogWriter);
         var rubbergodKarmaService = new RubbergodKarmaService(directApi, dcClient, mapper);
         var userHearthbeatService = new UserHearthbeatService(DatabaseBuilder);
+        var birthdayService = new BirthdayService(dcClient, DatabaseBuilder);
 
-        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService, ApiRequestContext, userHearthbeatService);
+        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService, ApiRequestContext, userHearthbeatService, birthdayService, configuration);
     }
 
     [TestMethod]
@@ -242,5 +245,12 @@ public class UsersControllerTests : ControllerTest<UsersController>
     {
         var result = await Controller.GetAvailableCommandsAsync();
         CheckResult<OkObjectResult, List<CommandGroup>>(result);
+    }
+
+    [TestMethod]
+    public async Task GetTodayBirthdayInfoAsync()
+    {
+        var result = await Controller.GetTodayBirthdayInfoAsync();
+        CheckResult<OkObjectResult, MessageResponse>(result);
     }
 }

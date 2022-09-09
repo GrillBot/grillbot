@@ -87,7 +87,7 @@ public class PointsApiService
         }
         else
         {
-            var user = await repository.User.FindUserByIdAsync(userId, UserIncludeOptions.Guilds);
+            var user = await repository.User.FindUserByIdAsync(userId, UserIncludeOptions.Guilds, true);
             if (user != null)
                 guildIds = user.Guilds.Select(o => o.GuildId).ToList();
         }

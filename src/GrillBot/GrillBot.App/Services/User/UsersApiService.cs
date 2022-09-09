@@ -62,7 +62,7 @@ public class UsersApiService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var entity = await repository.User.FindUserByIdAsync(id, UserIncludeOptions.All);
+        var entity = await repository.User.FindUserByIdAsync(id, UserIncludeOptions.All, true);
         if (entity == null)
             return null;
 

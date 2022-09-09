@@ -73,11 +73,11 @@ public class UserRepository : RepositoryBase
         }
     }
 
-    public async Task<User?> FindUserByIdAsync(ulong id, UserIncludeOptions includeOptions = UserIncludeOptions.None)
+    public async Task<User?> FindUserByIdAsync(ulong id, UserIncludeOptions includeOptions = UserIncludeOptions.None, bool disableTracking = false)
     {
         using (CreateCounter())
         {
-            var query = Context.Users.AsSplitQuery().AsNoTracking();
+            var query = Context.Users.AsQueryable();
             if (includeOptions.HasFlag(UserIncludeOptions.Guilds))
                 query = query.Include(o => o.Guilds).ThenInclude(o => o.Guild);
             if (includeOptions.HasFlag(UserIncludeOptions.UsedInvite))
@@ -90,6 +90,10 @@ public class UserRepository : RepositoryBase
                 query = query.Include(o => o.Guilds).ThenInclude(o => o.EmoteStatistics.Where(x => x.UseCount > 0));
             if (includeOptions.HasFlag(UserIncludeOptions.Unverify))
                 query = query.Include(o => o.Guilds).ThenInclude(o => o.Unverify!.UnverifyLog);
+            if (disableTracking)
+                query = query.AsNoTracking();
+            if (includeOptions != UserIncludeOptions.None)
+                query = query.AsSplitQuery();
 
             return await query.FirstOrDefaultAsync(o => o.Id == id.ToString());
         }

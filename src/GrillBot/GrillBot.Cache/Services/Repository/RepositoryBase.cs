@@ -12,4 +12,7 @@ public abstract class RepositoryBase
         Context = context;
         Counter = counter;
     }
+
+    protected CounterItem CreateCounter()
+        => Counter.Create($"Cache.{GetType().Name.Replace("Repository", "")}");
 }

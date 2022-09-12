@@ -69,4 +69,10 @@ public static class GuildExtensions
 
         return await allChannels.FindAllAsync(o => o.HaveAccessAsync(user));
     }
+
+    public static async Task<bool> CanManageInvitesAsync(this IGuild guild, IUser user)
+    {
+        var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
+        return guildUser != null && guildUser.CanManageInvites();
+    }
 }

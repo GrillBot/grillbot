@@ -23,7 +23,7 @@ public class MessageIndexRepository : RepositoryBase
 
     public async Task<List<MessageIndex>> GetMessagesAsync(ulong authorId = default, ulong channelId = default, ulong guildId = default)
     {
-        using (Counter.Create("Cache"))
+        using (CreateCounter())
         {
             return await GetBaseQuery(authorId, channelId, guildId).ToListAsync();
         }
@@ -31,7 +31,7 @@ public class MessageIndexRepository : RepositoryBase
 
     public async Task<int> GetMessagesCountAsync(ulong authorId = default, ulong channelId = default, ulong guildId = default)
     {
-        using (Counter.Create("Cache"))
+        using (CreateCounter())
         {
             return await GetBaseQuery(authorId, channelId, guildId).CountAsync();
         }
@@ -39,7 +39,7 @@ public class MessageIndexRepository : RepositoryBase
 
     public async Task<MessageIndex?> FindMessageByIdAsync(ulong messageId)
     {
-        using (Counter.Create("Cache"))
+        using (CreateCounter())
         {
             return await GetBaseQuery()
                 .FirstOrDefaultAsync(o => o.MessageId == messageId.ToString());

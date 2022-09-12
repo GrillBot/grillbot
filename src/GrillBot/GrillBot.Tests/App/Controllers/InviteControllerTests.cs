@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Data.Models.API.Invites;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Database.Models;
@@ -14,9 +15,10 @@ public class InviteControllerTests : ControllerTest<InviteController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var service = new InviteService(discordClient, DatabaseBuilder, TestServices.AutoMapper.Value, auditLogWriter);
+        var inviteManager = new InviteManager(CacheBuilder, TestServices.CounterManager.Value);
+        var service = new InviteService(discordClient, DatabaseBuilder, TestServices.AutoMapper.Value, auditLogWriter, inviteManager);
 
-        return new InviteController(service);
+        return new InviteController(service, ApiRequestContext);
     }
 
     [TestMethod]
@@ -61,9 +63,9 @@ public class InviteControllerTests : ControllerTest<InviteController>
     }
 
     [TestMethod]
-    public void GetCurrentMetadataCount()
+    public async Task GetCurrentMetadataCount()
     {
-        var result = Controller.GetCurrentMetadataCount();
+        var result = await Controller.GetCurrentMetadataCountAsync();
         CheckResult<OkObjectResult, int>(result);
 
         Assert.AreEqual(0, ((OkObjectResult)result.Result)?.Value);

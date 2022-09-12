@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services;
+using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,10 +16,12 @@ namespace GrillBot.App.Controllers;
 public class InviteController : Controller
 {
     private InviteService InviteService { get; }
+    private ApiRequestContext Context { get; }
 
-    public InviteController(InviteService inviteService)
+    public InviteController(InviteService inviteService, ApiRequestContext context)
     {
         InviteService = inviteService;
+        Context = context;
     }
 
     /// <summary>
@@ -45,7 +48,7 @@ public class InviteController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> RefreshMetadataCacheAsync()
     {
-        var result = await InviteService.RefreshMetadataAsync();
+        var result = await InviteService.RefreshMetadataAsync(Context.LoggedUser, true);
         return Ok(result);
     }
 
@@ -55,9 +58,9 @@ public class InviteController : Controller
     /// <response code="200">Returns count of current items in cache.</response>
     [HttpGet("metadata/count")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<int> GetCurrentMetadataCount()
+    public async Task<ActionResult<int>> GetCurrentMetadataCountAsync()
     {
-        var result = InviteService.GetMetadataCount();
+        var result = await InviteService.GetMetadataCountAsync();
         return Ok(result);
     }
 }

@@ -25,18 +25,18 @@ public class DirectApiRepository : RepositoryBase
 
     public async Task<DirectApiMessage?> FindMessageByIdAsync(ulong messageId)
     {
-        using (Counter.Create("Cache"))
+        using (CreateCounter())
         {
             return await GetBaseQuery()
                 .FirstOrDefaultAsync(o => o.Id == messageId.ToString());
         }
     }
 
-    public async Task<List<DirectApiMessage>> FindExpiredMessagesAsync()
+    public List<DirectApiMessage> FindExpiredMessages()
     {
-        using (Counter.Create("Cache"))
+        using (CreateCounter())
         {
-            return await GetBaseQuery().ToListAsync();
+            return GetBaseQuery().ToList();
         }
     }
 }

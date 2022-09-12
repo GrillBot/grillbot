@@ -17,7 +17,8 @@ public static class GrillBotCacheExtensions
             .AddDbContext<GrillBotCacheContext>(opt => opt.EnableDetailedErrors().EnableThreadSafetyChecks().UseNpgsql(connectionString), ServiceLifetime.Scoped, ServiceLifetime.Singleton)
             .AddSingleton<GrillBotCacheBuilder>()
             .AddSingleton<ProfilePictureManager>()
-            .AddSingleton<MessageCacheManager>();
+            .AddSingleton<MessageCacheManager>()
+            .AddSingleton<InviteManager>();
     }
 
     public static void InitCache(this IApplicationBuilder app)
@@ -28,10 +29,13 @@ public static class GrillBotCacheExtensions
         repository.ProcessMigrations();
 
         var messageIndexes = repository.MessageIndexRepository.GetMessagesAsync().Result;
-        repository.RemoveCollection(messageIndexes);
+        if (messageIndexes.Count > 0) repository.RemoveCollection(messageIndexes);
 
-        var expiredDirectApiMessages = repository.DirectApiRepository.FindExpiredMessagesAsync().Result;
-        repository.RemoveCollection(expiredDirectApiMessages);
+        var expiredDirectApiMessages = repository.DirectApiRepository.FindExpiredMessages();
+        if (expiredDirectApiMessages.Count > 0) repository.RemoveCollection(expiredDirectApiMessages);
+
+        var inviteMetadata = repository.InviteMetadataRepository.GetAllInvites();
+        if (inviteMetadata.Count > 0) repository.RemoveCollection(inviteMetadata);
 
         repository.Commit();
     }

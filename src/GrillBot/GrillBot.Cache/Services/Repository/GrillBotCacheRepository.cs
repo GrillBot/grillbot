@@ -20,6 +20,7 @@ public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
     public MessageIndexRepository MessageIndexRepository => GetOrCreateRepository<MessageIndexRepository>();
     public StatisticsRepository StatisticsRepository => GetOrCreateRepository<StatisticsRepository>();
     public ProfilePictureRepository ProfilePictureRepository => GetOrCreateRepository<ProfilePictureRepository>();
+    public InviteMetadataRepository InviteMetadataRepository => GetOrCreateRepository<InviteMetadataRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {

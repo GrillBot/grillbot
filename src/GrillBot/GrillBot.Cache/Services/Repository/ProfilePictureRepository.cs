@@ -14,7 +14,7 @@ public class ProfilePictureRepository : RepositoryBase
 
     public async Task<List<ProfilePicture>> GetProfilePicturesAsync(ulong userId, string? avatarId = null)
     {
-        using (Counter.Create("Cache"))
+        using (CreateCounter())
         {
             var query = Context.ProfilePictures
                 .Where(o => o.UserId == userId.ToString());
@@ -28,7 +28,7 @@ public class ProfilePictureRepository : RepositoryBase
 
     public async Task<List<ProfilePicture>> GetProfilePicturesExceptOneAsync(ulong userId, string avatarId)
     {
-        using (Counter.Create("Cache"))
+        using (CreateCounter())
         {
             return await Context.ProfilePictures
                 .Where(o => o.UserId == userId.ToString() && o.AvatarId != avatarId)

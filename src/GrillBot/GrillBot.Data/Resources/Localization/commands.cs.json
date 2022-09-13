@@ -57,13 +57,11 @@
     }
   },
   "bot": {
+    "name": "bot",
+    "description": "Příkazy k informacím a konfiguraci bota.",
     "info": {
-      "name": "bot",
-      "description": "Příkazy k informacím a konfiguraci bota.",
-      "info": {
-        "name": "info",
-        "description": "Informace o botovi"
-      }
+      "name": "info",
+      "description": "Informace o botovi"
     },
     "selfunverify": {
       "name": "selfunverify",

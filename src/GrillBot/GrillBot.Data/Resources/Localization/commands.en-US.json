@@ -57,13 +57,11 @@
     }
   },
   "bot": {
+    "name": "bot",
+    "description": "Bot information and configuration commands.",
     "info": {
-      "name": "bot",
-      "description": "Bot information and configuration commands.",
-      "info": {
-        "name": "info",
-        "description": "Bot info"
-      }
+      "name": "info",
+      "description": "Bot info"
     },
     "selfunverify": {
       "name": "selfunverify",

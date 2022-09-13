@@ -18,7 +18,7 @@ public class MemeModule : InteractionsModuleBase
         Configuration = configuration;
     }
 
-    [SlashCommand("kasparek", "Zeptá se tvojí mámy, jakého máš kašpárka.")]
+    [SlashCommand("kasparek", "He asks your mom what kind of **** you have.")]
     public Task GetRandomLengthAsync()
     {
         var random = RandomizationService.GetOrCreateGenerator("Kasparek");
@@ -26,9 +26,9 @@ public class MemeModule : InteractionsModuleBase
         return SetResponseAsync($"{value}cm");
     }
 
-    [SlashCommand("hi", "Pozdrav uživatele")]
+    [SlashCommand("hi", "Hello user")]
     public Task HiAsync(
-        [Summary("zaklad", "Řekni botovi, v jaké soustavě tě má podravit.")]
+        [Summary("base", "Tell the bot in which base to greet you.")]
         [Choice("Binární", 2)]
         [Choice("Osmičková", 8)]
         [Choice("Šestnáctková", 16)]

@@ -8,7 +8,7 @@ using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Interactions;
 
-[Group("remind", "Připomenutí k určitému datu")]
+[Group("remind", "A reminder for a specific date")]
 [RequireUserPerms]
 public class RemindModule : InteractionsModuleBase
 {
@@ -19,15 +19,15 @@ public class RemindModule : InteractionsModuleBase
         RemindService = remindService;
     }
 
-    [SlashCommand("create", "Vytvoření připomenutí k určitému datu.")]
+    [SlashCommand("create", "Create a reminder for a specific date.")]
     public async Task CreateAsync(
-        [Summary("komu", "Označení uživatele, který si přeje dostat upozornění")]
+        [Summary("who", "Designation of the user who wishes to receive notifications")]
         IUser who,
-        [Summary("kdy", "Datum a čas události. Musí být v budoucnosti.")]
+        [Summary("when", "Reminder date and time. It must be in the future.")]
         DateTime at,
-        [Summary("zprava", "Zpráva, která se zašle uživateli.")]
+        [Summary("message", "The message that will be sent to the user.")]
         string message,
-        [Summary("tajne", "Toto upozornění má být skryto před zraky ostatních.")] [Choice("Ano", "true")] [Choice("Ne", "false")]
+        [Summary("secret", "This notification should be hidden from others.")] [Choice("Ano", "true")] [Choice("Ne", "false")]
         bool secret = false
     )
     {
@@ -48,11 +48,11 @@ public class RemindModule : InteractionsModuleBase
         }
     }
 
-    [SlashCommand("cancel", "Předčasné zrušení připomenutí.")]
+    [SlashCommand("cancel", "Early cancellation of reminders.")]
     public async Task CancelRemindAsync(
-        [Summary("ident", "Identifikace připomenutí")] [Autocomplete(typeof(RemindAutoCompleteHandler))]
+        [Summary("ident", "Reminder identification")] [Autocomplete(typeof(RemindAutoCompleteHandler))]
         long id,
-        [Summary("upozornit", "Zda se má cílový uživatel předčasně upozornit.")] [Choice("Ano", "true")] [Choice("Ne", "false")]
+        [Summary("notify", "Whether to notify the target user early.")] [Choice("Ano", "true")] [Choice("Ne", "false")]
         bool notify = false
     )
     {
@@ -67,7 +67,7 @@ public class RemindModule : InteractionsModuleBase
         }
     }
 
-    [SlashCommand("list", "Seznam aktuálně čekajících připomenutí.")]
+    [SlashCommand("list", "List of currently pending reminders.")]
     public async Task RemindListAsync()
     {
         var data = await RemindService.GetRemindersAsync(Context.User, 0);

@@ -7,16 +7,16 @@ using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Interactions.User;
 
-[Group("user", "Správa uživatelů")]
+[Group("user", "User management")]
 [RequireUserPerms(GuildPermission.ViewAuditLog)]
 [DefaultMemberPermissions(GuildPermission.ViewAuditLog | GuildPermission.UseApplicationCommands)]
 public class UserModule : Infrastructure.Commands.InteractionsModuleBase
 {
-    [SlashCommand("access", "Zobrazení seznamu oprávnění uživatele.")]
+    [SlashCommand("access", "View a list of user permissions.")]
     public async Task GetAccessListAsync(
-        [Summary("uzivatel", "Identifikace uživatele")]
+        [Summary("user", "User identification")]
         IGuildUser user,
-        [Summary("tajne", "Zobrazit výsledek soukromě?")] [Choice("Ano", "true")] [Choice("Ne", "false")]
+        [Summary("secret", "View result privately?")] [Choice("Ano", "true")] [Choice("Ne", "false")]
         bool secret = false
     )
     {

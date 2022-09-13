@@ -9,7 +9,7 @@ using GrillBot.Data.Exceptions;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-[Group("suggestion", "Podání návrhu")]
+[Group("suggestion", "Submission of proposal")]
 public class SuggestionModule : InteractionsModuleBase
 {
     private EmoteSuggestionService EmoteSuggestions { get; }
@@ -22,12 +22,12 @@ public class SuggestionModule : InteractionsModuleBase
         FeatureSuggestions = featureSuggestions;
     }
 
-    [SlashCommand("emote", "Podání návrhu na přidání nového emote.")]
+    [SlashCommand("emote", "Submitting a proposal to add a new emote.")]
     [RequireGuildEvent("EmoteSuggestions", "Aktuálně není období pro podávání návrhů na nové emoty.")]
     public async Task SuggestEmoteAsync(
-        [Summary("emote", "Možnost navrhnout emote na základě existujícího emote (z jiného serveru).")]
+        [Summary("emote", "Option to design an emote based on an existing emote (from another server).")]
         IEmote emote = null,
-        [Summary("attachment", "Možnost navrhnout emote na základě obrázku.")]
+        [Summary("attachment", "Ability to design an emote based on an image.")]
         IAttachment attachment = null
     )
     {
@@ -99,7 +99,7 @@ public class SuggestionModule : InteractionsModuleBase
         await EmoteSuggestions.SetApprovalStateAsync((IComponentInteraction)Context.Interaction, approved, Context.Channel);
     }
 
-    [SlashCommand("process_emote_suggestions", "Zpracování schválených návrhů na emoty.", true)]
+    [SlashCommand("process_emote_suggestions", "Processing approved emote suggestions.", true)]
     [RequireEmoteSuggestionChannel]
     public async Task ProcessEmoteSuggestionsAsync()
     {
@@ -115,7 +115,7 @@ public class SuggestionModule : InteractionsModuleBase
         }
     }
 
-    [SlashCommand("feature", "Podání návrhu na novou feature do GrillBot.")]
+    [SlashCommand("feature", "Submission of a proposal for a new feature to GrillBot.")]
     public Task SuggestFeatureAsync()
     {
         var suggestionId = Guid.NewGuid().ToString();

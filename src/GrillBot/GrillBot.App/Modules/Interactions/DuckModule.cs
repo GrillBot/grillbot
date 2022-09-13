@@ -20,7 +20,7 @@ public class DuckModule : InteractionsModuleBase
         Culture = new CultureInfo("cs-CZ");
     }
 
-    [SlashCommand("kachna", "Zjistí aktuální stav kachny.")]
+    [SlashCommand("duck", "Finds the current state of the duck club.")]
     public async Task GetDuckInfoAsync()
     {
         var currentState = await GetCurrentStateAsync();

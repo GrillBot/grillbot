@@ -7,7 +7,7 @@ using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Interactions;
 
-[Group("emote", "Správa emotů")]
+[Group("emote", "Managing emotes")]
 [RequireUserPerms]
 public class EmoteModule : InteractionsModuleBase
 {
@@ -18,9 +18,9 @@ public class EmoteModule : InteractionsModuleBase
         EmotesCommandService = emotesCommandService;
     }
 
-    [SlashCommand("get", "Informace o emote")]
+    [SlashCommand("get", "Emote information")]
     public async Task GetEmoteInfoAsync(
-        [Summary("emote", "Identifikace emote (ID/Název/Celý emote)")] IEmote emote
+        [Summary("emote", "Emote identification (ID/Name/Full emote)")] IEmote emote
     )
     {
         try
@@ -37,19 +37,19 @@ public class EmoteModule : InteractionsModuleBase
         }
     }
 
-    [SlashCommand("list", "Seznam statistik emotů")]
+    [SlashCommand("list", "List of emote stats")]
     public async Task GetEmoteStatsListAsync(
-        [Summary("order", "Seřadit podle")]
+        [Summary("order", "Sort by")]
         [Choice("Počtu použití", "UseCount")]
         [Choice("Data a času posledního použití", "LastOccurence")]
         string orderBy,
-        [Summary("direction", "Vzestupně/Sestupně")]
+        [Summary("direction", "Ascending/Descending")]
         [Choice("Sestupně", "true")]
         [Choice("Vzestupně", "false")]
         bool descending,
-        [Summary("user", "Zobrazit statistiku pouze jednoho uživatele")]
+        [Summary("user", "Show statistics of only one user")]
         IUser ofUser = null,
-        [Summary("animovane", "Chci v seznamu zobrazit i animované emoty?")]
+        [Summary("animated", "Do I want to show animated emotes in the list too?")]
         [Choice("Zobrazit animované emoty.", "false")]
         [Choice("Pryč animované emoty.", "true")]
         bool filterAnimated = false

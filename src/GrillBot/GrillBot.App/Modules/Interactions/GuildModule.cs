@@ -8,7 +8,7 @@ using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Modules.Interactions;
 
-[Group("guild", "Management serveru")]
+[Group("guild", "Guild management")]
 [RequireUserPerms]
 [RequireBotPermission(GuildPermission.Administrator)]
 public class GuildModule : InteractionsModuleBase
@@ -20,7 +20,7 @@ public class GuildModule : InteractionsModuleBase
         UserService = userService;
     }
 
-    [SlashCommand("info", "Informace o serveru")]
+    [SlashCommand("info", "Guild information")]
     public async Task GetInfoAsync()
     {
         var guild = Context.Guild;

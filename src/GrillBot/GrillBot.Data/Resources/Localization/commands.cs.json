@@ -1,0 +1,260 @@
+﻿{
+  "$schema": "https://gist.github.com/Cenngo/d46a881de24823302f66c3c7e2f7b254",
+  "selfunverify": {
+    "name": "selfunverify",
+    "description": "Dočasné odebrání přístupu sobě sama na serveru.",
+    "end": {
+      "name": "konec",
+      "description": "Datum a čas konce, nebo doba trvání odebrání přístupu."
+    },
+    "keepables": {
+      "name": "pristupy",
+      "description": "Seznam ponechatelných přístupů. Oddělujte čárkou, mezerou nebo středníkem."
+    }
+  },
+  "me": {
+    "name": "me",
+    "description": "Informace o mně"
+  },
+  "user": {
+    "name": "user",
+    "description": "Správa uživatelů",
+    "access": {
+      "name": "access",
+      "description": "Zobrazení seznamu oprávnění uživatele.",
+      "user": {
+        "name": "uzivatel",
+        "description": "Identifikace uživatele"
+      },
+      "secret": {
+        "name": "tajne",
+        "description": "Zobrazit výsledek soukromě?"
+      }
+    }
+  },
+  "birthdays": {
+    "name": "narozeniny",
+    "description": "Narozeniny",
+    "today": {
+      "name": "dnes",
+      "description": "Zjištění, kdo má dnes narozeniny."
+    },
+    "add": {
+      "name": "pridat",
+      "description": "Přidání tvého data narození.",
+      "when": {
+        "name": "kdy",
+        "description": "Datum, kdy máš narozeniny. (Formát: yyyy-mm-dd, pokud nechceš rok, tak zadej jako rok 0001)."
+      }
+    },
+    "remove": {
+      "name": "smazat",
+      "description": "Smazání data narození."
+    },
+    "have": {
+      "name": "mam",
+      "description": "Dotaz, jestli mám uložené narozeniny?"
+    }
+  },
+  "bot": {
+    "info": {
+      "name": "bot",
+      "description": "Příkazy k informacím a konfiguraci bota.",
+      "info": {
+        "name": "info",
+        "description": "Informace o botovi"
+      }
+    },
+    "selfunverify": {
+      "name": "selfunverify",
+      "description": "Konfigurace selfunverify.",
+      "list-keepables": {
+        "name": "list-keepables",
+        "description": "Seznam ponechatelných přístpů při selfunverify"
+      }
+    }
+  },
+  "channel": {
+    "name": "channel",
+    "description": "Informace o kanálech",
+    "info": {
+      "name": "info",
+      "description": "Informace o kanálu",
+      "channel": {
+        "name": "kanal"
+      }
+    },
+    "board": {
+      "name": "board",
+      "description": "TOP 10 statistik kanálů, kam máš přístup."
+    }
+  },
+  "duck": {
+    "name": "kachna",
+    "description": "Zjistí aktuální stav kachny."
+  },
+  "emote": {
+    "name": "emote",
+    "description": "Správa emotů",
+    "get": {
+      "name": "get",
+      "description": "Informace o emote",
+      "emote": {
+        "name": "emote",
+        "description": "Identifikace emote (ID/Název/Celý emote)"
+      }
+    },
+    "list": {
+      "name": "list",
+      "description": "Seznam statistik emotů",
+      "order": {
+        "name": "seradit",
+        "description": "Seřadit podle"
+      },
+      "direction": {
+        "name": "smer",
+        "description": "Vzestupně/Sestupně"
+      },
+      "user": {
+        "name": "uzivatel",
+        "description": "Zobrazit statistiku pouze jednoho uživatele"
+      },
+      "animated": {
+        "name": "animovane",
+        "description": "Chci v seznamu zobrazit i animované emoty?"
+      }
+    }
+  },
+  "guild": {
+    "name": "guild",
+    "description": "Management serveru",
+    "info": {
+      "name": "info",
+      "description": "Informace o serveru"
+    }
+  },
+  "solve": {
+    "name": "solve",
+    "description": "Spočítá matematický výraz.",
+    "expression": {
+      "name": "vyraz",
+      "description": "Matematický výraz k výpočtu."
+    }
+  },
+  "kasparek": {
+    "name": "kasparek",
+    "description": "Zeptá se tvojí mámy, jakého máš kašpárka."
+  },
+  "hi": {
+    "name": "hi",
+    "description": "Pozdrav uživatele",
+    "base": {
+      "name": "base",
+      "description": "Řekni botovi, v jaké soustavě tě má podravit."
+    }
+  },
+  "mock": {
+    "name": "mock",
+    "description": "Mockuje zadanou zprávu",
+    "message": {
+      "name": "message",
+      "description": "Zpráva k mockování"
+    }
+  },
+  "remind": {
+    "name": "remind",
+    "description": "Připomenutí k určitému datu",
+    "create": {
+      "name": "create",
+      "description": "Vytvoření připomenutí k určitému datu.",
+      "who": {
+        "name": "komu",
+        "description": "Označení uživatele, který si přeje dostat upozornění"
+      },
+      "when": {
+        "name": "kdy",
+        "description": "Datum a čas události. Musí být v budoucnosti."
+      },
+      "message": {
+        "name": "zprava",
+        "description": "Zpráva, která se zašle uživateli."
+      },
+      "secret": {
+        "name": "secret",
+        "description": "Toto upozornění má být skryto před zraky ostatních."
+      }
+    },
+    "cancel": {
+      "name": "cancel",
+      "description": "Předčasné zrušení připomenutí.",
+      "ident": {
+        "name": "identifikace",
+        "description": "Identifikace připomenutí"
+      },
+      "notify": {
+        "name": "upozornit",
+        "description": "Zda se má cílový uživatel předčasně upozornit."
+      }
+    },
+    "list": {
+      "name": "list",
+      "description": "Seznam aktuálně čekajících připomenutí."
+    }
+  },
+  "search": {
+    "name": "hledam",
+    "description": "Hledání",
+    "list": {
+      "name": "list",
+      "description": "Aktuální hledání.",
+      "channel": {
+        "name": "kanal",
+        "description": "Kanál, ve kterém chcete něco najít."
+      },
+      "substring": {
+        "name": "podretezec",
+        "description": "Vyhledávací podřetězec"
+      }
+    },
+    "create": {
+      "name": "nove",
+      "description": "Vytvoření nového hledání.",
+      "message": {
+        "name": "zprava",
+        "description": "Zpráva"
+      }
+    },
+    "remove": {
+      "name": "smazat",
+      "description": "Smaže hledání",
+      "ident": {
+        "name": "identifikace",
+        "description": "Identifikace hledání"
+      }
+    }
+  },
+  "suggestion": {
+    "name": "suggestion",
+    "description": "Podání návrhu",
+    "emote": {
+      "name": "emote",
+      "description": "Podání návrhu na přidání nového emote.",
+      "emote": {
+        "name": "emote",
+        "description": "Možnost navrhnout emote na základě existujícího emote (z jiného serveru)."
+      },
+      "attachment": {
+        "name": "attachment",
+        "description": "Možnost navrhnout emote na základě obrázku."
+      }
+    },
+    "feature": {
+      "name": "feature",
+      "description": "Podání návrhu na novou feature do GrillBot."
+    }
+  },
+  "process_emote_suggestions": {
+    "name": "process_emote_suggestions",
+    "description": "Zpracování schválených návrhů na emoty."
+  }
+}

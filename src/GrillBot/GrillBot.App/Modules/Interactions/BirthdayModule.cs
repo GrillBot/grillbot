@@ -4,7 +4,7 @@ using GrillBot.App.Services.Birthday;
 
 namespace GrillBot.App.Modules.Interactions;
 
-[Group("narozeniny", "Narozeniny")]
+[Group("birthdays", "Birthdays")]
 public class BirthdayModule : InteractionsModuleBase
 {
     private BirthdayService BirthdayService { get; }
@@ -16,16 +16,16 @@ public class BirthdayModule : InteractionsModuleBase
         Configuration = configuration;
     }
 
-    [SlashCommand("dnes", "Zjištění, kdo má dnes narozeniny.")]
+    [SlashCommand("today", "Finding out who's birthday is today.")]
     public async Task TodayBirthdayAsync()
     {
         var users = await BirthdayService.GetTodayBirthdaysAsync();
         await SetResponseAsync(BirthdayHelper.Format(users, Configuration));
     }
 
-    [SlashCommand("pridat", "Přidání tvého data narození.")]
+    [SlashCommand("add", "Adding your date of birth.")]
     public async Task AddAsync(
-        [Summary("kdy", "Datum, kdy máš narozeniny. (Formát: yyyy-mm-dd, pokud nechceš rok, tak zadej jako rok 0001).")]
+        [Summary("when", "The date of your birthday. (Format: yyyy-mm-dd, if you don't want a year, enter 0001 as the year).")]
         DateTime when
     )
     {
@@ -42,14 +42,14 @@ public class BirthdayModule : InteractionsModuleBase
         }
     }
 
-    [SlashCommand("smazat", "Smazání data narození.")]
+    [SlashCommand("remove", "Delete date of birth.")]
     public async Task RemoveAsync()
     {
         await BirthdayService.RemoveBirthdayAsync(Context.User);
         await SetResponseAsync("Datum narození bylo úspěšně odebráno.");
     }
 
-    [SlashCommand("mam", "Dotaz, jestli mám uložené narozeniny?")]
+    [SlashCommand("have", "Ask if I have my birthday saved?")]
     public async Task HaveAsync()
     {
         if (await BirthdayService.HaveBirthdayAsync(Context.User))

@@ -10,7 +10,7 @@ using GrillBot.Database.Enums.Internal;
 
 namespace GrillBot.App.Modules.Interactions;
 
-[Group("channel", "Informace o kanálech")]
+[Group("channel", "Channel information")]
 [RequireUserPerms]
 public class ChannelModule : InteractionsModuleBase
 {
@@ -21,7 +21,7 @@ public class ChannelModule : InteractionsModuleBase
         DatabaseBuilder = databaseBuilder;
     }
 
-    [SlashCommand("info", "Informace o kanálu")]
+    [SlashCommand("info", "Channel information")]
     public async Task GetChannelInfoAsync(SocketGuildChannel channel)
     {
         var user = Context.User as IGuildUser ?? await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);
@@ -172,7 +172,7 @@ public class ChannelModule : InteractionsModuleBase
         await SetResponseAsync(embed: channelEmbed.Build());
     }
 
-    [SlashCommand("board", "TOP 10 statistik kanálů, kam máš přístup.")]
+    [SlashCommand("board", "TOP 10 channel statistics you can access.")]
     public async Task GetChannelboardAsync()
     {
         var user = Context.User as IGuildUser ?? await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);

@@ -18,9 +18,9 @@ public class MathModule : InteractionsModuleBase
         HttpClientFactory = httpClientFactory;
     }
 
-    [SlashCommand("solve", "Spočítá matematický výraz.")]
+    [SlashCommand("solve", "Calculates a mathematical expression.")]
     public async Task SolveExpressionAsync(
-        [Summary("vyraz", "Matematický výraz k výpočtu.")]
+        [Summary("expression", "Mathematical expression to calculate.")]
         string expression
     )
     {

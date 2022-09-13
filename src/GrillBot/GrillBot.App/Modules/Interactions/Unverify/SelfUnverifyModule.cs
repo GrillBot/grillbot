@@ -18,13 +18,13 @@ public class SelfUnverifyModule : InteractionsModuleBase
         Configuration = configuration;
     }
 
-    [SlashCommand("selfunverify", "Dočasné odebrání přístupu sobě sama na serveru.")]
+    [SlashCommand("selfunverify", "Temporarily remove access to yourself on the server.")]
     [RequireBotPermission(GuildPermission.AddReactions)]
     [RequireBotPermission(GuildPermission.ManageRoles)]
     public async Task SelfUnverifyAsync(
-        [Summary("konec", "Datum a čas konce, nebo doba trvání odebrání přístupu.")]
+        [Summary("end", "End date and time, or duration of access removal.")]
         DateTime end,
-        [Summary("pristupy", "Seznam ponechatelných přístupů. Oddělujte čárkou, mezerou nebo středníkem.")]
+        [Summary("keepables", "A list of allowable accesses. Separate with a comma, space, or semicolon.")]
         string keepables = null
     )
     {

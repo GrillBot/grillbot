@@ -8,7 +8,7 @@ using GrillBot.Common.Helpers;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-[Group("hledam", "Hledání")]
+[Group("search", "Searching")]
 public class SearchingModule : InteractionsModuleBase
 {
     private SearchingService SearchingService { get; }
@@ -18,11 +18,11 @@ public class SearchingModule : InteractionsModuleBase
         SearchingService = searchingService;
     }
 
-    [SlashCommand("list", "Aktuální hledání.")]
+    [SlashCommand("list", "Current search.")]
     public async Task SearchingListAsync(
-        [Summary("kanal", "Kanál, ve kterém chcete něco najít.")]
+        [Summary("channel", "The channel you want to find something in.")]
         ITextChannel channel = null,
-        [Summary("podretezec", "Vyhledávací podřetězec")]
+        [Summary("substring", "Search substring")]
         [Discord.Interactions.MaxLength(50)]
         string query = null
     )
@@ -48,9 +48,9 @@ public class SearchingModule : InteractionsModuleBase
         await handler.ProcessAsync(Context);
     }
 
-    [SlashCommand("nove", "Vytvoření nového hledání.")]
+    [SlashCommand("create", "Create a new search.")]
     public async Task CreateSearchAsync(
-        [Summary("zprava", "Zpráva")] string message
+        [Summary("message", "Message")] string message
     )
     {
         try
@@ -64,9 +64,9 @@ public class SearchingModule : InteractionsModuleBase
         }
     }
 
-    [SlashCommand("smazat", "Smaže hledání")]
+    [SlashCommand("remove", "Deletes the search")]
     public async Task RemoveRemindAsync(
-        [Autocomplete(typeof(SearchingAutoCompleteHandler))] [Summary("ident", "Identifikace hledání")]
+        [Autocomplete(typeof(SearchingAutoCompleteHandler))] [Summary("ident", "Search identification")]
         long ident
     )
     {

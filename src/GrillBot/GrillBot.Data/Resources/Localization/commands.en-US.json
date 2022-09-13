@@ -3,12 +3,12 @@
   "selfunverify": {
     "name": "selfunverify",
     "description": "Temporarily remove access to yourself on the server.",
-    "konec": {
+    "end": {
       "name": "end",
       "description": "End date and time, or duration of access removal."
     },
-    "pristupy": {
-      "name": "accesses",
+    "keepables": {
+      "name": "keepables",
       "description": "A list of allowable accesses. Separate with a comma, space, or semicolon."
     }
   },
@@ -22,36 +22,36 @@
     "access": {
       "name": "access",
       "description": "View a list of user permissions.",
-      "uzivatel": {
+      "user": {
         "name": "user",
         "description": "User identification"
       },
-      "tajne": {
+      "secret": {
         "name": "secret",
         "description": "View result privately?"
       }
     }
   },
-  "narozeniny": {
+  "birthdays": {
     "name": "birthdays",
     "description": "Birthdays",
-    "dnes": {
+    "today": {
       "name": "today",
       "description": "Finding out who's birthday is today."
     },
-    "pridat": {
+    "add": {
       "name": "add",
       "description": "Adding your date of birth.",
-      "kdy": {
+      "when": {
         "name": "when",
         "description": "The date of your birthday. (Format: yyyy-mm-dd, if you don't want a year, enter 0001 as the year)."
       }
     },
-    "smazat": {
+    "remove": {
       "name": "remove",
       "description": "Delete date of birth."
     },
-    "mam": {
+    "have": {
       "name": "have",
       "description": "Ask if I have my birthday saved?"
     }
@@ -89,7 +89,7 @@
       "description": "TOP 10 channel statistics you can access."
     }
   },
-  "kachna": {
+  "duck": {
     "name": "duck",
     "description": "Finds the current state of the duck club."
   },
@@ -119,7 +119,7 @@
         "name": "user",
         "description": "Show statistics of only one user"
       },
-      "animovane": {
+      "animated": {
         "name": "animated",
         "description": "Do I want to show animated emotes in the list too?"
       }
@@ -136,7 +136,7 @@
   "solve": {
     "name": "solve",
     "description": "Calculates a mathematical expression.",
-    "vyraz": {
+    "expression": {
       "name": "expression",
       "description": "Mathematical expression to calculate."
     }
@@ -148,7 +148,7 @@
   "hi": {
     "name": "hi",
     "description": "Hello user",
-    "zaklad": {
+    "base": {
       "name": "base",
       "description": "Tell the bot in which base to greet you."
     }
@@ -156,7 +156,7 @@
   "mock": {
     "name": "mock",
     "description": "Mocks the specified message",
-    "zprava": {
+    "message": {
       "name": "message",
       "description": "Message for mocking"
     }
@@ -167,19 +167,19 @@
     "create": {
       "name": "create",
       "description": "Create a reminder for a specific date.",
-      "komu": {
+      "who": {
         "name": "recipient",
         "description": "Designation of the user who wishes to receive notifications"
       },
-      "kdy": {
-        "name": "when",
+      "when": {
+        "name": "kdy",
         "description": "Reminder date and time. It must be in the future."
       },
-      "zprava": {
+      "message": {
         "name": "message",
         "description": "The message that will be sent to the user."
       },
-      "tajne": {
+      "secret": {
         "name": "secret",
         "description": "This notification should be hidden from others."
       }
@@ -191,8 +191,8 @@
         "name": "identification",
         "description": "Reminder identification"
       },
-      "upozornit": {
-        "name": "remind",
+      "notify": {
+        "name": "notify",
         "description": "Whether to notify the target user early."
       }
     },
@@ -201,30 +201,30 @@
       "description": "List of currently pending reminders."
     }
   },
-  "hledam": {
+  "search": {
     "name": "search",
     "description": "Searching",
     "list": {
       "name": "list",
       "description": "Current search.",
-      "kanal": {
+      "channel": {
         "name": "channel",
         "description": "The channel you want to find something in."
       },
-      "podretezec": {
+      "substring": {
         "name": "substring",
         "description": "Search substring"
       }
     },
-    "nove": {
+    "create": {
       "name": "create",
       "description": "Create a new search.",
-      "zprava": {
+      "message": {
         "name": "message",
         "description": "Message"
       }
     },
-    "smazat": {
+    "remove": {
       "name": "remove",
       "description": "Deletes the search",
       "ident": {

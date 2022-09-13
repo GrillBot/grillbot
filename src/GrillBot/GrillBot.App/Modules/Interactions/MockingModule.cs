@@ -15,9 +15,9 @@ public class MockingModule : InteractionsModuleBase
         MockingService = mockingService;
     }
 
-    [SlashCommand("mock", "Mockuje zadanou zprávu")]
+    [SlashCommand("mock", "Mocks the specified message")]
     public Task MockAsync(
-        [Summary("zprava", "Zpráva k mockování")]
+        [Summary("message", "Message for mocking")]
         string message
     )
     {

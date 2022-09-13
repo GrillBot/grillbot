@@ -15,7 +15,7 @@ public class UserMeModule : InteractionsModuleBase
         UserService = userService;
     }
 
-    [SlashCommand("me", "Informace o mně")]
+    [SlashCommand("me", "Information about me")]
     public async Task GetInfoAboutMeAsync()
     {
         var user = Context.User as SocketGuildUser ?? Context.Guild.GetUser(Context.User.Id);

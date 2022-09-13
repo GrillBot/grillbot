@@ -8,10 +8,10 @@ using GrillBot.App.Infrastructure.Commands;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-[Group("bot", "Příkazy k informacím a konfiguraci bota.")]
+[Group("bot", "Bot information and configuration commands.")]
 public class BotModule : InteractionsModuleBase
 {
-    [SlashCommand("info", "Informace o botovi")]
+    [SlashCommand("info", "Bot info")]
     public async Task BotInfoAsync()
     {
         var culture = new CultureInfo("cs-CZ");
@@ -39,7 +39,7 @@ public class BotModule : InteractionsModuleBase
         await SetResponseAsync(embed: embed);
     }
 
-    [Group("selfunverify", "Konfigurace selfunverify.")]
+    [Group("selfunverify", "Configuring selfunverify.")]
     public class SelfUnverifyConfig : InteractionsModuleBase
     {
         private SelfunverifyService Service { get; }
@@ -49,7 +49,7 @@ public class BotModule : InteractionsModuleBase
             Service = service;
         }
 
-        [SlashCommand("list-keepables", "Seznam ponechatelných přístpů při selfunverify")]
+        [SlashCommand("list-keepables", "List of allowable accesses when selfunverify")]
         public async Task ListAsync(string group = null)
         {
             var data = await Service.GetKeepablesAsync(group);

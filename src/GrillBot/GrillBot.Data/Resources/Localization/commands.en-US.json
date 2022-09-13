@@ -1,0 +1,260 @@
+﻿{
+  "$schema": "https://gist.github.com/Cenngo/d46a881de24823302f66c3c7e2f7b254",
+  "selfunverify": {
+    "name": "selfunverify",
+    "description": "Temporarily remove access to yourself on the server.",
+    "konec": {
+      "name": "end",
+      "description": "End date and time, or duration of access removal."
+    },
+    "pristupy": {
+      "name": "accesses",
+      "description": "A list of allowable accesses. Separate with a comma, space, or semicolon."
+    }
+  },
+  "me": {
+    "name": "me",
+    "description": "Information about me"
+  },
+  "user": {
+    "name": "user",
+    "description": "User management",
+    "access": {
+      "name": "access",
+      "description": "View a list of user permissions.",
+      "uzivatel": {
+        "name": "user",
+        "description": "User identification"
+      },
+      "tajne": {
+        "name": "secret",
+        "description": "View result privately?"
+      }
+    }
+  },
+  "narozeniny": {
+    "name": "birthdays",
+    "description": "Birthdays",
+    "dnes": {
+      "name": "today",
+      "description": "Finding out who's birthday is today."
+    },
+    "pridat": {
+      "name": "add",
+      "description": "Adding your date of birth.",
+      "kdy": {
+        "name": "when",
+        "description": "The date of your birthday. (Format: yyyy-mm-dd, if you don't want a year, enter 0001 as the year)."
+      }
+    },
+    "smazat": {
+      "name": "remove",
+      "description": "Delete date of birth."
+    },
+    "mam": {
+      "name": "have",
+      "description": "Ask if I have my birthday saved?"
+    }
+  },
+  "bot": {
+    "info": {
+      "name": "bot",
+      "description": "Bot information and configuration commands.",
+      "info": {
+        "name": "info",
+        "description": "Bot info"
+      }
+    },
+    "selfunverify": {
+      "name": "selfunverify",
+      "description": "Configuring selfunverify.",
+      "list-keepables": {
+        "name": "list-keepables",
+        "description": "List of allowable accesses when selfunverify"
+      }
+    }
+  },
+  "channel": {
+    "name": "channel",
+    "description": "Channel information",
+    "info": {
+      "name": "info",
+      "description": "Channel information",
+      "channel": {
+        "name": "channel"
+      }
+    },
+    "board": {
+      "name": "board",
+      "description": "TOP 10 channel statistics you can access."
+    }
+  },
+  "kachna": {
+    "name": "duck",
+    "description": "Finds the current state of the duck club."
+  },
+  "emote": {
+    "name": "emote",
+    "description": "Managing emotes",
+    "get": {
+      "name": "get",
+      "description": "Emote information",
+      "emote": {
+        "name": "emote",
+        "description": "Emote identification (ID/Name/Full emote)"
+      }
+    },
+    "list": {
+      "name": "list",
+      "description": "List of emote stats",
+      "order": {
+        "name": "order",
+        "description": "Sort by"
+      },
+      "direction": {
+        "name": "direction",
+        "description": "Ascending/Descending"
+      },
+      "user": {
+        "name": "user",
+        "description": "Show statistics of only one user"
+      },
+      "animovane": {
+        "name": "animated",
+        "description": "Do I want to show animated emotes in the list too?"
+      }
+    }
+  },
+  "guild": {
+    "name": "guild",
+    "description": "Guild management",
+    "info": {
+      "name": "info",
+      "description": "Guild information"
+    }
+  },
+  "solve": {
+    "name": "solve",
+    "description": "Calculates a mathematical expression.",
+    "vyraz": {
+      "name": "expression",
+      "description": "Mathematical expression to calculate."
+    }
+  },
+  "kasparek": {
+    "name": "kasparek",
+    "description": "He asks your mom what kind of **** you have."
+  },
+  "hi": {
+    "name": "hi",
+    "description": "Hello user",
+    "zaklad": {
+      "name": "base",
+      "description": "Tell the bot in which base to greet you."
+    }
+  },
+  "mock": {
+    "name": "mock",
+    "description": "Mocks the specified message",
+    "zprava": {
+      "name": "message",
+      "description": "Message for mocking"
+    }
+  },
+  "remind": {
+    "name": "remind",
+    "description": "A reminder for a specific date",
+    "create": {
+      "name": "create",
+      "description": "Create a reminder for a specific date.",
+      "komu": {
+        "name": "recipient",
+        "description": "Designation of the user who wishes to receive notifications"
+      },
+      "kdy": {
+        "name": "when",
+        "description": "Reminder date and time. It must be in the future."
+      },
+      "zprava": {
+        "name": "message",
+        "description": "The message that will be sent to the user."
+      },
+      "tajne": {
+        "name": "secret",
+        "description": "This notification should be hidden from others."
+      }
+    },
+    "cancel": {
+      "name": "cancel",
+      "description": "Early cancellation of reminders.",
+      "ident": {
+        "name": "identification",
+        "description": "Reminder identification"
+      },
+      "upozornit": {
+        "name": "remind",
+        "description": "Whether to notify the target user early."
+      }
+    },
+    "list": {
+      "name": "list",
+      "description": "List of currently pending reminders."
+    }
+  },
+  "hledam": {
+    "name": "search",
+    "description": "Searching",
+    "list": {
+      "name": "list",
+      "description": "Current search.",
+      "kanal": {
+        "name": "channel",
+        "description": "The channel you want to find something in."
+      },
+      "podretezec": {
+        "name": "substring",
+        "description": "Search substring"
+      }
+    },
+    "nove": {
+      "name": "create",
+      "description": "Create a new search.",
+      "zprava": {
+        "name": "message",
+        "description": "Message"
+      }
+    },
+    "smazat": {
+      "name": "remove",
+      "description": "Deletes the search",
+      "ident": {
+        "name": "identification",
+        "description": "Search identification"
+      }
+    }
+  },
+  "suggestion": {
+    "name": "suggestion",
+    "description": "Submission of proposal",
+    "emote": {
+      "name": "emote",
+      "description": "Submitting a proposal to add a new emote.",
+      "emote": {
+        "name": "emote",
+        "description": "Option to design an emote based on an existing emote (from another server)."
+      },
+      "attachment": {
+        "name": "attachment",
+        "description": "Ability to design an emote based on an image."
+      }
+    },
+    "process_emote_suggestions": {
+      "name": "process_emote_suggestions",
+      "description": "Processing approved emote suggestions."
+    },
+    "feature": {
+      "name": "feature",
+      "description": "Submission of a proposal for a new feature to GrillBot."
+    }
+  }
+}

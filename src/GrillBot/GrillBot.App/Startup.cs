@@ -56,19 +56,22 @@ public class Startup
             SuppressUnknownDispatchWarnings = true
         };
 
-        var commandsConfig = new CommandServiceConfig()
+        var commandsConfig = new CommandServiceConfig
         {
             CaseSensitiveCommands = true,
             DefaultRunMode = Discord.Commands.RunMode.Async,
             LogLevel = LogSeverity.Verbose
         };
 
-        var interactionsConfig = new InteractionServiceConfig()
+        var currentAssembly = Assembly.GetExecutingAssembly();
+        var basePath = Path.GetDirectoryName(currentAssembly.Location)!;
+        var interactionsConfig = new InteractionServiceConfig
         {
             DefaultRunMode = Discord.Interactions.RunMode.Async,
             EnableAutocompleteHandlers = true,
             LogLevel = LogSeverity.Verbose,
-            UseCompiledLambda = true
+            UseCompiledLambda = true,
+            LocalizationManager = new JsonLocalizationManager(Path.Combine(basePath, "Resources", "Localization"), "commands")
         };
 
         var discordClient = new DiscordSocketClient(discordConfig);
@@ -83,7 +86,6 @@ public class Startup
             .AddCaching(Configuration)
             .AddDatabase(connectionString)
             .AddMemoryCache()
-            .AddAutoMapper(typeof(Startup).Assembly, typeof(Emojis).Assembly, typeof(GrillBotContext).Assembly)
             .AddScoped<ApiRequest>()
             .AddControllers(c =>
             {
@@ -96,7 +98,6 @@ public class Startup
             })
             .AddNewtonsoftJson();
 
-        var currentAssembly = Assembly.GetExecutingAssembly();
         var referencedAssemblies = currentAssembly
             .GetReferencedAssemblies()
             .Where(o => o.Name!.StartsWith("GrillBot"))

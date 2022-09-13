@@ -1,0 +1,20 @@
+﻿{
+  "BotModule": {
+    "BotInfoAsync": {
+      "CreatedAt": "Založen",
+      "Uptime": "Uptime",
+      "Repository": "Repozitář",
+      "Documentation": "Dokumentace",
+      "Swagger": "Swagger",
+      "PrivateAdmin": "Administrace (Vyšší role)",
+      "PublicAdmin": "Administrace (Pro každého)"
+    }
+  },
+  "SelfUnverifyConfig": {
+    "ListAsync": {
+      "NoKeepables": "Nebyly nalezeny žádné ponechatelné přístupy.",
+      "Title": "Ponechatelné role a kanály",
+      "Other": "Ostatní"
+    }
+  }
+}

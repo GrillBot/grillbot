@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Infrastructure.Commands;
 
@@ -6,6 +7,12 @@ namespace GrillBot.App.Infrastructure.Commands;
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
     protected bool CanDefer { get; set; } = true;
+    private LocalizationManager Localization { get; }
+
+    protected InteractionsModuleBase(LocalizationManager localization = null)
+    {
+        Localization = localization;
+    }
 
     /// <summary>
     /// Check whether Defer can be performed.
@@ -66,4 +73,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             msg.Embed = embed;
         }, requestOptions);
     }
+
+    protected string GetLocale(string method, string id)
+        => Localization?.Get($"{GetType().Name}/{method}/{id}", Context.Interaction.UserLocale);
 }

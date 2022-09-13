@@ -4,6 +4,7 @@ using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions.Discord;
 using System.Diagnostics;
 using GrillBot.App.Infrastructure.Commands;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -11,10 +12,14 @@ namespace GrillBot.App.Modules.Interactions;
 [Group("bot", "Bot information and configuration commands.")]
 public class BotModule : InteractionsModuleBase
 {
+    public BotModule(LocalizationManager localization) : base(localization)
+    {
+    }
+
     [SlashCommand("info", "Bot info")]
     public async Task BotInfoAsync()
     {
-        var culture = new CultureInfo("cs-CZ");
+        var culture = new CultureInfo(Context.Interaction.UserLocale);
         var process = Process.GetCurrentProcess();
         var color = Context.Guild == null
             ? Color.Default
@@ -24,13 +29,13 @@ public class BotModule : InteractionsModuleBase
         var embed = new EmbedBuilder()
             .WithTitle(user.GetFullName())
             .WithThumbnailUrl(user.GetUserAvatarUrl())
-            .AddField("Založen", user.CreatedAt.LocalDateTime.Humanize(culture: culture))
-            .AddField("Uptime", (DateTime.Now - process.StartTime).Humanize(culture: culture, maxUnit: TimeUnit.Day))
-            .AddField("Repozitář", "https://gitlab.com/grillbot")
-            .AddField("Dokumentace", "https://docs.grillbot.cloud/")
-            .AddField("Swagger", "https://grillbot.cloud/swagger")
-            .AddField("Administrace (Vyšší oprávnění)", "https://grillbot.cloud")
-            .AddField("Administrace (Pro ostatní)", "https://public.grillbot.cloud/")
+            .AddField(GetLocale(nameof(BotInfoAsync), "CreatedAt"), user.CreatedAt.LocalDateTime.Humanize(culture: culture))
+            .AddField(GetLocale(nameof(BotInfoAsync), "Uptime"), (DateTime.Now - process.StartTime).Humanize(culture: culture, maxUnit: TimeUnit.Day))
+            .AddField(GetLocale(nameof(BotInfoAsync), "Repository"), "https://gitlab.com/grillbot")
+            .AddField(GetLocale(nameof(BotInfoAsync), "Documentation"), "https://docs.grillbot.cloud/")
+            .AddField(GetLocale(nameof(BotInfoAsync), "Swagger"), "https://grillbot.cloud/swagger")
+            .AddField(GetLocale(nameof(BotInfoAsync), "PrivateAdmin"), "https://grillbot.cloud")
+            .AddField(GetLocale(nameof(BotInfoAsync), "PublicAdmin"), "https://public.grillbot.cloud/")
             .WithColor(color)
             .WithCurrentTimestamp()
             .WithFooter(Context.User)
@@ -44,7 +49,7 @@ public class BotModule : InteractionsModuleBase
     {
         private SelfunverifyService Service { get; }
 
-        public SelfUnverifyConfig(SelfunverifyService service)
+        public SelfUnverifyConfig(SelfunverifyService service, LocalizationManager localization) : base(localization)
         {
             Service = service;
         }
@@ -56,7 +61,7 @@ public class BotModule : InteractionsModuleBase
 
             if (data.Count == 0)
             {
-                await SetResponseAsync("Nebyly nalezeny žádné ponechatelné přístupy.");
+                await SetResponseAsync(GetLocale(nameof(ListAsync), "NoKeepables"));
                 return;
             }
 
@@ -64,12 +69,12 @@ public class BotModule : InteractionsModuleBase
                 .WithColor(Color.Blue)
                 .WithCurrentTimestamp()
                 .WithFooter(Context.User)
-                .WithTitle("Ponechatelné role a kanály");
+                .WithTitle(GetLocale(nameof(ListAsync), "Title"));
 
             foreach (var grp in data.GroupBy(o => string.Join("|", o.Value)))
             {
                 string fieldGroupResult;
-                var keys = string.Join(", ", grp.Select(o => o.Key == "_" ? "Ostatní" : o.Key));
+                var keys = string.Join(", ", grp.Select(o => o.Key == "_" ? GetLocale(nameof(ListAsync), "Other") : o.Key));
 
                 var fieldGroupBuilder = new StringBuilder();
                 foreach (var item in grp.First().Value)

@@ -1,0 +1,20 @@
+﻿{
+  "BotModule": {
+    "BotInfoAsync": {
+      "CreatedAt": "Created",
+      "Uptime": "Uptime",
+      "Repository": "Repository",
+      "Documentation": "Documentation",
+      "Swagger": "Swagger",
+      "PrivateAdmin": "Administration (Only admins)",
+      "PublicAdmin": "Administration (For everyone)"
+    }
+  },
+  "SelfUnverifyConfig": {
+    "ListAsync": {
+      "NoKeepables": "No keepable accesses were found.",
+      "Title": "Keepable roles and channels",
+      "Other": "Other"
+    }
+  }
+}

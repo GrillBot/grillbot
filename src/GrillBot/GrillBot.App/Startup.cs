@@ -44,7 +44,7 @@ public class Startup
     {
         var connectionString = Configuration.GetConnectionString("Default");
 
-        var discordConfig = new DiscordSocketConfig()
+        var discordConfig = new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.All,
             LogLevel = LogSeverity.Verbose,
@@ -65,19 +65,22 @@ public class Startup
 
         var currentAssembly = Assembly.GetExecutingAssembly();
         var basePath = Path.GetDirectoryName(currentAssembly.Location)!;
+        var localizationPath = Path.Combine(basePath, "Resources", "Localization");
+        
         var interactionsConfig = new InteractionServiceConfig
         {
             DefaultRunMode = Discord.Interactions.RunMode.Async,
             EnableAutocompleteHandlers = true,
             LogLevel = LogSeverity.Verbose,
             UseCompiledLambda = true,
-            LocalizationManager = new JsonLocalizationManager(Path.Combine(basePath, "Resources", "Localization"), "commands")
+            LocalizationManager = new JsonLocalizationManager(localizationPath, "commands")
         };
 
         var discordClient = new DiscordSocketClient(discordConfig);
 
         services
             .AddCommonManagers()
+            .AddLocalization(localizationPath, "messages")
             .Configure<ApiBehaviorOptions>(opt => opt.SuppressModelStateInvalidFilter = true)
             .AddSingleton(discordClient)
             .AddSingleton<IDiscordClient>(discordClient)

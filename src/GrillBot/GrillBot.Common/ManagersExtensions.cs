@@ -17,4 +17,10 @@ public static class ManagersExtensions
             .AddSingleton<EventManager>()
             .AddLoggingServices();
     }
+
+    public static IServiceCollection AddLocalization(this IServiceCollection services, string basePath, string fileMask)
+    {
+        var manager = new LocalizationManager(basePath, fileMask);
+        return services.AddSingleton(manager);
+    }
 }

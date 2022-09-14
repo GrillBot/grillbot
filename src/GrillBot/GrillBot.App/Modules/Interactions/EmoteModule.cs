@@ -41,13 +41,13 @@ public class EmoteModule : InteractionsModuleBase
 
     [SlashCommand("list", "List of emote stats")]
     public async Task GetEmoteStatsListAsync(
-        [Summary("order", "Sort by")] [Choice("Počtu použití", "UseCount")] [Choice("Data a času posledního použití", "LastOccurence")]
+        [Summary("order", "Sort by")] [Choice("Number of uses", "UseCount")] [Choice("Date and time of last use", "LastOccurence")]
         string orderBy,
-        [Summary("direction", "Ascending/Descending")] [Choice("Sestupně", "true")] [Choice("Vzestupně", "false")]
+        [Summary("direction", "Ascending/Descending")] [Choice("Ascending", "true")] [Choice("Descending", "false")]
         bool descending,
         [Summary("user", "Show statistics of only one user")]
         IUser ofUser = null,
-        [Summary("animated", "Do I want to show animated emotes in the list too?")] [Choice("Zobrazit animované emoty.", "false")] [Choice("Pryč animované emoty.", "true")]
+        [Summary("animated", "Do I want to show animated emotes in the list too?")] [Choice("Show animated emotes", "false")] [Choice("Hide animated emotes", "true")]
         bool filterAnimated = false
     )
     {

@@ -28,7 +28,13 @@
       },
       "secret": {
         "name": "secret",
-        "description": "View result privately?"
+        "description": "View result privately?",
+        "Yes": {
+          "name": "Yes"
+        },
+        "No": {
+          "name": "No"
+        }
       }
     }
   },
@@ -107,11 +113,23 @@
       "description": "List of emote stats",
       "order": {
         "name": "order",
-        "description": "Sort by"
+        "description": "Sort by",
+        "Number of uses": {
+          "name": "Number of uses"
+        },
+        "Date and time of last use": {
+          "name": "Date and time of last use"
+        }
       },
       "direction": {
         "name": "direction",
-        "description": "Ascending/Descending"
+        "description": "Ascending/Descending",
+        "Ascending": {
+          "name": "Ascending"
+        },
+        "Descending": {
+          "name": "Descending"
+        }
       },
       "user": {
         "name": "user",
@@ -119,7 +137,13 @@
       },
       "animated": {
         "name": "animated",
-        "description": "Do I want to show animated emotes in the list too?"
+        "description": "Do I want to show animated emotes in the list too?",
+        "Show animated emotes": {
+          "name": "Show animated emotes"
+        },
+        "Hide animated emotes": {
+          "name": "Hide animated emotes"
+        }
       }
     }
   },
@@ -148,7 +172,16 @@
     "description": "Hello user",
     "base": {
       "name": "base",
-      "description": "Tell the bot in which base to greet you."
+      "description": "Tell the bot in which base to greet you.",
+      "Binary": {
+        "name": "Binary"
+      },
+      "Octal": {
+        "name": "Octal"
+      },
+      "Hexadecimal": {
+        "name": "Hexadecimal"
+      }
     }
   },
   "mock": {
@@ -179,7 +212,13 @@
       },
       "secret": {
         "name": "secret",
-        "description": "This notification should be hidden from others."
+        "description": "This notification should be hidden from others.",
+        "Yes": {
+          "name": "Yes"
+        },
+        "No": {
+          "name": "No"
+        }
       }
     },
     "cancel": {
@@ -191,7 +230,13 @@
       },
       "notify": {
         "name": "notify",
-        "description": "Whether to notify the target user early."
+        "description": "Whether to notify the target user early.",
+        "Yes": {
+          "name": "Yes"
+        },
+        "No": {
+          "name": "No"
+        }
       }
     },
     "list": {

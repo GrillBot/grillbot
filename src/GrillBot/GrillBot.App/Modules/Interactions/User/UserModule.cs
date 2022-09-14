@@ -16,7 +16,7 @@ public class UserModule : Infrastructure.Commands.InteractionsModuleBase
     public async Task GetAccessListAsync(
         [Summary("user", "User identification")]
         IGuildUser user,
-        [Summary("secret", "View result privately?")] [Choice("Ano", "true")] [Choice("Ne", "false")]
+        [Summary("secret", "View result privately?")] [Choice("Yes", "true")] [Choice("No", "false")]
         bool secret = false
     )
     {

@@ -29,7 +29,7 @@ public class MemeModule : InteractionsModuleBase
 
     [SlashCommand("hi", "Hello user")]
     public Task HiAsync(
-        [Summary("base", "Tell the bot in which base to greet you.")] [Choice("Binární", 2)] [Choice("Osmičková", 8)] [Choice("Šestnáctková", 16)]
+        [Summary("base", "Tell the bot in which base to greet you.")] [Choice("Binary", 2)] [Choice("Octal", 8)] [Choice("Hexadecimal", 16)]
         int? @base = null
     )
     {

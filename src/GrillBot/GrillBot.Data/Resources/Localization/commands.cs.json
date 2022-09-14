@@ -28,7 +28,13 @@
       },
       "secret": {
         "name": "tajne",
-        "description": "Zobrazit výsledek soukromě?"
+        "description": "Zobrazit výsledek soukromě?",
+        "Yes": {
+          "name": "Ano"
+        },
+        "No": {
+          "name": "Ne"
+        }
       }
     }
   },
@@ -107,11 +113,23 @@
       "description": "Seznam statistik emotů",
       "order": {
         "name": "seradit",
-        "description": "Seřadit podle"
+        "description": "Seřadit podle",
+        "Number of uses": {
+          "name": "Počtu použití"
+        },
+        "Date and time of last use": {
+          "name": "Data a času posledního použití"
+        }
       },
       "direction": {
         "name": "smer",
-        "description": "Vzestupně/Sestupně"
+        "description": "Vzestupně/Sestupně",
+        "Ascending": {
+          "name": "Vzestupně"
+        },
+        "Descending": {
+          "name": "Sestupně"
+        }
       },
       "user": {
         "name": "uzivatel",
@@ -119,7 +137,13 @@
       },
       "animated": {
         "name": "animovane",
-        "description": "Chci v seznamu zobrazit i animované emoty?"
+        "description": "Chci v seznamu zobrazit i animované emoty?",
+        "Show animated emotes": {
+          "name": "Zobrazit animované emoty"
+        },
+        "Hide animated emotes": {
+          "name": "Pryč animované emoty"
+        }
       }
     }
   },
@@ -148,7 +172,16 @@
     "description": "Pozdrav uživatele",
     "base": {
       "name": "base",
-      "description": "Řekni botovi, v jaké soustavě tě má podravit."
+      "description": "Řekni botovi, v jaké soustavě tě má podravit.",
+      "Binary": {
+        "name": "Binární"
+      },
+      "Octal": {
+        "name": "Osmičková"
+      },
+      "Hexadecimal": {
+        "name": "Šestnáctková"
+      }
     }
   },
   "mock": {
@@ -178,8 +211,14 @@
         "description": "Zpráva, která se zašle uživateli."
       },
       "secret": {
-        "name": "secret",
-        "description": "Toto upozornění má být skryto před zraky ostatních."
+        "name": "tajne",
+        "description": "Toto upozornění má být skryto před zraky ostatních.",
+        "Yes": {
+          "name": "Ano"
+        },
+        "No": {
+          "name": "Ne"
+        }
       }
     },
     "cancel": {
@@ -191,7 +230,13 @@
       },
       "notify": {
         "name": "upozornit",
-        "description": "Zda se má cílový uživatel předčasně upozornit."
+        "description": "Zda se má cílový uživatel předčasně upozornit.",
+        "Yes": {
+          "name": "Ano"
+        },
+        "No": {
+          "name": "Ne"
+        }
       }
     },
     "list": {

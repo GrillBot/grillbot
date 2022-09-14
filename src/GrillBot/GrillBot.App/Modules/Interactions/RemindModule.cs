@@ -28,7 +28,7 @@ public class RemindModule : InteractionsModuleBase
         DateTime at,
         [Summary("message", "The message that will be sent to the user.")]
         string message,
-        [Summary("secret", "This notification should be hidden from others.")] [Choice("Ano", "true")] [Choice("Ne", "false")]
+        [Summary("secret", "This notification should be hidden from others.")] [Choice("Yes", "true")] [Choice("No", "false")]
         bool secret = false
     )
     {
@@ -53,7 +53,7 @@ public class RemindModule : InteractionsModuleBase
     public async Task CancelRemindAsync(
         [Summary("ident", "Reminder identification")] [Autocomplete(typeof(RemindAutoCompleteHandler))]
         long id,
-        [Summary("notify", "Whether to notify the target user early.")] [Choice("Ano", "true")] [Choice("Ne", "false")]
+        [Summary("notify", "Whether to notify the target user early.")] [Choice("Yes", "true")] [Choice("No", "false")]
         bool notify = false
     )
     {

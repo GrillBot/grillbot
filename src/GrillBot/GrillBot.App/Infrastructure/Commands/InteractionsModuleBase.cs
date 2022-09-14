@@ -9,6 +9,9 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected bool CanDefer { get; set; } = true;
     private LocalizationManager Localization { get; }
 
+    protected CultureInfo Culture
+        => string.IsNullOrEmpty(Context?.Interaction?.UserLocale) ? null : new CultureInfo(Context.Interaction.UserLocale);
+
     protected InteractionsModuleBase(LocalizationManager localization = null)
     {
         Localization = localization;
@@ -75,5 +78,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     }
 
     protected string GetLocale(string method, string id)
-        => Localization?.Get($"{GetType().Name}/{method}/{id}", Context.Interaction.UserLocale);
+        => Localization?.Get(GetLocaleId(method, id), Context.Interaction.UserLocale);
+
+    protected string GetLocaleId(string method, string id) => $"{GetType().Name}/{method}/{id}";
 }

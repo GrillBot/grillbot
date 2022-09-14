@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Managers;
+﻿using GrillBot.Common.Helpers;
+using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
@@ -22,5 +23,12 @@ public static class ManagersExtensions
     {
         var manager = new LocalizationManager(basePath, fileMask);
         return services.AddSingleton(manager);
+    }
+
+    public static IServiceCollection AddHelpers(this IServiceCollection services)
+    {
+        return services
+            .AddSingleton<FormatHelper>()
+            .AddSingleton<GuildHelper>();
     }
 }

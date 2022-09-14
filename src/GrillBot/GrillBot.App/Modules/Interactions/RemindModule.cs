@@ -5,6 +5,7 @@ using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Common;
 using GrillBot.Common.Helpers;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -14,7 +15,7 @@ public class RemindModule : InteractionsModuleBase
 {
     private RemindService RemindService { get; }
 
-    public RemindModule(RemindService remindService)
+    public RemindModule(RemindService remindService, LocalizationManager localization) : base(localization)
     {
         RemindService = remindService;
     }
@@ -39,7 +40,7 @@ public class RemindModule : InteractionsModuleBase
             var remindId = await RemindService.CreateRemindAsync(Context.User, who, at, message, originalMessage.Id);
 
             var buttons = secret ? null : new ComponentBuilder().WithButton(customId: $"remind_copy:{remindId}", emote: Emojis.PersonRisingHand).Build();
-            var msg = $"Připomenutí bylo vytvořeno.{(secret ? "" : $"Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {Emojis.PersonRisingHand}")}";
+            var msg = GetLocale(nameof(CreateAsync), "Success") + (secret ? "" : " " + GetLocale(nameof(CreateAsync), "CopyMessage").FormatWith(Emojis.PersonRisingHand.ToString()));
             await SetResponseAsync(msg, components: buttons, secret: secret);
         }
         catch (ValidationException ex)
@@ -59,7 +60,7 @@ public class RemindModule : InteractionsModuleBase
         try
         {
             await RemindService.CancelRemindAsync(id, Context.User, notify);
-            await SetResponseAsync($"Upozornění bylo úspěšně zrušeno{(notify ? " a cílový uživatel byl upozorněn" : "")}.");
+            await SetResponseAsync(GetLocale(nameof(CancelRemindAsync), notify ? "CancelledWithNotify" : "Cancelled"));
         }
         catch (ValidationException ex)
         {

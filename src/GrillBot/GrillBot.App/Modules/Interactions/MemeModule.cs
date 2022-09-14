@@ -3,6 +3,7 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -12,7 +13,7 @@ public class MemeModule : InteractionsModuleBase
     private RandomizationService RandomizationService { get; }
     private IConfiguration Configuration { get; }
 
-    public MemeModule(RandomizationService randomizationService, IConfiguration configuration)
+    public MemeModule(RandomizationService randomizationService, IConfiguration configuration, LocalizationManager localization) : base(localization)
     {
         RandomizationService = randomizationService;
         Configuration = configuration;
@@ -28,15 +29,12 @@ public class MemeModule : InteractionsModuleBase
 
     [SlashCommand("hi", "Hello user")]
     public Task HiAsync(
-        [Summary("base", "Tell the bot in which base to greet you.")]
-        [Choice("Binární", 2)]
-        [Choice("Osmičková", 8)]
-        [Choice("Šestnáctková", 16)]
+        [Summary("base", "Tell the bot in which base to greet you.")] [Choice("Binární", 2)] [Choice("Osmičková", 8)] [Choice("Šestnáctková", 16)]
         int? @base = null
     )
     {
         var emote = Configuration.GetValue<string>("Discord:Emotes:FeelsWowMan");
-        var msg = $"Ahoj {Context.User.GetDisplayName(false)} {emote}";
+        var msg = GetLocale(nameof(HiAsync), "Template").FormatWith(Context.User.GetDisplayName(false), emote);
 
         return SetResponseAsync(@base == null ? msg : string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));
     }

@@ -5,6 +5,7 @@ using System.Net.Http;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -13,7 +14,7 @@ public class MathModule : InteractionsModuleBase
 {
     private IHttpClientFactory HttpClientFactory { get; }
 
-    public MathModule(IHttpClientFactory httpClientFactory)
+    public MathModule(IHttpClientFactory httpClientFactory, LocalizationManager localization) : base(localization)
     {
         HttpClientFactory = httpClientFactory;
     }
@@ -31,7 +32,7 @@ public class MathModule : InteractionsModuleBase
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)
             .WithCurrentTimestamp()
-            .AddField("Výraz", $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength - 2)}`");
+            .AddField(GetLocale(nameof(SolveExpressionAsync), "Expression"), $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength - 2)}`");
 
         try
         {
@@ -42,19 +43,19 @@ public class MathModule : InteractionsModuleBase
             if (!response.IsSuccessStatusCode)
             {
                 embed.WithColor(Color.Red)
-                    .WithTitle("Výpočet se nezdařil")
-                    .AddField("Hlášení", calcResult.Error);
+                    .WithTitle(GetLocale(nameof(SolveExpressionAsync), "ComputeFailed"))
+                    .AddField(GetLocale(nameof(SolveExpressionAsync), "Report"), calcResult.Error);
             }
             else
             {
                 embed.WithColor(Color.Green)
-                    .AddField("Výsledek", calcResult.Result);
+                    .AddField(GetLocale(nameof(SolveExpressionAsync), "Result"), calcResult.Result);
             }
         }
         catch (TaskCanceledException)
         {
             embed.WithColor(Color.Red)
-                .WithTitle("Vypršel časový limit pro zpracování výrazu");
+                .WithTitle(GetLocale(nameof(SolveExpressionAsync), "Timeout"));
         }
 
         await SetResponseAsync(embed: embed.Build());

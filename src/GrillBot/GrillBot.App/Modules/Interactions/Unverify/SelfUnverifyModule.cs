@@ -3,6 +3,7 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;
 
@@ -12,7 +13,7 @@ public class SelfUnverifyModule : InteractionsModuleBase
     private SelfunverifyService SelfunverifyService { get; }
     private IConfiguration Configuration { get; }
 
-    public SelfUnverifyModule(SelfunverifyService selfunverifyService, IConfiguration configuration)
+    public SelfUnverifyModule(SelfunverifyService selfunverifyService, IConfiguration configuration, LocalizationManager localization) : base(localization)
     {
         SelfunverifyService = selfunverifyService;
         Configuration = configuration;
@@ -51,7 +52,7 @@ public class SelfUnverifyModule : InteractionsModuleBase
             }
             else
             {
-                await SetResponseAsync("Provedení selfunverify se nezdařilo.");
+                await SetResponseAsync(GetLocale(nameof(SelfUnverifyAsync), "GenericError"));
                 throw;
             }
         }

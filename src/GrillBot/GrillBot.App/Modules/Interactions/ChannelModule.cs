@@ -5,6 +5,7 @@ using GrillBot.App.Modules.Implementations.Channels;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
+using GrillBot.Common.Managers;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Enums.Internal;
 
@@ -15,10 +16,13 @@ namespace GrillBot.App.Modules.Interactions;
 public class ChannelModule : InteractionsModuleBase
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private FormatHelper FormatHelper { get; }
 
-    public ChannelModule(GrillBotDatabaseBuilder databaseBuilder)
+    public ChannelModule(GrillBotDatabaseBuilder databaseBuilder, LocalizationManager localization,
+        FormatHelper formatHelper) : base(localization)
     {
         DatabaseBuilder = databaseBuilder;
+        FormatHelper = formatHelper;
     }
 
     [SlashCommand("info", "Channel information")]
@@ -26,12 +30,12 @@ public class ChannelModule : InteractionsModuleBase
     {
         var user = Context.User as IGuildUser ?? await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);
         if (user == null)
-            throw new InvalidOperationException("Nepodařilo se dohledat uživatele, která zavolal příkaz.");
+            throw new InvalidOperationException(GetLocale(nameof(GetChannelInfoAsync), "UserNotFound"));
 
         var haveAccess = await channel.HaveAccessAsync(user);
         if (!haveAccess)
         {
-            await SetResponseAsync("Informace o kanálu ti nemohu dát, protože tam nemáš přístup.");
+            await SetResponseAsync(GetLocale(nameof(GetChannelInfoAsync), "NoAccess"));
             return;
         }
 
@@ -46,12 +50,12 @@ public class ChannelModule : InteractionsModuleBase
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
             .WithTitle((isThread ? "" : "#") + channel.Name)
-            .AddField("Založeno", channel.CreatedAt.LocalDateTime.ToCzechFormat(), true);
+            .AddField(GetLocale(nameof(GetChannelInfoAsync), "CreatedAt"), channel.CreatedAt.LocalDateTime.ToCzechFormat(), true);
 
         if (!isCategory && channelType != ChannelType.Forum)
         {
             channelEmbed.AddField(
-                "Počet členů",
+                GetLocale(nameof(GetChannelInfoAsync), "MemberCount"),
                 isThread ? FormatHelper.FormatMembersToCzech(((IThreadChannel)channel).MemberCount) : FormatHelper.FormatMembersToCzech(channel.Users.Count),
                 true
             );
@@ -59,31 +63,22 @@ public class ChannelModule : InteractionsModuleBase
 
         switch (channelType)
         {
-            case ChannelType.News:
-                channelEmbed.WithAuthor("Informace o kanálu s novinkami");
-                break;
-            case ChannelType.Voice:
-                channelEmbed.WithAuthor("Informace o hlasovém kanálu");
+            case ChannelType.News or ChannelType.Voice:
+                channelEmbed.WithAuthor(GetLocale(nameof(GetChannelInfoAsync), $"{channelType}ChannelTitle"));
                 break;
             default:
             {
                 if (isThread)
-                    channelEmbed.WithAuthor("Informace o vláknu");
+                    channelEmbed.WithAuthor(GetLocale(nameof(GetChannelInfoAsync), "ThreadChannelTitle"));
                 else
                     switch (channelType)
                     {
-                        case ChannelType.Stage:
-                            channelEmbed.WithAuthor("Informace o jevišti");
-                            break;
-                        case ChannelType.Text:
-                            channelEmbed.WithAuthor("Informace o textovém kanálu");
-                            break;
-                        case ChannelType.Forum:
-                            channelEmbed.WithAuthor("Informace o fóru");
+                        case ChannelType.Text or ChannelType.Stage or ChannelType.Forum:
+                            channelEmbed.WithAuthor(GetLocale(nameof(GetChannelInfoAsync), $"{channelType}ChannelTitle"));
                             break;
                         default:
                         {
-                            channelEmbed.WithAuthor(isCategory ? "Informace o kategorii" : $"Informace o neznámém typu kanálu ({channelType})");
+                            channelEmbed.WithAuthor(GetLocale(nameof(GetChannelInfoAsync), isCategory ? "CategoryChannelTitle" : "OtherChannelTitle".FormatWith(channelType.ToString())));
                             break;
                         }
                     }
@@ -99,14 +94,15 @@ public class ChannelModule : InteractionsModuleBase
                 var permissionGroups = channel.PermissionOverwrites.GroupBy(o => o.TargetType).ToDictionary(o => o.Key, o => o.Count());
                 var userPermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.User);
                 var rolePermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.Role);
-                var permsFormatted = $"Uživatelské: {FormatHelper.FormatPermissionstoCzech(userPermsCount)}\n" +
-                                     $"Role: {FormatHelper.FormatPermissionstoCzech(rolePermsCount)}";
+                var userPermsCountFormat = FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PermsCountValue"), Context.Interaction.UserLocale, userPermsCount);
+                var rolePermsCountFormat = FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PermsCountValue"), Context.Interaction.UserLocale, rolePermsCount);
+                var permsFormatted = GetLocale(nameof(GetChannelInfoAsync), "PermsCount").FormatWith(userPermsCountFormat, rolePermsCountFormat);
 
-                channelEmbed.AddField("Počet oprávnění", permsFormatted);
+                channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "PermsCountTitle"), permsFormatted);
                 break;
             }
             case true:
-                channelEmbed.AddField("Kanál", (channel as SocketThreadChannel)!.ParentChannel!.GetMention(), true);
+                channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "Channel"), (channel as SocketThreadChannel)!.ParentChannel!.GetMention(), true);
                 break;
         }
 
@@ -115,18 +111,19 @@ public class ChannelModule : InteractionsModuleBase
             if (!string.IsNullOrEmpty(forum!.Topic))
                 channelEmbed.WithDescription(forum.Topic.Cut(EmbedBuilder.MaxDescriptionLength));
 
-            channelEmbed.AddField("Počet tagů", FormatHelper.Format(forum.Tags.Count, "tag", "tagy", "tagů"), true);
+            channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "TagsCount"),
+                FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "TagsCountValue"), Context.Interaction.UserLocale, forum.Tags.Count), true);
 
             var activeThreads = (await forum.GetActiveThreadsAsync()).Where(o => o.CategoryId == forum.Id).ToList();
             var privateThreadsCount = activeThreads.Count(o => o.Type == ThreadType.PrivateThread);
             var publicThreadsCount = activeThreads.Count(o => o.Type == ThreadType.PublicThread);
             var threadsFormatBuilder = new StringBuilder();
             if (publicThreadsCount > 0)
-                threadsFormatBuilder.AppendLine(FormatHelper.Format(publicThreadsCount, "veřejné vlákno", "veřejné vlákna", "veřejných vláken"));
+                threadsFormatBuilder.AppendLine(FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PublicThreadCountValue"), Context.Interaction.UserLocale, publicThreadsCount));
             if (privateThreadsCount > 0)
-                threadsFormatBuilder.AppendLine(FormatHelper.Format(privateThreadsCount, "soukromé vlákno", "soukromé vlákna", "soukromých vláken"));
+                threadsFormatBuilder.AppendLine(FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PrivateThreadCountValue"), Context.Interaction.UserLocale, publicThreadsCount));
             if (threadsFormatBuilder.Length > 0)
-                channelEmbed.AddField("Počet vláken", threadsFormatBuilder.ToString());
+                channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "ThreadCount"), threadsFormatBuilder.ToString());
         }
 
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -138,34 +135,35 @@ public class ChannelModule : InteractionsModuleBase
             var lastMessage = channelData.Users.Max(o => o.LastMessageAt);
 
             channelEmbed
-                .AddField("Počet zpráv", FormatHelper.FormatMessagesToCzech(channelData.Users.Sum(o => o.Count)), true);
+                .AddField(GetLocale(nameof(GetChannelInfoAsync), "MessageCount"),
+                    FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "MessageCountValue"), Context.Interaction.UserLocale, channelData.Users.Sum(o => o.Count)), true);
 
             if (firstMessage != DateTime.MinValue)
-                channelEmbed.AddField("První zpráva", firstMessage.ToCzechFormat(), true);
+                channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "FirstMessage"), firstMessage.ToCzechFormat(), true);
             if (lastMessage != DateTime.MinValue)
-                channelEmbed.AddField("Poslední zpráva", lastMessage.ToCzechFormat(), true);
+                channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "LastMessage"), lastMessage.ToCzechFormat(), true);
 
             var flagsData = Enum.GetValues<ChannelFlags>()
                 .Where(o => channelData.HasFlag(o))
                 .Select(o => o switch
                 {
-                    ChannelFlags.CommandsDisabled => "Deaktivovány všechny příkazy",
-                    ChannelFlags.AutoReplyDeactivated => "Deaktivovány automatické odpovědi",
-                    ChannelFlags.StatsHidden => "Skryté statistiky",
+                    ChannelFlags.CommandsDisabled => GetLocale(nameof(GetChannelInfoAsync), "Flags/CommandsDisabled"),
+                    ChannelFlags.AutoReplyDeactivated => GetLocale(nameof(GetChannelInfoAsync), "Flags/AutoReplyDeactivated"),
+                    ChannelFlags.StatsHidden => GetLocale(nameof(GetChannelInfoAsync), "Flags/StatsHidden"),
                     _ => null
                 })
                 .Where(o => !string.IsNullOrEmpty(o))
                 .ToList();
 
             if (flagsData.Count > 0)
-                channelEmbed.AddField("Konfigurace", string.Join("\n", flagsData));
+                channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "Configuration"), string.Join("\n", flagsData));
 
             if (!channelData.HasFlag(ChannelFlags.StatsHidden))
             {
                 var topTenQuery = channelData.Users.OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt).Take(10);
                 var topTenData = topTenQuery.Select((o, i) => $"**{i + 1,2}.** {Context.Guild.GetUser(o.UserId.ToUlong())?.GetDisplayName()} ({FormatHelper.FormatMessagesToCzech(o.Count)})");
 
-                channelEmbed.AddField("TOP 10 uživatelů", string.Join("\n", topTenData));
+                channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "TopTen"), string.Join("\n", topTenData));
             }
         }
 
@@ -177,12 +175,12 @@ public class ChannelModule : InteractionsModuleBase
     {
         var user = Context.User as IGuildUser ?? await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);
         if (user == null)
-            throw new InvalidOperationException("Nepodařilo se dohledat uživatele, který zavolal příkaz.");
+            throw new InvalidOperationException(GetLocale(nameof(GetChannelboardAsync), "UserNotFound"));
 
         var availableChannels = await Context.Guild.GetAvailableChannelsAsync(user, true);
         if (availableChannels.Count == 0)
         {
-            await SetResponseAsync("Nemáš přístup do žádného kanálu.");
+            await SetResponseAsync(GetLocale(nameof(GetChannelboardAsync), "NoAccess"));
             return;
         }
 
@@ -193,7 +191,7 @@ public class ChannelModule : InteractionsModuleBase
 
         if (channels.Count == 0)
         {
-            await SetResponseAsync("Doteď nebyla zaznamenána žádná aktivita v kanálech.");
+            await SetResponseAsync(GetLocale(nameof(GetChannelboardAsync), "NoActivity"));
             return;
         }
 

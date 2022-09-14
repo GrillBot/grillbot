@@ -1,4 +1,21 @@
 ﻿{
+  "SelfUnverifyModule": {
+    "SelfUnverifyAsync": {
+      "GenericError": "Selfunverify failed."
+    }
+  },
+  "BirthdayModule": {
+    "AddAsync": {
+      "Success": "Date of birth has been saved successfully."
+    },
+    "RemoveAsync": {
+      "Success": "Date of birth successfully removed."
+    },
+    "HaveAsync": {
+      "Yes": "Yes. You have your birthday saved.",
+      "No": "No. You don't have a birthday saved."
+    }
+  },
   "BotModule": {
     "BotInfoAsync": {
       "CreatedAt": "Created",
@@ -15,6 +32,191 @@
       "NoKeepables": "No keepable accesses were found.",
       "Title": "Keepable roles and channels",
       "Other": "Other"
+    }
+  },
+  "ChannelModule": {
+    "GetChannelInfoAsync": {
+      "UserNotFound": "The user who called the command could not be found.",
+      "NoAccess": "I can't give you channel info because you don't have access to it.",
+      "CreatedAt": "Created",
+      "MemberCount": "Member count",
+      "NewsChannelTitle": "News feed information",
+      "VoiceChannelTitle": "Voice channel information",
+      "ThreadChannelTitle": "Thread information",
+      "StageChannelTitle": "Stage information",
+      "TextChannelTitle": "Text channel information",
+      "ForumChannelTitle": "Forum information",
+      "CategoryChannelTitle": "Category information",
+      "OtherChannelTitle:": "Unknown channel type information ({0})",
+      "PermsCountValue": {
+        "One": "{0:N0} permission",
+        "TwoToFour": "{0:N0} permissions",
+        "FiveAndMore": "{0:N0} permissions"
+      },
+      "PermsCount": "User: {0}\nRole: {1}",
+      "PermsCountTitle": "Permissions count",
+      "Channel": "Channel",
+      "TagsCount": "Number of tags",
+      "TagsCountValue": {
+        "One": "{0:N0} tag",
+        "TwoToFour": "{0:N0} tags",
+        "FiveAndMore": "{0:N0} tags"
+      },
+      "ThreadCount": "Number of threads",
+      "PublicThreadCountValue": {
+        "One": "{0:N0} public thread",
+        "TwoToFour": "{0:N0} public threads",
+        "FiveAndMore": "{0:N0} public threads"
+      },
+      "PrivateThreadCountValue": {
+        "One": "{0:N0} private thread",
+        "TwoToFour": "{0:N0} private threads",
+        "FiveAndMore": "{0:N0} soukromých vláken"
+      },
+      "MessageCount": "Number of messages",
+      "MessageCountValue": {
+        "One": "{0:N0} message",
+        "TwoToFour": "{0:N0} messages",
+        "FiveAndMore": "{0:N0} messages"
+      },
+      "FirstMessage": "First message",
+      "LastMessage": "Last message",
+      "Flags": {
+        "CommandsDisabled": "All commands disabled",
+        "AutoReplyDeactivated": "Automatic replies disabled",
+        "StatsHidden": "Hidden statistics"
+      },
+      "Configuration": "Configuration",
+      "TopTen": "TOP 10 users"
+    },
+    "GetChannelboardAsync": {
+      "UserNotFound": "The user who called the command could not be found.",
+      "NoAccess": "You don't have access to any channels.",
+      "NoActivity": "No channel activity has been recorded so far."
+    }
+  },
+  "DuckModule": {
+    "GetDuckInfoAsync": {
+      "CannotGetState": "The status of the duck could not be determined. Please try again later or watch channel {0}",
+      "DuckName": "U kachničky",
+      "Closed": "Kachna is closed.",
+      "NextOpenNotPlanned": "The next opener is not scheduled.",
+      "NextOpenAt": "The next opener will be behind {0}.",
+      "WhatsNext": "And what else?",
+      "WhatsNextUnknown": "The next opener is not scheduled, but this status is set to end {0}. What will happen then, no one knows.",
+      "Opened": "Kachna is open!",
+      "Open": "OPEN",
+      "TimeToClose": " {0} left to go.",
+      "Closing": "We are closing",
+      "ChillzoneTo": "The duck is open in chillzone mode until {0}!",
+      "Note": "Note"
+    }
+  },
+  "EmoteModule": {
+    "GetEmoteInfoAsync": {
+      "NoActivity": "No activity has been recorded for this emote yet."
+    }
+  },
+  "GuildModule": {
+    "GetInfoAsync": {
+      "CategoryCount": "Number of categories",
+      "TextChannelCount": "Number of text channels",
+      "VoiceChannelCount": "Number of voice channels",
+      "RoleCount": "Number of roles",
+      "EmoteCount": "Number of emotes (regular/animated)",
+      "BanCount": "Number of bans",
+      "CreatedAt": "Created",
+      "Owner": "Owner",
+      "MemberCount": "Number of members",
+      "PremiumTier": "Guild level",
+      "BoosterCount": "Number of boosters",
+      "Improvements": "Improvements",
+      "DetailsTitle": "Details",
+      "DetailsText": "You can find detailed information about the server in the web administration (https://grillbot.cloud/)",
+      "Features": {
+        "AnimatedIcon": "Animated icon",
+        "Banner": "Banner",
+        "Commerce": "eCommerce",
+        "Community": "Community mode",
+        "Discoverable": "Publicly visible",
+        "InviteSplash": "Background for invitations",
+        "MemberVerificationGateEnabled": "Verification on connection",
+        "News": "News",
+        "Partnered": "Partner program",
+        "PreviewEnabled": "Preview the server before connecting",
+        "VanityUrl": "Vanity URL",
+        "Verified": "Verified server",
+        "VIPRegions": "VIP voice region",
+        "WelcomeScreenEnabled": "Welcome screen",
+        "MonetizationEnabled": "Monetization",
+        "MoreStickers": "Stickers",
+        "PrivateThreads": "Private threads",
+        "RoleIcons": "Role icons",
+        "SevenDayThreadArchive": "Archiving threads after a week",
+        "ThreeDayThreadArchive": "Thread archiving after 3 days",
+        "TicketedEventsEnabled": "Events",
+        "AnimatedBanner": "Animated banner",
+        "TextInVoiceEnabled": "Text in voice channels",
+        "ThreadsEnabled": "Threads",
+        "ChannelBanner": "Channel banner",
+        "Hub": "School server",
+        "MoreEmoji": "More emotes",
+        "RoleSubscriptionsAvailableForPurchase": "Paid roles",
+        "MemberProfiles": "Alternative user profiles",
+        "NewThreadPermissions": "",
+        "ThreadsEnabledTesting": ""
+      }
+    }
+  },
+  "MathModule": {
+    "SolveExpressionAsync": {
+      "Expression": "Expression",
+      "ComputeFailed": "Calculation failed",
+      "Report": "Report",
+      "Result": "Result",
+      "Timeout": "Expression timed out"
+    }
+  },
+  "MemeModule": {
+    "HiAsync": {
+      "Template": "Hi {0} {1}"
+    }
+  },
+  "RemindModule": {
+    "CreateAsync": {
+      "Success": "A reminder has been created.",
+      "CopyMessage": "If anyone wishes to receive this notification as well, please click the {0} button."
+    },
+    "CancelRemindAsync": {
+      "Cancelled": "The reminder was successfully canceled.",
+      "CancelledWithNotify": "The reminder was successfully canceled and the target user was notified."
+    }
+  },
+  "SearchingModule": {
+    "CreateSearchAsync": {
+      "Success": "The search was successfully saved."
+    },
+    "RemoveSearchAsync": {
+      "Success": "The search was successfully deleted."
+    }
+  },
+  "SuggestionModule": {
+    "SuggestEmoteAsync": {
+      "NoEmoteAndAttachment": "Can't suggest a new emote when no emote is delivered. The emote can be delivered in the form of another emote or image.",
+      "EmoteExistsInGuild": "Cannot submit an emote that is already on this server.",
+      "ModalTitle": "Submitting a proposal for a new emote",
+      "ModalEmoteName": "The name of the emote",
+      "ModalEmoteDescription": "Description of the emote",
+      "ModalEmoteDescriptionPlaceholder": "Anything to add? What does the emote describe? Why should we have him here?"
+    },
+    "EmoteSuggestionFormSubmitedAsync": {
+      "Success": "Your suggestion to add an emote has been successfully processed."
+    },
+    "ProcessEmoteSuggestionsAsync": {
+      "Success": "Voting for approved emotes has started."
+    },
+    "FeatureSuggestionSubmittedAsync": {
+      "Success": "Your suggestion to add a feature has been successfully processed."
     }
   }
 }

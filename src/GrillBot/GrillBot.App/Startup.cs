@@ -81,6 +81,7 @@ public class Startup
         services
             .AddCommonManagers()
             .AddLocalization(localizationPath, "messages")
+            .AddHelpers()
             .Configure<ApiBehaviorOptions>(opt => opt.SuppressModelStateInvalidFilter = true)
             .AddSingleton(discordClient)
             .AddSingleton<IDiscordClient>(discordClient)

@@ -4,6 +4,8 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.User;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
+using GrillBot.Common.Managers;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -14,10 +16,12 @@ namespace GrillBot.App.Modules.Interactions;
 public class GuildModule : InteractionsModuleBase
 {
     private UserService UserService { get; }
+    private GuildHelper GuildHelper { get; }
 
-    public GuildModule(UserService userService)
+    public GuildModule(UserService userService, LocalizationManager localization, GuildHelper guildHelper) : base(localization)
     {
         UserService = userService;
+        GuildHelper = guildHelper;
     }
 
     [SlashCommand("info", "Guild information")]
@@ -44,23 +48,26 @@ public class GuildModule : InteractionsModuleBase
         if (!string.IsNullOrEmpty(guild.BannerId))
             embed.WithImageUrl(guild.BannerUrl);
 
-        embed.AddField("Počet kategorií", guild.CategoryChannels?.Count ?? 0, true)
-            .AddField("Počet textových kanálů", guild.TextChannels.Count, true)
-            .AddField("Počet hlasových kanálů", guild.VoiceChannels.Count, true)
-            .AddField("Počet rolí", guild.Roles.Count, true)
-            .AddField("Počet emotů (běžných/animovaných)", $"{basicEmotesCount} / {animatedCount}", true)
-            .AddField("Počet banů", banCount, true)
-            .AddField("Vytvořen", guild.CreatedAt.LocalDateTime.ToCzechFormat(), true)
-            .AddField("Vlastník", guild.Owner.GetFullName())
-            .AddField("Počet členů", guild.Users.Count, true)
-            .AddField("Úroveň serveru", tier, true)
-            .AddField("Počet boosterů", guild.PremiumSubscriptionCount, true);
+        embed.AddField(GetLocale(nameof(GetInfoAsync), "CategoryCount"), guild.CategoryChannels?.Count ?? 0, true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "TextChannelCount"), guild.TextChannels.Count, true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "VoiceChannelCount"), guild.VoiceChannels.Count, true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "RoleCount"), guild.Roles.Count, true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "EmoteCount"), $"{basicEmotesCount} / {animatedCount}", true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "BanCount"), banCount, true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "CreatedAt"), guild.CreatedAt.LocalDateTime.ToCzechFormat(), true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "Owner"), guild.Owner.GetFullName())
+            .AddField(GetLocale(nameof(GetInfoAsync), "MemberCount"), guild.MemberCount, true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "PremiumTier"), tier, true)
+            .AddField(GetLocale(nameof(GetInfoAsync), "BoosterCount"), guild.PremiumSubscriptionCount, true);
 
         if (guild.Features.Value != GuildFeature.None)
-            embed.AddField("Vylepšení", string.Join("\n", guild.GetTranslatedFeatures()));
+        {
+            var features = GuildHelper.GetFeatures(guild, Context.Interaction.UserLocale, GetLocaleId(nameof(GetInfoAsync), "Features")).ToList();
+            embed.AddField(GetLocale(nameof(GetInfoAsync), "Improvements"), string.Join("\n", features));
+        }
 
         if (await UserService.CheckUserFlagsAsync(Context.User, UserFlags.WebAdmin))
-            embed.AddField("Podrobnosti", "Podrobné informace o serveru najdeš ve webové administraci (https://grillbot.cloud/)");
+            embed.AddField(GetLocale(nameof(GetInfoAsync), "DetailsTitle"), GetLocale(nameof(GetInfoAsync), "DetailsText"));
 
         await SetResponseAsync(embed: embed.Build());
     }

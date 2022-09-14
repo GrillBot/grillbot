@@ -3,6 +3,7 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Data.Models.Duck;
 using System.Net.Http;
 using GrillBot.App.Infrastructure.Commands;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -11,13 +12,11 @@ public class DuckModule : InteractionsModuleBase
 {
     private IHttpClientFactory HttpClientFactory { get; }
     private IConfiguration Configuration { get; }
-    private CultureInfo Culture { get; }
 
-    public DuckModule(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public DuckModule(IHttpClientFactory httpClientFactory, IConfiguration configuration, LocalizationManager localization) : base(localization)
     {
         HttpClientFactory = httpClientFactory;
         Configuration = configuration;
-        Culture = new CultureInfo("cs-CZ");
     }
 
     [SlashCommand("duck", "Finds the current state of the duck club.")]
@@ -27,12 +26,12 @@ public class DuckModule : InteractionsModuleBase
         if (currentState == null)
         {
             var infoChannel = Configuration.GetValue<string>("Services:KachnaOnline:InfoChannel");
-            await SetResponseAsync($"Nepodařilo se zjistit stav kachny. Zkus to prosím později, nebo se podívej do kanálu {infoChannel}");
+            await SetResponseAsync(GetLocale(nameof(GetDuckInfoAsync), "CannotGetState").FormatWith(infoChannel));
             return;
         }
 
         var embed = new EmbedBuilder()
-            .WithAuthor("U Kachničky")
+            .WithAuthor(GetLocale(nameof(GetDuckInfoAsync), "DuckName"))
             .WithColor(Color.Gold)
             .WithCurrentTimestamp();
 
@@ -68,7 +67,7 @@ public class DuckModule : InteractionsModuleBase
 
     private void ProcessPrivateOrClosed(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
-        titleBuilder.AppendLine("Kachna je zavřená.");
+        titleBuilder.AppendLine(GetLocale(nameof(GetDuckInfoAsync), "Closed"));
 
         if (state.FollowingState != null)
         {
@@ -82,7 +81,7 @@ public class DuckModule : InteractionsModuleBase
             return;
         }
 
-        titleBuilder.Append("Další otvíračka není naplánovaná.");
+        titleBuilder.Append(GetLocale(nameof(GetDuckInfoAsync), "NextOpenNotPlanned"));
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 
@@ -91,54 +90,53 @@ public class DuckModule : InteractionsModuleBase
         var left = state.FollowingState.Start - DateTime.Now;
 
         titleBuilder
-            .Append("Další otvíračka bude za ")
-            .Append(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute))
-            .Append('.');
+            .Append(GetLocale(nameof(GetDuckInfoAsync), "NextOpenAt").FormatWith(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)));
 
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 
-    private static void FormatWithNextOpeningNoPrivate(DuckState state, EmbedBuilder embed)
+    private void FormatWithNextOpeningNoPrivate(DuckState state, EmbedBuilder embed)
     {
         if (string.IsNullOrEmpty(state.Note))
         {
-            embed.AddField("A co dál?",
-                $"Další otvíračka není naplánovaná, ale tento stav má skončit {state.FollowingState.PlannedEnd:dd. MM. v HH:mm}. Co bude pak, to nikdo neví.");
+            embed.AddField(GetLocale(nameof(GetDuckInfoAsync), "WhatsNext"),
+                GetLocale(nameof(GetDuckInfoAsync), "WhatsNextUnknown").FormatWith(state.FollowingState.PlannedEnd!.Value.ToString("dd. MM. HH:mm")));
 
             return;
         }
 
-        AddNoteToEmbed(embed, state.Note, "A co dál?");
+        AddNoteToEmbed(embed, state.Note, GetLocale(nameof(GetDuckInfoAsync), "WhatsNext"));
     }
 
     private void ProcessOpenBar(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
-        titleBuilder.Append("Kachna je otevřená!");
-        embedBuilder.AddField("Otevřeno", state.Start.ToString("HH:mm"), true);
+        titleBuilder.Append(GetLocale(nameof(GetDuckInfoAsync), "Opened"));
+        embedBuilder.AddField(GetLocale(nameof(GetDuckInfoAsync), "Open"), state.Start.ToString("HH:mm"), true);
 
         if (state.PlannedEnd.HasValue)
         {
             var left = state.PlannedEnd.Value - DateTime.Now;
 
-            titleBuilder.Append(" Do konce zbývá ").Append(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)).Append('.');
-            embedBuilder.AddField("Zavíráme", state.PlannedEnd.Value.ToString("HH:mm"), true);
+            titleBuilder.Append(GetLocale(nameof(GetDuckInfoAsync), "TimeToClose").FormatWith(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)));
+            embedBuilder.AddField(GetLocale(nameof(GetDuckInfoAsync), "Closing"), state.PlannedEnd.Value.ToString("HH:mm"), true);
         }
 
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 
-    private static void ProcessChillzone(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
+    private void ProcessChillzone(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
         titleBuilder
-            .Append("Kachna je otevřená v režimu chillzóna až do ")
-            .Append($"{state.PlannedEnd!.Value:HH:mm}")
-            .Append('!');
+            .Append(GetLocale(nameof(GetDuckInfoAsync), "ChillzoneTo").FormatWith(state.PlannedEnd!.Value.ToString("HH:mm")));
 
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 
-    private static void AddNoteToEmbed(EmbedBuilder embed, string note, string title = "Poznámka")
+    private void AddNoteToEmbed(EmbedBuilder embed, string note, string title = null)
     {
+        if (string.IsNullOrEmpty(title))
+            title = GetLocale(nameof(GetDuckInfoAsync), "Note");
+
         if (!string.IsNullOrEmpty(note))
             embed.AddField(title, note);
     }

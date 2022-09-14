@@ -4,6 +4,7 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
 using GrillBot.Common.Helpers;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -13,7 +14,7 @@ public class SearchingModule : InteractionsModuleBase
 {
     private SearchingService SearchingService { get; }
 
-    public SearchingModule(SearchingService searchingService)
+    public SearchingModule(SearchingService searchingService, LocalizationManager localization) : base(localization)
     {
         SearchingService = searchingService;
     }
@@ -22,8 +23,7 @@ public class SearchingModule : InteractionsModuleBase
     public async Task SearchingListAsync(
         [Summary("channel", "The channel you want to find something in.")]
         ITextChannel channel = null,
-        [Summary("substring", "Search substring")]
-        [Discord.Interactions.MaxLength(50)]
+        [Summary("substring", "Search substring")] [Discord.Interactions.MaxLength(50)]
         string query = null
     )
     {
@@ -56,7 +56,7 @@ public class SearchingModule : InteractionsModuleBase
         try
         {
             await SearchingService.CreateAsync(Context.Guild, Context.User as IGuildUser, Context.Channel as IGuildChannel, message);
-            await SetResponseAsync("Hledání bylo úspěšně uloženo.");
+            await SetResponseAsync(GetLocale(nameof(CreateSearchAsync), "Success"));
         }
         catch (ValidationException ex)
         {
@@ -65,7 +65,7 @@ public class SearchingModule : InteractionsModuleBase
     }
 
     [SlashCommand("remove", "Deletes the search")]
-    public async Task RemoveRemindAsync(
+    public async Task RemoveSearchAsync(
         [Autocomplete(typeof(SearchingAutoCompleteHandler))] [Summary("ident", "Search identification")]
         long ident
     )
@@ -73,7 +73,7 @@ public class SearchingModule : InteractionsModuleBase
         try
         {
             await SearchingService.RemoveSearchAsync(ident, Context.User as IGuildUser);
-            await SetResponseAsync("Hledání bylo úspěšně smazáno.");
+            await SetResponseAsync(GetLocale(nameof(RemoveSearchAsync), "Success"));
         }
         catch (UnauthorizedAccessException ex)
         {

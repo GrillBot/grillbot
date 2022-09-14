@@ -1,4 +1,21 @@
 ﻿{
+  "SelfUnverifyModule": {
+    "SelfUnverifyAsync": {
+      "GenericError": "Provedení selfunverify se nezdařilo."
+    }
+  },
+  "BirthdayModule": {
+    "AddAsync": {
+      "Success": "Datum narození bylo úspěšně uloženo."
+    },
+    "RemoveAsync": {
+      "Success": "Datum narození bylo úspěšně odebráno."
+    },
+    "HaveAsync": {
+      "Yes": "Ano. Máš uložené narozeniny.",
+      "No": "Ne. Nemáš uložené narozeniny."
+    }
+  },
   "BotModule": {
     "BotInfoAsync": {
       "CreatedAt": "Založen",
@@ -15,6 +32,191 @@
       "NoKeepables": "Nebyly nalezeny žádné ponechatelné přístupy.",
       "Title": "Ponechatelné role a kanály",
       "Other": "Ostatní"
+    }
+  },
+  "ChannelModule": {
+    "GetChannelInfoAsync": {
+      "UserNotFound": "Nepodařilo se dohledat uživatele, která zavolal příkaz.",
+      "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
+      "CreatedAt": "Založeno",
+      "MemberCount": "Počet členů",
+      "NewsChannelTitle": "Informace o kanálu s novinkami",
+      "VoiceChannelTitle": "Informace o hlasovém kanálu",
+      "ThreadChannelTitle": "Informace o vláknu",
+      "StageChannelTitle": "Informace o jevišti",
+      "TextChannelTitle": "Informace o textovém kanálu",
+      "ForumChannelTitle": "Informace o fóru",
+      "CategoryChannelTitle": "Informace o kategorii",
+      "OtherChannelTitle:": "Informace o neznámém typu kanálu ({0})",
+      "PermsCountValue": {
+        "One": "{0:N0} oprávnění",
+        "TwoToFour": "{0:N0} oprávnění",
+        "FiveAndMore": "{0:N0} oprávnění"
+      },
+      "PermsCount": "Uživatelské: {0}\nRole: {1}",
+      "PermsCountTitle": "Počet oprávnění",
+      "Channel": "Kanál",
+      "TagsCount": "Počet tagů",
+      "TagsCountValue": {
+        "One": "{0:N0} tag",
+        "TwoToFour": "{0:N0} tagy",
+        "FiveAndMore": "{0:N0} tagů"
+      },
+      "ThreadCount": "Počet vláken",
+      "PublicThreadCountValue": {
+        "One": "{0:N0} veřejné vlákno",
+        "TwoToFour": "{0:N0} veřejné vlákna",
+        "FiveAndMore": "{0:N0} veřejných vláken"
+      },
+      "PrivateThreadCountValue": {
+        "One": "{0:N0} soukromé vlákno",
+        "TwoToFour": "{0:N0} soukromé vlákna",
+        "FiveAndMore": "{0:N0} soukromých vláken"
+      },
+      "MessageCount": "Počet zpráv",
+      "MessageCountValue": {
+        "One": "{0:N0} zpráva",
+        "TwoToFour": "{0:N0} zprávy",
+        "FiveAndMore": "{0:N0} zpráv"
+      },
+      "FirstMessage": "První zpráva",
+      "LastMessage": "Poslední zpráva",
+      "Flags": {
+        "CommandsDisabled": "Deaktivovány všechny příkazy",
+        "AutoReplyDeactivated": "Deaktivovány automatické odpovědi",
+        "StatsHidden": "Skryté statistiky"
+      },
+      "Configuration": "Konfigurace",
+      "TopTen": "TOP 10 uživatelů"
+    },
+    "GetChannelboardAsync": {
+      "UserNotFound": "Nepodařilo se dohledat uživatele, která zavolal příkaz.",
+      "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
+      "NoActivity": "Doteď nebyla zaznamenána žádná aktivita v kanálech."
+    }
+  },
+  "DuckModule": {
+    "GetDuckInfoAsync": {
+      "CannotGetState": "Nepodařilo se zjistit stav kachny. Zkus to prosím později, nebo se podívej do kanálu {0}",
+      "DuckName": "U kachničky",
+      "Closed": "Kachna je zavřená.",
+      "NextOpenNotPlanned": "Další otvíračka není naplánovaná.",
+      "NextOpenAt": "Další otvíračka bude za {0}.",
+      "WhatsNext": "A co dál?",
+      "WhatsNextUnknown": "Další otvíračka není naplánovaná, ale tento stav má skončit {0}. Co bude pak, to nikdo neví.",
+      "Opened": "Kachna je otevřená!",
+      "Open": "Otevřeno",
+      "TimeToClose": " Do konce zbývá {0}.",
+      "Closing": "Zavíráme",
+      "ChillzoneTo": "Kachna je otevřená v režimu chillzóna až do {0}!",
+      "Note": "Poznámka"
+    }
+  },
+  "EmoteModule": {
+    "GetEmoteInfoAsync": {
+      "NoActivity": "U tohoto emote ještě nebyla zaznamenána žádná aktivita."
+    }
+  },
+  "GuildModule": {
+    "GetInfoAsync": {
+      "CategoryCount": "Počet kategorií",
+      "TextChannelCount": "Počet textových kanálů",
+      "VoiceChannelCount": "Počet hlasových kanálů",
+      "RoleCount": "Počet rolí",
+      "EmoteCount": "Počet emotů (běžných/animovaných)",
+      "BanCount": "Počet banů",
+      "CreatedAt": "Vytvořen",
+      "Owner": "Vlastník",
+      "MemberCount": "Počet členů",
+      "PremiumTier": "Úroveň serveru",
+      "BoosterCount": "Počet boosterů",
+      "Improvements": "Vylepšení",
+      "DetailsTitle": "Podrobnosti",
+      "DetailsText": "Podrobné informace o serveru najdeš ve webové administraci (https://grillbot.cloud/)",
+      "Features": {
+        "AnimatedIcon": "Animovaná ikona",
+        "Banner": "Banner",
+        "Commerce": "eKomerce",
+        "Community": "Komunitní režim",
+        "Discoverable": "Veřejně viditelný",
+        "InviteSplash": "Pozadí u pozvánky",
+        "MemberVerificationGateEnabled": "Verifikace při připojení",
+        "News": "Novinky",
+        "Partnered": "Partnerský program",
+        "PreviewEnabled": "Náhled serveru před připojením",
+        "VanityUrl": "Unikátní URL pozvánky",
+        "Verified": "Ověřený server",
+        "VIPRegions": "VIP hlasová oblast",
+        "WelcomeScreenEnabled": "Uvítací obrazovka",
+        "MonetizationEnabled": "Monetizace",
+        "MoreStickers": "Nálepky",
+        "PrivateThreads": "Privátní vlákna",
+        "RoleIcons": "Ikony rolí",
+        "SevenDayThreadArchive": "Archivace vláken po týdnu",
+        "ThreeDayThreadArchive": "Archivace vláken po 3 dnech",
+        "TicketedEventsEnabled": "Události",
+        "AnimatedBanner": "Animovaný banner",
+        "TextInVoiceEnabled": "Text v hlasových kanálech",
+        "ThreadsEnabled": "Vlákna",
+        "ChannelBanner": "Banner kanálů",
+        "Hub": "Školní server",
+        "MoreEmoji": "Více emotů",
+        "RoleSubscriptionsAvailableForPurchase": "Placené role",
+        "MemberProfiles": "Alternativní profily uživatelů",
+        "NewThreadPermissions": "",
+        "ThreadsEnabledTesting": ""
+      }
+    }
+  },
+  "MathModule": {
+    "SolveExpressionAsync": {
+      "Expression": "Výraz",
+      "ComputeFailed": "Výpočet se nezdařil",
+      "Report": "Hlášení",
+      "Result": "Výsledek",
+      "Timeout": "Vypršel časový limit pro zpracování výrazu"
+    }
+  },
+  "MemeModule": {
+    "HiAsync": {
+      "Template": "Ahoj {0} {1}"
+    }
+  },
+  "RemindModule": {
+    "CreateAsync": {
+      "Success": "Připomenutí bylo vytvořeno.",
+      "CopyMessage": "Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {0}"
+    },
+    "CancelRemindAsync": {
+      "Cancelled": "Upozornění bylo úspěšně zrušeno.",
+      "CancelledWithNotify": "Upozornění bylo úspěšně zrušeno a cílový uživatel byl upozorněn."
+    }
+  },
+  "SearchingModule": {
+    "CreateSearchAsync": {
+      "Success": "Hledání bylo úspěšně uloženo."
+    },
+    "RemoveSearchAsync": {
+      "Success": "Hledání bylo úspěšně smazáno."
+    }
+  },
+  "SuggestionModule": {
+    "SuggestEmoteAsync": {
+      "NoEmoteAndAttachment": "Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.",
+      "EmoteExistsInGuild": "Nelze podat návrh na emote, který je již na tomto serveru.",
+      "ModalTitle": "Podání návrhu na nový emote",
+      "ModalEmoteName": "Název emote",
+      "ModalEmoteDescription": "Popis emote",
+      "ModalEmoteDescriptionPlaceholder": "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?"
+    },
+    "EmoteSuggestionFormSubmitedAsync": {
+      "Success": "Tvůj návrh na přidání emote byl úspěšně zpracován."
+    },
+    "ProcessEmoteSuggestionsAsync": {
+      "Success": "Hlasování pro schválené emoty bylo spuštěno"
+    },
+    "FeatureSuggestionSubmittedAsync": {
+      "Success": "Tvůj návrh na přidání feature byl úspěšně zpracován."
     }
   }
 }

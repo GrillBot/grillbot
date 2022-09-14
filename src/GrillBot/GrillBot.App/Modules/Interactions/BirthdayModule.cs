@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Services.Birthday;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -10,7 +11,7 @@ public class BirthdayModule : InteractionsModuleBase
     private BirthdayService BirthdayService { get; }
     private IConfiguration Configuration { get; }
 
-    public BirthdayModule(BirthdayService birthdayService, IConfiguration configuration)
+    public BirthdayModule(BirthdayService birthdayService, IConfiguration configuration, LocalizationManager localization) : base(localization)
     {
         BirthdayService = birthdayService;
         Configuration = configuration;
@@ -33,12 +34,12 @@ public class BirthdayModule : InteractionsModuleBase
 
         if (Context.Guild.CurrentUser.GuildPermissions.ManageMessages)
         {
-            await ReplyAsync($"{Context.User.Mention} Datum narození bylo úspěšně uloženo.", allowedMentions: new AllowedMentions { AllowedTypes = AllowedMentionTypes.Users });
+            await ReplyAsync(Context.User.Mention + " " + GetLocale(nameof(AddAsync), "Success"), allowedMentions: new AllowedMentions { AllowedTypes = AllowedMentionTypes.Users });
             await DeleteOriginalResponseAsync();
         }
         else
         {
-            await SetResponseAsync("Datum narození bylo úspěšně uloženo.");
+            await SetResponseAsync(GetLocale(nameof(AddAsync), "Success"));
         }
     }
 
@@ -46,15 +47,13 @@ public class BirthdayModule : InteractionsModuleBase
     public async Task RemoveAsync()
     {
         await BirthdayService.RemoveBirthdayAsync(Context.User);
-        await SetResponseAsync("Datum narození bylo úspěšně odebráno.");
+        await SetResponseAsync(GetLocale(nameof(RemoveAsync), "Success"));
     }
 
     [SlashCommand("have", "Ask if I have my birthday saved?")]
     public async Task HaveAsync()
     {
-        if (await BirthdayService.HaveBirthdayAsync(Context.User))
-            await SetResponseAsync("Ano. Máš uložené narozeniny.");
-        else
-            await SetResponseAsync("Ne. Nemáš uložené narozeniny.");
+        var localeKey = await BirthdayService.HaveBirthdayAsync(Context.User) ? "Yes" : "No";
+        await SetResponseAsync(GetLocale(nameof(HaveAsync), localeKey));
     }
 }

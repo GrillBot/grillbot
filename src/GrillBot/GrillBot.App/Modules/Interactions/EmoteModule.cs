@@ -4,6 +4,7 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Common.Helpers;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -13,21 +14,22 @@ public class EmoteModule : InteractionsModuleBase
 {
     private EmotesCommandService EmotesCommandService { get; }
 
-    public EmoteModule(EmotesCommandService emotesCommandService)
+    public EmoteModule(EmotesCommandService emotesCommandService, LocalizationManager localization) : base(localization)
     {
         EmotesCommandService = emotesCommandService;
     }
 
     [SlashCommand("get", "Emote information")]
     public async Task GetEmoteInfoAsync(
-        [Summary("emote", "Emote identification (ID/Name/Full emote)")] IEmote emote
+        [Summary("emote", "Emote identification (ID/Name/Full emote)")]
+        IEmote emote
     )
     {
         try
         {
             var result = await EmotesCommandService.GetInfoAsync(emote, Context.User);
             if (result == null)
-                await SetResponseAsync("U tohoto emote ještě nebyla zaznamenána žádná aktivita.");
+                await SetResponseAsync(GetLocale(nameof(GetEmoteInfoAsync), "NoActivity"));
             else
                 await SetResponseAsync(embed: result);
         }
@@ -39,19 +41,13 @@ public class EmoteModule : InteractionsModuleBase
 
     [SlashCommand("list", "List of emote stats")]
     public async Task GetEmoteStatsListAsync(
-        [Summary("order", "Sort by")]
-        [Choice("Počtu použití", "UseCount")]
-        [Choice("Data a času posledního použití", "LastOccurence")]
+        [Summary("order", "Sort by")] [Choice("Počtu použití", "UseCount")] [Choice("Data a času posledního použití", "LastOccurence")]
         string orderBy,
-        [Summary("direction", "Ascending/Descending")]
-        [Choice("Sestupně", "true")]
-        [Choice("Vzestupně", "false")]
+        [Summary("direction", "Ascending/Descending")] [Choice("Sestupně", "true")] [Choice("Vzestupně", "false")]
         bool descending,
         [Summary("user", "Show statistics of only one user")]
         IUser ofUser = null,
-        [Summary("animated", "Do I want to show animated emotes in the list too?")]
-        [Choice("Zobrazit animované emoty.", "false")]
-        [Choice("Pryč animované emoty.", "true")]
+        [Summary("animated", "Do I want to show animated emotes in the list too?")] [Choice("Zobrazit animované emoty.", "false")] [Choice("Pryč animované emoty.", "true")]
         bool filterAnimated = false
     )
     {

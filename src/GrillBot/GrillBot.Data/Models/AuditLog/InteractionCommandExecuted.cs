@@ -23,6 +23,7 @@ public class InteractionCommandExecuted
     public string ErrorReason { get; set; }
     public int Duration { get; set; }
     public string Exception { get; set; }
+    public string Locale { get; set; }
 
     [JsonIgnore]
     public string FullName => $"{Name} ({ModuleName}/{MethodName})";
@@ -54,6 +55,7 @@ public class InteractionCommandExecuted
     {
         HasResponded = interaction.HasResponded;
         IsValidToken = interaction.IsValidToken;
+        Locale = interaction.UserLocale;
 
         Parameters = interaction.Data.Options.Flatten(o => o.Options)
             .Where(o => o.Type != ApplicationCommandOptionType.SubCommand && o.Type != ApplicationCommandOptionType.SubCommandGroup)
@@ -66,6 +68,7 @@ public class InteractionCommandExecuted
     {
         HasResponded = interaction.HasResponded;
         IsValidToken = interaction.IsValidToken;
+        Locale = interaction.UserLocale;
         Parameters = new List<InteractionCommandParameter> { new(interaction.Data) };
     }
 
@@ -74,6 +77,7 @@ public class InteractionCommandExecuted
     {
         HasResponded = interaction.HasResponded;
         IsValidToken = interaction.IsValidToken;
+        Locale = interaction.UserLocale;
         Parameters = new List<InteractionCommandParameter> { new(interaction.Data) };
     }
 
@@ -82,8 +86,9 @@ public class InteractionCommandExecuted
     {
         HasResponded = component.HasResponded;
         IsValidToken = component.IsValidToken;
+        Locale = component.UserLocale;
 
-        Parameters = new List<InteractionCommandParameter>()
+        Parameters = new List<InteractionCommandParameter>
         {
             new() { Name = "CustomId", Type = "String", Value = component.Data.CustomId },
             new() { Name = "Type", Type = "String", Value = component.Data.Type.ToString() }
@@ -95,8 +100,9 @@ public class InteractionCommandExecuted
     {
         HasResponded = modal.HasResponded;
         IsValidToken = modal.IsValidToken;
+        Locale = modal.UserLocale;
 
-        Parameters = new List<InteractionCommandParameter>()
+        Parameters = new List<InteractionCommandParameter>
         {
             new() { Name = "ModalCustomId", Type = "String", Value = modal.Data.CustomId }
         };

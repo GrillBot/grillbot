@@ -49,6 +49,6 @@ public class FormatHelper
         };
 
         var text = Localization.Get($"{id}/{countId}", locale);
-        return text.FormatWith(new CultureInfo(locale), count);
+        return text.FormatWith(Localization.GetCulture(locale), count);
     }
 }

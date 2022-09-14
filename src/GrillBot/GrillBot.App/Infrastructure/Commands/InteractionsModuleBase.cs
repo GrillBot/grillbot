@@ -10,7 +10,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     private LocalizationManager Localization { get; }
 
     protected CultureInfo Culture
-        => string.IsNullOrEmpty(Context?.Interaction?.UserLocale) ? null : new CultureInfo(Context.Interaction.UserLocale);
+        => string.IsNullOrEmpty(Context?.Interaction?.UserLocale) ? null : Localization.GetCulture(Context.Interaction.UserLocale);
 
     protected InteractionsModuleBase(LocalizationManager localization = null)
     {

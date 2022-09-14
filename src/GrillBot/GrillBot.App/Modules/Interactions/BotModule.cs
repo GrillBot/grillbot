@@ -19,7 +19,6 @@ public class BotModule : InteractionsModuleBase
     [SlashCommand("info", "Bot info")]
     public async Task BotInfoAsync()
     {
-        var culture = new CultureInfo(Context.Interaction.UserLocale);
         var process = Process.GetCurrentProcess();
         var color = Context.Guild == null
             ? Color.Default
@@ -29,8 +28,8 @@ public class BotModule : InteractionsModuleBase
         var embed = new EmbedBuilder()
             .WithTitle(user.GetFullName())
             .WithThumbnailUrl(user.GetUserAvatarUrl())
-            .AddField(GetLocale(nameof(BotInfoAsync), "CreatedAt"), user.CreatedAt.LocalDateTime.Humanize(culture: culture))
-            .AddField(GetLocale(nameof(BotInfoAsync), "Uptime"), (DateTime.Now - process.StartTime).Humanize(culture: culture, maxUnit: TimeUnit.Day))
+            .AddField(GetLocale(nameof(BotInfoAsync), "CreatedAt"), user.CreatedAt.LocalDateTime.Humanize(culture: Culture))
+            .AddField(GetLocale(nameof(BotInfoAsync), "Uptime"), (DateTime.Now - process.StartTime).Humanize(culture: Culture, maxUnit: TimeUnit.Day))
             .AddField(GetLocale(nameof(BotInfoAsync), "Repository"), "https://gitlab.com/grillbot")
             .AddField(GetLocale(nameof(BotInfoAsync), "Documentation"), "https://docs.grillbot.cloud/")
             .AddField(GetLocale(nameof(BotInfoAsync), "Swagger"), "https://grillbot.cloud/swagger")

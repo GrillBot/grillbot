@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
 namespace GrillBot.Common.Managers;
@@ -6,6 +7,7 @@ namespace GrillBot.Common.Managers;
 public class LocalizationManager
 {
     private const string DefaultLocale = "en-US";
+    private readonly string[] _supportedLocales = { "cs", DefaultLocale };
 
     // Dictionary<Id#Locale, Value>
     private Dictionary<string, string> Data { get; set; }
@@ -77,4 +79,12 @@ public class LocalizationManager
     }
 
     private static string GetKey(string id, string locale) => $"{id}#{locale}";
+
+    public CultureInfo GetCulture(string locale)
+    {
+        return !IsSupportedLocale(locale) ? new CultureInfo(DefaultLocale) : new CultureInfo(locale);
+    }
+
+    private bool IsSupportedLocale(string locale)
+        => locale == "cs-CZ" ? _supportedLocales.Contains("cs") : _supportedLocales.Contains(locale);
 }

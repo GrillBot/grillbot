@@ -1,23 +1,23 @@
 ﻿{
   "SelfUnverifyModule": {
-    "SelfUnverifyAsync": {
+    "SelfUnverify": {
       "GenericError": "Selfunverify failed."
     }
   },
   "BirthdayModule": {
-    "AddAsync": {
+    "Add": {
       "Success": "Date of birth has been saved successfully."
     },
-    "RemoveAsync": {
+    "Remove": {
       "Success": "Date of birth successfully removed."
     },
-    "HaveAsync": {
+    "Have": {
       "Yes": "Yes. You have your birthday saved.",
       "No": "No. You don't have a birthday saved."
     }
   },
   "BotModule": {
-    "BotInfoAsync": {
+    "BotInfo": {
       "CreatedAt": "Created",
       "Uptime": "Uptime",
       "Repository": "Repository",
@@ -28,14 +28,14 @@
     }
   },
   "SelfUnverifyConfig": {
-    "ListAsync": {
+    "List": {
       "NoKeepables": "No keepable accesses were found.",
       "Title": "Keepable roles and channels",
       "Other": "Other"
     }
   },
   "ChannelModule": {
-    "GetChannelInfoAsync": {
+    "GetChannelInfo": {
       "UserNotFound": "The user who called the command could not be found.",
       "NoAccess": "I can't give you channel info because you don't have access to it.",
       "CreatedAt": "Created",
@@ -89,14 +89,14 @@
       "Configuration": "Configuration",
       "TopTen": "TOP 10 users"
     },
-    "GetChannelboardAsync": {
+    "GetChannelboard": {
       "UserNotFound": "The user who called the command could not be found.",
       "NoAccess": "You don't have access to any channels.",
       "NoActivity": "No channel activity has been recorded so far."
     }
   },
   "DuckModule": {
-    "GetDuckInfoAsync": {
+    "GetDuckInfo": {
       "CannotGetState": "The status of the duck could not be determined. Please try again later or watch channel {0}",
       "DuckName": "U kachničky",
       "Closed": "Kachna is closed.",
@@ -113,12 +113,12 @@
     }
   },
   "EmoteModule": {
-    "GetEmoteInfoAsync": {
+    "GetEmoteInfo": {
       "NoActivity": "No activity has been recorded for this emote yet."
     }
   },
   "GuildModule": {
-    "GetInfoAsync": {
+    "GetInfo": {
       "CategoryCount": "Number of categories",
       "TextChannelCount": "Number of text channels",
       "VoiceChannelCount": "Number of voice channels",
@@ -169,7 +169,7 @@
     }
   },
   "MathModule": {
-    "SolveExpressionAsync": {
+    "SolveExpression": {
       "Expression": "Expression",
       "ComputeFailed": "Calculation failed",
       "Report": "Report",
@@ -178,30 +178,30 @@
     }
   },
   "MemeModule": {
-    "HiAsync": {
+    "Hi": {
       "Template": "Hi {0} {1}"
     }
   },
   "RemindModule": {
-    "CreateAsync": {
+    "Create": {
       "Success": "A reminder has been created.",
       "CopyMessage": "If anyone wishes to receive this notification as well, please click the {0} button."
     },
-    "CancelRemindAsync": {
+    "CancelRemind": {
       "Cancelled": "The reminder was successfully canceled.",
       "CancelledWithNotify": "The reminder was successfully canceled and the target user was notified."
     }
   },
   "SearchingModule": {
-    "CreateSearchAsync": {
+    "CreateSearch": {
       "Success": "The search was successfully saved."
     },
-    "RemoveSearchAsync": {
+    "RemoveSearch": {
       "Success": "The search was successfully deleted."
     }
   },
   "SuggestionModule": {
-    "SuggestEmoteAsync": {
+    "SuggestEmote": {
       "NoEmoteAndAttachment": "Can't suggest a new emote when no emote is delivered. The emote can be delivered in the form of another emote or image.",
       "EmoteExistsInGuild": "Cannot submit an emote that is already on this server.",
       "ModalTitle": "Submitting a proposal for a new emote",
@@ -209,13 +209,13 @@
       "ModalEmoteDescription": "Description of the emote",
       "ModalEmoteDescriptionPlaceholder": "Anything to add? What does the emote describe? Why should we have him here?"
     },
-    "EmoteSuggestionFormSubmitedAsync": {
+    "EmoteSuggestionFormSubmited": {
       "Success": "Your suggestion to add an emote has been successfully processed."
     },
-    "ProcessEmoteSuggestionsAsync": {
+    "ProcessEmoteSuggestions": {
       "Success": "Voting for approved emotes has started."
     },
-    "FeatureSuggestionSubmittedAsync": {
+    "FeatureSuggestionSubmitted": {
       "Success": "Your suggestion to add a feature has been successfully processed."
     }
   }

@@ -1,23 +1,23 @@
 ﻿{
   "SelfUnverifyModule": {
-    "SelfUnverifyAsync": {
+    "SelfUnverify": {
       "GenericError": "Provedení selfunverify se nezdařilo."
     }
   },
   "BirthdayModule": {
-    "AddAsync": {
+    "Add": {
       "Success": "Datum narození bylo úspěšně uloženo."
     },
-    "RemoveAsync": {
+    "Remove": {
       "Success": "Datum narození bylo úspěšně odebráno."
     },
-    "HaveAsync": {
+    "Have": {
       "Yes": "Ano. Máš uložené narozeniny.",
       "No": "Ne. Nemáš uložené narozeniny."
     }
   },
   "BotModule": {
-    "BotInfoAsync": {
+    "BotInfo": {
       "CreatedAt": "Založen",
       "Uptime": "Uptime",
       "Repository": "Repozitář",
@@ -28,14 +28,14 @@
     }
   },
   "SelfUnverifyConfig": {
-    "ListAsync": {
+    "List": {
       "NoKeepables": "Nebyly nalezeny žádné ponechatelné přístupy.",
       "Title": "Ponechatelné role a kanály",
       "Other": "Ostatní"
     }
   },
   "ChannelModule": {
-    "GetChannelInfoAsync": {
+    "GetChannelInfo": {
       "UserNotFound": "Nepodařilo se dohledat uživatele, která zavolal příkaz.",
       "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
       "CreatedAt": "Založeno",
@@ -89,14 +89,14 @@
       "Configuration": "Konfigurace",
       "TopTen": "TOP 10 uživatelů"
     },
-    "GetChannelboardAsync": {
+    "GetChannelboard": {
       "UserNotFound": "Nepodařilo se dohledat uživatele, která zavolal příkaz.",
       "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
       "NoActivity": "Doteď nebyla zaznamenána žádná aktivita v kanálech."
     }
   },
   "DuckModule": {
-    "GetDuckInfoAsync": {
+    "GetDuckInfo": {
       "CannotGetState": "Nepodařilo se zjistit stav kachny. Zkus to prosím později, nebo se podívej do kanálu {0}",
       "DuckName": "U kachničky",
       "Closed": "Kachna je zavřená.",
@@ -113,12 +113,12 @@
     }
   },
   "EmoteModule": {
-    "GetEmoteInfoAsync": {
+    "GetEmoteInfo": {
       "NoActivity": "U tohoto emote ještě nebyla zaznamenána žádná aktivita."
     }
   },
   "GuildModule": {
-    "GetInfoAsync": {
+    "GetInfo": {
       "CategoryCount": "Počet kategorií",
       "TextChannelCount": "Počet textových kanálů",
       "VoiceChannelCount": "Počet hlasových kanálů",
@@ -169,7 +169,7 @@
     }
   },
   "MathModule": {
-    "SolveExpressionAsync": {
+    "SolveExpression": {
       "Expression": "Výraz",
       "ComputeFailed": "Výpočet se nezdařil",
       "Report": "Hlášení",
@@ -178,30 +178,30 @@
     }
   },
   "MemeModule": {
-    "HiAsync": {
+    "Hi": {
       "Template": "Ahoj {0} {1}"
     }
   },
   "RemindModule": {
-    "CreateAsync": {
+    "Create": {
       "Success": "Připomenutí bylo vytvořeno.",
       "CopyMessage": "Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {0}"
     },
-    "CancelRemindAsync": {
+    "CancelRemind": {
       "Cancelled": "Upozornění bylo úspěšně zrušeno.",
       "CancelledWithNotify": "Upozornění bylo úspěšně zrušeno a cílový uživatel byl upozorněn."
     }
   },
   "SearchingModule": {
-    "CreateSearchAsync": {
+    "CreateSearch": {
       "Success": "Hledání bylo úspěšně uloženo."
     },
-    "RemoveSearchAsync": {
+    "RemoveSearch": {
       "Success": "Hledání bylo úspěšně smazáno."
     }
   },
   "SuggestionModule": {
-    "SuggestEmoteAsync": {
+    "SuggestEmote": {
       "NoEmoteAndAttachment": "Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.",
       "EmoteExistsInGuild": "Nelze podat návrh na emote, který je již na tomto serveru.",
       "ModalTitle": "Podání návrhu na nový emote",
@@ -209,13 +209,13 @@
       "ModalEmoteDescription": "Popis emote",
       "ModalEmoteDescriptionPlaceholder": "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?"
     },
-    "EmoteSuggestionFormSubmitedAsync": {
+    "EmoteSuggestionFormSubmited": {
       "Success": "Tvůj návrh na přidání emote byl úspěšně zpracován."
     },
-    "ProcessEmoteSuggestionsAsync": {
+    "ProcessEmoteSuggestions": {
       "Success": "Hlasování pro schválené emoty bylo spuštěno"
     },
-    "FeatureSuggestionSubmittedAsync": {
+    "FeatureSuggestionSubmitted": {
       "Success": "Tvůj návrh na přidání feature byl úspěšně zpracován."
     }
   }

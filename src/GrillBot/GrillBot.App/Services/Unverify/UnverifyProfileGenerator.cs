@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 
@@ -7,23 +8,25 @@ namespace GrillBot.App.Services.Unverify;
 public class UnverifyProfileGenerator
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private LocalizationManager Localization { get; }
 
-    public UnverifyProfileGenerator(GrillBotDatabaseBuilder databaseBuilder)
+    public UnverifyProfileGenerator(GrillBotDatabaseBuilder databaseBuilder, LocalizationManager localization)
     {
         DatabaseBuilder = databaseBuilder;
+        Localization = localization;
     }
 
-    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole)
+    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole, string locale)
     {
         var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify)
         {
-            Reason = !selfunverify ? ParseReason(data) : null
+            Reason = !selfunverify ? ParseReason(data, locale) : null
         };
 
         var keepables = await GetKeepablesAsync();
 
-        await ProcessRolesAsync(profile, user, guild, selfunverify, keep, mutedRole, keepables);
-        await ProcessChannelsAsync(profile, guild, user, keep, keepables);
+        await ProcessRolesAsync(profile, user, guild, selfunverify, keep, mutedRole, keepables, locale);
+        await ProcessChannelsAsync(profile, guild, user, keep, keepables, locale);
 
         return profile;
     }
@@ -44,9 +47,9 @@ public class UnverifyProfileGenerator
         };
     }
 
-    private static string ParseReason(string data)
+    private string ParseReason(string data, string locale)
     {
-        var ex = new ValidationException("Nelze bezdůvodně odebrat přístup. Přečti si nápovědu a pak to zkus znovu.");
+        var ex = new ValidationException(Localization["Unverify/Validation/UnverifyWithoutReason", locale]);
 
         var parts = data.Split("<@", StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 2) throw ex;
@@ -56,8 +59,8 @@ public class UnverifyProfileGenerator
         return reason;
     }
 
-    private static async Task ProcessRolesAsync(UnverifyUserProfile profile, IGuildUser user, IGuild guild, bool selfunverify, List<string> keep, IRole mutedRole,
-        Dictionary<string, List<string>> keepables)
+    private async Task ProcessRolesAsync(UnverifyUserProfile profile, IGuildUser user, IGuild guild, bool selfunverify, List<string> keep, IRole mutedRole,
+        Dictionary<string, List<string>> keepables, string locale)
     {
         var rolesToRemove = user.GetRoles();
         profile.RolesToRemove.AddRange(rolesToRemove);
@@ -84,7 +87,7 @@ public class UnverifyProfileGenerator
 
         foreach (var toKeep in keep)
         {
-            CheckDefinition(keepables, toKeep);
+            CheckDefinition(keepables, toKeep, locale);
             var role = profile.RolesToRemove.Find(o => string.Equals(o.Name, toKeep, StringComparison.InvariantCultureIgnoreCase));
 
             if (role != null)
@@ -106,7 +109,7 @@ public class UnverifyProfileGenerator
         }
     }
 
-    private static async Task ProcessChannelsAsync(UnverifyUserProfile profile, IGuild guild, IUser user, List<string> keep, Dictionary<string, List<string>> keepabless)
+    private async Task ProcessChannelsAsync(UnverifyUserProfile profile, IGuild guild, IUser user, List<string> keep, Dictionary<string, List<string>> keepables, string locale)
     {
         var channels = (await guild.GetChannelsAsync()).ToList();
         channels = channels
@@ -119,7 +122,7 @@ public class UnverifyProfileGenerator
         profile.ChannelsToRemove.AddRange(channelsToRemove);
         foreach (var toKeep in keep)
         {
-            CheckDefinition(keepabless, toKeep);
+            CheckDefinition(keepables, toKeep, locale);
             foreach (var overwrite in profile.ChannelsToRemove.ToList())
             {
                 var guildChannel = await guild.GetChannelAsync(overwrite.ChannelId);
@@ -138,10 +141,10 @@ public class UnverifyProfileGenerator
         return definitions.ContainsKey(item) || definitions.Values.Any(o => o?.Contains(item) == true);
     }
 
-    private static void CheckDefinition(Dictionary<string, List<string>> definitions, string item)
+    private void CheckDefinition(Dictionary<string, List<string>> definitions, string item, string locale)
     {
         if (!ExistsInKeepDefinition(definitions, item))
-            throw new ValidationException($"{item.ToUpper()} není ponechatelné.");
+            throw new ValidationException(Localization["Unverify/Validation/UndefinedKeepable", locale].FormatWith(item.ToUpper()));
     }
 
     private async Task<Dictionary<string, List<string>>> GetKeepablesAsync()

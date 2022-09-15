@@ -222,5 +222,35 @@
     "FeatureSuggestionSubmitted": {
       "Success": "Your suggestion to add a feature has been successfully processed."
     }
+  },
+  "Unverify": {
+    "Validation": {
+      "KeepableCountExceeded": "Cannot keep more than {0} roles and channels.",
+      "GuildOwner": "Unable to remove access because user **{0}** is the owner of this server.",
+      "Administrator": "Unable to remove access because user **{0}** has administrative privileges.",
+      "MultipleUnverify": "Unable to revoke access because user **{0}** has already revoked access to **{1}**.",
+      "MustBeInFuture": "The end of unverify must be in the future.",
+      "MinimalTime": "Minimum time for unverify is {0}",
+      "HigherRoles": "Unable to remove access because user **{0}** has higher roles. **({1})**",
+      "UnverifyWithoutReason": "Access cannot be revoked without reason. Read the help and then try again.",
+      "UndefinedKeepable": "{0} is not retainable."
+    },
+    "Update": {
+      "UnverifyNotFound": "Unable to update the time for the searched user. Unverify not found.",
+      "NotEnoughTime": "Updating the date and time is no longer possible. Time is up or less than half a minute remains."
+    },
+    "Message": {
+      "UnverifyToChannelWithReason": "Temporarily removing access for user **{0}** has been completed. Access will be restored **{1}**. Reason: {2}",
+      "UnverifyToChannelWithoutReason": "Temporarily removing access for user **{0}** has been completed. Access will be restored **{1}**.",
+      "PrivateUnverifyWithReason": "All rights on server **{0}** have been temporarily revoked. Access will be returned to you **{1}**. Reason: {2}",
+      "PrivateUnverifyWithoutReason": "All rights on server **{0}** have been temporarily revoked. Your access will be restored **{1}**",
+      "PrivateUpdate": "The time to revoke your rights on server **{0}** has been updated. Access will be returned to you **{1}**.",
+      "UpdateToChannel": "End of access removal reset for user **{0}** has been updated.\\nAccess will be restored to **{1}**",
+      "PrivateManuallyRemovedUnverify": "Access to server **{0}** has been returned to you prematurely.",
+      "ManuallyRemoveToChannel": "Early rollback of access for user **{0}** has completed.",
+      "ManuallyRemoveFailed": "Early rollback of access for user **{0}** failed. ({1})",
+      "RemoveAccessUnverifyNotFound": "Unable to restore access early for user **{0}**. Unverify not found.",
+      "UnverifyFailedToChannel": "Failed to temporarily remove access for user **{0}**. The user has been restored to their original state."
+    }
   }
 }

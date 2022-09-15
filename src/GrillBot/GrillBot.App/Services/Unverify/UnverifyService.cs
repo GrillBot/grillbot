@@ -2,6 +2,7 @@ using Discord.Net;
 using GrillBot.App.Services.Permissions;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
@@ -20,9 +21,11 @@ public class UnverifyService
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager LoggingManager { get; }
+    private LocalizationManager Localization { get; }
+    private UnverifyMessageGenerator MessageGenerator { get; }
 
-    public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator,
-        UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder, PermissionsCleaner permissionsCleaner, LoggingManager loggingManager)
+    public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder,
+        PermissionsCleaner permissionsCleaner, LoggingManager loggingManager, LocalizationManager localization, UnverifyMessageGenerator messageGenerator)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
@@ -31,11 +34,13 @@ public class UnverifyService
         DatabaseBuilder = databaseBuilder;
         DiscordClient = client;
         LoggingManager = loggingManager;
+        Localization = localization;
+        MessageGenerator = messageGenerator;
 
         DiscordClient.UserLeft += OnUserLeftAsync;
     }
 
-    public async Task<List<string>> SetUnverifyAsync(List<SocketUser> users, DateTime end, string data, SocketGuild guild, IUser from, bool dry)
+    public async Task<List<string>> SetUnverifyAsync(List<SocketUser> users, DateTime end, string data, SocketGuild guild, IUser from, bool dry, string locale)
     {
         await guild.DownloadUsersAsync();
         var messages = new List<string>();
@@ -45,7 +50,7 @@ public class UnverifyService
 
         foreach (var user in users)
         {
-            var message = await SetUnverifyAsync(user, end, data, guild, fromUser, false, new List<string>(), muteRole, dry);
+            var message = await SetUnverifyAsync(user, end, data, guild, fromUser, false, new List<string>(), muteRole, dry, locale);
             messages.Add(message);
         }
 
@@ -53,16 +58,16 @@ public class UnverifyService
     }
 
     public async Task<string> SetUnverifyAsync(IUser user, DateTime end, string data, SocketGuild guild, IGuildUser from, bool selfunverify, List<string> keep,
-        IRole muteRole, bool dry)
+        IRole muteRole, bool dry, string locale)
     {
         if (selfunverify && muteRole == null) muteRole = await GetMutedRoleAsync(guild);
         var guildUser = user as IGuildUser ?? guild.GetUser(user.Id);
 
-        await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end, keep?.Count ?? 0);
-        var profile = await ProfileGenerator.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole);
+        await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end, keep?.Count ?? 0, locale);
+        var profile = await ProfileGenerator.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole, locale);
 
         if (dry)
-            return UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
+            return MessageGenerator.CreateUnverifyMessageToChannel(profile, locale);
 
         var unverifyLog = await LogUnverifyAsync(profile, guild, from, selfunverify);
         try
@@ -91,7 +96,7 @@ public class UnverifyService
 
             try
             {
-                var dmMessage = UnverifyMessageGenerator.CreateUnverifyPmMessage(profile, guild);
+                var dmMessage = MessageGenerator.CreateUnverifyPmMessage(profile, guild, locale);
                 await profile.Destination.SendMessageAsync(dmMessage);
             }
             catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
@@ -99,7 +104,7 @@ public class UnverifyService
                 // User have disabled DMs.
             }
 
-            return UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
+            return MessageGenerator.CreateUnverifyMessageToChannel(profile, locale);
         }
         catch (Exception ex)
         {
@@ -107,7 +112,7 @@ public class UnverifyService
             await profile.ReturnRolesAsync();
             await profile.ReturnChannelsAsync(guild);
             await LoggingManager.ErrorAsync("Unverify", $"An error occured when unverify removing access to {user.GetFullName()}", ex);
-            return UnverifyMessageGenerator.CreateUnverifyFailedToChannel(profile.Destination);
+            return MessageGenerator.CreateUnverifyFailedToChannel(profile.Destination, locale);
         }
     }
 
@@ -124,16 +129,16 @@ public class UnverifyService
         return selfunverify ? Logger.LogSelfunverifyAsync(profile, guild) : Logger.LogUnverifyAsync(profile, guild, from);
     }
 
-    public async Task<string> UpdateUnverifyAsync(IGuildUser user, IGuild guild, DateTime newEnd, IGuildUser fromUser)
+    public async Task<string> UpdateUnverifyAsync(IGuildUser user, IGuild guild, DateTime newEnd, IGuildUser fromUser, string locale)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var dbUser = await repository.GuildUser.FindGuildUserAsync(user);
         if (dbUser?.Unverify == null)
-            throw new NotFoundException("Aktualizaci času nelze pro hledaného uživatele provést. Unverify nenalezeno.");
+            throw new NotFoundException(Localization["Unverify/Update/UnverifyNotFound", locale]);
 
         if ((dbUser.Unverify.EndAt - DateTime.Now).TotalSeconds <= 30.0)
-            throw new ValidationException("Aktualizace data a času již není možná. Vypršel čas nebo zbývá méně než půl minuty.");
+            throw new ValidationException(Localization["Unverify/Update/NotEnoughTime", locale]);
 
         await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user);
 
@@ -143,7 +148,7 @@ public class UnverifyService
 
         try
         {
-            var dmMessage = UnverifyMessageGenerator.CreateUpdatePmMessage(guild, newEnd);
+            var dmMessage = MessageGenerator.CreateUpdatePmMessage(guild, newEnd, locale);
             await user.SendMessageAsync(dmMessage);
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
@@ -151,10 +156,10 @@ public class UnverifyService
             // User have disabled DMs.
         }
 
-        return UnverifyMessageGenerator.CreateUpdateChannelMessage(user, newEnd);
+        return MessageGenerator.CreateUpdateChannelMessage(user, newEnd, locale);
     }
 
-    public async Task<string> RemoveUnverifyAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false, bool fromWeb = false)
+    public async Task<string> RemoveUnverifyAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser, string locale, bool isAuto = false, bool fromWeb = false)
     {
         try
         {
@@ -162,7 +167,7 @@ public class UnverifyService
 
             var dbUser = await repository.GuildUser.FindGuildUserAsync(toUser);
             if (dbUser?.Unverify == null)
-                return UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser);
+                return MessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser, locale);
 
             var profile = UnverifyProfileGenerator.Reconstruct(dbUser.Unverify, toUser, guild);
             await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto, fromWeb);
@@ -185,11 +190,11 @@ public class UnverifyService
             }
 
             if (isAuto)
-                return UnverifyMessageGenerator.CreateRemoveAccessManuallyToChannel(toUser);
+                return MessageGenerator.CreateRemoveAccessManuallyToChannel(toUser, locale);
 
             try
             {
-                var dmMessage = UnverifyMessageGenerator.CreateRemoveAccessManuallyPmMessage(guild);
+                var dmMessage = MessageGenerator.CreateRemoveAccessManuallyPmMessage(guild, locale);
                 await toUser.SendMessageAsync(dmMessage);
             }
             catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
@@ -197,17 +202,16 @@ public class UnverifyService
                 // User have disabled DMs.
             }
 
-            return UnverifyMessageGenerator.CreateRemoveAccessManuallyToChannel(toUser);
+            return MessageGenerator.CreateRemoveAccessManuallyToChannel(toUser, locale);
         }
         catch (Exception ex) when (!isAuto)
         {
             await LoggingManager.ErrorAsync("Unverify/Remove", "An error occured when unverify returning access.", ex);
-            return UnverifyMessageGenerator.CreateRemoveAccessManuallyFailed(toUser, ex);
+            return MessageGenerator.CreateRemoveAccessManuallyFailed(toUser, ex, locale);
         }
     }
 
-    private Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> channels, IGuildUser user, IGuild guild,
-        IGuildUser fromUser, bool isAuto, bool fromWeb)
+    private Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> channels, IGuildUser user, IGuild guild, IGuildUser fromUser, bool isAuto, bool fromWeb)
     {
         return isAuto ? Logger.LogAutoremoveAsync(returnedRoles, channels, user, guild) : Logger.LogRemoveAsync(returnedRoles, channels, guild, fromUser, user, fromWeb);
     }
@@ -237,7 +241,7 @@ public class UnverifyService
                 return;
             }
 
-            await RemoveUnverifyAsync(guild, guild.CurrentUser, user, true);
+            await RemoveUnverifyAsync(guild, guild.CurrentUser, user, LocalizationManager.DefaultLocale, true);
         }
         catch (Exception ex)
         {

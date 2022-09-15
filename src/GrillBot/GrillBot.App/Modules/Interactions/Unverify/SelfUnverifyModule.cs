@@ -39,7 +39,7 @@ public class SelfUnverifyModule : InteractionsModuleBase
 
             end = end.AddMinutes(1); // Strinct checks are only in unverify.
             var toKeep = keepables.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(o => o.ToUpper()).ToList();
-            var result = await SelfunverifyService.ProcessSelfUnverifyAsync(Context.User, end, Context.Guild, toKeep);
+            var result = await SelfunverifyService.ProcessSelfUnverifyAsync(Context.User, end, Context.Guild, toKeep, Locale);
             await SetResponseAsync(result);
         }
         catch (Exception ex)

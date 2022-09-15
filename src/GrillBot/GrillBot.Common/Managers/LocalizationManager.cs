@@ -6,7 +6,7 @@ namespace GrillBot.Common.Managers;
 
 public class LocalizationManager
 {
-    private const string DefaultLocale = "en-US";
+    public const string DefaultLocale = "en-US";
     private readonly string[] _supportedLocales = { "cs", DefaultLocale };
 
     // Dictionary<Id#Locale, Value>
@@ -65,7 +65,10 @@ public class LocalizationManager
                 break;
         }
     }
-
+    
+    public string? this[string id, string locale]
+        => Get(id, locale);
+    
     public string Get(string id, string locale)
     {
         return Get(GetKey(id, locale)) ?? Get(GetKey(id, DefaultLocale))

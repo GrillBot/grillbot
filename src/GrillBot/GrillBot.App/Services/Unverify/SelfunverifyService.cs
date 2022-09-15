@@ -14,10 +14,10 @@ public class SelfunverifyService
         DatabaseBuilder = databaseBuilder;
     }
 
-    public Task<string> ProcessSelfUnverifyAsync(SocketUser user, DateTime end, SocketGuild guild, List<string> toKeep)
+    public Task<string> ProcessSelfUnverifyAsync(SocketUser user, DateTime end, SocketGuild guild, List<string> toKeep, string locale)
     {
         var guildUser = user as SocketGuildUser ?? guild.GetUser(user.Id);
-        return UnverifyService.SetUnverifyAsync(guildUser, end, null, guild, guildUser, true, toKeep, null, false);
+        return UnverifyService.SetUnverifyAsync(guildUser, end, null, guild, guildUser, true, toKeep, null, false, locale);
     }
 
     public async Task AddKeepablesAsync(List<KeepableParams> parameters)

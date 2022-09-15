@@ -34,7 +34,7 @@ public class FunverifyModule : ModuleBase
             var users = Context.Message.MentionedUsers.Where(o => o != null).ToList();
             if (users.Count == 0) return;
 
-            var messages = await UnverifyService.SetUnverifyAsync(users, end, data, Context.Guild, Context.User, true);
+            var messages = await UnverifyService.SetUnverifyAsync(users, end, data, Context.Guild, Context.User, true, "cs");
             foreach (var message in messages)
             {
                 await ReplyAsync(message);

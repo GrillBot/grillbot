@@ -80,7 +80,7 @@ public class UnverifyController : Controller
             return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
         var fromUser = await guild.GetUserAsync(ApiRequestContext.GetUserId());
-        var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, fromWeb: true);
+        var result = await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, "cs", fromWeb: true);
         return Ok(new MessageResponse(result));
     }
 
@@ -108,7 +108,7 @@ public class UnverifyController : Controller
             return NotFound(new MessageResponse("Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen."));
 
         var fromUser = await guild.GetUserAsync(ApiRequestContext.GetUserId());
-        var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser);
+        var result = await UnverifyService.UpdateUnverifyAsync(toUser, guild, endTime, fromUser, "cs");
         return Ok(new MessageResponse(result));
     }
 

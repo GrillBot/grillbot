@@ -222,5 +222,35 @@
     "FeatureSuggestionSubmitted": {
       "Success": "Tvůj návrh na přidání feature byl úspěšně zpracován."
     }
+  },
+  "Unverify": {
+    "Validation": {
+      "KeepableCountExceeded": "Nelze si ponechat více než {0} rolí a kanálů.",
+      "GuildOwner": "Nelze provést odebrání přístupu, protože uživatel **{0}** je vlastník tohoto serveru.",
+      "Administrator": "Nelze provést odebrání přístupu, protože uživatel **{0}** má administrátorská oprávnění.",
+      "MultipleUnverify": "Nelze provést odebrání přístupu, protože uživatel **{0}** již má odebraný přístup do **{1}**.",
+      "MustBeInFuture": "Konec unverify musí být v budoucnosti.",
+      "MinimalTime": "Minimální čas pro unverify je {0}",
+      "HigherRoles": "Nelze provést odebírání přístupu, protože uživatel **{0}** má vyšší role. **({1})**",
+      "UnverifyWithoutReason": "Nelze bezdůvodně odebrat přístup. Přečti si nápovědu a pak to zkus znovu.",
+      "UndefinedKeepable": "{0} není ponechatelné."
+    },
+    "Update": {
+      "UnverifyNotFound": "Aktualizaci času nelze pro hledaného uživatele provést. Unverify nenalezeno.",
+      "NotEnoughTime": "Aktualizace data a času již není možná. Vypršel čas nebo zbývá méně než půl minuty."
+    },
+    "Message": {
+      "UnverifyToChannelWithReason": "Dočasné odebrání přístupu pro uživatele **{0}** bylo dokončeno. Přístup bude navrácen **{1}**. Důvod: {2}",
+      "UnverifyToChannelWithoutReason": "Dočasné odebrání přístupu pro uživatele **{0}** bylo dokončeno. Přístup bude navrácen **{1}**.",
+      "PrivateUnverifyWithReason": "Byla ti dočasně odebrána všechna práva na serveru **{0}**. Přístup ti bude navrácen **{1}**. Důvod: {2}",
+      "PrivateUnverifyWithoutReason": "Byla ti dočasně odebrána všechna práva na serveru **{0}**. Přístup ti bude navrácen **{1}**",
+      "PrivateUpdate": "Byl ti aktualizován čas pro odebrání práv na serveru **{0}**. Přístup ti bude navrácen **{1}**.",
+      "UpdateToChannel": "Reset konce odebrání přístupu pro uživatele **{0}** byl aktualizován.\\nPřístup bude navrácen **{1}**",
+      "PrivateManuallyRemovedUnverify": "Byl ti předčasně vrácen přístup na serveru **{0}**.",
+      "ManuallyRemoveToChannel": "Předčasné vrácení přístupu pro uživatele **{0}** bylo dokončeno.",
+      "ManuallyRemoveFailed": "Předčasné vrácení přístupu pro uživatele **{0}** selhalo. ({1})",
+      "RemoveAccessUnverifyNotFound": "Předčasné vrácení přístupu pro uživatele **{0}** nelze provést. Unverify nebylo nalezeno.",
+      "UnverifyFailedToChannel": "Dočasné odebrání přístupu pro uživatele **{0}** se nezdařilo. Uživatel byl obnoven do původního stavu."
+    }
   }
 }

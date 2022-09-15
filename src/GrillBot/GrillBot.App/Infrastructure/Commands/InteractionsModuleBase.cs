@@ -9,8 +9,11 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected bool CanDefer { get; set; } = true;
     private LocalizationManager Localization { get; }
 
+    protected string Locale
+        => Context?.Interaction?.UserLocale;
+
     protected CultureInfo Culture
-        => string.IsNullOrEmpty(Context?.Interaction?.UserLocale) ? null : Localization.GetCulture(Context.Interaction.UserLocale);
+        => string.IsNullOrEmpty(Locale) ? null : Localization.GetCulture(Locale);
 
     protected InteractionsModuleBase(LocalizationManager localization = null)
     {

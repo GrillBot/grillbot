@@ -1,69 +1,81 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Data.Models.Unverify;
 
 namespace GrillBot.App.Services.Unverify;
 
-public static class UnverifyMessageGenerator
+public class UnverifyMessageGenerator
 {
-    public static string CreateUnverifyMessageToChannel(UnverifyUserProfile profile)
+    private LocalizationManager Localization { get; }
+
+    public UnverifyMessageGenerator(LocalizationManager localization)
+    {
+        Localization = localization;
+    }
+
+    public string CreateUnverifyMessageToChannel(UnverifyUserProfile profile, string locale)
     {
         var endDateTime = profile.End.ToCzechFormat();
         var username = profile.Destination.GetDisplayName();
 
-        return $"Dočasné odebrání přístupu pro uživatele **{username}** bylo dokončeno. Přístup bude navrácen **{endDateTime}**. {(!profile.IsSelfUnverify ? $"Důvod: {profile.Reason}" : "")}";
+        return profile.IsSelfUnverify
+            ? Localization["Unverify/Message/UnverifyToChannelWithoutReason", locale].FormatWith(username, endDateTime)
+            : Localization["Unverify/Message/UnverifyToChannelWithReason", locale].FormatWith(username, endDateTime, profile.Reason);
     }
 
-    public static string CreateUnverifyPmMessage(UnverifyUserProfile profile, IGuild guild)
+    public string CreateUnverifyPmMessage(UnverifyUserProfile profile, IGuild guild, string locale)
     {
         var endDateTime = profile.End.ToCzechFormat();
 
-        return $"Byla ti dočasně odebrána všechna práva na serveru **{guild.Name}**. Přístup ti bude navrácen **{endDateTime}**. {(!profile.IsSelfUnverify ? $"Důvod: {profile.Reason}" : "")}";
+        return profile.IsSelfUnverify
+            ? Localization["Unverify/Message/PrivateUnverifyWithoutReason", locale].FormatWith(guild.Name, endDateTime)
+            : Localization["Unverify/Message/PrivateUnverifyWithReason", locale].FormatWith(guild.Name, endDateTime, profile.Reason);
     }
 
-    public static string CreateUpdatePmMessage(IGuild guild, DateTime endDateTime)
+    public string CreateUpdatePmMessage(IGuild guild, DateTime endDateTime, string locale)
     {
         var formatedEnd = endDateTime.ToCzechFormat();
 
-        return $"Byl ti aktualizován čas pro odebrání práv na serveru **{guild.Name}**. Přístup ti bude navrácen **{formatedEnd}**.";
+        return Localization["Unverify/Message/PrivateUpdate", locale].FormatWith(guild.Name, formatedEnd);
     }
 
-    public static string CreateUpdateChannelMessage(IGuildUser user, DateTime endDateTime)
+    public string CreateUpdateChannelMessage(IGuildUser user, DateTime endDateTime, string locale)
     {
         var username = user.GetDisplayName();
         var formatedEnd = endDateTime.ToCzechFormat();
 
-        return $"Reset konce odebrání přístupu pro uživatele **{username}** byl aktualizován.\nPřístup bude navrácen **{formatedEnd}**";
+        return Localization["Unverify/Message/UpdateToChannel", locale].FormatWith(username, formatedEnd);
     }
 
-    public static string CreateRemoveAccessManuallyPmMessage(IGuild guild)
-        => $"Byl ti předčasně vrácen přístup na serveru **{guild.Name}**.";
+    public string CreateRemoveAccessManuallyPmMessage(IGuild guild, string locale)
+        => Localization["Unverify/Message/PrivateManuallyRemovedUnverify", locale].FormatWith(guild.Name);
 
-    public static string CreateRemoveAccessManuallyToChannel(IGuildUser user)
+    public string CreateRemoveAccessManuallyToChannel(IGuildUser user, string locale)
     {
         var username = user.GetDisplayName();
 
-        return $"Předčasné vrácení přístupu pro uživatele **{username}** bylo dokončeno.";
+        return Localization["Unverify/Message/ManuallyRemoveToChannel", locale].FormatWith(username);
     }
 
-    public static string CreateRemoveAccessManuallyFailed(IGuildUser user, Exception ex)
+    public string CreateRemoveAccessManuallyFailed(IGuildUser user, Exception ex, string locale)
     {
         var username = user.GetFullName();
 
-        return $"Předčasné vrácení přístupu pro uživatele **{username}** selhalo. ({ex.Message})";
+        return Localization["Unverify/Message/ManuallyRemoveFailed", locale].FormatWith(username, ex.Message);
     }
 
-    public static string CreateRemoveAccessUnverifyNotFound(IGuildUser user)
+    public string CreateRemoveAccessUnverifyNotFound(IGuildUser user, string locale)
     {
         var username = user.GetDisplayName();
 
-        return $"Předčasné vrácení přístupu pro uživatele **{username}** nelze provést. Unverify nebylo nalezeno.";
+        return Localization["Unverify/Message/RemoveAccessUnverifyNotFound", locale].FormatWith(username);
     }
 
-    public static string CreateUnverifyFailedToChannel(IGuildUser user)
+    public string CreateUnverifyFailedToChannel(IGuildUser user, string locale)
     {
         var username = user.GetDisplayName();
 
-        return $"Dočasné odebrání přístupu pro uživatele **{username}** se nezdařilo. Uživatel byl obnoven do původního stavu.";
+        return Localization["Unverify/Message/UnverifyFailedToChannel", locale].FormatWith(username);
     }
 }

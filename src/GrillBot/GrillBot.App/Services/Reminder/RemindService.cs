@@ -3,6 +3,7 @@ using GrillBot.App.Infrastructure;
 using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Services.Reminder;
@@ -13,13 +14,14 @@ public class RemindService
     private IConfiguration Configuration { get; }
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private LocalizationManager Localization { get; }
 
-    public RemindService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder,
-        IConfiguration configuration)
+    public RemindService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, LocalizationManager localization)
     {
         Configuration = configuration;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
+        Localization = localization;
     }
 
     public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
@@ -235,7 +237,7 @@ public class RemindService
         await repository.CommitAsync();
     }
 
-    public async Task<Dictionary<long, string>> GetRemindSuggestionsAsync(IUser user)
+    public async Task<Dictionary<long, string>> GetRemindSuggestionsAsync(IUser user, string locale)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -244,11 +246,11 @@ public class RemindService
 
         var incoming = data
             .Where(o => o.ToUserId == userId)
-            .ToDictionary(o => o.Id, o => $"Příchozí #{o.Id} ({o.At.ToCzechFormat()}) od uživatele {o.FromUser!.Username}#{o.FromUser!.Discriminator}");
+            .ToDictionary(o => o.Id, o => Localization.Get("RemindModule/Suggestions/Incoming", locale).FormatWith(o.Id, o.At.ToCzechFormat(), o.FromUser!.FullName()));
 
         var outgoing = data
             .Where(o => o.FromUserId == userId)
-            .ToDictionary(o => o.Id, o => $"Odchozí #{o.Id} ({o.At.ToCzechFormat()}) pro uživatele {o.ToUser!.Username}#{o.ToUser!.Discriminator}");
+            .ToDictionary(o => o.Id, o => Localization.Get("RemindModule/Suggestions/Outgoing", locale).FormatWith(o.Id, o.At.ToCzechFormat(), o.ToUser!.FullName()));
 
         return incoming
             .Concat(outgoing)

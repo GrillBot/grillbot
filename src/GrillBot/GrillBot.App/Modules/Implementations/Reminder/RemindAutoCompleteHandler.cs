@@ -10,7 +10,7 @@ public class RemindAutoCompleteHandler : AutocompleteHandler
         IServiceProvider services)
     {
         var service = services.GetRequiredService<RemindService>();
-        var suggestions = await service.GetRemindSuggestionsAsync(context.User);
+        var suggestions = await service.GetRemindSuggestionsAsync(context.User, autocompleteInteraction.UserLocale);
 
         var result = suggestions.Select(o => new AutocompleteResult(o.Value, o.Key));
         return AutocompletionResult.FromSuccess(result);

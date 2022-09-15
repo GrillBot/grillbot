@@ -190,6 +190,10 @@
     "CancelRemind": {
       "Cancelled": "Upozornění bylo úspěšně zrušeno.",
       "CancelledWithNotify": "Upozornění bylo úspěšně zrušeno a cílový uživatel byl upozorněn."
+    },
+    "Suggestions": {
+      "Incoming": "Příchozí #{0} ({1}) od uživatele {2}",
+      "Outgoing": "Odchozí #{0} ({2}) pro uživatele {2}"
     }
   },
   "SearchingModule": {

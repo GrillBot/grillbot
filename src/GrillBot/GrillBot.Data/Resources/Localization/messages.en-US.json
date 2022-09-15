@@ -190,6 +190,10 @@
     "CancelRemind": {
       "Cancelled": "The reminder was successfully canceled.",
       "CancelledWithNotify": "The reminder was successfully canceled and the target user was notified."
+    },
+    "Suggestions": {
+      "Incoming": "Incoming #{0} ({1}) from user {2}",
+      "Outgoing": "Outgoing #{0} ({2}) to user {2}"
     }
   },
   "SearchingModule": {

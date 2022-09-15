@@ -96,11 +96,13 @@ public class InviteManager
         if (invite.GuildId == null)
             return null;
 
+        var createdAt = invite.CreatedAt?.LocalDateTime;
+
         return new InviteMetadata
         {
             Code = invite.Code,
             Uses = invite.Uses ?? 0,
-            CreatedAt = invite.CreatedAt?.LocalDateTime,
+            CreatedAt = createdAt == DateTime.MinValue ? null : createdAt,
             CreatorId = invite.Inviter?.Id.ToString(),
             GuildId = invite.GuildId.ToString()!,
             IsVanity = invite.Guild.VanityURLCode == invite.Code

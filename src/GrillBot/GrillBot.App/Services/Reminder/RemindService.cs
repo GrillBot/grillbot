@@ -92,7 +92,8 @@ public class RemindService
         if (original == null)
             throw new InvalidOperationException("Upozornění nebylo nalezeno.");
 
-        if (original.FromUserId == toUser.Id.ToString())
+        // User cannot copy reminders that created for himself.
+        if (original.FromUserId == toUser.Id.ToString() && original.ToUserId == toUser.Id.ToString())
             throw new ValidationException("Toto upozornění jsi založil, nemůžeš dostat to stejné.");
 
         if (!string.IsNullOrEmpty(original.RemindMessageId))

@@ -66,10 +66,10 @@ public class LocalizationManager
         }
     }
     
-    public string? this[string id, string locale]
+    public string this[string id, string locale]
         => Get(id, locale);
     
-    public string Get(string id, string locale)
+    private string Get(string id, string locale)
     {
         return Get(GetKey(id, locale)) ?? Get(GetKey(id, DefaultLocale))
             ?? throw new ArgumentException($"Localized text with id {id} for locale {locale} is missing and there is no default locale either.");

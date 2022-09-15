@@ -94,8 +94,8 @@ public class ChannelModule : InteractionsModuleBase
                 var permissionGroups = channel.PermissionOverwrites.GroupBy(o => o.TargetType).ToDictionary(o => o.Key, o => o.Count());
                 var userPermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.User);
                 var rolePermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.Role);
-                var userPermsCountFormat = FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PermsCountValue"), Context.Interaction.UserLocale, userPermsCount);
-                var rolePermsCountFormat = FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PermsCountValue"), Context.Interaction.UserLocale, rolePermsCount);
+                var userPermsCountFormat = FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PermsCountValue"), Locale, userPermsCount);
+                var rolePermsCountFormat = FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PermsCountValue"), Locale, rolePermsCount);
                 var permsFormatted = GetLocale(nameof(GetChannelInfoAsync), "PermsCount").FormatWith(userPermsCountFormat, rolePermsCountFormat);
 
                 channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "PermsCountTitle"), permsFormatted);
@@ -112,16 +112,16 @@ public class ChannelModule : InteractionsModuleBase
                 channelEmbed.WithDescription(forum.Topic.Cut(EmbedBuilder.MaxDescriptionLength));
 
             channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "TagsCount"),
-                FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "TagsCountValue"), Context.Interaction.UserLocale, forum.Tags.Count), true);
+                FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "TagsCountValue"), Locale, forum.Tags.Count), true);
 
             var activeThreads = (await forum.GetActiveThreadsAsync()).Where(o => o.CategoryId == forum.Id).ToList();
             var privateThreadsCount = activeThreads.Count(o => o.Type == ThreadType.PrivateThread);
             var publicThreadsCount = activeThreads.Count(o => o.Type == ThreadType.PublicThread);
             var threadsFormatBuilder = new StringBuilder();
             if (publicThreadsCount > 0)
-                threadsFormatBuilder.AppendLine(FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PublicThreadCountValue"), Context.Interaction.UserLocale, publicThreadsCount));
+                threadsFormatBuilder.AppendLine(FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PublicThreadCountValue"), Locale, publicThreadsCount));
             if (privateThreadsCount > 0)
-                threadsFormatBuilder.AppendLine(FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PrivateThreadCountValue"), Context.Interaction.UserLocale, publicThreadsCount));
+                threadsFormatBuilder.AppendLine(FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "PrivateThreadCountValue"), Locale, publicThreadsCount));
             if (threadsFormatBuilder.Length > 0)
                 channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "ThreadCount"), threadsFormatBuilder.ToString());
         }
@@ -136,7 +136,7 @@ public class ChannelModule : InteractionsModuleBase
 
             channelEmbed
                 .AddField(GetLocale(nameof(GetChannelInfoAsync), "MessageCount"),
-                    FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "MessageCountValue"), Context.Interaction.UserLocale, channelData.Users.Sum(o => o.Count)), true);
+                    FormatHelper.FormatNumber(GetLocaleId(nameof(GetChannelInfoAsync), "MessageCountValue"), Locale, channelData.Users.Sum(o => o.Count)), true);
 
             if (firstMessage != DateTime.MinValue)
                 channelEmbed.AddField(GetLocale(nameof(GetChannelInfoAsync), "FirstMessage"), firstMessage.ToCzechFormat(), true);

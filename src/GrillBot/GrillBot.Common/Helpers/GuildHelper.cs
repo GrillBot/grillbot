@@ -19,7 +19,7 @@ public class GuildHelper
 
         return Enum.GetValues<GuildFeature>()
             .Where(o => o > 0 && guild.Features.HasFeature(o))
-            .Select(o => Localization.Get($"{localeId}/{o}", locale))
+            .Select(o => Localization[$"{localeId}/{o}", locale])
             .Where(o => !string.IsNullOrEmpty(o))
             .Distinct()
             .OrderBy(o => o);

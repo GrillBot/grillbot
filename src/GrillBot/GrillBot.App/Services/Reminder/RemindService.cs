@@ -246,11 +246,11 @@ public class RemindService
 
         var incoming = data
             .Where(o => o.ToUserId == userId)
-            .ToDictionary(o => o.Id, o => Localization.Get("RemindModule/Suggestions/Incoming", locale).FormatWith(o.Id, o.At.ToCzechFormat(), o.FromUser!.FullName()));
+            .ToDictionary(o => o.Id, o => Localization["RemindModule/Suggestions/Incoming", locale].FormatWith(o.Id, o.At.ToCzechFormat(), o.FromUser!.FullName()));
 
         var outgoing = data
             .Where(o => o.FromUserId == userId)
-            .ToDictionary(o => o.Id, o => Localization.Get("RemindModule/Suggestions/Outgoing", locale).FormatWith(o.Id, o.At.ToCzechFormat(), o.ToUser!.FullName()));
+            .ToDictionary(o => o.Id, o => Localization["RemindModule/Suggestions/Outgoing", locale].FormatWith(o.Id, o.At.ToCzechFormat(), o.ToUser!.FullName()));
 
         return incoming
             .Concat(outgoing)

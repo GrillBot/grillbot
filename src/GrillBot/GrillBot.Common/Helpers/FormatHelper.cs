@@ -48,7 +48,7 @@ public class FormatHelper
             _ => "FiveAndMore"
         };
 
-        var text = Localization.Get($"{id}/{countId}", locale);
+        var text = Localization[$"{id}/{countId}", locale];
         return text.FormatWith(Localization.GetCulture(locale), count);
     }
 }

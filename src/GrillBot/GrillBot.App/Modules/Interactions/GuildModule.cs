@@ -62,7 +62,7 @@ public class GuildModule : InteractionsModuleBase
 
         if (guild.Features.Value != GuildFeature.None)
         {
-            var features = GuildHelper.GetFeatures(guild, Context.Interaction.UserLocale, GetLocaleId(nameof(GetInfoAsync), "Features")).ToList();
+            var features = GuildHelper.GetFeatures(guild, Locale, GetLocaleId(nameof(GetInfoAsync), "Features")).ToList();
             embed.AddField(GetLocale(nameof(GetInfoAsync), "Improvements"), string.Join("\n", features));
         }
 

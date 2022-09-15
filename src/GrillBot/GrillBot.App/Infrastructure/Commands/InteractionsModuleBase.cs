@@ -81,7 +81,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     }
 
     protected string GetLocale(string method, string id)
-        => Localization?.Get(GetLocaleId(method, id), Context.Interaction.UserLocale);
+        => Localization?[GetLocaleId(method, id), Locale];
 
     protected string GetLocaleId(string method, string id) => $"{GetType().Name}/{method.Replace("Async", "")}/{id}";
 }

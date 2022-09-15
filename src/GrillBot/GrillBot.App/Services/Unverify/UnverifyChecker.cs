@@ -1,6 +1,6 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -15,10 +15,10 @@ public class UnverifyChecker
     private TimeSpan SelfunverifyMinimalTime { get; }
     private int MaxKeepAccessCount { get; }
     private IWebHostEnvironment Environment { get; }
-    private LocalizationManager Localization { get; }
+    private ITextsManager Texts { get; }
 
     public UnverifyChecker(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, IWebHostEnvironment environment,
-        LocalizationManager localization)
+        ITextsManager texts)
     {
         DatabaseBuilder = databaseBuilder;
         Environment = environment;
@@ -27,16 +27,16 @@ public class UnverifyChecker
         UnverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("MinimalTimes:Unverify"));
         SelfunverifyMinimalTime = TimeSpan.FromMinutes(unverifyConfig.GetValue<int>("MinimalTimes:Selfunverify"));
         MaxKeepAccessCount = unverifyConfig.GetValue<int>("MaxKeepAccessCount");
-        Localization = localization;
+        Texts = texts;
     }
 
     public async Task ValidateUnverifyAsync(IGuildUser user, IGuild guild, bool selfunverify, DateTime end, int keeped, string locale)
     {
         if (keeped > MaxKeepAccessCount)
-            throw new ValidationException(Localization["Unverify/Validation/KeepableCountExceeded", locale].FormatWith(MaxKeepAccessCount));
+            throw new ValidationException(Texts["Unverify/Validation/KeepableCountExceeded", locale].FormatWith(MaxKeepAccessCount));
 
         if (guild.OwnerId == user.Id)
-            throw new ValidationException(Localization["Unverify/Validation/GuildOwner", locale].FormatWith(user.GetDisplayName()));
+            throw new ValidationException(Texts["Unverify/Validation/GuildOwner", locale].FormatWith(user.GetDisplayName()));
 
         await using var repository = DatabaseBuilder.CreateRepository();
         var dbUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
@@ -44,13 +44,13 @@ public class UnverifyChecker
         if (!selfunverify)
         {
             if (!Environment.IsDevelopment() && (user.GuildPermissions.Administrator || dbUser.User!.HaveFlags(UserFlags.BotAdmin)))
-                throw new ValidationException(Localization["Unverify/Validation/Administrator", locale].FormatWith(user.GetDisplayName()));
+                throw new ValidationException(Texts["Unverify/Validation/Administrator", locale].FormatWith(user.GetDisplayName()));
 
             await ValidateRolesAsync(guild, user, locale);
         }
 
         if (dbUser.Unverify != null)
-            throw new ValidationException(Localization["Unverify/Validation/MultipleUnverify", locale].FormatWith(user.GetDisplayName(), dbUser.Unverify.EndAt.ToCzechFormat()));
+            throw new ValidationException(Texts["Unverify/Validation/MultipleUnverify", locale].FormatWith(user.GetDisplayName(), dbUser.Unverify.EndAt.ToCzechFormat()));
 
         ValidateUnverifyDate(end, dbUser.User!.SelfUnverifyMinimalTime, selfunverify, locale);
     }
@@ -60,12 +60,12 @@ public class UnverifyChecker
         var diff = end - DateTime.Now.AddSeconds(-5); // Add 5 seconds tolerance.
 
         if (diff.TotalMinutes < 0)
-            throw new ValidationException(Localization["Unverify/Validation/MustBeInFuture", locale]);
+            throw new ValidationException(Texts["Unverify/Validation/MustBeInFuture", locale]);
 
         var minimal = selfunverify ? usersMinimalSelfUnverifyTime ?? SelfunverifyMinimalTime : UnverifyMinimalTime;
         if (diff < minimal)
-            throw new ValidationException(Localization["Unverify/Validation/MinimalTime", locale]
-                .FormatWith(minimal.Humanize(culture: Localization.GetCulture(locale), precision: int.MaxValue, minUnit: TimeUnit.Second)));
+            throw new ValidationException(Texts["Unverify/Validation/MinimalTime", locale]
+                .FormatWith(minimal.Humanize(culture: Texts.GetCulture(locale), precision: int.MaxValue, minUnit: TimeUnit.Second)));
     }
 
     private async Task ValidateRolesAsync(IGuild guild, IGuildUser user, string locale)
@@ -82,6 +82,6 @@ public class UnverifyChecker
         var higherRoles = userRoles.Where(o => o.Position > botRolePosition).Select(o => o.Name);
         var higherRoleNames = string.Join(", ", higherRoles);
 
-        throw new ValidationException(Localization["Unverify/Validation/HigherRoles", locale].FormatWith(user.GetDisplayName(), higherRoleNames));
+        throw new ValidationException(Texts["Unverify/Validation/HigherRoles", locale].FormatWith(user.GetDisplayName(), higherRoleNames));
     }
 }

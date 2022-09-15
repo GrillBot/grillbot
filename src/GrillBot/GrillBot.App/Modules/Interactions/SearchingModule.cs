@@ -4,7 +4,7 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
 using GrillBot.Common.Helpers;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -14,7 +14,7 @@ public class SearchingModule : InteractionsModuleBase
 {
     private SearchingService SearchingService { get; }
 
-    public SearchingModule(SearchingService searchingService, LocalizationManager localization) : base(localization)
+    public SearchingModule(SearchingService searchingService, ITextsManager texts) : base(texts)
     {
         SearchingService = searchingService;
     }
@@ -56,7 +56,7 @@ public class SearchingModule : InteractionsModuleBase
         try
         {
             await SearchingService.CreateAsync(Context.Guild, Context.User as IGuildUser, Context.Channel as IGuildChannel, message);
-            await SetResponseAsync(GetLocale(nameof(CreateSearchAsync), "Success"));
+            await SetResponseAsync(GetText(nameof(CreateSearchAsync), "Success"));
         }
         catch (ValidationException ex)
         {
@@ -73,7 +73,7 @@ public class SearchingModule : InteractionsModuleBase
         try
         {
             await SearchingService.RemoveSearchAsync(ident, Context.User as IGuildUser);
-            await SetResponseAsync(GetLocale(nameof(RemoveSearchAsync), "Success"));
+            await SetResponseAsync(GetText(nameof(RemoveSearchAsync), "Success"));
         }
         catch (UnauthorizedAccessException ex)
         {

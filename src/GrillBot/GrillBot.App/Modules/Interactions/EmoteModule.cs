@@ -4,7 +4,7 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Common.Helpers;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -14,7 +14,7 @@ public class EmoteModule : InteractionsModuleBase
 {
     private EmotesCommandService EmotesCommandService { get; }
 
-    public EmoteModule(EmotesCommandService emotesCommandService, LocalizationManager localization) : base(localization)
+    public EmoteModule(EmotesCommandService emotesCommandService, ITextsManager texts) : base(texts)
     {
         EmotesCommandService = emotesCommandService;
     }
@@ -29,7 +29,7 @@ public class EmoteModule : InteractionsModuleBase
         {
             var result = await EmotesCommandService.GetInfoAsync(emote, Context.User);
             if (result == null)
-                await SetResponseAsync(GetLocale(nameof(GetEmoteInfoAsync), "NoActivity"));
+                await SetResponseAsync(GetText(nameof(GetEmoteInfoAsync), "NoActivity"));
             else
                 await SetResponseAsync(embed: result);
         }

@@ -14,7 +14,8 @@ public class RemindControllerTests : ControllerTest<ReminderController>
     {
         var discordClient = DiscordHelper.CreateClient();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var remindService = new RemindService(discordClient, DatabaseBuilder, TestServices.Configuration.Value);
+        var texts = new TextsBuilder().Build();
+        var remindService = new RemindService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, texts);
         var apiService = new RemindApiService(DatabaseBuilder, TestServices.AutoMapper.Value, ApiRequestContext, remindService, auditLogWriter);
 
         return new ReminderController(apiService, ApiRequestContext);

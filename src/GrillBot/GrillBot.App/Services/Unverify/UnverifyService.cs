@@ -2,7 +2,7 @@ using Discord.Net;
 using GrillBot.App.Services.Permissions;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
@@ -21,11 +21,11 @@ public class UnverifyService
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager LoggingManager { get; }
-    private LocalizationManager Localization { get; }
+    private ITextsManager Texts { get; }
     private UnverifyMessageGenerator MessageGenerator { get; }
 
     public UnverifyService(DiscordSocketClient client, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder,
-        PermissionsCleaner permissionsCleaner, LoggingManager loggingManager, LocalizationManager localization, UnverifyMessageGenerator messageGenerator)
+        PermissionsCleaner permissionsCleaner, LoggingManager loggingManager, ITextsManager texts, UnverifyMessageGenerator messageGenerator)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
@@ -34,7 +34,7 @@ public class UnverifyService
         DatabaseBuilder = databaseBuilder;
         DiscordClient = client;
         LoggingManager = loggingManager;
-        Localization = localization;
+        Texts = texts;
         MessageGenerator = messageGenerator;
 
         DiscordClient.UserLeft += OnUserLeftAsync;
@@ -135,10 +135,10 @@ public class UnverifyService
 
         var dbUser = await repository.GuildUser.FindGuildUserAsync(user);
         if (dbUser?.Unverify == null)
-            throw new NotFoundException(Localization["Unverify/Update/UnverifyNotFound", locale]);
+            throw new NotFoundException(Texts["Unverify/Update/UnverifyNotFound", locale]);
 
         if ((dbUser.Unverify.EndAt - DateTime.Now).TotalSeconds <= 30.0)
-            throw new ValidationException(Localization["Unverify/Update/NotEnoughTime", locale]);
+            throw new ValidationException(Texts["Unverify/Update/NotEnoughTime", locale]);
 
         await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user);
 
@@ -241,7 +241,7 @@ public class UnverifyService
                 return;
             }
 
-            await RemoveUnverifyAsync(guild, guild.CurrentUser, user, LocalizationManager.DefaultLocale, true);
+            await RemoveUnverifyAsync(guild, guild.CurrentUser, user, TextsManager.DefaultLocale, true);
         }
         catch (Exception ex)
         {

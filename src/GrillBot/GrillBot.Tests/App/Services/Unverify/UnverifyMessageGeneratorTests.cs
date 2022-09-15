@@ -17,12 +17,12 @@ public class UnverifyMessageGeneratorTests
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
-        var result = UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/UnverifyToChannelWithoutReason", "cs", "{0},{1}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateUnverifyMessageToChannel(profile, "cs");
 
-        Assert.AreEqual(
-            "Dočasné odebrání přístupu pro uživatele **GrillBot-User-Username#1234** bylo dokončeno. Přístup bude navrácen **04. 02. 2022 00:00:00**. ",
-            result
-        );
+        Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00", result);
     }
 
     [TestMethod]
@@ -33,12 +33,12 @@ public class UnverifyMessageGeneratorTests
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
-        var result = UnverifyMessageGenerator.CreateUnverifyMessageToChannel(profile);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/UnverifyToChannelWithReason", "cs", "{0},{1},{2}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateUnverifyMessageToChannel(profile, "cs");
 
-        Assert.AreEqual(
-            "Dočasné odebrání přístupu pro uživatele **GrillBot-User-Username#1234** bylo dokončeno. Přístup bude navrácen **04. 02. 2022 00:00:00**. Důvod: Duvod",
-            result
-        );
+        Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00,Duvod", result);
     }
 
     [TestMethod]
@@ -49,12 +49,12 @@ public class UnverifyMessageGeneratorTests
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
-        var result = UnverifyMessageGenerator.CreateUnverifyPmMessage(profile, guild);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/PrivateUnverifyWithoutReason", "cs", "{0},{1}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateUnverifyPmMessage(profile, guild, "cs");
 
-        Assert.AreEqual(
-            "Byla ti dočasně odebrána všechna práva na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. ",
-            result
-        );
+        Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00", result);
     }
 
     [TestMethod]
@@ -65,12 +65,12 @@ public class UnverifyMessageGeneratorTests
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
-        var result = UnverifyMessageGenerator.CreateUnverifyPmMessage(profile, guild);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/PrivateUnverifyWithReason", "cs", "{0},{1},{2}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateUnverifyPmMessage(profile, guild, "cs");
 
-        Assert.AreEqual(
-            "Byla ti dočasně odebrána všechna práva na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**. Důvod: Duvod",
-            result
-        );
+        Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00,Duvod", result);
     }
 
     [TestMethod]
@@ -78,12 +78,12 @@ public class UnverifyMessageGeneratorTests
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var end = new DateTime(2022, 02, 04);
-        var result = UnverifyMessageGenerator.CreateUpdatePmMessage(guild, end);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/PrivateUpdate", "cs", "{0},{1}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateUpdatePmMessage(guild, end, "cs");
 
-        Assert.AreEqual(
-            "Byl ti aktualizován čas pro odebrání práv na serveru **GrillBot-Guild-Name**. Přístup ti bude navrácen **04. 02. 2022 00:00:00**.",
-            result
-        );
+        Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00", result);
     }
 
     [TestMethod]
@@ -93,24 +93,24 @@ public class UnverifyMessageGeneratorTests
         var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
-        var result = UnverifyMessageGenerator.CreateUpdateChannelMessage(guildUser, end);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/UpdateToChannel", "cs", "{0},{1}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateUpdateChannelMessage(guildUser, end, "cs");
 
-        Assert.AreEqual(
-            "Reset konce odebrání přístupu pro uživatele **GrillBot-User-Username#1234** byl aktualizován.\nPřístup bude navrácen **04. 02. 2022 00:00:00**",
-            result
-        );
+        Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00", result);
     }
 
     [TestMethod]
     public void CreateRemoveAccessManuallyPmMessage()
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyPmMessage(guild);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/PrivateManuallyRemovedUnverify", "cs", "{0}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateRemoveAccessManuallyPmMessage(guild, "cs");
 
-        Assert.AreEqual(
-           "Byl ti předčasně vrácen přístup na serveru **GrillBot-Guild-Name**.",
-           result
-        );
+        Assert.AreEqual("GrillBot-Guild-Name", result);
     }
 
     [TestMethod]
@@ -119,12 +119,12 @@ public class UnverifyMessageGeneratorTests
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
-        var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyToChannel(guildUser);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/ManuallyRemoveToChannel", "cs", "{0}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateRemoveAccessManuallyToChannel(guildUser, "cs");
 
-        Assert.AreEqual(
-           "Předčasné vrácení přístupu pro uživatele **GrillBot-User-Username#1234** bylo dokončeno.",
-           result
-        );
+        Assert.AreEqual("GrillBot-User-Username#1234", result);
     }
 
     [TestMethod]
@@ -134,9 +134,12 @@ public class UnverifyMessageGeneratorTests
         var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
         var exception = new Exception("Test");
-        var result = UnverifyMessageGenerator.CreateRemoveAccessManuallyFailed(guildUser, exception);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/ManuallyRemoveFailed", "cs", "{0}({1})")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateRemoveAccessManuallyFailed(guildUser, exception, "cs");
 
-        Assert.AreEqual("Předčasné vrácení přístupu pro uživatele **GrillBot-User-Username#1234** selhalo. (Test)", result);
+        Assert.AreEqual("GrillBot-User-Username#1234(Test)", result);
     }
 
     [TestMethod]
@@ -145,9 +148,12 @@ public class UnverifyMessageGeneratorTests
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
-        var result = UnverifyMessageGenerator.CreateRemoveAccessUnverifyNotFound(guildUser);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/RemoveAccessUnverifyNotFound", "cs", "{0}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateRemoveAccessUnverifyNotFound(guildUser, "cs");
 
-        Assert.AreEqual("Předčasné vrácení přístupu pro uživatele **GrillBot-User-Username#1234** nelze provést. Unverify nebylo nalezeno.", result);
+        Assert.AreEqual("GrillBot-User-Username#1234", result);
     }
 
     [TestMethod]
@@ -156,8 +162,11 @@ public class UnverifyMessageGeneratorTests
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
-        var result = UnverifyMessageGenerator.CreateUnverifyFailedToChannel(guildUser);
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/UnverifyFailedToChannel", "cs", "{0}")
+            .Build();
+        var result = new UnverifyMessageGenerator(texts).CreateUnverifyFailedToChannel(guildUser, "cs");
 
-        Assert.AreEqual("Dočasné odebrání přístupu pro uživatele **GrillBot-User-Username#1234** se nezdařilo. Uživatel byl obnoven do původního stavu.", result);
+        Assert.AreEqual("GrillBot-User-Username#1234", result);
     }
 }

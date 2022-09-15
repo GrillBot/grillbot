@@ -3,7 +3,7 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -13,7 +13,7 @@ public class MemeModule : InteractionsModuleBase
     private RandomizationService RandomizationService { get; }
     private IConfiguration Configuration { get; }
 
-    public MemeModule(RandomizationService randomizationService, IConfiguration configuration, LocalizationManager localization) : base(localization)
+    public MemeModule(RandomizationService randomizationService, IConfiguration configuration, ITextsManager texts) : base(texts)
     {
         RandomizationService = randomizationService;
         Configuration = configuration;
@@ -34,7 +34,7 @@ public class MemeModule : InteractionsModuleBase
     )
     {
         var emote = Configuration.GetValue<string>("Discord:Emotes:FeelsWowMan");
-        var msg = GetLocale(nameof(HiAsync), "Template").FormatWith(Context.User.GetDisplayName(false), emote);
+        var msg = GetText(nameof(HiAsync), "Template").FormatWith(Context.User.GetDisplayName(false), emote);
 
         return SetResponseAsync(@base == null ? msg : string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));
     }

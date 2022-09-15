@@ -5,7 +5,7 @@ using System.Net.Http;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -14,7 +14,7 @@ public class MathModule : InteractionsModuleBase
 {
     private IHttpClientFactory HttpClientFactory { get; }
 
-    public MathModule(IHttpClientFactory httpClientFactory, LocalizationManager localization) : base(localization)
+    public MathModule(IHttpClientFactory httpClientFactory, ITextsManager texts) : base(texts)
     {
         HttpClientFactory = httpClientFactory;
     }
@@ -32,7 +32,7 @@ public class MathModule : InteractionsModuleBase
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)
             .WithCurrentTimestamp()
-            .AddField(GetLocale(nameof(SolveExpressionAsync), "Expression"), $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength - 2)}`");
+            .AddField(GetText(nameof(SolveExpressionAsync), "Expression"), $"`{expression.Cut(EmbedFieldBuilder.MaxFieldValueLength - 2)}`");
 
         try
         {
@@ -43,19 +43,19 @@ public class MathModule : InteractionsModuleBase
             if (!response.IsSuccessStatusCode)
             {
                 embed.WithColor(Color.Red)
-                    .WithTitle(GetLocale(nameof(SolveExpressionAsync), "ComputeFailed"))
-                    .AddField(GetLocale(nameof(SolveExpressionAsync), "Report"), calcResult.Error);
+                    .WithTitle(GetText(nameof(SolveExpressionAsync), "ComputeFailed"))
+                    .AddField(GetText(nameof(SolveExpressionAsync), "Report"), calcResult.Error);
             }
             else
             {
                 embed.WithColor(Color.Green)
-                    .AddField(GetLocale(nameof(SolveExpressionAsync), "Result"), calcResult.Result);
+                    .AddField(GetText(nameof(SolveExpressionAsync), "Result"), calcResult.Result);
             }
         }
         catch (TaskCanceledException)
         {
             embed.WithColor(Color.Red)
-                .WithTitle(GetLocale(nameof(SolveExpressionAsync), "Timeout"));
+                .WithTitle(GetText(nameof(SolveExpressionAsync), "Timeout"));
         }
 
         await SetResponseAsync(embed: embed.Build());

@@ -1,15 +1,16 @@
 ﻿using Discord;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.Common.Helpers;
 
 public class GuildHelper
 {
-    private LocalizationManager Localization { get; }
+    private ITextsManager Texts { get; }
 
-    public GuildHelper(LocalizationManager localization)
+    public GuildHelper(ITextsManager texts)
     {
-        Localization = localization;
+        Texts = texts;
     }
 
     public IEnumerable<string> GetFeatures(IGuild guild, string locale, string localeId)
@@ -19,7 +20,7 @@ public class GuildHelper
 
         return Enum.GetValues<GuildFeature>()
             .Where(o => o > 0 && guild.Features.HasFeature(o))
-            .Select(o => Localization[$"{localeId}/{o}", locale])
+            .Select(o => Texts[$"{localeId}/{o}", locale])
             .Where(o => !string.IsNullOrEmpty(o))
             .Distinct()
             .OrderBy(o => o);

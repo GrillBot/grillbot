@@ -13,16 +13,18 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
     {
         var discordClient = DiscordHelper.CreateClient();
         var configuration = TestServices.Configuration.Value;
-        var checker = new UnverifyChecker(DatabaseBuilder, configuration, TestServices.ProductionEnvironment.Value);
-        var profileGenerator = new UnverifyProfileGenerator(DatabaseBuilder);
+        var texts = new TextsBuilder().Build();
+        var checker = new UnverifyChecker(DatabaseBuilder, configuration, TestServices.ProductionEnvironment.Value, texts);
+        var profileGenerator = new UnverifyProfileGenerator(DatabaseBuilder, texts);
         var logger = new UnverifyLogger(discordClient, DatabaseBuilder);
         var commandsService = DiscordHelper.CreateCommandsService();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var logging = LoggingHelper.CreateLogger<PermissionsCleaner>();
         var permissionsCleaner = new PermissionsCleaner(TestServices.CounterManager.Value, logging);
         var loggingManager = new LoggingManager(discordClient, commandsService, interactionService, TestServices.EmptyProvider.Value);
+        var messageGenerator = new UnverifyMessageGenerator(texts);
 
-        return new UnverifyService(discordClient, checker, profileGenerator, logger, DatabaseBuilder, permissionsCleaner, loggingManager);
+        return new UnverifyService(discordClient, checker, profileGenerator, logger, DatabaseBuilder, permissionsCleaner, loggingManager, texts, messageGenerator);
     }
 
     [TestMethod]

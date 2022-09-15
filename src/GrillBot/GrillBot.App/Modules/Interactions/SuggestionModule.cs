@@ -4,7 +4,7 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.App.Services.Suggestion;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -16,7 +16,7 @@ public class SuggestionModule : InteractionsModuleBase
     private EmoteSuggestionService EmoteSuggestions { get; }
     private FeatureSuggestionService FeatureSuggestions { get; }
 
-    public SuggestionModule(EmoteSuggestionService emoteSuggestionService, FeatureSuggestionService featureSuggestions, LocalizationManager localization) : base(localization)
+    public SuggestionModule(EmoteSuggestionService emoteSuggestionService, FeatureSuggestionService featureSuggestions, ITextsManager texts) : base(texts)
     {
         EmoteSuggestions = emoteSuggestionService;
         CanDefer = false;
@@ -35,19 +35,19 @@ public class SuggestionModule : InteractionsModuleBase
         switch (emote)
         {
             case null when attachment == null:
-                await SetResponseAsync(GetLocale(nameof(SuggestEmoteAsync), "NoEmoteAndAttachment"));
+                await SetResponseAsync(GetText(nameof(SuggestEmoteAsync), "NoEmoteAndAttachment"));
                 return;
             case Emote emoteData when Context.Guild.Emotes.Any(o => o.Id == emoteData.Id):
-                await SetResponseAsync(GetLocale(nameof(SuggestEmoteAsync), "EmoteExistsInGuild"));
+                await SetResponseAsync(GetText(nameof(SuggestEmoteAsync), "EmoteExistsInGuild"));
                 return;
         }
 
         var sessionId = Guid.NewGuid().ToString();
-        var modal = new ModalBuilder(GetLocale(nameof(SuggestEmoteAsync), "ModalTitle"), $"suggestions_emote:{sessionId}")
-            .AddTextInput(GetLocale(nameof(SuggestEmoteAsync), "ModalEmoteName"), "suggestions_emote_name", minLength: 2, maxLength: 50, required: true,
+        var modal = new ModalBuilder(GetText(nameof(SuggestEmoteAsync), "ModalTitle"), $"suggestions_emote:{sessionId}")
+            .AddTextInput(GetText(nameof(SuggestEmoteAsync), "ModalEmoteName"), "suggestions_emote_name", minLength: 2, maxLength: 50, required: true,
                 value: emote?.Name ?? Path.GetFileNameWithoutExtension(attachment!.Filename))
-            .AddTextInput(GetLocale(nameof(SuggestEmoteAsync), "ModalEmoteDescription"), "suggestions_emote_description", TextInputStyle.Paragraph,
-                GetLocale(nameof(SuggestEmoteAsync), "ModalEmoteDescriptionPlaceholder"), maxLength: EmbedFieldBuilder.MaxFieldValueLength, required: false)
+            .AddTextInput(GetText(nameof(SuggestEmoteAsync), "ModalEmoteDescription"), "suggestions_emote_description", TextInputStyle.Paragraph,
+                GetText(nameof(SuggestEmoteAsync), "ModalEmoteDescriptionPlaceholder"), maxLength: EmbedFieldBuilder.MaxFieldValueLength, required: false)
             .Build();
 
         var suggestionData = emote as object ?? attachment;
@@ -63,7 +63,7 @@ public class SuggestionModule : InteractionsModuleBase
         {
             var user = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
             await EmoteSuggestions.ProcessSessionAsync(sessionId, Context.Guild, user, modal);
-            await Context.User.SendMessageAsync(GetLocale(nameof(EmoteSuggestionFormSubmitedAsync), "Success"));
+            await Context.User.SendMessageAsync(GetText(nameof(EmoteSuggestionFormSubmitedAsync), "Success"));
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
         {
@@ -109,7 +109,7 @@ public class SuggestionModule : InteractionsModuleBase
         {
             await DeferAsync();
             await EmoteSuggestions.ProcessSuggestionsToVoteAsync(Context.Guild);
-            await SetResponseAsync(GetLocale(nameof(ProcessEmoteSuggestionsAsync), "Success"));
+            await SetResponseAsync(GetText(nameof(ProcessEmoteSuggestionsAsync), "Success"));
         }
         catch (GrillBotException ex)
         {
@@ -132,7 +132,7 @@ public class SuggestionModule : InteractionsModuleBase
         try
         {
             await FeatureSuggestions.ProcessSessionAsync(sessionId, Context.User, modal);
-            await Context.User.SendMessageAsync(GetLocale(nameof(FeatureSuggestionSubmittedAsync), "Success"));
+            await Context.User.SendMessageAsync(GetText(nameof(FeatureSuggestionSubmittedAsync), "Success"));
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
         {

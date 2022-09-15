@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 
@@ -8,12 +8,12 @@ namespace GrillBot.App.Services.Unverify;
 public class UnverifyProfileGenerator
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private LocalizationManager Localization { get; }
+    private ITextsManager Texts { get; }
 
-    public UnverifyProfileGenerator(GrillBotDatabaseBuilder databaseBuilder, LocalizationManager localization)
+    public UnverifyProfileGenerator(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts)
     {
         DatabaseBuilder = databaseBuilder;
-        Localization = localization;
+        Texts = texts;
     }
 
     public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole, string locale)
@@ -49,7 +49,7 @@ public class UnverifyProfileGenerator
 
     private string ParseReason(string data, string locale)
     {
-        var ex = new ValidationException(Localization["Unverify/Validation/UnverifyWithoutReason", locale]);
+        var ex = new ValidationException(Texts["Unverify/Validation/UnverifyWithoutReason", locale]);
 
         var parts = data.Split("<@", StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 2) throw ex;
@@ -144,7 +144,7 @@ public class UnverifyProfileGenerator
     private void CheckDefinition(Dictionary<string, List<string>> definitions, string item, string locale)
     {
         if (!ExistsInKeepDefinition(definitions, item))
-            throw new ValidationException(Localization["Unverify/Validation/UndefinedKeepable", locale].FormatWith(item.ToUpper()));
+            throw new ValidationException(Texts["Unverify/Validation/UndefinedKeepable", locale].FormatWith(item.ToUpper()));
     }
 
     private async Task<Dictionary<string, List<string>>> GetKeepablesAsync()

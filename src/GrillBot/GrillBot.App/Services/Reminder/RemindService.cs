@@ -3,7 +3,7 @@ using GrillBot.App.Infrastructure;
 using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Services.Reminder;
@@ -14,14 +14,14 @@ public class RemindService
     private IConfiguration Configuration { get; }
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private LocalizationManager Localization { get; }
+    private ITextsManager Texts { get; }
 
-    public RemindService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, LocalizationManager localization)
+    public RemindService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts)
     {
         Configuration = configuration;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
-        Localization = localization;
+        Texts = texts;
     }
 
     public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
@@ -246,11 +246,11 @@ public class RemindService
 
         var incoming = data
             .Where(o => o.ToUserId == userId)
-            .ToDictionary(o => o.Id, o => Localization["RemindModule/Suggestions/Incoming", locale].FormatWith(o.Id, o.At.ToCzechFormat(), o.FromUser!.FullName()));
+            .ToDictionary(o => o.Id, o => Texts["RemindModule/Suggestions/Incoming", locale].FormatWith(o.Id, o.At.ToCzechFormat(), o.FromUser!.FullName()));
 
         var outgoing = data
             .Where(o => o.FromUserId == userId)
-            .ToDictionary(o => o.Id, o => Localization["RemindModule/Suggestions/Outgoing", locale].FormatWith(o.Id, o.At.ToCzechFormat(), o.ToUser!.FullName()));
+            .ToDictionary(o => o.Id, o => Texts["RemindModule/Suggestions/Outgoing", locale].FormatWith(o.Id, o.At.ToCzechFormat(), o.ToUser!.FullName()));
 
         return incoming
             .Concat(outgoing)

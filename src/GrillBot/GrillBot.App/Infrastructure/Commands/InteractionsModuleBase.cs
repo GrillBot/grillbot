@@ -1,5 +1,5 @@
 ﻿using Discord.Interactions;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Infrastructure.Commands;
 
@@ -7,17 +7,17 @@ namespace GrillBot.App.Infrastructure.Commands;
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
     protected bool CanDefer { get; set; } = true;
-    private LocalizationManager Localization { get; }
+    private ITextsManager Texts { get; }
 
     protected string Locale
         => Context?.Interaction?.UserLocale;
 
     protected CultureInfo Culture
-        => string.IsNullOrEmpty(Locale) ? null : Localization.GetCulture(Locale);
+        => string.IsNullOrEmpty(Locale) ? null : Texts.GetCulture(Locale);
 
-    protected InteractionsModuleBase(LocalizationManager localization = null)
+    protected InteractionsModuleBase(ITextsManager texts = null)
     {
-        Localization = localization;
+        Texts = texts;
     }
 
     /// <summary>
@@ -80,8 +80,8 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         }, requestOptions);
     }
 
-    protected string GetLocale(string method, string id)
-        => Localization?[GetLocaleId(method, id), Locale];
+    protected string GetText(string method, string id)
+        => Texts?[GetTextId(method, id), Locale];
 
-    protected string GetLocaleId(string method, string id) => $"{GetType().Name}/{method.Replace("Async", "")}/{id}";
+    protected string GetTextId(string method, string id) => $"{GetType().Name}/{method.Replace("Async", "")}/{id}";
 }

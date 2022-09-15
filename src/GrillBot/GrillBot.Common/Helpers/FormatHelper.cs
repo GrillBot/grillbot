@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 using Humanizer;
 using Markdig;
 
@@ -7,11 +8,11 @@ namespace GrillBot.Common.Helpers;
 
 public class FormatHelper
 {
-    private LocalizationManager Localization { get; }
+    private ITextsManager Texts { get; }
 
-    public FormatHelper(LocalizationManager localization)
+    public FormatHelper(ITextsManager texts)
     {
-        Localization = localization;
+        Texts = texts;
     }
 
     public static string FormatMembersToCzech(long count) => Format(count, "člen", "členové", "členů");
@@ -48,7 +49,7 @@ public class FormatHelper
             _ => "FiveAndMore"
         };
 
-        var text = Localization[$"{id}/{countId}", locale];
-        return text.FormatWith(Localization.GetCulture(locale), count);
+        var text = Texts[$"{id}/{countId}", locale];
+        return text.FormatWith(Texts.GetCulture(locale), count);
     }
 }

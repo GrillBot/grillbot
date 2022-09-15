@@ -37,15 +37,17 @@ public class UnverifyControllerTests : ControllerTest<UnverifyController>
 
         var discordClient = DiscordHelper.CreateClient();
         var configuration = TestServices.Configuration.Value;
-        var unverifyChecker = new UnverifyChecker(DatabaseBuilder, configuration, TestServices.ProductionEnvironment.Value);
-        var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder);
+        var texts = new TextsBuilder().Build();
+        var unverifyChecker = new UnverifyChecker(DatabaseBuilder, configuration, TestServices.ProductionEnvironment.Value, texts);
+        var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder, texts);
         var logger = new UnverifyLogger(discordClient, DatabaseBuilder);
         var commandsService = DiscordHelper.CreateCommandsService();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
         var logging = LoggingHelper.CreateLogger<PermissionsCleaner>();
         var permissionsCleaner = new PermissionsCleaner(TestServices.CounterManager.Value, logging);
         var loggingManager = new LoggingManager(discordClient, commandsService, interactionService, TestServices.EmptyProvider.Value);
-        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DatabaseBuilder, permissionsCleaner, loggingManager);
+        var messageGenerator = new UnverifyMessageGenerator(texts);
+        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, logger, DatabaseBuilder, permissionsCleaner, loggingManager, texts, messageGenerator);
         var mapper = TestServices.AutoMapper.Value;
         var unverifyApiService = new UnverifyApiService(DatabaseBuilder, mapper, dcClient, ApiRequestContext);
 

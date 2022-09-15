@@ -3,7 +3,7 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Data.Models.Duck;
 using System.Net.Http;
 using GrillBot.App.Infrastructure.Commands;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -13,7 +13,7 @@ public class DuckModule : InteractionsModuleBase
     private IHttpClientFactory HttpClientFactory { get; }
     private IConfiguration Configuration { get; }
 
-    public DuckModule(IHttpClientFactory httpClientFactory, IConfiguration configuration, LocalizationManager localization) : base(localization)
+    public DuckModule(IHttpClientFactory httpClientFactory, IConfiguration configuration, ITextsManager texts) : base(texts)
     {
         HttpClientFactory = httpClientFactory;
         Configuration = configuration;
@@ -26,12 +26,12 @@ public class DuckModule : InteractionsModuleBase
         if (currentState == null)
         {
             var infoChannel = Configuration.GetValue<string>("Services:KachnaOnline:InfoChannel");
-            await SetResponseAsync(GetLocale(nameof(GetDuckInfoAsync), "CannotGetState").FormatWith(infoChannel));
+            await SetResponseAsync(GetText(nameof(GetDuckInfoAsync), "CannotGetState").FormatWith(infoChannel));
             return;
         }
 
         var embed = new EmbedBuilder()
-            .WithAuthor(GetLocale(nameof(GetDuckInfoAsync), "DuckName"))
+            .WithAuthor(GetText(nameof(GetDuckInfoAsync), "DuckName"))
             .WithColor(Color.Gold)
             .WithCurrentTimestamp();
 
@@ -67,7 +67,7 @@ public class DuckModule : InteractionsModuleBase
 
     private void ProcessPrivateOrClosed(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
-        titleBuilder.AppendLine(GetLocale(nameof(GetDuckInfoAsync), "Closed"));
+        titleBuilder.AppendLine(GetText(nameof(GetDuckInfoAsync), "Closed"));
 
         if (state.FollowingState != null)
         {
@@ -81,7 +81,7 @@ public class DuckModule : InteractionsModuleBase
             return;
         }
 
-        titleBuilder.Append(GetLocale(nameof(GetDuckInfoAsync), "NextOpenNotPlanned"));
+        titleBuilder.Append(GetText(nameof(GetDuckInfoAsync), "NextOpenNotPlanned"));
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 
@@ -90,7 +90,7 @@ public class DuckModule : InteractionsModuleBase
         var left = state.FollowingState.Start - DateTime.Now;
 
         titleBuilder
-            .Append(GetLocale(nameof(GetDuckInfoAsync), "NextOpenAt").FormatWith(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)));
+            .Append(GetText(nameof(GetDuckInfoAsync), "NextOpenAt").FormatWith(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)));
 
         AddNoteToEmbed(embedBuilder, state.Note);
     }
@@ -99,26 +99,26 @@ public class DuckModule : InteractionsModuleBase
     {
         if (string.IsNullOrEmpty(state.Note))
         {
-            embed.AddField(GetLocale(nameof(GetDuckInfoAsync), "WhatsNext"),
-                GetLocale(nameof(GetDuckInfoAsync), "WhatsNextUnknown").FormatWith(state.FollowingState.PlannedEnd!.Value.ToString("dd. MM. HH:mm")));
+            embed.AddField(GetText(nameof(GetDuckInfoAsync), "WhatsNext"),
+                GetText(nameof(GetDuckInfoAsync), "WhatsNextUnknown").FormatWith(state.FollowingState.PlannedEnd!.Value.ToString("dd. MM. HH:mm")));
 
             return;
         }
 
-        AddNoteToEmbed(embed, state.Note, GetLocale(nameof(GetDuckInfoAsync), "WhatsNext"));
+        AddNoteToEmbed(embed, state.Note, GetText(nameof(GetDuckInfoAsync), "WhatsNext"));
     }
 
     private void ProcessOpenBar(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
-        titleBuilder.Append(GetLocale(nameof(GetDuckInfoAsync), "Opened"));
-        embedBuilder.AddField(GetLocale(nameof(GetDuckInfoAsync), "Open"), state.Start.ToString("HH:mm"), true);
+        titleBuilder.Append(GetText(nameof(GetDuckInfoAsync), "Opened"));
+        embedBuilder.AddField(GetText(nameof(GetDuckInfoAsync), "Open"), state.Start.ToString("HH:mm"), true);
 
         if (state.PlannedEnd.HasValue)
         {
             var left = state.PlannedEnd.Value - DateTime.Now;
 
-            titleBuilder.Append(GetLocale(nameof(GetDuckInfoAsync), "TimeToClose").FormatWith(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)));
-            embedBuilder.AddField(GetLocale(nameof(GetDuckInfoAsync), "Closing"), state.PlannedEnd.Value.ToString("HH:mm"), true);
+            titleBuilder.Append(GetText(nameof(GetDuckInfoAsync), "TimeToClose").FormatWith(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)));
+            embedBuilder.AddField(GetText(nameof(GetDuckInfoAsync), "Closing"), state.PlannedEnd.Value.ToString("HH:mm"), true);
         }
 
         AddNoteToEmbed(embedBuilder, state.Note);
@@ -127,7 +127,7 @@ public class DuckModule : InteractionsModuleBase
     private void ProcessChillzone(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
         titleBuilder
-            .Append(GetLocale(nameof(GetDuckInfoAsync), "ChillzoneTo").FormatWith(state.PlannedEnd!.Value.ToString("HH:mm")));
+            .Append(GetText(nameof(GetDuckInfoAsync), "ChillzoneTo").FormatWith(state.PlannedEnd!.Value.ToString("HH:mm")));
 
         AddNoteToEmbed(embedBuilder, state.Note);
     }
@@ -135,7 +135,7 @@ public class DuckModule : InteractionsModuleBase
     private void AddNoteToEmbed(EmbedBuilder embed, string note, string title = null)
     {
         if (string.IsNullOrEmpty(title))
-            title = GetLocale(nameof(GetDuckInfoAsync), "Note");
+            title = GetText(nameof(GetDuckInfoAsync), "Note");
 
         if (!string.IsNullOrEmpty(note))
             embed.AddField(title, note);

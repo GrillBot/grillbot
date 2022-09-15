@@ -3,6 +3,7 @@ using GrillBot.Tests.Infrastructure.Discord;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.Reminder;
@@ -24,7 +25,12 @@ public class RemindServiceTests : ServiceTest<RemindService>
             .SetGetGuildsAction(new[] { guild })
             .Build();
 
-        return new RemindService(discordClient, DatabaseBuilder, TestServices.Configuration.Value);
+        var texts = new TextsBuilder()
+            .AddText("RemindModule/Suggestions/Incoming", "cs", "{0}{1}{2}")
+            .AddText("RemindModule/Suggestions/Outgoing", "cs", "{0}{1}{2}")
+            .Build();
+
+        return new RemindService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, texts);
     }
 
     [TestMethod]
@@ -302,7 +308,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         await Repository.AddAsync(remind);
         await Repository.CommitAsync();
 
-        var suggestions = await Service.GetRemindSuggestionsAsync(User);
+        var suggestions = await Service.GetRemindSuggestionsAsync(User, "cs");
         Assert.AreEqual(1, suggestions.Count);
     }
 }

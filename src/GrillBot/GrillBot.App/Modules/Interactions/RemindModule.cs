@@ -5,7 +5,7 @@ using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Common;
 using GrillBot.Common.Helpers;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -15,7 +15,7 @@ public class RemindModule : InteractionsModuleBase
 {
     private RemindService RemindService { get; }
 
-    public RemindModule(RemindService remindService, LocalizationManager localization) : base(localization)
+    public RemindModule(RemindService remindService, ITextsManager texts) : base(texts)
     {
         RemindService = remindService;
     }
@@ -40,7 +40,7 @@ public class RemindModule : InteractionsModuleBase
             var remindId = await RemindService.CreateRemindAsync(Context.User, who, at, message, originalMessage.Id);
 
             var buttons = secret ? null : new ComponentBuilder().WithButton(customId: $"remind_copy:{remindId}", emote: Emojis.PersonRisingHand).Build();
-            var msg = GetLocale(nameof(CreateAsync), "Success") + (secret ? "" : " " + GetLocale(nameof(CreateAsync), "CopyMessage").FormatWith(Emojis.PersonRisingHand.ToString()));
+            var msg = GetText(nameof(CreateAsync), "Success") + (secret ? "" : " " + GetText(nameof(CreateAsync), "CopyMessage").FormatWith(Emojis.PersonRisingHand.ToString()));
             await SetResponseAsync(msg, components: buttons, secret: secret);
         }
         catch (ValidationException ex)
@@ -60,7 +60,7 @@ public class RemindModule : InteractionsModuleBase
         try
         {
             await RemindService.CancelRemindAsync(id, Context.User, notify);
-            await SetResponseAsync(GetLocale(nameof(CancelRemindAsync), notify ? "CancelledWithNotify" : "Cancelled"));
+            await SetResponseAsync(GetText(nameof(CancelRemindAsync), notify ? "CancelledWithNotify" : "Cancelled"));
         }
         catch (ValidationException ex)
         {

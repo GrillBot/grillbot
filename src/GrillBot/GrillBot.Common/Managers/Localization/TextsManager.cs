@@ -2,9 +2,9 @@
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
-namespace GrillBot.Common.Managers;
+namespace GrillBot.Common.Managers.Localization;
 
-public class LocalizationManager
+public class TextsManager : ITextsManager
 {
     public const string DefaultLocale = "en-US";
     private readonly string[] _supportedLocales = { "cs", DefaultLocale };
@@ -17,7 +17,7 @@ public class LocalizationManager
 
     private readonly Regex _localeParserRegex = new("\\w+.(?<locale>\\w{2}(?:-\\w{2})?).json", RegexOptions.Compiled | RegexOptions.Singleline);
 
-    public LocalizationManager(string basePath, string fileMask)
+    public TextsManager(string basePath, string fileMask)
     {
         Data = new Dictionary<string, string>();
         BasePath = basePath;
@@ -65,10 +65,10 @@ public class LocalizationManager
                 break;
         }
     }
-    
+
     public string this[string id, string locale]
         => Get(id, locale);
-    
+
     private string Get(string id, string locale)
     {
         return Get(GetKey(id, locale)) ?? Get(GetKey(id, DefaultLocale))

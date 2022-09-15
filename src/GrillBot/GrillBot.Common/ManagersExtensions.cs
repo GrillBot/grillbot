@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,8 +22,8 @@ public static class ManagersExtensions
 
     public static IServiceCollection AddLocalization(this IServiceCollection services, string basePath, string fileMask)
     {
-        var manager = new LocalizationManager(basePath, fileMask);
-        return services.AddSingleton(manager);
+        var manager = new TextsManager(basePath, fileMask);
+        return services.AddSingleton<ITextsManager>(manager);
     }
 
     public static IServiceCollection AddHelpers(this IServiceCollection services)

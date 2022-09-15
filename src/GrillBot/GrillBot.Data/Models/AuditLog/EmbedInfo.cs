@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Discord;
 
@@ -15,6 +16,7 @@ public class EmbedInfo
     public string ProviderName { get; set; }
     public string ThumbnailInfo { get; set; }
     public int FieldsCount { get; set; }
+    public List<EmbedFieldInfo> Fields { get; set; }
 
     public EmbedInfo()
     {
@@ -31,10 +33,13 @@ public class EmbedInfo
         VideoInfo = ParseVideoInfo(embed.Video);
 
         if (embed.Image != null)
-            ImageInfo = $"{embed.Image.Value.Url} ({embed.Image.Value.Width}x{embed.Image.Value.Height})";
+            ImageInfo = $"{embed.Image!.Value.Url} ({embed.Image.Value.Width}x{embed.Image.Value.Height})";
 
         if (embed.Thumbnail != null)
-            ThumbnailInfo = $"{embed.Thumbnail.Value.Url} ({embed.Thumbnail.Value.Width}x{embed.Thumbnail.Value.Height})";
+            ThumbnailInfo = $"{embed.Thumbnail!.Value.Url} ({embed.Thumbnail.Value.Width}x{embed.Thumbnail.Value.Height})";
+
+        if (FieldsCount > 0)
+            Fields = embed.Fields.Select(o => new EmbedFieldInfo(o)).ToList();
     }
 
     private string ParseVideoInfo(EmbedVideo? video)
@@ -42,11 +47,11 @@ public class EmbedInfo
         if (video == null)
             return null;
 
-        var size = $"({video.Value.Width}x{video.Value.Height})";
+        var size = $"({video!.Value.Width}x{video.Value.Height})";
 
         if (ProviderName != "Twitch")
             return $"{video.Value.Url} {size}";
-        
+
         var url = new Uri(video.Value.Url);
         var queryFields = url.Query[1..].Split('&').Select(o => o.Split('=')).ToDictionary(o => o[0], o => o[1]);
         return $"{queryFields["channel"]} {size}";

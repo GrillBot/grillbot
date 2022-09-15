@@ -64,7 +64,7 @@
   },
   "bot": {
     "name": "bot",
-    "description": "Příkazy k informacím a konfiguraci bota.",
+    "description": "Správa bota",
     "info": {
       "name": "info",
       "description": "Informace o botovi"
@@ -74,7 +74,7 @@
       "description": "Konfigurace selfunverify.",
       "list-keepables": {
         "name": "list-keepables",
-        "description": "Seznam ponechatelných přístpů při selfunverify"
+        "description": "Seznam ponechatelných přístupů při selfunverify"
       }
     }
   },
@@ -90,7 +90,7 @@
     },
     "board": {
       "name": "board",
-      "description": "TOP 10 statistik kanálů, kam máš přístup."
+      "description": "Statistika nejaktivnějších kanálů na serveru."
     }
   },
   "duck": {
@@ -142,7 +142,7 @@
           "name": "Zobrazit animované emoty"
         },
         "Hide animated emotes": {
-          "name": "Pryč animované emoty"
+          "name": "Nezobrazovat animované emoty"
         }
       }
     }
@@ -169,7 +169,7 @@
   },
   "hi": {
     "name": "hi",
-    "description": "Pozdrav uživatele",
+    "description": "Pozdravit uživatele",
     "base": {
       "name": "base",
       "description": "Řekni botovi, v jaké soustavě tě má podravit.",
@@ -212,7 +212,7 @@
       },
       "secret": {
         "name": "tajne",
-        "description": "Toto upozornění má být skryto před zraky ostatních.",
+        "description": "O vytvoření připomenutí by neměl nikdo vědět.",
         "Yes": {
           "name": "Ano"
         },

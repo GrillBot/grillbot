@@ -2,14 +2,14 @@
   "$schema": "https://gist.github.com/Cenngo/d46a881de24823302f66c3c7e2f7b254",
   "selfunverify": {
     "name": "selfunverify",
-    "description": "Temporarily remove access to yourself on the server.",
+    "description": "Temporarily deny access to yourself on the server.",
     "end": {
       "name": "end",
       "description": "End date and time, or duration of access removal."
     },
     "keepables": {
       "name": "keepables",
-      "description": "A list of allowable accesses. Separate with a comma, space, or semicolon."
+      "description": "A list of channels or roles to keep access. Separate with a comma, space, or semicolon."
     }
   },
   "me": {
@@ -43,7 +43,7 @@
     "description": "Birthdays",
     "today": {
       "name": "today",
-      "description": "Finding out who's birthday is today."
+      "description": "Find out whose birthday it is today."
     },
     "add": {
       "name": "add",
@@ -64,7 +64,7 @@
   },
   "bot": {
     "name": "bot",
-    "description": "Bot information and configuration commands.",
+    "description": "Bot management",
     "info": {
       "name": "info",
       "description": "Bot info"
@@ -90,12 +90,12 @@
     },
     "board": {
       "name": "board",
-      "description": "TOP 10 channel statistics you can access."
+      "description": "Statistics of the most active channels on the server."
     }
   },
   "duck": {
     "name": "duck",
-    "description": "Finds the current state of the duck club."
+    "description": "Find out about the current state of the duck club."
   },
   "emote": {
     "name": "emote",
@@ -142,7 +142,7 @@
           "name": "Show animated emotes"
         },
         "Hide animated emotes": {
-          "name": "Hide animated emotes"
+          "name": "Don't show animated emotes"
         }
       }
     }
@@ -212,7 +212,7 @@
       },
       "secret": {
         "name": "secret",
-        "description": "This notification should be hidden from others.",
+        "description": "No one should know about creating a reminder.",
         "Yes": {
           "name": "Yes"
         },
@@ -281,7 +281,7 @@
     "description": "Submission of proposal",
     "emote": {
       "name": "emote",
-      "description": "Submitting a proposal to add a new emote.",
+      "description": "Submission of a proposal for an emote",
       "emote": {
         "name": "emote",
         "description": "Option to design an emote based on an existing emote (from another server)."

@@ -99,15 +99,28 @@ public class UserRepository : RepositoryBase
         }
     }
 
+    private IQueryable<User> GetUsersWithTodayBirthdayQuery()
+    {
+        var today = DateTime.Now;
+
+        return Context.Users.AsNoTracking()
+            .Where(o => o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
+            .OrderBy(o => o.Id);
+    }
+
+    public async Task<bool> HaveSomeoneBirthdayTodayAsync()
+    {
+        using (CreateCounter())
+        {
+            return await GetUsersWithTodayBirthdayQuery().AnyAsync();
+        }
+    }
+
     public async Task<List<User>> GetUsersWithTodayBirthday()
     {
         using (CreateCounter())
         {
-            var today = DateTime.Now;
-
-            return await Context.Users.AsNoTracking()
-                .Where(o => o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
-                .ToListAsync();
+            return await GetUsersWithTodayBirthdayQuery().ToListAsync();
         }
     }
 

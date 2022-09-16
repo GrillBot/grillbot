@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Actions\Commands" />
     <Folder Include="GrillBotData\Cache\Peepolove\" />
   </ItemGroup>
 

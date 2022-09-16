@@ -13,11 +13,7 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     protected override BirthdayService CreateService()
     {
         User = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var discordClient = new ClientBuilder()
-            .SetGetUserAction(User)
-            .Build();
-
-        return new BirthdayService(discordClient, DatabaseBuilder);
+        return new BirthdayService(DatabaseBuilder);
     }
 
     [TestMethod]
@@ -71,17 +67,5 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
     {
         var result = await Service.HaveBirthdayAsync(User);
         Assert.IsFalse(result);
-    }
-
-    [TestMethod]
-    public async Task GetTodayBirthdaysAsync()
-    {
-        var dbUser = Database.Entity.User.FromDiscord(User);
-        dbUser.Birthday = DateTime.Today;
-        await Repository.AddAsync(dbUser);
-        await Repository.CommitAsync();
-
-        var result = await Service.GetTodayBirthdaysAsync();
-        Assert.AreEqual(1, result.Count);
     }
 }

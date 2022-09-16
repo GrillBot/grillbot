@@ -1,6 +1,7 @@
 using System.Reflection;
 using Discord.Commands;
 using Discord.Interactions;
+using GrillBot.App.Actions;
 using GrillBot.App.Handlers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
@@ -91,6 +92,7 @@ public class Startup
             .AddDatabase(connectionString)
             .AddMemoryCache()
             .AddScoped<ApiRequest>()
+            .AddActions()
             .AddControllers(c =>
             {
                 c.Filters.Add<ExceptionFilter>();

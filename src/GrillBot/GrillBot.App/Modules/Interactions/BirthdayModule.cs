@@ -1,6 +1,8 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Actions.Api.V2;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Services.Birthday;
+using Microsoft.Extensions.DependencyInjection;
 using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -9,19 +11,25 @@ namespace GrillBot.App.Modules.Interactions;
 public class BirthdayModule : InteractionsModuleBase
 {
     private BirthdayService BirthdayService { get; }
+    private IServiceProvider ServiceProvider { get; }
     private IConfiguration Configuration { get; }
 
-    public BirthdayModule(BirthdayService birthdayService, IConfiguration configuration, ITextsManager texts) : base(texts)
+    public BirthdayModule(BirthdayService birthdayService, IConfiguration configuration, ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
     {
         BirthdayService = birthdayService;
+        ServiceProvider = serviceProvider;
         Configuration = configuration;
     }
 
     [SlashCommand("today", "Finding out who's birthday is today.")]
     public async Task TodayBirthdayAsync()
     {
-        var users = await BirthdayService.GetTodayBirthdaysAsync();
-        await SetResponseAsync(BirthdayHelper.Format(users, Configuration));
+        using var scope = ServiceProvider.CreateScope();
+
+        var action = scope.ServiceProvider.GetRequiredService<GetTodayBirthdayInfo>();
+        var result = await action.ProcessAsync();
+
+        await SetResponseAsync(result);
     }
 
     [SlashCommand("add", "Adding your date of birth.")]

@@ -172,7 +172,7 @@
     "description": "Pozdravit uživatele",
     "base": {
       "name": "base",
-      "description": "Řekni botovi, v jaké soustavě tě má podravit.",
+      "description": "Řekni botovi, v jaké soustavě tě má pozdravit.",
       "Binary": {
         "name": "Binární"
       },

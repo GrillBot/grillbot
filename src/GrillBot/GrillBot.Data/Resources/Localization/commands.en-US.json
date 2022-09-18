@@ -278,7 +278,7 @@
   },
   "suggestion": {
     "name": "suggestion",
-    "description": "Submission of proposal",
+    "description": "Submission of a proposal",
     "emote": {
       "name": "emote",
       "description": "Submission of a proposal for an emote",

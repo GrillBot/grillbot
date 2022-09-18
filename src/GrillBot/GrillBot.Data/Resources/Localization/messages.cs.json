@@ -65,12 +65,12 @@
       "ThreadCount": "Počet vláken",
       "PublicThreadCountValue": {
         "One": "{0:N0} veřejné vlákno",
-        "TwoToFour": "{0:N0} veřejné vlákna",
+        "TwoToFour": "{0:N0} veřejná vlákna",
         "FiveAndMore": "{0:N0} veřejných vláken"
       },
       "PrivateThreadCountValue": {
         "One": "{0:N0} soukromé vlákno",
-        "TwoToFour": "{0:N0} soukromé vlákna",
+        "TwoToFour": "{0:N0} soukromá vlákna",
         "FiveAndMore": "{0:N0} soukromých vláken"
       },
       "MessageCount": "Počet zpráv",
@@ -150,7 +150,7 @@
         "WelcomeScreenEnabled": "Uvítací obrazovka",
         "MonetizationEnabled": "Monetizace",
         "MoreStickers": "Nálepky",
-        "PrivateThreads": "Privátní vlákna",
+        "PrivateThreads": "Soukromá vlákna",
         "RoleIcons": "Ikony rolí",
         "SevenDayThreadArchive": "Archivace vláken po týdnu",
         "ThreeDayThreadArchive": "Archivace vláken po 3 dnech",

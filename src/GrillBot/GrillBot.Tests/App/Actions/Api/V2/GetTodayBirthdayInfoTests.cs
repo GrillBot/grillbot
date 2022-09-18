@@ -72,20 +72,14 @@ public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
     }
 
     [TestMethod]
-    public async Task ProcessAsync_LastWithoutYear()
+    public async Task ProcessAsync_OnlyOne()
     {
         var now = DateTime.Now;
 
         var withYear = Database.Entity.User.FromDiscord(Users[0]);
         withYear.Birthday = now.Date;
 
-        var withoutYear = Database.Entity.User.FromDiscord(Users[1]);
-        withoutYear.Birthday = new DateTime(0001, now.Month, now.Day);
-
-        var unknownUser = Database.Entity.User.FromDiscord(new UserBuilder().SetIdentity(Consts.UserId + 4, Consts.Username, Consts.Discriminator).Build());
-        unknownUser.Birthday = new DateTime(0001, now.Month, now.Day);
-
-        await Repository.AddCollectionAsync(new[] { withYear, withoutYear, unknownUser });
+        await Repository.AddCollectionAsync(new[] { withYear });
         await Repository.CommitAsync();
 
         var result = await Action.ProcessAsync();

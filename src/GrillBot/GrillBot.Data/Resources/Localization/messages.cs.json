@@ -36,7 +36,7 @@
   },
   "ChannelModule": {
     "GetChannelInfo": {
-      "UserNotFound": "Nepodařilo se dohledat uživatele, která zavolal příkaz.",
+      "UserNotFound": "Nepodařilo se dohledat uživatele, který zavolal příkaz.",
       "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
       "CreatedAt": "Založeno",
       "MemberCount": "Počet členů",
@@ -90,7 +90,7 @@
       "TopTen": "TOP 10 uživatelů"
     },
     "GetChannelboard": {
-      "UserNotFound": "Nepodařilo se dohledat uživatele, která zavolal příkaz.",
+      "UserNotFound": "Nepodařilo se dohledat uživatele, který zavolal příkaz.",
       "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
       "NoActivity": "Doteď nebyla zaznamenána žádná aktivita v kanálech."
     }

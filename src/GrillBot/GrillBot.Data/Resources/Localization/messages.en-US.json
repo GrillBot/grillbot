@@ -13,7 +13,7 @@
     },
     "Have": {
       "Yes": "Yes. You have your birthday saved.",
-      "No": "No. You don't have a birthday saved."
+      "No": "No. You don't have your a birthday saved."
     }
   },
   "BotModule": {
@@ -71,7 +71,7 @@
       "PrivateThreadCountValue": {
         "One": "{0:N0} private thread",
         "TwoToFour": "{0:N0} private threads",
-        "FiveAndMore": "{0:N0} soukromých vláken"
+        "FiveAndMore": "{0:N0} private threads"
       },
       "MessageCount": "Number of messages",
       "MessageCountValue": {

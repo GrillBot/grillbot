@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 
 namespace GrillBot.App.Actions.Api.V2;
@@ -9,13 +10,15 @@ public class GetTodayBirthdayInfo : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
     private IConfiguration Configuration { get; }
+    private ITextsManager Texts { get; }
 
     public GetTodayBirthdayInfo(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder,
-        IDiscordClient discordClient, IConfiguration configuration) : base(apiContext)
+        IDiscordClient discordClient, IConfiguration configuration, ITextsManager texts) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
         Configuration = configuration;
+        Texts = texts;
     }
 
     public async Task<string> ProcessAsync()
@@ -43,30 +46,31 @@ public class GetTodayBirthdayInfo : ApiAction
         return result;
     }
 
-    private string Format(List<(IUser user, int? age)> users)
+    private string Format(IReadOnlyCollection<(IUser user, int? age)> users)
     {
         if (users.Count == 0)
-        {
-            return $"Dnes nemá nikdo narozeniny {Configuration["Discord:Emotes:Sadge"]}";
-        }
+            return Texts["BirthdayModule/Info/NoOneHave", ApiContext.Language].FormatWith(Configuration["Discord:Emotes:Sadge"]);
 
-        var withoutLast = users.Take(users.Count - 1).Select(o => $"**{o.user.GetDisplayName(false)}{(o.age != null ? $" ({o.age} let)" : null)}**".Trim());
-        var last = users[^1];
+        var formatted = users
+            .Select(o =>
+                o.age == null
+                    ? Texts["BirthdayModule/Info/Parts/WithoutYears", ApiContext.Language].FormatWith(o.user.GetDisplayName(false))
+                    : Texts["BirthdayModule/Info/Parts/WithYears", ApiContext.Language].FormatWith(o.user.GetDisplayName(false), o.age.Value)
+            ).ToList();
 
-        var builder = new StringBuilder("Dnes ")
-            .Append(users.Count == 1 ? "má" : "mají").Append(" narozeniny ")
-            .AppendJoin(", ", withoutLast);
+        var result = Texts[$"BirthdayModule/Info/Template/{(users.Count > 1 ? "MultipleForm" : "SingleForm")}", ApiContext.Language];
+        var hypers = Configuration["Discord:Emotes:Hypers"];
 
         if (users.Count > 1)
-            builder.Append(" a ");
-
-        builder.Append("**").Append(last.user.GetDisplayName(false));
-        if (last.age != null)
-            builder.Append(" (").Append(last.age).Append(" let)**");
+        {
+            var withoutLast = string.Join(", ", formatted.Take(formatted.Count - 1));
+            result = result.FormatWith(withoutLast, formatted[^1], hypers);
+        }
         else
-            builder.Append("**");
+        {
+            result = result.FormatWith(formatted[0], hypers);
+        }
 
-        builder.Append(' ').Append(Configuration["Discord:Emotes:Hypers"]);
-        return builder.ToString();
+        return result;
     }
 }

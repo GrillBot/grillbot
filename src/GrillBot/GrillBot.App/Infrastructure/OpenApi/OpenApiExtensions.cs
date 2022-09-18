@@ -17,6 +17,7 @@ public static class OpenApiExtensions
             setSecurity(doc);
 
             doc.OperationProcessors.Add(new OnlyDevelopmentProcessor());
+            doc.OperationProcessors.Add(new AddHeadersProcessor());
             doc.UseRouteNameAsOperationId = true;
             doc.UseControllerSummaryAsTagDescription = true;
 

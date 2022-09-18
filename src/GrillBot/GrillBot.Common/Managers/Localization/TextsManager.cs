@@ -7,7 +7,7 @@ namespace GrillBot.Common.Managers.Localization;
 public class TextsManager : ITextsManager
 {
     public const string DefaultLocale = "en-US";
-    private readonly string[] _supportedLocales = { "cs", DefaultLocale };
+    private static readonly string[] SupportedLocales = { "cs", DefaultLocale };
 
     // Dictionary<Id#Locale, Value>
     private Dictionary<string, string> Data { get; set; }
@@ -88,6 +88,9 @@ public class TextsManager : ITextsManager
         return !IsSupportedLocale(locale) ? new CultureInfo(DefaultLocale) : new CultureInfo(locale);
     }
 
-    private bool IsSupportedLocale(string locale)
-        => locale == "cs-CZ" ? _supportedLocales.Contains("cs") : _supportedLocales.Contains(locale);
+    public static bool IsSupportedLocale(string locale)
+        => SupportedLocales.Contains(FixLocale(locale));
+
+    public static string FixLocale(string locale)
+        => locale == "cs-CZ" ? "cs" : locale;
 }

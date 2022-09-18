@@ -20,6 +20,7 @@ public class BirthdayCronJob : Job
     {
         Configuration = configuration;
         GetTodayBirthdayInfo = getTodayBirthdayInfo;
+        GetTodayBirthdayInfo.UpdateContext("cs", discordClient.CurrentUser);
         DatabaseBuilder = databaseBuilder;
     }
 

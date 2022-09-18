@@ -14,6 +14,17 @@
     "Have": {
       "Yes": "Ano. Máš uložené narozeniny.",
       "No": "Ne. Nemáš uložené narozeniny."
+    },
+    "Info": {
+      "NoOneHave": "Dnes nemá nikdo narozeniny. {0}",
+      "Parts": {
+        "WithYears": "**{0} ({1} let)**",
+        "WithoutYears": "**{0}**"
+      },
+      "Template": {
+        "SingleForm": "Dnes má narozeniny {0} {1}",
+        "MultipleForm": "Dnes mají narozeniny {0} a {1} {2}"
+      }
     }
   },
   "BotModule": {

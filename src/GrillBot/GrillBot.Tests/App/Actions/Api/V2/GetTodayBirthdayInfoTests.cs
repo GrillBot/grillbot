@@ -26,7 +26,15 @@ public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
             clientBuilder.SetGetUserAction(user);
         var client = clientBuilder.Build();
 
-        return new GetTodayBirthdayInfo(ApiRequestContext, DatabaseBuilder, client, Configuration);
+        var texts = new TextsBuilder()
+            .AddText("BirthdayModule/Info/NoOneHave", "cs", "NoOneHave {0}")
+            .AddText("BirthdayModule/Info/Parts/WithoutYears", "cs", "{0}")
+            .AddText("BirthdayModule/Info/Parts/WithYears", "cs", "{0},{1}")
+            .AddText("BirthdayModule/Info/Template/MultipleForm", "cs", "{0},{1},{2}")
+            .AddText("BirthdayModule/Info/Template/SingleForm", "cs", "{0},{1}")
+            .Build();
+
+        return new GetTodayBirthdayInfo(ApiRequestContext, DatabaseBuilder, client, Configuration, texts);
     }
 
     [TestMethod]

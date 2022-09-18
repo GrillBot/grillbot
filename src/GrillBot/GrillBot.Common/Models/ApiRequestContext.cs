@@ -15,6 +15,8 @@ public class ApiRequestContext
     /// </summary>
     public IUser? LoggedUser { get; set; }
 
+    public string Language { get; set; } = "cs";
+
     public ulong GetUserId()
     {
         var userId = LoggedUserData?.FindFirst(ClaimTypes.NameIdentifier)?.Value;

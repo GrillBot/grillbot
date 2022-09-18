@@ -12,13 +12,11 @@ public class BirthdayModule : InteractionsModuleBase
 {
     private BirthdayService BirthdayService { get; }
     private IServiceProvider ServiceProvider { get; }
-    private IConfiguration Configuration { get; }
 
-    public BirthdayModule(BirthdayService birthdayService, IConfiguration configuration, ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
+    public BirthdayModule(BirthdayService birthdayService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
     {
         BirthdayService = birthdayService;
         ServiceProvider = serviceProvider;
-        Configuration = configuration;
     }
 
     [SlashCommand("today", "Finding out who's birthday is today.")]
@@ -27,6 +25,7 @@ public class BirthdayModule : InteractionsModuleBase
         using var scope = ServiceProvider.CreateScope();
 
         var action = scope.ServiceProvider.GetRequiredService<GetTodayBirthdayInfo>();
+        action.UpdateContext(Locale, Context.User);
         var result = await action.ProcessAsync();
 
         await SetResponseAsync(result);

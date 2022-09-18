@@ -19,6 +19,7 @@ public class ApiRequest
     public string LoggedUserRole { get; set; }
     public string StatusCode { get; set; }
     public Dictionary<string, string> Parameters { get; set; } = new();
+    public string Language { get; set; }
 
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)

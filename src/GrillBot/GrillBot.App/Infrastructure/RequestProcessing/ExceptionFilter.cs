@@ -6,6 +6,7 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GrillBot.App.Infrastructure.RequestProcessing;
 
@@ -28,12 +29,21 @@ public class ExceptionFilter : IAsyncExceptionFilter
     {
         ApiRequest.EndAt = DateTime.Now;
 
-        if (context.Exception is OperationCanceledException)
+        switch (context.Exception)
         {
-            context.ExceptionHandled = true;
-            context.Result = new StatusCodeResult(400);
-            ApiRequest.StatusCode = "400 (BadRequest)";
-            return;
+            case OperationCanceledException:
+                context.ExceptionHandled = true;
+                context.Result = new StatusCodeResult(400);
+                ApiRequest.StatusCode = "400 (BadRequest)";
+                return;
+            case ValidationException validationException:
+                if (validationException.ValidationResult.MemberNames.Any())
+                {
+                    SetValidationError(context, validationException);
+                    return;
+                }
+
+                break;
         }
 
         ApiRequest.StatusCode = "500 (InternalServerError)";
@@ -45,5 +55,16 @@ public class ExceptionFilter : IAsyncExceptionFilter
         var controllerInfo = $"{ApiRequest.ControllerName}.{ApiRequest.ActionName}";
         var exception = new ApiException(context.Exception.Message, context.Exception, ApiRequestContext.LoggedUser, path, controllerInfo);
         await LoggingManager.ErrorAsync("API", "An error occured while request processing API request", exception);
+    }
+
+    private void SetValidationError(ExceptionContext context, ValidationException ex)
+    {
+        var validationResult = ex.ValidationResult;
+        var modelState = new ModelStateDictionary();
+        modelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage ?? "");
+
+        context.ExceptionHandled = true;
+        context.Result = new BadRequestObjectResult(new ValidationProblemDetails(modelState));
+        ApiRequest.StatusCode = "400 (BadRequest)";
     }
 }

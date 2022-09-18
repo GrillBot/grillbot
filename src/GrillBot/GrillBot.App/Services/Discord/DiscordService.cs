@@ -8,11 +8,11 @@ using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using System.Reflection;
 using GrillBot.Common.Managers.Logging;
+using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Services.Discord;
 
@@ -85,12 +85,30 @@ public class DiscordService : IHostedService
     {
         var currentAssembly = Assembly.GetExecutingAssembly();
 
-        currentAssembly
+        var initializable = currentAssembly
             .GetTypes()
             .Where(o => o.Assembly == currentAssembly && o.IsClass && !o.IsAbstract && o.GetCustomAttribute<InitializableAttribute>() != null)
             .OrderBy(o => o.Name)
-            .ToList()
-            .ForEach(service => Provider.GetRequiredService(service));
+            .ToList();
+
+        foreach (var service in initializable)
+        {
+            var dependency = Provider.GetService(service);
+            if (dependency != null) continue;
+
+            var interfaces = service.GetInterfaces();
+            if (interfaces.Length > 0)
+            {
+                foreach (var @interface in interfaces)
+                {
+                    dependency = Provider.GetService(@interface);
+                    if (dependency != null) continue;
+                }
+            }
+
+            if (dependency == null)
+                throw new GrillBotException($"Failed initialization of service {service.FullName}");
+        }
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

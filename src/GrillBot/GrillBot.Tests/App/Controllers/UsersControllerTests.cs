@@ -46,10 +46,9 @@ public class UsersControllerTests : ControllerTest<UsersController>
         var externalHelpService = new ExternalCommandsHelpService(directApi, configuration, ServiceProvider);
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var apiService = new UsersApiService(DatabaseBuilder, mapper, dcClient, ApiRequestContext, auditLogWriter);
-        var rubbergodKarmaService = new RubbergodKarmaService(directApi, dcClient, mapper);
         var userHearthbeatService = new UserHearthbeatService(DatabaseBuilder);
 
-        return new UsersController(helpService, externalHelpService, apiService, rubbergodKarmaService, ApiRequestContext, userHearthbeatService, ServiceProvider);
+        return new UsersController(helpService, externalHelpService, apiService, ApiRequestContext, userHearthbeatService, ServiceProvider);
     }
 
     [TestMethod]

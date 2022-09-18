@@ -1,28 +1,29 @@
 ﻿using AutoMapper;
 using GrillBot.App.Services.DirectApi;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Models;
 
-namespace GrillBot.App.Services.User;
+namespace GrillBot.App.Actions.Api.V2;
 
-public class RubbergodKarmaService
+public class GetRubbergodUserKarma : ApiAction
 {
-    private DirectApiService DirectApi { get; }
+    private IDirectApiService DirectApi { get; }
     private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
 
-    public RubbergodKarmaService(DirectApiService directApi, IDiscordClient client, IMapper mapper)
+    public GetRubbergodUserKarma(ApiRequestContext apiContext, IDirectApiService directApi, IDiscordClient discordClient, IMapper mapper) : base(apiContext)
     {
         DirectApi = directApi;
-        DiscordClient = client;
+        DiscordClient = discordClient;
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<UserKarma>> GetUserKarmaAsync(SortParams sort, PaginatedParams pagination)
+    public async Task<PaginatedResponse<UserKarma>> ProcessAsync(KarmaListParams parameters)
     {
-        var command = CommandBuilder.CreateKarmaCommand(sort, pagination);
+        var command = CommandBuilder.CreateKarmaCommand(parameters.Sort, parameters.Pagination);
         var jsonData = await DirectApi.SendCommandAsync("Rubbergod", command);
         var data = JObject.Parse(jsonData);
 
@@ -31,7 +32,7 @@ public class RubbergodKarmaService
         if (data["content"] == null)
             throw new GrillBotException("Missing required field \"content\" in rubbergod API output.");
 
-        var result = new PaginatedResponse<UserKarma>()
+        var result = new PaginatedResponse<UserKarma>
         {
             Data = new List<UserKarma>(),
             Page = data["meta"]["page"]!.Value<int>(),
@@ -42,9 +43,9 @@ public class RubbergodKarmaService
         result.CanNext = result.Page < data["meta"]["total_pages"]!.Value<int>();
 
         var itemsOnPage = data["content"].OfType<JObject>().ToList();
-        for (int i = 0; i < itemsOnPage.Count; i++)
+        for (var i = 0; i < itemsOnPage.Count; i++)
         {
-            var position = pagination.Skip + i + 1;
+            var position = parameters.Pagination.Skip + i + 1;
             var row = await ParseRowAsync(itemsOnPage[i], position);
             if (row != null)
                 result.Data.Add(row);
@@ -60,12 +61,12 @@ public class RubbergodKarmaService
         if (user == null)
             return null;
 
-        return new UserKarma()
+        return new UserKarma
         {
             Negative = row["negative"].Value<int>(),
             Value = row["karma"].Value<int>(),
             Positive = row["positive"].Value<int>(),
-            User = Mapper.Map<Data.Models.API.Users.User>(user),
+            User = Mapper.Map<User>(user),
             Position = position
         };
     }

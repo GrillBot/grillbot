@@ -10,12 +10,12 @@ namespace GrillBot.App.Services.CommandsHelp;
 /// </summary>
 public class ExternalCommandsHelpService
 {
-    private DirectApiService DirectApi { get; }
+    private IDirectApiService DirectApi { get; }
     private IConfiguration Configuration { get; }
     private IServiceProvider ServiceProvider { get; }
     private Type ParserInterfaceType { get; }
 
-    public ExternalCommandsHelpService(DirectApiService directApi, IConfiguration configuration, IServiceProvider serviceProvider)
+    public ExternalCommandsHelpService(IDirectApiService directApi, IConfiguration configuration, IServiceProvider serviceProvider)
     {
         DirectApi = directApi;
         Configuration = configuration.GetSection("Services");

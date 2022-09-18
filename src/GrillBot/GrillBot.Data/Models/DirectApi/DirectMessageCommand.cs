@@ -12,12 +12,14 @@ public class DirectMessageCommand
     [JsonProperty("parameters")]
     public Dictionary<string, object> Parameters { get; set; }
 
-    public DirectMessageCommand() { }
+    public DirectMessageCommand()
+    {
+        Parameters = new Dictionary<string, object>();
+    }
 
-    public DirectMessageCommand(string method)
+    public DirectMessageCommand(string method) : this()
     {
         Method = method;
-        Parameters = new Dictionary<string, object>();
     }
 
     public DirectMessageCommand WithParameter(string key, object value)
@@ -31,4 +33,6 @@ public class DirectMessageCommand
     {
         if (Parameters?.Count == 0) Parameters = null;
     }
+
+    public override string ToString() => $"{Method}|{string.Join("|", Parameters.Values)}";
 }

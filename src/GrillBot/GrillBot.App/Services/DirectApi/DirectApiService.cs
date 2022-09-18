@@ -10,7 +10,7 @@ using GrillBot.Data.Models.DirectApi;
 namespace GrillBot.App.Services.DirectApi;
 
 [Initializable]
-public class DirectApiService
+public class DirectApiService : IDirectApiService
 {
     private IConfiguration Configuration { get; }
     private InitManager InitManager { get; }
@@ -48,6 +48,9 @@ public class DirectApiService
             return;
 
         var attachmentData = await message.Attachments.First().DownloadAsync();
+        if (attachmentData == null)
+            return;
+        
         var entity = new DirectApiMessage
         {
             ExpireAt = DateTime.UtcNow.AddMinutes(10),
@@ -65,15 +68,15 @@ public class DirectApiService
         => InitManager.Get() && AuthorizedServices.Contains(message.Author.Id) && message.Reference != null && message.Attachments.Count == 1 &&
            AuthorizedChannelIds.Contains(message.Channel.Id);
 
-    public async Task<string> SendCommandAsync(string service, DirectMessageCommand command, CancellationToken cancellationToken = default)
+    public async Task<string> SendCommandAsync(string service, DirectMessageCommand command)
     {
         var configuration = Configuration.GetRequiredSection(service);
 
-        var request = await SendCommandRequestAsync(configuration, command, cancellationToken);
+        var request = await SendCommandRequestAsync(configuration, command);
         return await WaitAndGetResponseAsync(configuration, request);
     }
 
-    private async Task<IUserMessage> SendCommandRequestAsync(IConfiguration configuration, DirectMessageCommand command, CancellationToken cancellationToken = default)
+    private async Task<IUserMessage> SendCommandRequestAsync(IConfiguration configuration, DirectMessageCommand command)
     {
         var channelId = configuration.GetValue<ulong>("AuthorizedChannelId");
         var apiChannel = await DiscordClient.FindTextChannelAsync(channelId);
@@ -81,11 +84,7 @@ public class DirectApiService
             throw new GrillBotException("Cannot find authorized direct API channel");
 
         var json = JsonConvert.SerializeObject(command);
-
-        return await apiChannel.SendMessageAsync(
-            $"```json\n{json}\n```",
-            options: new RequestOptions { CancelToken = cancellationToken }
-        );
+        return await apiChannel.SendMessageAsync($"```json\n{json}\n```");
     }
 
     private async Task<string> WaitAndGetResponseAsync(IConfiguration configuration, IUserMessage request)

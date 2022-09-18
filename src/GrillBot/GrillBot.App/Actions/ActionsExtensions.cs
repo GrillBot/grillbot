@@ -13,6 +13,7 @@ public static class ActionsExtensions
     private static IServiceCollection AddApiActions(this IServiceCollection services)
     {
         return services
-            .AddScoped<Api.V2.GetTodayBirthdayInfo>();
+            .AddScoped<Api.V2.GetTodayBirthdayInfo>()
+            .AddScoped<Api.V2.GetRubbergodUserKarma>();
     }
 }

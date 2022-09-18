@@ -2,8 +2,11 @@
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -47,6 +50,8 @@ public class ExceptionFilter : IAsyncExceptionFilter
         }
 
         ApiRequest.StatusCode = "500 (InternalServerError)";
+        if (context.Exception is GrillBotException)
+            context.Result = new ObjectResult(new MessageResponse(context.Exception.Message)) { StatusCode = StatusCodes.Status500InternalServerError };
 
         var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, ApiRequestContext.LoggedUser);
         await AuditLogWriter.StoreAsync(wrapper);

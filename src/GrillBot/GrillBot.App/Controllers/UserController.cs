@@ -24,18 +24,16 @@ public class UsersController : Controller
     private CommandsHelpService HelpService { get; }
     private ExternalCommandsHelpService ExternalCommandsHelpService { get; }
     private UsersApiService ApiService { get; }
-    private RubbergodKarmaService KarmaService { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private UserHearthbeatService UserHearthbeatService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public UsersController(CommandsHelpService helpService, ExternalCommandsHelpService externalCommandsHelpService, UsersApiService apiService, RubbergodKarmaService karmaService,
-        ApiRequestContext apiRequestContext, UserHearthbeatService userHearthbeatService, IServiceProvider serviceProvider)
+    public UsersController(CommandsHelpService helpService, ExternalCommandsHelpService externalCommandsHelpService, UsersApiService apiService, ApiRequestContext apiRequestContext,
+        UserHearthbeatService userHearthbeatService, IServiceProvider serviceProvider)
     {
         HelpService = helpService;
         ExternalCommandsHelpService = externalCommandsHelpService;
         ApiService = apiService;
-        KarmaService = karmaService;
         ApiRequestContext = apiRequestContext;
         UserHearthbeatService = userHearthbeatService;
         ServiceProvider = serviceProvider;
@@ -198,17 +196,11 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
     {
-        try
-        {
-            this.StoreParameters(parameters);
+        var action = ServiceProvider.GetRequiredService<GetRubbergodUserKarma>();
+        action.Init(this, parameters);
 
-            var result = await KarmaService.GetUserKarmaAsync(parameters.Sort, parameters.Pagination);
-            return Ok(result);
-        }
-        catch (GrillBotException ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new MessageResponse(ex.Message));
-        }
+        var result = await action.ProcessAsync(parameters);
+        return Ok(result);
     }
 
     /// <summary>

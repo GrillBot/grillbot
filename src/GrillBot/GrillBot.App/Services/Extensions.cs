@@ -26,7 +26,7 @@ public static class Extensions
             .AddScoped<CommandsHelp.ExternalCommandsHelpService>();
 
         services
-            .AddSingleton<DirectApi.DirectApiService>();
+            .AddSingleton<DirectApi.IDirectApiService, DirectApi.DirectApiService>();
 
         services
             .AddSingleton<Discord.DiscordSyncService>();
@@ -82,7 +82,6 @@ public static class Extensions
         
         services
             .AddSingleton<User.UserService>()
-            .AddScoped<User.RubbergodKarmaService>()
             .AddScoped<User.UsersApiService>()
             .AddScoped<User.UserHearthbeatService>();
 

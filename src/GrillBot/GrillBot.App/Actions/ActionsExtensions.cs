@@ -15,7 +15,8 @@ public static class ActionsExtensions
         // V1
         // AuditLog
         services
-            .AddScoped<Api.V1.AuditLog.RemoveItem>();
+            .AddScoped<Api.V1.AuditLog.RemoveItem>()
+            .AddScoped<Api.V1.AuditLog.GetAuditLogList>();
 
         // V2
         services

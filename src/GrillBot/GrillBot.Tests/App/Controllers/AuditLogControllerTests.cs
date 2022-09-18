@@ -1,16 +1,10 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.API.AuditLog;
-using GrillBot.Data.Models.API.AuditLog.Filters;
-using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
-using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -20,9 +14,8 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     protected override AuditLogController CreateController()
     {
         var fileStorage = new FileStorageMock(TestServices.Configuration.Value);
-        var mapper = TestServices.AutoMapper.Value;
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var apiService = new AuditLogApiService(DatabaseBuilder, mapper, fileStorage, ApiRequestContext, auditLogWriter);
+        var apiService = new AuditLogApiService(DatabaseBuilder, fileStorage, ApiRequestContext, auditLogWriter);
 
         return new AuditLogController(apiService, ServiceProvider);
     }
@@ -31,154 +24,6 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
     {
         if (File.Exists("Temp.txt"))
             File.Delete("Temp.txt");
-    }
-
-    [TestMethod]
-    public async Task GetAuditLogListAsync_WithoutFilter_WithoutData()
-    {
-        var result = await Controller.GetAuditLogListAsync(new AuditLogListParams());
-        CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetAuditLogListAsync_WithFilter_WithData()
-    {
-        var filter = new AuditLogListParams
-        {
-            ChannelId = Consts.ChannelId.ToString(),
-            CreatedFrom = DateTime.MinValue,
-            CreatedTo = DateTime.MaxValue,
-            GuildId = Consts.GuildId.ToString(),
-            IgnoreBots = true,
-            ProcessedUserIds = new List<string> { Consts.UserId.ToString() },
-            Types = Enum.GetValues<AuditLogItemType>().ToList()
-        };
-
-        await Repository.AddAsync(new AuditLogItem
-        {
-            ChannelId = Consts.ChannelId.ToString(),
-            CreatedAt = DateTime.UtcNow,
-            Data = "",
-            GuildId = Consts.GuildId.ToString(),
-            ProcessedUserId = Consts.UserId.ToString(),
-            Type = AuditLogItemType.Command
-        });
-        await Repository.AddCollectionAsync(Enum.GetValues<AuditLogItemType>().Where(o => o > 0).Select(o => new AuditLogItem
-        {
-            ChannelId = Consts.ChannelId.ToString(),
-            CreatedAt = DateTime.UtcNow,
-            Data = "{}",
-            GuildId = Consts.GuildId.ToString(),
-            ProcessedUserId = Consts.UserId.ToString(),
-            Type = o
-        }));
-
-        await Repository.AddAsync(new Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await Repository.AddAsync(new GuildChannel { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
-        await Repository.AddAsync(new GuildUser { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
-        await Repository.AddAsync(new User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
-        await Repository.CommitAsync();
-
-        var result = await Controller.GetAuditLogListAsync(filter);
-        CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetAuditLogListAsync_WithExcludes_WithData()
-    {
-        var filter = new AuditLogListParams
-        {
-            ChannelId = Consts.ChannelId.ToString(),
-            CreatedFrom = DateTime.MinValue,
-            CreatedTo = DateTime.MaxValue,
-            GuildId = Consts.GuildId.ToString(),
-            IgnoreBots = true,
-            ProcessedUserIds = new List<string> { Consts.UserId.ToString() },
-            Types = new List<AuditLogItemType> { AuditLogItemType.Info },
-            ExcludedTypes = new List<AuditLogItemType> { AuditLogItemType.MemberRoleUpdated }
-        };
-
-        await Repository.AddAsync(new AuditLogItem
-        {
-            ChannelId = Consts.ChannelId.ToString(),
-            CreatedAt = DateTime.UtcNow,
-            Data = "",
-            GuildId = Consts.GuildId.ToString(),
-            ProcessedUserId = Consts.UserId.ToString(),
-            Type = AuditLogItemType.Command
-        });
-        await Repository.AddCollectionAsync(Enum.GetValues<AuditLogItemType>().Where(o => o > 0).Select(o => new AuditLogItem
-        {
-            ChannelId = Consts.ChannelId.ToString(),
-            CreatedAt = DateTime.UtcNow,
-            Data = "{}",
-            GuildId = Consts.GuildId.ToString(),
-            ProcessedUserId = Consts.UserId.ToString(),
-            Type = o
-        }));
-
-        await Repository.AddAsync(new Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await Repository.AddAsync(new GuildChannel { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
-        await Repository.AddAsync(new GuildUser { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
-        await Repository.AddAsync(new User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
-        await Repository.CommitAsync();
-
-        var result = await Controller.GetAuditLogListAsync(filter);
-        CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetAuditLogListAsync_WithExtendedFilters_WithData()
-    {
-        var filter = new AuditLogListParams
-        {
-            Types = Enum.GetValues<AuditLogItemType>().ToList(),
-            CommandFilter = new ExecutionFilter
-            {
-                Duration = new RangeParams<int> { From = int.MinValue, To = int.MaxValue },
-                Name = "dd",
-                WasSuccess = true,
-            },
-            ErrorFilter = new TextFilter { Text = "T" },
-            InfoFilter = new TextFilter { Text = "T" },
-            InteractionFilter = new ExecutionFilter
-            {
-                WasSuccess = true,
-                Name = "ddddddd",
-                Duration = new RangeParams<int> { From = int.MinValue, To = int.MaxValue }
-            },
-            JobFilter = new ExecutionFilter
-            {
-                WasSuccess = true,
-                Name = "ddddddd",
-                Duration = new RangeParams<int> { From = int.MinValue, To = int.MaxValue }
-            },
-            WarningFilter = new TextFilter { Text = "T" },
-            Ids = string.Join(", ", Enumerable.Range(0, 1000).Select(o => o.ToString()))
-        };
-
-        static AuditLogItem CreateItem(object data, AuditLogItemType type)
-        {
-            return new AuditLogItem
-            {
-                ChannelId = Consts.ChannelId.ToString(),
-                CreatedAt = DateTime.UtcNow,
-                Data = JsonConvert.SerializeObject(data, AuditLogWriter.SerializerSettings),
-                GuildId = Consts.GuildId.ToString(),
-                ProcessedUserId = Consts.UserId.ToString(),
-                Type = type
-            };
-        }
-
-        await Repository.AddAsync(CreateItem(new CommandExecution { Command = "A", Duration = 50, IsSuccess = true }, AuditLogItemType.Command));
-        await Repository.AddAsync(new Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await Repository.AddAsync(new GuildChannel { Name = Consts.ChannelName, GuildId = Consts.GuildId.ToString(), ChannelId = Consts.ChannelId.ToString() });
-        await Repository.AddAsync(new GuildUser { GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
-        await Repository.AddAsync(new User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator });
-        await Repository.CommitAsync();
-
-        var result = await Controller.GetAuditLogListAsync(filter);
-        CheckResult<OkObjectResult, PaginatedResponse<AuditLogListItem>>(result);
     }
 
     [TestMethod]
@@ -277,21 +122,6 @@ public class AuditLogControllerTests : ControllerTest<AuditLogController>
 
         var result = await Controller.GetFileContentAsync(12345, 123);
         CheckResult<FileContentResult>(result);
-    }
-
-    [TestMethod]
-    public void AuditLogListParams_ModelStateValidation()
-    {
-        var @params = new AuditLogListParams
-        {
-            Ids = "0,1,3;",
-            Types = new List<AuditLogItemType> { AuditLogItemType.Info },
-            ExcludedTypes = new List<AuditLogItemType> { AuditLogItemType.Info }
-        };
-        var validationContext = new ValidationContext(@params);
-
-        var result = @params.Validate(validationContext).ToList();
-        Assert.AreEqual(2, result.Count);
     }
 
     [TestMethod]

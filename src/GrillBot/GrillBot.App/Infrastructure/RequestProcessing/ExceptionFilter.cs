@@ -66,7 +66,8 @@ public class ExceptionFilter : IAsyncExceptionFilter
     {
         var validationResult = ex.ValidationResult;
         var modelState = new ModelStateDictionary();
-        modelState.AddModelError(validationResult.MemberNames.First(), validationResult.ErrorMessage ?? "");
+        foreach (var memberName in validationResult.MemberNames)
+            modelState.AddModelError(memberName, validationResult.ErrorMessage ?? "");
 
         context.ExceptionHandled = true;
         context.Result = new BadRequestObjectResult(new ValidationProblemDetails(modelState));

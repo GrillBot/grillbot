@@ -5,7 +5,6 @@ using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Infrastructure;
@@ -13,7 +12,7 @@ using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObject, IApiObject
+public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
 {
     [DiscordId]
     public string GuildId { get; set; }
@@ -161,26 +160,6 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IValidatableObj
         };
 
         return Sort.Descending ? sortQuery.ThenByDescending(o => o.Id) : sortQuery.ThenBy(o => o.Id);
-    }
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (!string.IsNullOrEmpty(Ids))
-        {
-            var items = Ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            for (var i = 0; i < items.Length; i++)
-            {
-                if (!long.TryParse(items[i], out _))
-                    yield return new ValidationResult($"ID[{i}] is not number.", new[] { $"{nameof(Ids)}[{i}]" });
-            }
-        }
-
-        if (ExcludedTypes.Count <= 0 || Types.Count <= 0)
-            yield break;
-
-        var intersectTypes = ExcludedTypes.Intersect(Types);
-        if (intersectTypes.Any())
-            yield return new ValidationResult("You cannot filter and exclude the same types at the same time.");
     }
 
     public void UpdateStartDate(DateTime startAt)

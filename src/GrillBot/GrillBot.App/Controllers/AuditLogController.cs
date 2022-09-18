@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Actions;
+using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
@@ -58,9 +59,10 @@ public class AuditLogController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromBody] AuditLogListParams parameters)
     {
-        this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-        var result = await ApiService.GetListAsync(parameters);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.GetAuditLogList>();
+        var result = await action.ProcessAsync(parameters);
         return Ok(result);
     }
 

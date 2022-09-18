@@ -267,6 +267,10 @@
   "AuditLog": {
     "RemoveItem": {
       "NotFound": "Požadovaný záznam v logu nebyl nalezen."
+    },
+    "List": {
+      "TypesCombination": "Nelze filtrovat a vyloučit stejné typy současně.",
+      "IdNotNumber": "ID[{0}] není číslo."
     }
   }
 }

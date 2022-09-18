@@ -267,6 +267,10 @@
   "AuditLog": {
     "RemoveItem": {
       "NotFound": "The requested log entry was not found."
+    },
+    "List": {
+      "TypesCombination": "You cannot filter and exclude the same types at the same time.",
+      "IdNotNumber": "ID[{0}] is not number."
     }
   }
 }

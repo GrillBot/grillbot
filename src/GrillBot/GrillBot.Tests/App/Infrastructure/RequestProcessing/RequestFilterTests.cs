@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using GrillBot.App.Services.User;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
+using Microsoft.AspNetCore.Http;
 
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
 
@@ -34,7 +35,7 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
     [TestMethod]
     public async Task OnActionExecutionAsync()
     {
-        var context = CreateContext("GetRedirectLink");
+        var context = CreateContext("GetRedirectLink", new HeaderDictionary());
         var @delegate = GetDelegate();
 
         await Filter.OnActionExecutionAsync(context, @delegate);
@@ -47,7 +48,7 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
         var modelState = new ModelStateDictionary();
         modelState.AddModelError("Error", "Error");
 
-        var context = CreateContext("GetRedirectLink", modelState: modelState);
+        var context = CreateContext("GetRedirectLink", new HeaderDictionary(), modelState: modelState);
         var @delegate = GetDelegate();
 
         await Filter.OnActionExecutionAsync(context, @delegate);

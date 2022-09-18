@@ -20,7 +20,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<List<ulong>> GetDiscordAuditLogIdsAsync(IGuild? guild, IChannel? channel, AuditLogItemType[]? types, DateTime after)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.AuditLogs.AsNoTracking()
                 .Where(o => o.DiscordAuditLogItemId != null && o.CreatedAt >= after);
@@ -48,7 +48,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<bool> ExistsExpiredItemAsync(DateTime expiredAt)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await GetExpiredItemsQueryAsync(expiredAt).AnyAsync();
         }
@@ -56,7 +56,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<List<AuditLogItem>> GetExpiredDataAsync(DateTime expiredAt)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await GetExpiredItemsQueryAsync(expiredAt).ToListAsync();
         }
@@ -75,7 +75,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<List<AuditLogItem>> GetSimpleDataAsync(IQueryableModel<AuditLogItem> model)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await CreateQuery(model, true)
                 .Select(o => new AuditLogItem { Id = o.Id, Type = o.Type, Data = o.Data, CreatedAt = o.CreatedAt })
@@ -85,7 +85,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<PaginatedResponse<AuditLogItem>> GetLogListAsync(IQueryableModel<AuditLogItem> model, PaginatedParams pagination, List<long>? logIds)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             if (logIds != null)
@@ -97,7 +97,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<AuditLogItem?> FindLogItemByIdAsync(long id, bool includeFiles = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.AuditLogs.AsQueryable();
             if (includeFiles)
@@ -109,7 +109,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<Dictionary<AuditLogItemType, int>> GetStatisticsByTypeAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.AuditLogs.AsNoTracking()
                 .GroupBy(o => o.Type)
@@ -120,7 +120,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<Dictionary<string, int>> GetStatisticsByDateAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.AuditLogs.AsNoTracking()
                 .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
@@ -132,7 +132,7 @@ public class AuditLogRepository : RepositoryBase
 
     public async Task<Dictionary<string, int>> GetApiRequestsByDateAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.AuditLogs.AsNoTracking()
                 .Where(o => o.Type == AuditLogItemType.Api)
@@ -141,12 +141,5 @@ public class AuditLogRepository : RepositoryBase
                 .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })
                 .ToDictionaryAsync(o => o.Date, o => o.Count);
         }
-    }
-
-    public async Task<List<AuditLogItem>> GetAllApiLogsAsync()
-    {
-        return await Context.AuditLogs
-            .Where(o => o.Type == AuditLogItemType.Api)
-            .ToListAsync();
     }
 }

@@ -263,5 +263,10 @@
       "RemoveAccessUnverifyNotFound": "Předčasné vrácení přístupu pro uživatele **{0}** nelze provést. Unverify nebylo nalezeno.",
       "UnverifyFailedToChannel": "Dočasné odebrání přístupu pro uživatele **{0}** se nezdařilo. Uživatel byl obnoven do původního stavu."
     }
+  },
+  "AuditLog": {
+    "RemoveItem": {
+      "NotFound": "Požadovaný záznam v logu nebyl nalezen."
+    }
   }
 }

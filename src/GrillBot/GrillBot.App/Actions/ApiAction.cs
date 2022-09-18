@@ -15,7 +15,7 @@ public abstract class ApiAction
         ApiContext = apiContext;
     }
 
-    public void Init(Controller controller, IApiObject apiObject)
+    public static void Init(Controller controller, IApiObject apiObject)
     {
         controller.StoreParameters(apiObject);
     }

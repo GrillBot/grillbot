@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Actions.Api.V2;
+﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V2;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -197,7 +198,7 @@ public class UsersController : Controller
     public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
     {
         var action = ServiceProvider.GetRequiredService<GetRubbergodUserKarma>();
-        action.Init(this, parameters);
+        ApiAction.Init(this, parameters);
 
         var result = await action.ProcessAsync(parameters);
         return Ok(result);

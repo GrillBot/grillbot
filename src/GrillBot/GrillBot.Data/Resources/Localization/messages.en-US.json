@@ -263,5 +263,10 @@
       "RemoveAccessUnverifyNotFound": "Unable to restore access early for user **{0}**. Unverify not found.",
       "UnverifyFailedToChannel": "Failed to temporarily remove access for user **{0}**. The user has been restored to their original state."
     }
+  },
+  "AuditLog": {
+    "RemoveItem": {
+      "NotFound": "The requested log entry was not found."
+    }
   }
 }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -18,17 +19,18 @@ namespace GrillBot.App.Controllers;
 public class AuditLogController : Controller
 {
     private AuditLogApiService ApiService { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public AuditLogController(AuditLogApiService apiService)
+    public AuditLogController(AuditLogApiService apiService, IServiceProvider serviceProvider)
     {
         ApiService = apiService;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
-    /// Removes item from log.
+    /// Remove item from audit log.
     /// </summary>
-    /// <param name="id">Log item ID</param>
-    /// <response code="200"></response>
+    /// <response code="200">Success.</response>
     /// <response code="404">Item not found.</response>
     [HttpDelete("{id}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
@@ -36,10 +38,11 @@ public class AuditLogController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult> RemoveItemAsync(long id)
     {
-        var result = await ApiService.RemoveItemAsync(id);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.RemoveItem>();
+        var result = await action.ProcessAsync(id);
 
-        if (!result)
-            return NotFound(new MessageResponse("Požadovaný záznam v logu nebyl nalezen nebo nemáš oprávnění přistoupit k tomuto záznamu."));
+        if (result != null)
+            return StatusCode(result.Value.status, new MessageResponse(result.Value.response));
 
         return Ok();
     }

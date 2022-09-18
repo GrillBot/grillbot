@@ -138,31 +138,6 @@ public class AuditLogApiService
         return file;
     }
 
-    public async Task<bool> RemoveItemAsync(long id)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var item = await repository.AuditLog.FindLogItemByIdAsync(id, true);
-
-        if (item == null) return false;
-        if (item.Files.Count > 0)
-        {
-            var storage = FileStorage.Create("Audit");
-
-            foreach (var file in item.Files)
-            {
-                var fileInfo = await storage.GetFileInfoAsync("DeletedAttachments", file.Filename);
-                if (!fileInfo.Exists) continue;
-
-                fileInfo.Delete();
-            }
-
-            repository.RemoveCollection(item.Files);
-        }
-
-        repository.Remove(item);
-        return await repository.CommitAsync() > 0;
-    }
-
     public async Task HandleClientAppMessageAsync(ClientLogItemRequest request)
     {
         var item = new AuditLogDataWrapper(request.GetAuditLogType(), request.Content, processedUser: ApiRequestContext.LoggedUser);

@@ -12,8 +12,16 @@ public static class ActionsExtensions
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)
     {
-        return services
+        // V1
+        // AuditLog
+        services
+            .AddScoped<Api.V1.AuditLog.RemoveItem>();
+
+        // V2
+        services
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()
             .AddScoped<Api.V2.GetRubbergodUserKarma>();
+
+        return services;
     }
 }

@@ -6,6 +6,7 @@ using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -16,11 +17,13 @@ public class AuthController : Controller
 {
     private OAuth2Service Service { get; }
     private IDiscordClient DiscordClient { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public AuthController(OAuth2Service service, IDiscordClient discordClient)
+    public AuthController(OAuth2Service service, IDiscordClient discordClient, IServiceProvider serviceProvider)
     {
         Service = service;
         DiscordClient = discordClient;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -32,8 +35,10 @@ public class AuthController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult<OAuth2GetLink> GetRedirectLink([FromQuery] AuthState state)
     {
-        var link = Service.GetRedirectLink(state);
-        return Ok(link);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Auth.GetRedirectLink>();
+        var result = action.Process(state);
+
+        return Ok(result);
     }
 
     /// <summary>

@@ -20,6 +20,10 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.AuditLog.GetFileContent>()
             .AddScoped<Api.V1.AuditLog.CreateLogItem>();
 
+        // Auth
+        services
+            .AddScoped<Api.V1.Auth.GetRedirectLink>();
+
         // V2
         services
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()

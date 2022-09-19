@@ -39,7 +39,7 @@ public class ApiKeyAuthAttributeTests
         httpContext.Setup(o => o.RequestServices).Returns(serviceProvider);
 
         var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
-        var controller = new AuthController(null, null);
+        var controller = new AuthController(null, null, null);
 
         return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), controller)
         {

@@ -34,15 +34,7 @@ public class AuthControllerTests : ControllerTest<AuthController>
         var loggingManager = new LoggingManager(discordClient, commandsService, interactions, ServiceProvider);
         var service = new OAuth2Service(configuration, DatabaseBuilder, httpClientFactory, loggingManager);
 
-        return new AuthController(service, client);
-    }
-
-    [TestMethod]
-    public void GetRedirectLink()
-    {
-        var state = new AuthState();
-        var link = Controller.GetRedirectLink(state);
-        CheckResult<OkObjectResult, OAuth2GetLink>(link);
+        return new AuthController(service, client, ServiceProvider);
     }
 
     [TestMethod]

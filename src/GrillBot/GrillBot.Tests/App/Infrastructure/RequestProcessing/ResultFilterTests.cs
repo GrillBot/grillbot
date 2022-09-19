@@ -15,7 +15,7 @@ public class ResultFilterTests : ActionFilterTest<ResultFilter>
     protected override bool CanInitProvider() => false;
 
     protected override Controller CreateController(IServiceProvider provider)
-        => new AuthController(null, null);
+        => new AuthController(null, null, null);
 
     protected override ResultFilter CreateFilter()
     {

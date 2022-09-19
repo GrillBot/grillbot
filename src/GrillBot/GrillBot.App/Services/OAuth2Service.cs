@@ -26,23 +26,6 @@ public class OAuth2Service
         LoggingManager = loggingManager;
     }
 
-    public OAuth2GetLink GetRedirectLink(AuthState state)
-    {
-        var builder = new UriBuilder("https://discord.com/api/oauth2/authorize")
-        {
-            Query = string.Join(
-                "&",
-                $"client_id={Configuration["ClientId"]}",
-                $"redirect_uri={WebUtility.UrlEncode(Configuration["RedirectUrl"])}",
-                "response_type=code",
-                "scope=identify",
-                $"state={state.Encode()}"
-            )
-        };
-
-        return new OAuth2GetLink(builder.ToString());
-    }
-
     public async Task<string> CreateRedirectUrlAsync(string code, string encodedState)
     {
         var state = AuthState.Decode(encodedState);

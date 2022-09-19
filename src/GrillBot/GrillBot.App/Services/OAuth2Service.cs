@@ -1,10 +1,8 @@
 ﻿#pragma warning disable S1075 // URIs should not be hardcoded
-using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Enums;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 using System.Security.Claims;
 using Discord.Net;
 using GrillBot.Common.Managers.Logging;
@@ -15,56 +13,13 @@ public class OAuth2Service
 {
     private IConfiguration Configuration { get; }
     private GrillBotDatabaseBuilder DbFactory { get; }
-    private HttpClient HttpClient { get; }
     private LoggingManager LoggingManager { get; }
 
-    public OAuth2Service(IConfiguration configuration, GrillBotDatabaseBuilder dbFactory, IHttpClientFactory httpClientFactory, LoggingManager loggingManager)
+    public OAuth2Service(IConfiguration configuration, GrillBotDatabaseBuilder dbFactory, LoggingManager loggingManager)
     {
         Configuration = configuration.GetSection("Auth:OAuth2");
         DbFactory = dbFactory;
-        HttpClient = httpClientFactory.CreateClient();
         LoggingManager = loggingManager;
-    }
-
-    public async Task<string> CreateRedirectUrlAsync(string code, string encodedState)
-    {
-        var state = AuthState.Decode(encodedState);
-        var accessToken = await CreateAccessTokenAsync(code);
-        var redirectUrl = GetReturnUrl(state);
-
-        var uriBuilder = new UriBuilder(redirectUrl)
-        {
-            Query = string.Join("&", $"sessionId={accessToken}", $"isPublic={state.IsPublic}")
-        };
-
-        return uriBuilder.ToString();
-    }
-
-    private string GetReturnUrl(AuthState state)
-        => !string.IsNullOrEmpty(state.ReturnUrl) ? state.ReturnUrl : Configuration[state.IsPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"];
-
-    private async Task<string> CreateAccessTokenAsync(string code)
-    {
-        using var message = new HttpRequestMessage(HttpMethod.Post, "https://discord.com/api/oauth2/token")
-        {
-            Content = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                { "client_id", Configuration["ClientId"] },
-                { "client_secret", Configuration["ClientSecret"] },
-                { "grant_type", "authorization_code" },
-                { "code", code },
-                { "scope", "identify" },
-                { "redirect_uri", Configuration["RedirectUrl"] }
-            })
-        };
-
-        using var response = await HttpClient.SendAsync(message);
-        var json = await response.Content.ReadAsStringAsync();
-
-        if (!response.IsSuccessStatusCode)
-            throw new WebException(json);
-
-        return JObject.Parse(json)["access_token"]!.ToString();
     }
 
     private async Task<IUser> GetUserAsync(string token)

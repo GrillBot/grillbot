@@ -10,7 +10,7 @@ public class GetRedirectLink : ApiAction
 
     public GetRedirectLink(ApiRequestContext apiContext, IConfiguration configuration) : base(apiContext)
     {
-        Configuration = configuration;
+        Configuration = configuration.GetRequiredSection("Auth:OAuth2");
     }
 
     public OAuth2GetLink Process(AuthState state)

@@ -22,7 +22,8 @@ public static class ActionsExtensions
 
         // Auth
         services
-            .AddScoped<Api.V1.Auth.GetRedirectLink>();
+            .AddScoped<Api.V1.Auth.GetRedirectLink>()
+            .AddScoped<Api.V1.Auth.ProcessCallback>();
 
         // V2
         services

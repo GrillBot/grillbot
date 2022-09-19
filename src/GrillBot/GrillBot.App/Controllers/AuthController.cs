@@ -54,7 +54,8 @@ public class AuthController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult> OnOAuth2CallbackAsync([FromQuery, Required] string code, [Required, FromQuery] string state)
     {
-        var redirectUrl = await Service.CreateRedirectUrlAsync(code, state);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Auth.ProcessCallback>();
+        var redirectUrl = await action.ProcessAsync(code, state);
         return Redirect(redirectUrl);
     }
 

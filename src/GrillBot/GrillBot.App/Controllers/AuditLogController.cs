@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Actions;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -14,6 +15,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/auditlog")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class AuditLogController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

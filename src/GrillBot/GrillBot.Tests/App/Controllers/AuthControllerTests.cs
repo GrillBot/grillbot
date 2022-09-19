@@ -1,11 +1,8 @@
 ﻿using System.Linq;
 using GrillBot.App.Controllers;
 using GrillBot.App.Services;
-using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using System.Net.Http;
 using Discord;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -30,19 +27,10 @@ public class AuthControllerTests : ControllerTest<AuthController>
         var discordClient = DiscordHelper.CreateClient();
         var commandsService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
-        var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"access_token\": \"12345\"}") });
         var loggingManager = new LoggingManager(discordClient, commandsService, interactions, ServiceProvider);
-        var service = new OAuth2Service(configuration, DatabaseBuilder, httpClientFactory, loggingManager);
+        var service = new OAuth2Service(configuration, DatabaseBuilder, loggingManager);
 
         return new AuthController(service, client, ServiceProvider);
-    }
-
-    [TestMethod]
-    public async Task OnOAuth2CallBackAsync()
-    {
-        var encodedState = new AuthState().Encode();
-        var result = await Controller.OnOAuth2CallbackAsync("code", encodedState);
-        CheckResult<RedirectResult>(result);
     }
 
     [TestMethod]

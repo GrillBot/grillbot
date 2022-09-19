@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
@@ -17,7 +18,7 @@ public class AutoReplyRepository : RepositoryBase
         using (Counter.Create("Database"))
         {
             return await Context.AutoReplies.AsNoTracking()
-                .ToListAsync();
+                .OrderBy(o => o.Id).ToListAsync();
         }
     }
 

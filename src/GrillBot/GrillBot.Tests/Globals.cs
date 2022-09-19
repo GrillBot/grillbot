@@ -13,6 +13,7 @@ global using Microsoft.Extensions.Configuration;
 using AutoMapper;
 using GrillBot.Common.Managers.Counters;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace GrillBot.Tests;
 
@@ -25,6 +26,7 @@ public static class TestServices
     public static readonly Lazy<CounterManager> CounterManager = new();
     public static readonly Lazy<IServiceProvider> EmptyProvider = new(DiHelper.CreateEmptyProvider, LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<IServiceProvider> InitializedProvider = new(DiHelper.CreateInitializedProvider, LazyThreadSafetyMode.ExecutionAndPublication);
+    public static readonly Lazy<ILoggerFactory> LoggerFactory = new(LoggingHelper.CreateLoggerFactory, LazyThreadSafetyMode.ExecutionAndPublication);
 
     public static readonly Lazy<IWebHostEnvironment> TestingEnvironment = new(() => new EnvironmentBuilder().AsTest().Build(), LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<IWebHostEnvironment> ProductionEnvironment = new(() => new EnvironmentBuilder().AsProd().Build(), LazyThreadSafetyMode.ExecutionAndPublication);

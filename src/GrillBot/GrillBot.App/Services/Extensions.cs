@@ -14,8 +14,7 @@ public static class Extensions
             .AddSingleton<AuditLog.AuditClearingHelper>();
 
         services
-            .AddSingleton<AutoReply.AutoReplyService>()
-            .AddScoped<AutoReply.AutoReplyApiService>();
+            .AddSingleton<AutoReplyService>();
 
         services
             .AddSingleton<Birthday.BirthdayService>();

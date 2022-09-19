@@ -1,12 +1,12 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using System.Text.RegularExpressions;
+using GrillBot.App.Infrastructure;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using System.Text.RegularExpressions;
-using GrillBot.Common.Extensions.Discord;
 
-namespace GrillBot.App.Services.AutoReply;
+namespace GrillBot.App.Services;
 
 [Initializable]
 public class AutoReplyService

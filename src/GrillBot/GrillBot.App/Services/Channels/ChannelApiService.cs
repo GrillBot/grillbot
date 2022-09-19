@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.AutoReply;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;

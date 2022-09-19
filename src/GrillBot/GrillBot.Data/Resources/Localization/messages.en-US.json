@@ -286,5 +286,8 @@
       "PublicAdminBlocked": "User {0} has blocked access to public administration.",
       "PrivateAdminDisabled": "User {0} does not have permission to access private administration."
     }
+  },
+  "AutoReply": {
+    "NotFound": "The requested auto-reply with ID {0} was not found."
   }
 }

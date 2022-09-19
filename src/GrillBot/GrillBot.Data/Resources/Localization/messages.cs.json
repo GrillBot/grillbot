@@ -286,5 +286,8 @@
       "PublicAdminBlocked": "Uživatel {0} má zablokovaný přístup do osobní administrace.",
       "PrivateAdminDisabled": "Uživatel {0} nemá oprávnění pro přístup do administrace."
     }
+  },
+  "AutoReply": {
+    "NotFound": "Požadovaná automatická odpověď s ID {0} nebyla nalezena."
   }
 }

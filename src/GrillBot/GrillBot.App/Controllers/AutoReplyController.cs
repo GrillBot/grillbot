@@ -1,10 +1,12 @@
-﻿using GrillBot.App.Services.AutoReply;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AutoReply;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -12,13 +14,14 @@ namespace GrillBot.App.Controllers;
 [Route("api/autoreply")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class AutoReplyController : Controller
 {
-    private AutoReplyApiService AutoReplyApiService { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public AutoReplyController(AutoReplyApiService autoReplyApiService)
+    public AutoReplyController(IServiceProvider serviceProvider)
     {
-        AutoReplyApiService = autoReplyApiService;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -29,7 +32,9 @@ public class AutoReplyController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync()
     {
-        var result = await AutoReplyApiService.GetListAsync();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.GetAutoReplyList>();
+        var result = await action.ProcessAsync();
+
         return Ok(result);
     }
 
@@ -44,11 +49,11 @@ public class AutoReplyController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id)
     {
-        var item = await AutoReplyApiService.GetItemAsync(id);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.GetAutoReplyItem>();
+        var (item, errMsg) = await action.ProcessAsync(id);
 
-        if (item == null)
-            return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
-
+        if (!string.IsNullOrEmpty(errMsg))
+            return NotFound(new MessageResponse(errMsg));
         return Ok(item);
     }
 
@@ -62,10 +67,12 @@ public class AutoReplyController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AutoReplyItem>> CreateItemAsync([FromBody] AutoReplyItemParams parameters)
     {
-        this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-        var item = await AutoReplyApiService.CreateItemAsync(parameters);
-        return Ok(item);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.CreateAutoReplyItem>();
+        var result = await action.ProcessAsync(parameters);
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -78,16 +85,17 @@ public class AutoReplyController : Controller
     /// <response code="404">Item not found</response>
     [HttpPut("{id:long}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AutoReplyItem>> UpdateItemAsync(long id, [FromBody] AutoReplyItemParams parameters)
     {
-        this.StoreParameters(parameters);
-        var item = await AutoReplyApiService.UpdateItemAsync(id, parameters);
+        ApiAction.Init(this, parameters);
 
-        if (item == null)
-            return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.UpdateAutoReplyItem>();
+        var (item, errMsg) = await action.ProcessAsync(id, parameters);
 
+        if (!string.IsNullOrEmpty(errMsg))
+            return NotFound(new MessageResponse(errMsg));
         return Ok(item);
     }
 
@@ -99,13 +107,14 @@ public class AutoReplyController : Controller
     /// <response code="404">Item not found</response>
     [HttpDelete("{id:long}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> RemoveItemAsync(long id)
     {
-        var result = await AutoReplyApiService.RemoveItemAsync(id);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.RemoveAutoReplyItem>();
+        var errMsg = await action.ProcessAsync(id);
 
-        if (!result)
-            return NotFound(new MessageResponse($"Požadovaná automatická odpověď s ID {id} nebyla nalezena."));
+        if (!string.IsNullOrEmpty(errMsg))
+            return NotFound(new MessageResponse(errMsg));
 
         return Ok();
     }

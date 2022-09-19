@@ -25,6 +25,14 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Auth.GetRedirectLink>()
             .AddScoped<Api.V1.Auth.ProcessCallback>()
             .AddScoped<Api.V1.Auth.CreateToken>();
+        
+        // AutoReply
+        services
+            .AddScoped<Api.V1.AutoReply.GetAutoReplyList>()
+            .AddScoped<Api.V1.AutoReply.GetAutoReplyItem>()
+            .AddScoped<Api.V1.AutoReply.CreateAutoReplyItem>()
+            .AddScoped<Api.V1.AutoReply.UpdateAutoReplyItem>()
+            .AddScoped<Api.V1.AutoReply.RemoveAutoReplyItem>();
 
         // V2
         services

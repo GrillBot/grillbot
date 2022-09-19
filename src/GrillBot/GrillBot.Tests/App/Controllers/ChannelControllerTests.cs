@@ -1,7 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Controllers;
+using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.AutoReply;
 using GrillBot.App.Services.Channels;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;

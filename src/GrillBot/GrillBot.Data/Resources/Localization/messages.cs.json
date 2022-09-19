@@ -274,6 +274,10 @@
     },
     "GetFileContent": {
       "NotFound": "Požadovaný soubor nebyl nalezen."
+    },
+    "CreateLogItem": {
+      "Required": "Vyberte jeden typ logu.",
+      "MultipleTypes": "Bylo vybráno více typů logu. Vyberte pouze jeden."
     }
   }
 }

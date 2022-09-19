@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -17,12 +16,10 @@ namespace GrillBot.App.Controllers;
 [ApiExplorerSettings(GroupName = "v1")]
 public class AuditLogController : Controller
 {
-    private AuditLogApiService ApiService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public AuditLogController(AuditLogApiService apiService, IServiceProvider serviceProvider)
+    public AuditLogController(IServiceProvider serviceProvider)
     {
-        ApiService = apiService;
         ServiceProvider = serviceProvider;
     }
 
@@ -94,9 +91,11 @@ public class AuditLogController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     public async Task<ActionResult> HandleClientAppMessageAsync([FromBody] ClientLogItemRequest request)
     {
-        this.StoreParameters(request);
+        ApiAction.Init(this, request);
 
-        await ApiService.HandleClientAppMessageAsync(request);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.CreateLogItem>();
+        await action.ProcessAsync(request);
+
         return Ok();
     }
 }

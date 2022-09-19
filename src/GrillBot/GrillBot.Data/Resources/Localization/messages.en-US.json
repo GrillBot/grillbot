@@ -274,6 +274,10 @@
     },
     "GetFileContent": {
       "NotFound": "The requested file was not found."
+    },
+    "CreateLogItem": {
+      "Required": "Select one record type.",
+      "MultipleTypes": "Multiple record types have been selected. Select only one."
     }
   }
 }

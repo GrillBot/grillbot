@@ -10,7 +10,6 @@ public static class Extensions
     {
         services
             .AddSingleton<AuditLog.AuditLogService>()
-            .AddScoped<AuditLog.AuditLogApiService>()
             .AddSingleton<AuditLog.AuditLogWriter>()
             .AddSingleton<AuditLog.AuditClearingHelper>();
 

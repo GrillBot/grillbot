@@ -9,6 +9,7 @@ public class FileStorageMock : FileStorageFactory
     private List<(string category, string filename, FileInfo info)> Files { get; } = new()
     {
         ("DeletedAttachments", "Temp.txt", new FileInfo("Temp.txt")),
+        ("DeletedAttachments", "Temp.unknown", new FileInfo("Temp.unknown")),
         ("DeletedAttachments", "Temporary.txt", new FileInfo("Temporary.txt")),
         ("Clearing", null, new FileInfo("File.xml")),
         ("Common", "LastErrorDate.txt", new FileInfo("LastErrorDateTest.txt"))

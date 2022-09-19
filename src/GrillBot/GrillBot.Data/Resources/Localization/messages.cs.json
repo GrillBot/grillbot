@@ -271,6 +271,9 @@
     "List": {
       "TypesCombination": "Nelze filtrovat a vyloučit stejné typy současně.",
       "IdNotNumber": "ID[{0}] není číslo."
+    },
+    "GetFileContent": {
+      "NotFound": "Požadovaný soubor nebyl nalezen."
     }
   }
 }

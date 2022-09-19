@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Actions;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -9,7 +8,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
@@ -77,18 +75,13 @@ public class AuditLogController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<IActionResult> GetFileContentAsync(long id, long fileId)
     {
-        try
-        {
-            var fileInfo = await ApiService.GetLogItemFileAsync(id, fileId);
-            var contentType = new FileExtensionContentTypeProvider().TryGetContentType(fileInfo.FullName, out var type) ? type : "application/octet-stream";
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.GetFileContent>();
+        var result = await action.ProcessAsync(id, fileId);
 
-            var content = await System.IO.File.ReadAllBytesAsync(fileInfo.FullName);
-            return File(content, contentType);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new MessageResponse(ex.Message));
-        }
+        if (!string.IsNullOrEmpty(result.errMsg))
+            return NotFound(new MessageResponse(result.errMsg));
+
+        return File(result.content, result.contentType);
     }
 
     /// <summary>

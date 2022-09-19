@@ -279,5 +279,12 @@
       "Required": "Vyberte jeden typ logu.",
       "MultipleTypes": "Bylo vybráno více typů logu. Vyberte pouze jeden."
     }
+  },
+  "Auth": {
+    "CreateToken": {
+      "UserNotFound": "Proveden pokus s neplatným tokenem, nebo uživatel neexistuje. Opakujte přihlášení.",
+      "PublicAdminBlocked": "Uživatel {0} má zablokovaný přístup do osobní administrace.",
+      "PrivateAdminDisabled": "Uživatel {0} nemá oprávnění pro přístup do administrace."
+    }
   }
 }

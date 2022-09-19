@@ -1,6 +1,5 @@
-﻿using GrillBot.App.Infrastructure.OpenApi;
-using GrillBot.App.Services;
-using GrillBot.Common.Extensions.Discord;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Authorization;
@@ -13,21 +12,18 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/auth")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class AuthController : Controller
 {
-    private OAuth2Service Service { get; }
-    private IDiscordClient DiscordClient { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public AuthController(OAuth2Service service, IDiscordClient discordClient, IServiceProvider serviceProvider)
+    public AuthController(IServiceProvider serviceProvider)
     {
-        Service = service;
-        DiscordClient = discordClient;
         ServiceProvider = serviceProvider;
     }
 
     /// <summary>
-    /// Get redirect uri to access OAuth2 gateway.
+    /// Get redirect link to access OAuth2 gateway.
     /// </summary>
     /// <response code="200">Success</response>
     [HttpGet("link")]
@@ -72,7 +68,8 @@ public class AuthController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<OAuth2LoginToken>> CreateLoginTokenAsync([FromQuery, Required] string sessionId, [FromQuery, Required] bool isPublic)
     {
-        var token = await Service.CreateTokenAsync(sessionId, isPublic);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Auth.CreateToken>();
+        var token = await action.ProcessAsync(sessionId, isPublic);
         return Ok(token);
     }
 
@@ -90,14 +87,8 @@ public class AuthController : Controller
     [OnlyDevelopment]
     public async Task<ActionResult<OAuth2LoginToken>> CreateLoginTokenFromIdAsync(ulong userId, [FromQuery] bool isPublic = false)
     {
-        var user = await DiscordClient.FindUserAsync(userId);
-        if (user == null)
-        {
-            ModelState.AddModelError(nameof(userId), $"Cannot find user with userId {userId}.");
-            return BadRequest(new ValidationProblemDetails(ModelState));
-        }
-
-        var token = await Service.CreateTokenAsync(user, isPublic);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Auth.CreateToken>();
+        var token = await action.ProcessAsync(userId, isPublic);
         return Ok(token);
     }
 }

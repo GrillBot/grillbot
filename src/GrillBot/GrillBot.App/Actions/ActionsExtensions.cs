@@ -23,7 +23,8 @@ public static class ActionsExtensions
         // Auth
         services
             .AddScoped<Api.V1.Auth.GetRedirectLink>()
-            .AddScoped<Api.V1.Auth.ProcessCallback>();
+            .AddScoped<Api.V1.Auth.ProcessCallback>()
+            .AddScoped<Api.V1.Auth.CreateToken>();
 
         // V2
         services

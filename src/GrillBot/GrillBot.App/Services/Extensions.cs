@@ -88,7 +88,6 @@ public static class Extensions
             .AddSingleton<BoosterService>()
             .AddSingleton<InviteService>()
             .AddSingleton<MockingService>()
-            .AddScoped<OAuth2Service>()
             .AddSingleton<RandomizationService>()
             .AddSingleton<SearchingService>();
 

@@ -279,5 +279,12 @@
       "Required": "Select one record type.",
       "MultipleTypes": "Multiple record types have been selected. Select only one."
     }
+  },
+  "Auth": {
+    "CreateToken": {
+      "UserNotFound": "An attempt was made with an invalid token, or the user does not exist. Please login again.",
+      "PublicAdminBlocked": "User {0} has blocked access to public administration.",
+      "PrivateAdminDisabled": "User {0} does not have permission to access private administration."
+    }
   }
 }

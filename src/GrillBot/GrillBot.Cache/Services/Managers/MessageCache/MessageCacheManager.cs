@@ -289,7 +289,7 @@ public class MessageCacheManager : IMessageCacheManager
         }
     }
 
-    public async Task<int> ClearAllMessagesFromChannel(IChannel channel)
+    public async Task<int> ClearAllMessagesFromChannelAsync(IChannel channel)
     {
         await Semaphore.WaitAsync();
 

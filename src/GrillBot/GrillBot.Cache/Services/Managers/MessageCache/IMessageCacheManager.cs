@@ -8,6 +8,6 @@ public interface IMessageCacheManager
     Task<int> GetCachedMessagesCount(IChannel channel);
     Task<IMessage?> GetAsync(ulong messageId, IMessageChannel? channel, bool includeRemoved = false, bool forceReload = false);
     Task<IMessage?> GetLastMessageAsync(IChannel? channel = null, IUser? author = null, IGuild? guild = null);
-    Task<int> ClearAllMessagesFromChannel(IChannel channel);
+    Task<int> ClearAllMessagesFromChannelAsync(IChannel channel);
     Task<string> ProcessScheduledTaskAsync();
 }

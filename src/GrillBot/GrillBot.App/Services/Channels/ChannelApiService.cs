@@ -5,7 +5,6 @@ using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using System.Security.Claims;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
@@ -92,26 +91,6 @@ public class ChannelApiService
         await AuditLogWriter.StoreAsync(auditLogItem);
 
         return true;
-    }
-
-    public async Task ClearCacheAsync(ulong guildId, ulong channelId, ClaimsPrincipal user)
-    {
-        var guild = await DiscordClient.GetGuildAsync(guildId);
-        if (guild == null) return;
-
-        var channel = await guild.GetTextChannelAsync(channelId);
-        if (channel == null)
-            return;
-
-        var clearedCount = await MessageCache.ClearAllMessagesFromChannel(channel);
-
-        var auditLogItem = new AuditLogDataWrapper(
-            AuditLogItemType.Info,
-            $"Byla ručně smazána cache zpráv kanálu. Smazaných zpráv: {clearedCount}",
-            guild, channel, ApiRequestContext.LoggedUser
-        );
-
-        await AuditLogWriter.StoreAsync(auditLogItem);
     }
 
     public async Task<List<ChannelboardItem>> GetChannelBoardAsync()

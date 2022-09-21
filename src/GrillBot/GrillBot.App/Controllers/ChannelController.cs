@@ -91,7 +91,8 @@ public class ChannelController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> ClearChannelCacheAsync(ulong guildId, ulong channelId)
     {
-        await ApiService.ClearCacheAsync(guildId, channelId, User);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.ClearMessageCache>();
+        await action.ProcessAsync(guildId, channelId);
         return Ok();
     }
 

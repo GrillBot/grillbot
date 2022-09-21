@@ -49,13 +49,6 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
     }
 
     [TestMethod]
-    public async Task ClearChannelCacheAsync()
-    {
-        var result = await Controller.ClearChannelCacheAsync(Consts.GuildId, Consts.ChannelId);
-        CheckResult<OkResult>(result);
-    }
-
-    [TestMethod]
     public async Task GetChannelDetailAsync_Found()
     {
         var guild = new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };

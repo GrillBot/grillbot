@@ -6,6 +6,7 @@ using GrillBot.App.Services.CommandsHelp;
 using GrillBot.App.Services.DirectApi;
 using GrillBot.App.Services.User;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.Help;
 using GrillBot.Data.Models.API.Users;

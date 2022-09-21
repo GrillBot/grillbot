@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Logging;
 using Quartz;
@@ -11,9 +12,9 @@ namespace GrillBot.App.Services;
 [DisallowUninitialized]
 public class MessageCacheJob : Job
 {
-    private MessageCacheManager MessageCacheManager { get; }
+    private IMessageCacheManager MessageCacheManager { get; }
 
-    public MessageCacheJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager, MessageCacheManager messageCacheManager, LoggingManager loggingManager) : base(
+    public MessageCacheJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager, IMessageCacheManager messageCacheManager, LoggingManager loggingManager) : base(
         auditLogWriter, discordClient, initManager, loggingManager)
     {
         MessageCacheManager = messageCacheManager;

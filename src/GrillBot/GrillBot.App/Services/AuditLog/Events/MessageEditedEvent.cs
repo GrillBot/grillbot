@@ -1,4 +1,5 @@
 ﻿using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
@@ -11,7 +12,7 @@ public class MessageEditedEvent : AuditEventBase
     private Cacheable<IMessage, ulong> Before { get; }
     private SocketMessage After { get; }
     private ISocketMessageChannel Channel { get; }
-    private MessageCacheManager MessageCache { get; }
+    private IMessageCacheManager MessageCache { get; }
     private IDiscordClient DiscordClient { get; }
 
     private SocketTextChannel TextChannel => Channel as SocketTextChannel;
@@ -22,7 +23,7 @@ public class MessageEditedEvent : AuditEventBase
         Before = before;
         After = after;
         Channel = channel;
-        MessageCache = serviceProvider.GetRequiredService<MessageCacheManager>();
+        MessageCache = serviceProvider.GetRequiredService<IMessageCacheManager>();
         DiscordClient = serviceProvider.GetRequiredService<IDiscordClient>();
     }
 

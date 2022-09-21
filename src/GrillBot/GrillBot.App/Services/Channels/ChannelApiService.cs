@@ -7,8 +7,8 @@ using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using System.Security.Claims;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Helpers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models;
 using GrillBot.Database.Enums.Internal;
@@ -18,7 +18,7 @@ namespace GrillBot.App.Services.Channels;
 
 public class ChannelApiService
 {
-    private MessageCacheManager MessageCache { get; }
+    private IMessageCacheManager MessageCache { get; }
     private AutoReplyService AutoReplyService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
@@ -26,7 +26,7 @@ public class ChannelApiService
     private ApiRequestContext ApiRequestContext { get; }
     private AuditLogWriter AuditLogWriter { get; }
 
-    public ChannelApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient client, MessageCacheManager messageCache,
+    public ChannelApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient client, IMessageCacheManager messageCache,
         AutoReplyService autoReplyService, ApiRequestContext apiRequestContext, AuditLogWriter auditLogWriter)
     {
         MessageCache = messageCache;
@@ -122,23 +122,6 @@ public class ChannelApiService
         await AuditLogWriter.StoreAsync(auditLogItem);
 
         return true;
-    }
-
-    public async Task PostMessageAsync(ulong guildId, ulong channelId, SendMessageToChannelParams parameters)
-    {
-        var guild = await DiscordClient.GetGuildAsync(guildId);
-        if (guild == null)
-            throw new NotFoundException("Nepodařilo se najít server.");
-
-        var channel = await guild.GetTextChannelAsync(channelId);
-        if (channel == null)
-            throw new NotFoundException($"Nepodařilo se najít kanál na serveru {guild.Name}");
-
-        var reference = MessageHelper.CreateMessageReference(parameters.Reference, channelId, guildId);
-        if (reference != null && await channel.GetMessageAsync(reference.MessageId.Value) == null)
-            reference = null;
-
-        await channel.SendMessageAsync(parameters.Content, messageReference: reference);
     }
 
     public async Task ClearCacheAsync(ulong guildId, ulong channelId, ClaimsPrincipal user)

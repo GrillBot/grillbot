@@ -1,4 +1,5 @@
 ﻿using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.FileStorage;
@@ -13,7 +14,7 @@ public class MessageDeletedEvent : AuditEventBase
 {
     private Cacheable<IMessage, ulong> Message { get; }
     private Cacheable<IMessageChannel, ulong> Channel { get; }
-    private MessageCacheManager MessageCache { get; }
+    private IMessageCacheManager MessageCache { get; }
     private FileStorageFactory FileStorageFactory { get; }
 
     public MessageDeletedEvent(AuditLogService auditLogService, AuditLogWriter auditLogWriter, IServiceProvider serviceProvider, Cacheable<IMessage, ulong> message,
@@ -21,7 +22,7 @@ public class MessageDeletedEvent : AuditEventBase
     {
         Message = message;
         Channel = channel;
-        MessageCache = serviceProvider.GetRequiredService<MessageCacheManager>();
+        MessageCache = serviceProvider.GetRequiredService<IMessageCacheManager>();
         FileStorageFactory = serviceProvider.GetRequiredService<FileStorageFactory>();
     }
 

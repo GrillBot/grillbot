@@ -2,6 +2,8 @@
 using Discord;
 using System.ComponentModel.DataAnnotations;
 using GrillBot.Common.Infrastructure;
+using Newtonsoft.Json;
+using NSwag.Annotations;
 
 namespace GrillBot.Data.Models.API.Channels;
 
@@ -16,6 +18,11 @@ public class SendMessageToChannelParams : IApiObject
     /// Reference is jump link or message ID.
     /// </summary>
     public string Reference { get; set; }
+
+    // Only for commands.
+    [JsonIgnore]
+    [OpenApiIgnore]
+    public List<FileAttachment> Attachments { get; } = new();
 
     public Dictionary<string, string> SerializeForLog()
     {

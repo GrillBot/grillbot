@@ -61,18 +61,10 @@ public class ChannelController : Controller
     public async Task<ActionResult> SendMessageToChannelAsync(ulong guildId, ulong channelId, [FromBody] SendMessageToChannelParams parameters)
     {
         ApiAction.Init(this, parameters);
-        
-        try
-        {
-            this.StoreParameters(parameters);
 
-            await ApiService.PostMessageAsync(guildId, channelId, parameters);
-            return Ok();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new MessageResponse(ex.Message));
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.SendMessageToChannel>();
+        await action.ProcessAsync(guildId, channelId, parameters);
+        return Ok();
     }
 
     /// <summary>

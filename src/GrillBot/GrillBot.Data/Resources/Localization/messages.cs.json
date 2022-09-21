@@ -104,6 +104,10 @@
       "UserNotFound": "Nepodařilo se dohledat uživatele, který zavolal příkaz.",
       "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
       "NoActivity": "Doteď nebyla zaznamenána žádná aktivita v kanálech."
+    },
+    "PostMessage": {
+      "GuildNotFound": "Nepodařilo se najít server.",
+      "ChannelNotFound": "Nepodařilo se najít kanál na serveru {0}."
     }
   },
   "DuckModule": {

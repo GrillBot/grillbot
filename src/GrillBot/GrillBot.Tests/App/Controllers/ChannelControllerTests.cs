@@ -4,6 +4,7 @@ using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Channels;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -47,28 +48,6 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var apiService = new ChannelApiService(DatabaseBuilder, TestServices.AutoMapper.Value, dcClient, messageCache, autoReplyService, ApiRequestContext, auditLogWriter);
 
         return new ChannelController(apiService, ServiceProvider);
-    }
-
-    [TestMethod]
-    public async Task SendMessageToChannelAsync_GuildNotFound()
-    {
-        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId + 1, Consts.ChannelId, new SendMessageToChannelParams() { Content = "Content" });
-        CheckResult<NotFoundObjectResult>(result);
-    }
-
-    [TestMethod]
-    public async Task SendMessageToChannelAsync_ChannelNotFound()
-    {
-        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId + 1, new SendMessageToChannelParams { Content = "Content" });
-        CheckResult<NotFoundObjectResult>(result);
-    }
-
-    [TestMethod]
-    public async Task SendMessageToChannelAsync_Success()
-    {
-        var data = new SendMessageToChannelParams { Content = "Ahoj, toto je test." };
-        var result = await Controller.SendMessageToChannelAsync(Consts.GuildId, Consts.ChannelId, data);
-        CheckResult<OkResult>(result);
     }
 
     [TestMethod]

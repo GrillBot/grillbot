@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 
 namespace GrillBot.App.Services.Suggestion;
 
@@ -8,10 +9,10 @@ public class EmoteSuggestionsEventManager
 {
     private DiscordSocketClient DiscordClient { get; }
     private EmoteSuggestionService EmoteSuggestionService { get; }
-    private MessageCacheManager MessageCacheManager { get; }
+    private IMessageCacheManager MessageCacheManager { get; }
 
     public EmoteSuggestionsEventManager(DiscordSocketClient discordClient, EmoteSuggestionService emoteSuggestionService,
-        MessageCacheManager messageCacheManager)
+        IMessageCacheManager messageCacheManager)
     {
         DiscordClient = discordClient;
         EmoteSuggestionService = emoteSuggestionService;

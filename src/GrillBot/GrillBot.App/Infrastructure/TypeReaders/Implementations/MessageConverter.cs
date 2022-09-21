@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +21,7 @@ public class MessageConverter : ConverterBase<IMessage>
     {
         if (ulong.TryParse(value, out var messageId))
         {
-            var messageCache = ServiceProvider.GetRequiredService<MessageCacheManager>();
+            var messageCache = ServiceProvider.GetRequiredService<IMessageCacheManager>();
             var message = await messageCache.GetAsync(messageId, Channel);
 
             if (message != null)

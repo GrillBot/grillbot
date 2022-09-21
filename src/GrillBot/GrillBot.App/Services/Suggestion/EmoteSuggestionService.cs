@@ -6,6 +6,7 @@ using GrillBot.Data.Models.Suggestion;
 using GrillBot.Database.Enums;
 using System.Net.Http;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common;
 
 namespace GrillBot.App.Services.Suggestion;
@@ -15,10 +16,10 @@ public partial class EmoteSuggestionService
     private SuggestionSessionService SessionService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
-    private MessageCacheManager MessageCacheManager { get; }
+    private IMessageCacheManager MessageCacheManager { get; }
 
     public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotDatabaseBuilder databaseBuilder,
-        IDiscordClient discordClient, MessageCacheManager messageCacheManager)
+        IDiscordClient discordClient, IMessageCacheManager messageCacheManager)
     {
         SessionService = sessionService;
         DatabaseBuilder = databaseBuilder;

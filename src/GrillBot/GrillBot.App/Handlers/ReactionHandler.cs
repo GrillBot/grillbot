@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
@@ -12,12 +13,13 @@ namespace GrillBot.App.Handlers;
 public class ReactionHandler
 {
     private IEnumerable<ReactionEventHandler> EventHandlers { get; }
-    private MessageCacheManager MessageCache { get; }
+    private IMessageCacheManager MessageCache { get; }
     private InitManager InitManager { get; }
     private DiscordSocketClient DiscordClient { get; }
     private LoggingManager LoggingManager { get; }
 
-    public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers, MessageCacheManager messageCacheManager, InitManager initManager, LoggingManager loggingManager)
+    public ReactionHandler(DiscordSocketClient client, IEnumerable<ReactionEventHandler> eventHandlers, IMessageCacheManager messageCacheManager, InitManager initManager,
+        LoggingManager loggingManager)
     {
         DiscordClient = client;
         EventHandlers = eventHandlers;

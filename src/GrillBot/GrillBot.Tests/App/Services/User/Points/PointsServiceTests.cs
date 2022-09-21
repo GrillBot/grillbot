@@ -3,6 +3,7 @@ using Discord;
 using GrillBot.App.Services;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;

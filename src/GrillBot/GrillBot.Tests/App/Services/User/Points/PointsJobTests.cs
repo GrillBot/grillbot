@@ -2,6 +2,7 @@
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Tests.Infrastructure.Discord;

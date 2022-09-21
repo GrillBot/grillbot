@@ -6,6 +6,7 @@ using GrillBot.Tests.Infrastructure.Discord;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;

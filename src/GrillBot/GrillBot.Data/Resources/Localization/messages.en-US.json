@@ -104,6 +104,10 @@
       "UserNotFound": "The user who called the command could not be found.",
       "NoAccess": "You don't have access to any channels.",
       "NoActivity": "No channel activity has been recorded so far."
+    },
+    "PostMessage": {
+      "GuildNotFound": "Failed to find server.",
+      "ChannelNotFound": "Could not find channel on server {0}."
     }
   },
   "DuckModule": {

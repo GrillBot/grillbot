@@ -1,15 +1,15 @@
-﻿using Discord;
+﻿using System.Net;
+using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
-using System.Net;
 
-namespace GrillBot.Cache.Services.Managers;
+namespace GrillBot.Cache.Services.Managers.MessageCache;
 
-public class MessageCacheManager
+public class MessageCacheManager : IMessageCacheManager
 {
     private SemaphoreSlim Semaphore { get; }
     private Dictionary<ulong, IMessage> Messages { get; }
@@ -49,7 +49,7 @@ public class MessageCacheManager
 
         try
         {
-            if (!InitManager.Get() || LoadedChannels.Contains(message.Channel.Id) || message.Channel is IDMChannel) 
+            if (!InitManager.Get() || LoadedChannels.Contains(message.Channel.Id) || message.Channel is IDMChannel)
                 return;
 
             await DownloadMessagesAsync(message.Channel); // Download 100 latest messages.
@@ -86,7 +86,7 @@ public class MessageCacheManager
         {
             if (channel is IDMChannel)
                 return;
-            
+
             await using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id);
@@ -126,7 +126,7 @@ public class MessageCacheManager
         {
             if (channel is IDMChannel)
                 return;
-            
+
             MessagesForUpdate.Add(after.Id);
         }
         finally

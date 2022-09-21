@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Enums.Internal;
@@ -10,12 +11,12 @@ namespace GrillBot.App.Services.Channels;
 public class ChannelService
 {
     private string CommandPrefix { get; }
-    private MessageCacheManager MessageCache { get; }
+    private IMessageCacheManager MessageCache { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     public ChannelService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
-        MessageCacheManager messageCache)
+        IMessageCacheManager messageCache)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         MessageCache = messageCache;

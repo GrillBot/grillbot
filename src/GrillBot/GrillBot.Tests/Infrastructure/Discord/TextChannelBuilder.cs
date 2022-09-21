@@ -44,9 +44,24 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
         return this;
     }
 
+    public TextChannelBuilder SetSendFilesAction(IUserMessage message)
+    {
+        Mock.Setup(o => o.SendFilesAsync(It.IsAny<IEnumerable<FileAttachment>>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(),
+                It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(), It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(), It.IsAny<MessageFlags>()))
+            .Returns(Task.FromResult(message));
+        return this;
+    }
+
     public TextChannelBuilder SetGetMessageAsync(IMessage message)
     {
         Mock.Setup(o => o.GetMessageAsync(It.Is<ulong>(x => x == message.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(message));
+        return this;
+    }
+
+    public TextChannelBuilder SetSendMessageAction(IUserMessage message)
+    {
+        Mock.Setup(o => o.SendMessageAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(), It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
+            It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(), It.IsAny<MessageFlags>())).ReturnsAsync(message);
         return this;
     }
 }

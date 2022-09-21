@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
@@ -13,7 +14,7 @@ public partial class PointsService
     private string CommandPrefix { get; }
     private IConfiguration Configuration { get; }
     private Random Random { get; }
-    private MessageCacheManager MessageCache { get; }
+    private IMessageCacheManager MessageCache { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
@@ -21,7 +22,7 @@ public partial class PointsService
     private MagickImage TrophyImage { get; }
 
     public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
-        MessageCacheManager messageCache, RandomizationService randomizationService, ProfilePictureManager profilePictureManager)
+        IMessageCacheManager messageCache, RandomizationService randomizationService, ProfilePictureManager profilePictureManager)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         Configuration = configuration.GetSection("Points");

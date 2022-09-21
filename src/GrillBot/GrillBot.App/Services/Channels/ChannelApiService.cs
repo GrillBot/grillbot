@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Channels;
@@ -12,7 +11,6 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models;
 using GrillBot.Database.Enums.Internal;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Channels;
 
@@ -36,34 +34,6 @@ public class ChannelApiService
         DiscordClient = client;
         ApiRequestContext = apiRequestContext;
         AuditLogWriter = auditLogWriter;
-    }
-
-    public async Task<PaginatedResponse<GuildChannelListItem>> GetListAsync(GetChannelListParams parameters)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.Channel.GetChannelListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<GuildChannelListItem>.CopyAndMapAsync(data, MapChannelAsync);
-    }
-
-    private async Task<GuildChannelListItem> MapChannelAsync(Database.Entity.GuildChannel entity)
-    {
-        var guild = await DiscordClient.GetGuildAsync(entity.GuildId.ToUlong());
-        var guildChannel = guild != null ? await guild.GetChannelAsync(entity.ChannelId.ToUlong()) : null;
-
-        var result = Mapper.Map<GuildChannelListItem>(entity);
-        if (guildChannel != null)
-        {
-            result = Mapper.Map(guildChannel, result);
-
-            if (entity.IsText() || entity.IsThread() || entity.IsVoice())
-                result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
-        }
-
-        if (result.FirstMessageAt == DateTime.MinValue) result.FirstMessageAt = null;
-        if (result.LastMessageAt == DateTime.MinValue) result.LastMessageAt = null;
-
-        return result;
     }
 
     public async Task<ChannelDetail> GetDetailAsync(ulong id)

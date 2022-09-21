@@ -37,7 +37,8 @@ public static class ActionsExtensions
         // Channel
         services
             .AddScoped<Api.V1.Channel.GetChannelUsers>()
-            .AddScoped<Api.V1.Channel.SendMessageToChannel>();
+            .AddScoped<Api.V1.Channel.SendMessageToChannel>()
+            .AddScoped<Api.V1.Channel.GetChannelList>();
 
         // V2
         services

@@ -76,9 +76,10 @@ public class ChannelController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<GuildChannelListItem>>> GetChannelsListAsync([FromBody] GetChannelListParams parameters)
     {
-        this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-        var result = await ApiService.GetListAsync(parameters);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelList>();
+        var result = await action.ProcessAsync(parameters);
         return Ok(result);
     }
 

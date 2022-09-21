@@ -2,7 +2,6 @@
 using Moq;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
@@ -64,9 +63,8 @@ public class GuildBuilder : BuilderBase<IGuild>
 
     public GuildBuilder SetGetTextChannelAction(ITextChannel channel)
     {
-        Mock.Setup(o =>
-            o.GetTextChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(),
-                It.IsAny<RequestOptions>())).Returns(Task.FromResult(channel));
+        Mock.Setup(o => o.GetTextChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channel);
+        Mock.Setup(o => o.GetChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channel);
         return this;
     }
 

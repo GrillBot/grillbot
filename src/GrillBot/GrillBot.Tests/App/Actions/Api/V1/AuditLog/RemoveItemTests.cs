@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Discord;
 using GrillBot.App.Actions.Api.V1.AuditLog;
+using GrillBot.Data.Exceptions;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -27,12 +29,11 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
     }
 
     [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
     {
-        var result = await Action.ProcessAsync(1);
-
-        Assert.IsNotNull(result);
-        Assert.AreEqual(404, result.Value.status);
+        await Action.ProcessAsync(1);
     }
 
     [TestMethod]
@@ -48,19 +49,14 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
             Data = "Info"
         });
         await Repository.CommitAsync();
-
-        var result = await Action.ProcessAsync(id);
-
-        Assert.IsNull(result);
+        await Action.ProcessAsync(id);
     }
 
     [TestMethod]
     public async Task ProcessAsync_WithFiles_FileNotOnDisk()
     {
         await InitFullLogItemAsync();
-
-        var result = await Action.ProcessAsync(1);
-        Assert.IsNull(result);
+        await Action.ProcessAsync(1);
     }
 
     [TestMethod]
@@ -69,9 +65,7 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
         await InitFullLogItemAsync();
         await File.WriteAllBytesAsync("Temp.txt", new byte[] { 1, 2, 3, 4, 5 });
 
-        var result = await Action.ProcessAsync(1);
-
-        Assert.IsNull(result);
+        await Action.ProcessAsync(1);
         Assert.IsFalse(File.Exists("Temp.txt"));
     }
 

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.AutoReply;
 
 namespace GrillBot.App.Actions.Api.V1.AutoReply;
@@ -18,14 +19,14 @@ public class GetAutoReplyItem : ApiAction
         Texts = texts;
     }
 
-    public async Task<(AutoReplyItem item, string errMsg)> ProcessAsync(long id)
+    public async Task<AutoReplyItem> ProcessAsync(long id)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var entity = await repository.AutoReply.FindReplyByIdAsync(id);
         if (entity == null)
-            return (null, Texts["AutoReply/NotFound", ApiContext.Language].FormatWith(id));
+            throw new NotFoundException(Texts["AutoReply/NotFound", ApiContext.Language].FormatWith(id));
 
-        return (Mapper.Map<AutoReplyItem>(entity), null);
+        return Mapper.Map<AutoReplyItem>(entity);
     }
 }

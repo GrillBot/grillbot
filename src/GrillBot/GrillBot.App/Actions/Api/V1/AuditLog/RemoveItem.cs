@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Http;
@@ -20,19 +21,18 @@ public class RemoveItem : ApiAction
         FileStorage = fileStorage;
     }
 
-    public async Task<(int status, string response)?> ProcessAsync(long id)
+    public async Task ProcessAsync(long id)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var logItem = await repository.AuditLog.FindLogItemByIdAsync(id, true);
         if (logItem == null)
-            return (StatusCodes.Status404NotFound, Texts["AuditLog/RemoveItem/NotFound", ApiContext.Language]);
+            throw new NotFoundException(Texts["AuditLog/RemoveItem/NotFound", ApiContext.Language]);
 
         await RemoveFilesAsync(repository, logItem);
         repository.Remove(logItem);
 
         await repository.CommitAsync();
-        return null;
     }
 
     private async Task RemoveFilesAsync(GrillBotRepository repository, AuditLogItem logItem)

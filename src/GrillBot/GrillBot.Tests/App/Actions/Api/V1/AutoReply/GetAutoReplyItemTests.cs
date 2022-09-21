@@ -1,4 +1,6 @@
-﻿using GrillBot.App.Actions.Api.V1.AutoReply;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions.Api.V1.AutoReply;
+using GrillBot.Data.Exceptions;
 using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.AutoReply;
@@ -21,18 +23,16 @@ public class GetAutoReplyItemTests : ApiActionTest<GetAutoReplyItem>
         await Repository.AddAsync(new Database.Entity.AutoReplyItem { Id = 1, Template = "Template", Reply = "Reply" });
         await Repository.CommitAsync();
 
-        var (item, errMsg) = await Action.ProcessAsync(1);
+        var item = await Action.ProcessAsync(1);
 
         Assert.IsNotNull(item);
-        Assert.IsTrue(string.IsNullOrEmpty(errMsg));
     }
 
     [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
     {
-        var (item, errMsg) = await Action.ProcessAsync(1);
-
-        Assert.IsNull(item);
-        Assert.IsFalse(string.IsNullOrEmpty(errMsg));
+        await Action.ProcessAsync(1);
     }
 }

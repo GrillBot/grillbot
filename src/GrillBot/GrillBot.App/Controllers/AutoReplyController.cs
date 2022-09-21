@@ -50,10 +50,8 @@ public class AutoReplyController : Controller
     public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id)
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.GetAutoReplyItem>();
-        var (item, errMsg) = await action.ProcessAsync(id);
+        var item = await action.ProcessAsync(id);
 
-        if (!string.IsNullOrEmpty(errMsg))
-            return NotFound(new MessageResponse(errMsg));
         return Ok(item);
     }
 
@@ -92,10 +90,8 @@ public class AutoReplyController : Controller
         ApiAction.Init(this, parameters);
 
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.UpdateAutoReplyItem>();
-        var (item, errMsg) = await action.ProcessAsync(id, parameters);
+        var item = await action.ProcessAsync(id, parameters);
 
-        if (!string.IsNullOrEmpty(errMsg))
-            return NotFound(new MessageResponse(errMsg));
         return Ok(item);
     }
 
@@ -111,10 +107,7 @@ public class AutoReplyController : Controller
     public async Task<ActionResult> RemoveItemAsync(long id)
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.RemoveAutoReplyItem>();
-        var errMsg = await action.ProcessAsync(id);
-
-        if (!string.IsNullOrEmpty(errMsg))
-            return NotFound(new MessageResponse(errMsg));
+        await action.ProcessAsync(id);
 
         return Ok();
     }

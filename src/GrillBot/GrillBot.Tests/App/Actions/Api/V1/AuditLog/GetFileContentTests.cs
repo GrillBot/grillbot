@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Discord;
 using GrillBot.App.Actions.Api.V1.AuditLog;
+using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
@@ -28,37 +30,29 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
     }
 
     [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_ItemNotFound()
     {
-        var result = await Action.ProcessAsync(1, 1);
-
-        Assert.IsNull(result.content);
-        Assert.IsTrue(string.IsNullOrEmpty(result.contentType));
-        Assert.IsFalse(string.IsNullOrEmpty(result.errMsg));
+        await Action.ProcessAsync(1, 1);
     }
 
     [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_MetadataNotFound()
     {
         await InitDataAsync(false, null);
-
-        var result = await Action.ProcessAsync(1, 1);
-
-        Assert.IsNull(result.content);
-        Assert.IsTrue(string.IsNullOrEmpty(result.contentType));
-        Assert.IsFalse(string.IsNullOrEmpty(result.errMsg));
+        await Action.ProcessAsync(1, 1);
     }
 
     [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_FileNotExists()
     {
         await InitDataAsync(true, "txt");
-
-        var result = await Action.ProcessAsync(1, 1);
-
-        Assert.IsNull(result.content);
-        Assert.IsTrue(string.IsNullOrEmpty(result.contentType));
-        Assert.IsFalse(string.IsNullOrEmpty(result.errMsg));
+        await Action.ProcessAsync(1, 1);
     }
 
     [TestMethod]
@@ -72,7 +66,6 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
         Assert.IsNotNull(result.content);
         Assert.AreEqual(5, result.content.Length);
         Assert.AreEqual("application/octet-stream", result.contentType);
-        Assert.IsTrue(string.IsNullOrEmpty(result.errMsg));
     }
 
     [TestMethod]
@@ -86,7 +79,6 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
         Assert.IsNotNull(result.content);
         Assert.AreEqual(5, result.content.Length);
         Assert.AreEqual("text/plain", result.contentType);
-        Assert.IsTrue(string.IsNullOrEmpty(result.errMsg));
     }
 
     private async Task InitDataAsync(bool withFiles, string extension)

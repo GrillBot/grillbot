@@ -37,10 +37,7 @@ public class AuditLogController : Controller
     public async Task<ActionResult> RemoveItemAsync(long id)
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.RemoveItem>();
-        var result = await action.ProcessAsync(id);
-
-        if (result != null)
-            return StatusCode(result.Value.status, new MessageResponse(result.Value.response));
+        await action.ProcessAsync(id);
 
         return Ok();
     }
@@ -76,9 +73,6 @@ public class AuditLogController : Controller
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.GetFileContent>();
         var result = await action.ProcessAsync(id, fileId);
-
-        if (!string.IsNullOrEmpty(result.errMsg))
-            return NotFound(new MessageResponse(result.errMsg));
 
         return File(result.content, result.contentType);
     }

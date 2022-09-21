@@ -47,6 +47,9 @@ public class ExceptionFilter : IAsyncExceptionFilter
                 }
 
                 break;
+            case NotFoundException:
+                SetNotFound(context);
+                return;
         }
 
         ApiRequest.StatusCode = "500 (InternalServerError)";
@@ -72,5 +75,12 @@ public class ExceptionFilter : IAsyncExceptionFilter
         context.ExceptionHandled = true;
         context.Result = new BadRequestObjectResult(new ValidationProblemDetails(modelState));
         ApiRequest.StatusCode = "400 (BadRequest)";
+    }
+
+    private void SetNotFound(ExceptionContext context)
+    {
+        context.ExceptionHandled = true;
+        context.Result = new NotFoundObjectResult(new MessageResponse(context.Exception.Message));
+        ApiRequest.StatusCode = "404 (NotFound)";
     }
 }

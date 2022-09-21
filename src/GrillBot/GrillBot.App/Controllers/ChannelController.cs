@@ -60,6 +60,8 @@ public class ChannelController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> SendMessageToChannelAsync(ulong guildId, ulong channelId, [FromBody] SendMessageToChannelParams parameters)
     {
+        ApiAction.Init(this, parameters);
+        
         try
         {
             this.StoreParameters(parameters);

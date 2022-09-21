@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Data.Exceptions;
 using Microsoft.AspNetCore.StaticFiles;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
@@ -21,23 +22,23 @@ public class GetFileContent : ApiAction
         Texts = texts;
     }
 
-    public async Task<(byte[] content, string contentType, string errMsg)> ProcessAsync(long logId, long fileId)
+    public async Task<(byte[] content, string contentType)> ProcessAsync(long logId, long fileId)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var errMsg = Texts["AuditLog/GetFileContent/NotFound", ApiContext.Language];
         var logItem = await repository.AuditLog.FindLogItemByIdAsync(logId, true);
         var metadata = logItem?.Files.FirstOrDefault(o => o.Id == fileId);
-        if (metadata == null) return (null, null, errMsg);
+        if (metadata == null) throw new NotFoundException(errMsg);
 
         var storage = FileStorage.Create("Audit");
         var file = await storage.GetFileInfoAsync("DeletedAttachments", metadata.Filename);
-        if (!file.Exists) return (null, null, errMsg);
+        if (!file.Exists) throw new NotFoundException(errMsg);
 
         if (!ContentTypeProvider.TryGetContentType(file.FullName, out var contentType))
             contentType = "application/octet-stream";
 
         var content = await File.ReadAllBytesAsync(file.FullName);
-        return (content, contentType, null);
+        return (content, contentType);
     }
 }

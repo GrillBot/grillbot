@@ -1,6 +1,8 @@
-﻿using GrillBot.App.Actions.Api.V1.AutoReply;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions.Api.V1.AutoReply;
 using GrillBot.App.Services;
 using GrillBot.Common.Managers;
+using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.AutoReply;
 using GrillBot.Tests.Infrastructure.Common;
 
@@ -22,12 +24,11 @@ public class UpdateAutoReplyItemTests : ApiActionTest<UpdateAutoReplyItem>
     }
 
     [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
     {
-        var result = await Action.ProcessAsync(1, new AutoReplyItemParams());
-
-        Assert.IsNull(result.item);
-        Assert.IsFalse(string.IsNullOrEmpty(result.errMsg));
+        await Action.ProcessAsync(1, new AutoReplyItemParams());
     }
 
     [TestMethod]
@@ -43,7 +44,6 @@ public class UpdateAutoReplyItemTests : ApiActionTest<UpdateAutoReplyItem>
             Template = "Template"
         });
 
-        Assert.IsNotNull(result.item);
-        Assert.IsTrue(string.IsNullOrEmpty(result.errMsg));
+        Assert.IsNotNull(result);
     }
 }

@@ -108,6 +108,9 @@
     "PostMessage": {
       "GuildNotFound": "Failed to find server.",
       "ChannelNotFound": "Could not find channel on server {0}."
+    },
+    "GetChannelDetail": {
+      "ChannelNotFound": "The requested channel was not found."
     }
   },
   "DuckModule": {

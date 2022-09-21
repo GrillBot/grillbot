@@ -1,21 +1,17 @@
 ﻿using AutoMapper;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.Common.Extensions;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models;
-using GrillBot.Database.Enums.Internal;
 
 namespace GrillBot.App.Services.Channels;
 
 public class ChannelApiService
 {
-    private IMessageCacheManager MessageCache { get; }
     private AutoReplyService AutoReplyService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
@@ -23,44 +19,15 @@ public class ChannelApiService
     private ApiRequestContext ApiRequestContext { get; }
     private AuditLogWriter AuditLogWriter { get; }
 
-    public ChannelApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient client, IMessageCacheManager messageCache,
-        AutoReplyService autoReplyService, ApiRequestContext apiRequestContext, AuditLogWriter auditLogWriter)
+    public ChannelApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient client, AutoReplyService autoReplyService, ApiRequestContext apiRequestContext,
+        AuditLogWriter auditLogWriter)
     {
-        MessageCache = messageCache;
         AutoReplyService = autoReplyService;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = client;
         ApiRequestContext = apiRequestContext;
         AuditLogWriter = auditLogWriter;
-    }
-
-    public async Task<ChannelDetail> GetDetailAsync(ulong id)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, ChannelsIncludeUsersMode.IncludeExceptInactive, true, true);
-        if (channel == null) return null;
-
-        var result = Mapper.Map<ChannelDetail>(channel);
-        if (channel.IsText())
-        {
-            var threads = await repository.Channel.GetChildChannelsAsync(id);
-            result.Threads = Mapper.Map<List<Channel>>(threads);
-        }
-
-        if (channel.HasFlag(ChannelFlags.Deleted))
-            return result;
-
-        var guild = await DiscordClient.GetGuildAsync(channel.GuildId.ToUlong());
-        var guildChannel = guild != null ? await guild.GetChannelAsync(channel.ChannelId.ToUlong()) : null;
-        if (guildChannel == null)
-            return result;
-
-        result = Mapper.Map(guildChannel, result);
-        if (channel.IsText() || channel.IsThread() || channel.IsVoice())
-            result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
-        return result;
     }
 
     public async Task<bool> UpdateChannelAsync(ulong id, UpdateChannelParams parameters)

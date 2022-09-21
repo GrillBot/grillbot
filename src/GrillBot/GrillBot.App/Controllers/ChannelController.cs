@@ -108,11 +108,8 @@ public class ChannelController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id)
     {
-        var result = await ApiService.GetDetailAsync(id);
-
-        if (result == null)
-            return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
-
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelDetail>();
+        var result = await action.ProcessAsync(id);
         return Ok(result);
     }
 

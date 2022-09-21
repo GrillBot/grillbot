@@ -108,6 +108,9 @@
     "PostMessage": {
       "GuildNotFound": "Nepodařilo se najít server.",
       "ChannelNotFound": "Nepodařilo se najít kanál na serveru {0}."
+    },
+    "GetChannelDetail": {
+      "ChannelNotFound": "Požadovaný kanál nebyl nalezen."
     }
   },
   "DuckModule": {

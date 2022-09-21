@@ -1,9 +1,11 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using GrillBot.App.Actions;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.Infrastructure.Common;
 
+[ExcludeFromCodeCoverage]
 public abstract class ApiActionTest<TAction> : ActionTest<TAction> where TAction : ApiAction
 {
     protected static readonly Lazy<ApiRequestContext> UserApiRequestContext

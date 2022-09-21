@@ -22,6 +22,7 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
         return new RemoveItem(ApiRequestContext, DatabaseBuilder, texts, fileStorage);
     }
 
+    [ExcludeFromCodeCoverage]
     protected override void Cleanup()
     {
         if (File.Exists("Temp.txt"))

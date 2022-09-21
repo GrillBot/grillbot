@@ -1,8 +1,10 @@
-﻿using Discord;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord;
 using Discord.Commands;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
+[ExcludeFromCodeCoverage]
 public class CommandContextBuilder : BuilderBase<ICommandContext>
 {
     public CommandContextBuilder SetClient(IDiscordClient client)

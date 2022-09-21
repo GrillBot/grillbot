@@ -1,9 +1,11 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using GrillBot.Cache.Services.Repository;
 using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.Tests.Infrastructure.Common;
 
+[ExcludeFromCodeCoverage]
 public abstract class ActionTest : TestBase
 {
     private ControllerTestConfiguration TestConfiguration
@@ -13,6 +15,7 @@ public abstract class ActionTest : TestBase
     //protected bool CanInitProvider() => TestConfiguration?.CanInitProvider ?? false;
 }
 
+[ExcludeFromCodeCoverage]
 public abstract class ActionTest<TAction> : ActionTest
 {
     protected TAction Action { get; private set; }

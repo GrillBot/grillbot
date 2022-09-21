@@ -7,7 +7,6 @@ using Discord.Net;
 using Discord.WebSocket;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
@@ -171,9 +170,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
         const string message = "Test";
         var exception = new ArgumentException();
 
-        if (!await Service.CanHandleAsync(LogSeverity.Critical, source, exception))
-            Assert.Fail();
-
+        await Service.CanHandleAsync(LogSeverity.Critical, source, exception);
         await Service.WarningAsync(source, message, exception);
     }
 }

@@ -47,8 +47,7 @@ public static class Extensions
             .AddSingleton<RendererFactory>();
 
         services
-            .AddSingleton<Channels.ChannelService>()
-            .AddScoped<Channels.ChannelApiService>();
+            .AddSingleton<Channels.ChannelService>();
 
         services
             .AddSingleton<Permissions.PermissionsCleaner>()

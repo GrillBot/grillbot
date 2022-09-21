@@ -236,7 +236,7 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<List<(string channelId, long count, DateTime firstMessageAt, DateTime lastMessageAt)>> GetAvailableStatsAsync(IGuild guild, IEnumerable<string> availableChannelIds)
+    public async Task<Dictionary<string, (long count, DateTime firstMessageAt, DateTime lastMessageAt)>> GetAvailableStatsAsync(IGuild guild, IEnumerable<string> availableChannelIds)
     {
         using (Counter.Create("Database"))
         {
@@ -251,8 +251,7 @@ public class ChannelRepository : RepositoryBase
                     FirstMessageAt = o.Min(x => x.FirstMessageAt)
                 });
 
-            var data = await query.ToListAsync();
-            return data.ConvertAll(o => (o.ChannelId, o.Count, o.FirstMessageAt, o.LastMessageAt));
+            return await query.ToDictionaryAsync(o => o.ChannelId, o => (o.Count, o.FirstMessageAt, o.LastMessageAt));
         }
     }
 }

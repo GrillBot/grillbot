@@ -1,12 +1,11 @@
-﻿using GrillBot.App.Actions;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using GrillBot.App.Services.Channels;
-using GrillBot.Data.Exceptions;
 using GrillBot.Database.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,14 +14,13 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/channel")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class ChannelController : Controller
 {
-    private ChannelApiService ApiService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public ChannelController(ChannelApiService apiService, IServiceProvider serviceProvider)
+    public ChannelController(IServiceProvider serviceProvider)
     {
-        ApiService = apiService;
         ServiceProvider = serviceProvider;
     }
 
@@ -145,7 +143,8 @@ public class ChannelController : Controller
     [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync()
     {
-        var result = await ApiService.GetChannelBoardAsync();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelboard>();
+        var result = await action.ProcessAsync();
         return Ok(result);
     }
 }

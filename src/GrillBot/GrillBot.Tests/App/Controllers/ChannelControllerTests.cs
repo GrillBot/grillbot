@@ -46,7 +46,7 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var autoReplyService = new AutoReplyService(TestServices.Configuration.Value, discordClient, DatabaseBuilder, initManager);
         var apiService = new ChannelApiService(DatabaseBuilder, TestServices.AutoMapper.Value, dcClient, messageCache, autoReplyService, ApiRequestContext, auditLogWriter);
 
-        return new ChannelController(apiService);
+        return new ChannelController(apiService, ServiceProvider);
     }
 
     [TestMethod]
@@ -179,23 +179,6 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
         var result = await Controller.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
         CheckResult<ObjectResult>(result);
         CheckForStatusCode(result, 500);
-    }
-
-    [TestMethod]
-    public async Task GetChannelUsersAsync()
-    {
-        var guild = new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
-        guild.Users.Add(new Database.Entity.GuildUser { User = new Database.Entity.User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
-
-        var channel = new Database.Entity.GuildChannel { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() };
-        channel.Users.Add(new Database.Entity.GuildUserChannel { ChannelId = Consts.ChannelId.ToString(), GuildId = Consts.GuildId.ToString(), UserId = Consts.UserId.ToString() });
-        guild.Channels.Add(channel);
-
-        await Repository.AddAsync(guild);
-        await Repository.CommitAsync();
-
-        var result = await Controller.GetChannelUsersAsync(Consts.ChannelId, new PaginatedParams());
-        CheckResult<OkObjectResult, PaginatedResponse<ChannelUserStatItem>>(result);
     }
 
     [TestMethod]

@@ -1,4 +1,5 @@
-﻿using GrillBot.Data.Models.API;
+﻿using GrillBot.App.Actions;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using GrillBot.App.Services.Channels;
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -16,12 +18,14 @@ namespace GrillBot.App.Controllers;
 public class ChannelController : Controller
 {
     private ChannelApiService ApiService { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public ChannelController(ChannelApiService apiService)
+    public ChannelController(ChannelApiService apiService, IServiceProvider serviceProvider)
     {
         ApiService = apiService;
+        ServiceProvider = serviceProvider;
     }
-    
+
     /// <summary>
     /// Get paginated list of user statistics in channel.
     /// </summary>
@@ -33,9 +37,10 @@ public class ChannelController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromBody] PaginatedParams pagination)
     {
-        this.StoreParameters(pagination);
+        ApiAction.Init(this, pagination);
 
-        var result = await ApiService.GetChannelUsersAsync(id, pagination);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelUsers>();
+        var result = await action.ProcessAsync(id, pagination);
         return Ok(result);
     }
 

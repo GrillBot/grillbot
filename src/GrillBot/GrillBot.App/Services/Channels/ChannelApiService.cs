@@ -161,20 +161,6 @@ public class ChannelApiService
         await AuditLogWriter.StoreAsync(auditLogItem);
     }
 
-    public async Task<PaginatedResponse<ChannelUserStatItem>> GetChannelUsersAsync(ulong channelId, PaginatedParams pagination)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.Channel.GetUserChannelListAsync(channelId, pagination);
-        var result = await PaginatedResponse<ChannelUserStatItem>
-            .CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<ChannelUserStatItem>(entity)));
-
-        for (var i = 0; i < result.Data.Count; i++)
-            result.Data[i].Position = pagination.Skip + i + 1;
-
-        return result;
-    }
-
     public async Task<List<ChannelboardItem>> GetChannelBoardAsync()
     {
         var loggedUserId = ApiRequestContext.GetUserId();

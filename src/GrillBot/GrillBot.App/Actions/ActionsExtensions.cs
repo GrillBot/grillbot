@@ -33,6 +33,10 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.AutoReply.CreateAutoReplyItem>()
             .AddScoped<Api.V1.AutoReply.UpdateAutoReplyItem>()
             .AddScoped<Api.V1.AutoReply.RemoveAutoReplyItem>();
+        
+        // Channel
+        services
+            .AddScoped<Api.V1.Channel.GetChannelUsers>();
 
         // V2
         services

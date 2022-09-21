@@ -1,9 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Controllers;
-using GrillBot.App.Services;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Channels;
-using GrillBot.Common.Managers;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
@@ -37,49 +34,8 @@ public class ChannelControllerTests : ControllerTest<ChannelController>
             .SetGetGuildsAction(new List<IGuild> { guild })
             .Build();
 
-        var discordClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var autoReplyService = new AutoReplyService(TestServices.Configuration.Value, discordClient, DatabaseBuilder, initManager);
-        var apiService = new ChannelApiService(DatabaseBuilder, TestServices.AutoMapper.Value, dcClient, autoReplyService, ApiRequestContext, auditLogWriter);
-
+        var apiService = new ChannelApiService(DatabaseBuilder, TestServices.AutoMapper.Value, dcClient, ApiRequestContext);
         return new ChannelController(apiService, ServiceProvider);
-    }
-
-    [TestMethod]
-    public async Task UpdateChannelAsync_NotFound()
-    {
-        var result = await Controller.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
-        CheckResult<NotFoundObjectResult, ChannelDetail>(result);
-    }
-
-    [TestMethod]
-    public async Task UpdateChannelAsync_Found()
-    {
-        var guild = new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
-        guild.Users.Add(new Database.Entity.GuildUser { User = new Database.Entity.User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
-        guild.Channels.Add(new Database.Entity.GuildChannel { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() });
-
-        await Repository.AddAsync(guild);
-        await Repository.CommitAsync();
-
-        var result = await Controller.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams { Flags = 42 });
-        CheckResult<OkResult>(result);
-    }
-
-    [TestMethod]
-    public async Task UpdateChannelAsync_NothingChanged()
-    {
-        var guild = new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName };
-        guild.Users.Add(new Database.Entity.GuildUser { User = new Database.Entity.User { Id = Consts.UserId.ToString(), Username = Consts.Username, Discriminator = Consts.Discriminator } });
-        guild.Channels.Add(new Database.Entity.GuildChannel { Name = Consts.ChannelName, ChannelId = Consts.ChannelId.ToString() });
-
-        await Repository.AddAsync(guild);
-        await Repository.CommitAsync();
-
-        var result = await Controller.UpdateChannelAsync(Consts.ChannelId, new UpdateChannelParams());
-        CheckResult<ObjectResult>(result);
-        CheckForStatusCode(result, 500);
     }
 
     [TestMethod]

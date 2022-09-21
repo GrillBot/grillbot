@@ -109,7 +109,7 @@
       "GuildNotFound": "Nepodařilo se najít server.",
       "ChannelNotFound": "Nepodařilo se najít kanál na serveru {0}."
     },
-    "GetChannelDetail": {
+    "ChannelDetail": {
       "ChannelNotFound": "Požadovaný kanál nebyl nalezen."
     }
   },

@@ -21,7 +21,7 @@ public class GetChannelDetailTests : ApiActionTest<GetChannelDetail>
         Guild = guildBuilder.SetGetTextChannelAction(TextChannel).Build();
 
         var texts = new TextsBuilder()
-            .AddText("ChannelModule/GetChannelDetail/ChannelNotFound", "cs", "ChannelNotFound")
+            .AddText("ChannelModule/ChannelDetail/ChannelNotFound", "cs", "ChannelNotFound")
             .Build();
         var client = new ClientBuilder()
             .SetGetGuildAction(Guild)

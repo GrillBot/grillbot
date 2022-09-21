@@ -40,7 +40,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Channel.SendMessageToChannel>()
             .AddScoped<Api.V1.Channel.GetChannelList>()
             .AddScoped<Api.V1.Channel.ClearMessageCache>()
-            .AddScoped<Api.V1.Channel.GetChannelDetail>();
+            .AddScoped<Api.V1.Channel.GetChannelDetail>()
+            .AddScoped<Api.V1.Channel.UpdateChannel>();
 
         // V2
         services

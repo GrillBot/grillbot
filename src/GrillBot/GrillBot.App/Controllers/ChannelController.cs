@@ -128,20 +128,11 @@ public class ChannelController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UpdateChannelAsync(ulong id, [FromBody] UpdateChannelParams parameters)
     {
-        try
-        {
-            this.StoreParameters(parameters);
-            var result = await ApiService.UpdateChannelAsync(id, parameters);
+        ApiAction.Init(this, parameters);
 
-            if (result)
-                return Ok();
-
-            return StatusCode(500, new MessageResponse("Nepodařilo se aktualizovat kanál."));
-        }
-        catch (NotFoundException)
-        {
-            return NotFound(new MessageResponse("Požadovaný kanál nebyl nalezen."));
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.UpdateChannel>();
+        await action.ProcessAsync(id, parameters);
+        return Ok();
     }
 
     /// <summary>

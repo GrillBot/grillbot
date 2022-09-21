@@ -33,7 +33,7 @@ public class GetChannelDetail : ApiAction
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, ChannelsIncludeUsersMode.IncludeExceptInactive, true, true);
-        if (channel == null) throw new NotFoundException(Texts["ChannelModule/GetChannelDetail/ChannelNotFound", ApiContext.Language]);
+        if (channel == null) throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
         var result = Mapper.Map<ChannelDetail>(channel);
         if (channel.IsText())

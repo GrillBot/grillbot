@@ -10,14 +10,13 @@ using GrillBot.Data.Models.API.Emotes;
 using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
-using GrillBot.Data.Models.API.Guilds;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/data")]
-[ResponseCache(CacheProfileName = "ConstsApi")]
 [ApiExplorerSettings(GroupName = "v1")]
 public class DataController : Controller
 {
@@ -29,9 +28,10 @@ public class DataController : Controller
     private IMapper Mapper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ApiRequestContext ApiRequestContext { get; }
+    private IServiceProvider ServiceProvider { get; }
 
     public DataController(IDiscordClient discordClient, CommandService commandService, IConfiguration configuration, InteractionService interactionService,
-        EmotesCacheService emotesCacheService, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext)
+        EmotesCacheService emotesCacheService, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext, IServiceProvider serviceProvider)
     {
         DiscordClient = discordClient;
         CommandService = commandService;
@@ -41,6 +41,7 @@ public class DataController : Controller
         Mapper = mapper;
         DatabaseBuilder = databaseBuilder;
         ApiRequestContext = apiRequestContext;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -51,26 +52,10 @@ public class DataController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync()
     {
-        var guildsFilter = new GetGuildListParams
-        {
-            Pagination = { Page = 1, PageSize = int.MaxValue },
-        };
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetAvailableGuilds>();
+        var result = await action.ProcessAsync();
 
-        if (ApiRequestContext.IsPublic())
-        {
-            var loggedUserId = ApiRequestContext.GetUserId();
-            var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
-
-            guildsFilter.MutualGuildIds.AddRange(mutualGuilds.Select(o => o.Id.ToString()));
-        }
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var guildsData = await repository.Guild.GetGuildListAsync(guildsFilter, guildsFilter.Pagination);
-        var guilds = guildsData.Data
-            .ToDictionary(o => o.Id, o => o.Name);
-
-        return Ok(guilds);
+        return Ok(result);
     }
 
     /// <summary>

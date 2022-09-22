@@ -45,25 +45,7 @@ public class DataControllerTests : ControllerTest<DataController>
         var interactions = DiscordHelper.CreateInteractionService(discordClient, provider);
         var emotesCache = new EmotesCacheService(discordClient);
 
-        return new DataController(client, commandsService, TestServices.Configuration.Value, interactions, emotesCache, TestServices.AutoMapper.Value, DatabaseBuilder, ApiRequestContext);
-    }
-
-    [TestMethod]
-    public async Task GetAvailableGuildsAsync()
-    {
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
-        await Repository.CommitAsync();
-
-        var result = await Controller.GetAvailableGuildsAsync();
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    [ControllerTestConfiguration(true)]
-    public async Task GetAvailableGuildsAsync_Public()
-    {
-        var result = await Controller.GetAvailableGuildsAsync();
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
+        return new DataController(client, commandsService, TestServices.Configuration.Value, interactions, emotesCache, TestServices.AutoMapper.Value, DatabaseBuilder, ApiRequestContext, provider);
     }
 
     [TestMethod]
@@ -125,14 +107,6 @@ public class DataControllerTests : ControllerTest<DataController>
     public async Task GetAvailableUsersAsync_WithMutualGuilds()
     {
         var result = await Controller.GetAvailableUsersAsync(false);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    [ControllerTestConfiguration(true)]
-    public async Task GetAvailableGuildsAsync_AsUser()
-    {
-        var result = await Controller.GetAvailableGuildsAsync();
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 

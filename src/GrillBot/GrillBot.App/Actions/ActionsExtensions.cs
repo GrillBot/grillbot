@@ -43,6 +43,10 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Channel.GetChannelDetail>()
             .AddScoped<Api.V1.Channel.UpdateChannel>()
             .AddScoped<Api.V1.Channel.GetChannelboard>();
+        
+        // Guild
+        services
+            .AddScoped<Api.V1.Guild.GetAvailableGuilds>();
 
         // V2
         services

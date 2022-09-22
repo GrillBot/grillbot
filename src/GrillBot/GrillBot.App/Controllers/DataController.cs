@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GrillBot.Data.Models.API.Channels;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
@@ -68,46 +67,8 @@ public class DataController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
     {
-        var loggedUserId = ApiRequestContext.GetUserId();
-        var availableGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : (await DiscordClient.GetGuildsAsync()).ToList();
-
-        if (guildId != null)
-            availableGuilds = availableGuilds.FindAll(o => o.Id == guildId.Value);
-
-        var availableChannels = new List<IGuildChannel>();
-        foreach (var guild in availableGuilds)
-        {
-            if (ApiRequestContext.IsPublic())
-            {
-                var guildUser = await guild.GetUserAsync(loggedUserId);
-                availableChannels.AddRange(await guild.GetAvailableChannelsAsync(guildUser, ignoreThreads));
-            }
-            else
-            {
-                // Get all channels (if wanted ignore threads, ignore it). 
-                var guildChannels = (await guild.GetChannelsAsync()).ToList();
-                if (ignoreThreads)
-                    guildChannels = guildChannels.FindAll(o => o is not IThreadChannel);
-                availableChannels.AddRange(guildChannels);
-            }
-        }
-
-        var channels = availableChannels
-            .Select(o => Mapper.Map<Channel>(o))
-            .Where(o => o.Type != null && o.Type != ChannelType.Category)
-            .ToList();
-
-        var guildIds = availableChannels.Select(o => o.Id.ToString()).ToList();
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var dbChannels = await repository.Channel.GetAllChannelsAsync(guildIds, ignoreThreads, true);
-        dbChannels = dbChannels.FindAll(o => channels.All(x => x.Id != o.ChannelId)); // Select from DB all channels that is not visible.
-        channels.AddRange(Mapper.Map<List<Channel>>(dbChannels));
-
-        var result = channels
-            .DistinctBy(o => o.Id)
-            .OrderBy(o => o.Name)
-            .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type is ChannelType.PublicThread or ChannelType.PrivateThread or ChannelType.NewsThread ? "(Thread)" : "")}".Trim());
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelSimpleList>();
+        var result = await action.ProcessAsync(guildId, ignoreThreads);
 
         return Ok(result);
     }

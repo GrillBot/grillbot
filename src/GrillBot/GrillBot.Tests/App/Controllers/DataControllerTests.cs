@@ -49,20 +49,6 @@ public class DataControllerTests : ControllerTest<DataController>
     }
 
     [TestMethod]
-    public async Task GetChannelsAsync_WithGuild_WithThreads()
-    {
-        var result = await Controller.GetChannelsAsync(Consts.GuildId + 1);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetChannelsAsync_WithoutGuild_WithoutThreads()
-    {
-        var result = await Controller.GetChannelsAsync(null, true);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
     public async Task GetRoles_WithGuild()
     {
         var result = await Controller.GetRolesAsync(Consts.GuildId);
@@ -107,22 +93,6 @@ public class DataControllerTests : ControllerTest<DataController>
     public async Task GetAvailableUsersAsync_WithMutualGuilds()
     {
         var result = await Controller.GetAvailableUsersAsync(false);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    [ControllerTestConfiguration(true)]
-    public async Task GetChannelsAsync_WithGuild_WithThreads_AsUser()
-    {
-        var result = await Controller.GetChannelsAsync(Consts.GuildId + 1);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    [ControllerTestConfiguration(true)]
-    public async Task GetChannelsAsync_WithoutGuild_WithoutThreads_AsUser()
-    {
-        var result = await Controller.GetChannelsAsync(null, true);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 

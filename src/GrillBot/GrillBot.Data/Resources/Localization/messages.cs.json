@@ -111,6 +111,9 @@
     },
     "ChannelDetail": {
       "ChannelNotFound": "Požadovaný kanál nebyl nalezen."
+    },
+    "ChannelSimpleList": {
+      "NoMutualGuild": "Požadovaný server nesdílíš s botem."
     }
   },
   "DuckModule": {

@@ -111,6 +111,9 @@
     },
     "ChannelDetail": {
       "ChannelNotFound": "The requested channel was not found."
+    },
+    "ChannelSimpleList": {
+      "NoMutualGuild": "You do not share the requested server with the bot."
     }
   },
   "DuckModule": {

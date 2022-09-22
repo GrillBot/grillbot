@@ -1,5 +1,6 @@
 ﻿using Discord;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Moq;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
@@ -62,6 +63,19 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
     {
         Mock.Setup(o => o.SendMessageAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(), It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),
             It.IsAny<MessageComponent>(), It.IsAny<ISticker[]>(), It.IsAny<Embed[]>(), It.IsAny<MessageFlags>())).ReturnsAsync(message);
+        return this;
+    }
+
+    public TextChannelBuilder SetGetUserAction(IGuildUser user)
+    {
+        Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(x => x == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
+        return this;
+    }
+
+    public TextChannelBuilder SetGetUsersAction(IEnumerable<IGuildUser> users)
+    {
+        var enumerable = new List<IReadOnlyCollection<IGuildUser>> { users.ToList().AsReadOnly() }.ToAsyncEnumerable();
+        Mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(enumerable);
         return this;
     }
 }

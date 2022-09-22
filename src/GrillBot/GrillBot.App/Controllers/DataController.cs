@@ -81,19 +81,10 @@ public class DataController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetRolesAsync(ulong? guildId)
     {
-        var loggedUserId = ApiRequestContext.GetUserId();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetRoles>();
+        var result = await action.ProcessAsync(guildId);
 
-        var availableGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : (await DiscordClient.GetGuildsAsync()).ToList();
-        if (guildId != null)
-            availableGuilds = availableGuilds.FindAll(o => o.Id == guildId.Value);
-
-        var roles = availableGuilds
-            .Select(o => o.Roles.Where(x => x.Id != o.EveryoneRole.Id))
-            .SelectMany(o => o)
-            .OrderBy(o => o.Name)
-            .ToDictionary(o => o.Id.ToString(), o => o.Name);
-
-        return Ok(roles);
+        return Ok(result);
     }
 
     /// <summary>

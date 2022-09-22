@@ -27,12 +27,9 @@ public class DataControllerTests : ControllerTest<DataController>
             .SetGuild(guildBuilder.Build())
             .Build();
 
-        var role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).SetPosition(1).Build();
-
         Guild = guildBuilder
             .SetGetUsersAction(new[] { user })
             .SetGetChannelsAction(new[] { channel })
-            .SetRoles(new[] { role })
             .Build();
 
         var client = new ClientBuilder()
@@ -46,20 +43,6 @@ public class DataControllerTests : ControllerTest<DataController>
         var emotesCache = new EmotesCacheService(discordClient);
 
         return new DataController(client, commandsService, TestServices.Configuration.Value, interactions, emotesCache, TestServices.AutoMapper.Value, DatabaseBuilder, ApiRequestContext, provider);
-    }
-
-    [TestMethod]
-    public async Task GetRoles_WithGuild()
-    {
-        var result = await Controller.GetRolesAsync(Consts.GuildId);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetRoles_WithoutGuild()
-    {
-        var result = await Controller.GetRolesAsync(null);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 
     [TestMethod]
@@ -93,22 +76,6 @@ public class DataControllerTests : ControllerTest<DataController>
     public async Task GetAvailableUsersAsync_WithMutualGuilds()
     {
         var result = await Controller.GetAvailableUsersAsync(false);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    [ControllerTestConfiguration(true)]
-    public async Task GetRoles_WithGuild_AsUser()
-    {
-        var result = await Controller.GetRolesAsync(Consts.GuildId);
-        CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    [ControllerTestConfiguration(true)]
-    public async Task GetRoles_WithoutGuild_AsUser()
-    {
-        var result = await Controller.GetRolesAsync(null);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
     }
 

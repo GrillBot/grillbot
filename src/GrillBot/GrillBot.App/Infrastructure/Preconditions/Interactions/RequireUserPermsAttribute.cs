@@ -46,6 +46,6 @@ public class RequireUserPermsAttribute : PreconditionAttribute
         };
 
         var result = await service.CheckPermissionsAsync(request);
-        return result.IsAllowed() ? PreconditionResult.FromSuccess() : PreconditionResult.FromError(result.ToString());
+        return string.IsNullOrEmpty(result) ? PreconditionResult.FromSuccess() : PreconditionResult.FromError(result);
     }
 }

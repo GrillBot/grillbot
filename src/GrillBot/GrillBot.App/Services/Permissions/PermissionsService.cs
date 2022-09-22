@@ -18,24 +18,28 @@ public class PermissionsService
         ServiceProvider = serviceProvider;
     }
 
-    public async Task<PermsCheckResult> CheckPermissionsAsync(CheckRequestBase request)
+    public async Task<string> CheckPermissionsAsync(CheckRequestBase request)
     {
         request.FixImplicitPermissions();
+
+        if (CheckContext(request) == false)
+            return "Voláš příkaz tam, kde jej nelze spustit.";
 
         await using var repository = DatabaseBuilder.CreateRepository();
         var user = await repository.User.FindUserAsync(request.User, true);
 
-        return new PermsCheckResult
-        {
-            ChannelDisabled = await CheckChannelDisabledAsync(repository, request),
-            ContextCheck = CheckContext(request),
-            ChannelPermissions = await CheckChannelPermissionsAsync(request),
-            GuildPermissions = await CheckGuildPermissionsAsync(request),
-            BoosterAllowed = CheckServerBooster(request),
-            IsAdmin = user?.HaveFlags(UserFlags.BotAdmin) ?? false,
-            ExplicitAllow = await CheckExplicitAllowAsync(repository, request),
-            ExplicitBan = (user?.HaveFlags(UserFlags.CommandsDisabled) ?? false) || await CheckExplicitBansAsync(repository, request)
-        };
+        if (user?.HaveFlags(UserFlags.BotAdmin) ?? false)
+            return null;
+        if (await CheckChannelDisabledAsync(repository, request))
+            return "V tomto kanálu byly příkazy deaktivovány.";
+        if ((user?.HaveFlags(UserFlags.CommandsDisabled) ?? false) || await CheckExplicitBansAsync(repository, request))
+            return "Byl ti zakázán přístup k tomuto příkazu.";
+        if (await CheckExplicitAllowAsync(repository, request) == true || CheckServerBooster(request) == true)
+            return null;
+        if (await CheckGuildPermissionsAsync(request) == true)
+            return null;
+
+        return await CheckChannelPermissionsAsync(request) == true ? null : "Nesplňuješ podmínky pro spuštění příkazu na serveru.";
     }
 
     private static async Task<bool> CheckChannelDisabledAsync(GrillBotRepository repository, CheckRequestBase request)

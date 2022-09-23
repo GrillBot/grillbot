@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Actions;
-using GrillBot.App.Services.Emotes;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Models;
@@ -15,14 +15,13 @@ namespace GrillBot.App.Controllers;
 [Route("api/emotes")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class EmotesController : Controller
 {
-    private EmotesApiService EmotesApiService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public EmotesController(EmotesApiService emotesApiService, IServiceProvider serviceProvider)
+    public EmotesController(IServiceProvider serviceProvider)
     {
-        EmotesApiService = emotesApiService;
         ServiceProvider = serviceProvider;
     }
 
@@ -90,7 +89,8 @@ public class EmotesController : Controller
         string emoteId
     )
     {
-        var result = await EmotesApiService.RemoveStatisticsAsync(emoteId);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.RemoveStats>();
+        var result = await action.ProcessAsync(emoteId);
         return Ok(result);
     }
 }

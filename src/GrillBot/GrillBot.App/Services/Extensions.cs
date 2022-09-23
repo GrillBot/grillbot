@@ -33,7 +33,6 @@ public static class Extensions
             .AddSingleton<Emotes.EmoteService>()
             .AddSingleton<Emotes.EmoteChainService>()
             .AddSingleton<Emotes.EmotesCacheService>()
-            .AddScoped<Emotes.EmotesApiService>()
             .AddSingleton<Emotes.EmotesCommandService>();
 
         services

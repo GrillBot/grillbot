@@ -52,7 +52,9 @@ public static class ActionsExtensions
         // Emote
         services
             .AddScoped<Api.V1.Emote.GetStatsOfEmotes>()
-            .AddScoped<Api.V1.Emote.GetSupportedEmotes>();
+            .AddScoped<Api.V1.Emote.GetSupportedEmotes>()
+            .AddScoped<Api.V1.Emote.MergeStats>()
+            .AddScoped<Api.V1.Emote.RemoveStats>();
 
         // Guild
         services

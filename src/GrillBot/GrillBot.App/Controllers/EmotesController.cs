@@ -70,19 +70,11 @@ public class EmotesController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> MergeStatsToAnotherAsync([FromBody] MergeEmoteStatsParams @params)
     {
-        try
-        {
-            this.StoreParameters(@params);
-            var result = await EmotesApiService.MergeStatsToAnotherAsync(@params);
-            return Ok(result);
-        }
-        catch (ValidationException ex)
-        {
-            var result = ex.ValidationResult;
-            ModelState.AddModelError(result.MemberNames.First(), result.ErrorMessage!);
+        ApiAction.Init(this, @params);
 
-            return BadRequest(new ValidationProblemDetails(ModelState));
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.MergeStats>();
+        var result = await action.ProcessAsync(@params);
+        return Ok(result);
     }
 
     /// <summary>

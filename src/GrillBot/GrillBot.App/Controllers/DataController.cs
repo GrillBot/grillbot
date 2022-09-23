@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,16 +11,13 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/data")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class DataController : Controller
 {
-    private EmotesCacheService EmotesCacheService { get; }
-    private IMapper Mapper { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public DataController(EmotesCacheService emotesCacheService, IMapper mapper, IServiceProvider serviceProvider)
+    public DataController(IServiceProvider serviceProvider)
     {
-        EmotesCacheService = emotesCacheService;
-        Mapper = mapper;
         ServiceProvider = serviceProvider;
     }
 
@@ -107,11 +103,8 @@ public class DataController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<List<EmoteItem>> GetSupportedEmotes()
     {
-        var emotes = EmotesCacheService.GetSupportedEmotes();
-
-        var result = Mapper.Map<List<EmoteItem>>(emotes)
-            .OrderBy(o => o.Name)
-            .ToList();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetSupportedEmotes>();
+        var result = action.Process();
 
         return Ok(result);
     }

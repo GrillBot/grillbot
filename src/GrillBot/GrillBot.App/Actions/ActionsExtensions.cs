@@ -49,6 +49,10 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Command.GetCommandsList>();
         
+        // Emote
+        services
+            .AddScoped<Api.V1.Emote.GetSupportedEmotes>();
+        
         // Guild
         services
             .AddScoped<Api.V1.Guild.GetAvailableGuilds>()

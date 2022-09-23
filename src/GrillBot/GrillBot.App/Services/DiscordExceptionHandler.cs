@@ -63,7 +63,8 @@ public class DiscordExceptionHandler : ILoggingHandler
             // 11 is magic constant represents error "Resource temporarily unavailable".
             () => exception is HttpRequestException && exception.InnerException is SocketException { ErrorCode: 11 },
             () => exception.InnerException is WebSocketException or WebSocketClosedException,
-            () => exception is TaskCanceledException && exception.InnerException is null
+            () => exception is TaskCanceledException && exception.InnerException is null,
+            () => exception is TimeoutException && exception.Message.Contains("Cannot respond to an interaction after 3 seconds!")
         };
 
         return cases.Any(@case => @case());

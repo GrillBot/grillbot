@@ -1,25 +1,21 @@
-﻿using GrillBot.App.Controllers;
-using GrillBot.App.Services.Suggestion;
+﻿using GrillBot.App.Actions.Api.V1.Emote;
 using GrillBot.Data.Models.API.Suggestions;
-using GrillBot.Database.Entity;
 using GrillBot.Database.Models;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
-using Microsoft.AspNetCore.Mvc;
-using EmoteSuggestion = GrillBot.Data.Models.API.Suggestions.EmoteSuggestion;
 
-namespace GrillBot.Tests.App.Controllers;
+namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 
 [TestClass]
-public class EmoteSuggestionControllerTests : ControllerTest<EmoteSuggestionController>
+public class GetEmoteSuggestionListTests : ApiActionTest<GetEmoteSuggestionsList>
 {
-    protected override EmoteSuggestionController CreateController()
+    protected override GetEmoteSuggestionsList CreateAction()
     {
-        var apiService = new EmoteSuggestionApiService(DatabaseBuilder, TestServices.AutoMapper.Value);
-        return new EmoteSuggestionController(apiService);
+        return new GetEmoteSuggestionsList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value);
     }
 
     [TestMethod]
-    public async Task GetSuggestionListAsync_WithoutFilter()
+    public async Task ProcessAsync_NoFilter()
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
@@ -29,25 +25,25 @@ public class EmoteSuggestionControllerTests : ControllerTest<EmoteSuggestionCont
             CreatedAt = DateTime.Now,
             ImageData = new byte[] { 1 },
             GuildId = guild.Id.ToString(),
-            Guild = Guild.FromDiscord(guild),
+            Guild = Database.Entity.Guild.FromDiscord(guild),
             FromUserId = user.Id.ToString(),
-            FromUser = GuildUser.FromDiscord(guild, user),
+            FromUser = Database.Entity.GuildUser.FromDiscord(guild, user),
             Filename = "File",
             EmoteName = "emote"
         };
 
-        await Repository.AddAsync(User.FromDiscord(user));
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.AddAsync(suggestion);
         await Repository.CommitAsync();
 
         var filter = new GetSuggestionsListParams();
-        var result = await Controller.GetSuggestionListAsync(filter);
+        var result = await Action.ProcessAsync(filter);
 
-        CheckResult<OkObjectResult, PaginatedResponse<EmoteSuggestion>>(result);
+        Assert.AreEqual(1, result.TotalItemsCount);
     }
 
     [TestMethod]
-    public async Task GetSuggestionListAsync_WithFilter()
+    public async Task ProcessAsync_WithFilter()
     {
         var filter = new GetSuggestionsListParams
         {
@@ -61,7 +57,7 @@ public class EmoteSuggestionControllerTests : ControllerTest<EmoteSuggestionCont
             Sort = { Descending = true }
         };
 
-        var result = await Controller.GetSuggestionListAsync(filter);
-        CheckResult<OkObjectResult, PaginatedResponse<EmoteSuggestion>>(result);
+        var result = await Action.ProcessAsync(filter);
+        Assert.AreEqual(0, result.TotalItemsCount);
     }
 }

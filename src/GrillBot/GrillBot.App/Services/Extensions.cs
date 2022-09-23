@@ -60,7 +60,6 @@ public static class Extensions
             .AddSingleton<Suggestion.SuggestionSessionService>()
             .AddSingleton<Suggestion.EmoteSuggestionService>()
             .AddSingleton<Suggestion.FeatureSuggestionService>()
-            .AddScoped<Suggestion.EmoteSuggestionApiService>()
             .AddSingleton<Suggestion.EmoteSuggestionsEventManager>();
 
         services

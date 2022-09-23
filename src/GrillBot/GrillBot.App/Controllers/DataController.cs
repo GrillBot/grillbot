@@ -1,9 +1,6 @@
-﻿using Discord.Commands;
-using Discord.Interactions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
 using AutoMapper;
@@ -20,22 +17,16 @@ namespace GrillBot.App.Controllers;
 public class DataController : Controller
 {
     private IDiscordClient DiscordClient { get; }
-    private CommandService CommandService { get; }
-    private IConfiguration Configuration { get; }
-    private InteractionService InteractionService { get; }
     private EmotesCacheService EmotesCacheService { get; }
     private IMapper Mapper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public DataController(IDiscordClient discordClient, CommandService commandService, IConfiguration configuration, InteractionService interactionService,
-        EmotesCacheService emotesCacheService, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext, IServiceProvider serviceProvider)
+    public DataController(IDiscordClient discordClient, EmotesCacheService emotesCacheService, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext,
+        IServiceProvider serviceProvider)
     {
         DiscordClient = discordClient;
-        CommandService = commandService;
-        Configuration = configuration;
-        InteractionService = interactionService;
         EmotesCacheService = emotesCacheService;
         Mapper = mapper;
         DatabaseBuilder = databaseBuilder;
@@ -96,19 +87,9 @@ public class DataController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult<List<string>> GetCommandsList()
     {
-        var commands = CommandService.Modules
-            .Where(o => o.Commands.Count > 0 && !o.Preconditions.OfType<TextCommandDeprecatedAttribute>().Any())
-            .Select(o => o.Commands.Where(x => !x.Preconditions.OfType<TextCommandDeprecatedAttribute>().Any()))
-            .SelectMany(o => o.Select(x => Configuration.GetValue<string>("Discord:Commands:Prefix") + (x.Aliases[0].Trim())).Distinct())
-            .Distinct();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetCommandsList>();
+        var result = action.Process();
 
-        var slashCommands = InteractionService.SlashCommands
-            .Select(o => o.ToString().Trim())
-            .Where(o => !string.IsNullOrEmpty(o))
-            .Select(o => $"/{o}")
-            .Distinct();
-
-        var result = commands.Concat(slashCommands).OrderBy(o => o[1..]).ToList();
         return Ok(result);
     }
 

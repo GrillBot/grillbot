@@ -45,11 +45,14 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Channel.GetChannelboard>()
             .AddScoped<Api.V1.Channel.GetChannelSimpleList>();
         
+        // Command
+        services
+            .AddScoped<Api.V1.Command.GetCommandsList>();
+        
         // Guild
         services
             .AddScoped<Api.V1.Guild.GetAvailableGuilds>()
             .AddScoped<Api.V1.Guild.GetRoles>();
-
         // V2
         services
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()

@@ -8,10 +8,10 @@ namespace GrillBot.Tests.Infrastructure.Common;
 [ExcludeFromCodeCoverage]
 public abstract class ApiActionTest<TAction> : ActionTest<TAction> where TAction : ApiAction
 {
-    protected static readonly Lazy<ApiRequestContext> UserApiRequestContext
+    private static readonly Lazy<ApiRequestContext> UserApiRequestContext
         = new(() => CreateApiRequestContext("User"), LazyThreadSafetyMode.ExecutionAndPublication);
 
-    protected static readonly Lazy<ApiRequestContext> AdminApiRequestContext
+    private static readonly Lazy<ApiRequestContext> AdminApiRequestContext
         = new(() => CreateApiRequestContext("Admin"), LazyThreadSafetyMode.ExecutionAndPublication);
     
     protected ApiRequestContext ApiRequestContext { get; private set; }

@@ -12,7 +12,7 @@ public abstract class ActionTest : TestBase
         => GetMethod().GetCustomAttribute<ControllerTestConfiguration>();
 
     protected bool IsPublic() => TestConfiguration?.IsPublic ?? false;
-    //protected bool CanInitProvider() => TestConfiguration?.CanInitProvider ?? false;
+    protected bool CanInitProvider() => TestConfiguration?.CanInitProvider ?? false;
 }
 
 [ExcludeFromCodeCoverage]
@@ -24,6 +24,7 @@ public abstract class ActionTest<TAction> : ActionTest
     protected TestCacheBuilder CacheBuilder { get; private set; }
     protected GrillBotRepository Repository { get; private set; }
     protected GrillBotCacheRepository CacheRepository { get; private set; }
+    protected IServiceProvider ServiceProvider { get; private set; }
 
     protected abstract TAction CreateAction();
 
@@ -34,6 +35,9 @@ public abstract class ActionTest<TAction> : ActionTest
         CacheBuilder = TestServices.CacheBuilder.Value;
         Repository = DatabaseBuilder.CreateRepository();
         CacheRepository = CacheBuilder.CreateRepository();
+
+        if (CanInitProvider())
+            ServiceProvider = TestServices.InitializedProvider.Value;
 
         Init();
         Action = CreateAction();

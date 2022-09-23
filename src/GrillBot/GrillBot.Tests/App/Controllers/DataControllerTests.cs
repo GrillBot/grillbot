@@ -38,11 +38,9 @@ public class DataControllerTests : ControllerTest<DataController>
 
         var discordClient = DiscordHelper.CreateClient();
         var provider = CanInitProvider() ? ServiceProvider : null;
-        var commandsService = DiscordHelper.CreateCommandsService(provider);
-        var interactions = DiscordHelper.CreateInteractionService(discordClient, provider);
         var emotesCache = new EmotesCacheService(discordClient);
 
-        return new DataController(client, commandsService, TestServices.Configuration.Value, interactions, emotesCache, TestServices.AutoMapper.Value, DatabaseBuilder, ApiRequestContext, provider);
+        return new DataController(client, emotesCache, TestServices.AutoMapper.Value, DatabaseBuilder, ApiRequestContext, provider);
     }
 
     [TestMethod]
@@ -77,14 +75,6 @@ public class DataControllerTests : ControllerTest<DataController>
     {
         var result = await Controller.GetAvailableUsersAsync(false);
         CheckResult<OkObjectResult, Dictionary<string, string>>(result);
-    }
-
-    [TestMethod]
-    [ControllerTestConfiguration(true, true)]
-    public void GetCommandsList()
-    {
-        var result = Controller.GetCommandsList();
-        CheckResult<OkObjectResult, List<string>>(result);
     }
 
     [TestMethod]

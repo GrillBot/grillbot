@@ -6,6 +6,8 @@ namespace GrillBot.Tests.TestHelpers;
 [ExcludeFromCodeCoverage]
 public static class ConfigurationHelper
 {
+    public const string Prefix = "$";
+
     public static IConfiguration CreateConfiguration(Dictionary<string, string> externalConfiguration = null)
     {
         var configuration = new ConfigurationBuilder()
@@ -22,7 +24,7 @@ public static class ConfigurationHelper
                 { "Auth:ApiKeys:963258743:AuthorizedMethods:0", "AuthController.Test" },
                 { "Auth:ApiKeys:963258742:AuthorizedMethods:0", "*" },
                 { "Auth:ApiKeys:963258740", "" },
-                { "Discord:Commands:Prefix", "$" },
+                { "Discord:Commands:Prefix", Prefix },
                 { "Discord:Emotes:Sadge", ":sadge:" },
                 { "Discord:Emotes:Hypers", ":hypers:" },
                 { "Discord:Emotes:Mocking", "<a:mocking:853755944429289482>" },

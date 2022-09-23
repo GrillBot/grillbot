@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
 using AutoMapper;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,21 +14,14 @@ namespace GrillBot.App.Controllers;
 [ApiExplorerSettings(GroupName = "v1")]
 public class DataController : Controller
 {
-    private IDiscordClient DiscordClient { get; }
     private EmotesCacheService EmotesCacheService { get; }
     private IMapper Mapper { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private ApiRequestContext ApiRequestContext { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public DataController(IDiscordClient discordClient, EmotesCacheService emotesCacheService, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext,
-        IServiceProvider serviceProvider)
+    public DataController(EmotesCacheService emotesCacheService, IMapper mapper, IServiceProvider serviceProvider)
     {
-        DiscordClient = discordClient;
         EmotesCacheService = emotesCacheService;
         Mapper = mapper;
-        DatabaseBuilder = databaseBuilder;
-        ApiRequestContext = apiRequestContext;
         ServiceProvider = serviceProvider;
     }
 
@@ -102,14 +93,8 @@ public class DataController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null)
     {
-        var loggedUserId = ApiRequestContext.GetUserId();
-        var mutualGuilds = ApiRequestContext.IsPublic() ? await DiscordClient.FindMutualGuildsAsync(loggedUserId) : null;
-        var mutualGuildIds = mutualGuilds?.ConvertAll(o => o.Id.ToString());
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.User.GetFullListOfUsers(bots, mutualGuildIds);
-        var result = data.ToDictionary(o => o.Id, o => $"{o.Username}#{o.Discriminator}");
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetAvailableUsers>();
+        var result = await action.ProcessAsync(bots);
 
         return Ok(result);
     }

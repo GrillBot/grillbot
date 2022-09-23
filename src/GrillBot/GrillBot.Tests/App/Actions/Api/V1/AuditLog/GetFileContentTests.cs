@@ -111,7 +111,7 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
         await Repository.AddAsync(item);
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
         await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
-        await Repository.AddAsync(User.FromDiscord(user));
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();
     }
 }

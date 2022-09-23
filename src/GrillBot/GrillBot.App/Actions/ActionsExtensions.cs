@@ -53,6 +53,11 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Guild.GetAvailableGuilds>()
             .AddScoped<Api.V1.Guild.GetRoles>();
+        
+        // User
+        services
+            .AddScoped<Api.V1.User.GetAvailableUsers>();
+        
         // V2
         services
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()

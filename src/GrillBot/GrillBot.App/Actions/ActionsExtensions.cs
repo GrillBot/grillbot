@@ -25,7 +25,7 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Auth.GetRedirectLink>()
             .AddScoped<Api.V1.Auth.ProcessCallback>()
             .AddScoped<Api.V1.Auth.CreateToken>();
-        
+
         // AutoReply
         services
             .AddScoped<Api.V1.AutoReply.GetAutoReplyList>()
@@ -33,7 +33,7 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.AutoReply.CreateAutoReplyItem>()
             .AddScoped<Api.V1.AutoReply.UpdateAutoReplyItem>()
             .AddScoped<Api.V1.AutoReply.RemoveAutoReplyItem>();
-        
+
         // Channel
         services
             .AddScoped<Api.V1.Channel.GetChannelUsers>()
@@ -44,24 +44,25 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Channel.UpdateChannel>()
             .AddScoped<Api.V1.Channel.GetChannelboard>()
             .AddScoped<Api.V1.Channel.GetChannelSimpleList>();
-        
+
         // Command
         services
             .AddScoped<Api.V1.Command.GetCommandsList>();
-        
+
         // Emote
         services
+            .AddScoped<Api.V1.Emote.GetStatsOfEmotes>()
             .AddScoped<Api.V1.Emote.GetSupportedEmotes>();
-        
+
         // Guild
         services
             .AddScoped<Api.V1.Guild.GetAvailableGuilds>()
             .AddScoped<Api.V1.Guild.GetRoles>();
-        
+
         // User
         services
             .AddScoped<Api.V1.User.GetAvailableUsers>();
-        
+
         // V2
         services
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()

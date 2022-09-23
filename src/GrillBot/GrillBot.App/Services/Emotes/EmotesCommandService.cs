@@ -43,8 +43,8 @@ public class EmotesCommandService
         };
 
         using var scope = ServiceProvider.CreateScope();
-        var apiService = scope.ServiceProvider.GetRequiredService<EmotesApiService>();
-        var list = await apiService.GetStatsOfEmotesAsync(@params, false);
+        var apiService = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetStatsOfEmotes>();
+        var list = await apiService.ProcessAsync(@params, false);
 
         return Tuple.Create(
             new EmbedBuilder().WithEmoteList(list.Data, context.User, ofUser, context.Guild, orderBy, descending, page).Build(),
@@ -62,8 +62,8 @@ public class EmotesCommandService
         };
 
         using var scope = ServiceProvider.CreateScope();
-        var apiService = scope.ServiceProvider.GetRequiredService<EmotesApiService>();
-        var list = await apiService.GetStatsOfEmotesAsync(@params, false);
+        var apiService = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetStatsOfEmotes>();
+        var list = await apiService.ProcessAsync(@params, false);
 
         return list.TotalItemsCount;
     }

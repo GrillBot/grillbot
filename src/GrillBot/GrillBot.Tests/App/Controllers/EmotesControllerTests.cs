@@ -5,7 +5,6 @@ using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.Database.Models;
 
 namespace GrillBot.Tests.App.Controllers;
 
@@ -17,50 +16,9 @@ public class EmotesControllerTests : ControllerTest<EmotesController>
         var discordClient = DiscordHelper.CreateClient();
         var cacheService = new EmotesCacheService(discordClient);
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var apiService = new EmotesApiService(DatabaseBuilder, cacheService, TestServices.AutoMapper.Value, ApiRequestContext, auditLogWriter);
+        var apiService = new EmotesApiService(DatabaseBuilder, cacheService, ApiRequestContext, auditLogWriter);
 
-        return new EmotesController(apiService);
-    }
-
-    [TestMethod]
-    public async Task GetStatsOfSupportedEmotesAsync_WithoutFilter()
-    {
-        var @params = new EmotesListParams();
-        var result = await Controller.GetStatsOfSupportedEmotesAsync(@params);
-
-        CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetStatsOfSupportedEmotesAsync_WithFilter()
-    {
-        var @params = new EmotesListParams
-        {
-            FirstOccurence = new RangeParams<DateTime?> { From = DateTime.MinValue, To = DateTime.MaxValue },
-            GuildId = Consts.GuildId.ToString(),
-            LastOccurence = new RangeParams<DateTime?> { From = DateTime.MinValue, To = DateTime.MaxValue },
-            Sort = new SortParams { Descending = true, OrderBy = "EmoteId" },
-            UseCount = new RangeParams<int?> { From = 0, To = 50 },
-            UserId = Consts.UserId.ToString(),
-            Pagination = new PaginatedParams(),
-            FilterAnimated = true,
-            EmoteName = "Emote"
-        };
-
-        var result = await Controller.GetStatsOfSupportedEmotesAsync(@params);
-        CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetStatsOfUnsupportedEmotesAsync()
-    {
-        var @params = new EmotesListParams
-        {
-            Sort = { OrderBy = "FirstOccurence" }
-        };
-
-        var result = await Controller.GetStatsOfUnsupportedEmotesAsync(@params);
-        CheckResult<OkObjectResult, PaginatedResponse<EmoteStatItem>>(result);
+        return new EmotesController(apiService, ServiceProvider);
     }
 
     [TestMethod]

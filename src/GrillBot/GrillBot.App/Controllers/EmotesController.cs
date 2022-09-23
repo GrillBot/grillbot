@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Services.Emotes;
+﻿using GrillBot.App.Actions;
+using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Models;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -16,10 +18,12 @@ namespace GrillBot.App.Controllers;
 public class EmotesController : Controller
 {
     private EmotesApiService EmotesApiService { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public EmotesController(EmotesApiService emotesApiService)
+    public EmotesController(EmotesApiService emotesApiService, IServiceProvider serviceProvider)
     {
         EmotesApiService = emotesApiService;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -32,9 +36,10 @@ public class EmotesController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfSupportedEmotesAsync([FromBody] EmotesListParams @params)
     {
-        this.StoreParameters(@params);
+        ApiAction.Init(this, @params);
 
-        var result = await EmotesApiService.GetStatsOfEmotesAsync(@params, false);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetStatsOfEmotes>();
+        var result = await action.ProcessAsync(@params, false);
         return Ok(result);
     }
 
@@ -48,9 +53,10 @@ public class EmotesController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfUnsupportedEmotesAsync([FromBody] EmotesListParams @params)
     {
-        this.StoreParameters(@params);
+        ApiAction.Init(this, @params);
 
-        var result = await EmotesApiService.GetStatsOfEmotesAsync(@params, true);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetStatsOfEmotes>();
+        var result = await action.ProcessAsync(@params, true);
         return Ok(result);
     }
 

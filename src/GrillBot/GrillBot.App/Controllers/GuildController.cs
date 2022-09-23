@@ -1,11 +1,13 @@
-﻿using GrillBot.App.Services.Guild;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
+using GrillBot.App.Services.Guild;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NSwag.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -13,13 +15,16 @@ namespace GrillBot.App.Controllers;
 [Route("api/guild")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class GuildController : Controller
 {
     private GuildApiService ApiService { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public GuildController(GuildApiService apiService)
+    public GuildController(GuildApiService apiService, IServiceProvider serviceProvider)
     {
         ApiService = apiService;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -32,9 +37,10 @@ public class GuildController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromBody] GetGuildListParams parameters)
     {
-        this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-        var result = await ApiService.GetListAsync(parameters);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetGuildList>();
+        var result = await action.ProcessAsync(parameters);
         return Ok(result);
     }
 

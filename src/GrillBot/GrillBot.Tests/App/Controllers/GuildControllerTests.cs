@@ -3,7 +3,6 @@ using GrillBot.App.Services.Guild;
 using GrillBot.Data.Models.API.Guilds;
 using Microsoft.AspNetCore.Mvc;
 using Discord;
-using GrillBot.Database.Models;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -36,25 +35,7 @@ public class GuildControllerTests : ControllerTest<GuildController>
             .Build();
         
         var apiService = new GuildApiService(DatabaseBuilder, client, TestServices.AutoMapper.Value, CacheBuilder);
-        return new GuildController(apiService);
-    }
-
-    [TestMethod]
-    public async Task GetGuildListAsync_WithFilter()
-    {
-        var filter = new GetGuildListParams { NameQuery = "Guild" };
-        var result = await Controller.GetGuildListAsync(filter);
-        CheckResult<OkObjectResult, PaginatedResponse<Guild>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetGuildListAsync_WithoutFilter()
-    {
-        await Repository.AddAsync(new Database.Entity.Guild { Id = Consts.GuildId.ToString(), Name = Consts.GuildName });
-        await Repository.CommitAsync();
-
-        var result = await Controller.GetGuildListAsync(new GetGuildListParams());
-        CheckResult<OkObjectResult, PaginatedResponse<Guild>>(result);
+        return new GuildController(apiService, ServiceProvider);
     }
 
     [TestMethod]

@@ -5,7 +5,6 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
-using GrillBot.Database.Models;
 using GrillBot.Database.Models.Guilds;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -25,25 +24,6 @@ public class GuildApiService
         DiscordClient = client;
         Mapper = mapper;
         CacheBuilder = cacheBuilder;
-    }
-
-    public async Task<PaginatedResponse<Data.Models.API.Guilds.Guild>> GetListAsync(GetGuildListParams parameters)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.Guild.GetGuildListAsync(parameters, parameters.Pagination);
-        var result = await PaginatedResponse<Data.Models.API.Guilds.Guild>
-            .CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<Data.Models.API.Guilds.Guild>(entity)));
-
-        for (var i = 0; i < result.Data.Count; i++)
-        {
-            var guild = await DiscordClient.GetGuildAsync(result.Data[i].Id.ToUlong());
-            if (guild == null) continue;
-
-            result.Data[i] = Mapper.Map(guild, result.Data[i]);
-        }
-
-        return result;
     }
 
     public async Task<GuildDetail> GetDetailAsync(ulong id)

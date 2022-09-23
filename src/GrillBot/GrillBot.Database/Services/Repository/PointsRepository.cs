@@ -265,4 +265,13 @@ public class PointsRepository : RepositoryBase
             return await GetExpiredSummariesBaseQuery().ToListAsync();
         }
     }
+
+    public async Task<bool> ExistsTransactionAsync(PointsTransaction transaction)
+    {
+        using (CreateCounter())
+        {
+            return await Context.PointsTransactions.AsNoTracking()
+                .AnyAsync(o => o.GuildId == transaction.GuildId && o.UserId == transaction.UserId && o.MessageId == transaction.MessageId && o.ReactionId == transaction.ReactionId);
+        }
+    }
 }

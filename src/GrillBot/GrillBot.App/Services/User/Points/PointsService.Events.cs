@@ -28,10 +28,11 @@ public partial class PointsService
         if (transaction == null || transaction.Points == 0) return;
 
         var migrated = CreateMigratedTransaction(guildUser, transaction);
-        if (migrated != null)
+        if (migrated != null && !await repository.Points.ExistsTransactionAsync(migrated))
             await repository.AddAsync(migrated);
 
-        await repository.AddAsync(transaction);
+        if (!await repository.Points.ExistsTransactionAsync(transaction))
+            await repository.AddAsync(transaction);
         await repository.CommitAsync();
         await RecalculatePointsSummaryAsync(repository, true, new List<IGuildUser> { guildUserEntity });
     }
@@ -88,10 +89,11 @@ public partial class PointsService
         if (transaction == null || transaction.Points == 0) return;
 
         var migrated = CreateMigratedTransaction(guildUser, transaction);
-        if (migrated != null)
+        if (migrated != null && !await repository.Points.ExistsTransactionAsync(migrated))
             await repository.AddAsync(migrated);
 
-        await repository.AddAsync(transaction);
+        if (!await repository.Points.ExistsTransactionAsync(transaction))
+            await repository.AddAsync(transaction);
         await repository.CommitAsync();
         await RecalculatePointsSummaryAsync(repository, true, new List<IGuildUser> { user });
     }

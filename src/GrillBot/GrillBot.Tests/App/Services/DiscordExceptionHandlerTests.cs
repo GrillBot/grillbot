@@ -104,7 +104,8 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
             new HttpRequestException("", resourceUnavailable),
             new("", new WebSocketException()),
             new("", new WebSocketClosedException(0)),
-            new TaskCanceledException()
+            new TaskCanceledException(),
+            new TimeoutException("Cannot respond to an interaction after 3 seconds!")
         };
 
         foreach (var @case in cases)

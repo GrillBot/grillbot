@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Diagnostics.CodeAnalysis;
+using AutoMapper;
 using GrillBot.App.Actions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API;
@@ -16,6 +17,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/permissions")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class PermissionsController : Controller
 {
     private IDiscordClient DiscordClient { get; }
@@ -65,14 +67,9 @@ public class PermissionsController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> RemoveExplicitPermissionAsync([Required] string command, [Required] string targetId)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.RemoveExplicitPermission>();
+        await action.ProcessAsync(command, targetId);
 
-        var permission = await repository.Permissions.FindPermissionForTargetAsync(command, targetId);
-        if (permission == null)
-            return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
-
-        repository.Remove(permission);
-        await repository.CommitAsync();
         return Ok();
     }
 

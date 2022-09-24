@@ -313,6 +313,9 @@
   "ExplicitPerms": {
     "Create": {
       "Conflict": "Explicit permission for command {0} ({1}) already exists."
+    },
+    "Remove": {
+      "NotFound": "Explicit permission for command {0} ({1}) does not exist."
     }
   }
 }

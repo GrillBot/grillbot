@@ -14,28 +14,6 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
     }
 
     [TestMethod]
-    public async Task RemoveExplicitPermissionAsync_NotFound()
-    {
-        var result = await Controller.RemoveExplicitPermissionAsync("unverify", Consts.UserId.ToString());
-        CheckResult<NotFoundObjectResult>(result);
-    }
-
-    [TestMethod]
-    public async Task RemoveExplicitPermissionAsync_Found()
-    {
-        var parameters = new CreateExplicitPermissionParams
-        {
-            Command = "unverify",
-            IsRole = false,
-            State = Database.Enums.ExplicitPermissionState.Allowed,
-            TargetId = Consts.UserId.ToString()
-        };
-
-        CheckResult<OkResult>(await Controller.CreateExplicitPermissionAsync(parameters));
-        CheckResult<OkResult>(await Controller.RemoveExplicitPermissionAsync("unverify", Consts.UserId.ToString()));
-    }
-
-    [TestMethod]
     public async Task GetExplicitPermissionsListAsync_WithoutFilter()
     {
         await Repository.AddCollectionAsync(new[]

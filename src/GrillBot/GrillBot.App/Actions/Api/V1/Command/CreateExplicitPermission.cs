@@ -46,6 +46,6 @@ public class CreateExplicitPermission : ApiAction
         IsConflict = await repository.Permissions.ExistsCommandForTargetAsync(parameters.Command, parameters.TargetId);
 
         if (IsConflict)
-            ErrorMessage = Texts["ExplicitPerms/Create/Conflict", ApiContext.Language];
+            ErrorMessage = Texts["ExplicitPerms/Create/Conflict", ApiContext.Language].FormatWith(parameters.Command, parameters.TargetId);
     }
 }

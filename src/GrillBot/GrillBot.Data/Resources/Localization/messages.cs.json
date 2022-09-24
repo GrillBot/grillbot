@@ -313,6 +313,9 @@
   "ExplicitPerms": {
     "Create": {
       "Conflict": "Explicitní oprávnění pro příkaz {0} ({1}) již existuje."
+    },
+    "Remove": {
+      "NotFound": "Explicitní oprávnění pro příkaz {0} ({1}) neexistuje."
     }
   }
 }

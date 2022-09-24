@@ -20,4 +20,5 @@ public static class Consts
     public const ulong MessageId = 970663868185608242;
     public const string Nickname = "GrillBot-GuildUser-Nickname";
     public const string AvatarId = "AvatarId";
+    public const string VanityInviteCode = "vanity";
 }

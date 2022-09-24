@@ -38,29 +38,10 @@ public class TestDatabaseBuilder : GrillBotDatabaseBuilder
         ClearDatabase(context);
     }
 
-    private static void ClearDatabase(GrillBotContext context)
+    private static void ClearDatabase(DbContext context)
     {
         context.ChangeTracker.Clear();
-        context.RemoveRange(context.Users.AsEnumerable());
-        context.RemoveRange(context.Guilds.AsEnumerable());
-        context.RemoveRange(context.GuildUsers.AsEnumerable());
-        context.RemoveRange(context.Channels.AsEnumerable());
-        context.RemoveRange(context.UserChannels.AsEnumerable());
-        context.RemoveRange(context.Invites.AsEnumerable());
-        context.RemoveRange(context.SearchItems.AsEnumerable());
-        context.RemoveRange(context.Unverifies.AsEnumerable());
-        context.RemoveRange(context.UnverifyLogs.AsEnumerable());
-        context.RemoveRange(context.AuditLogs.AsEnumerable());
-        context.RemoveRange(context.AuditLogFiles.AsEnumerable());
-        context.RemoveRange(context.Emotes.AsEnumerable());
-        context.RemoveRange(context.Reminders.AsEnumerable());
-        context.RemoveRange(context.SelfunverifyKeepables.AsEnumerable());
-        context.RemoveRange(context.ExplicitPermissions.AsEnumerable());
-        context.RemoveRange(context.AutoReplies.AsEnumerable());
-        context.RemoveRange(context.EmoteSuggestions.AsEnumerable());
-        context.RemoveRange(context.GuildEvents.AsEnumerable());
-        context.RemoveRange(context.PointsTransactionSummaries.AsEnumerable());
-        context.RemoveRange(context.PointsTransactions.AsEnumerable());
-        context.SaveChanges();
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
     }
 }

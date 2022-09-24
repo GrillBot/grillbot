@@ -42,9 +42,8 @@ public class TestCacheBuilder : GrillBotCacheBuilder
     private static void ClearDatabase(GrillBotCacheContext context)
     {
         context.ChangeTracker.Clear();
-        context.RemoveRange(context.DirectApiMessages.AsEnumerable());
-        context.RemoveRange(context.MessageIndex.AsEnumerable());
-        context.RemoveRange(context.ProfilePictures.AsEnumerable());
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
         context.SaveChanges();
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
-using GrillBot.App.Services;
-using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,14 +17,10 @@ namespace GrillBot.App.Controllers;
 [ExcludeFromCodeCoverage]
 public class InviteController : Controller
 {
-    private InviteService InviteService { get; }
-    private ApiRequestContext Context { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public InviteController(InviteService inviteService, ApiRequestContext context, IServiceProvider serviceProvider)
+    public InviteController(IServiceProvider serviceProvider)
     {
-        InviteService = inviteService;
-        Context = context;
         ServiceProvider = serviceProvider;
     }
 
@@ -55,7 +49,9 @@ public class InviteController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> RefreshMetadataCacheAsync()
     {
-        var result = await InviteService.RefreshMetadataAsync(Context.LoggedUser, true);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.RefreshMetadata>();
+        var result = await action.ProcessAsync(true); 
+        
         return Ok(result);
     }
 
@@ -67,7 +63,9 @@ public class InviteController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<int>> GetCurrentMetadataCountAsync()
     {
-        var result = await InviteService.GetMetadataCountAsync();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.GetMetadataCount>();
+        var result = await action.ProcessAsync();
+        
         return Ok(result);
     }
 }

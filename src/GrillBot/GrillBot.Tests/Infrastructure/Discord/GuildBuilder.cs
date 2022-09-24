@@ -19,9 +19,7 @@ public class GuildBuilder : BuilderBase<IGuild>
     }
 
     public GuildBuilder SetIdentity(ulong id, string name)
-    {
-        return SetId(id).SetName(name);
-    }
+        => SetId(id).SetName(name);
 
     public GuildBuilder SetId(ulong id)
     {
@@ -83,9 +81,7 @@ public class GuildBuilder : BuilderBase<IGuild>
     {
         var channelsData = channels.ToList().AsReadOnly();
 
-        Mock.Setup(o => o.GetChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.FromResult((IReadOnlyCollection<IGuildChannel>)channelsData));
-
+        Mock.Setup(o => o.GetChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult((IReadOnlyCollection<IGuildChannel>)channelsData));
         SetGetTextChannelsAction(channelsData);
         return this;
     }
@@ -94,8 +90,7 @@ public class GuildBuilder : BuilderBase<IGuild>
     {
         var usersData = users.ToList().AsReadOnly();
 
-        Mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.FromResult((IReadOnlyCollection<IGuildUser>)usersData));
+        Mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(usersData);
         foreach (var user in usersData)
             SetGetUserAction(user);
 
@@ -104,9 +99,26 @@ public class GuildBuilder : BuilderBase<IGuild>
 
     public GuildBuilder SetGetUserAction(IGuildUser user)
     {
-        Mock.Setup(o =>
-                o.GetUserAsync(It.Is<ulong>(id => id == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.FromResult(user));
+        Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(id => id == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
+        return this;
+    }
+
+    public GuildBuilder SetGetInvitesAction(IEnumerable<IInviteMetadata> invites)
+    {
+        var invitesData = invites.ToList();
+        var vanityInvite = invitesData.Find(o => o.Code == Consts.VanityInviteCode);
+        invitesData.RemoveAll(o => o.Code == Consts.VanityInviteCode);
+
+        Mock.Setup(o => o.GetInvitesAsync(It.IsAny<RequestOptions>())).ReturnsAsync(invitesData.AsReadOnly());
+        if (vanityInvite != null)
+            SetGetVanityInviteAsync(vanityInvite);
+        return this;
+    }
+
+    public GuildBuilder SetGetVanityInviteAsync(IInviteMetadata invite)
+    {
+        Mock.Setup(o => o.VanityURLCode).Returns(invite.Code);
+        Mock.Setup(o => o.GetVanityInviteAsync(It.IsAny<RequestOptions>())).ReturnsAsync(invite);
         return this;
     }
 }

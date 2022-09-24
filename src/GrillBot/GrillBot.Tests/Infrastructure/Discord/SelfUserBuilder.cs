@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Moq;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
@@ -8,14 +7,17 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class SelfUserBuilder : BuilderBase<ISelfUser>
 {
-    public SelfUserBuilder SetIdentity(ulong id, string username, string discriminator)
+    public SelfUserBuilder()
     {
-        SetId(id);
-        SetUsername(username);
-        SetDiscriminator(discriminator);
-
-        return this;
     }
+
+    public SelfUserBuilder(IUser user)
+    {
+        SetIdentity(user.Id, user.Username, user.Discriminator);
+    }
+
+    public SelfUserBuilder SetIdentity(ulong id, string username, string discriminator)
+        => SetId(id).SetUsername(username).SetDiscriminator(discriminator);
 
     public SelfUserBuilder SetId(ulong id)
     {

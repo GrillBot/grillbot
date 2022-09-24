@@ -3,8 +3,10 @@ using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Models;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services;
 
@@ -15,13 +17,15 @@ public class InviteService
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriter AuditLogWriter { get; }
     private InviteManager InviteManager { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, InviteManager inviteManager)
+    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, InviteManager inviteManager, IServiceProvider serviceProvider)
     {
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;
         AuditLogWriter = auditLogWriter;
         InviteManager = inviteManager;
+        ServiceProvider = serviceProvider;
 
         DiscordClient.Ready += InitAsync;
         DiscordClient.UserJoined += user => user.IsUser() ? OnUserJoinedAsync(user) : Task.CompletedTask;
@@ -30,38 +34,12 @@ public class InviteService
 
     private async Task InitAsync()
     {
-        await RefreshMetadataAsync(DiscordClient.CurrentUser, false);
+        using var scope = ServiceProvider.CreateScope();
+        scope.ServiceProvider.GetRequiredService<ApiRequestContext>().LoggedUser = DiscordClient.CurrentUser;
+
+        var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.RefreshMetadata>();
+        await action.ProcessAsync(false);
     }
-
-    private async Task<int> RefreshMetadataAsync(IGuild guild, IUser user, bool isReload)
-    {
-        if (!await guild.CanManageInvitesAsync(DiscordClient.CurrentUser)) return 0;
-
-        var invites = await InviteManager.DownloadInvitesAsync(guild);
-        if (invites.Count == 0) return 0;
-
-        await AuditLogWriter.StoreAsync(new AuditLogDataWrapper(AuditLogItemType.Info,
-            $"Invites for guild \"{guild.Name}\" was {(isReload ? "reloaded" : "loaded")}. Loaded invites: {invites.Count}", guild, processedUser: user));
-
-        await InviteManager.UpdateMetadataAsync(guild, invites);
-        return invites.Count;
-    }
-
-    public async Task<Dictionary<string, int>> RefreshMetadataAsync(IUser user, bool isReload)
-    {
-        var result = new Dictionary<string, int>();
-
-        foreach (var guild in DiscordClient.Guilds)
-        {
-            var updatedCount = await RefreshMetadataAsync(guild, user, isReload);
-            result.Add(guild.Name, updatedCount);
-        }
-
-        return result;
-    }
-
-    public async Task<int> GetMetadataCountAsync()
-        => await InviteManager.GetMetadataCountAsync();
 
     private async Task OnUserJoinedAsync(SocketGuildUser user)
     {

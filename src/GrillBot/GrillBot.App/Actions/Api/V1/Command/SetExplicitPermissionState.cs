@@ -1,29 +1,29 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
+using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Command;
 
-public class RemoveExplicitPermission : ApiAction
+public class SetExplicitPermissionState : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
 
-    public RemoveExplicitPermission(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts) : base(apiContext)
+    public SetExplicitPermissionState(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
     }
 
-    public async Task ProcessAsync(string command, string targetId)
+    public async Task ProcessAsync(string command, string targetId, ExplicitPermissionState state)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-
         var permission = await repository.Permissions.FindPermissionForTargetAsync(command, targetId);
         if (permission == null)
             throw new NotFoundException(Texts["ExplicitPerms/NotFound", ApiContext.Language].FormatWith(command, targetId));
 
-        repository.Remove(permission);
+        permission.State = state;
         await repository.CommitAsync();
     }
 }

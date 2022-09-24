@@ -16,7 +16,7 @@ public class RemoveExplicitPermissionTests : ApiActionTest<RemoveExplicitPermiss
     protected override RemoveExplicitPermission CreateAction()
     {
         Texts = new TextsBuilder()
-            .AddText("ExplicitPerms/Remove/NotFound", "cs", "PermNotFound")
+            .AddText("ExplicitPerms/NotFound", "cs", "PermNotFound")
             .Build();
 
         return new RemoveExplicitPermission(ApiRequestContext, DatabaseBuilder, Texts);

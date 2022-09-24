@@ -17,12 +17,10 @@ namespace GrillBot.App.Controllers;
 [ExcludeFromCodeCoverage]
 public class PermissionsController : Controller
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public PermissionsController(GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider)
+    public PermissionsController(IServiceProvider serviceProvider)
     {
-        DatabaseBuilder = databaseBuilder;
         ServiceProvider = serviceProvider;
     }
 
@@ -90,13 +88,8 @@ public class PermissionsController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> SetExplicitPermissionStateAsync([Required] string command, [Required] string targetId, ExplicitPermissionState state)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var permission = await repository.Permissions.FindPermissionForTargetAsync(command, targetId);
-        if (permission == null)
-            return NotFound(new MessageResponse($"Explicitní oprávnění pro příkaz {command} ({targetId}) neexistuje."));
-
-        permission.State = state;
-        await repository.CommitAsync();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.SetExplicitPermissionState>();
+        await action.ProcessAsync(command, targetId, state);
         return Ok();
     }
 }

@@ -10,7 +10,7 @@ public class CreateExplicitPermissionTests : ApiActionTest<CreateExplicitPermiss
     protected override CreateExplicitPermission CreateAction()
     {
         var texts = new TextsBuilder()
-            .AddText("ExplicitPerms/Create/Conflict", "cs", "Conflict")
+            .AddText("ExplicitPerms/Conflict", "cs", "Conflict")
             .Build();
 
         return new CreateExplicitPermission(ApiRequestContext, DatabaseBuilder, texts);

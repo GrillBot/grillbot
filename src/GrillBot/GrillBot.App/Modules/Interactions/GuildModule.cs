@@ -48,8 +48,12 @@ public class GuildModule : InteractionsModuleBase
         if (!string.IsNullOrEmpty(guild.BannerId))
             embed.WithImageUrl(guild.BannerUrl);
 
+        var textChannelsCount = guild.TextChannels.Count(o => o is not IThreadChannel);
+        var threadChannelsCount = guild.TextChannels.Count(o => o is IThreadChannel); 
+
         embed.AddField(GetText(nameof(GetInfoAsync), "CategoryCount"), guild.CategoryChannels?.Count ?? 0, true)
-            .AddField(GetText(nameof(GetInfoAsync), "TextChannelCount"), guild.TextChannels.Count, true)
+            .AddField(GetText(nameof(GetInfoAsync), "TextChannelCount"), textChannelsCount, true)
+            .AddField(GetText(nameof(GetInfoAsync), "ThreadsCount"), threadChannelsCount, true)
             .AddField(GetText(nameof(GetInfoAsync), "VoiceChannelCount"), guild.VoiceChannels.Count, true)
             .AddField(GetText(nameof(GetInfoAsync), "RoleCount"), guild.Roles.Count, true)
             .AddField(GetText(nameof(GetInfoAsync), "EmoteCount"), $"{basicEmotesCount} / {animatedCount}", true)

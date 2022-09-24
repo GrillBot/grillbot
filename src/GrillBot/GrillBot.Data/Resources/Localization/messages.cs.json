@@ -142,6 +142,7 @@
     "GetInfo": {
       "CategoryCount": "Počet kategorií",
       "TextChannelCount": "Počet textových kanálů",
+      "ThreadsCount": "Počet vláken",
       "VoiceChannelCount": "Počet hlasových kanálů",
       "RoleCount": "Počet rolí",
       "EmoteCount": "Počet emotů (běžných/animovaných)",

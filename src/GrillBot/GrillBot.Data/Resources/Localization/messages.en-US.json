@@ -142,6 +142,7 @@
     "GetInfo": {
       "CategoryCount": "Number of categories",
       "TextChannelCount": "Number of text channels",
+      "ThreadsCount": "Number of threads",
       "VoiceChannelCount": "Number of voice channels",
       "RoleCount": "Number of roles",
       "EmoteCount": "Number of emotes (regular/animated)",

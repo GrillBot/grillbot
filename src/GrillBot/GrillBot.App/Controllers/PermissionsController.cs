@@ -1,10 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AutoMapper;
 using GrillBot.App.Actions;
-using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Permissions;
-using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -20,15 +17,11 @@ namespace GrillBot.App.Controllers;
 [ExcludeFromCodeCoverage]
 public class PermissionsController : Controller
 {
-    private IDiscordClient DiscordClient { get; }
-    private IMapper Mapper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public PermissionsController(IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider)
+    public PermissionsController(GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider)
     {
-        DiscordClient = discordClient;
-        Mapper = mapper;
         DatabaseBuilder = databaseBuilder;
         ServiceProvider = serviceProvider;
     }
@@ -81,35 +74,8 @@ public class PermissionsController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<List<ExplicitPermission>>> GetExplicitPermissionsListAsync([FromQuery] string searchQuery)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var permissions = await repository.Permissions.GetPermissionsListAsync(searchQuery);
-
-        var result = new List<ExplicitPermission>();
-
-        var userPermissions = permissions.Where(o => !o.IsRole).ToList();
-        if (userPermissions.Count > 0)
-        {
-            var users = await repository.User.FindAllUsersExceptBots();
-
-            var userPerms = userPermissions
-                .Select(o => Mapper.Map<ExplicitPermission>(o, x => x.AfterMap((_, dst) => dst.User = Mapper.Map<User>(users.Find(t => t.Id == o.TargetId)))))
-                .OrderBy(o => o.User?.Username)
-                .ThenBy(o => o.Command);
-
-            result.AddRange(userPerms);
-        }
-
-        var rolePermissions = permissions.Where(o => o.IsRole).ToList();
-        if (rolePermissions.Count > 0)
-        {
-            var roles = await DiscordClient.GetRolesAsync();
-            var rolePerms = rolePermissions
-                .Select(o => Mapper.Map<ExplicitPermission>(o, x => x.AfterMap((_, dst) => dst.Role = Mapper.Map<Role>(roles.Find(t => t.Id.ToString() == o.TargetId)))))
-                .OrderBy(o => o.Role?.Name)
-                .ThenBy(o => o.Command);
-
-            result.AddRange(rolePerms);
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetExplicitPermissionList>();
+        var result = await action.ProcessAsync(searchQuery);
 
         return Ok(result);
     }

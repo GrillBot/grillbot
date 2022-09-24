@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Controllers;
-using GrillBot.Data.Models.API.Permissions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -9,30 +8,7 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
 {
     protected override PermissionsController CreateController()
     {
-        var discordClient = DiscordHelper.CreateClient();
-        return new PermissionsController(discordClient, TestServices.AutoMapper.Value, DatabaseBuilder, ServiceProvider);
-    }
-
-    [TestMethod]
-    public async Task GetExplicitPermissionsListAsync_WithoutFilter()
-    {
-        await Repository.AddCollectionAsync(new[]
-        {
-            new Database.Entity.ExplicitPermission { Command = "unverify", IsRole = true, State = Database.Enums.ExplicitPermissionState.Banned, TargetId = Consts.RoleId.ToString() },
-            new Database.Entity.ExplicitPermission { Command = "unverify", IsRole = false, State = Database.Enums.ExplicitPermissionState.Banned, TargetId = Consts.UserId.ToString() }
-        });
-        await Repository.AddAsync(new Database.Entity.User { Username = Consts.Username, Discriminator = Consts.Discriminator, Id = Consts.UserId.ToString() });
-        await Repository.CommitAsync();
-
-        var result = await Controller.GetExplicitPermissionsListAsync(null);
-        CheckResult<OkObjectResult, List<ExplicitPermission>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetExplicitPermissionsListAsync_WithFilter()
-    {
-        var result = await Controller.GetExplicitPermissionsListAsync("selfunverify");
-        CheckResult<OkObjectResult, List<ExplicitPermission>>(result);
+        return new PermissionsController(DatabaseBuilder, ServiceProvider);
     }
 
     [TestMethod]

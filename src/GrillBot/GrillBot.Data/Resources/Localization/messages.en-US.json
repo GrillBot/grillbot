@@ -309,5 +309,10 @@
   },
   "AutoReply": {
     "NotFound": "The requested auto-reply with ID {0} was not found."
+  },
+  "ExplicitPerms": {
+    "Create": {
+      "Conflict": "Explicit permission for command {0} ({1}) already exists."
+    }
   }
 }

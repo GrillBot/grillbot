@@ -10,37 +10,7 @@ public class PermissionsControllerTests : ControllerTest<PermissionsController>
     protected override PermissionsController CreateController()
     {
         var discordClient = DiscordHelper.CreateClient();
-        return new PermissionsController(discordClient, TestServices.AutoMapper.Value, DatabaseBuilder);
-    }
-
-    [TestMethod]
-    public async Task CreateExplicitPermissionAsync_NotExists()
-    {
-        var parameters = new CreateExplicitPermissionParams
-        {
-            Command = "$unverify",
-            IsRole = false,
-            State = Database.Enums.ExplicitPermissionState.Allowed,
-            TargetId = Consts.UserId.ToString()
-        };
-
-        var result = await Controller.CreateExplicitPermissionAsync(parameters);
-        CheckResult<OkResult>(result);
-    }
-
-    [TestMethod]
-    public async Task CreateExplicitPermissionAsync_Exists()
-    {
-        var parameters = new CreateExplicitPermissionParams
-        {
-            Command = "unverify",
-            IsRole = false,
-            State = Database.Enums.ExplicitPermissionState.Allowed,
-            TargetId = Consts.UserId.ToString()
-        };
-
-        CheckResult<OkResult>(await Controller.CreateExplicitPermissionAsync(parameters));
-        CheckResult<ConflictObjectResult>(await Controller.CreateExplicitPermissionAsync(parameters));
+        return new PermissionsController(discordClient, TestServices.AutoMapper.Value, DatabaseBuilder, ServiceProvider);
     }
 
     [TestMethod]

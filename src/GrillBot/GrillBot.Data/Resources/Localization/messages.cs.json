@@ -309,5 +309,10 @@
   },
   "AutoReply": {
     "NotFound": "Požadovaná automatická odpověď s ID {0} nebyla nalezena."
+  },
+  "ExplicitPerms": {
+    "Create": {
+      "Conflict": "Explicitní oprávnění pro příkaz {0} ({1}) již existuje."
+    }
   }
 }

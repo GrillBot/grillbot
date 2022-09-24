@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GrillBot.App.Actions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Permissions;
@@ -7,6 +8,7 @@ using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -19,12 +21,14 @@ public class PermissionsController : Controller
     private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public PermissionsController(IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
+    public PermissionsController(IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider)
     {
         DiscordClient = discordClient;
         Mapper = mapper;
         DatabaseBuilder = databaseBuilder;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -39,26 +43,13 @@ public class PermissionsController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Conflict)]
     public async Task<ActionResult> CreateExplicitPermissionAsync([FromBody] CreateExplicitPermissionParams parameters)
     {
-        this.StoreParameters(parameters);
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var exists = await repository.Permissions.ExistsCommandForTargetAsync(parameters.Command, parameters.TargetId);
+        ApiAction.Init(this, parameters);
 
-        if (exists)
-            return Conflict(new MessageResponse($"Explicitní oprávnění pro příkaz {parameters.Command} ({parameters.TargetId}) již existuje."));
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.CreateExplicitPermission>();
+        await action.ProcessAsync(parameters);
 
-        if (!char.IsLetter(parameters.Command[0]))
-            parameters.Command = parameters.Command[1..];
-
-        var permission = new Database.Entity.ExplicitPermission
-        {
-            IsRole = parameters.IsRole,
-            TargetId = parameters.TargetId,
-            Command = parameters.Command,
-            State = parameters.State
-        };
-
-        await repository.AddAsync(permission);
-        await repository.CommitAsync();
+        if (action.IsConflict)
+            return Conflict(new MessageResponse(action.ErrorMessage));
         return Ok();
     }
 

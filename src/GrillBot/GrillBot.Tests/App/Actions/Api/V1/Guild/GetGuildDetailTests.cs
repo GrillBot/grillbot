@@ -2,6 +2,7 @@
 using Discord;
 using GrillBot.App.Actions.Api.V1.Guild;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
@@ -60,14 +61,23 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
 
         var result = await Action.ProcessAsync(Guild.Id);
 
-        Assert.IsNotNull(result);
+        CheckSuccess(result, true);
         Assert.AreEqual(Guild.Name, result.Name);
         Assert.AreEqual(Guild.Id.ToString(), result.Id);
+    }
+
+    public static void CheckSuccess(GuildDetail result, bool full)
+    {
+        Assert.IsNotNull(result);
         Assert.IsNotNull(result.AdminChannel);
         Assert.IsNotNull(result.EmoteSuggestionChannel);
-        Assert.IsNotNull(result.BoosterRole);
         Assert.IsNotNull(result.MutedRole);
         Assert.IsNotNull(result.VoteChannel);
+
+        if (!full)
+            return;
+
+        Assert.IsNotNull(result.BoosterRole);
         Assert.IsTrue(result.UserStatusReport.Count > 0);
         Assert.IsTrue(result.ClientTypeReport.Count > 0);
     }

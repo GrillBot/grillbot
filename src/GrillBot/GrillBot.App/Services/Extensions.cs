@@ -39,8 +39,7 @@ public static class Extensions
             .AddSingleton<FileStorageFactory>();
 
         services
-            .AddSingleton<Guild.GuildEventsService>()
-            .AddScoped<Guild.GuildApiService>();
+            .AddSingleton<Guild.GuildEventsService>();
 
         services
             .AddSingleton<RendererFactory>();

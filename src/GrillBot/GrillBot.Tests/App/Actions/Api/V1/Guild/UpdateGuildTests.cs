@@ -1,0 +1,107 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Discord;
+using GrillBot.App.Actions.Api.V1.Guild;
+using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Database.Models;
+using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Discord;
+
+namespace GrillBot.Tests.App.Actions.Api.V1.Guild;
+
+[TestClass]
+public class UpdateGuildTests : ApiActionTest<UpdateGuild>
+{
+    private IGuild Guild { get; set; }
+
+    protected override UpdateGuild CreateAction()
+    {
+        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
+        var textChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
+        var role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
+        Guild = guildBuilder.SetGetChannelsAction(new[] { textChannel }).SetRoles(new[] { role }).SetGetUsersAction(Enumerable.Empty<IGuildUser>()).Build();
+
+        var client = new ClientBuilder()
+            .SetGetGuildsAction(new[] { Guild })
+            .Build();
+        var texts = new TextsBuilder()
+            .AddText("GuildModule/GuildDetail/NotFound", "cs", "GuildNotFound")
+            .AddText("GuildModule/UpdateGuild/AdminChannelNotFound", "cs", "AdminChannelNotFound")
+            .AddText("GuildModule/UpdateGuild/MuteRoleNotFound", "cs", "MuteRoleNotFound")
+            .AddText("GuildModule/UpdateGuild/EmoteSuggestionChannelNotFound", "cs", "EmoteSuggestionChannelNotFound")
+            .AddText("GuildModule/UpdateGuild/VoteChannelNotFound", "cs", "VoteChannelNotFound")
+            .Build();
+        var getGuildDetail = new GetGuildDetail(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client, CacheBuilder, texts);
+        return new UpdateGuild(ApiRequestContext, client, DatabaseBuilder, getGuildDetail, texts);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
+    public async Task ProcessAsync_GuildNotFound()
+    {
+        var parameters = new UpdateGuildParams();
+        await Action.ProcessAsync(Consts.GuildId + 1, parameters);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_Success()
+    {
+        var parameters = new UpdateGuildParams
+        {
+            AdminChannelId = Consts.ChannelId.ToString(),
+            MuteRoleId = Consts.RoleId.ToString(),
+            VoteChannelId = Consts.ChannelId.ToString(),
+            EmoteSuggestionChannelId = Consts.ChannelId.ToString(),
+            EmoteSuggestionsValidity = new RangeParams<DateTime> { From = DateTime.MinValue, To = DateTime.MaxValue }
+        };
+
+        var result = await Action.ProcessAsync(Consts.GuildId, parameters);
+        GetGuildDetailTests.CheckSuccess(result, false);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_RemoveEvents()
+    {
+        var guild = Database.Entity.Guild.FromDiscord(Guild);
+        guild.GuildEvents.Add(new Database.Entity.GuildEvent { Id = "EmoteSuggestions" });
+        await Repository.AddAsync(guild);
+        await Repository.CommitAsync();
+
+        var parameters = new UpdateGuildParams();
+        var result = await Action.ProcessAsync(Consts.GuildId, parameters);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.GuildEvents.Count);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_ValidationErrors()
+    {
+        var cases = new[]
+        {
+            new UpdateGuildParams { AdminChannelId = (Consts.ChannelId + 1).ToString() },
+            new UpdateGuildParams { MuteRoleId = (Consts.RoleId + 1).ToString() },
+            new UpdateGuildParams { EmoteSuggestionChannelId = (Consts.ChannelId + 1).ToString() },
+            new UpdateGuildParams { VoteChannelId = (Consts.ChannelId + 1).ToString() }
+        };
+
+        foreach (var @case in cases)
+        {
+            try
+            {
+                await Action.ProcessAsync(Consts.GuildId, @case);
+                Assert.Fail("ProcessAsync not thrown exception");
+            }
+            catch (Exception ex)
+            {
+                if (ex is ValidationException vex && !string.IsNullOrEmpty(vex.ValidationResult.ErrorMessage))
+                    continue;
+
+                throw;
+            }
+        }
+    }
+}

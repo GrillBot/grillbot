@@ -122,7 +122,7 @@
       "DuckName": "U kachničky",
       "Closed": "Kachna is closed.",
       "NextOpenNotPlanned": "The next opener is not scheduled.",
-      "NextOpenAt": "The next opener will be behind {0}.",
+      "NextOpenAt": "Opening hours start at {0}.",
       "WhatsNext": "And what else?",
       "WhatsNextUnknown": "The next opener is not scheduled, but this status is set to end {0}. What will happen then, no one knows.",
       "Opened": "Kachna is open!",
@@ -190,6 +190,12 @@
     },
     "GuildDetail": {
       "NotFound": "The requested server could not be found."
+    },
+    "UpdateGuild": {
+      "AdminChannelNotFound": "Failed to locate admin channel.",
+      "MuteRoleNotFound": "Failed to find the role that represents silencing the user on unverify.",
+      "EmoteSuggestionChannelNotFound": "Failed to find channel for emote suggestions.",
+      "VoteChannelNotFound": "Could not find public polling channel."
     }
   },
   "MathModule": {

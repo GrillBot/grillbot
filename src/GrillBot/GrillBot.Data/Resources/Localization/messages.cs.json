@@ -29,7 +29,7 @@
   },
   "BotModule": {
     "BotInfo": {
-      "CreatedAt": "Založen",
+      "CreatedAt": "Vytvořen",
       "Uptime": "Uptime",
       "Repository": "Repozitář",
       "Documentation": "Dokumentace",
@@ -49,7 +49,7 @@
     "GetChannelInfo": {
       "UserNotFound": "Nepodařilo se dohledat uživatele, který zavolal příkaz.",
       "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
-      "CreatedAt": "Založeno",
+      "CreatedAt": "Vytvořen",
       "MemberCount": "Počet členů",
       "NewsChannelTitle": "Informace o kanálu s novinkami",
       "VoiceChannelTitle": "Informace o hlasovém kanálu",
@@ -190,6 +190,12 @@
     },
     "GuildDetail": {
       "NotFound": "Požadovaný server se nepodařilo najít."
+    },
+    "UpdateGuild": {
+      "AdminChannelNotFound": "Nepodařilo se dohledat administrátorský kanál",
+      "MuteRoleNotFound": "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.",
+      "EmoteSuggestionChannelNotFound": "Nepodařilo se dohledat kanál pro návrhy emotů.",
+      "VoteChannelNotFound": "Nepodařilo se dohledat kanál pro veřejná hlasování."
     }
   },
   "MathModule": {

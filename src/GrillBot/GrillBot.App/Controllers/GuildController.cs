@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
-using GrillBot.App.Services.Guild;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models;
@@ -18,12 +17,10 @@ namespace GrillBot.App.Controllers;
 [ExcludeFromCodeCoverage]
 public class GuildController : Controller
 {
-    private GuildApiService ApiService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public GuildController(GuildApiService apiService, IServiceProvider serviceProvider)
+    public GuildController(IServiceProvider serviceProvider)
     {
-        ApiService = apiService;
         ServiceProvider = serviceProvider;
     }
 
@@ -71,14 +68,10 @@ public class GuildController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams parameters)
     {
-        this.StoreParameters(parameters);
-        var result = await ApiService.UpdateGuildAsync(id, parameters, ModelState);
+        ApiAction.Init(this, parameters);
 
-        if (result == null)
-            return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
-
-        if (!ModelState.IsValid)
-            return BadRequest(new ValidationProblemDetails(ModelState));
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.UpdateGuild>();
+        var result = await action.ProcessAsync(id, parameters);
 
         return Ok(result);
     }

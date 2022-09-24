@@ -1,11 +1,5 @@
-﻿using AutoMapper;
-using GrillBot.Cache.Services;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.Channels;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.API.Guilds;
-using GrillBot.Database.Models.Guilds;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GrillBot.App.Services.Guild;
@@ -14,70 +8,11 @@ public class GuildApiService
 {
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
-    private GrillBotCacheBuilder CacheBuilder { get; }
 
-    public GuildApiService(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient client, IMapper mapper,
-        GrillBotCacheBuilder cacheBuilder)
+    public GuildApiService(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient client)
     {
         DatabaseBuilder = databaseBuilder;
         DiscordClient = client;
-        Mapper = mapper;
-        CacheBuilder = cacheBuilder;
-    }
-
-    public async Task<GuildDetail> GetDetailAsync(ulong id)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var dbGuild = await repository.Guild.FindGuildByIdAsync(id, true);
-        if (dbGuild == null) return null;
-
-        var detail = Mapper.Map<GuildDetail>(dbGuild);
-        var discordGuild = await DiscordClient.GetGuildAsync(id);
-        if (discordGuild == null)
-            return detail;
-
-        detail.DatabaseReport = await CreateDatabaseReportAsync(id);
-        detail = Mapper.Map(discordGuild, detail);
-        if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
-            detail.AdminChannel = Mapper.Map<Channel>(await discordGuild.GetChannelAsync(dbGuild.AdminChannelId.ToUlong()));
-
-        if (!string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
-            detail.EmoteSuggestionChannel = Mapper.Map<Channel>(await discordGuild.GetChannelAsync(dbGuild.EmoteSuggestionChannelId.ToUlong()));
-
-        if (!string.IsNullOrEmpty(dbGuild.BoosterRoleId))
-            detail.BoosterRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.BoosterRoleId.ToUlong()));
-
-        if (!string.IsNullOrEmpty(dbGuild.MuteRoleId))
-            detail.MutedRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.MuteRoleId.ToUlong()));
-
-        if (!string.IsNullOrEmpty(dbGuild.VoteChannelId))
-            detail.VoteChannel = Mapper.Map<Channel>(await discordGuild.GetChannelAsync(dbGuild.VoteChannelId.ToUlong()));
-
-        var guildUsers = await discordGuild.GetUsersAsync();
-        detail.UserStatusReport = guildUsers
-            .GroupBy(o => o.GetStatus())
-            .ToDictionary(o => o.Key, o => o.Count());
-
-        detail.ClientTypeReport = guildUsers
-            .Where(o => o.Status != UserStatus.Offline && o.Status != UserStatus.Invisible)
-            .SelectMany(o => o.ActiveClients)
-            .GroupBy(o => o)
-            .ToDictionary(o => o.Key, o => o.Count());
-
-        return detail;
-    }
-
-    private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var report = await repository.Guild.GetDatabaseReportDataAsync(guildId);
-
-        await using var cache = CacheBuilder.CreateRepository();
-        report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
-
-        return report;
     }
 
     public async Task<GuildDetail> UpdateGuildAsync(ulong id, UpdateGuildParams parameters, ModelStateDictionary modelState)
@@ -113,7 +48,7 @@ public class GuildApiService
 
         if (modelState.IsValid)
             await repository.CommitAsync();
-        return await GetDetailAsync(id);
+        return null;
     }
 
     private static void UpdateGuildEvents(Database.Entity.Guild guild, UpdateGuildParams parameters)

@@ -187,6 +187,9 @@
         "NewThreadPermissions": "",
         "ThreadsEnabledTesting": ""
       }
+    },
+    "GuildDetail": {
+      "NotFound": "Požadovaný server se nepodařilo najít."
     }
   },
   "MathModule": {

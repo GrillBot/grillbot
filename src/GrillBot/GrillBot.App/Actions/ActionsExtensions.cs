@@ -60,6 +60,7 @@ public static class ActionsExtensions
         // Guild
         services
             .AddScoped<Api.V1.Guild.GetAvailableGuilds>()
+            .AddScoped<Api.V1.Guild.GetGuildDetail>()
             .AddScoped<Api.V1.Guild.GetGuildList>()
             .AddScoped<Api.V1.Guild.GetRoles>();
 

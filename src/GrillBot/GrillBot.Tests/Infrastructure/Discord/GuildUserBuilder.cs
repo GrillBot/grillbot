@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Moq;
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -127,6 +126,20 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     {
         Mock.Setup(o => o.AvatarId).Returns(avatarId);
         Mock.Setup(o => o.DisplayAvatarId).Returns(avatarId);
+        return this;
+    }
+
+    public GuildUserBuilder SetActiveDevices(IEnumerable<ClientType> clients)
+    {
+        Mock.Setup(o => o.ActiveClients).Returns(clients.ToList().AsReadOnly());
+        return this;
+    }
+
+    public GuildUserBuilder SetStatus(UserStatus status, bool setActiveClients = true)
+    {
+        Mock.Setup(o => o.Status).Returns(status);
+        if (setActiveClients && status != UserStatus.Offline)
+            SetActiveDevices(new[] { ClientType.Desktop, ClientType.Mobile, ClientType.Web });
         return this;
     }
 }

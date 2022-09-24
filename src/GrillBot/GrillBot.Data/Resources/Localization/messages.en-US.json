@@ -187,6 +187,9 @@
         "NewThreadPermissions": "",
         "ThreadsEnabledTesting": ""
       }
+    },
+    "GuildDetail": {
+      "NotFound": "The requested server could not be found."
     }
   },
   "MathModule": {

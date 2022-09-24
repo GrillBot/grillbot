@@ -45,7 +45,7 @@ public class GuildController : Controller
     }
 
     /// <summary>
-    /// Gets detailed information about guild.
+    /// Get detailed information about guild.
     /// </summary>
     /// <param name="id">Guild ID</param>
     [HttpGet("{id}")]
@@ -53,11 +53,10 @@ public class GuildController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id)
     {
-        var guildDetail = await ApiService.GetDetailAsync(id);
-        if (guildDetail == null)
-            return NotFound(new MessageResponse("Nepodařilo se dohledat server."));
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetGuildDetail>();
+        var result = await action.ProcessAsync(id);
 
-        return Ok(guildDetail);
+        return Ok(result);
     }
 
     /// <summary>

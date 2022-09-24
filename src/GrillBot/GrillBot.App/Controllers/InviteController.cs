@@ -1,4 +1,6 @@
-﻿using GrillBot.App.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
+using GrillBot.App.Services;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Database.Models;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -13,15 +16,18 @@ namespace GrillBot.App.Controllers;
 [Route("api/invite")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class InviteController : Controller
 {
     private InviteService InviteService { get; }
     private ApiRequestContext Context { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public InviteController(InviteService inviteService, ApiRequestContext context)
+    public InviteController(InviteService inviteService, ApiRequestContext context, IServiceProvider serviceProvider)
     {
         InviteService = inviteService;
         Context = context;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -34,9 +40,10 @@ public class InviteController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromBody] GetInviteListParams parameters)
     {
-        this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-        var result = await InviteService.GetInviteListAsync(parameters);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.GetInviteList>();
+        var result = await action.ProcessAsync(parameters);
         return Ok(result);
     }
 

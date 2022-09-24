@@ -64,6 +64,10 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Guild.GetGuildList>()
             .AddScoped<Api.V1.Guild.GetRoles>()
             .AddScoped<Api.V1.Guild.UpdateGuild>();
+        
+        // Invite
+        services
+            .AddScoped<Api.V1.Invite.GetInviteList>();
 
         // User
         services

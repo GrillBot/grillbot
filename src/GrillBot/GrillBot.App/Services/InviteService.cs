@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Models.API.Invites;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services;
 
@@ -16,15 +13,13 @@ public class InviteService
 {
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
     private AuditLogWriter AuditLogWriter { get; }
     private InviteManager InviteManager { get; }
 
-    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, AuditLogWriter auditLogWriter, InviteManager inviteManager)
+    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, InviteManager inviteManager)
     {
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
         AuditLogWriter = auditLogWriter;
         InviteManager = inviteManager;
 
@@ -144,12 +139,4 @@ public class InviteService
 
     private async Task OnInviteCreated(IInviteMetadata invite)
         => await InviteManager.AddInviteAsync(invite);
-
-    public async Task<PaginatedResponse<GuildInvite>> GetInviteListAsync(GetInviteListParams parameters)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.Invite.GetInviteListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<GuildInvite>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<GuildInvite>(entity)));
-    }
 }

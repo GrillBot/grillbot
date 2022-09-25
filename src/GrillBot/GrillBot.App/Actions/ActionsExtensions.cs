@@ -82,6 +82,10 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Points.GetSummaries>()
             .AddScoped<Api.V1.Points.GetSummaryGraphData>()
             .AddScoped<Api.V1.Points.GetTransactionList>();
+        
+        // Reminder
+        services
+            .AddScoped<Api.V1.Reminder.GetReminderList>();
 
         // User
         services

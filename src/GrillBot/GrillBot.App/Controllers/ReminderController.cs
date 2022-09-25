@@ -1,5 +1,6 @@
-﻿using GrillBot.App.Services.Reminder;
-using GrillBot.Common.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
+using GrillBot.App.Services.Reminder;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Reminder;
@@ -8,21 +9,23 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/remind")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class ReminderController : Controller
 {
     private RemindApiService ApiService { get; }
-    private ApiRequestContext ApiRequestContext { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public ReminderController(RemindApiService apiService, ApiRequestContext apiRequestContext)
+    public ReminderController(RemindApiService apiService, IServiceProvider serviceProvider)
     {
         ApiService = apiService;
-        ApiRequestContext = apiRequestContext;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -36,17 +39,11 @@ public class ReminderController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromBody] GetReminderListParams parameters)
     {
-        if (ApiRequestContext.IsPublic())
-        {
-            parameters.ToUserId = ApiRequestContext.GetUserId().ToString();
-            parameters.OriginalMessageId = null;
+        ApiAction.Init(this, parameters);
 
-            if (string.Equals(parameters.Sort.OrderBy, "ToUser", StringComparison.InvariantCultureIgnoreCase))
-                parameters.Sort.OrderBy = "Id";
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.GetReminderList>();
+        var result = await action.ProcessAsync(parameters);
 
-        this.StoreParameters(parameters);
-        var result = await ApiService.GetListAsync(parameters);
         return Ok(result);
     }
 

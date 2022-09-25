@@ -1,38 +1,25 @@
-﻿using AutoMapper;
-using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Models.API.Reminder;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.Reminder;
 
 public class RemindApiService
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private RemindService RemindService { get; }
     private AuditLogWriter AuditLogWriter { get; }
 
-    public RemindApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, ApiRequestContext apiRequestContext,
+    public RemindApiService(GrillBotDatabaseBuilder databaseBuilder, ApiRequestContext apiRequestContext,
         RemindService remindService, AuditLogWriter auditLogWriter)
     {
         DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
         ApiRequestContext = apiRequestContext;
         RemindService = remindService;
         AuditLogWriter = auditLogWriter;
-    }
-
-    public async Task<PaginatedResponse<RemindMessage>> GetListAsync(GetReminderListParams parameters)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.Remind.GetRemindListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<RemindMessage>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<RemindMessage>(entity)));
     }
 
     /// <summary>

@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
-using GrillBot.App.Services.User.Points;
-using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Models;
@@ -19,14 +17,10 @@ namespace GrillBot.App.Controllers;
 [ExcludeFromCodeCoverage]
 public class PointsController : Controller
 {
-    private PointsApiService ApiService { get; }
-    private ApiRequestContext Context { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public PointsController(PointsApiService apiService, ApiRequestContext context, IServiceProvider serviceProvider)
+    public PointsController(IServiceProvider serviceProvider)
     {
-        ApiService = apiService;
-        Context = context;
         ServiceProvider = serviceProvider;
     }
 
@@ -110,7 +104,8 @@ public class PointsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<UserPointsItem>>> ComputeUserPointsAsync(ulong userId)
     {
-        var result = await ApiService.ComputeUserPointsAsync(userId, false);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.ComputeUserPoints>();
+        var result = await action.ProcessAsync(userId);
         return Ok(result);
     }
 
@@ -123,8 +118,8 @@ public class PointsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<UserPointsItem>>> ComputeLoggedUserPointsAsync()
     {
-        var userId = Context.GetUserId();
-        var result = await ApiService.ComputeUserPointsAsync(userId, true);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.ComputeUserPoints>();
+        var result = await action.ProcessAsync(null);
         return Ok(result);
     }
 }

@@ -71,8 +71,7 @@ public static class Extensions
             .AddScoped<Unverify.UnverifyApiService>();
 
         services
-            .AddSingleton<User.Points.PointsService>()
-            .AddScoped<User.Points.PointsApiService>();
+            .AddSingleton<User.Points.PointsService>();
         
         services
             .AddSingleton<User.UserService>()

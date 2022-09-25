@@ -85,6 +85,7 @@ public static class ActionsExtensions
         
         // Reminder
         services
+            .AddScoped<Api.V1.Reminder.CancelRemind>()
             .AddScoped<Api.V1.Reminder.GetReminderList>();
 
         // User

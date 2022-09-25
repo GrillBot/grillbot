@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Moq;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
@@ -75,6 +74,13 @@ public class UserBuilder : BuilderBase<IUser>
     public UserBuilder SetAvatar(string avatarId)
     {
         Mock.Setup(o => o.AvatarId).Returns(avatarId);
+        return this;
+    }
+
+    public UserBuilder SetSendMessageAction(IUserMessage message)
+    {
+        var dmChannel = new DmChannelBuilder().SetSendMessageAction(message).Build();
+        Mock.Setup(o => o.CreateDMChannelAsync(It.IsAny<RequestOptions>())).ReturnsAsync(dmChannel);
         return this;
     }
 }

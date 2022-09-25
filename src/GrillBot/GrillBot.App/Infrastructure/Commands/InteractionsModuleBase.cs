@@ -10,7 +10,13 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     private ITextsManager Texts { get; }
 
     protected string Locale
-        => Context?.Interaction?.UserLocale;
+    {
+        get
+        {
+            var locale = Context?.Interaction?.UserLocale ?? "";
+            return TextsManager.IsSupportedLocale(locale) ? locale : TextsManager.DefaultLocale;
+        }
+    }
 
     protected CultureInfo Culture
         => string.IsNullOrEmpty(Locale) ? null : Texts.GetCulture(Locale);

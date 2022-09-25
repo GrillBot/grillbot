@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
-using GrillBot.App.Services.Reminder;
-using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Reminder;
 using GrillBot.Database.Models;
@@ -19,12 +17,10 @@ namespace GrillBot.App.Controllers;
 [ExcludeFromCodeCoverage]
 public class ReminderController : Controller
 {
-    private RemindApiService ApiService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public ReminderController(RemindApiService apiService, IServiceProvider serviceProvider)
+    public ReminderController(IServiceProvider serviceProvider)
     {
-        ApiService = apiService;
         ServiceProvider = serviceProvider;
     }
 
@@ -62,18 +58,11 @@ public class ReminderController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Gone)]
     public async Task<ActionResult> CancelRemindAsync(long id, [FromQuery] bool notify = false)
     {
-        try
-        {
-            await ApiService.ServiceCancellationAsync(id, notify);
-            return Ok();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new MessageResponse(ex.Message));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return StatusCode((int)HttpStatusCode.Gone, new MessageResponse(ex.Message));
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.CancelRemind>();
+        await action.ProcessAsync(id, notify, true);
+
+        if (action.IsGone)
+            return StatusCode((int)HttpStatusCode.Gone, new MessageResponse(action.ErrorMessage));
+        return Ok();
     }
 }

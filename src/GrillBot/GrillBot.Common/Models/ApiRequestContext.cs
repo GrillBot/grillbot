@@ -19,7 +19,10 @@ public class ApiRequestContext
 
     public ulong GetUserId()
     {
-        var userId = LoggedUserData?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (LoggedUserData == null)
+            return LoggedUser?.Id ?? 0;
+
+        var userId = LoggedUserData.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return string.IsNullOrEmpty(userId) ? 0 : Convert.ToUInt64(userId);
     }
 

@@ -10,21 +10,20 @@ namespace GrillBot.Tests.App.Actions.Api.V2;
 public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
 {
     private static IConfiguration Configuration => TestServices.Configuration.Value;
-    private List<IUser> Users { get; set; }
+    private IUser[] Users { get; set; }
 
     protected override GetTodayBirthdayInfo CreateAction()
     {
-        Users = new List<IUser>
+        Users = new[]
         {
             new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build(),
             new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).Build()
         };
 
-        var clientBuilder = new ClientBuilder()
-            .SetGetGuildsAction(Enumerable.Empty<IGuild>());
-        foreach (var user in Users)
-            clientBuilder.SetGetUserAction(user);
-        var client = clientBuilder.Build();
+        var client = new ClientBuilder()
+            .SetGetGuildsAction(Enumerable.Empty<IGuild>())
+            .SetGetUserAction(Users)
+            .Build();
 
         var texts = new TextsBuilder()
             .AddText("BirthdayModule/Info/NoOneHave", "cs", "NoOneHave {0}")

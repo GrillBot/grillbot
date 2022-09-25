@@ -6,6 +6,7 @@ using GrillBot.App.Services.Reminder;
 using GrillBot.Common;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -14,10 +15,12 @@ namespace GrillBot.App.Modules.Interactions;
 public class RemindModule : InteractionsModuleBase
 {
     private RemindService RemindService { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public RemindModule(RemindService remindService, ITextsManager texts) : base(texts)
+    public RemindModule(RemindService remindService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
     {
         RemindService = remindService;
+        ServiceProvider = serviceProvider;
     }
 
     [SlashCommand("create", "Create a reminder for a specific date.")]
@@ -57,15 +60,15 @@ public class RemindModule : InteractionsModuleBase
         bool notify = false
     )
     {
-        try
-        {
-            await RemindService.CancelRemindAsync(id, Context.User, notify);
+        using var scope = ServiceProvider.CreateScope();
+        var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.CancelRemind>();
+        action.UpdateContext(Locale, Context.User);
+        await action.ProcessAsync(id, notify, false);
+
+        if (action.IsGone || !action.IsAuthorized)
+            await SetResponseAsync(action.ErrorMessage);
+        else
             await SetResponseAsync(GetText(nameof(CancelRemindAsync), notify ? "CancelledWithNotify" : "Cancelled"));
-        }
-        catch (ValidationException ex)
-        {
-            await SetResponseAsync(ex.Message);
-        }
     }
 
     [SlashCommand("list", "List of currently pending reminders.")]

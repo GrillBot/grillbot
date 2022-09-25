@@ -220,11 +220,28 @@
     },
     "CancelRemind": {
       "Cancelled": "The reminder was successfully canceled.",
-      "CancelledWithNotify": "The reminder was successfully canceled and the target user was notified."
+      "CancelledWithNotify": "The reminder was successfully canceled and the target user was notified.",
+      "NotFound": "The requested reminder was not found.",
+      "AlreadyCancelled": "You cannot cancel an already canceled reminder.",
+      "AlreadyNotified": "You cannot cancel a remind that has already been sent.",
+      "InvalidOperator": "A reminder can only be canceled by the person to whom it is addressed or who created it."
     },
     "Suggestions": {
       "Incoming": "Incoming #{0} ({1}) from user {2}",
       "Outgoing": "Outgoing #{0} ({2}) to user {2}"
+    },
+    "NotifyMessage": {
+      "ForceTitle": "You received a new reminder prematurely",
+      "Title": "You have a new reminder",
+      "Fields": {
+        "Id": "ID",
+        "From": "From",
+        "Attention": "ATTENTION",
+        "Message": "Message",
+        "Options": "Options"
+      },
+      "Postponed": "This reminder has already been snoozed {0}x",
+      "Options": "If you wish to postpone this reminder, click on the appropriate reaction according to the number of hours."
     }
   },
   "SearchingModule": {

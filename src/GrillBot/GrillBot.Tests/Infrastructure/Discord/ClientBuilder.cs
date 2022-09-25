@@ -42,4 +42,11 @@ public class ClientBuilder : BuilderBase<IDiscordClient>
         Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(x => x == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(user));
         return this;
     }
+
+    public ClientBuilder SetGetUserAction(IEnumerable<IUser> users)
+    {
+        foreach (var user in users)
+            SetGetUserAction(user);
+        return this;
+    }
 }

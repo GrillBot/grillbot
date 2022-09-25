@@ -3,7 +3,6 @@ using GrillBot.Tests.Infrastructure.Discord;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Discord;
-using GrillBot.Common.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.Reminder;
@@ -189,99 +188,6 @@ public class RemindServiceTests : ServiceTest<RemindService>
 
         await Repository.CommitAsync();
         await Service.CopyAsync(6, to);
-    }
-
-    [TestMethod]
-    [ExcludeFromCodeCoverage]
-    [ExpectedException(typeof(ValidationException))]
-    public async Task CancelRemindAsync_NotFound()
-    {
-        await Service.CancelRemindAsync(1, null);
-    }
-
-    [TestMethod]
-    [ExcludeFromCodeCoverage]
-    [ExpectedException(typeof(ValidationException))]
-    public async Task CancelRemindAsync_Finished()
-    {
-        var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
-
-        await Repository.User.GetOrCreateUserAsync(User);
-        await Repository.AddAsync(new Database.Entity.RemindMessage
-        {
-            At = DateTime.MinValue,
-            FromUserId = User.Id.ToString(),
-            ToUserId = User.Id.ToString(),
-            Message = "Message",
-            OriginalMessageId = "12345",
-            Id = 1
-        });
-
-        await Repository.CommitAsync();
-        await Service.CancelRemindAsync(1, middle);
-    }
-
-    [TestMethod]
-    [ExcludeFromCodeCoverage]
-    [ExpectedException(typeof(ValidationException))]
-    public async Task CancelRemindAsync_Finished2()
-    {
-        var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
-
-        await Repository.User.GetOrCreateUserAsync(User);
-        await Repository.AddAsync(new Database.Entity.RemindMessage
-        {
-            At = DateTime.Now.AddDays(3),
-            FromUserId = User.Id.ToString(),
-            ToUserId = User.Id.ToString(),
-            Message = "Message",
-            OriginalMessageId = "12345",
-            Id = 1,
-            RemindMessageId = "12345"
-        });
-        await Repository.CommitAsync();
-        await Service.CancelRemindAsync(1, middle);
-    }
-
-    [TestMethod]
-    [ExcludeFromCodeCoverage]
-    [ExpectedException(typeof(ValidationException))]
-    public async Task CancelRemindAsync_NoPerms()
-    {
-        var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
-
-        await Repository.User.GetOrCreateUserAsync(User);
-        await Repository.AddAsync(new Database.Entity.RemindMessage
-        {
-            At = DateTime.Now.AddDays(3),
-            FromUserId = User.Id.ToString(),
-            ToUserId = User.Id.ToString(),
-            Message = "Message",
-            OriginalMessageId = "12345",
-            Id = 1
-        });
-        await Repository.CommitAsync();
-        await Service.CancelRemindAsync(1, middle);
-    }
-
-    [TestMethod]
-    public async Task CancelRemindAsync_Success()
-    {
-        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
-
-        await Repository.User.GetOrCreateUserAsync(to);
-        await Repository.User.GetOrCreateUserAsync(User);
-        await Repository.AddAsync(new Database.Entity.RemindMessage
-        {
-            At = DateTime.Now.AddDays(3),
-            FromUserId = User.Id.ToString(),
-            ToUserId = User.Id.ToString(),
-            Message = "Message",
-            OriginalMessageId = "12345",
-            Id = 1
-        });
-        await Repository.CommitAsync();
-        await Service.CancelRemindAsync(1, User);
     }
 
     [TestMethod]

@@ -220,11 +220,28 @@
     },
     "CancelRemind": {
       "Cancelled": "Upozornění bylo úspěšně zrušeno.",
-      "CancelledWithNotify": "Upozornění bylo úspěšně zrušeno a cílový uživatel byl upozorněn."
+      "CancelledWithNotify": "Upozornění bylo úspěšně zrušeno a cílový uživatel byl upozorněn.",
+      "NotFound": "Požadované upozornění nebylo nalezeno.",
+      "AlreadyCancelled": "Nelze zrušit již zrušené upozornění.",
+      "AlreadyNotified": "Nelze zrušit již proběhlé upozornění.",
+      "InvalidOperator": "Upozornění může zrušit pouze ten, komu je určeno, nebo kdo jej založil."
     },
     "Suggestions": {
       "Incoming": "Příchozí #{0} ({1}) od uživatele {2}",
       "Outgoing": "Odchozí #{0} ({2}) pro uživatele {2}"
+    },
+    "NotifyMessage": {
+      "ForceTitle": "Máš předčasně nové upozornění",
+      "Title": "Máš nové upozornění",
+      "Fields": {
+        "Id": "ID",
+        "From": "Od",
+        "Attention": "POZOR",
+        "Message": "Zpráva",
+        "Options": "Možnosti"
+      },
+      "Postponed": "Toto upozornění bylo odloženo už {0}x",
+      "Options": "Pokud si přeješ toto upozornění posunout, tak klikni na příslušnou reakci podle počtu hodin."
     }
   },
   "SearchingModule": {

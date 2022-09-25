@@ -1,6 +1,4 @@
-﻿using Discord.Net;
-using GrillBot.App.Infrastructure;
-using GrillBot.Common;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
@@ -15,6 +13,7 @@ public class RemindService
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
+    private RemindHelper RemindHelper { get; }
 
     public RemindService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts)
     {
@@ -22,6 +21,7 @@ public class RemindService
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
+        RemindHelper = new RemindHelper(client, texts);
     }
 
     public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
@@ -116,90 +116,6 @@ public class RemindService
         await CreateRemindAsync(fromUser, toUser, original.At, original.Message, original.OriginalMessageId!.ToUlong());
     }
 
-    /// <summary>
-    /// Cancels remind.
-    /// </summary>
-    /// <param name="id">ID of remind</param>
-    /// <param name="user">Destination user</param>
-    /// <param name="notify">Send notifiaction before cancel.</param>
-    public async Task CancelRemindAsync(long id, IUser user, bool notify = false)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var remind = await repository.Remind.FindRemindByIdAsync(id);
-
-        if (remind == null)
-            throw new ValidationException("Upozornění nebylo nalezeno.");
-
-        if (!string.IsNullOrEmpty(remind.RemindMessageId))
-        {
-            if (remind.RemindMessageId == "0")
-                throw new ValidationException("Toto upozornění již bylo dříve zrušeno.");
-
-            throw new ValidationException("Toto upozornění již bylo odesláno.");
-        }
-
-        if (remind.FromUserId != user.Id.ToString() && remind.ToUserId != user.Id.ToString())
-            throw new ValidationException("Upozornění může zrušit pouze ten, komu je určeno, nebo kdo jej založil.");
-
-        ulong messageId = 0;
-        if (notify)
-            messageId = await SendNotificationMessageAsync(remind, true);
-
-        remind.RemindMessageId = messageId.ToString();
-        await repository.CommitAsync();
-    }
-
-    public async Task<ulong> SendNotificationMessageAsync(RemindMessage remind, bool force = false)
-    {
-        var embed = (await CreateRemindEmbedAsync(remind, force))?.Build();
-
-        if (embed == null)
-            return 0;
-
-        var toUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
-        try
-        {
-            if (toUser != null)
-                return (await toUser.SendMessageAsync(embed: embed)).Id;
-        }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-        {
-            // User have disabled DMs.
-            return 0;
-        }
-
-        return 0;
-    }
-
-    private async Task<EmbedBuilder> CreateRemindEmbedAsync(RemindMessage remind, bool force = false)
-    {
-        var embed = new EmbedBuilder()
-            .WithAuthor(DiscordClient.CurrentUser)
-            .WithColor(force ? Color.Gold : Color.Green)
-            .WithCurrentTimestamp()
-            .WithTitle(force ? "Máš předčasně nové upozornění." : "Máš nové upozornění.")
-            .AddField("ID", remind.Id, true);
-
-        if (remind.FromUserId != remind.ToUserId)
-        {
-            var fromUser = await DiscordClient.FindUserAsync(remind.FromUserId.ToUlong());
-
-            if (fromUser != null)
-                embed.AddField("Od", fromUser.GetFullName(), true);
-        }
-
-        if (remind.Postpone > 0)
-            embed.AddField("POZOR", $"Toto upozornění bylo odloženo už {remind.Postpone}x");
-
-        embed
-            .AddField("Zpráva", remind.Message);
-
-        if (!force)
-            embed.AddField("Možnosti", "Pokud si přeješ toto upozornění posunout, tak klikni na příslušnou reakci podle počtu hodin.");
-
-        return embed;
-    }
-
     public async Task<List<long>> GetRemindIdsForProcessAsync()
     {
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -213,27 +129,7 @@ public class RemindService
         var remind = await repository.Remind.FindRemindByIdAsync(id);
         if (remind == null) return;
 
-        var embed = (await CreateRemindEmbedAsync(remind)).Build();
-        var toUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
-
-        ulong messageId = 0;
-        try
-        {
-            if (toUser != null)
-            {
-                var msg = await toUser.SendMessageAsync(embed: embed);
-                var hourEmojis = Emojis.NumberToEmojiMap.Where(o => o.Key > 0).Select(o => o.Value);
-                await msg.AddReactionsAsync(hourEmojis.ToArray());
-
-                messageId = msg.Id;
-            }
-        }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-        {
-            // User have disabled DMs.
-        }
-
-        remind.RemindMessageId = messageId.ToString();
+        remind.RemindMessageId = await RemindHelper.ProcessRemindAsync(remind, false);
         await repository.CommitAsync();
     }
 

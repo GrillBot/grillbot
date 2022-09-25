@@ -52,8 +52,7 @@ public static class Extensions
             .AddSingleton<Permissions.PermissionsService>();
 
         services
-            .AddSingleton<Reminder.RemindService>()
-            .AddScoped<Reminder.RemindApiService>();
+            .AddSingleton<Reminder.RemindService>();
 
         services
             .AddSingleton<Suggestion.SuggestionSessionService>()

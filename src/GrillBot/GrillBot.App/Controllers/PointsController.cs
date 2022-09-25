@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Points;
@@ -55,9 +56,10 @@ public class PointsController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<PointsTransaction>>> GetTransactionListAsync([FromBody] GetPointTransactionsParams parameters)
     {
-        this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-        var result = await ApiService.GetTransactionListAsync(parameters);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.GetTransactionList>();
+        var result = await action.ProcessAsync(parameters);
         return Ok(result);
     }
 

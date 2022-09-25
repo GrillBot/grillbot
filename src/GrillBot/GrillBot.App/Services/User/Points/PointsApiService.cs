@@ -20,20 +20,6 @@ public class PointsApiService
         DiscordClient = discordClient;
     }
 
-    public async Task<PaginatedResponse<PointsTransaction>> GetTransactionListAsync(GetPointTransactionsParams parameters)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var transactions = await repository.Points.GetTransactionListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions, entity =>
-        {
-            var item = Mapper.Map<PointsTransaction>(entity);
-            if (entity.MergedItemsCount > 0)
-                item.MergeInfo = Mapper.Map<PointsMergeInfo>(entity);
-            return Task.FromResult(item);
-        });
-    }
-
     public async Task<PaginatedResponse<PointsSummary>> GetSummariesAsync(GetPointsSummaryParams parameters)
     {
         await using var repository = DatabaseBuilder.CreateRepository();

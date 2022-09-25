@@ -34,48 +34,6 @@ public class PointsControllerTests : ControllerTest<PointsController>
     }
 
     [TestMethod]
-    public async Task GetTransactionListAsync_WithoutFilter()
-    {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(new Database.Entity.PointsTransaction
-        {
-            Guild = Database.Entity.Guild.FromDiscord(Guild),
-            Points = 50,
-            AssingnedAt = DateTime.Now,
-            GuildId = Guild.Id.ToString(),
-            GuildUser = Database.Entity.GuildUser.FromDiscord(Guild, User),
-            ReactionId = "",
-            MessageId = Consts.MessageId.ToString(),
-            UserId = User.Id.ToString()
-        });
-        await Repository.CommitAsync();
-
-        var filter = new GetPointTransactionsParams
-        {
-            Sort = { Descending = false }
-        };
-        var result = await Controller.GetTransactionListAsync(filter);
-
-        CheckResult<OkObjectResult, PaginatedResponse<PointsTransaction>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetTransactionListAsync_WithFilter()
-    {
-        var filter = new GetPointTransactionsParams
-        {
-            AssignedAt = new RangeParams<DateTime?> { From = DateTime.MinValue, To = DateTime.MaxValue },
-            GuildId = Guild.Id.ToString(),
-            OnlyMessages = true,
-            OnlyReactions = true,
-            UserId = User.Id.ToString()
-        };
-
-        var result = await Controller.GetTransactionListAsync(filter);
-        CheckResult<OkObjectResult, PaginatedResponse<PointsTransaction>>(result);
-    }
-
-    [TestMethod]
     public async Task GetSummariesAsync_WithoutFilter()
     {
         await Repository.AddAsync(Database.Entity.User.FromDiscord(User));

@@ -79,6 +79,7 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Points.GetPointsLeaderboard>()
             .AddScoped<Api.V1.Points.GetSummaries>()
+            .AddScoped<Api.V1.Points.GetSummaryGraphData>()
             .AddScoped<Api.V1.Points.GetTransactionList>();
 
         // User

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums.Internal;
 
@@ -17,17 +16,6 @@ public class PointsApiService
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = discordClient;
-    }
-
-    public async Task<List<PointsSummaryBase>> GetGraphDataAsync(GetPointsSummaryParams parameters)
-    {
-        parameters.Sort.OrderBy = "Day";
-        parameters.Sort.Descending = false;
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.Points.GetGraphDataAsync(parameters);
-        return data.ConvertAll(o => Mapper.Map<PointsSummaryBase>(o));
     }
 
     public async Task<List<UserPointsItem>> ComputeUserPointsAsync(ulong userId, bool onlyMutualGuilds)

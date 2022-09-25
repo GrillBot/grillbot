@@ -74,9 +74,11 @@ public class PointsController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<PointsSummary>>> GetSummariesAsync([FromBody] GetPointsSummaryParams parameters)
     {
-        this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-        var result = await ApiService.GetSummariesAsync(parameters);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.GetSummaries>();
+        var result = await action.ProcessAsync(parameters);
+        
         return Ok(result);
     }
 

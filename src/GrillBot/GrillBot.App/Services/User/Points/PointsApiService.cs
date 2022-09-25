@@ -3,7 +3,6 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums.Internal;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.User.Points;
 
@@ -18,20 +17,6 @@ public class PointsApiService
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = discordClient;
-    }
-
-    public async Task<PaginatedResponse<PointsSummary>> GetSummariesAsync(GetPointsSummaryParams parameters)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var summaries = await repository.Points.GetSummaryListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<PointsSummary>.CopyAndMapAsync(summaries, entity =>
-        {
-            var item = Mapper.Map<PointsSummary>(entity);
-            if (entity.IsMerged)
-                item.MergeInfo = Mapper.Map<PointsMergeInfo>(entity);
-            return Task.FromResult(item);
-        });
     }
 
     public async Task<List<PointsSummaryBase>> GetGraphDataAsync(GetPointsSummaryParams parameters)

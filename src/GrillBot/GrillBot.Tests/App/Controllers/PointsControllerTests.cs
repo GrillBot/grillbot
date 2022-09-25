@@ -3,7 +3,6 @@ using GrillBot.App.Controllers;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Database.Models;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,41 +30,6 @@ public class PointsControllerTests : ControllerTest<PointsController>
 
         var apiService = new PointsApiService(DatabaseBuilder, TestServices.AutoMapper.Value, client);
         return new PointsController(apiService, ApiRequestContext, ServiceProvider);
-    }
-
-    [TestMethod]
-    public async Task GetSummariesAsync_WithoutFilter()
-    {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(new Database.Entity.PointsTransactionSummary
-        {
-            Day = DateTime.Now.Date,
-            Guild = Database.Entity.Guild.FromDiscord(Guild),
-            GuildId = Guild.Id.ToString(),
-            GuildUser = Database.Entity.GuildUser.FromDiscord(Guild, User),
-            MessagePoints = 50,
-            ReactionPoints = 50,
-            UserId = User.Id.ToString()
-        });
-        await Repository.CommitAsync();
-
-        var filter = new GetPointsSummaryParams();
-        var result = await Controller.GetSummariesAsync(filter);
-        CheckResult<OkObjectResult, PaginatedResponse<PointsSummary>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetSummariesAsync_WithFilter()
-    {
-        var filter = new GetPointsSummaryParams
-        {
-            Sort = { Descending = false },
-            Days = new RangeParams<DateTime?> { From = DateTime.MinValue, To = DateTime.MaxValue },
-            GuildId = Guild.Id.ToString(),
-            UserId = User.Id.ToString()
-        };
-        var result = await Controller.GetSummariesAsync(filter);
-        CheckResult<OkObjectResult, PaginatedResponse<PointsSummary>>(result);
     }
 
     [TestMethod]

@@ -74,6 +74,10 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Invite.GetInviteList>()
             .AddScoped<Api.V1.Invite.GetMetadataCount>()
             .AddScoped<Api.V1.Invite.RefreshMetadata>();
+        
+        // Points
+        services
+            .AddScoped<Api.V1.Points.GetPointsLeaderboard>();
 
         // User
         services

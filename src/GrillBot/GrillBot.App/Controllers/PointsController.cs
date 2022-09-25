@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Services.User.Points;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Services.User.Points;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
@@ -7,21 +8,25 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/user/points")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class PointsController : Controller
 {
     private PointsApiService ApiService { get; }
     private ApiRequestContext Context { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public PointsController(PointsApiService apiService, ApiRequestContext context)
+    public PointsController(PointsApiService apiService, ApiRequestContext context, IServiceProvider serviceProvider)
     {
         ApiService = apiService;
         Context = context;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -31,10 +36,11 @@ public class PointsController : Controller
     [HttpGet("board")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<UserPointsItem>>> GetPointsLeaderboardAsync()
     {
-        var result = await ApiService.GetPointsBoardAsync();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.GetPointsLeaderboard>();
+        var result = await action.ProcessAsync();
+
         return Ok(result);
     }
 

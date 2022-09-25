@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums.Internal;
@@ -13,14 +12,12 @@ public class PointsApiService
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
     private IDiscordClient DiscordClient { get; }
-    private ApiRequestContext ApiRequestContext { get; }
 
-    public PointsApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ApiRequestContext apiRequestContext)
+    public PointsApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = discordClient;
-        ApiRequestContext = apiRequestContext;
     }
 
     public async Task<PaginatedResponse<PointsTransaction>> GetTransactionListAsync(GetPointTransactionsParams parameters)
@@ -60,20 +57,6 @@ public class PointsApiService
 
         var data = await repository.Points.GetGraphDataAsync(parameters);
         return data.ConvertAll(o => Mapper.Map<PointsSummaryBase>(o));
-    }
-
-    public async Task<List<UserPointsItem>> GetPointsBoardAsync()
-    {
-        var result = new List<UserPointsItem>();
-        var mutualGuilds = (await DiscordClient.FindMutualGuildsAsync(ApiRequestContext.LoggedUser!.Id)).ConvertAll(o => o.Id.ToString());
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var data = await repository.Points.GetPointsBoardDataAsync(mutualGuilds);
-        if (data.Count > 0)
-            result.AddRange(Mapper.Map<List<UserPointsItem>>(data));
-
-        return result;
     }
 
     public async Task<List<UserPointsItem>> ComputeUserPointsAsync(ulong userId, bool onlyMutualGuilds)

@@ -29,8 +29,8 @@ public class PointsControllerTests : ControllerTest<PointsController>
             .SetGetUserAction(User)
             .Build();
 
-        var apiService = new PointsApiService(DatabaseBuilder, TestServices.AutoMapper.Value, client, ApiRequestContext);
-        return new PointsController(apiService, ApiRequestContext);
+        var apiService = new PointsApiService(DatabaseBuilder, TestServices.AutoMapper.Value, client);
+        return new PointsController(apiService, ApiRequestContext, ServiceProvider);
     }
 
     [TestMethod]
@@ -129,33 +129,6 @@ public class PointsControllerTests : ControllerTest<PointsController>
         var filter = new GetPointsSummaryParams();
         var result = await Controller.GetGraphDataAsync(filter);
         CheckResult<OkObjectResult, List<PointsSummaryBase>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetPointsLeaderboardAsync_WithoutData()
-    {
-        var result = await Controller.GetPointsLeaderboardAsync();
-        CheckResult<OkObjectResult, List<UserPointsItem>>(result);
-    }
-
-    [TestMethod]
-    public async Task GetPointsLeaderboardAsync_WithData()
-    {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(new Database.Entity.PointsTransactionSummary
-        {
-            Day = DateTime.Now,
-            GuildId = Guild.Id.ToString(),
-            Guild = Database.Entity.Guild.FromDiscord(Guild),
-            GuildUser = Database.Entity.GuildUser.FromDiscord(Guild, User),
-            MessagePoints = 50,
-            ReactionPoints = 50,
-            UserId = User.Id.ToString()
-        });
-        await Repository.CommitAsync();
-
-        var result = await Controller.GetPointsLeaderboardAsync();
-        CheckResult<OkObjectResult, List<UserPointsItem>>(result);
     }
 
     [TestMethod]

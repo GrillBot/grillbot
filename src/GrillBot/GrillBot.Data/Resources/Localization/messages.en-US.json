@@ -4,7 +4,9 @@
       "GenericError": "Selfunverify failed."
     },
     "Keepables": {
-      "Exists": "Keepable role or channel {0}/{1} already exists."
+      "Exists": "Keepable role or channel {0}/{1} already exists.",
+      "GroupNotExists": "The retainable role or channel group {0} does not exist.",
+      "NotExists": "Keepable role or channel {0}/{1} does not exist."
     }
   },
   "BirthdayModule": {

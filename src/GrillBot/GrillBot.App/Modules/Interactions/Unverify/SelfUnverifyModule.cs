@@ -10,13 +10,13 @@ namespace GrillBot.App.Modules.Interactions.Unverify;
 [RequireUserPerms]
 public class SelfUnverifyModule : InteractionsModuleBase
 {
-    private SelfunverifyService SelfunverifyService { get; }
     private IConfiguration Configuration { get; }
+    private UnverifyService UnverifyService { get; }
 
-    public SelfUnverifyModule(SelfunverifyService selfunverifyService, IConfiguration configuration, ITextsManager texts) : base(texts)
+    public SelfUnverifyModule(IConfiguration configuration, ITextsManager texts, UnverifyService unverifyService) : base(texts)
     {
-        SelfunverifyService = selfunverifyService;
         Configuration = configuration;
+        UnverifyService = unverifyService;
     }
 
     [SlashCommand("selfunverify", "Temporarily remove access to yourself on the server.")]
@@ -39,7 +39,8 @@ public class SelfUnverifyModule : InteractionsModuleBase
 
             end = end.AddMinutes(1); // Strinct checks are only in unverify.
             var toKeep = keepables.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(o => o.ToUpper()).ToList();
-            var result = await SelfunverifyService.ProcessSelfUnverifyAsync(Context.User, end, Context.Guild, toKeep, Locale);
+            var guildUser = Context.User as SocketGuildUser ?? Context.Guild.GetUser(Context.User.Id);
+            var result = await UnverifyService.SetUnverifyAsync(guildUser, end, null, Context.Guild, guildUser, true, toKeep, null, false, Locale);
             await SetResponseAsync(result);
         }
         catch (Exception ex)

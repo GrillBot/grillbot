@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Actions;
-using GrillBot.App.Services.Unverify;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
 using GrillBot.Common.Infrastructure;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,14 +14,13 @@ namespace GrillBot.App.Controllers;
 [Route("api/selfunverify/keep")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class SelfUnverifyController : Controller
 {
-    private SelfunverifyService SelfunverifyService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public SelfUnverifyController(SelfunverifyService selfunverifyService, IServiceProvider serviceProvider)
+    public SelfUnverifyController(IServiceProvider serviceProvider)
     {
-        SelfunverifyService = selfunverifyService;
         ServiceProvider = serviceProvider;
     }
 
@@ -66,7 +65,7 @@ public class SelfUnverifyController : Controller
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.KeepableExists>();
         var result = await action.ProcessAsync(parameters);
-        
+
         return Ok(result);
     }
 
@@ -80,16 +79,9 @@ public class SelfUnverifyController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> KeepableRemoveAsync(string group, string name = null)
     {
-        try
-        {
-            await SelfunverifyService.RemoveKeepableAsync(group, name);
-            return Ok();
-        }
-        catch (ValidationException ex)
-        {
-            ModelState.AddModelError("Exist", ex.Message);
-            var problemDetails = new ValidationProblemDetails(ModelState);
-            return BadRequest(problemDetails);
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.RemoveKeepables>();
+        await action.ProcessAsync(group, name);
+
+        return Ok();
     }
 }

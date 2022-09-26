@@ -66,7 +66,6 @@ public static class Extensions
             .AddSingleton<Unverify.UnverifyMessageGenerator>()
             .AddSingleton<Unverify.UnverifyProfileGenerator>()
             .AddSingleton<Unverify.UnverifyService>()
-            .AddSingleton<Unverify.SelfunverifyService>()
             .AddScoped<Unverify.UnverifyApiService>();
 
         services

@@ -4,7 +4,9 @@
       "GenericError": "Provedení selfunverify se nezdařilo."
     },
     "Keepables": {
-      "Exists": "Ponechatelná role nebo kanál {0}/{1} již existuje."
+      "Exists": "Ponechatelná role nebo kanál {0}/{1} již existuje.",
+      "GroupNotExists": "Skupina ponechatelných rolí nebo kanálů {0} neexistuje.",
+      "NotExists": "Ponechatelná role nebo kanál {0}/{1} neexistuje."
     }
   },
   "BirthdayModule": {

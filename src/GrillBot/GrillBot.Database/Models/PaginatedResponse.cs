@@ -88,23 +88,17 @@ public class PaginatedResponse<TModel>
 
     private static PaginatedResponse<TModel> CreateEmpty(PaginatedParams request)
     {
-        if (request.Page <= 1)
-            request.Page = 0;
-
         return new PaginatedResponse<TModel>
         {
-            Page = request.Page == 0 ? 1 : request.Page
+            Page = Math.Max(request.Page, 0)
         };
     }
 
     private static PaginatedResponse<TEntity> CreateEmptyWithEntity<TEntity>(PaginatedParams @params)
     {
-        if (@params.Page <= 1)
-            @params.Page = 0;
-
         return new PaginatedResponse<TEntity>
         {
-            Page = @params.Page == 0 ? 1 : @params.Page
+            Page = Math.Max(@params.Page, 0)
         };
     }
 

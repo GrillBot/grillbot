@@ -68,13 +68,13 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Guild.GetGuildList>()
             .AddScoped<Api.V1.Guild.GetRoles>()
             .AddScoped<Api.V1.Guild.UpdateGuild>();
-        
+
         // Invite
         services
             .AddScoped<Api.V1.Invite.GetInviteList>()
             .AddScoped<Api.V1.Invite.GetMetadataCount>()
             .AddScoped<Api.V1.Invite.RefreshMetadata>();
-        
+
         // Points
         services
             .AddScoped<Api.V1.Points.ComputeUserPoints>()
@@ -82,11 +82,15 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Points.GetSummaries>()
             .AddScoped<Api.V1.Points.GetSummaryGraphData>()
             .AddScoped<Api.V1.Points.GetTransactionList>();
-        
+
         // Reminder
         services
             .AddScoped<Api.V1.Reminder.CancelRemind>()
             .AddScoped<Api.V1.Reminder.GetReminderList>();
+
+        // Searching
+        services
+            .AddScoped<Api.V1.Searching.GetSearchingList>();
 
         // User
         services

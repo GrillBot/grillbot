@@ -1,10 +1,11 @@
-﻿using GrillBot.App.Services;
-using GrillBot.Common.Models;
+﻿using GrillBot.App.Actions;
+using GrillBot.App.Services;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -14,12 +15,12 @@ namespace GrillBot.App.Controllers;
 public class SearchingController : Controller
 {
     private SearchingService Service { get; }
-    private ApiRequestContext ApiRequestContext { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public SearchingController(SearchingService searchingService, ApiRequestContext apiRequestContext)
+    public SearchingController(SearchingService searchingService, IServiceProvider serviceProvider)
     {
         Service = searchingService;
-        ApiRequestContext = apiRequestContext;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -33,10 +34,11 @@ public class SearchingController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromBody] GetSearchingListParams parameters)
     {
-        this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-        var data = await Service.GetPaginatedListAsync(parameters, ApiRequestContext);
-        return Ok(data);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Searching.GetSearchingList>();
+        var result = await action.ProcessAsync(parameters);
+        return Ok(result);
     }
 
     /// <summary>

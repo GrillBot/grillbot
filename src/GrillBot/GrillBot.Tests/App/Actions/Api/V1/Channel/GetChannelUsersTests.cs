@@ -40,6 +40,6 @@ public class GetChannelUsersTests : ApiActionTest<GetChannelUsers>
         Assert.AreEqual(1, result.TotalItemsCount);
         Assert.IsFalse(result.CanNext);
         Assert.IsFalse(result.CanPrev);
-        Assert.AreEqual(1, result.Page);
+        Assert.AreEqual(0, result.Page);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using GrillBot.Common.Infrastructure;
 using Newtonsoft.Json;
@@ -15,7 +16,7 @@ public class PaginatedParams : IApiObject
     /// Page.
     /// </summary>
     [Range(0, int.MaxValue, ErrorMessage = "Číslo stránky je v neplatném rozsahu.")]
-    public int Page { get; set; } = 1;
+    public int Page { get; set; }
 
     /// <summary>
     /// Page size.
@@ -25,7 +26,7 @@ public class PaginatedParams : IApiObject
 
     [OpenApiIgnore]
     [JsonIgnore]
-    public int Skip => (Page == 0 ? 0 : Page - 1) * PageSize;
+    public int Skip => Math.Max(Page, 0) * PageSize;
 
     public Dictionary<string, string> SerializeForLog()
     {

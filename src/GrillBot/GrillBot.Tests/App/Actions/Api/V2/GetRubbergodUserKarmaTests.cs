@@ -43,8 +43,8 @@ public class GetRubbergodUserKarmaTests : ApiActionTest<GetRubbergodUserKarma>
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_MissingMetadata()
     {
-        // Karma|desc|karma|1
-        var parameters = new KarmaListParams();
+        // Karma|desc|karma|0
+        var parameters = new KarmaListParams { Pagination = { Page = 0 } };
         await Action.ProcessAsync(parameters);
     }
 
@@ -54,14 +54,14 @@ public class GetRubbergodUserKarmaTests : ApiActionTest<GetRubbergodUserKarma>
     public async Task ProcessAsync_MissingContent()
     {
         // Karma|desc|karma|2
-        var parameters = new KarmaListParams { Pagination = { Page = 2 } };
+        var parameters = new KarmaListParams { Pagination = { Page = 1 } };
         await Action.ProcessAsync(parameters);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
-        var parameters = new KarmaListParams { Pagination = { Page = 3 } };
+        var parameters = new KarmaListParams { Pagination = { Page = 2 } };
         var result = await Action.ProcessAsync(parameters);
 
         Assert.IsNotNull(result?.Data);

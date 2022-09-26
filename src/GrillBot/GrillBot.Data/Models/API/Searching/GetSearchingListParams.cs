@@ -26,10 +26,6 @@ public class GetSearchingListParams : IQueryableModel<SearchItem>, IApiObject
 
     public string MessageQuery { get; set; }
 
-    [JsonIgnore]
-    [OpenApiIgnore]
-    public List<string> MutualGuilds { get; set; }
-
     /// <summary>
     /// Available: Id, User, Guild, Channel
     /// Default: Id
@@ -61,9 +57,6 @@ public class GetSearchingListParams : IQueryableModel<SearchItem>, IApiObject
 
         if (!string.IsNullOrEmpty(MessageQuery))
             query = query.Where(o => o.MessageContent.Contains(MessageQuery));
-
-        if (MutualGuilds != null)
-            query = query.Where(o => MutualGuilds.Contains(o.GuildId));
 
         return query;
     }

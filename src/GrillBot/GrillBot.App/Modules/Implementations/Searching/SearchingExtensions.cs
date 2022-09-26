@@ -1,12 +1,13 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Data.Models;
+using GrillBot.Data.Models.API.Searching;
+using GrillBot.Database.Models;
 
 namespace GrillBot.App.Modules.Implementations.Searching;
 
 public static class SearchingExtensions
 {
-    public static EmbedBuilder WithSearching(this EmbedBuilder embed, List<SearchingItem> items, ITextChannel channel, IGuild guild, int page, IUser user,
+    public static EmbedBuilder WithSearching(this EmbedBuilder embed, PaginatedResponse<SearchingListItem> items, ITextChannel channel, IGuild guild, int page, IUser user,
         string messageQuery)
     {
         embed.WithFooter(user);
@@ -16,7 +17,7 @@ public static class SearchingExtensions
         embed.WithColor(Color.Blue);
         embed.WithCurrentTimestamp();
 
-        if (items.Count == 0)
+        if (items.TotalItemsCount == 0)
         {
             embed.WithDescription(
                 $"V kanálu {channel.GetMention()} zatím nikdo nic nehledá." +
@@ -25,8 +26,8 @@ public static class SearchingExtensions
         }
         else
         {
-            items.ForEach(o => embed.AddField(
-                $"**{o.Id}** - **{o.DisplayName}**",
+            items.Data.ForEach(o => embed.AddField(
+                $"**{o.Id}** - **{o.User.Username}**",
                 FixMessage(o.Message)
             ));
         }

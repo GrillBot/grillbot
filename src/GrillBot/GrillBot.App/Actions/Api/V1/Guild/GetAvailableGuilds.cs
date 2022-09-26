@@ -22,7 +22,7 @@ public class GetAvailableGuilds : ApiAction
 
         var filter = new GetGuildListParams
         {
-            Pagination = { Page = 1, PageSize = int.MaxValue }
+            Pagination = { Page = 0, PageSize = int.MaxValue }
         };
 
         await using var repository = DatabaseBuilder.CreateRepository();

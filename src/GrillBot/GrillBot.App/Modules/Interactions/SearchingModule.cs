@@ -5,6 +5,8 @@ using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Data.Models.API.Searching;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -13,10 +15,12 @@ namespace GrillBot.App.Modules.Interactions;
 public class SearchingModule : InteractionsModuleBase
 {
     private SearchingService SearchingService { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public SearchingModule(SearchingService searchingService, ITextsManager texts) : base(texts)
+    public SearchingModule(SearchingService searchingService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
     {
         SearchingService = searchingService;
+        ServiceProvider = serviceProvider;
     }
 
     [SlashCommand("list", "Current search.")]
@@ -29,9 +33,22 @@ public class SearchingModule : InteractionsModuleBase
     {
         channel ??= (ITextChannel)Context.Channel;
 
-        var list = await SearchingService.GetSearchListAsync(Context.Guild, channel, query, 0);
-        var count = await SearchingService.GetItemsCountAsync(Context.Guild, channel, query);
-        var pagesCount = (int)Math.Ceiling(count / (double)EmbedBuilder.MaxFieldCount);
+        var parameters = new GetSearchingListParams
+        {
+            Pagination = { Page = 0, PageSize = EmbedBuilder.MaxFieldCount },
+            Sort = { Descending = false, OrderBy = "Id" },
+            ChannelId = channel.Id.ToString(),
+            GuildId = Context.Guild.Id.ToString(),
+            MessageQuery = query
+        };
+
+        using var scope = ServiceProvider.CreateScope();
+
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Searching.GetSearchingList>();
+        action.UpdateContext(Locale, Context.User);
+        
+        var list = await action.ProcessAsync(parameters);
+        var pagesCount = (int)Math.Ceiling(list.TotalItemsCount / (double)EmbedBuilder.MaxFieldCount);
 
         var embed = new EmbedBuilder()
             .WithSearching(list, channel, Context.Guild, 0, Context.User, query);
@@ -44,7 +61,7 @@ public class SearchingModule : InteractionsModuleBase
     [ComponentInteraction("search:*", ignoreGroupNames: true)]
     public async Task HandleSearchingListPaginationAsync(int page)
     {
-        var handler = new SearchingPaginationHandler(SearchingService, Context.Client, page);
+        var handler = new SearchingPaginationHandler(Context.Client, ServiceProvider, page);
         await handler.ProcessAsync(Context);
     }
 

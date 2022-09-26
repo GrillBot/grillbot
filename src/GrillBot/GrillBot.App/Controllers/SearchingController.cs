@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.App.Services;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,12 +13,10 @@ namespace GrillBot.App.Controllers;
 [ApiExplorerSettings(GroupName = "v1")]
 public class SearchingController : Controller
 {
-    private SearchingService Service { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public SearchingController(SearchingService searchingService, IServiceProvider serviceProvider)
+    public SearchingController(IServiceProvider serviceProvider)
     {
-        Service = searchingService;
         ServiceProvider = serviceProvider;
     }
 
@@ -50,7 +47,8 @@ public class SearchingController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids)
     {
-        await Service.RemoveSearchesAsync(ids);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Searching.RemoveSearches>();
+        await action.ProcessAsync(ids);
         return Ok();
     }
 }

@@ -75,18 +75,6 @@ public class SearchingService
         await repository.CommitAsync();
     }
 
-    public async Task RemoveSearchesAsync(long[] ids)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var searches = await repository.Searching.FindSearchesByIdsAsync(ids);
-        if (searches.Count == 0)
-            return;
-
-        repository.RemoveCollection(searches);
-        await repository.CommitAsync();
-    }
-
     public async Task<Dictionary<long, string>> GenerateSuggestionsAsync(IGuildUser user, IGuild guild, IChannel channel, string locale)
     {
         var isBotAdmin = await UserService.CheckUserFlagsAsync(user, UserFlags.BotAdmin);

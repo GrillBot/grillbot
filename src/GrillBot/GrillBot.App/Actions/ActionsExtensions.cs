@@ -90,7 +90,8 @@ public static class ActionsExtensions
 
         // Searching
         services
-            .AddScoped<Api.V1.Searching.GetSearchingList>();
+            .AddScoped<Api.V1.Searching.GetSearchingList>()
+            .AddScoped<Api.V1.Searching.RemoveSearches>();
 
         // User
         services

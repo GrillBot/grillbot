@@ -64,7 +64,9 @@ public class SelfUnverifyController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<bool>> KeepableExistsAsync([FromQuery] KeepableParams parameters)
     {
-        var result = await SelfunverifyService.KeepableExistsAsync(parameters);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.KeepableExists>();
+        var result = await action.ProcessAsync(parameters);
+        
         return Ok(result);
     }
 

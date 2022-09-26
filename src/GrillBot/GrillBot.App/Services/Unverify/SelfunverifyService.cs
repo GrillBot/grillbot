@@ -1,5 +1,3 @@
-using GrillBot.Data.Models.API.Selfunverify;
-
 namespace GrillBot.App.Services.Unverify;
 
 public class SelfunverifyService
@@ -43,11 +41,5 @@ public class SelfunverifyService
         }
 
         await repository.CommitAsync();
-    }
-
-    public async Task<bool> KeepableExistsAsync(KeepableParams parameters)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.SelfUnverify.KeepableExistsAsync(parameters.Group, parameters.Name);
     }
 }

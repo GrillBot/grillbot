@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Services.Unverify;
-using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Tests.App.Controllers;
@@ -12,15 +11,6 @@ public class SelfUnverifyControllerTests : ControllerTest<SelfUnverifyController
     {
         var service = new SelfunverifyService(null, DatabaseBuilder);
         return new SelfUnverifyController(service, ServiceProvider);
-    }
-
-    [TestMethod]
-    public async Task KeepableExistsAsync()
-    {
-        var parameter = new KeepableParams { Group = "1BIT", Name = "IZP" };
-        var result = await Controller.KeepableExistsAsync(parameter);
-
-        CheckResult<OkObjectResult, bool>(result);
     }
 
     [TestMethod]

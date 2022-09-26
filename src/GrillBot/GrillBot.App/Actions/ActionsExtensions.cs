@@ -96,7 +96,8 @@ public static class ActionsExtensions
         // Unverify
         services
             .AddScoped<Api.V1.Unverify.AddKeepables>()
-            .AddScoped<Api.V1.Unverify.GetKeepablesList>();
+            .AddScoped<Api.V1.Unverify.GetKeepablesList>()
+            .AddScoped<Api.V1.Unverify.KeepableExists>();
 
         // User
         services

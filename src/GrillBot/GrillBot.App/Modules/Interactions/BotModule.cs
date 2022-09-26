@@ -1,10 +1,10 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions.Discord;
 using System.Diagnostics;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Common.Managers.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -46,17 +46,20 @@ public class BotModule : InteractionsModuleBase
     [Group("selfunverify", "Configuring selfunverify.")]
     public class SelfUnverifyConfig : InteractionsModuleBase
     {
-        private SelfunverifyService Service { get; }
+        private IServiceProvider ServiceProvider { get; }
 
-        public SelfUnverifyConfig(SelfunverifyService service, ITextsManager texts) : base(texts)
+        public SelfUnverifyConfig(ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
         {
-            Service = service;
+            ServiceProvider = serviceProvider;
         }
 
         [SlashCommand("list-keepables", "List of allowable accesses when selfunverify")]
         public async Task ListAsync(string group = null)
         {
-            var data = await Service.GetKeepablesAsync(group);
+            using var scope = ServiceProvider.CreateScope();
+            var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.GetKeepablesList>();
+            action.UpdateContext(Locale, Context.User);
+            var data = await action.ProcessAsync(group);
 
             if (data.Count == 0)
             {

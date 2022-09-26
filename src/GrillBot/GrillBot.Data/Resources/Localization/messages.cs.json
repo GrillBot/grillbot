@@ -2,6 +2,9 @@
   "SelfUnverifyModule": {
     "SelfUnverify": {
       "GenericError": "Provedení selfunverify se nezdařilo."
+    },
+    "Keepables": {
+      "Exists": "Ponechatelná role nebo kanál {0}/{1} již existuje."
     }
   },
   "BirthdayModule": {

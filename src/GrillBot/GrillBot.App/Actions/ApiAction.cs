@@ -17,8 +17,11 @@ public abstract class ApiAction
 
     public static void Init(Controller controller, IApiObject apiObject)
     {
-        controller.StoreParameters(apiObject);
+        Init(controller, new[] { apiObject });
     }
+
+    public static void Init(Controller controller, IApiObject[] apiObjects)
+        => controller.StoreParameters(apiObjects);    
 
     /// <summary>
     /// Manually update context. Use only if ApiAction is used in commands.

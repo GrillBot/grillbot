@@ -2,6 +2,9 @@
   "SelfUnverifyModule": {
     "SelfUnverify": {
       "GenericError": "Selfunverify failed."
+    },
+    "Keepables": {
+      "Exists": "Keepable role or channel {0}/{1} already exists."
     }
   },
   "BirthdayModule": {

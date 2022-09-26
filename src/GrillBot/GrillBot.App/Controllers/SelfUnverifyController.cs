@@ -1,10 +1,12 @@
-﻿using GrillBot.App.Services.Unverify;
+﻿using GrillBot.App.Actions;
+using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Infrastructure;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -15,10 +17,12 @@ namespace GrillBot.App.Controllers;
 public class SelfUnverifyController : Controller
 {
     private SelfunverifyService SelfunverifyService { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public SelfUnverifyController(SelfunverifyService selfunverifyService)
+    public SelfUnverifyController(SelfunverifyService selfunverifyService, IServiceProvider serviceProvider)
     {
         SelfunverifyService = selfunverifyService;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -29,12 +33,14 @@ public class SelfUnverifyController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, List<string>>>> GetKeepablesListAsync()
     {
-        var result = await SelfunverifyService.GetKeepablesAsync(null);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.GetKeepablesList>();
+        var result = await action.ProcessAsync(null);
+
         return Ok(result);
     }
 
     /// <summary>
-    /// Add new role or channel.
+    /// Add new keepable role or channel.
     /// </summary>
     /// <response code="200">Success</response>
     /// <response code="400">Validation failed</response>
@@ -43,18 +49,11 @@ public class SelfUnverifyController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> AddKeepableAsync([FromBody] List<KeepableParams> parameters)
     {
-        try
-        {
-            this.StoreParameters(parameters.OfType<IApiObject>().ToArray());
-            await SelfunverifyService.AddKeepablesAsync(parameters);
-            return Ok();
-        }
-        catch (ValidationException ex)
-        {
-            ModelState.AddModelError("Exist", ex.Message);
-            var problemDetails = new ValidationProblemDetails(ModelState);
-            return BadRequest(problemDetails);
-        }
+        ApiAction.Init(this, parameters.OfType<IApiObject>().ToArray());
+
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.AddKeepables>();
+        await action.ProcessAsync(parameters);
+        return Ok();
     }
 
     /// <summary>

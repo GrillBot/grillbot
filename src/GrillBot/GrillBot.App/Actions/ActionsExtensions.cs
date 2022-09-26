@@ -93,6 +93,11 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Searching.GetSearchingList>()
             .AddScoped<Api.V1.Searching.RemoveSearches>();
 
+        // Unverify
+        services
+            .AddScoped<Api.V1.Unverify.AddKeepables>()
+            .AddScoped<Api.V1.Unverify.GetKeepablesList>();
+
         // User
         services
             .AddScoped<Api.V1.User.GetAvailableUsers>();

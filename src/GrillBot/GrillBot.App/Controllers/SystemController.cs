@@ -1,11 +1,10 @@
-﻿using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
+﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -13,22 +12,14 @@ namespace GrillBot.App.Controllers;
 [Route("api/system")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class SystemController : Controller
 {
-    private IWebHostEnvironment Environment { get; }
-    private DiscordSocketClient DiscordClient { get; }
-    private InitManager InitManager { get; }
-    private CounterManager CounterManager { get; }
-    private EventManager EventManager { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public SystemController(IWebHostEnvironment environment, DiscordSocketClient discordClient,
-        InitManager initManager, CounterManager counterManager, EventManager eventManager)
+    public SystemController(IServiceProvider serviceProvider)
     {
-        Environment = environment;
-        DiscordClient = discordClient;
-        InitManager = initManager;
-        CounterManager = counterManager;
-        EventManager = eventManager;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -39,11 +30,10 @@ public class SystemController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult<DiagnosticsInfo> GetDiagnostics()
     {
-        var isActive = InitManager.Get();
-        var activeOperations = CounterManager.GetActiveCounters();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.System.GetDiagnostics>();
+        var result = action.Process();
 
-        var data = new DiagnosticsInfo(Environment.EnvironmentName, DiscordClient, isActive, activeOperations);
-        return Ok(data);
+        return Ok(result);
     }
 
     /// <summary>
@@ -54,7 +44,8 @@ public class SystemController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public ActionResult ChangeBotStatus(bool isActive)
     {
-        InitManager.Set(isActive);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.System.ChangeBotStatus>();
+        action.Process(isActive);
         return Ok();
     }
 
@@ -66,7 +57,8 @@ public class SystemController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<string[]> GetEventLog()
     {
-        var data = EventManager.GetEventLog();
-        return Ok(data);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.System.GetEventLog>();
+        var result = action.Process();
+        return Ok(result);
     }
 }

@@ -49,4 +49,10 @@ public class ClientBuilder : BuilderBase<IDiscordClient>
             SetGetUserAction(user);
         return this;
     }
+
+    public ClientBuilder SetConnectionState(ConnectionState state)
+    {
+        Mock.Setup(o => o.ConnectionState).Returns(state);
+        return this;
+    }
 }

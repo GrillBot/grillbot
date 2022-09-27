@@ -32,11 +32,6 @@ public class DiagnosticsInfo
     public TimeSpan CpuTime { get; set; }
 
     /// <summary>
-    /// Discord communication latency
-    /// </summary>
-    public TimeSpan Latency { get; set; }
-
-    /// <summary>
     /// Connection state to discord.
     /// </summary>
     public ConnectionState ConnectionState { get; set; }
@@ -69,12 +64,10 @@ public class DiagnosticsInfo
         CurrentDateTime = DateTime.Now;
     }
 
-    public DiagnosticsInfo(string environmentName, DiscordSocketClient discord, bool isActive,
-        Dictionary<string, int> activeOperations) : this()
+    public DiagnosticsInfo(string environmentName, ConnectionState connectionState, bool isActive, Dictionary<string, int> activeOperations) : this()
     {
         InstanceType = environmentName;
-        Latency = TimeSpan.FromMilliseconds(discord.Latency);
-        ConnectionState = discord.ConnectionState;
+        ConnectionState = connectionState;
         IsActive = isActive;
         ActiveOperations = activeOperations;
     }

@@ -103,6 +103,12 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Statistics.GetJobStatistics>()
             .AddScoped<Api.V1.Statistics.GetUnverifyStatistics>();
 
+        // System
+        services
+            .AddScoped<Api.V1.System.ChangeBotStatus>()
+            .AddScoped<Api.V1.System.GetDiagnostics>()
+            .AddScoped<Api.V1.System.GetEventLog>();
+
         // Unverify
         services
             .AddScoped<Api.V1.Unverify.AddKeepables>()

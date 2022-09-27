@@ -1,14 +1,10 @@
-﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.Cache.Services;
-using GrillBot.Common.Managers;
-using GrillBot.Data.Models.API.AuditLog.Filters;
+﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.Data.Models.API.Statistics;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -16,17 +12,14 @@ namespace GrillBot.App.Controllers;
 [Route("api/stats")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class StatisticsController : Controller
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private GrillBotCacheBuilder CacheBuilder { get; }
-    private EventManager EventManager { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public StatisticsController(GrillBotDatabaseBuilder databaseBuilder, GrillBotCacheBuilder cacheBuilder, EventManager eventManager)
+    public StatisticsController(IServiceProvider serviceProvider)
     {
-        DatabaseBuilder = databaseBuilder;
-        CacheBuilder = cacheBuilder;
-        EventManager = eventManager;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -35,25 +28,12 @@ public class StatisticsController : Controller
     /// <response code="200">Returns dictionary of database tables and records count. (TableName, Count)</response>
     [HttpGet("db")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetDbStatusAsync()
+    public async Task<ActionResult<DatabaseStatistics>> GetDbStatusAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.Statistics.GetTablesStatusAsync();
-        return Ok(data);
-    }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetDatabaseStatus>();
+        var result = await action.ProcessAsync();
 
-    /// <summary>
-    /// Get statistics of database cache tables.
-    /// </summary>
-    /// <response code="200">Returns dictonary of row counts in database tables in the cache database. (TableName, Count)</response>
-    [HttpGet("db/cache")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetDbCacheStatusAsync()
-    {
-        await using var cache = CacheBuilder.CreateRepository();
-
-        var statistics = await cache.StatisticsRepository.GetTableStatisticsAsync();
-        return Ok(statistics);
+        return Ok(result);
     }
 
     /// <summary>
@@ -64,14 +44,8 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsByTypeAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.AuditLog.GetStatisticsByTypeAsync();
-
-        var result = Enum.GetValues<AuditLogItemType>()
-            .Where(o => o != AuditLogItemType.None)
-            .Select(o => new { Key = o.ToString(), Value = data.TryGetValue(o, out var val) ? val : 0 })
-            .OrderByDescending(o => o.Value).ThenBy(o => o.Key)
-            .ToDictionary(o => o.Key, o => o.Value);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetAuditLogStatistics>();
+        var result = await action.ProcessByTypeAsync();
 
         return Ok(result);
     }
@@ -84,9 +58,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsByDateAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.AuditLog.GetStatisticsByDateAsync();
-        return Ok(data);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetAuditLogStatistics>();
+        var result = await action.ProcessByDateAsync();
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -96,39 +71,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<StatisticItem>>> GetTextCommandStatisticsAsync()
     {
-        var filterModel = new AuditLogListParams
-        {
-            Types = new List<AuditLogItemType> { AuditLogItemType.Command },
-            IgnoreBots = true,
-            Sort = null
-        };
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetCommandStatistics>();
+        var result = await action.ProcessTextCommandsAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.AuditLog.GetSimpleDataAsync(filterModel);
-
-        var deserializedData = data.Select(o => new
-        {
-            o.CreatedAt,
-            Data = JsonConvert.DeserializeObject<CommandExecution>(o.Data, AuditLogWriter.SerializerSettings)
-        });
-
-        var groupedData = deserializedData.Where(o => !string.IsNullOrEmpty(o.Data!.Command))
-            .GroupBy(o => o.Data.Command)
-            .Select(o => new StatisticItem
-            {
-                Key = o.Key,
-                FailedCount = o.Count(x => !x.Data!.IsSuccess),
-                Last = o.Max(x => x.CreatedAt),
-                SuccessCount = o.Count(x => x.Data!.IsSuccess),
-                MinDuration = o.Min(x => x.Data!.Duration),
-                MaxDuration = o.Max(x => x.Data!.Duration),
-                TotalDuration = o.Sum(x => x.Data!.Duration),
-                LastRunDuration = o.OrderByDescending(x => x.CreatedAt).Select(x => x.Data!.Duration).FirstOrDefault()
-            })
-            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
-            .ToList();
-
-        return Ok(groupedData);
+        return Ok(result);
     }
 
     /// <summary>
@@ -138,38 +84,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<StatisticItem>>> GetInteractionsStatusAsync()
     {
-        var filterModel = new AuditLogListParams
-        {
-            Types = new List<AuditLogItemType> { AuditLogItemType.InteractionCommand },
-            IgnoreBots = true,
-            Sort = null
-        };
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetCommandStatistics>();
+        var result = await action.ProcessInteractionsAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.AuditLog.GetSimpleDataAsync(filterModel);
-
-        var deserializedData = data.ConvertAll(o => new
-        {
-            o.CreatedAt,
-            Data = JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogWriter.SerializerSettings)
-        });
-
-        var groupedData = deserializedData.GroupBy(o => o.Data!.FullName)
-            .Select(o => new StatisticItem
-            {
-                Key = o.Key,
-                FailedCount = o.Count(x => !x.Data!.IsSuccess),
-                Last = o.Max(x => x.CreatedAt),
-                SuccessCount = o.Count(x => x.Data!.IsSuccess),
-                MinDuration = o.Min(x => x.Data!.Duration),
-                MaxDuration = o.Max(x => x.Data!.Duration),
-                TotalDuration = o.Sum(x => x.Data!.Duration),
-                LastRunDuration = o.OrderByDescending(x => x.CreatedAt).Select(x => x.Data!.Duration).FirstOrDefault()
-            })
-            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
-            .ToList();
-
-        return Ok(groupedData);
+        return Ok(result);
     }
 
     /// <summary>
@@ -180,15 +98,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByOperationAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var statistics = await repository.Unverify.GetStatisticsByTypeAsync();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetUnverifyStatistics>();
+        var result = await action.ProcessByOperationAsync();
 
-        var data = Enum.GetValues<UnverifyOperation>()
-            .Select(o => new { Key = o.ToString(), Value = statistics.TryGetValue(o, out var val) ? val : 0 })
-            .OrderByDescending(o => o.Value).ThenBy(o => o.Key)
-            .ToDictionary(o => o.Key, o => o.Value);
-
-        return Ok(data);
+        return Ok(result);
     }
 
     /// <summary>
@@ -199,9 +112,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByDateAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.Unverify.GetStatisticsByDateAsync();
-        return Ok(data);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetUnverifyStatistics>();
+        var result = await action.ProcessByDateAsync();
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -212,37 +126,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<StatisticItem>>> GetJobStatisticsAsync()
     {
-        var filterModel = new AuditLogListParams
-        {
-            Types = new List<AuditLogItemType> { AuditLogItemType.JobCompleted },
-            Sort = null
-        };
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetJobStatistics>();
+        var result = await action.ProcessAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var dbData = await repository.AuditLog.GetSimpleDataAsync(filterModel);
-
-        var data = dbData
-            .Select(o => new
-            {
-                o.CreatedAt,
-                Data = JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriter.SerializerSettings)
-            })
-            .GroupBy(o => o.Data!.JobName)
-            .Select(o => new StatisticItem
-            {
-                Key = o.Key,
-                FailedCount = o.Count(x => x.Data!.WasError),
-                Last = o.Max(x => x.CreatedAt),
-                MaxDuration = o.Max(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
-                MinDuration = o.Min(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
-                SuccessCount = o.Count(x => !x.Data!.WasError),
-                TotalDuration = o.Sum(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
-                LastRunDuration = o.OrderByDescending(x => x.CreatedAt).Select(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)).FirstOrDefault()
-            })
-            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
-            .ToList();
-
-        return Ok(data);
+        return Ok(result);
     }
 
     /// <summary>
@@ -253,9 +140,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByDateAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.AuditLog.GetApiRequestsByDateAsync();
-        return Ok(data);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetApiStatistics>();
+        var result = await action.ProcessByDateAsync();
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -266,39 +154,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<StatisticItem>>> GetApiRequestsByEndpointAsync()
     {
-        var filterModel = new AuditLogListParams
-        {
-            Types = new List<AuditLogItemType> { AuditLogItemType.Api },
-            Sort = null
-        };
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetApiStatistics>();
+        var result = await action.ProcessByEndpointAsync();
 
-        var dbData = await repository.AuditLog.GetSimpleDataAsync(filterModel);
-        var toProcess = dbData
-            .Select(o => new
-            {
-                o.CreatedAt,
-                Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)
-            })
-            .Where(o => !o.Data!.IsCorrupted());
-
-        var data = toProcess
-            .GroupBy(o => $"{o.Data!.Method} {o.Data.TemplatePath}")
-            .Select(o => new StatisticItem
-            {
-                Key = o.Key,
-                FailedCount = o.Count(x => Convert.ToInt32(x.Data!.StatusCode.Split(' ')[0]) >= 400),
-                Last = o.Max(x => x.CreatedAt),
-                MaxDuration = o.Max(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
-                MinDuration = o.Min(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
-                SuccessCount = o.Count(x => Convert.ToInt32(x.Data!.StatusCode.Split(' ')[0]) < 400),
-                TotalDuration = o.Sum(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)),
-                LastRunDuration = o.OrderByDescending(x => x.CreatedAt).Select(x => Convert.ToInt32((x.Data!.EndAt - x.Data.StartAt).TotalMilliseconds)).FirstOrDefault()
-            })
-            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
-            .ToList();
-
-        return Ok(data);
+        return Ok(result);
     }
 
     /// <summary>
@@ -309,36 +168,10 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByStatusCodeAsync()
     {
-        var filterModel = new AuditLogListParams
-        {
-            Types = new List<AuditLogItemType> { AuditLogItemType.Api },
-            Sort = null
-        };
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetApiStatistics>();
+        var result = await action.ProcessByStatusCodeAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var dbData = await repository.AuditLog.GetSimpleDataAsync(filterModel);
-        var toProcess = dbData
-            .Select(o => new
-            {
-                o.CreatedAt,
-                Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)
-            })
-            .Where(o => !o.Data!.IsCorrupted());
-
-        var data = toProcess
-            .Select(o => new
-            {
-                o.CreatedAt,
-                o.Data,
-                StatusCode = o.Data!.GetStatusCode()
-            })
-            .GroupBy(o => o.StatusCode)
-            .Select(o => new { o.Key, Count = o.Count() })
-            .OrderByDescending(o => o.Count).ThenBy(o => o.Key)
-            .ToDictionary(o => o.Key, o => o.Count);
-
-        return Ok(data);
+        return Ok(result);
     }
 
     /// <summary>
@@ -349,7 +182,9 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<Dictionary<string, ulong>> GetEventLogStatistics()
     {
-        var statistics = EventManager.GetStatistics();
-        return Ok(statistics);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetEventStatistics>();
+        var result = action.Process();
+        
+        return Ok(result);
     }
 }

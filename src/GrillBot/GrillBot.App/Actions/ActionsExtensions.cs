@@ -93,6 +93,16 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Searching.GetSearchingList>()
             .AddScoped<Api.V1.Searching.RemoveSearches>();
 
+        // Statistics
+        services
+            .AddScoped<Api.V1.Statistics.GetApiStatistics>()
+            .AddScoped<Api.V1.Statistics.GetAuditLogStatistics>()
+            .AddScoped<Api.V1.Statistics.GetCommandStatistics>()
+            .AddScoped<Api.V1.Statistics.GetDatabaseStatus>()
+            .AddScoped<Api.V1.Statistics.GetEventStatistics>()
+            .AddScoped<Api.V1.Statistics.GetJobStatistics>()
+            .AddScoped<Api.V1.Statistics.GetUnverifyStatistics>();
+
         // Unverify
         services
             .AddScoped<Api.V1.Unverify.AddKeepables>()

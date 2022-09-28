@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
@@ -101,7 +100,7 @@ public class ChannelService
     /// <summary>
     /// Finds last message from user in cache. If message wasn't found bot will use statistics and refresh cache and tries find message.
     /// </summary>
-    public async Task<IUserMessage> GetLastMsgFromUserAsync(SocketGuild guild, IUser loggedUser)
+    public async Task<IUserMessage> GetLastMsgFromUserAsync(IGuild guild, IUser loggedUser)
     {
         var lastCachedMsgFromAuthor = await MessageCache.GetLastMessageAsync(guild: guild, author: loggedUser);
         if (lastCachedMsgFromAuthor is IUserMessage lastMessage) return lastMessage;
@@ -115,7 +114,8 @@ public class ChannelService
             if (lastMessage != null) return lastMessage;
         }
 
-        return guild.TextChannels
+        var socketGuild = DiscordClient.GetGuild(guild.Id);
+        return socketGuild.TextChannels
             .SelectMany(o => o.CachedMessages)
             .Where(o => o.Author.Id == loggedUser.Id)
             .MaxBy(o => o.Id) as IUserMessage;

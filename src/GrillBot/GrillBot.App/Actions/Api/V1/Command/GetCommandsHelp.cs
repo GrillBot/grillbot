@@ -1,50 +1,48 @@
 ﻿using Discord.Commands;
-using GrillBot.Data.Models.API.Help;
 using GrillBot.App.Services.Channels;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
+using GrillBot.Common.Models;
+using GrillBot.Data.Models.API.Help;
 
-namespace GrillBot.App.Services.CommandsHelp;
+namespace GrillBot.App.Actions.Api.V1.Command;
 
-/// <summary>
-/// Service for generating commands for GrillBot commands.
-/// </summary>
-public class CommandsHelpService
+public class GetCommandsHelp : ApiAction
 {
-    private DiscordSocketClient DiscordClient { get; }
+    private IDiscordClient DiscordClient { get; }
     private CommandService CommandService { get; }
     private ChannelService ChannelService { get; }
     private IServiceProvider ServiceProvider { get; }
 
     private string Prefix { get; }
 
-    public CommandsHelpService(DiscordSocketClient discordClient, CommandService commandService, ChannelService channelService,
-        IServiceProvider provider, IConfiguration configuration)
+    public GetCommandsHelp(ApiRequestContext apiContext, IDiscordClient discordClient, CommandService commandService, ChannelService channelService, IServiceProvider serviceProvider,
+        IConfiguration configuration) : base(apiContext)
     {
         DiscordClient = discordClient;
         CommandService = commandService;
         ChannelService = channelService;
-        ServiceProvider = provider;
+        ServiceProvider = serviceProvider;
 
         Prefix = configuration.GetValue<string>("Discord:Commands:Prefix");
     }
 
-    public async Task<List<CommandGroup>> GetHelpAsync(ulong loggedUserId)
+    public async Task<List<CommandGroup>> ProcessAsync()
     {
-        var loggedUser = await DiscordClient.FindUserAsync(loggedUserId);
+        var loggedUser = await DiscordClient.FindUserAsync(ApiContext.GetUserId());
         var result = new List<CommandGroup>();
 
         foreach (var module in CommandService.Modules.Where(o => o.Commands.Count > 0))
         {
-            var group = await GetTextBasedGroupAsync(loggedUser, module);
+            var group = await ProcessGroupAsync(loggedUser, module);
             if (group != null) result.Add(group);
         }
 
         return result;
     }
 
-    private async Task<CommandGroup> GetTextBasedGroupAsync(IUser loggedUser, ModuleInfo module)
+    private async Task<CommandGroup> ProcessGroupAsync(IUser loggedUser, ModuleInfo module)
     {
         var group = new CommandGroup
         {
@@ -52,7 +50,8 @@ public class CommandsHelpService
             GroupName = module.Name
         };
 
-        foreach (var guild in DiscordClient.FindMutualGuilds(loggedUser.Id))
+        var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUser.Id);
+        foreach (var guild in mutualGuilds)
         {
             var lastMessage = await ChannelService.GetLastMsgFromUserAsync(guild, loggedUser);
             if (lastMessage == null) continue;

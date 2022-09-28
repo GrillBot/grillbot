@@ -3,6 +3,8 @@ using GrillBot.Data.Models.AuditLog;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using GrillBot.Database.Services;
 
 namespace GrillBot.Tests.TestHelpers;
 
@@ -25,6 +27,11 @@ public static class DiHelper
             .AddSingleton(TestServices.TestingEnvironment.Value);
 
         startup.ConfigureServices(services);
+        
+        var dbBuilder = services.FirstOrDefault(o => o.ServiceType == typeof(GrillBotDatabaseBuilder));
+        services.Remove(dbBuilder);
+        services.AddSingleton<GrillBotDatabaseBuilder>(TestServices.DatabaseBuilder.Value);
+        
         return services.BuildServiceProvider();
     }
 }

@@ -121,4 +121,10 @@ public class GuildBuilder : BuilderBase<IGuild>
         Mock.Setup(o => o.GetVanityInviteAsync(It.IsAny<RequestOptions>())).ReturnsAsync(invite);
         return this;
     }
+
+    public GuildBuilder SetGetCurrentUserAction(IGuildUser user)
+    {
+        Mock.Setup(o => o.GetCurrentUserAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
+        return this;
+    }
 }

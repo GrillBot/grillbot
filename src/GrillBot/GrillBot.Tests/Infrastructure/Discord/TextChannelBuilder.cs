@@ -59,6 +59,15 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
         return this;
     }
 
+    public TextChannelBuilder SetGetMessagesAsync(IMessage message)
+    {
+        var messages = new List<IMessage> { message }.AsReadOnly();
+        var data = new List<IReadOnlyCollection<IMessage>> { messages }.ToAsyncEnumerable();
+
+        Mock.Setup(o => o.GetMessagesAsync(It.IsAny<int>(), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(data);
+        return this;
+    }
+
     public TextChannelBuilder SetSendMessageAction(IUserMessage message)
     {
         Mock.Setup(o => o.SendMessageAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<Embed>(), It.IsAny<RequestOptions>(), It.IsAny<AllowedMentions>(), It.IsAny<MessageReference>(),

@@ -31,6 +31,7 @@ public static class ConfigurationHelper
                 { "Reminder:MinimalTimeMinutes", "15" },
                 { "Services:Rubbergod:Id", "123456789" },
                 { "Services:Rubbergod:AuthorizedChannelId", "987654321" },
+                { "Services:Rubbergod:HelpParserClass", "RubbergodHelpParser" },
                 { "WebAdmin:UserDetailLink", "http://grillbot/{0}" },
                 { "Discord:Emotes:Online", "<:Online:856875667379585034>" },
                 { "Discord:Emotes:Offline", "<:Offline:856875666842583040>" },

@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Actions;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api.V2;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Users;
@@ -7,8 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Data.Models.API.Help;
 using Microsoft.AspNetCore.Http;
-using GrillBot.App.Services.CommandsHelp;
-using GrillBot.Data.Exceptions;
 using GrillBot.App.Services.User;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Common.Models;
@@ -20,23 +19,13 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/user")]
 [ApiExplorerSettings(GroupName = "v1")]
+[ExcludeFromCodeCoverage]
 public class UsersController : Controller
 {
-    private CommandsHelpService HelpService { get; }
-    private ExternalCommandsHelpService ExternalCommandsHelpService { get; }
-    private UsersApiService ApiService { get; }
-    private ApiRequestContext ApiRequestContext { get; }
-    private UserHearthbeatService UserHearthbeatService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public UsersController(CommandsHelpService helpService, ExternalCommandsHelpService externalCommandsHelpService, UsersApiService apiService, ApiRequestContext apiRequestContext,
-        UserHearthbeatService userHearthbeatService, IServiceProvider serviceProvider)
+    public UsersController(IServiceProvider serviceProvider)
     {
-        HelpService = helpService;
-        ExternalCommandsHelpService = externalCommandsHelpService;
-        ApiService = apiService;
-        ApiRequestContext = apiRequestContext;
-        UserHearthbeatService = userHearthbeatService;
         ServiceProvider = serviceProvider;
     }
 
@@ -51,10 +40,12 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromBody] GetUserListParams parameters)
     {
+        ApiAction.Init(this, parameters);
         parameters.FixStatus();
-        this.StoreParameters(parameters);
 
-        var result = await ApiService.GetListAsync(parameters);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetUserList>();
+        var result = await action.ProcessAsync(parameters);
+
         return Ok(result);
     }
 
@@ -69,16 +60,14 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id)
     {
-        var result = await ApiService.GetUserDetailAsync(id);
-
-        if (result == null)
-            return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetUserDetail>();
+        var result = await action.ProcessAsync(id);
 
         return Ok(result);
     }
 
     /// <summary>
-    /// Gets data about currently logged user.
+    /// Get data about currently logged user.
     /// </summary>
     /// <response code="200">Success</response>
     /// <response code="404">User not found.</response>
@@ -89,20 +78,10 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
     {
-        var loggedUserId = ApiRequestContext.GetUserId();
-        var user = await GetUserDetailAsync(loggedUserId);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetUserDetail>();
+        var result = await action.ProcessSelfAsync();
 
-        switch (user.Result)
-        {
-            case NotFoundObjectResult:
-                return user;
-            // Remove private data. User not have permission to view this.
-            case OkObjectResult { Value: UserDetail userDetail }:
-                userDetail.RemoveSecretData();
-                return user;
-            default:
-                throw new InvalidOperationException("Při načítání aktuálně přihlášeného uživatele došlo k neočekávanému výstupu.");
-        }
+        return Ok(result);
     }
 
     /// <summary>
@@ -114,8 +93,9 @@ public class UsersController : Controller
     [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync()
     {
-        var loggedUserId = ApiRequestContext.GetUserId();
-        var result = await HelpService.GetHelpAsync(loggedUserId);
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetCommandsHelp>();
+        var result = await action.ProcessAsync();
+
         return Ok(result);
     }
 
@@ -131,17 +111,10 @@ public class UsersController : Controller
     [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service)
     {
-        try
-        {
-            var loggedUserId = ApiRequestContext.GetUserId();
-            service = char.ToUpper(service[0]) + service[1..].ToLower();
-            var result = await ExternalCommandsHelpService.GetHelpAsync(service, loggedUserId);
-            return Ok(result);
-        }
-        catch (GrillBotException ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new MessageResponse(ex.Message));
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetExternalCommands>();
+        var result = await action.ProcessAsync(service);
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -157,17 +130,12 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult> UpdateUserAsync(ulong id, [FromBody] UpdateUserParams parameters)
     {
-        try
-        {
-            this.StoreParameters(parameters);
+        ApiAction.Init(this, parameters);
 
-            await ApiService.UpdateUserAsync(id, parameters);
-            return Ok();
-        }
-        catch (NotFoundException)
-        {
-            return NotFound(new MessageResponse("Zadaný uživatel nebyl nalezen."));
-        }
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.UpdateUser>();
+        await action.ProcessAsync(id, parameters);
+
+        return Ok();
     }
 
     /// <summary>
@@ -181,7 +149,10 @@ public class UsersController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatOffAsync()
     {
-        await UserHearthbeatService.UpdateHearthbeatAsync(false, ApiRequestContext);
+        var service = ServiceProvider.GetRequiredService<UserHearthbeatService>();
+        var apiContext = ServiceProvider.GetRequiredService<ApiRequestContext>();
+
+        await service.UpdateHearthbeatAsync(false, apiContext);
         return Ok();
     }
 
@@ -197,10 +168,11 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
     {
-        var action = ServiceProvider.GetRequiredService<GetRubbergodUserKarma>();
         ApiAction.Init(this, parameters);
 
+        var action = ServiceProvider.GetRequiredService<GetRubbergodUserKarma>();
         var result = await action.ProcessAsync(parameters);
+
         return Ok(result);
     }
 

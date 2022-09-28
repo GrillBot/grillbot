@@ -20,7 +20,6 @@ public static class Extensions
             .AddSingleton<Birthday.BirthdayService>();
 
         services
-            .AddScoped<CommandsHelp.CommandsHelpService>()
             .AddScoped<CommandsHelp.ExternalCommandsHelpService>();
 
         services
@@ -72,7 +71,6 @@ public static class Extensions
         
         services
             .AddSingleton<User.UserService>()
-            .AddScoped<User.UsersApiService>()
             .AddScoped<User.UserHearthbeatService>();
 
         services

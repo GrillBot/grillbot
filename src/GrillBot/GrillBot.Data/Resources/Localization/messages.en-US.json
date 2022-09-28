@@ -343,5 +343,8 @@
   "ExplicitPerms": {
     "Conflict": "Explicit permission for command {0} ({1}) already exists.",
     "NotFound": "Explicit permission for command {0} ({1}) does not exist."
+  },
+  "User": {
+    "NotFound": "No user with this identifier was found."
   }
 }

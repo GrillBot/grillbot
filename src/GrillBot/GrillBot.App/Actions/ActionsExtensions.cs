@@ -48,8 +48,10 @@ public static class ActionsExtensions
         // Command
         services
             .AddScoped<Api.V1.Command.CreateExplicitPermission>()
+            .AddScoped<Api.V1.Command.GetCommandsHelp>()
             .AddScoped<Api.V1.Command.GetCommandsList>()
             .AddScoped<Api.V1.Command.GetExplicitPermissionList>()
+            .AddScoped<Api.V1.Command.GetExternalCommands>()
             .AddScoped<Api.V1.Command.RemoveExplicitPermission>()
             .AddScoped<Api.V1.Command.SetExplicitPermissionState>();
 
@@ -123,7 +125,10 @@ public static class ActionsExtensions
 
         // User
         services
-            .AddScoped<Api.V1.User.GetAvailableUsers>();
+            .AddScoped<Api.V1.User.GetAvailableUsers>()
+            .AddScoped<Api.V1.User.GetUserDetail>()
+            .AddScoped<Api.V1.User.GetUserList>()
+            .AddScoped<Api.V1.User.UpdateUser>();
 
         // V2
         services

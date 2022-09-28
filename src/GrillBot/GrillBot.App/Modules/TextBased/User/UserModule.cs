@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.User;
 using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
@@ -11,8 +12,6 @@ namespace GrillBot.App.Modules.TextBased.User;
 public class UserModule : ModuleBase
 {
     private UserService UserService { get; }
-
-    public const int UserAccessMaxCountPerPage = 15;
 
     public UserModule(UserService userService)
     {
@@ -35,5 +34,6 @@ public class UserModule : ModuleBase
     [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění v kanálech.")]
     [RequireUserPerms(GuildPermission.ManageRoles)]
     [TextCommandDeprecated(AlternativeCommand = "/user access", AdditionalMessage = "Případně lze příkaz zavolat i z kontextové nabídky uživatele.")]
+    [ExcludeFromCodeCoverage]
     public Task GetUsersAccessListAsync(params IGuildUser[] _) => Task.CompletedTask;
 }

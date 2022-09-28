@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using System.Net.Http;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using ConsoleTableExt;
 using Microsoft.Extensions.Caching.Memory;
 using GrillBot.Data.Models.Guilds;
@@ -197,6 +198,7 @@ public class ServerModule : ModuleBase
 
         [Command("info")]
         [TextCommandDeprecated(AlternativeCommand = "/guild info")]
+        [ExcludeFromCodeCoverage]
         public Task InfoAsync() => Task.CompletedTask;
 
         [Group("perms")]

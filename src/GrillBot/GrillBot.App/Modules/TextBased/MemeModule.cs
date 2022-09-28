@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Images;
 using GrillBot.Cache.Services.Managers;
@@ -56,6 +57,7 @@ public class MemeModule : ModuleBase
     [Command("kachna")]
     [Alias("duck")]
     [TextCommandDeprecated(AlternativeCommand = "/kachna")]
+    [ExcludeFromCodeCoverage]
     public Task GetDuckInfoAsync() => Task.CompletedTask;
 
     #region Hi
@@ -63,6 +65,7 @@ public class MemeModule : ModuleBase
     [Command("hi")]
     [Summary("Pozdraví uživatele")]
     [TextCommandDeprecated(AlternativeCommand = "/hi")]
+    [ExcludeFromCodeCoverage]
     public Task HiAsync(int? _ = null) => Task.CompletedTask; // Command was reimplemented to Slash command.
 
     #endregion

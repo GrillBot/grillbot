@@ -1,9 +1,11 @@
-﻿using Discord.Commands;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
 
+[ExcludeFromCodeCoverage]
 public class MathModule : ModuleBase
 {
     [Command("solve")]

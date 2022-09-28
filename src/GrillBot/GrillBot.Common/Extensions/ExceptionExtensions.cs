@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.ComponentModel.DataAnnotations;
+using Discord;
 using GrillBot.Common.Exceptions;
 using Commands = Discord.Commands;
 
@@ -17,4 +18,7 @@ public static class ExceptionExtensions
 
         return user ?? client.CurrentUser;
     }
+
+    public static ValidationException ToBadRequestValidation(this ValidationException exception, object? value, params string[] memberNames)
+        => new ValidationException(new ValidationResult(exception.Message, memberNames), null, value);
 }

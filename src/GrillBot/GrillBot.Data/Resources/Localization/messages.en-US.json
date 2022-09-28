@@ -304,6 +304,14 @@
       "ManuallyRemoveFailed": "Early rollback of access for user **{0}** failed. ({1})",
       "RemoveAccessUnverifyNotFound": "Unable to restore access early for user **{0}**. Unverify not found.",
       "UnverifyFailedToChannel": "Failed to temporarily remove access for user **{0}**. The user has been restored to their original state."
+    },
+    "GuildNotFound": "The server on which unverify should be located was not found.",
+    "DestUserNotFound": "The user to whom unverify should have been assigned was not found.",
+    "Recover": {
+      "LogItemNotFound": "A record of access removal was not found.",
+      "ValidUnverify": "Unable to restore access to the user because he currently has unverify in effect.",
+      "GuildNotFound": "Unable to find the server on which unverify was applied.",
+      "MemberNotFound": "Unable to locate user on guild {0}."
     }
   },
   "AuditLog": {

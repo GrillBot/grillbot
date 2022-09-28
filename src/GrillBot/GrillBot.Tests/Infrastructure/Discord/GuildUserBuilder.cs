@@ -142,4 +142,11 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
             SetActiveDevices(new[] { ClientType.Desktop, ClientType.Mobile, ClientType.Web });
         return this;
     }
+
+    public GuildUserBuilder SetSendMessageAction(IUserMessage message)
+    {
+        var dmChannel = new DmChannelBuilder().SetSendMessageAction(message).Build();
+        Mock.Setup(o => o.CreateDMChannelAsync(It.IsAny<RequestOptions>())).ReturnsAsync(dmChannel);
+        return this;
+    }
 }

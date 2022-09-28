@@ -45,11 +45,13 @@ public class UnverifyRepository : RepositoryBase
         }
     }
 
-    public async Task<PaginatedResponse<UnverifyLog>> GetLogsAsync(IQueryableModel<UnverifyLog> model, PaginatedParams pagination)
+    public async Task<PaginatedResponse<UnverifyLog>> GetLogsAsync(IQueryableModel<UnverifyLog> model, PaginatedParams pagination, List<string> mutualGuilds)
     {
         using (CreateCounter())
         {
             var query = CreateQuery(model, true);
+            if (mutualGuilds.Count > 0)
+                query = query.Where(o => mutualGuilds.Contains(o.GuildId));
             return await PaginatedResponse<UnverifyLog>.CreateWithEntityAsync(query, pagination);
         }
     }

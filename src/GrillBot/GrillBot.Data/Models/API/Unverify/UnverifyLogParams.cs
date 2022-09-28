@@ -47,10 +47,6 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
     /// </summary>
     public RangeParams<DateTime?> Created { get; set; }
 
-    [JsonIgnore]
-    [OpenApiIgnore]
-    public List<string> MutualGuilds { get; set; }
-
     /// <summary>
     /// Available: Operation, Guild, FromUser, ToUser, CreatedAt
     /// Default: CreatedAt.
@@ -81,17 +77,11 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
         if (!string.IsNullOrEmpty(ToUserId))
             query = query.Where(o => o.ToUserId == ToUserId);
 
-        if (Created != null)
-        {
-            if (Created.From != null)
-                query = query.Where(o => o.CreatedAt >= Created.From.Value);
+        if (Created?.From != null)
+            query = query.Where(o => o.CreatedAt >= Created.From.Value);
 
-            if (Created.To != null)
-                query = query.Where(o => o.CreatedAt <= Created.To.Value);
-        }
-
-        if (MutualGuilds != null)
-            query = query.Where(o => MutualGuilds.Contains(o.GuildId));
+        if (Created?.To != null)
+            query = query.Where(o => o.CreatedAt <= Created.To.Value);
 
         return query;
     }

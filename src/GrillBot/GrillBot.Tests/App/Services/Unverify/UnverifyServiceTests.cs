@@ -24,7 +24,7 @@ public class UnverifyServiceTests : ServiceTest<UnverifyService>
         var loggingManager = new LoggingManager(discordClient, commandsService, interactionService, TestServices.EmptyProvider.Value);
         var messageGenerator = new UnverifyMessageGenerator(texts);
 
-        return new UnverifyService(discordClient, checker, profileGenerator, logger, DatabaseBuilder, permissionsCleaner, loggingManager, texts, messageGenerator);
+        return new UnverifyService(discordClient, checker, profileGenerator, logger, DatabaseBuilder, permissionsCleaner, loggingManager, texts, messageGenerator, null);
     }
 
     [TestMethod]

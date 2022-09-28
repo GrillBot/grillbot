@@ -304,6 +304,14 @@
       "ManuallyRemoveFailed": "Předčasné vrácení přístupu pro uživatele **{0}** selhalo. ({1})",
       "RemoveAccessUnverifyNotFound": "Předčasné vrácení přístupu pro uživatele **{0}** nelze provést. Unverify nebylo nalezeno.",
       "UnverifyFailedToChannel": "Dočasné odebrání přístupu pro uživatele **{0}** se nezdařilo. Uživatel byl obnoven do původního stavu."
+    },
+    "GuildNotFound": "Server na kterém by se mělo nacházet unverify nebyl nalezen.",
+    "DestUserNotFound": "Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen.",
+    "Recover": {
+      "LogItemNotFound": "Záznam o provedeném odebrání přístupu nebyl nalezen.",
+      "ValidUnverify": "Nelze provést obnovení přístupu uživateli, protože má aktuálně platné unverify.",
+      "GuildNotFound": "Nelze najít server, na kterém bylo uděleno unverify.",
+      "MemberNotFound": "Nelze vyhledat uživatele na serveru {0}"
     }
   },
   "AuditLog": {

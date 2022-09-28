@@ -1,47 +1,55 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Models;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Actions.Api.V1.Unverify;
 
-public class UnverifyApiService
+public class GetLogs : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
-    private ApiRequestContext ApiRequestContext { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public UnverifyApiService(GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient,
-        ApiRequestContext apiRequestContext)
+    public GetLogs(ApiRequestContext apiContext, IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
     {
-        DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
         DiscordClient = discordClient;
-        ApiRequestContext = apiRequestContext;
+        Mapper = mapper;
+        DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<PaginatedResponse<UnverifyLogItem>> GetLogsAsync(UnverifyLogParams parameters)
+    public async Task<PaginatedResponse<UnverifyLogItem>> ProcessAsync(UnverifyLogParams parameters)
     {
-        if (ApiRequestContext.IsPublic())
-        {
-            var loggedUserId = ApiRequestContext.GetUserId();
-            var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(loggedUserId);
-
-            parameters.FromUserId = null;
-            parameters.ToUserId = loggedUserId.ToString();
-            parameters.MutualGuilds = mutualGuilds.ConvertAll(o => o.Id.ToString());
-        }
+        var mutualGuilds = await GetMutualGuildsAsync();
+        UpdatePublicAccess(parameters, mutualGuilds);
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var data = await repository.Unverify.GetLogsAsync(parameters, parameters.Pagination);
+        var data = await repository.Unverify.GetLogsAsync(parameters, parameters.Pagination, mutualGuilds);
         return await PaginatedResponse<UnverifyLogItem>.CopyAndMapAsync(data, MapItemAsync);
+    }
+
+    private async Task<List<string>> GetMutualGuildsAsync()
+    {
+        if (!ApiContext.IsPublic()) return new List<string>();
+
+        var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
+        return mutualGuilds.ConvertAll(o => o.Id.ToString());
+    }
+
+    private void UpdatePublicAccess(UnverifyLogParams parameters, ICollection<string> mutualGuilds)
+    {
+        if (!ApiContext.IsPublic()) return;
+
+        parameters.FromUserId = null;
+        parameters.ToUserId = ApiContext.GetUserId().ToString();
+        if (!string.IsNullOrEmpty(parameters.GuildId) && !mutualGuilds.Contains(parameters.GuildId))
+            parameters.GuildId = null;
     }
 
     private async Task<UnverifyLogItem> MapItemAsync(UnverifyLog entity)

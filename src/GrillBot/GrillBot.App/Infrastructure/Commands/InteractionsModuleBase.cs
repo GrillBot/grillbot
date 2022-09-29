@@ -10,7 +10,7 @@ namespace GrillBot.App.Infrastructure.Commands;
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
     protected bool CanDefer { get; set; } = true;
-    private ITextsManager Texts { get; }
+    protected ITextsManager Texts { get; }
     private IServiceProvider ServiceProvider { get; }
 
     protected string Locale

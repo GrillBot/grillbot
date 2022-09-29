@@ -346,5 +346,10 @@
   },
   "User": {
     "NotFound": "No user with this identifier was found."
+  },
+  "Emojization": {
+    "NoContent": "No content to convert was specified.",
+    "DuplicateChar": "Found duplicate ({0}).",
+    "Done": "Done"
   }
 }

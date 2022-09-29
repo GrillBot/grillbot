@@ -200,6 +200,26 @@
       "description": "Uživatel, který bude na obrázku. Pokud ho nezadáte, budete tam vy."
     }
   },
+  "emojize": {
+    "name": "emojize",
+    "description": "Vytvoření zprávy z emoji na základě textu.",
+    "message": {
+      "name": "zprava",
+      "description": "Zpráva k převodu. Může obsahovat emoty."
+    }
+  },
+  "rectjize": {
+    "name": "reactjize",
+    "description": "Převod textu do emoji a nastavení jako reakce.",
+    "message": {
+      "name": "zprava",
+      "description": "Zpráva k převodu. Může obsahovat emoty. Nesmí obsahovat duplicitní emoty/znaky."
+    },
+    "reference": {
+      "name": "reference",
+      "description": "Odkaz na zprávu, na kterou se mají dát reakce."
+    }
+  },
   "mock": {
     "name": "mock",
     "description": "Mockuje zadanou zprávu",

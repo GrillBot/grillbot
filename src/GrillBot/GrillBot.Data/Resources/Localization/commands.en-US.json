@@ -200,6 +200,26 @@
       "description": "The user who will be in the picture. If you don't enter it, you will be there."
     }
   },
+  "emojize": {
+    "name": "emojize",
+    "description": "Create a text-based emoji message.",
+    "message": {
+      "name": "zprava",
+      "description": "Transfer message. May contain emoticons."
+    }
+  },
+  "rectjize": {
+    "name": "reactjize",
+    "description": "Convert text to emoji and set as reaction.",
+    "message": {
+      "name": "zprava",
+      "description": "Transfer message. May contain emoticons. Must not contain duplicate emotes/characters."
+    },
+    "reference": {
+      "name": "reference",
+      "description": "Link to the message to be responded to."
+    }
+  },
   "mock": {
     "name": "mock",
     "description": "Mocks the specified message",

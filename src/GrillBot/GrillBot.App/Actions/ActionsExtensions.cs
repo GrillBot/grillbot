@@ -142,7 +142,8 @@ public static class ActionsExtensions
     private static IServiceCollection AddCommandsActions(this IServiceCollection services)
     {
         services
-            .AddScoped<Commands.ImageCreator>();
+            .AddScoped<Commands.ImageCreator>()
+            .AddScoped<Commands.Emojization>();
         
         return services;
     }

@@ -346,5 +346,10 @@
   },
   "User": {
     "NotFound": "Uživatel s tímto identifikátorem nebyl nalezen."
+  },
+  "Emojization": {
+    "NoContent": "Nebyl zadán žádný obsah k převodu.",
+    "DuplicateChar": "Nalezena duplicita ({0}).,",
+    "Done": "Hotovo"
   }
 }

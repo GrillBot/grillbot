@@ -115,30 +115,7 @@ public static class Emojis
         { 'X', Nok }
     };
 
-    public static List<Emoji> ConvertStringToEmoji(string str, bool allowDuplicity = false)
-    {
-        str = str.ToUpper();
-
-        var result = new List<Emoji>();
-        foreach (var character in str)
-        {
-            var emoji = ConvertCharacterToEmoji(character);
-
-            if (emoji == null || (result.Contains(emoji) && !allowDuplicity))
-                emoji = ConvertCharacterToEmoji(character, true);
-
-            if (emoji == null) continue;
-
-            if (result.Contains(emoji) && !allowDuplicity)
-                throw new ArgumentException($"Duplicitní znak `{character}`.");
-
-            result.Add(emoji);
-        }
-
-        return result;
-    }
-
-    private static Emoji? ConvertCharacterToEmoji(char character, bool alternativeFirst = false)
+    public static Emoji? ConvertCharacterToEmoji(char character, bool alternativeFirst = false)
     {
         if (char.IsDigit(character) && NumberToEmojiMap.ContainsKey((int)char.GetNumericValue(character)))
             return NumberToEmojiMap[(int)char.GetNumericValue(character)];

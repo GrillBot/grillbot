@@ -1,13 +1,17 @@
-﻿using Discord.Interactions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
+[ExcludeFromCodeCoverage]
 public class MemeModule : InteractionsModuleBase
 {
     private RandomizationService RandomizationService { get; }
@@ -57,5 +61,46 @@ public class MemeModule : InteractionsModuleBase
         var result = await command.Command.PeepoangryAsync(user);
 
         await FollowupWithFileAsync(result);
+    }
+
+    [SlashCommand("emojize", "Emojization")]
+    public async Task EmojizeAsync(string message)
+    {
+        using var command = GetCommand<Actions.Commands.Emojization>();
+
+        try
+        {
+            var result = command.Command.Process(message);
+            await SetResponseAsync(result);
+        }
+        catch (Exception ex) when (ex is ValidationException or GrillBotException)
+        {
+            await SetResponseAsync(ex.Message);
+        }
+    }
+
+    [MessageCommand("Emojize")]
+    public async Task EmojizeAsync(IMessage message)
+        => await EmojizeAsync(message.Content);
+
+    [SlashCommand("reactjize", "Reactjize")]
+    [SuppressDefer]
+    [RequireBotPermission(ChannelPermission.AddReactions)]
+    public async Task ReactjizeAsync(string message, IMessage reference)
+    {
+        await DeferAsync(ephemeral: true);
+        using var command = GetCommand<Actions.Commands.Emojization>();
+
+        try
+        {
+            var emotes = command.Command.ProcessForReacts(message, 20);
+            foreach (var emote in emotes)
+                await reference.AddReactionAsync(emote);
+            await SetResponseAsync(Texts["Emojization/Done", Locale]);
+        }
+        catch (Exception ex) when (ex is ValidationException or GrillBotException)
+        {
+            await SetResponseAsync(ex.Message, secret: true);
+        }
     }
 }

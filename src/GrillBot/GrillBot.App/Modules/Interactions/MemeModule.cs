@@ -13,7 +13,7 @@ public class MemeModule : InteractionsModuleBase
     private RandomizationService RandomizationService { get; }
     private IConfiguration Configuration { get; }
 
-    public MemeModule(RandomizationService randomizationService, IConfiguration configuration, ITextsManager texts) : base(texts)
+    public MemeModule(RandomizationService randomizationService, IConfiguration configuration, ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
     {
         RandomizationService = randomizationService;
         Configuration = configuration;

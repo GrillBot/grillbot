@@ -17,7 +17,7 @@ public sealed class PeepoangryRenderer : RendererBase, IDisposable
         AngryPeepo = new MagickImage(PeepoangryResources.peepoangry);
     }
 
-    public override async Task<string> RenderAsync(IUser user, ICommandContext commandContext)
+    public async Task<string> RenderAsync(IUser user, IGuild guild)
     {
         var filename = user.CreateProfilePicFilename(64);
         var file = await Cache.GetFileInfoAsync("Peepoangry", filename);
@@ -26,7 +26,7 @@ public sealed class PeepoangryRenderer : RendererBase, IDisposable
             return file.FullName;
 
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 64);
-        if (profilePicture.IsAnimated && !CanProcessGif(profilePicture, commandContext.Guild))
+        if (profilePicture.IsAnimated && !CanProcessGif(profilePicture, guild))
         {
             filename = Path.ChangeExtension(filename, ".png");
             file = await Cache.GetFileInfoAsync("Peepoangry", filename);

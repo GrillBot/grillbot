@@ -1,10 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Commands;
+﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
-using GrillBot.App.Services.Images;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Common;
-using GrillBot.Common.FileStorage;
 using GrillBot.Common.Helpers;
 using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
@@ -14,51 +10,25 @@ namespace GrillBot.App.Modules.TextBased;
 [RequireUserPerms]
 public class MemeModule : ModuleBase
 {
-    private FileStorageFactory FileStorageFactory { get; }
-    private ProfilePictureManager ProfilePictureManager { get; }
-
-    public MemeModule(FileStorageFactory fileStorage, ProfilePictureManager profilePictureManager)
-    {
-        FileStorageFactory = fileStorage;
-        ProfilePictureManager = profilePictureManager;
-    }
-
     [Command("peepolove")]
     [Alias("love")]
     [TextCommandDeprecated(AlternativeCommand = "/peepolove")]
     public Task PeepoloveAsync(IUser user = null) => Task.CompletedTask;
 
-    #region Peepoangry
-
     [Command("peepoangry")]
     [Alias("angry")]
-    [Summary("Naštvaně zírající peepo.")]
-    public async Task PeepoangryAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
-    {
-        user ??= Context.User;
-        using var renderer = new PeepoangryRenderer(FileStorageFactory, ProfilePictureManager);
-        var path = await renderer.RenderAsync(user, Context);
-
-        await ReplyFileAsync(path, false);
-    }
-
-    #endregion
+    [TextCommandDeprecated(AlternativeCommand = "/peepoangry")]
+    public Task PeepoangryAsync(IUser user = null) => Task.CompletedTask;
 
     [Command("kachna")]
     [Alias("duck")]
     [TextCommandDeprecated(AlternativeCommand = "/kachna")]
-    [ExcludeFromCodeCoverage]
     public Task GetDuckInfoAsync() => Task.CompletedTask;
-
-    #region Hi
 
     [Command("hi")]
     [Summary("Pozdraví uživatele")]
     [TextCommandDeprecated(AlternativeCommand = "/hi")]
-    [ExcludeFromCodeCoverage]
     public Task HiAsync(int? _ = null) => Task.CompletedTask; // Command was reimplemented to Slash command.
-
-    #endregion
 
     #region Emojization
 

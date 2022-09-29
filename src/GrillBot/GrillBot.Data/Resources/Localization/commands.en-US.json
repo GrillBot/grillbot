@@ -188,7 +188,15 @@
     "name": "peepolove",
     "description": "Generates an image where the peepo hugs the user.",
     "user": {
-      "name": "uzivatel",
+      "name": "user",
+      "description": "The user who will be in the picture. If you don't enter it, you will be there."
+    }
+  },
+  "peepoangry": {
+    "name": "peepoangry",
+    "description": "It will generate an image with an angry peepo staring at you.",
+    "user": {
+      "name": "user",
       "description": "The user who will be in the picture. If you don't enter it, you will be there."
     }
   },

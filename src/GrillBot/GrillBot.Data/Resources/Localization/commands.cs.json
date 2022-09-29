@@ -192,6 +192,14 @@
       "description": "Uživatel, který bude na obrázku. Pokud ho nezadáte, budete tam vy."
     }
   },
+  "peepoangry": {
+    "name": "peepoangry",
+    "description": "Vygeneruje obrázek, kde na tebe bude zírat naštvaný peepo.",
+    "user": {
+      "name": "uzivatel",
+      "description": "Uživatel, který bude na obrázku. Pokud ho nezadáte, budete tam vy."
+    }
+  },
   "mock": {
     "name": "mock",
     "description": "Mockuje zadanou zprávu",

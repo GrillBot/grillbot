@@ -27,6 +27,7 @@ tests:
   image: mcr.microsoft.com/dotnet/sdk:6.0
   stage: Unit tests
   script:
+    - "apt-get update && echo 'msttcorefonts msttcorefonts/accepted-mscorefonts-eula select true' | debconf-set-selections && apt-get install -y --allow-unauthenticated ttf-mscorefonts-installer*"
     - "dotnet restore $SOURCE_CODE_PATH --packages $NUGET_PACKAGES_DIRECTORY"
     - 'dotnet test $SOURCE_CODE_PATH --no-restore --test-adapter-path:. --logger:"junit;LogFilePath=..\artifacts\{assembly}-test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"'
   artifacts:

@@ -23,20 +23,10 @@ public class MemeModule : ModuleBase
         ProfilePictureManager = profilePictureManager;
     }
 
-    #region Peepolove
-
     [Command("peepolove")]
     [Alias("love")]
-    public async Task PeepoloveAsync([Name("id/tag/jmeno_uzivatele")] IUser user = null)
-    {
-        user ??= Context.User;
-        using var renderer = new PeepoloveRenderer(FileStorageFactory, ProfilePictureManager);
-        var path = await renderer.RenderAsync(user, Context);
-
-        await ReplyFileAsync(path, false);
-    }
-
-    #endregion
+    [TextCommandDeprecated(AlternativeCommand = "/peepolove")]
+    public Task PeepoloveAsync(IUser user = null) => Task.CompletedTask;
 
     #region Peepoangry
 

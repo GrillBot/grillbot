@@ -38,4 +38,24 @@ public class MemeModule : InteractionsModuleBase
 
         return SetResponseAsync(@base == null ? msg : string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));
     }
+
+    [SlashCommand("peepolove", "Peepolove")]
+    [UserCommand("Peepolove")]
+    public async Task PeepoloveAsync(IUser user = null)
+    {
+        using var command = GetCommand<Actions.Commands.ImageCreator>();
+        var result = await command.Command.PeepoloveAsync(user);
+
+        await FollowupWithFileAsync(result);
+    }
+
+    [SlashCommand("peepoangry", "Angry peepo")]
+    [UserCommand("Peepoangry")]
+    public async Task PeepoangryAsync(IUser user = null)
+    {
+        using var command = GetCommand<Actions.Commands.ImageCreator>();
+        var result = await command.Command.PeepoangryAsync(user);
+
+        await FollowupWithFileAsync(result);
+    }
 }

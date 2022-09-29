@@ -184,6 +184,14 @@
       }
     }
   },
+  "peepolove": {
+    "name": "peepolove",
+    "description": "Generates an image where the peepo hugs the user.",
+    "user": {
+      "name": "uzivatel",
+      "description": "The user who will be in the picture. If you don't enter it, you will be there."
+    }
+  },
   "mock": {
     "name": "mock",
     "description": "Mocks the specified message",

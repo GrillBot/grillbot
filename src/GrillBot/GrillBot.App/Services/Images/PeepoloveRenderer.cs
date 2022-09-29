@@ -19,7 +19,7 @@ public sealed class PeepoloveRenderer : RendererBase, IDisposable
         Hands = new MagickImage(PeepoloveResources.Hands);
     }
 
-    public override async Task<string> RenderAsync(IUser user, ICommandContext commandContext)
+    public async Task<string> RenderAsync(IUser user, IGuild guild)
     {
         var filename = user.CreateProfilePicFilename(256);
         var file = await Cache.GetFileInfoAsync("Peepolove", filename);
@@ -28,7 +28,7 @@ public sealed class PeepoloveRenderer : RendererBase, IDisposable
             return file.FullName;
 
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
-        if (profilePicture.IsAnimated && !CanProcessGif(profilePicture, commandContext.Guild))
+        if (profilePicture.IsAnimated && !CanProcessGif(profilePicture, guild))
         {
             filename = Path.ChangeExtension(filename, ".png");
             file = await Cache.GetFileInfoAsync("Peepolove", filename);

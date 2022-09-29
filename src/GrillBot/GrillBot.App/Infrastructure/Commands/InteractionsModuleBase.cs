@@ -1,5 +1,8 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Actions;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.Commands;
 
@@ -8,6 +11,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 {
     protected bool CanDefer { get; set; } = true;
     private ITextsManager Texts { get; }
+    private IServiceProvider ServiceProvider { get; }
 
     protected string Locale
     {
@@ -21,9 +25,10 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected CultureInfo Culture
         => string.IsNullOrEmpty(Locale) ? null : Texts.GetCulture(Locale);
 
-    protected InteractionsModuleBase(ITextsManager texts = null)
+    protected InteractionsModuleBase(ITextsManager texts = null, IServiceProvider serviceProvider = null)
     {
         Texts = texts;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -90,4 +95,12 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         => Texts?[GetTextId(method, id), Locale];
 
     protected string GetTextId(string method, string id) => $"{GetType().Name}/{method.Replace("Async", "")}/{id}";
+
+    protected ScopedCommand<TCommand> GetCommand<TCommand>() where TCommand : CommandAction
+    {
+        var command = new ScopedCommand<TCommand>(ServiceProvider.CreateScope());
+        command.Command.Init(Context);
+
+        return command;
+    }
 }

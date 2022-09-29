@@ -7,7 +7,8 @@ public static class ActionsExtensions
     public static IServiceCollection AddActions(this IServiceCollection services)
     {
         return services
-            .AddApiActions();
+            .AddApiActions()
+            .AddCommandsActions();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)
@@ -135,6 +136,14 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()
             .AddScoped<Api.V2.GetRubbergodUserKarma>();
 
+        return services;
+    }
+
+    private static IServiceCollection AddCommandsActions(this IServiceCollection services)
+    {
+        services
+            .AddScoped<Commands.ImageCreator>();
+        
         return services;
     }
 }

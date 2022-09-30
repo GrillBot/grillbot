@@ -204,7 +204,7 @@
     "name": "emojize",
     "description": "Create a text-based emoji message.",
     "message": {
-      "name": "zprava",
+      "name": "message",
       "description": "Message to be converted. It is also possible to enter emoticons."
     }
   },
@@ -212,7 +212,7 @@
     "name": "reactjize",
     "description": "Convert text to emoji and set as reaction.",
     "message": {
-      "name": "zprava",
+      "name": "message",
       "description": "Message to be converted. It is also possible to enter emoticons. Must not contain duplicate emotes/characters."
     },
     "reference": {

@@ -127,4 +127,12 @@ public class GuildBuilder : BuilderBase<IGuild>
         Mock.Setup(o => o.GetCurrentUserAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
         return this;
     }
+
+    public GuildBuilder SetEmotes(IEnumerable<GuildEmote> emotes)
+    {
+        var data = emotes.ToList().AsReadOnly();
+        Mock.Setup(o => o.Emotes).Returns(data);
+        Mock.Setup(o => o.GetEmotesAsync(It.IsAny<RequestOptions>())).ReturnsAsync(data);
+        return this;
+    }
 }

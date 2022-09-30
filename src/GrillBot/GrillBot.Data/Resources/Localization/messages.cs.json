@@ -349,7 +349,8 @@
   },
   "Emojization": {
     "NoContent": "Nebyl zadán žádný obsah k převodu.",
-    "DuplicateChar": "Nalezena duplicita ({0}).,",
-    "Done": "Hotovo"
+    "DuplicateChar": "Nalezena duplicita ({0}).",
+    "Done": "Hotovo",
+    "EmptyResult": "Nepodařilo se provést převod. Zpráva obsahuje pouze neplatné znaky."
   }
 }

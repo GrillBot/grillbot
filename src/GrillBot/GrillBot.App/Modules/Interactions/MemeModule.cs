@@ -93,9 +93,14 @@ public class MemeModule : InteractionsModuleBase
 
         try
         {
-            var emotes = command.Command.ProcessForReacts(message, 20);
-            foreach (var emote in emotes)
-                await reference.AddReactionAsync(emote);
+            var reactionsCount = 20 - reference.Reactions.Count;
+            if (reactionsCount > 0)
+            {
+                var emotes = command.Command.ProcessForReacts(message, reactionsCount);
+                foreach (var emote in emotes)
+                    await reference.AddReactionAsync(emote);
+            }
+
             await SetResponseAsync(Texts["Emojization/Done", Locale]);
         }
         catch (Exception ex) when (ex is ValidationException or GrillBotException)

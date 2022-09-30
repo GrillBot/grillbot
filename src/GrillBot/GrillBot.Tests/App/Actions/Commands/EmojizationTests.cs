@@ -15,6 +15,9 @@ public class EmojizationTests : CommandActionTest<Emojization>
     protected override IDiscordInteraction Interaction { get; }
         = new DiscordInteractionBuilder().Build();
 
+    protected override IGuild Guild { get; }
+        = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { EmoteHelper.CreateGuildEmote(Emote.Parse(Consts.PepeJamEmote)) }).Build();
+
     protected override Emojization CreateAction()
     {
         var texts = new TextsBuilder()
@@ -59,5 +62,22 @@ public class EmojizationTests : CommandActionTest<Emojization>
         var result = Action.ProcessForReacts(msg, int.MaxValue).ToList();
 
         Assert.IsTrue(result.Count > 0);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ValidationException))]
+    [ExcludeFromCodeCoverage]
+    public void Process_OnlyInvalidCharacters() => Action.Process("@&");
+
+    [TestMethod]
+    public void Process_WithExternalEmote()
+    {
+        const string msg = $"{Consts.PepeJamEmote} {Consts.OnlineEmoteId} TEST";
+        var result = Action.Process(msg);
+
+        Assert.IsFalse(string.IsNullOrEmpty(result));
+        Assert.IsTrue(result.Contains(' '));
+        Assert.IsTrue(result.Contains(Consts.PepeJamEmote));
+        Assert.IsFalse(result.Contains(Consts.OnlineEmoteId));
     }
 }

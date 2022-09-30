@@ -350,6 +350,7 @@
   "Emojization": {
     "NoContent": "No content to convert was specified.",
     "DuplicateChar": "Found duplicate ({0}).",
-    "Done": "Done"
+    "Done": "Done",
+    "EmptyResult": "Conversion failed. The message contains only invalid characters."
   }
 }

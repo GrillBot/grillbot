@@ -15,10 +15,6 @@ public abstract class CommandAction
         }
     }
 
-    public CommandAction()
-    {
-    }
-
     public void Init(IInteractionContext context)
     {
         Context = context;

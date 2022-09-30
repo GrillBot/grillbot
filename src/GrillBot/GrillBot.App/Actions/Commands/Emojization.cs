@@ -16,17 +16,23 @@ public class Emojization : CommandAction
     public string Process(string message)
     {
         var tokens = CheckAndParseContent(message);
-        var emotes = ConvertTokensToEmotes(tokens, true).ToList();
+        var emotes = ConvertTokensToEmotes(tokens, true);
+        emotes = FilterUnknownEmotes(emotes);
         emotes = AddSpaces(emotes).ToList();
+        EnsureNotEmpty(emotes);
+
         return BuildMessage(emotes);
     }
 
     public IEnumerable<IEmote> ProcessForReacts(string message, int maxCount)
     {
         var tokens = CheckAndParseContent(message);
-        var emotes = ConvertTokensToEmotes(tokens, false);
+        var emotes = ConvertTokensToEmotes(tokens, false).ToList();
+        emotes = FilterUnknownEmotes(emotes);
+        emotes = emotes.Where(o => o != null).Take(maxCount).ToList();
+        EnsureNotEmpty(emotes);
 
-        return emotes.Where(o => o != null).Take(maxCount).ToList();
+        return emotes;
     }
 
     private List<object> CheckAndParseContent(string message)
@@ -37,7 +43,7 @@ public class Emojization : CommandAction
         return MessageHelper.ParseMessage(message).ToList();
     }
 
-    private IEnumerable<IEmote> ConvertTokensToEmotes(List<object> tokens, bool allowDuplicity)
+    private List<IEmote> ConvertTokensToEmotes(List<object> tokens, bool allowDuplicity)
     {
         var result = new List<IEmote>();
 
@@ -84,6 +90,13 @@ public class Emojization : CommandAction
         return result;
     }
 
+    private void EnsureNotEmpty(IReadOnlyCollection<IEmote> emotes)
+    {
+        var isEmpty = emotes.Count == 0 || emotes.All(o => o == null);
+        if (isEmpty)
+            throw new ValidationException(Texts["Emojization/EmptyResult", Locale]);
+    }
+
     private static IEnumerable<IEmote> AddSpaces(IEnumerable<IEmote> emotes)
     {
         foreach (var emote in emotes)
@@ -112,5 +125,11 @@ public class Emojization : CommandAction
         }
 
         return builder.ToString().Trim();
+    }
+
+    private List<IEmote> FilterUnknownEmotes(List<IEmote> emotes)
+    {
+        var guildEmotes = Context.Guild.Emotes;
+        return emotes.FindAll(o => o is null or Emoji || guildEmotes.Any(x => Equals(x, o)));
     }
 }

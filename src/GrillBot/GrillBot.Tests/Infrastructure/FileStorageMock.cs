@@ -12,7 +12,9 @@ public class FileStorageMock : FileStorageFactory
         ("DeletedAttachments", "Temp.unknown", new FileInfo("Temp.unknown")),
         ("DeletedAttachments", "Temporary.txt", new FileInfo("Temporary.txt")),
         ("Clearing", null, new FileInfo("File.xml")),
-        ("Common", "LastErrorDate.txt", new FileInfo("LastErrorDateTest.txt"))
+        ("Common", "LastErrorDate.txt", new FileInfo("LastErrorDateTest.txt")),
+        ("Peepolove", $"{Consts.UserId}_{Consts.Discriminator}_256.png", new FileInfo($"{Consts.UserId}_{Consts.Discriminator}_256.png")),
+        ("Peepoangry", $"{Consts.UserId}_{Consts.Discriminator}_64.png", new FileInfo($"{Consts.UserId}_{Consts.Discriminator}_64.png")),
     };
 
     public FileStorageMock(IConfiguration configuration) : base(configuration)

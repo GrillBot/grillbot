@@ -39,6 +39,6 @@ public abstract class ApiActionTest<TAction> : ActionTest<TAction> where TAction
 
     protected override void Init()
     {
-        ApiRequestContext = ApiConfiguration.IsPublic ? UserApiRequestContext.Value : AdminApiRequestContext.Value;
+        ApiRequestContext = IsPublic ? UserApiRequestContext.Value : AdminApiRequestContext.Value;
     }
 }

@@ -78,8 +78,6 @@ public class Emojization : CommandAction
                         AddEmoteFromChar(stringChar);
                     break;
                 }
-                default:
-                    throw new NotSupportedException($"Unsupported token type ({(token == null ? "null" : token.GetType())})");
             }
         }
 

@@ -15,6 +15,7 @@ public abstract class CommandActionTest<TAction> : ActionTest<TAction> where TAc
 
     protected virtual IGuild Guild { get; }
     protected virtual IGuildUser User { get; }
+    protected virtual IDiscordInteraction Interaction { get; }
     protected IInteractionContext Context { get; private set; }
 
     protected override bool CanInitProvider
@@ -22,6 +23,6 @@ public abstract class CommandActionTest<TAction> : ActionTest<TAction> where TAc
 
     protected override void Init()
     {
-        Context = new InteractionContextBuilder().SetGuild(Guild).SetUser(User).Build();
+        Context = new InteractionContextBuilder().SetGuild(Guild).SetUser(User).SetInteraction(Interaction).Build();
     }
 }

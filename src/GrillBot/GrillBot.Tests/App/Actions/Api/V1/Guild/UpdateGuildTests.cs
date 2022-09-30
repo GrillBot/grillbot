@@ -78,6 +78,7 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
     }
 
     [TestMethod]
+    [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_ValidationErrors()
     {
         var cases = new[]

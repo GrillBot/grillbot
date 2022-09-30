@@ -15,4 +15,10 @@ public class InteractionContextBuilder : BuilderBase<IInteractionContext>
         Mock.Setup(o => o.User).Returns(user);
         return this;
     }
+
+    public InteractionContextBuilder SetInteraction(IDiscordInteraction interaction)
+    {
+        Mock.Setup(o => o.Interaction).Returns(interaction);
+        return this;
+    }
 }

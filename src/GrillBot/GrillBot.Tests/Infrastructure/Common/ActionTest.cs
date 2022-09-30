@@ -1,22 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using GrillBot.Cache.Services.Repository;
 using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.Tests.Infrastructure.Common;
 
 [ExcludeFromCodeCoverage]
-public abstract class ActionTest : TestBase
-{
-    private ControllerTestConfiguration TestConfiguration
-        => GetMethod().GetCustomAttribute<ControllerTestConfiguration>();
-
-    protected bool IsPublic() => TestConfiguration?.IsPublic ?? false;
-    protected bool CanInitProvider() => TestConfiguration?.CanInitProvider ?? false;
-}
-
-[ExcludeFromCodeCoverage]
-public abstract class ActionTest<TAction> : ActionTest
+public abstract class ActionTest<TAction> : TestBase
 {
     protected TAction Action { get; private set; }
 
@@ -25,6 +14,8 @@ public abstract class ActionTest<TAction> : ActionTest
     protected GrillBotRepository Repository { get; private set; }
     protected GrillBotCacheRepository CacheRepository { get; private set; }
     protected IServiceProvider ServiceProvider { get; private set; }
+
+    protected abstract bool CanInitProvider { get; }
 
     protected abstract TAction CreateAction();
 
@@ -36,7 +27,7 @@ public abstract class ActionTest<TAction> : ActionTest
         Repository = DatabaseBuilder.CreateRepository();
         CacheRepository = CacheBuilder.CreateRepository();
 
-        if (CanInitProvider())
+        if (CanInitProvider)
             ServiceProvider = TestServices.InitializedProvider.Value;
 
         Init();

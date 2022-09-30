@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Actions.Api.V1.Command;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Command;
 
@@ -16,7 +17,7 @@ public class GetCommandsListTests : ApiActionTest<GetCommandsList>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(canInitProvider: true)]
+    [ApiConfiguration(canInitProvider: true)]
     public void Process()
     {
         var result = Action.Process();

@@ -6,6 +6,7 @@ using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 using Newtonsoft.Json;
 
@@ -80,7 +81,7 @@ public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_Public()
     {
         await InitDataAsync();

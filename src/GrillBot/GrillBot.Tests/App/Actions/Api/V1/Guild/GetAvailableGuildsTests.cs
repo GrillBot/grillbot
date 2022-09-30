@@ -1,6 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Actions.Api.V1.Guild;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Guild;
@@ -23,7 +24,7 @@ public class GetAvailableGuildsTests : ApiActionTest<GetAvailableGuilds>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_AsUser()
     {
         var result = await Action.ProcessAsync();

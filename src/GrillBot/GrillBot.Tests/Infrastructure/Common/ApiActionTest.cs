@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Security.Claims;
 using GrillBot.App.Actions;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.Infrastructure.Common;
@@ -8,12 +10,18 @@ namespace GrillBot.Tests.Infrastructure.Common;
 [ExcludeFromCodeCoverage]
 public abstract class ApiActionTest<TAction> : ActionTest<TAction> where TAction : ApiAction
 {
+    private ApiConfigurationAttribute ApiConfiguration
+        => GetMethod().GetCustomAttribute<ApiConfigurationAttribute>();
+
+    protected override bool CanInitProvider => ApiConfiguration?.CanInitProvider ?? false;
+    protected bool IsPublic => ApiConfiguration?.IsPublic ?? false;
+
     private static readonly Lazy<ApiRequestContext> UserApiRequestContext
         = new(() => CreateApiRequestContext("User"), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private static readonly Lazy<ApiRequestContext> AdminApiRequestContext
         = new(() => CreateApiRequestContext("Admin"), LazyThreadSafetyMode.ExecutionAndPublication);
-    
+
     protected ApiRequestContext ApiRequestContext { get; private set; }
 
     private static ApiRequestContext CreateApiRequestContext(string role)
@@ -31,6 +39,6 @@ public abstract class ApiActionTest<TAction> : ActionTest<TAction> where TAction
 
     protected override void Init()
     {
-        ApiRequestContext = IsPublic() ? UserApiRequestContext.Value : AdminApiRequestContext.Value;
+        ApiRequestContext = ApiConfiguration.IsPublic ? UserApiRequestContext.Value : AdminApiRequestContext.Value;
     }
 }

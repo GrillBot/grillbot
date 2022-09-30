@@ -2,6 +2,7 @@
 using GrillBot.App.Actions.Api.V1.Searching;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Searching;
@@ -67,7 +68,7 @@ public class GetSearchingListTests : ApiActionTest<GetSearchingList>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_Public()
     {
         await InitDataAsync();
@@ -78,7 +79,7 @@ public class GetSearchingListTests : ApiActionTest<GetSearchingList>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_UnallowedGuild()
     {
         await InitDataAsync();

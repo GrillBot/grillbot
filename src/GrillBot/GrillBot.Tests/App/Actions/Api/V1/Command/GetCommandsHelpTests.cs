@@ -4,6 +4,7 @@ using GrillBot.App.Services.Channels;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Command;
@@ -34,7 +35,7 @@ public class GetCommandsHelpTests : ApiActionTest<GetCommandsHelp>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(canInitProvider: true)]
+    [ApiConfiguration(canInitProvider: true)]
     public async Task ProcessAsync()
     {
         await MessageCacheManager.DownloadMessagesAsync(TextChannel);

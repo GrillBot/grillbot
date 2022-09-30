@@ -5,6 +5,7 @@ using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Models;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 using Newtonsoft.Json;
 using UnverifyLogRemove = GrillBot.Data.Models.Unverify.UnverifyLogRemove;
@@ -97,7 +98,7 @@ public class GetLogsTests : ApiActionTest<GetLogs>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_Public()
     {
         await InitDataAsync();

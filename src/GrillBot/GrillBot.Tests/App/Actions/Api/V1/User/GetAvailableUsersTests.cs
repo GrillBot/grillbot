@@ -1,6 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Actions.Api.V1.User;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.User;
@@ -49,7 +50,7 @@ public class GetAvailableUsersTests : ApiActionTest<GetAvailableUsers>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_AsPublic()
     {
         var result = await Action.ProcessAsync(null);

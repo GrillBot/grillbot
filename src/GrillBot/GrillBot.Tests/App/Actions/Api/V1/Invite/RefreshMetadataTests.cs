@@ -4,6 +4,7 @@ using GrillBot.App.Actions.Api.V1.Invite;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Invite;
@@ -31,7 +32,7 @@ public class RefreshMetadataTests : ApiActionTest<RefreshMetadata>
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { guild, guildWithoutInvites })
-            .SetSelfUser(IsPublic() ? new SelfUserBuilder(standardUser).Build() : new SelfUserBuilder(admin).Build())
+            .SetSelfUser(IsPublic ? new SelfUserBuilder(standardUser).Build() : new SelfUserBuilder(admin).Build())
             .Build();
 
         var inviteManager = new InviteManager(CacheBuilder, TestServices.CounterManager.Value);
@@ -41,7 +42,7 @@ public class RefreshMetadataTests : ApiActionTest<RefreshMetadata>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_StandardUser()
     {
         var result = await Action.ProcessAsync(true);

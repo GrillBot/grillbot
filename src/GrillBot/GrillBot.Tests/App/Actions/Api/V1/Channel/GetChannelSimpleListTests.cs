@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Channel;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Channel;
@@ -36,14 +37,14 @@ public class GetChannelSimpleListTests : ApiActionTest<GetChannelSimpleList>
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_NoMutualGuild()
     {
         await Action.ProcessAsync(Consts.GuildId + 1, false);
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_Success_Public()
     {
         var result = await Action.ProcessAsync(null, false);

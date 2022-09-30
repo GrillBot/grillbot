@@ -10,6 +10,7 @@ using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 using Newtonsoft.Json;
 
@@ -124,7 +125,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(canInitProvider: true)]
+    [ApiConfiguration(canInitProvider: true)]
     public async Task ProcessAsync_FailedReconstruction()
     {
         await InitDataAsync(true, true);

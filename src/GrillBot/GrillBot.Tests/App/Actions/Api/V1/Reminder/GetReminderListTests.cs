@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Actions.Api.V1.Reminder;
 using GrillBot.Data.Models.API.Reminder;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Reminder;
@@ -23,7 +24,7 @@ public class GetReminderListTests : ApiActionTest<GetReminderList>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_AsPublic()
     {
         await InitDataAsync();

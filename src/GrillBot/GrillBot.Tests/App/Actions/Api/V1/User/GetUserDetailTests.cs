@@ -8,6 +8,7 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Common.Attributes;
 using GrillBot.Tests.Infrastructure.Discord;
 using Newtonsoft.Json;
 
@@ -152,7 +153,7 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
     }
 
     [TestMethod]
-    [ControllerTestConfiguration(true)]
+    [ApiConfiguration(true)]
     public async Task ProcessAsync_Self()
     {
         await InitDataAsync(Consts.UserId, false);

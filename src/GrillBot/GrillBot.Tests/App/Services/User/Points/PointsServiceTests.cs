@@ -31,10 +31,9 @@ public class PointsServiceTests : ServiceTest<PointsService>
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
         var counterManager = TestServices.CounterManager.Value;
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
-        var randomization = new RandomizationService();
         var profilePicture = new ProfilePictureManager(CacheBuilder, counterManager);
 
-        return new PointsService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, messageCache, randomization, profilePicture, texts);
+        return new PointsService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, messageCache, TestServices.Randomization.Value, profilePicture, texts);
     }
 
     private async Task InitDataAsync()

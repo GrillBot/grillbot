@@ -20,10 +20,9 @@ public class PointsJobTests : JobTest<PointsJob>
         var initManager = new InitManager(loggingFactory);
         var counter = TestServices.CounterManager.Value;
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counter);
-        var randomization = new RandomizationService();
         var profilePictures = new ProfilePictureManager(CacheBuilder, counter);
         var texts = new TextsBuilder().Build();
-        var pointsService = new PointsService(discordClient, DatabaseBuilder, configuration, messageCache, randomization, profilePictures, texts);
+        var pointsService = new PointsService(discordClient, DatabaseBuilder, configuration, messageCache, TestServices.Randomization.Value, profilePictures, texts);
         var client = new ClientBuilder().Build();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var commandsService = DiscordHelper.CreateCommandsService();

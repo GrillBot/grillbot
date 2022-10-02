@@ -122,4 +122,30 @@ public class PointsController : Controller
         var result = await action.ProcessAsync(null);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Creation of a service transaction by users with bonus points.
+    /// </summary>
+    [HttpPut("service/increment/{guildId}/{toUserId}/{amount:int}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> ServiceIncrementPointsAsync(ulong guildId, ulong toUserId, int amount)
+    {
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.ServiceIncrementPoints>();
+        await action.ProcessAsync(guildId, toUserId, amount);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Service transfer of points between accounts.
+    /// </summary>
+    [HttpPut("service/transfer/{guildId}/{fromUserId}/{toUserId}/{amount:int}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> ServiceTransferPointsAsync(ulong guildId, ulong fromUserId, ulong toUserId, int amount)
+    {
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.ServiceTransferPoints>();
+        await action.ProcessAsync(guildId, fromUserId, toUserId, amount);
+        return Ok();
+    }
 }

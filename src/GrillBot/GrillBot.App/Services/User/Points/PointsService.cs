@@ -2,6 +2,7 @@
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
 using ImageMagick;
@@ -18,11 +19,12 @@ public partial class PointsService
     private ProfilePictureManager ProfilePictureManager { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private ITextsManager Texts { get; }
 
     private MagickImage TrophyImage { get; }
 
-    public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
-        IMessageCacheManager messageCache, RandomizationService randomizationService, ProfilePictureManager profilePictureManager)
+    public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, IMessageCacheManager messageCache,
+        RandomizationService randomizationService, ProfilePictureManager profilePictureManager, ITextsManager texts)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         Configuration = configuration.GetSection("Points");
@@ -31,6 +33,7 @@ public partial class PointsService
         ProfilePictureManager = profilePictureManager;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
+        Texts = texts;
 
         DiscordClient.MessageReceived += message => message.TryLoadMessage(out var msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
         DiscordClient.ReactionAdded += OnReactionAddedAsync;

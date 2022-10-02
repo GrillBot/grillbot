@@ -352,5 +352,19 @@
     "DuplicateChar": "Nalezena duplicita ({0}).",
     "Done": "Hotovo",
     "EmptyResult": "Nepodařilo se provést převod. Zpráva obsahuje pouze neplatné znaky."
+  },
+  "Points": {
+    "Service": {
+      "Increment": {
+        "UserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen."
+      },
+      "Transfer": {
+        "SourceUserNotFound": "Nelze převést body, protože uživatel od kterého se přenáší body nebyl nalezen.",
+        "DestUserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
+        "SameAccounts": "Nelze převést body mezi stejnými účty.",
+        "UserIsBot": "Nelze převést body, protože uživatel {0} není běžný uživatel.",
+        "InsufficientAmount": "Nelze převést body od uživatele {0}, protože jich nemá dostatek."
+      }
+    }
   }
 }

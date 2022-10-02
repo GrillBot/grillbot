@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Points;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Common;
@@ -9,7 +10,6 @@ namespace GrillBot.App.Modules.TextBased;
 
 [Group("points")]
 [Alias("body")]
-[Name("Body")]
 public class PointsModule : ModuleBase
 {
     private PointsService PointsService { get; }
@@ -42,30 +42,13 @@ public class PointsModule : ModuleBase
 
     [Command("give")]
     [Alias("dej")]
-    [Summary("Přidá uživateli zadané množství bodů.")]
-    [Infrastructure.Preconditions.TextBased.RequireUserPerms(GuildPermission.Administrator)]
-    public async Task GivePointsAsync([Name("mnozstvi")] int amount, [Name("uzivatel")] SocketGuildUser user)
-    {
-        await PointsService.IncrementPointsAsync(user, amount);
-        await ReplyAsync($"Body byly úspěšně {(amount > 0 ? "přidány" : "odebrány")}.");
-    }
+    [TextCommandDeprecated(AdditionalMessage = "Servisní akce přidání a převodu bodů byly přesunuty do webové administrace.")]
+    public Task GivePointsAsync(int amount, SocketGuildUser user) => Task.CompletedTask;
 
     [Command("transfer")]
     [Alias("preved")]
-    [Summary("Převede určité množství bodů od jednoho uživatele druhému.")]
-    [Infrastructure.Preconditions.TextBased.RequireUserPerms(GuildPermission.Administrator)]
-    public async Task TransferPointsAsync([Name("id/tag/jmeno_uzivatele (Od koho)")] SocketGuildUser from, [Name("id/tag/jmeno_uzivatele (Komu)")] SocketGuildUser to, [Name("mnozstvi")] int amount)
-    {
-        try
-        {
-            await PointsService.TransferPointsAsync(from, to, amount);
-            await ReplyAsync("Body byly úspěšně převedeny.");
-        }
-        catch (InvalidOperationException ex)
-        {
-            await ReplyAsync(ex.Message);
-        }
-    }
+    [TextCommandDeprecated(AdditionalMessage = "Servisní akce přidání a převodu bodů byly přesunuty do webové administrace.")]
+    public Task TransferPointsAsync(SocketGuildUser from, SocketGuildUser to, int amount) => Task.CompletedTask;
 
     [Command("board")]
     [Summary("Získání TOP 10 statistik v počtu bodů.")]

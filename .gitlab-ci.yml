@@ -5,7 +5,7 @@ variables:
 
 stages:
   - Build
-  - Unit tests
+  - Tests
 
 cache:
   key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
@@ -25,7 +25,7 @@ build:
 
 tests:
   image: mcr.microsoft.com/dotnet/sdk:6.0
-  stage: Unit tests
+  stage: Tests
   script:
     - "sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list"
     - "apt-get update && apt-get install -y --allow-unauthenticated ttf-mscorefonts-installer fontconfig libc6-dev libgdiplus libx11-dev"
@@ -40,3 +40,9 @@ tests:
     reports:
       junit:
         - ./**/*test-result.xml
+
+texts_check:
+  image: python:latest
+  stage: Tests
+  script:
+    - "python3 src/CI/check-texts.py"

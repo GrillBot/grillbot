@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord;
+﻿using Discord;
 using GrillBot.App.Services;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
@@ -27,6 +26,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
             .Build();
         GuildUser = userBuilder.SetGuild(Guild).Build();
 
+        var texts = new TextsBuilder().Build();
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
         var counterManager = TestServices.CounterManager.Value;
@@ -34,7 +34,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
         var randomization = new RandomizationService();
         var profilePicture = new ProfilePictureManager(CacheBuilder, counterManager);
 
-        return new PointsService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, messageCache, randomization, profilePicture);
+        return new PointsService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, messageCache, randomization, profilePicture, texts);
     }
 
     private async Task InitDataAsync()
@@ -110,94 +110,6 @@ public class PointsServiceTests : ServiceTest<PointsService>
         await Repository.CommitAsync();
         Repository.ClearChangeTracker();
     }
-
-    #region ServiceActions
-
-    [TestMethod]
-    public async Task IncrementPointsAsync()
-    {
-        await Service.IncrementPointsAsync(GuildUser, 100);
-        Repository.ClearChangeTracker();
-
-        var userPoints = await Repository.Points.ComputePointsOfUserAsync(Guild.Id, GuildUser.Id);
-        Assert.AreEqual(100, userPoints);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(InvalidOperationException))]
-    [ExcludeFromCodeCoverage]
-    public async Task TransferPointsAsync_SameUsers()
-    {
-        await Service.TransferPointsAsync(GuildUser, GuildUser, 50);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(InvalidOperationException))]
-    [ExcludeFromCodeCoverage]
-    public async Task TransferPointsAsync_FromBot()
-    {
-        var fromUser = new GuildUserBuilder().SetIdentity(GuildUser).SetGuild(Guild).AsBot().Build();
-        var toUser = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator)
-            .SetGuild(Guild).Build();
-
-        await Service.TransferPointsAsync(fromUser, toUser, 50);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(InvalidOperationException))]
-    [ExcludeFromCodeCoverage]
-    public async Task TransferPointsAsync_ToBot()
-    {
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator)
-            .SetGuild(Guild).AsBot().Build();
-
-        await Service.TransferPointsAsync(GuildUser, toUser, 50);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(InvalidOperationException))]
-    [ExcludeFromCodeCoverage]
-    public async Task TransferPointsAsync_SourceNotInDb()
-    {
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator)
-            .SetGuild(Guild).Build();
-
-        await Service.TransferPointsAsync(GuildUser, toUser, 50);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(InvalidOperationException))]
-    [ExcludeFromCodeCoverage]
-    public async Task TransferPointsAsync_InsufficientAmount()
-    {
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator)
-            .SetGuild(Guild).Build();
-
-        await InitDataAsync();
-        await Repository.CommitAsync();
-
-        await Service.TransferPointsAsync(GuildUser, toUser, 50);
-    }
-
-    [TestMethod]
-    public async Task TransferPointsAsync_Success()
-    {
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator)
-            .SetGuild(Guild).Build();
-
-        await Service.IncrementPointsAsync(GuildUser, 100);
-        await Service.TransferPointsAsync(GuildUser, toUser, 50);
-        Repository.ClearChangeTracker();
-
-        var fromUserPoints = await Repository.Points.ComputePointsOfUserAsync(Guild.Id, GuildUser.Id);
-        var toUserPoints = await Repository.Points.ComputePointsOfUserAsync(Guild.Id, toUser.Id);
-
-        Assert.AreEqual(50, fromUserPoints);
-        Assert.AreEqual(50, toUserPoints);
-    }
-
-    #endregion
 
     #region Recalculation
 

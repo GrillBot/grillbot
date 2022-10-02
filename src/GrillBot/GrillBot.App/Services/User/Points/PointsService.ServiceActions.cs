@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Services.User.Points;
 
@@ -26,7 +27,7 @@ public partial class PointsService
 
         var fromUserPoints = await repository.Points.ComputePointsOfUserAsync(fromUser.GuildId, fromUser.Id);
         if (fromUserPoints < amount)
-            throw new InvalidOperationException(Texts["Points/Service/Transfer/InsufficientAmount", locale].FormatWith(fromUser.GetFullName()));
+            throw new ValidationException(Texts["Points/Service/Transfer/InsufficientAmount", locale].FormatWith(fromUser.GetFullName())).ToBadRequestValidation(amount, nameof(fromUser));
 
         var fromGuildUser = await repository.GuildUser.FindGuildUserAsync(fromUser);
         await repository.User.GetOrCreateUserAsync(toUser);

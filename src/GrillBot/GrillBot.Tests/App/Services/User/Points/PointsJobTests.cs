@@ -22,7 +22,8 @@ public class PointsJobTests : JobTest<PointsJob>
         var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counter);
         var randomization = new RandomizationService();
         var profilePictures = new ProfilePictureManager(CacheBuilder, counter);
-        var pointsService = new PointsService(discordClient, DatabaseBuilder, configuration, messageCache, randomization, profilePictures);
+        var texts = new TextsBuilder().Build();
+        var pointsService = new PointsService(discordClient, DatabaseBuilder, configuration, messageCache, randomization, profilePictures, texts);
         var client = new ClientBuilder().Build();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var commandsService = DiscordHelper.CreateCommandsService();

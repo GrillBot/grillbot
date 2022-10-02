@@ -327,13 +327,13 @@
         "description": "Ability to design an emote based on an image."
       }
     },
-    "process_emote_suggestions": {
-      "name": "process_emote_suggestions",
-      "description": "Processing approved emote suggestions."
-    },
     "feature": {
       "name": "feature",
       "description": "Submission of a proposal for a new feature to GrillBot."
     }
+  },
+  "process_emote_suggestions": {
+    "name": "process_emote_suggestions",
+    "description": "Processing approved emote suggestions."
   }
 }

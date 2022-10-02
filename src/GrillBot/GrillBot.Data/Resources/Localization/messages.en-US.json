@@ -365,6 +365,16 @@
         "UserIsBot": "Unable to transfer points because user {0} is a bot.",
         "InsufficientAmount": "Unable to transfer points from user {0} because he does not have enough points."
       }
+    },
+    "Board": {
+      "NoActivity": "No events showing activity on the server have been captured yet.",
+      "Title": "Activity statistics by points",
+      "Row": "**{0:N0}.** {1} ({2})",
+      "Counts": {
+        "One": "{0:N0} point",
+        "TwoToFour": "{0:N0} points",
+        "FiveAndMore": "{0:N0} points"
+      }
     }
   }
 }

@@ -11,7 +11,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 {
     protected bool CanDefer { get; set; } = true;
     protected ITextsManager Texts { get; }
-    private IServiceProvider ServiceProvider { get; }
+    protected IServiceProvider ServiceProvider { get; }
 
     protected string Locale
     {

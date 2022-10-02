@@ -122,7 +122,45 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<List<PointBoardItem>> GetPointsBoardDataAsync(IEnumerable<string> guildIds, int? take = null, ulong userId = 0)
+    private IQueryable<PointBoardItem> GetPointsBoardQuery(IEnumerable<string> guildIds, ulong userId = 0)
+    {
+        var baseQuery = Context.PointsTransactionSummaries.AsNoTracking()
+            .Where(o =>
+                (o.GuildUser.User!.Flags & (int)UserFlags.NotUser) == 0 &&
+                guildIds.Contains(o.GuildId)
+            );
+
+        if (userId > 0)
+            baseQuery = baseQuery.Where(o => o.UserId == userId.ToString());
+
+        return baseQuery
+            .GroupBy(o => new { o.GuildId, o.UserId })
+            .Select(o => new PointBoardItem
+            {
+                PointsToday = o.Where(x => x.Day == DateTime.Now.Date).Sum(x => x.MessagePoints + x.ReactionPoints),
+                TotalPoints = o.Sum(x => x.MessagePoints + x.ReactionPoints),
+                PointsMonthBack = o.Where(x => x.Day >= DateTime.Now.AddMonths(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
+                PointsYearBack = o.Where(x => x.Day >= DateTime.Now.AddYears(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
+                GuildId = o.Key.GuildId,
+                UserId = o.Key.UserId
+            })
+            .Where(o => o.TotalPoints > 0)
+            .OrderByDescending(o => o.PointsYearBack)
+            .AsQueryable();
+    }
+
+    public async Task<int> GetPointsBoardCountAsync(IEnumerable<string> guildIds, ulong userId = 0)
+    {
+        var guildIdData = guildIds.ToList();
+
+        using (CreateCounter())
+        {
+            if (guildIdData.Count == 0) return 0;
+            return await GetPointsBoardQuery(guildIdData, userId).CountAsync();
+        }
+    }
+
+    public async Task<List<PointBoardItem>> GetPointsBoardDataAsync(IEnumerable<string> guildIds, int? take = null, ulong userId = 0, int? skip = null)
     {
         var guildIdData = guildIds.ToList();
 
@@ -131,30 +169,9 @@ public class PointsRepository : RepositoryBase
             if (guildIdData.Count == 0)
                 return new List<PointBoardItem>();
 
-            var baseQuery = Context.PointsTransactionSummaries.AsNoTracking()
-                .Where(o =>
-                    (o.GuildUser.User!.Flags & (int)UserFlags.NotUser) == 0 &&
-                    guildIdData.Contains(o.GuildId)
-                );
-
-            if (userId > 0)
-                baseQuery = baseQuery.Where(o => o.UserId == userId.ToString());
-
-            var query = baseQuery
-                .GroupBy(o => new { o.GuildId, o.UserId })
-                .Select(o => new PointBoardItem
-                {
-                    PointsToday = o.Where(x => x.Day == DateTime.Now.Date).Sum(x => x.MessagePoints + x.ReactionPoints),
-                    TotalPoints = o.Sum(x => x.MessagePoints + x.ReactionPoints),
-                    PointsMonthBack = o.Where(x => x.Day >= DateTime.Now.AddMonths(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
-                    PointsYearBack = o.Where(x => x.Day >= DateTime.Now.AddYears(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
-                    GuildId = o.Key.GuildId,
-                    UserId = o.Key.UserId
-                })
-                .Where(o => o.TotalPoints > 0)
-                .OrderByDescending(o => o.PointsYearBack)
-                .AsQueryable();
-
+            var query = GetPointsBoardQuery(guildIdData, userId);
+            if (skip != null)
+                query = query.Skip(skip.Value);
             if (take != null)
                 query = query.Take(take.Value);
 

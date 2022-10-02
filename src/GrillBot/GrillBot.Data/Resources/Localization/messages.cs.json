@@ -365,6 +365,16 @@
         "UserIsBot": "Nelze převést body, protože uživatel {0} není běžný uživatel.",
         "InsufficientAmount": "Nelze převést body od uživatele {0}, protože jich nemá dostatek."
       }
+    },
+    "Board": {
+      "NoActivity": "Ještě nebyly zachyceny žádné události ukazující aktivitu na serveru.",
+      "Title": "Statistika aktivity dle bodů",
+      "Row": "**{0:N0}.** {1} ({2})",
+      "Counts": {
+        "One": "{0:N0} bod",
+        "TwoToFour": "{0:N0} body",
+        "FiveAndMore": "{0:N0} bodů"
+      }
     }
   }
 }

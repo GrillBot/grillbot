@@ -1,9 +1,7 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Modules.Implementations.Points;
-using GrillBot.App.Services.User.Points;
 using GrillBot.Common;
-using GrillBot.Data.Exceptions;
 using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
@@ -12,33 +10,17 @@ namespace GrillBot.App.Modules.TextBased;
 [Alias("body")]
 public class PointsModule : ModuleBase
 {
-    private PointsService PointsService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public PointsModule(PointsService pointsService, GrillBotDatabaseBuilder databaseBuilder)
+    public PointsModule(GrillBotDatabaseBuilder databaseBuilder)
     {
-        PointsService = pointsService;
         DatabaseBuilder = databaseBuilder;
     }
 
     [Command("where")]
     [Alias("kde", "gde")]
-    [Summary("Získání aktuálního stavu bodů uživatele.")]
-    [Infrastructure.Preconditions.TextBased.RequireUserPerms(ContextType.Guild)]
-    public async Task GetPointsStateAsync([Name("id/tag/jmeno_uzivatele")] SocketUser user = null)
-    {
-        user ??= Context.User;
-
-        try
-        {
-            using var img = await PointsService.GetPointsOfUserImageAsync(Context.Guild, user);
-            await ReplyFileAsync(img.Path, false);
-        }
-        catch (NotFoundException ex)
-        {
-            await ReplyAsync(ex.Message);
-        }
-    }
+    [TextCommandDeprecated(AlternativeCommand = "/points where")]
+    public Task GetPointsStateAsync(SocketUser user = null) => Task.CompletedTask;
 
     [Command("give")]
     [Alias("dej")]

@@ -335,5 +335,17 @@
   "process_emote_suggestions": {
     "name": "process_emote_suggestions",
     "description": "Processing approved emote suggestions."
+  },
+  "points": {
+    "name": "points",
+    "description": "Points",
+    "where": {
+      "name": "where",
+      "description": "Get the current status of user points.",
+      "user": {
+        "name": "user",
+        "description": "The user for whom you wish to show the points status. If you don't enter, yours will be displayed."
+      }
+    }
   }
 }

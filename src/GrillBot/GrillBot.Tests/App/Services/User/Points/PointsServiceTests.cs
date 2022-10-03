@@ -1,9 +1,11 @@
-﻿using Discord;
-using GrillBot.App.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using Discord;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers;
+using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -171,6 +173,25 @@ public class PointsServiceTests : ServiceTest<PointsService>
         var result = await Service.MergeSummariesAsync();
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.IsTrue(result.StartsWith("MergeSummaries"));
+    }
+
+    #endregion
+
+    #region Rendering
+
+    [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
+    public async Task GetPointsOfUserImageAsync_NotFoundUser()
+        => await Service.GetPointsOfUserImageAsync(Guild, GuildUser);
+
+    [TestMethod]
+    public async Task GetPointsOfUserImageAsync_Success()
+    {
+        await InitSummariesAsync();
+
+        using var result = await Service.GetPointsOfUserImageAsync(Guild, User);
+        Assert.IsTrue(File.Exists(result.Path));
     }
 
     #endregion

@@ -335,5 +335,17 @@
   "process_emote_suggestions": {
     "name": "process_emote_suggestions",
     "description": "Zpracování schválených návrhů na emoty."
+  },
+  "points": {
+    "name": "body",
+    "description": "Body",
+    "where": {
+      "name": "kde",
+      "description": "Zjistí aktuální stav bodů uživatele.",
+      "user": {
+        "name": "uzivatel",
+        "description": "Uživatel, pro kterého si přejete zjistit stav bodů. Pokud ho nezadáte, zobrazí se vaše.."
+      }
+    }
   }
 }

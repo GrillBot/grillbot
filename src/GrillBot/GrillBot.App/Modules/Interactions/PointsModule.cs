@@ -7,6 +7,7 @@ using GrillBot.Data.Exceptions;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
+[Group("points", "Points")]
 public class PointsModule : InteractionsModuleBase
 {
     private PointsService PointsService { get; }
@@ -17,11 +18,12 @@ public class PointsModule : InteractionsModuleBase
     }
 
     [UserCommand("Body uživatele")]
-    public async Task GetUserPointsAsync(IUser user)
+    [SlashCommand("where", "Get the current status of user points.")]
+    public async Task GetUserPointsAsync(IUser user = null)
     {
         try
         {
-            using var img = await PointsService.GetPointsOfUserImageAsync(Context.Guild, user);
+            using var img = await PointsService.GetPointsOfUserImageAsync(Context.Guild, user ?? Context.User);
             await FollowupWithFileAsync(img.Path);
         }
         catch (NotFoundException ex)

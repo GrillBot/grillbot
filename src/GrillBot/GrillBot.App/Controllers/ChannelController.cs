@@ -140,7 +140,6 @@ public class ChannelController : Controller
     [HttpGet("board")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync()
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelboard>();

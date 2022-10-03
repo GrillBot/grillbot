@@ -90,7 +90,6 @@ public class UsersController : Controller
     [HttpGet("me/commands")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync()
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetCommandsHelp>();
@@ -108,7 +107,6 @@ public class UsersController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    [ResponseCache(CacheProfileName = "BoardApi")]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service)
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetExternalCommands>();

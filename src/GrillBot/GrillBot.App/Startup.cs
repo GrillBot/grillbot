@@ -98,9 +98,6 @@ public class Startup
                 c.Filters.Add<ExceptionFilter>();
                 c.Filters.Add<RequestFilter>();
                 c.Filters.Add<ResultFilter>();
-
-                c.CacheProfiles.Add("BoardApi", new CacheProfile { Duration = 60 }); // Response caching for boards (leaderboard, help, ...).
-                c.CacheProfiles.Add("ConstsApi", new CacheProfile { Duration = 30 }); // Response caching for constants.
             })
             .AddNewtonsoftJson();
 
@@ -152,7 +149,7 @@ public class Startup
             doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
         }).AddOpenApiDoc("v2", "Third-party API", "API for third party application with ApiKey authentication.", doc =>
         {
-            doc.AddSecurity("ApiKey", new OpenApiSecurityScheme()
+            doc.AddSecurity("ApiKey", new OpenApiSecurityScheme
             {
                 Name = "ApiKey",
                 Scheme = "ApiKey",
@@ -188,7 +185,7 @@ public class Startup
                 o.IncludeErrorDetails = true;
 
                 var machineInfo = $"{Environment.MachineName}/{Environment.UserName}";
-                o.TokenValidationParameters = new TokenValidationParameters()
+                o.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,

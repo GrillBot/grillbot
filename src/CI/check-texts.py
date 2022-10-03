@@ -28,8 +28,7 @@ def group_files(files: list) -> dict:
 def get_and_check_json(filename: str) -> dict:
     print(f"Reading file {os.path.basename(filename)}")
     with open(filename, encoding="utf-8") as json_file:
-        json_data = json_file.read().encode().decode("utf-8-sig")
-        return json.loads(json_data)
+        return json.loads(json_file.read().encode().decode("utf-8-sig"))
 
 
 def read_json_keys(json: dict, id: str = "") -> list:
@@ -45,30 +44,40 @@ def read_json_keys(json: dict, id: str = "") -> list:
     return result
 
 
-def cross_check_json(first_json: dict, second_json: dict):
-    first_json_basename = os.path.basename(str(first_json["filename"]))
-    second_json_basename = os.path.basename(str(second_json["filename"]))
-    print(f"Cross-checking files {first_json_basename} and {second_json_basename}")
+def flattern(json: dict, id: str = "") -> dict:
+    result = {}
+    for item in json:
+        next_id = f"{id}/{item}"
+        if type(json[item]) == dict:
+            result.update(flattern(json[item], next_id))
+        else:
+            result[next_id] = json[item]
+    return result
 
-    first_json_keys = read_json_keys(first_json["content"])
-    second_json_keys = read_json_keys(second_json["content"])
 
-    for value in first_json_keys:
-        if value not in second_json_keys:
-            raise ValueError(
-                f'Key "{value}" was found in {first_json_basename}, but wasn\'t found in {second_json_basename}'
-            )
-
-    for value in second_json_keys:
-        if value not in first_json_keys:
-            raise ValueError(
-                f'Key "{value}" was found in {second_json_basename}, but wasn\'t found in {first_json_basename}'
-            )
-
+def cross_check_keys(
+    first_json_filename: str,
+    first_json: dict,
+    second_json_filename: str,
+    second_json: dict,
+):
     print(
-        f"Cross-check of {first_json_basename} and {second_json_basename} - Success"
+        f"Cross-checking file structure of files {first_json_filename} and {second_json_filename}"
     )
 
+    def raise_err(val: str, swapped: bool):
+        file1 = second_json_filename if swapped else first_json_filename
+        file2 = first_json_filename if swapped else second_json_filename
+        raise ValueError(
+            f'Key "{val}" was found in {file1}, but wasn\'t found in {file2}'
+        )
+
+    for val in first_json:
+        if val not in second_json:
+            raise_err(val, False)
+    for val in second_json:
+        if val not in first_json:
+            raise_err(val, True)
 
 def check_group(group: str, files: list):
     print(f"Checking group {group} (Files: {len(files)})")
@@ -77,9 +86,14 @@ def check_group(group: str, files: list):
     )
     checked_groups = []
     for file in json_files:
+        first_value_data = flattern(file)
+        first_filename = os.path.basename(file["filename"])
+
         for another_file in json_files:
             key1 = f'{file["filename"]}-{another_file["filename"]}'
             key2 = f'{another_file["filename"]}-{file["filename"]}'
+            second_value_data = flattern(another_file)
+            second_filename = os.path.basename(another_file["filename"])
 
             if (
                 file["filename"] == another_file["filename"]
@@ -87,7 +101,9 @@ def check_group(group: str, files: list):
                 or key2 in checked_groups
             ):
                 continue
-            cross_check_json(file, another_file)
+            cross_check_keys(
+                first_filename, first_value_data, second_filename, second_value_data
+            )
             checked_groups.append(key1)
             checked_groups.append(key2)
 

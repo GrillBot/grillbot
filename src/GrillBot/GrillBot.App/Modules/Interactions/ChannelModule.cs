@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Channels;
@@ -18,8 +19,7 @@ public class ChannelModule : InteractionsModuleBase
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private FormatHelper FormatHelper { get; }
 
-    public ChannelModule(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts,
-        FormatHelper formatHelper) : base(texts)
+    public ChannelModule(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, FormatHelper formatHelper, IServiceProvider serviceProvider) : base(texts, serviceProvider)
     {
         DatabaseBuilder = databaseBuilder;
         FormatHelper = formatHelper;
@@ -215,5 +215,17 @@ public class ChannelModule : InteractionsModuleBase
     {
         var handler = new ChannelboardPaginationHandler(Context.Client, DatabaseBuilder, page);
         await handler.ProcessAsync(Context);
+    }
+
+    [SlashCommand("clean", "Deletes the last N messages from the channel.")]
+    [RequireBotPermission(ChannelPermission.ManageMessages | ChannelPermission.ReadMessageHistory)]
+    [SuppressDefer]
+    public async Task CleanAsync(int count, ITextChannel channel = null)
+    {
+        await DeferAsync(true);
+        using var command = GetCommand<Actions.Commands.CleanChannelMessages>();
+
+        var result = await command.Command.ProcessAsync(count, channel);
+        await SetResponseAsync(result, secret: true);
     }
 }

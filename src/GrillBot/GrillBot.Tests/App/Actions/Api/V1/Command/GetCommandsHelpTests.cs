@@ -22,7 +22,7 @@ public class GetCommandsHelpTests : ApiActionTest<GetCommandsHelp>
         var guild = guildBuilder.SetGetUserAction(user).SetGetCurrentUserAction(user).Build();
         var channelBuilder = new TextChannelBuilder().SetGuild(guild);
         var message = new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(user).SetChannel(channelBuilder.Build()).Build();
-        TextChannel = channelBuilder.SetGetMessagesAsync(message).Build();
+        TextChannel = channelBuilder.SetGetMessagesAsync(new[] { message }).Build();
 
         var client = new ClientBuilder().SetGetUserAction(user).SetGetGuildsAction(new[] { guild }).Build();
         var commandsService = DiscordHelper.CreateCommandsService(ServiceProvider);

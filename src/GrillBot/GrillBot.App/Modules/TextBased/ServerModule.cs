@@ -19,53 +19,9 @@ namespace GrillBot.App.Modules.TextBased;
 [Name("Správa serveru")]
 public class ServerModule : ModuleBase
 {
-    private IConfiguration Configuration { get; }
-
-    public ServerModule(IConfiguration configuration)
-    {
-        Configuration = configuration;
-    }
-
     [Command("clean")]
-    [Summary("Smaže zprávy v příslušném kanálu. Pokud nebyl zadán kanál jako parametr, tak bude použit kanál, kde byl zavolán příkaz.")]
-    [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na mazání zpráv.")]
-    [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidat reakce indikující stav.")]
-    [RequireBotPermission(GuildPermission.ReadMessageHistory, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na čtení historie.")]
-    [RequireUserPerms(GuildPermission.ManageMessages)]
-    public async Task CleanAsync([Name("pocet")] int take, [Name("kanal")] ITextChannel channel = null)
-    {
-        await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-        if (channel == null)
-        {
-            channel = (ITextChannel)Context.Channel;
-            take++;
-        }
-
-        var options = new RequestOptions
-        {
-            AuditLogReason = $"Clean command from GrillBot. Executed {Context.User} in #{channel.Name}",
-            RetryMode = RetryMode.AlwaysRetry,
-            Timeout = 30000
-        };
-
-        var messages = (await channel.GetMessagesAsync(take, options: options).FlattenAsync())
-            .Where(o => o.Id != Context.Message.Id)
-            .ToList();
-
-        var older = messages.FindAll(o => (DateTime.UtcNow - o.CreatedAt).TotalDays >= 14.0);
-        var newer = messages.FindAll(o => (DateTime.UtcNow - o.CreatedAt).TotalDays < 14.0);
-
-        await channel.DeleteMessagesAsync(newer, options);
-        foreach (var msg in older)
-        {
-            await msg.DeleteAsync(options);
-        }
-
-        await ReplyAsync($"Bylo úspěšně smazáno zpráv: **{messages.Count}**\nStarších, než 2 týdny: **{older.Count}**\nNovějších, než 2 týdny: **{newer.Count}**");
-        await Context.Message.RemoveAllReactionsAsync();
-        await Context.Message.AddReactionAsync(Emojis.Ok);
-    }
+    [TextCommandDeprecated(AlternativeCommand = "/channel clean")]
+    public Task CleanAsync(int take, ITextChannel channel = null) => Task.CompletedTask; 
 
     [Group("pin")]
     [Name("Správa pinů")]

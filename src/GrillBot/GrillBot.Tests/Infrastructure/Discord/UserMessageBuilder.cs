@@ -54,4 +54,10 @@ public class UserMessageBuilder : BuilderBase<IUserMessage>
             .Returns(new List<IReadOnlyCollection<IUser>> { users.ToList().AsReadOnly() }.ToAsyncEnumerable());
         return this;
     }
+
+    public UserMessageBuilder AsPinned(bool pinned = true)
+    {
+        Mock.Setup(o => o.IsPinned).Returns(pinned);
+        return this;
+    }
 }

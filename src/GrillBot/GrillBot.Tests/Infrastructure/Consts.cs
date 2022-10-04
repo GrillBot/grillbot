@@ -21,4 +21,5 @@ public static class Consts
     public const string Nickname = "GrillBot-GuildUser-Nickname";
     public const string AvatarId = "AvatarId";
     public const string VanityInviteCode = "vanity";
+    public const ulong InteractionId = 1026904103261048873;
 }

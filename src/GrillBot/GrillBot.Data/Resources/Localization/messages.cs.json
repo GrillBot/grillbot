@@ -119,6 +119,9 @@
     },
     "ChannelSimpleList": {
       "NoMutualGuild": "Požadovaný server nesdílíš s botem."
+    },
+    "Clean": {
+      "ResultMessage": "Bylo úspěšně smazáno zpráv: **{0}**\nZ toho připnutých: **{1}**"
     }
   },
   "DuckModule": {

@@ -146,7 +146,8 @@ public static class ActionsExtensions
         services
             .AddScoped<Commands.ImageCreator>()
             .AddScoped<Commands.Emojization>()
-            .AddScoped<Commands.PointsLeaderboard>();
+            .AddScoped<Commands.PointsLeaderboard>()
+            .AddScoped<Commands.CleanChannelMessages>();
         
         return services;
     }

@@ -21,4 +21,10 @@ public class InteractionContextBuilder : BuilderBase<IInteractionContext>
         Mock.Setup(o => o.Interaction).Returns(interaction);
         return this;
     }
+
+    public InteractionContextBuilder SetChannel(IMessageChannel channel)
+    {
+        Mock.Setup(o => o.Channel).Returns(channel);
+        return this;
+    }
 }

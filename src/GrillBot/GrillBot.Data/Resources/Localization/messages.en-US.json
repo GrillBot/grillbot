@@ -119,6 +119,9 @@
     },
     "ChannelSimpleList": {
       "NoMutualGuild": "You do not share the requested server with the bot."
+    },
+    "Clean": {
+      "ResultMessage": "Successfully deleted messages: **{0}**\nOf those pinned: **{1}**"
     }
   },
   "DuckModule": {

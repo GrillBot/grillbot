@@ -91,6 +91,18 @@
     "board": {
       "name": "board",
       "description": "Statistics of the most active channels on the server."
+    },
+    "clean": {
+      "name": "clean",
+      "description": "Deletes the last N messages from the channel.",
+      "count": {
+        "name": "count",
+        "description": "Count of messages to delete."
+      },
+      "channel": {
+        "name": "channel",
+        "description": "Channel where to delete messages. If the channel is not specified, the execution channel is used."
+      }
     }
   },
   "duck": {

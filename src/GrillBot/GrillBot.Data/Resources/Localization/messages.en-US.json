@@ -379,5 +379,8 @@
         "FiveAndMore": "{0:N0} points"
       }
     }
+  },
+  "Pins": {
+    "UnpinCount": "Messages successfully unpinned.\nTotal unpinned messages: **{0}**"
   }
 }

@@ -92,4 +92,11 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
         Mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(enumerable);
         return this;
     }
+
+    public TextChannelBuilder SetGetPinnedMessagesAction(IEnumerable<IMessage> messages)
+    {
+        var data = messages.ToList().AsReadOnly();
+        Mock.Setup(o => o.GetPinnedMessagesAsync(It.IsAny<RequestOptions>())).ReturnsAsync(data);
+        return this;
+    }
 }

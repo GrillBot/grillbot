@@ -21,78 +21,17 @@ public class ServerModule : ModuleBase
 {
     [Command("clean")]
     [TextCommandDeprecated(AlternativeCommand = "/channel clean")]
-    public Task CleanAsync(int take, ITextChannel channel = null) => Task.CompletedTask; 
+    public Task CleanAsync(int take, ITextChannel channel = null) => Task.CompletedTask;
 
     [Group("pin")]
-    [Name("Správa pinů")]
-    [RequireBotPermission(ChannelPermission.ManageMessages, ErrorMessage = "Nemohu provádet odepnutí zpráv, protože nemám oprávnění pracovat se zprávami.")]
-    [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidat reakce indikující stav.")]
-    [RequireBotPermission(GuildPermission.ReadMessageHistory, ErrorMessage = "Nemohu mazat zprávy, protože nemám oprávnění na čtení historie.")]
-    [RequireUserPerms(GuildPermission.ManageMessages)]
+    [TextCommandDeprecated(AlternativeCommand = "/pin purge")]
     public class PinManagementSubmodule : ModuleBase
     {
-        private IConfiguration Configuration { get; }
-
-        public PinManagementSubmodule(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        [Command("purge")]
+        public Task PurgePinsAsync(ITextChannel channel = null, params ulong[] messageIds) => Task.CompletedTask;
 
         [Command("purge")]
-        [Summary("Odepne zprávy z kanálu.")]
-        public async Task PurgePinsAsync([Name("kanal")] ITextChannel channel = null, [Name("id_zprav")] params ulong[] messageIds)
-        {
-            await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-            channel ??= (ITextChannel)Context.Channel;
-
-            uint unpinned = 0;
-            uint unknown = 0;
-            uint notPinned = 0;
-
-            foreach (var id in messageIds)
-            {
-                if (await channel.GetMessageAsync(id) is not IUserMessage message)
-                {
-                    unknown++;
-                    continue;
-                }
-
-                if (!message.IsPinned)
-                {
-                    notPinned++;
-                    continue;
-                }
-
-                await message.UnpinAsync();
-                unpinned++;
-            }
-
-            await ReplyAsync($"Zprávy byly úspěšně odepnuty.\nCelkem zpráv: **{messageIds.Length}**\nOdepnutých: **{unpinned}**\nNepřipnutých: **{notPinned}**\nNeexistujících: **{unknown}**");
-
-            await Context.Message.RemoveAllReactionsAsync();
-            await Context.Message.AddReactionAsync(Emojis.Ok);
-        }
-
-        [Command("purge")]
-        [Summary("Odepne z kanálu určitý počet zpráv.")]
-        public async Task PurgePinsAsync([Name("pocet")] int count, [Name("kanal")] ITextChannel channel = null)
-        {
-            await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-            channel ??= (ITextChannel)Context.Channel;
-
-            var pins = await channel.GetPinnedMessagesAsync();
-            count = Math.Min(pins.Count, count);
-
-            var pinCandidates = pins.Take(count).OfType<IUserMessage>().ToList();
-            foreach (var pin in pinCandidates)
-            {
-                await pin.UnpinAsync();
-            }
-
-            await ReplyAsync($"Zprávy byly úspěšně odepnuty.\nCelkem připnutých zpráv: **{pins.Count}**\nOdepnutých: **{pinCandidates.Count}**");
-            await Context.Message.RemoveAllReactionsAsync();
-            await Context.Message.AddReactionAsync(Emojis.Ok);
-        }
+        public Task PurgePinsAsync(int count, ITextChannel channel = null) => Task.CompletedTask;
     }
 
     [Group("guild")]

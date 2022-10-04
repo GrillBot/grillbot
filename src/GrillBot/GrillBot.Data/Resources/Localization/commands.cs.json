@@ -240,6 +240,22 @@
       "description": "Zpráva k mockování"
     }
   },
+  "pin": {
+    "name": "pin",
+    "description": "Správa pinů",
+    "purge": {
+      "name": "purge",
+      "description": "Odepne posledních N zpráv z pinů.",
+      "count": {
+        "name": "pocet",
+        "description": "Počet zpráv k odepnutí."
+      },
+      "channel": {
+        "name": "kanal",
+        "description": "Kanál, kde se mají zprávy smazat. Pokud kanál nebude zadán, tak se použije, kde byl příkaz použit."
+      }
+    }
+  },
   "remind": {
     "name": "remind",
     "description": "Připomenutí k určitému datu",

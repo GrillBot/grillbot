@@ -240,6 +240,22 @@
       "description": "Message for mocking"
     }
   },
+  "pin": {
+    "name": "pin",
+    "description": "Pins management",
+    "purge": {
+      "name": "purge",
+      "description": "Unpins the last N messages.",
+      "count": {
+        "name": "count",
+        "description": "Number of messages to unpin."
+      },
+      "channel": {
+        "name": "channel",
+        "description": "Channel where to delete messages. If the channel is not specified, the execution channel is used."
+      }
+    }
+  },
   "remind": {
     "name": "remind",
     "description": "A reminder for a specific date",

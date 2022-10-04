@@ -379,5 +379,8 @@
         "FiveAndMore": "{0:N0} bodů"
       }
     }
+  },
+  "Pins": {
+    "UnpinCount": "Zprávy byly úspěšně odepnuty.\nCelkem odepnutých zpráv: **{0}**"
   }
 }

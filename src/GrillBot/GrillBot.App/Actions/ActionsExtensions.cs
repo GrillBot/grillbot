@@ -148,7 +148,8 @@ public static class ActionsExtensions
             .AddScoped<Commands.Emojization>()
             .AddScoped<Commands.PointsLeaderboard>()
             .AddScoped<Commands.CleanChannelMessages>()
-            .AddScoped<Commands.PurgePins>();
+            .AddScoped<Commands.PurgePins>()
+            .AddScoped<Commands.SendMessageToChannel>();
         
         return services;
     }

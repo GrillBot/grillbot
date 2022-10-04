@@ -112,7 +112,9 @@
     },
     "PostMessage": {
       "GuildNotFound": "Nepodařilo se najít server.",
-      "ChannelNotFound": "Nepodařilo se najít kanál na serveru {0}."
+      "ChannelNotFound": "Nepodařilo se najít kanál na serveru {0}.",
+      "NoContent": "Nebyl zadán žádný platný vstup k odeslání.",
+      "Success": "Zpráva byla odeslána."
     },
     "ChannelDetail": {
       "ChannelNotFound": "Požadovaný kanál nebyl nalezen."

@@ -1,7 +1,5 @@
 ﻿using Discord.Commands;
-using System.Net.Http;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using ConsoleTableExt;
 using Microsoft.Extensions.Caching.Memory;
 using GrillBot.Data.Models.Guilds;
@@ -16,7 +14,6 @@ using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased;
 
-[Name("Správa serveru")]
 public class ServerModule : ModuleBase
 {
     [Command("clean")]
@@ -39,61 +36,11 @@ public class ServerModule : ModuleBase
     public class GuildManagementSubmodule : ModuleBase
     {
         [Command("send")]
-        [Summary("Pošle zprávu (vč. příloh) do kanálu.")]
-        [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu tenhle příkaz provést, protože nemám oprávnění mazat zprávy.")]
-        [RequireUserPerms(GuildPermission.ManageMessages)]
-        public async Task SendAnonymousToChannelAsync([Name("kanal")] IMessageChannel channel, [Remainder] [Name("volitelna_zprava")] string content = null)
-        {
-            if (string.IsNullOrEmpty(content) && Context.Message.ReferencedMessage != null)
-                content = Context.Message.ReferencedMessage.Content;
-
-            var attachments = Context.Message.Attachments.Select(o => o as IAttachment).ToList();
-            if (attachments.Count > 0 && Context.Message.ReferencedMessage != null) attachments = Context.Message.ReferencedMessage.Attachments.ToList();
-
-            if (string.IsNullOrEmpty(content) && attachments.Count == 0)
-            {
-                await ReplyAsync("Nemůžu nic poslat, protože jsi mi nic nedal.");
-                return;
-            }
-
-            if (attachments.Count > 0)
-            {
-                using var httpClient = new HttpClient();
-
-                var firstDone = string.IsNullOrEmpty(content);
-                foreach (var attachment in attachments)
-                {
-                    var response = await httpClient.GetAsync(attachment.Url);
-
-                    if (!response.IsSuccessStatusCode)
-                        continue;
-
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    var spoiler = attachment.IsSpoiler();
-
-                    if (firstDone)
-                    {
-                        await channel.SendFileAsync(stream, attachment.Filename, null, false, null, null, spoiler, AllowedMentions);
-                    }
-                    else
-                    {
-                        await channel.SendFileAsync(stream, attachment.Filename, content, isSpoiler: spoiler, allowedMentions: AllowedMentions);
-
-                        firstDone = true;
-                    }
-                }
-            }
-            else
-            {
-                await channel.SendMessageAsync(content);
-            }
-
-            await Context.Message.DeleteAsync();
-        }
+        [TextCommandDeprecated(AlternativeCommand = "/channel send")]
+        public Task SendAnonymousToChannelAsync(IMessageChannel channel, string content = null) => Task.CompletedTask;
 
         [Command("info")]
         [TextCommandDeprecated(AlternativeCommand = "/guild info")]
-        [ExcludeFromCodeCoverage]
         public Task InfoAsync() => Task.CompletedTask;
 
         [Group("perms")]

@@ -103,6 +103,26 @@
         "name": "kanal",
         "description": "Kanál, kde se mají zprávy smazat. Pokud kanál nebude zadán, tak se použije, kde byl příkaz použit."
       }
+    },
+    "send": {
+      "name": "send",
+      "description": "Odeslání zprávy do kanálu jako bot.",
+      "channel": {
+        "name": "kanal",
+        "description": "Kanál, do kterého se má poslat zpráva."
+      },
+      "content": {
+        "name": "obsah",
+        "description": "Textový obsah zprávy."
+      },
+      "reference": {
+        "name": "reference",
+        "description": "Odkaz na zprávu, na kterou má odkazovat tato zpráva."
+      },
+      "attachment": {
+        "name": "priloha",
+        "description": "Příloha"
+      }
     }
   },
   "duck": {

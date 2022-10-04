@@ -103,6 +103,26 @@
         "name": "channel",
         "description": "Channel where to delete messages. If the channel is not specified, the execution channel is used."
       }
+    },
+    "send": {
+      "name": "send",
+      "description": "Post a message to a channel as a bot.",
+      "channel": {
+        "name": "channel",
+        "description": "The channel to send the message to."
+      },
+      "content": {
+        "name": "content",
+        "description": "The textual content of the message."
+      },
+      "reference": {
+        "name": "reference",
+        "description": "A link to the message to which this message should refer."
+      },
+      "attachment": {
+        "name": "priloha",
+        "description": "Attachment"
+      }
     }
   },
   "duck": {

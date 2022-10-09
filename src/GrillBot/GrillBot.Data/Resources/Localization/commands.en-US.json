@@ -266,8 +266,8 @@
     "remove": {
       "name": "remove",
       "description": "Deleting permissions in channels.",
-      "user": {
-        "name": "user",
+      "all": {
+        "name": "all",
         "description": "Remove all user permissions from channel.",
         "channel": {
           "name": "channel",

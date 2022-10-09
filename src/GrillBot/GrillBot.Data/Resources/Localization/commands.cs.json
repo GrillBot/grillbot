@@ -266,8 +266,8 @@
     "remove": {
       "name": "remove",
       "description": "Mazání oprávnění v kanálech.",
-      "user": {
-        "name": "user",
+      "all": {
+        "name": "all",
         "description": "Odebere všechna uživatelská oprávnění z kanálu.",
         "channel": {
           "name": "kanal",

@@ -18,7 +18,7 @@ public class PermissionsModule : InteractionsModuleBase
         {
         }
 
-        [SlashCommand("user", "Remove all user permissions from channel.")]
+        [SlashCommand("all", "Remove all user permissions from channel.")]
         public async Task ClearPermissionsFromChannelAsync(IGuildChannel channel, IGuildUser excludedUser = null)
         {
             var excludedUsers = excludedUser != null ? new[] { excludedUser } : Array.Empty<IGuildUser>();

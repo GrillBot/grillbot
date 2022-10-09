@@ -29,12 +29,6 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
         return this;
     }
 
-    public TextChannelBuilder SetNsfw(bool isNsfw)
-    {
-        Mock.Setup(o => o.IsNsfw).Returns(isNsfw);
-        return this;
-    }
-
     public TextChannelBuilder SetGuild(IGuild guild)
     {
         Mock.Setup(o => o.Guild).Returns(guild);
@@ -80,12 +74,6 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
         return this;
     }
 
-    public TextChannelBuilder SetGetUserAction(IGuildUser user)
-    {
-        Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(x => x == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
-        return this;
-    }
-
     public TextChannelBuilder SetGetUsersAction(IEnumerable<IGuildUser> users)
     {
         var enumerable = new List<IReadOnlyCollection<IGuildUser>> { users.ToList().AsReadOnly() }.ToAsyncEnumerable();
@@ -97,6 +85,22 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
     {
         var data = messages.ToList().AsReadOnly();
         Mock.Setup(o => o.GetPinnedMessagesAsync(It.IsAny<RequestOptions>())).ReturnsAsync(data);
+        return this;
+    }
+
+    public TextChannelBuilder SetPermissions(IEnumerable<Overwrite> overwrites)
+    {
+        var overwritesData = overwrites.ToList().AsReadOnly();
+        Mock.Setup(o => o.PermissionOverwrites).Returns(overwritesData);
+
+        foreach (var overwrite in overwritesData)
+        {
+            if (overwrite.TargetType == PermissionTarget.Role)
+                Mock.Setup(o => o.GetPermissionOverwrite(It.Is<IRole>(r => r.Id == overwrite.TargetId))).Returns(overwrite.Permissions);
+            else
+                Mock.Setup(o => o.GetPermissionOverwrite(It.Is<IUser>(u => u.Id == overwrite.TargetId))).Returns(overwrite.Permissions);
+        }
+
         return this;
     }
 }

@@ -260,6 +260,26 @@
       "description": "Message for mocking"
     }
   },
+  "permissions": {
+    "name": "permissions",
+    "description": "Manage channel permissions.",
+    "remove": {
+      "name": "remove",
+      "description": "Deleting permissions in channels.",
+      "user": {
+        "name": "user",
+        "description": "Remove all user permissions from channel.",
+        "channel": {
+          "name": "channel",
+          "description": "The channel in which permissions are to be deleted."
+        },
+        "excludedUsers": {
+          "name": "excludedUsers",
+          "description": "List of users to exclude from the process."
+        }
+      }
+    }
+  },
   "pin": {
     "name": "pin",
     "description": "Pins management",

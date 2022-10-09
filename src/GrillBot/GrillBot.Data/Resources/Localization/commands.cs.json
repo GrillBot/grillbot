@@ -260,6 +260,26 @@
       "description": "Zpráva k mockování"
     }
   },
+  "permissions": {
+    "name": "permissions",
+    "description": "Správa oprávnění do kanálů.",
+    "remove": {
+      "name": "remove",
+      "description": "Mazání oprávnění v kanálech.",
+      "user": {
+        "name": "user",
+        "description": "Odebere všechna uživatelská oprávnění z kanálu.",
+        "channel": {
+          "name": "kanal",
+          "description": "Kanál ve kterém se mají smazat oprávnění."
+        },
+        "excludedUsers": {
+          "name": "excludedUsers",
+          "description": "Seznam uživatelů, kteří se mají z procesu vynechat."
+        }
+      }
+    }
+  },
   "pin": {
     "name": "pin",
     "description": "Správa pinů",

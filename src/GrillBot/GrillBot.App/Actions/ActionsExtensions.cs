@@ -149,7 +149,8 @@ public static class ActionsExtensions
             .AddScoped<Commands.PointsLeaderboard>()
             .AddScoped<Commands.CleanChannelMessages>()
             .AddScoped<Commands.PurgePins>()
-            .AddScoped<Commands.SendMessageToChannel>();
+            .AddScoped<Commands.SendMessageToChannel>()
+            .AddScoped<Commands.PermissionsCleaner>();
         
         return services;
     }

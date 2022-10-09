@@ -64,9 +64,8 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             await response.DeleteAsync();
     }
 
-    protected async Task<IUserMessage> SetResponseAsync(string content = null, Embed embed = default, Embed[] embeds = default,
-        MessageComponent components = default, MessageFlags? flags = default, IEnumerable<FileAttachment> attachments = default,
-        RequestOptions requestOptions = null, bool secret = false)
+    protected async Task<IUserMessage> SetResponseAsync(string content = null, Embed embed = default, Embed[] embeds = default, MessageComponent components = default, MessageFlags? flags = default,
+        IEnumerable<FileAttachment> attachments = default, RequestOptions requestOptions = null, bool secret = false, bool suppressFollowUp = false)
     {
         if (!Context.Interaction.HasResponded)
         {
@@ -74,7 +73,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             return await Context.Interaction.GetOriginalResponseAsync();
         }
 
-        if (Context.Interaction.IsValidToken)
+        if (Context.Interaction.IsValidToken && !suppressFollowUp)
             return await FollowupAsync(content, embeds, false, secret, null, requestOptions, components, embed);
 
         if (secret)

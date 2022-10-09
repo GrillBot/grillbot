@@ -58,29 +58,7 @@ public class ServerModule : ModuleBase
             }
 
             [Command("clear")]
-            [Summary("Smaže všechna uživatelská oprávnění z kanálu.")]
-            public async Task ClearPermissionsInChannelAsync([Name("kanal")] IGuildChannel channel, [Name("vynechani_uzivatele")] params IUser[] excludedUsers)
-            {
-                await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-                await Context.Guild.DownloadUsersAsync();
-
-                var overwrites = channel.PermissionOverwrites.Where(o => o.TargetType == PermissionTarget.User && excludedUsers.All(x => x.Id != o.TargetId)).ToList();
-                var msg = await ReplyAsync($"Probíhá úklid oprávnění **0** / **{overwrites.Count}** (**0 %**)");
-
-                double removed = 0;
-                foreach (var overwrite in overwrites)
-                {
-                    var user = Context.Guild.GetUser(overwrite.TargetId);
-                    await channel.RemovePermissionOverwriteAsync(user);
-
-                    removed++;
-                    await msg.ModifyAsync(o => o.Content = $"Probíhá úklid oprávnění **{removed}** / **{overwrites.Count}** (**{Math.Round(removed / overwrites.Count * 100)} %**)");
-                }
-
-                await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
-                await Context.Message.RemoveAllReactionsAsync();
-                await Context.Message.AddReactionAsync(Emojis.Ok);
-            }
+            public Task ClearPermissionsInChannelAsync(IGuildChannel channel, params IUser[] excludedUsers) => Task.CompletedTask;
 
             [Command("remove user")]
             [Summary("Smaže oprávnění uživatele v kanálech.")]

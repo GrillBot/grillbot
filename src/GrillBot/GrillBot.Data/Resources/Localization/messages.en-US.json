@@ -384,5 +384,10 @@
   },
   "Pins": {
     "UnpinCount": "Messages successfully unpinned.\nTotal unpinned messages: **{0}**"
+  },
+  "Permissions": {
+    "Useless": {
+      "CheckSummary": "Unnecessary permissions found: **{0}**\nNumber of channels: **{1}**\nNumber of users: **{2}**"
+    }
   }
 }

@@ -1,6 +1,4 @@
 ﻿using Discord.Commands;
-using System.Data;
-using ConsoleTableExt;
 using Microsoft.Extensions.Caching.Memory;
 using GrillBot.Data.Models.Guilds;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
@@ -50,47 +48,8 @@ public class ServerModule : ModuleBase
         [RequireUserPerms(GuildPermission.ManageRoles)]
         public class GuildPermissionsSubModule : ModuleBase
         {
-            private IConfiguration Configuration { get; }
-
-            public GuildPermissionsSubModule(IConfiguration configuration)
-            {
-                Configuration = configuration;
-            }
-
             [Command("clear")]
             public Task ClearPermissionsInChannelAsync(IGuildChannel channel, params IUser[] excludedUsers) => Task.CompletedTask;
-
-            [Command("remove user")]
-            [Summary("Smaže oprávnění uživatele v kanálech.")]
-            public async Task RemoveUserFromChannelsAsync([Name("id/tag/jmeno_uzivatele")] IGuildUser user, [Name("kanaly")] params IGuildChannel[] guildChannels)
-            {
-                var channels = guildChannels
-                    .Select(o => o is SocketCategoryChannel category ? category.Channels.OfType<IGuildChannel>() : new[] { o })
-                    .SelectMany(o => o)
-                    .Distinct()
-                    .ToArray();
-
-                if (channels.Length == 0) return;
-                await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-                var formatMessage = new Func<double, string>(removed => $"Probíhá úklid oprávnění **{removed}** / **{channels.Length}** (**{Math.Round(removed / channels.Length * 100)} %**)");
-                var msg = await ReplyAsync(formatMessage(0));
-
-                double removed = 0;
-                foreach (var channel in channels)
-                {
-                    var userPermission = channel.GetPermissionOverwrite(user);
-                    if (userPermission != null)
-                        await channel.RemovePermissionOverwriteAsync(user);
-
-                    removed++;
-                    await msg.ModifyAsync(o => o.Content = formatMessage(removed));
-                }
-
-                await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
-                await Context.Message.RemoveAllReactionsAsync();
-                await Context.Message.AddReactionAsync(Emojis.Ok);
-            }
 
             [Group("useless")]
             [Name("Zbytečná oprávnění")]
@@ -112,67 +71,8 @@ public class ServerModule : ModuleBase
                 }
 
                 [Command("check")]
-                [Summary("Zjistí zbytečná oprávnění a vygeneruje k nim report.")]
-                public async Task CheckUselessPermissionsAsync()
-                {
-                    await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-                    var uselessPermissions = await GetUselessPermissionsAsync();
-                    var sessionId = Guid.NewGuid();
-
-                    Cache.Set(sessionId, uselessPermissions);
-                    var channelsCount = uselessPermissions.Select(o => o.Channel.Id).Distinct().Count();
-                    var message =
-                        $"Kontrola zbytečných oprávnění dokončena.\nNalezeno zbytečných oprávnění: **{uselessPermissions.Count}**.\nPočet kanálů: **{channelsCount}**.\nTento výpočet je dostupný v cache pod klíčem `{sessionId}`";
-                    await ReplyAsync(message);
-
-                    await Context.Message.RemoveAllReactionsAsync();
-                    await Context.Message.AddReactionAsync(Emojis.Ok);
-                }
-
-                [Command("report")]
-                [Summary("Vypíše data, která se nacházejí v reportu pod zadaným klíčem.")]
-                public async Task GetUselessPermissionsReportAsync([Name("klic_vypoctu")] Guid sessionId)
-                {
-                    await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-                    if (!Cache.TryGetValue<List<UselessPermission>>(sessionId, out var permissions))
-                    {
-                        await ReplyAsync("Nelze vygenerovat report, protože daná session neexistuje v cache.");
-                        return;
-                    }
-
-                    var table = new DataTable();
-                    table.Columns.AddRange(new[]
-                    {
-                        new DataColumn("Důvod"),
-                        new DataColumn("Uživatelé")
-                    });
-
-                    foreach (var group in permissions.GroupBy(o => o.Type).Where(o => o.Any()))
-                    {
-                        var items = group.ToList();
-                        for (var i = 0; i < items.Count; i++)
-                        {
-                            var item = items[i];
-                            var value = $"{item.User.GetDisplayName()} (#{item.Channel.Name})";
-
-                            table.Rows.Add(i == 0 ? group.Key.GetDescription() : " ", value);
-                        }
-                    }
-
-                    var formatedTable = ConsoleTableBuilder.From(table)
-                        .WithTitle($"Seznam zbytečných oprávnění ke dni {DateTime.Now:yyyy-MM-dd}")
-                        .WithFormat(ConsoleTableBuilderFormat.MarkDown)
-                        .Export()
-                        .ToString();
-                    var bytes = Encoding.UTF8.GetBytes(formatedTable);
-
-                    using var ms = new MemoryStream(bytes);
-                    await ReplyStreamAsync(ms, $"{Context.Guild.Name}_Report.md", false);
-                    await Context.Message.RemoveAllReactionsAsync();
-                    await Context.Message.AddReactionAsync(Emojis.Ok);
-                }
+                [TextCommandDeprecated(AlternativeCommand = "/permissions useless check")]
+                public Task CheckUselessPermissionsAsync() => Task.CompletedTask;
 
                 [Command("clear")]
                 [Summary("Smaže zbytečná oprávnění na základě předchozího výpočtu, případně nově provedeného výpočtu.")]

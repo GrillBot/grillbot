@@ -67,14 +67,23 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected async Task<IUserMessage> SetResponseAsync(string content = null, Embed embed = default, Embed[] embeds = default, MessageComponent components = default, MessageFlags? flags = default,
         IEnumerable<FileAttachment> attachments = default, RequestOptions requestOptions = null, bool secret = false, bool suppressFollowUp = false)
     {
+        var attachmentsList = (attachments ?? Enumerable.Empty<FileAttachment>()).ToList();
+
         if (!Context.Interaction.HasResponded)
         {
-            await RespondAsync(content, embeds, false, secret, null, requestOptions, components, embed);
+            if (attachmentsList.Count > 0)
+                await RespondWithFilesAsync(attachments, content, embeds, false, secret, null, components, embed, requestOptions);
+            else
+                await RespondAsync(content, embeds, false, secret, null, requestOptions, components, embed);
             return await Context.Interaction.GetOriginalResponseAsync();
         }
 
         if (Context.Interaction.IsValidToken && !suppressFollowUp)
+        {
+            if (attachmentsList.Count > 0)
+                return await FollowupWithFilesAsync(attachmentsList, content, embeds, false, secret, null, components, embed, requestOptions);
             return await FollowupAsync(content, embeds, false, secret, null, requestOptions, components, embed);
+        }
 
         if (secret)
             flags |= MessageFlags.Ephemeral;

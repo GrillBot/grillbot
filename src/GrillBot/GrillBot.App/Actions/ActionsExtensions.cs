@@ -150,7 +150,8 @@ public static class ActionsExtensions
             .AddScoped<Commands.CleanChannelMessages>()
             .AddScoped<Commands.PurgePins>()
             .AddScoped<Commands.SendMessageToChannel>()
-            .AddScoped<Commands.PermissionsCleaner>();
+            .AddScoped<Commands.PermissionsCleaner>()
+            .AddScoped<Commands.PermissionsReader>();
         
         return services;
     }

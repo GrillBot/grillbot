@@ -384,5 +384,10 @@
   },
   "Pins": {
     "UnpinCount": "Zprávy byly úspěšně odepnuty.\nCelkem odepnutých zpráv: **{0}**"
+  },
+  "Permissions": {
+    "Useless": {
+      "CheckSummary": "Nalezeno zbytečných oprávnění: **{0}**\nPočet kanálů: **{1}**\nPočet uživatelů: **{2}**"
+    }
   }
 }

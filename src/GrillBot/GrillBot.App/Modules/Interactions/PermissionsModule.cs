@@ -66,5 +66,15 @@ public class PermissionsModule : InteractionsModuleBase
                 attachment.Dispose();
             }
         }
+
+        [SlashCommand("clear", "Remove useless permissions")]
+        public async Task RemoveUselessPermissionsAsync()
+        {
+            using var command = GetCommand<Actions.Commands.PermissionsCleaner>();
+            command.Command.PermissionsReader.Init(Context);
+            
+            command.Command.OnProgress = async progressBar => await SetResponseAsync(progressBar, suppressFollowUp: true);
+            await command.Command.RemoveUselessPermissionsAsync();
+        }
     }
 }

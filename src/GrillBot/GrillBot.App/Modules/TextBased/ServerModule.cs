@@ -1,10 +1,5 @@
 ﻿using Discord.Commands;
-using Microsoft.Extensions.Caching.Memory;
-using GrillBot.Data.Models.Guilds;
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
-using GrillBot.App.Services.Permissions;
-using GrillBot.App.Services.Unverify;
-using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
@@ -57,112 +52,13 @@ public class ServerModule : ModuleBase
             [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nelze provést kontrolu zbytečných oprávnění, protože nemám oprávnění přidávat reakce.")]
             public class GuildUselessPermissionsSubModule : ModuleBase
             {
-                private IMemoryCache Cache { get; }
-                private IConfiguration Configuration { get; }
-                private PermissionsCleaner PermissionsCleaner { get; }
-                private UnverifyService UnverifyService { get; }
-
-                public GuildUselessPermissionsSubModule(IMemoryCache cache, IConfiguration configuration, PermissionsCleaner permissionsCleaner, UnverifyService unverifyService)
-                {
-                    Cache = cache;
-                    Configuration = configuration;
-                    PermissionsCleaner = permissionsCleaner;
-                    UnverifyService = unverifyService;
-                }
-
                 [Command("check")]
                 [TextCommandDeprecated(AlternativeCommand = "/permissions useless check")]
                 public Task CheckUselessPermissionsAsync() => Task.CompletedTask;
 
                 [Command("clear")]
-                [Summary("Smaže zbytečná oprávnění na základě předchozího výpočtu, případně nově provedeného výpočtu.")]
-                public async Task RemoveUselessPermissionsAsync([Name("klic_vypoctu")] Guid? sessionId = null)
-                {
-                    await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-                    if (sessionId == null || !Cache.TryGetValue<List<UselessPermission>>(sessionId, out var permissions))
-                        permissions = await GetUselessPermissionsAsync();
-
-                    var msg = await ReplyAsync($"Probíhá úklid oprávnění **0** / **{permissions.Count}** (**0 %**)");
-
-                    double removed = 0;
-                    foreach (var permission in permissions)
-                    {
-                        await PermissionsCleaner.RemoveUselessPermissionAsync(permission);
-
-                        removed++;
-                        if ((removed % 2) == 0)
-                            await msg.ModifyAsync(o => o.Content = $"Probíhá úklid oprávnění **{removed}** / **{permissions.Count}** (**{Math.Round(removed / permissions.Count * 100)} %**)");
-                    }
-
-                    await msg.ModifyAsync(o => o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
-                    await Context.Message.RemoveAllReactionsAsync();
-                    await Context.Message.AddReactionAsync(Emojis.Ok);
-                }
-
-                [Command("clearForChannel")]
-                [Summary("Smaže zbytečná oprávnění pro daný kanál.")]
-                public async Task RemoveUselessPermissionsFromChannelAsync([Name("kanal")] IGuildChannel channel)
-                {
-                    await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-                    try
-                    {
-                        var unverifyIds = await UnverifyService.GetUserIdsWithUnverifyAsync(channel.Guild);
-                        var permissions = await PermissionsCleaner.GetUselessPermissionsForChannelAsync(channel, channel.Guild);
-                        permissions = permissions.FindAll(o => !unverifyIds.Contains(o.User.Id));
-
-                        if (permissions.Count == 0)
-                        {
-                            await ReplyAsync($"Nebylo nalezeno žádné zbytečné oprávnění pro kanál {channel.Name}");
-                            return;
-                        }
-
-                        var msg = await ReplyAsync(
-                            $"Probíhá úklid oprávnění **0** / **{permissions.Count}** (**0 %**)");
-
-                        double removed = 0;
-                        foreach (var permission in permissions)
-                        {
-                            await PermissionsCleaner.RemoveUselessPermissionAsync(permission);
-
-                            removed++;
-                            if ((removed % 2) == 0)
-                                await msg.ModifyAsync(o => o.Content = $"Probíhá úklid oprávnění **{removed}** / **{permissions.Count}** (**{Math.Round(removed / permissions.Count * 100)} %**)");
-                        }
-
-                        await msg.ModifyAsync(o =>
-                            o.Content = $"Úklid oprávnění dokončen. Smazáno **{removed}** uživatelských oprávnění.");
-                    }
-                    finally
-                    {
-                        await Context.Message.RemoveAllReactionsAsync();
-                        await Context.Message.AddReactionAsync(Emojis.Ok);
-                    }
-                }
-
-                private async Task<List<UselessPermission>> GetUselessPermissionsAsync()
-                {
-                    var unverifyUsers = await UnverifyService.GetUserIdsWithUnverifyAsync(Context.Guild);
-
-                    await Context.Guild.DownloadUsersAsync();
-                    var permissions = new List<UselessPermission>();
-
-                    foreach (var user in Context.Guild.Users.Where(o => !unverifyUsers.Contains(o.Id)))
-                    {
-                        try
-                        {
-                            var uselessPermissions = await PermissionsCleaner.GetUselessPermissionsForUser(user, Context.Guild);
-                            permissions.AddRange(uselessPermissions);
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            // Can ignore
-                        }
-                    }
-
-                    return permissions;
-                }
+                [TextCommandDeprecated(AlternativeCommand = "/permissions useless clear")]
+                public Task RemoveUselessPermissionsAsync(Guid? sessionId = null) => Task.CompletedTask;
             }
         }
 

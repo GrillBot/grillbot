@@ -278,6 +278,18 @@
           "description": "Seznam uživatelů, kteří se mají z procesu vynechat."
         }
       }
+    },
+    "useless": {
+      "name": "useless",
+      "description": "Čištění zbytečných oprávnění.",
+      "check": {
+        "name": "check",
+        "description": "Kontrola serveru na zbytečná oprávnění."
+      },
+      "clear": {
+        "name": "clear",
+        "description": "Provedení smazání zbytečných oprávnění."
+      }
     }
   },
   "pin": {

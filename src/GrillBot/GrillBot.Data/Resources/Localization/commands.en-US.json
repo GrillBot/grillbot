@@ -278,6 +278,18 @@
           "description": "List of users to exclude from the process."
         }
       }
+    },
+    "useless": {
+      "name": "useless",
+      "description": "Cleaning up unnecessary permissions.",
+      "check": {
+        "name": "check",
+        "description": "Checking the server for unnecessary permissions."
+      },
+      "clear": {
+        "name": "clear",
+        "description": "Perform deletion of unnecessary permissions."
+      }
     }
   },
   "pin": {

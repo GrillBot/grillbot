@@ -47,7 +47,6 @@ public static class Extensions
             .AddSingleton<Channels.ChannelService>();
 
         services
-            .AddSingleton<Permissions.PermissionsCleaner>()
             .AddSingleton<Permissions.PermissionsService>();
 
         services

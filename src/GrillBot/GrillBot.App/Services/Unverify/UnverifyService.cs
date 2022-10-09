@@ -1,5 +1,4 @@
 using Discord.Net;
-using GrillBot.App.Services.Permissions;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
@@ -17,7 +16,6 @@ public class UnverifyService
     private UnverifyChecker Checker { get; }
     private UnverifyProfileGenerator ProfileGenerator { get; }
     private UnverifyLogger Logger { get; }
-    private PermissionsCleaner PermissionsCleaner { get; }
     private DiscordSocketClient DiscordSocketClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager LoggingManager { get; }
@@ -26,12 +24,11 @@ public class UnverifyService
     private IDiscordClient DiscordClient { get; }
 
     public UnverifyService(DiscordSocketClient discordSocketClient, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder,
-        PermissionsCleaner permissionsCleaner, LoggingManager loggingManager, ITextsManager texts, UnverifyMessageGenerator messageGenerator, IDiscordClient discordClient)
+        LoggingManager loggingManager, ITextsManager texts, UnverifyMessageGenerator messageGenerator, IDiscordClient discordClient)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
         Logger = logger;
-        PermissionsCleaner = permissionsCleaner;
         DatabaseBuilder = databaseBuilder;
         DiscordSocketClient = discordSocketClient;
         LoggingManager = loggingManager;
@@ -183,13 +180,6 @@ public class UnverifyService
 
             dbUser.Unverify = null;
             await repository.CommitAsync();
-
-            var uselessPermissions = await PermissionsCleaner.GetUselessPermissionsForUser(toUser, guild);
-            if (uselessPermissions.Count > 0)
-            {
-                foreach (var permission in uselessPermissions)
-                    await PermissionsCleaner.RemoveUselessPermissionAsync(permission);
-            }
 
             if (isAuto)
                 return MessageGenerator.CreateRemoveAccessManuallyToChannel(toUser, locale);

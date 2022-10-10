@@ -6,12 +6,6 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class AttachmentBuilder : BuilderBase<IAttachment>
 {
-    public AttachmentBuilder SetId(ulong id)
-    {
-        Mock.Setup(o => o.Id).Returns(id);
-        return this;
-    }
-
     public AttachmentBuilder SetFilename(string filename)
     {
         Mock.Setup(o => o.Filename).Returns(filename);

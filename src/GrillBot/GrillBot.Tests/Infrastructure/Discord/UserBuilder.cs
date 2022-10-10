@@ -40,28 +40,9 @@ public class UserBuilder : BuilderBase<IUser>
         return this;
     }
 
-    public UserBuilder AsWebhook(bool isWebhook = true)
-    {
-        Mock.Setup(o => o.IsWebhook).Returns(isWebhook);
-
-        if (isWebhook)
-            Mock.Setup(o => o.IsBot).Returns(false);
-
-        return this;
-    }
-
     public UserBuilder SetUsername(string username)
     {
         Mock.Setup(o => o.Username).Returns(username);
-        return this;
-    }
-
-    public UserBuilder SetAvatarUrlAction(string avatarUrl, ImageFormat? format = null, ushort? size = null)
-    {
-        Mock.Setup(o => o.GetAvatarUrl(
-            format != null ? It.Is<ImageFormat>(x => x == format.Value) : It.IsAny<ImageFormat>(),
-            size != null ? It.Is<ushort>(x => x == size.Value) : It.IsAny<ushort>()
-        )).Returns(avatarUrl);
         return this;
     }
 

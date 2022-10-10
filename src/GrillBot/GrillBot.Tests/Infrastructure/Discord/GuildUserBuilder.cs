@@ -35,12 +35,6 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
         return SetIdentity(user.Id, user.Username, user.Discriminator);
     }
 
-    public GuildUserBuilder SetJoinDate(DateTimeOffset joinedAt)
-    {
-        Mock.Setup(o => o.JoinedAt).Returns(joinedAt);
-        return this;
-    }
-
     public GuildUserBuilder SetGuildPermissions(GuildPermissions permissions)
     {
         Mock.Setup(o => o.GuildPermissions).Returns(permissions);
@@ -51,12 +45,6 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     {
         Mock.Setup(o => o.Guild).Returns(guild);
         Mock.Setup(o => o.GuildId).Returns(guild.Id);
-        return this;
-    }
-
-    public GuildUserBuilder SetNickname(string nickname)
-    {
-        Mock.Setup(o => o.Nickname).Returns(nickname);
         return this;
     }
 
@@ -97,28 +85,9 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
         return this;
     }
 
-    public GuildUserBuilder AsWebhook(bool isWebhook = true)
-    {
-        Mock.Setup(o => o.IsWebhook).Returns(isWebhook);
-
-        if (isWebhook)
-            Mock.Setup(o => o.IsBot).Returns(false);
-
-        return this;
-    }
-
     public GuildUserBuilder SetUsername(string username)
     {
         Mock.Setup(o => o.Username).Returns(username);
-        return this;
-    }
-
-    public GuildUserBuilder SetAvatarUrlAction(string avatarUrl, ImageFormat? format = null, ushort? size = null)
-    {
-        Mock.Setup(o => o.GetAvatarUrl(
-            format != null ? It.Is<ImageFormat>(x => x == format.Value) : It.IsAny<ImageFormat>(),
-            size != null ? It.Is<ushort>(x => x == size.Value) : It.IsAny<ushort>()
-        )).Returns(avatarUrl);
         return this;
     }
 

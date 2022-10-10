@@ -14,12 +14,6 @@ public class ClientBuilder : BuilderBase<IDiscordClient>
         return this;
     }
 
-    public ClientBuilder SetGetApplicationAction(IApplication application)
-    {
-        Mock.Setup(o => o.GetApplicationInfoAsync(It.IsAny<RequestOptions>())).Returns(Task.FromResult(application));
-        return this;
-    }
-
     public ClientBuilder SetGetGuildAction(IGuild guild)
     {
         Mock.Setup(o => o.GetGuildAsync(It.Is<ulong>(x => x == guild.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(guild));

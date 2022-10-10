@@ -11,9 +11,4 @@ public static class LoggingHelper
     {
         return NullLoggerFactory.Instance;
     }
-
-    public static ILogger<T> CreateLogger<T>()
-    {
-        return NullLogger<T>.Instance;
-    }
 }

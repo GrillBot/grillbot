@@ -63,18 +63,11 @@ public class ServerModule : ModuleBase
         }
 
         [Group("react")]
-        [Name("Správa reakcí na serveru")]
-        [RequireBotPermission(GuildPermission.ManageMessages, ErrorMessage = "Nemohu spravovat reakce, protože nemám oprávnění pro správu zpráv.")]
         public class GuildReactSubModule : ModuleBase
         {
             [Command("clear")]
-            [Summary("Smaže reakci pro daný emote ze zprávy.")]
-            [RequireUserPerms(GuildPermission.ManageMessages)]
-            public async Task RemoveReactionAsync([Name("zprava")] IMessage message, [Name("emote")] IEmote emote)
-            {
-                await message.RemoveAllReactionsForEmoteAsync(emote);
-                await ReplyAsync($"Reakce pro emote {emote} byly smazány.");
-            }
+            [TextCommandDeprecated(AlternativeCommand = "/message clear react")]
+            public Task RemoveReactionAsync(IMessage message, IEmote emote) => Task.CompletedTask;
         }
 
         [Group("role")]

@@ -427,5 +427,17 @@
         "description": "The user for whom you wish to show the points status. If you don't enter, yours will be displayed."
       }
     }
+  },
+  "message": {
+    "name": "message",
+    "description": "Message management",
+    "clear": {
+      "name": "clear",
+      "description": "Deleting message content",
+      "react": {
+        "name": "react",
+        "description": "Deleting an emote from message reactions."
+      }
+    }
   }
 }

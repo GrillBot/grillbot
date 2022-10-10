@@ -389,5 +389,10 @@
     "Useless": {
       "CheckSummary": "Nalezeno zbytečných oprávnění: **{0}**\nPočet kanálů: **{1}**\nPočet uživatelů: **{2}**"
     }
+  },
+  "MessageClearSubModule": {
+    "ClearEmoteFromReactions": {
+      "Success": "Reakce pro emote {0} byly úspěšně smazány."
+    }
   }
 }

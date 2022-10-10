@@ -427,5 +427,17 @@
         "description": "Uživatel, pro kterého si přejete zjistit stav bodů. Pokud ho nezadáte, zobrazí se vaše.."
       }
     }
+  },
+  "message": {
+    "name": "message",
+    "description": "Správa zpráv",
+    "clear": {
+      "name": "clear",
+      "description": "Mazání obsahu zpráv",
+      "react": {
+        "name": "react",
+        "description": "Smazání emotu z reakcí na zprávě."
+      }
+    }
   }
 }

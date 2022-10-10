@@ -389,5 +389,10 @@
     "Useless": {
       "CheckSummary": "Unnecessary permissions found: **{0}**\nNumber of channels: **{1}**\nNumber of users: **{2}**"
     }
+  },
+  "MessageClearSubModule": {
+    "ClearEmoteFromReactions": {
+      "Success": "Reactions for emote {0} have been successfully deleted."
+    }
   }
 }

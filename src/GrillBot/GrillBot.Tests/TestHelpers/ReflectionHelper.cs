@@ -1,5 +1,5 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -40,5 +40,14 @@ public class ReflectionHelper
 
         var field = property.GetBackingField();
         field.SetValue(instance, value);
+    }
+
+    public static T CreateWithInternalConstructor<T>(params object[] constructorParameters) where T : class
+    {
+        var constructor = typeof(T).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).FirstOrDefault();
+        if (constructor == null) return null;
+
+        var instance = constructor.Invoke(constructorParameters);
+        return (T)instance;
     }
 }

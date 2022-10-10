@@ -394,5 +394,34 @@
     "ClearEmoteFromReactions": {
       "Success": "Reakce pro emote {0} byly úspěšně smazány."
     }
+  },
+  "Roles": {
+    "MemberCounts": {
+      "One": "{0:N0} člen",
+      "TwoToFour": "{0:N0} členové",
+      "FiveAndMore": "{0:N0} členů"
+    },
+    "RoleSummaryLine": "{0}, vytvořeno {1}, {2}, {3}, {4}",
+    "Mentionable": "tagovatelná",
+    "Managed": "spravuje Discord",
+    "PremiumSubscriberRole": "booster",
+    "GuildSummary": "Počet rolí: {0}\nPočet uživatelů s rolí: {1}\nPočet uživatelů bez role: {2}",
+    "ListTitle": "Seznam rolí",
+    "DetailTitle": "Detail role @{0}",
+    "DetailFields": {
+      "CreatedAt": "Vytvořeno",
+      "Everyone": "Everyone",
+      "Hoisted": "Separovaná",
+      "Managed": "Spravuje Discord",
+      "Mentionable": "Tagovatelná",
+      "MemberCount": "Počet členů",
+      "BoosterRole": "Booster role",
+      "BotUser": "Náleží botovi",
+      "Permissions": "Oprávnění"
+    },
+    "Boolean": {
+      "True": "Ano",
+      "False": "Ne"
+    }
   }
 }

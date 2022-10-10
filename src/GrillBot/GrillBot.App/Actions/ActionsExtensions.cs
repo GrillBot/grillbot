@@ -151,7 +151,8 @@ public static class ActionsExtensions
             .AddScoped<Commands.PurgePins>()
             .AddScoped<Commands.SendMessageToChannel>()
             .AddScoped<Commands.PermissionsCleaner>()
-            .AddScoped<Commands.PermissionsReader>();
+            .AddScoped<Commands.PermissionsReader>()
+            .AddScoped<Commands.RolesReader>();
         
         return services;
     }

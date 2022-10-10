@@ -394,5 +394,34 @@
     "ClearEmoteFromReactions": {
       "Success": "Reactions for emote {0} have been successfully deleted."
     }
+  },
+  "Roles": {
+    "MemberCounts": {
+      "One": "{0:N0} member",
+      "TwoToFour": "{0:N0} members",
+      "FiveAndMore": "{0:N0} members"
+    },
+    "RoleSummaryLine": "{0}, created at {1}, {2}, {3}, {4}",
+    "Mentionable": "mentionable",
+    "Managed": "managed by Discord",
+    "PremiumSubscriberRole": "booster",
+    "GuildSummary": "Number of roles: {0}\nNumber of users with role: {1}\nNumber of users without a role: {2}",
+    "ListTitle": "List of roles",
+    "DetailTitle": "Detail of role @{0}",
+    "DetailFields": {
+      "CreatedAt": "Created at",
+      "Everyone": "Everyone",
+      "Hoisted": "Separated",
+      "Managed": "Managed by Discord",
+      "Mentionable": "Mentionable",
+      "MemberCount": "Number of members",
+      "BoosterRole": "Booster role",
+      "BotUser": "It belongs to the bot",
+      "Permissions": "Permissions"
+    },
+    "Boolean": {
+      "True": "Yes",
+      "False": "No"
+    }
   }
 }

@@ -439,5 +439,33 @@
         "description": "Deleting an emote from message reactions."
       }
     }
+  },
+  "role": {
+    "name": "role",
+    "description": "Role management",
+    "list": {
+      "name": "list",
+      "description": "List of roles on the server",
+      "sort-by": {
+        "name": "sort",
+        "description": "How should the roles sorted?",
+        "Members": {
+          "name": "Members",
+          "description": "According to the number of members"
+        },
+        "Position": {
+          "name": "Position",
+          "description": "By position in the hierarchy"
+        }
+      }
+    },
+    "get": {
+      "name": "get",
+      "description": "Detailed information about the role",
+      "role": {
+        "name": "role",
+        "description": "Required role"
+      }
+    }
   }
 }

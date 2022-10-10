@@ -439,5 +439,33 @@
         "description": "Smazání emotu z reakcí na zprávě."
       }
     }
+  },
+  "role": {
+    "name": "role",
+    "description": "Správa rolí",
+    "list": {
+      "name": "list",
+      "description": "Seznam rolí na serveru",
+      "sort-by": {
+        "name": "razeni",
+        "description": "Jakým způsobem mají role seřadit?",
+        "Members": {
+          "name": "Členové",
+          "description": "Podle počtu členů"
+        },
+        "Position": {
+          "name": "Pozice",
+          "description": "Podle pozice v hierarchii"
+        }
+      }
+    },
+    "get": {
+      "name": "get",
+      "description": "Detailní informace o roli",
+      "role": {
+        "name": "role",
+        "description": "Požadovaná role"
+      }
+    }
   }
 }

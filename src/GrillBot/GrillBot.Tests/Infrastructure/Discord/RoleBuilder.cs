@@ -41,4 +41,10 @@ public class RoleBuilder : BuilderBase<IRole>
         Mock.Setup(o => o.Position).Returns(position);
         return this;
     }
+
+    public RoleBuilder SetTags(RoleTags tags)
+    {
+        Mock.Setup(o => o.Tags).Returns(tags);
+        return this;
+    }
 }

@@ -52,4 +52,7 @@ public class FormatHelper
         var text = Texts[$"{id}/{countId}", locale];
         return text.FormatWith(Texts.GetCulture(locale), count);
     }
+
+    public string FormatBoolean(string id, string locale, bool value)
+        => Texts[$"{id}/{value}", locale];
 }

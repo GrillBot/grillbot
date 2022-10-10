@@ -15,12 +15,10 @@ namespace GrillBot.App.Modules.Interactions;
 public class RemindModule : InteractionsModuleBase
 {
     private RemindService RemindService { get; }
-    private IServiceProvider ServiceProvider { get; }
 
-    public RemindModule(RemindService remindService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
+    public RemindModule(RemindService remindService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
     {
         RemindService = remindService;
-        ServiceProvider = serviceProvider;
     }
 
     [SlashCommand("create", "Create a reminder for a specific date.")]

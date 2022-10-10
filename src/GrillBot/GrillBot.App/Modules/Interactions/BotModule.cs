@@ -46,11 +46,8 @@ public class BotModule : InteractionsModuleBase
     [Group("selfunverify", "Configuring selfunverify.")]
     public class SelfUnverifyConfig : InteractionsModuleBase
     {
-        private IServiceProvider ServiceProvider { get; }
-
-        public SelfUnverifyConfig(ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
+        public SelfUnverifyConfig(ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
         {
-            ServiceProvider = serviceProvider;
         }
 
         [SlashCommand("list-keepables", "List of allowable accesses when selfunverify")]

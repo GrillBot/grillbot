@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Actions.Api.V2;
 using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.Birthday;
 using Microsoft.Extensions.DependencyInjection;
 using GrillBot.Common.Managers.Localization;
@@ -8,15 +9,14 @@ using GrillBot.Common.Managers.Localization;
 namespace GrillBot.App.Modules.Interactions;
 
 [Group("birthdays", "Birthdays")]
+[RequireUserPerms]
 public class BirthdayModule : InteractionsModuleBase
 {
     private BirthdayService BirthdayService { get; }
-    private IServiceProvider ServiceProvider { get; }
 
-    public BirthdayModule(BirthdayService birthdayService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
+    public BirthdayModule(BirthdayService birthdayService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
     {
         BirthdayService = birthdayService;
-        ServiceProvider = serviceProvider;
     }
 
     [SlashCommand("today", "Finding out who's birthday is today.")]

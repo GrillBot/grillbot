@@ -15,12 +15,10 @@ namespace GrillBot.App.Modules.Interactions;
 public class SearchingModule : InteractionsModuleBase
 {
     private SearchingService SearchingService { get; }
-    private IServiceProvider ServiceProvider { get; }
 
-    public SearchingModule(SearchingService searchingService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts)
+    public SearchingModule(SearchingService searchingService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
     {
         SearchingService = searchingService;
-        ServiceProvider = serviceProvider;
     }
 
     [SlashCommand("list", "Current search.")]

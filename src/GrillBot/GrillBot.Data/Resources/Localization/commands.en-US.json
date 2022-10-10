@@ -147,7 +147,7 @@
         "name": "order",
         "description": "Sort by",
         "Number of uses": {
-          "name": "Number of uses"
+          "name": "Count of uses"
         },
         "Date and time of last use": {
           "name": "Date and time of last use"
@@ -300,7 +300,7 @@
       "description": "Unpins the last N messages.",
       "count": {
         "name": "count",
-        "description": "Number of messages to unpin."
+        "description": "Count of messages to unpin."
       },
       "channel": {
         "name": "channel",
@@ -451,7 +451,7 @@
         "description": "How should the roles sorted?",
         "Members": {
           "name": "Members",
-          "description": "According to the number of members"
+          "description": "According to the count of members"
         },
         "Position": {
           "name": "Position",

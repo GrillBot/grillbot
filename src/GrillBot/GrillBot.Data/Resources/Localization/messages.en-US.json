@@ -72,13 +72,13 @@
       "PermsCount": "User: {0}\nRole: {1}",
       "PermsCountTitle": "Permissions count",
       "Channel": "Channel",
-      "TagsCount": "Number of tags",
+      "TagsCount": "Count of tags",
       "TagsCountValue": {
         "One": "{0:N0} tag",
         "TwoToFour": "{0:N0} tags",
         "FiveAndMore": "{0:N0} tags"
       },
-      "ThreadCount": "Number of threads",
+      "ThreadCount": "Count of threads",
       "PublicThreadCountValue": {
         "One": "{0:N0} public thread",
         "TwoToFour": "{0:N0} public threads",
@@ -89,7 +89,7 @@
         "TwoToFour": "{0:N0} private threads",
         "FiveAndMore": "{0:N0} private threads"
       },
-      "MessageCount": "Number of messages",
+      "MessageCount": "Count of messages",
       "MessageCountValue": {
         "One": "{0:N0} message",
         "TwoToFour": "{0:N0} messages",
@@ -150,18 +150,18 @@
   },
   "GuildModule": {
     "GetInfo": {
-      "CategoryCount": "Number of categories",
-      "TextChannelCount": "Number of text channels",
-      "ThreadsCount": "Number of threads",
-      "VoiceChannelCount": "Number of voice channels",
-      "RoleCount": "Number of roles",
-      "EmoteCount": "Number of emotes (regular/animated)",
-      "BanCount": "Number of bans",
+      "CategoryCount": "Count of categories",
+      "TextChannelCount": "Count of text channels",
+      "ThreadsCount": "Count of threads",
+      "VoiceChannelCount": "Count of voice channels",
+      "RoleCount": "Count of roles",
+      "EmoteCount": "Count of emotes (regular/animated)",
+      "BanCount": "Count of bans",
       "CreatedAt": "Created",
       "Owner": "Owner",
-      "MemberCount": "Number of members",
+      "MemberCount": "Count of members",
       "PremiumTier": "Guild level",
-      "BoosterCount": "Number of boosters",
+      "BoosterCount": "Count of boosters",
       "Improvements": "Improvements",
       "DetailsTitle": "Details",
       "DetailsText": "You can find detailed information about the server in the web administration (https://grillbot.cloud/)",
@@ -251,7 +251,7 @@
         "Options": "Options"
       },
       "Postponed": "This reminder has already been snoozed {0}x",
-      "Options": "If you wish to postpone this reminder, click on the appropriate reaction according to the number of hours."
+      "Options": "If you wish to postpone this reminder, click on the appropriate reaction according to the count of hours."
     }
   },
   "SearchingModule": {
@@ -387,7 +387,7 @@
   },
   "Permissions": {
     "Useless": {
-      "CheckSummary": "Unnecessary permissions found: **{0}**\nNumber of channels: **{1}**\nNumber of users: **{2}**"
+      "CheckSummary": "Unnecessary permissions found: **{0}**\nCount of channels: **{1}**\nCount of users: **{2}**"
     }
   },
   "MessageClearSubModule": {
@@ -405,7 +405,7 @@
     "Mentionable": "mentionable",
     "Managed": "managed by Discord",
     "PremiumSubscriberRole": "booster",
-    "GuildSummary": "Number of roles: {0}\nNumber of users with role: {1}\nNumber of users without a role: {2}",
+    "GuildSummary": "Count of roles: {0}\nCount of users with role: {1}\nCount of users without a role: {2}",
     "ListTitle": "List of roles",
     "DetailTitle": "Detail of role @{0}",
     "DetailFields": {
@@ -414,7 +414,7 @@
       "Hoisted": "Separated",
       "Managed": "Managed by Discord",
       "Mentionable": "Mentionable",
-      "MemberCount": "Number of members",
+      "MemberCount": "Count of members",
       "BoosterRole": "Booster role",
       "BotUser": "It belongs to the bot",
       "Permissions": "Permissions"

@@ -1,5 +1,4 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Channels;
@@ -215,35 +214,5 @@ public class ChannelModule : InteractionsModuleBase
     {
         var handler = new ChannelboardPaginationHandler(Context.Client, DatabaseBuilder, page);
         await handler.ProcessAsync(Context);
-    }
-
-    [SlashCommand("clean", "Deletes the last N messages from the channel.")]
-    [RequireBotPermission(ChannelPermission.ManageMessages | ChannelPermission.ReadMessageHistory)]
-    [SuppressDefer]
-    public async Task CleanAsync(int count, ITextChannel channel = null)
-    {
-        await DeferAsync(true);
-        using var command = GetCommand<Actions.Commands.CleanChannelMessages>();
-
-        var result = await command.Command.ProcessAsync(count, channel);
-        await SetResponseAsync(result, secret: true);
-    }
-
-    [SlashCommand("send", "Send message to command")]
-    [SuppressDefer]
-    public async Task SendMessageToChannelAsync(ITextChannel channel, string content = null, string reference = null, IAttachment attachment = null)
-    {
-        await DeferAsync(true);
-        using var command = GetCommand<Actions.Commands.SendMessageToChannel>();
-
-        try
-        {
-            await command.Command.ProcessAsync(channel, reference, content, new[] { attachment });
-            await SetResponseAsync(Texts["ChannelModule/PostMessage/Success", Locale]);
-        }
-        catch (ValidationException ex)
-        {
-            await SetResponseAsync(ex.Message);
-        }
     }
 }

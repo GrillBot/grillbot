@@ -91,38 +91,6 @@
     "board": {
       "name": "board",
       "description": "Statistics of the most active channels on the server."
-    },
-    "clean": {
-      "name": "clean",
-      "description": "Deletes the last N messages from the channel.",
-      "count": {
-        "name": "count",
-        "description": "Count of messages to delete."
-      },
-      "channel": {
-        "name": "channel",
-        "description": "Channel where to delete messages. If the channel is not specified, the execution channel is used."
-      }
-    },
-    "send": {
-      "name": "send",
-      "description": "Post a message to a channel as a bot.",
-      "channel": {
-        "name": "channel",
-        "description": "The channel to send the message to."
-      },
-      "content": {
-        "name": "content",
-        "description": "The textual content of the message."
-      },
-      "reference": {
-        "name": "reference",
-        "description": "A link to the message to which this message should refer."
-      },
-      "attachment": {
-        "name": "priloha",
-        "description": "Attachment"
-      }
     }
   },
   "duck": {
@@ -465,6 +433,42 @@
       "role": {
         "name": "role",
         "description": "Required role"
+      }
+    }
+  },
+  "admin": {
+    "name": "admin",
+    "description": "Administration commands",
+    "clean_messages": {
+      "name": "clean_messages",
+      "description": "Deletes the last N messages from the channel.",
+      "count": {
+        "name": "count",
+        "description": "Count of messages to delete."
+      },
+      "channel": {
+        "name": "channel",
+        "description": "Channel where to delete messages. If the channel is not specified, the execution channel is used."
+      }
+    },
+    "send": {
+      "name": "send",
+      "description": "Post a message to a channel as a bot.",
+      "channel": {
+        "name": "channel",
+        "description": "The channel to send the message to."
+      },
+      "content": {
+        "name": "content",
+        "description": "The textual content of the message."
+      },
+      "reference": {
+        "name": "reference",
+        "description": "A link to the message to which this message should refer."
+      },
+      "attachment": {
+        "name": "priloha",
+        "description": "Attachment"
       }
     }
   }

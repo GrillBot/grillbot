@@ -70,7 +70,7 @@ public class InviteService
             if (creatorUser != null)
             {
                 await repository.User.GetOrCreateUserAsync(creatorUser);
-                await repository.GuildUser.GetOrCreateGuildUserAsync(creatorUser);
+                await repository.GuildUser.GetOrCreateGuildUserAsync(creatorUser, true);
             }
         }
 
@@ -87,7 +87,7 @@ public class InviteService
             await repository.AddAsync(invite);
         }
 
-        var joinedUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
+        var joinedUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(user, true);
         joinedUserEntity.UsedInviteCode = usedInvite.Code;
 
         await repository.CommitAsync();

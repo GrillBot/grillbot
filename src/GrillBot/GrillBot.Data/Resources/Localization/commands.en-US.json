@@ -36,6 +36,14 @@
           "name": "No"
         }
       }
+    },
+    "info": {
+      "name": "info",
+      "description": "User information",
+      "user": {
+        "name": "user",
+        "description": "The user about whom we want to find out information."
+      }
     }
   },
   "birthdays": {

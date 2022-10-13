@@ -14,11 +14,11 @@ public class GuildUserRepository : RepositoryBase
     {
     }
 
-    public async Task<GuildUser> GetOrCreateGuildUserAsync(IGuildUser user)
+    public async Task<GuildUser> GetOrCreateGuildUserAsync(IGuildUser user, bool includeAll = false)
     {
         using (Counter.Create("Database"))
         {
-            var entity = await FindGuildUserAsync(user);
+            var entity = await FindGuildUserAsync(user, false, includeAll);
             if (entity != null)
                 return entity;
 
@@ -29,16 +29,20 @@ public class GuildUserRepository : RepositoryBase
         }
     }
 
-    public async Task<GuildUser?> FindGuildUserAsync(IGuildUser user, bool disableTracking = false)
+    public async Task<GuildUser?> FindGuildUserAsync(IGuildUser user, bool disableTracking = false, bool includeAll = false)
     {
         using (Counter.Create("Database"))
         {
             var query = Context.GuildUsers
-                .Include(o => o.Guild)
-                .Include(o => o.User)
-                .Include(o => o.UsedInvite!.Creator!.User)
-                .Include(o => o.Unverify!.UnverifyLog)
+                .Include(o => o.Guild).Include(o => o.User)
                 .AsQueryable();
+
+            if (includeAll)
+            {
+                query = query
+                    .Include(o => o.UsedInvite!.Creator!.User)
+                    .Include(o => o.Unverify!.UnverifyLog);
+            }
 
             if (disableTracking)
                 query = query.AsNoTracking();

@@ -61,6 +61,7 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     {
         Mock.Setup(o => o.Id).Returns(id);
         Mock.Setup(o => o.CreatedAt).Returns(SnowflakeUtils.FromSnowflake(id));
+        Mock.Setup(o => o.JoinedAt).Returns(SnowflakeUtils.FromSnowflake(id * 2));
         return this;
     }
 
@@ -116,6 +117,12 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     {
         var dmChannel = new DmChannelBuilder().SetSendMessageAction(message).Build();
         Mock.Setup(o => o.CreateDMChannelAsync(It.IsAny<RequestOptions>())).ReturnsAsync(dmChannel);
+        return this;
+    }
+
+    public GuildUserBuilder SetPremiumSinceDate(DateTimeOffset? premiumSince)
+    {
+        Mock.Setup(o => o.PremiumSince).Returns(premiumSince);
         return this;
     }
 }

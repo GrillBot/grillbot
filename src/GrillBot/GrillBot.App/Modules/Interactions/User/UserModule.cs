@@ -12,6 +12,10 @@ namespace GrillBot.App.Modules.Interactions.User;
 [DefaultMemberPermissions(GuildPermission.ViewAuditLog | GuildPermission.UseApplicationCommands)]
 public class UserModule : Infrastructure.Commands.InteractionsModuleBase
 {
+    public UserModule(IServiceProvider serviceProvider) : base(null, serviceProvider)
+    {
+    }
+
     [SlashCommand("access", "View a list of user permissions.")]
     public async Task GetAccessListAsync(
         [Summary("user", "User identification")]
@@ -44,5 +48,14 @@ public class UserModule : Infrastructure.Commands.InteractionsModuleBase
     {
         var handler = new UserAccessListHandler(Context.Client, page);
         await handler.ProcessAsync(Context);
+    }
+
+    [SlashCommand("info", "Information about user")]
+    public async Task UserInfoAsync(IGuildUser user)
+    {
+        using var command = GetCommand<Actions.Commands.UserInfo>();
+
+        var result = await command.Command.ProcessAsync(user);
+        await SetResponseAsync(embed: result);
     }
 }

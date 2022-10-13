@@ -36,6 +36,14 @@
           "name": "Ne"
         }
       }
+    },
+    "info": {
+      "name": "info",
+      "description": "Informace o uživateli",
+      "user": {
+        "name": "uzivatel",
+        "description": "Uživatel o kterém chceme zjistit informace"
+      }
     }
   },
   "birthdays": {

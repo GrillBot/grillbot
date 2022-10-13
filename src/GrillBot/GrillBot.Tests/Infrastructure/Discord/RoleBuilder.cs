@@ -15,6 +15,7 @@ public class RoleBuilder : BuilderBase<IRole>
     {
         Mock.Setup(o => o.Id).Returns(id);
         Mock.Setup(o => o.CreatedAt).Returns(SnowflakeUtils.FromSnowflake(id));
+        Mock.Setup(o => o.Mention).Returns($"<#{id}>");
         return this;
     }
 

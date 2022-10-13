@@ -350,7 +350,41 @@
     "NotFound": "Explicit permission for command {0} ({1}) does not exist."
   },
   "User": {
-    "NotFound": "No user with this identifier was found."
+    "NotFound": "No user with this identifier was found.",
+    "UserStatus": {
+      "Online": "Online",
+      "Offline": "Offline",
+      "DoNotDisturb": "Do not disturb",
+      "Idle": "Inactive"
+    },
+    "InfoEmbed": {
+      "Title": "User information",
+      "Fields": {
+        "State": "Status",
+        "Roles": "Roles",
+        "CreatedAt": "Created at",
+        "ActiveDevices": "Active devices",
+        "JoinedAt": "Joined at (order)",
+        "PremiumSince": "Boost since",
+        "Points": "Points",
+        "Reactions": "Reactions (given / obtained)",
+        "MessageCount": "Count of messages",
+        "UnverifyCount": "Count of unverifies",
+        "SelfUnverifyCount": "Count of self-unverifies",
+        "UnverifyInfo": "Unverify info",
+        "UsedInvite": "Used invite",
+        "MostActiveChannel": "Most active channel",
+        "LastMessageIn": "Last message in",
+        "WebAdminDetails": "Details"
+      },
+      "NoRoles": "*The user has no roles.*",
+      "UnverifyRow": "User has {0}unverify to {1}. {2}",
+      "ReasonRow": "Reason: {0}",
+      "UsedVanityInviteRow": "**{0}**\n{1}",
+      "UsedInviteRow": "**{0}**\nCreated by: **{1}** (**{2}**)",
+      "VanityInvite": "Universal invite",
+      "WebAdminDetails": "It was not possible to insert all the information they had here, the other information is available in the web administration."
+    }
   },
   "Emojization": {
     "NoContent": "No content to convert was specified.",

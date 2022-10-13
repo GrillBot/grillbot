@@ -78,7 +78,7 @@ public class UnverifyService
             await using var repository = DatabaseBuilder.CreateRepository();
 
             await repository.GuildUser.GetOrCreateGuildUserAsync(from);
-            var dbGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(profile.Destination);
+            var dbGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(profile.Destination, true);
 
             dbGuildUser.Unverify = new Database.Entity.Unverify
             {
@@ -132,7 +132,7 @@ public class UnverifyService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbUser = await repository.GuildUser.FindGuildUserAsync(user);
+        var dbUser = await repository.GuildUser.FindGuildUserAsync(user, includeAll: true);
         if (dbUser?.Unverify == null)
             throw new NotFoundException(Texts["Unverify/Update/UnverifyNotFound", locale]);
 
@@ -164,7 +164,7 @@ public class UnverifyService
         {
             await using var repository = DatabaseBuilder.CreateRepository();
 
-            var dbUser = await repository.GuildUser.FindGuildUserAsync(toUser);
+            var dbUser = await repository.GuildUser.FindGuildUserAsync(toUser, includeAll: true);
             if (dbUser?.Unverify == null)
                 return MessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser, locale);
 
@@ -252,7 +252,7 @@ public class UnverifyService
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
         if (guildUser == null) return;
 
-        var dbUser = await repository.GuildUser.FindGuildUserAsync(guildUser);
+        var dbUser = await repository.GuildUser.FindGuildUserAsync(guildUser, includeAll: true);
         if (dbUser?.Unverify != null)
         {
             dbUser.Unverify = null;

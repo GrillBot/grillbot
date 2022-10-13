@@ -4,9 +4,12 @@ public static class DateTimeExtensions
 {
     public static string ToCzechFormat(this DateTime dateTime, bool withoutTime = false, bool withMiliseconds = false)
     {
-        var timeFormat = $" HH:mm:ss" + (withMiliseconds ? ".ffff" : "");
+        var timeFormat = " HH:mm:ss" + (withMiliseconds ? ".ffff" : "");
         return dateTime.ToString($"dd. MM. yyyy{(withoutTime ? "" : timeFormat)}");
     }
+
+    public static string ToCzechFormat(this DateTimeOffset dateTime, bool withoutTime = false, bool withMiliseconds = false)
+        => dateTime.LocalDateTime.ToCzechFormat(withoutTime, withMiliseconds);
 
     public static int ComputeAge(this DateTime dateTime)
     {

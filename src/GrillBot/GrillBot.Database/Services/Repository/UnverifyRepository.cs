@@ -35,13 +35,16 @@ public class UnverifyRepository : RepositoryBase
     {
         using (CreateCounter())
         {
-            var baseQuery = Context.UnverifyLogs.AsNoTracking()
-                .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString());
+            var data = await Context.UnverifyLogs.AsNoTracking()
+                .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString() && (o.Operation == UnverifyOperation.Unverify || o.Operation == UnverifyOperation.Selfunverify))
+                .GroupBy(o => o.Operation)
+                .Select(o => new { o.Key, Count = o.Count() })
+                .ToDictionaryAsync(o => o.Key, o => o.Count);
 
-            var unverify = await baseQuery.CountAsync(o => o.Operation == UnverifyOperation.Unverify);
-            var selfunverify = await baseQuery.CountAsync(o => o.Operation == UnverifyOperation.Selfunverify);
-
-            return (unverify, selfunverify);
+            return (
+                data.TryGetValue(UnverifyOperation.Unverify, out var unverifyCount) ? unverifyCount : 0,
+                data.TryGetValue(UnverifyOperation.Selfunverify, out var selfUnverifyCount) ? selfUnverifyCount : 0
+            );
         }
     }
 
@@ -75,7 +78,7 @@ public class UnverifyRepository : RepositoryBase
         {
             return await Context.UnverifyLogs.AsNoTracking()
                 .Include(o => o.Guild)
-                .Include(o => o.ToUser!.Unverify) // TODO Nullable
+                .Include(o => o.ToUser!.Unverify)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
     }
@@ -118,11 +121,17 @@ public class UnverifyRepository : RepositoryBase
         }
     }
 
-    public async Task<Unverify?> FindUnverifyAsync(ulong guildId, ulong userId)
+    public async Task<Unverify?> FindUnverifyAsync(ulong guildId, ulong userId, bool disableTracking = false, bool includeLogs = false)
     {
         using (CreateCounter())
         {
-            return await Context.Unverifies
+            var query = Context.Unverifies.AsQueryable();
+            if (includeLogs)
+                query = query.Include(o => o.UnverifyLog);
+            if (disableTracking)
+                query = query.AsNoTracking();
+
+            return await query
                 .FirstOrDefaultAsync(o => o.GuildId == guildId.ToString() && o.UserId == userId.ToString());
         }
     }

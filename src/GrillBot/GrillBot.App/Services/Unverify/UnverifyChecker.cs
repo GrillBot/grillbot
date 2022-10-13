@@ -39,7 +39,7 @@ public class UnverifyChecker
             throw new ValidationException(Texts["Unverify/Validation/GuildOwner", locale].FormatWith(user.GetDisplayName()));
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var dbUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
+        var dbUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user, true);
 
         if (!selfunverify)
         {

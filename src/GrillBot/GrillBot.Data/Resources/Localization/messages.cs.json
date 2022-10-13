@@ -350,7 +350,41 @@
     "NotFound": "Explicitní oprávnění pro příkaz {0} ({1}) neexistuje."
   },
   "User": {
-    "NotFound": "Uživatel s tímto identifikátorem nebyl nalezen."
+    "NotFound": "Uživatel s tímto identifikátorem nebyl nalezen.",
+    "UserStatus": {
+      "Online": "Online",
+      "Offline": "Offline",
+      "DoNotDisturb": "Nerušit",
+      "Idle": "Neaktivní"
+    },
+    "InfoEmbed": {
+      "Title": "Informace o uživateli",
+      "Fields": {
+        "State": "Stav",
+        "Roles": "Role",
+        "CreatedAt": "Vytvořen",
+        "ActiveDevices": "Aktivní zařízení",
+        "JoinedAt": "Připojen (pořadí)",
+        "PremiumSince": "Boost od",
+        "Points": "Body",
+        "Reactions": "Reakce (udělené / získané)",
+        "MessageCount": "Počet zpráv",
+        "UnverifyCount": "Počet unverify",
+        "SelfUnverifyCount": "Počet selfunverify",
+        "UnverifyInfo": "Informace o unverify",
+        "UsedInvite": "Použitá pozvánka",
+        "MostActiveChannel": "Nejaktivnější kanál",
+        "LastMessageIn": "Poslední zpráva",
+        "WebAdminDetails": "Podrobnosti na webu"
+      },
+      "NoRoles": "*Uživatel nemá žádné role.*",
+      "UnverifyRow": "Uděleno {0}unverify do {1}. {2}",
+      "ReasonRow": "Důvod: {0}",
+      "UsedVanityInviteRow": "**{0}**\n{1}",
+      "UsedInviteRow": "**{0}**\nZaložil: **{1}** (**{2}**)",
+      "VanityInvite": "Univerzální pozvánka",
+      "WebAdminDetails": "Nepodařilo se sem vložit všechny informace které měly, ostatní informace jsou dostupné ve webové administraci."
+    }
   },
   "Emojization": {
     "NoContent": "Nebyl zadán žádný obsah k převodu.",

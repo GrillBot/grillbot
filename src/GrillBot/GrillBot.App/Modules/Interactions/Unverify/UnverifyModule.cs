@@ -7,6 +7,8 @@ using GrillBot.Data.Exceptions;
 namespace GrillBot.App.Modules.Interactions.Unverify;
 
 [Group("unverify", "Unverify management")]
+[DefaultMemberPermissions(GuildPermission.UseApplicationCommands | GuildPermission.ManageRoles)]
+[RequireUserPerms(GuildPermission.ManageRoles)]
 public class UnverifyModule : InteractionsModuleBase
 {
     public UnverifyModule(IServiceProvider serviceProvider) : base(null, serviceProvider)

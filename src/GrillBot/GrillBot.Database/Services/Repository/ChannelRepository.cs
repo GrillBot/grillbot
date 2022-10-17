@@ -85,7 +85,7 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<List<GuildChannel>> GetAllChannelsAsync(List<string> guildIds, bool ignoreThreads, bool disableTracking = false)
+    public async Task<List<GuildChannel>> GetAllChannelsAsync(List<string> guildIds, bool ignoreThreads, bool disableTracking = false, ChannelFlags filterFlags = ChannelFlags.None)
     {
         using (Counter.Create("Database"))
         {
@@ -94,6 +94,8 @@ public class ChannelRepository : RepositoryBase
 
             if (ignoreThreads)
                 query = query.Where(o => !new[] { ChannelType.NewsThread, ChannelType.PrivateThread, ChannelType.PublicThread }.Contains(o.ChannelType));
+            if (filterFlags > ChannelFlags.None)
+                query = query.Where(o => (o.Flags & (long)filterFlags) != 0);
 
             return await query.ToListAsync();
         }

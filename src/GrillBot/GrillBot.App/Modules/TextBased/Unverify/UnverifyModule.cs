@@ -1,16 +1,15 @@
 ﻿using Discord.Commands;
-using GrillBot.App.Modules.Implementations.Unverify;
+using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common;
 using GrillBot.Data.Exceptions;
 using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
-using RequireUserPerms = GrillBot.App.Infrastructure.Preconditions.TextBased.RequireUserPermsAttribute;
 
 namespace GrillBot.App.Modules.TextBased.Unverify;
 
 [Group("unverify")]
 [Name("Odebrání přístupu")]
-[RequireUserPerms(GuildPermission.ManageRoles)]
+[Infrastructure.Preconditions.TextBased.RequireUserPerms(GuildPermission.ManageRoles)]
 public class UnverifyModule : ModuleBase
 {
     private UnverifyService UnverifyService { get; }
@@ -123,24 +122,6 @@ public class UnverifyModule : ModuleBase
     }
 
     [Command("list")]
-    [Summary("Seznam uživatelů, kteří mají na serveru odebraný přístup.")]
-    [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
-    public async Task UnverifyListAsync()
-    {
-        var unverify = await UnverifyService.GetCurrentUnverifyAsync(Context.Guild, 0);
-
-        if (unverify == null)
-        {
-            await ReplyAsync("Nikdo zatím nemá odebraný přístup.");
-            return;
-        }
-
-        var unverifyCount = await UnverifyService.GetUnverifyCountsOfGuildAsync(Context.Guild);
-        var embed = new EmbedBuilder()
-            .WithUnverifyList(unverify, Context.Guild, Context.User, 0);
-
-        var message = await ReplyAsync(embed: embed.Build());
-        if (unverifyCount > 1)
-            await message.AddReactionsAsync(Emojis.PaginationEmojis);
-    }
+    [TextCommandDeprecated(AlternativeCommand = "/unverify list")]
+    public Task UnverifyListAsync() => Task.CompletedTask;
 }

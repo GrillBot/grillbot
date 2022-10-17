@@ -260,37 +260,6 @@ public class UnverifyService
         }
     }
 
-    public async Task<int> GetUnverifyCountsOfGuildAsync(IGuild guild)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.Unverify.GetUnverifyCountsAsync(guild);
-    }
-
-    public async Task<UnverifyUserProfile> GetCurrentUnverifyAsync(IGuild guild, int page)
-    {
-        await guild.DownloadUsersAsync();
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var unverify = await repository.Unverify.FindUnverifyPageAsync(guild, page);
-        if (unverify == null)
-            return null;
-
-        var user = await guild.GetUserAsync(unverify.UserId.ToUlong());
-        var profile = UnverifyProfileGenerator.Reconstruct(unverify, user, guild);
-
-        var hiddenChannelsData = await repository.Channel.GetAllChannelsAsync(new List<string> { guild.Id.ToString() }, true, true);
-        var hiddenChannels = hiddenChannelsData
-            .Where(o => o.HasFlag(ChannelFlags.StatsHidden))
-            .Select(o => o.ChannelId.ToUlong())
-            .ToList();
-
-        profile.ChannelsToKeep = profile.ChannelsToKeep.FindAll(o => !hiddenChannels.Contains(o.ChannelId));
-        profile.ChannelsToRemove = profile.ChannelsToRemove.FindAll(o => !hiddenChannels.Contains(o.ChannelId));
-
-        return profile;
-    }
-
     public async Task<List<(UnverifyUserProfile profile, IGuild guild)>> GetAllUnverifiesAsync(ulong? userId = null)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -309,12 +278,6 @@ public class UnverifyService
         }
 
         return profiles;
-    }
-
-    public async Task<List<ulong>> GetUserIdsWithUnverifyAsync(IGuild guild)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.Unverify.GetUserIdsWithUnverify(guild);
     }
 
     public async Task RecoverUnverifyState(long id, ulong fromUserId, string locale)

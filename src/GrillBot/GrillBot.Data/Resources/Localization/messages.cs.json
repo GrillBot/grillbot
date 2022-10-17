@@ -317,6 +317,25 @@
       "ValidUnverify": "Nelze provést obnovení přístupu uživateli, protože má aktuálně platné unverify.",
       "GuildNotFound": "Nelze najít server, na kterém bylo uděleno unverify.",
       "MemberNotFound": "Nelze vyhledat uživatele na serveru {0}"
+    },
+    "ListEmbed": {
+      "NoUnverify": "Zatím neprobíhá žádné unverify.",
+      "Title": "Dočasné odebrání přístupu",
+      "Fields": {
+        "StartAt": "Začátek",
+        "EndAt": "Konec",
+        "EndFor": "Konec za",
+        "Selfunverify": "Selfunverify",
+        "Reason": "Důvod",
+        "RetainedRoles": "Ponechané role",
+        "RemovedRoles": "Odebrané role",
+        "RetainedChannels": "Ponechané kanály",
+        "RemovedChannels": "Odebrané kanály"
+      },
+      "Boolean": {
+        "True": "Ano",
+        "False": "Ne"
+      }
     }
   },
   "AuditLog": {

@@ -317,6 +317,25 @@
       "ValidUnverify": "Unable to restore access to the user because he currently has unverify in effect.",
       "GuildNotFound": "Unable to find the server on which unverify was applied.",
       "MemberNotFound": "Unable to locate user on guild {0}."
+    },
+    "ListEmbed": {
+      "NoUnverify": "There is no unverify yet.",
+      "Title": "Temporary access removal",
+      "Fields": {
+        "StartAt": "Start at",
+        "EndAt": "End at",
+        "EndFor": "End for",
+        "Selfunverify": "Selfunverify",
+        "Reason": "Reason",
+        "RetainedRoles": "Retained roles",
+        "RemovedRoles": "Removed role",
+        "RetainedChannels": "Retained channels",
+        "RemovedChannels": "Removed channels"
+      },
+      "Boolean": {
+        "True": "Yes",
+        "False": "No"
+      }
     }
   },
   "AuditLog": {

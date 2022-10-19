@@ -479,5 +479,13 @@
         "description": "Příloha"
       }
     }
+  },
+  "unverify": {
+    "name": "unverify",
+    "description": "Dočasné odebrání přístupu na server.",
+    "list": {
+      "name": "list",
+      "description": "Seznam uživatelů kteří mají odebraný přístup."
+    }
   }
 }

@@ -479,5 +479,13 @@
         "description": "Attachment"
       }
     }
+  },
+  "unverify": {
+    "name": "unverify",
+    "description": "Temporary access removal in the guild.",
+    "list": {
+      "name": "list",
+      "description": "List of members that have removed access."
+    }
   }
 }

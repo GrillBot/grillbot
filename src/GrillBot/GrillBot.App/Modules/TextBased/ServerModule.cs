@@ -24,7 +24,6 @@ public class ServerModule : ModuleBase
     }
 
     [Group("guild")]
-    [Name("Servery")]
     public class GuildManagementSubmodule : ModuleBase
     {
         [Command("send")]

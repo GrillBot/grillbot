@@ -5,7 +5,6 @@ using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased.User;
 
-[RequireUserPerms(ContextType.Guild)]
 [ExcludeFromCodeCoverage]
 public class UserMeModule : ModuleBase
 {

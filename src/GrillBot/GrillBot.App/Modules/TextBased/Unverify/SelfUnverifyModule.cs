@@ -7,7 +7,6 @@ using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 namespace GrillBot.App.Modules.TextBased.Unverify;
 
 [Group("selfunverify")]
-[RequireContext(ContextType.Guild, ErrorMessage = "Tento příkaz lze použít pouze na serveru.")]
 [ExcludeFromCodeCoverage]
 public class SelfUnverifyModule : ModuleBase
 {

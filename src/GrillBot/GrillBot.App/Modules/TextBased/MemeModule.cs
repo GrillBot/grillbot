@@ -25,12 +25,10 @@ public class MemeModule : ModuleBase
     public Task GetDuckInfoAsync() => Task.CompletedTask;
 
     [Command("hi")]
-    [Summary("Pozdraví uživatele")]
     [TextCommandDeprecated(AlternativeCommand = "/hi")]
-    public Task HiAsync(int? _ = null) => Task.CompletedTask; // Command was reimplemented to Slash command.
+    public Task HiAsync(int? _ = null) => Task.CompletedTask;
 
     [Command("emojize")]
-    [Summary("Znovu pošle zprávu jako emoji.")]
     [TextCommandDeprecated(AlternativeCommand = "/emojize")]
     public Task EmojizeAsync(string message = null) => Task.CompletedTask;
 

@@ -73,7 +73,7 @@ public class UserInfoTests : CommandActionTest<UserInfo>
             GuildId = Consts.GuildId.ToString()
         };
 
-        guildUser.Unverify = new Unverify
+        guildUser.Unverify = new Database.Entity.Unverify
         {
             Reason = "Reason",
             Channels = new List<GuildChannelOverride>(),

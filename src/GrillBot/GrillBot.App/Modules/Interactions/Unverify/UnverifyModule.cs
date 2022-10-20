@@ -93,4 +93,28 @@ public class UnverifyModule : InteractionsModuleBase
             await SetResponseAsync(ex.Message);
         }
     }
+    
+    [SlashCommand("fun", "Set funverify to user.")]
+    public async Task SetFunverifyAsync(DateTime end, string reason, IGuildUser user, IGuildUser user2 = null, IGuildUser user3 = null, IGuildUser user4 = null, IGuildUser user5 = null)
+    {
+        using var scope = ServiceProvider.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<UnverifyService>();
+        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+        try
+        {
+            var users = new[] { user, user2, user3, user4, user5 }.Where(o => o != null).ToList();
+            var result = await service.SetUnverifyAsync(users, end, reason, Context.Guild, Context.User, true, Locale);
+
+            await SetResponseAsync(result[0]);
+            foreach (var msg in result.Skip(1)) await ReplyAsync(msg);
+            
+            await Task.Delay(configuration.GetValue<int>("Unverify:FunverifySleepTime"));
+            await Context.Channel.SendMessageAsync(configuration["Discord:Emotes:KappaLul"]);
+        }
+        catch (ValidationException ex)
+        {
+            await SetResponseAsync(ex.Message);
+        }
+    }
 }

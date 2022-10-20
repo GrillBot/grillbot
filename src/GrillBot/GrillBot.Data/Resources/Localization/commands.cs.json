@@ -538,6 +538,38 @@
         "name":"5uzivatel",
         "description": "5. Uživatel"
       }
+    },
+    "fun": {
+      "name": "fun",
+      "description": "Falešné fdebrání přístupu uživateli.",
+      "end": {
+        "name": "konec",
+        "description": "Datum a čas konce odebrání přístupu."
+      },
+      "reason": {
+        "name": "duvod",
+        "description": "Důvod odebrání přístupu."
+      },
+      "user": {
+        "name": "uzivatel",
+        "description": "1. Uživatel"
+      },
+      "user2": {
+        "name": "2uzivatel",
+        "description": "2. Uživatel"
+      },
+      "user3": {
+        "name":"3uzivatel",
+        "description": "3. Uživatel"
+      },
+      "user4": {
+        "name":"4uzivatel",
+        "description": "4. Uživatel"
+      },
+      "user5": {
+        "name":"5uzivatel",
+        "description": "5. Uživatel"
+      }
     }
   }
 }

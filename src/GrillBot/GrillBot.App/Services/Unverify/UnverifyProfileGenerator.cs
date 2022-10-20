@@ -49,14 +49,11 @@ public class UnverifyProfileGenerator
 
     private string ParseReason(string data, string locale)
     {
-        var ex = new ValidationException(Texts["Unverify/Validation/UnverifyWithoutReason", locale]);
+        data = (data ?? "").Trim();
 
-        var parts = data.Split("<@", StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length < 2) throw ex;
-
-        var reason = parts[0].Trim();
-        if (string.IsNullOrEmpty(reason)) throw ex;
-        return reason;
+        if (string.IsNullOrEmpty(data))
+            throw new ValidationException(Texts["Unverify/Validation/UnverifyWithoutReason", locale]);
+        return data;
     }
 
     private async Task ProcessRolesAsync(UnverifyUserProfile profile, IGuildUser user, IGuild guild, bool selfunverify, List<string> keep, IRole mutedRole,

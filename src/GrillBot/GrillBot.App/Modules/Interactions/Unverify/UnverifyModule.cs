@@ -3,8 +3,10 @@ using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Unverify;
+using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Unverify;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;
 
@@ -69,5 +71,26 @@ public class UnverifyModule : InteractionsModuleBase
 
         var result = await action.Command.ProcessAsync(Context.Guild.Id, user.Id);
         await SetResponseAsync(result);
+    }
+
+    [SlashCommand("set", "Set unverify to user.")]
+    [RequireBotPermission(GuildPermission.ManageRoles)]
+    public async Task SetUnverifyAsync(DateTime end, string reason, IGuildUser user, IGuildUser user2 = null, IGuildUser user3 = null, IGuildUser user4 = null, IGuildUser user5 = null)
+    {
+        using var scope = ServiceProvider.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<UnverifyService>();
+
+        try
+        {
+            var users = new[] { user, user2, user3, user4, user5 }.Where(o => o != null).ToList();
+            var result = await service.SetUnverifyAsync(users, end, reason, Context.Guild, Context.User, false, Locale);
+
+            await SetResponseAsync(result[0]);
+            foreach (var msg in result.Skip(1)) await ReplyAsync(msg);
+        }
+        catch (ValidationException ex)
+        {
+            await SetResponseAsync(ex.Message);
+        }
     }
 }

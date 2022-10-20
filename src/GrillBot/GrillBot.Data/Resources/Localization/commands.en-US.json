@@ -506,6 +506,38 @@
         "name": "user",
         "description": "User to whom access is to be returned."
       }
+    },
+    "set": {
+      "name": "set",
+      "description": "Process temporary access removal.",
+      "end": {
+        "name": "end",
+        "description": "Date and time when access will be restored."
+      },
+      "reason": {
+        "name": "reason",
+        "description": "Reason for removing access."
+      },
+      "user": {
+        "name": "user",
+        "description": "First user"
+      },
+      "user2": {
+        "name": "second-user",
+        "description": "Second user"
+      },
+      "user3": {
+        "name":"third-user",
+        "description": "Third user"
+      },
+      "user4": {
+        "name":"fourth-user",
+        "description": "Fourth user"
+      },
+      "user5": {
+        "name":"fifth-user",
+        "description": "Fifth user"
+      }
     }
   }
 }

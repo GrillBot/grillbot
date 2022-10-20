@@ -39,14 +39,12 @@ public class UnverifyService
         DiscordSocketClient.UserLeft += OnUserLeftAsync;
     }
 
-    public async Task<List<string>> SetUnverifyAsync(List<SocketUser> users, DateTime end, string data, SocketGuild guild, IUser from, bool dry, string locale)
+    public async Task<List<string>> SetUnverifyAsync(List<IGuildUser> users, DateTime end, string data, IGuild guild, IUser from, bool dry, string locale)
     {
-        await guild.DownloadUsersAsync();
-        var messages = new List<string>();
-
         var muteRole = await GetMutedRoleAsync(guild);
-        var fromUser = from as IGuildUser ?? guild.GetUser(from.Id);
+        var fromUser = from as IGuildUser ?? await guild.GetUserAsync(from.Id);
 
+        var messages = new List<string>();
         foreach (var user in users)
         {
             var message = await SetUnverifyAsync(user, end, data, guild, fromUser, false, new List<string>(), muteRole, dry, locale);
@@ -56,11 +54,11 @@ public class UnverifyService
         return messages;
     }
 
-    public async Task<string> SetUnverifyAsync(IUser user, DateTime end, string data, SocketGuild guild, IGuildUser from, bool selfunverify, List<string> keep,
+    public async Task<string> SetUnverifyAsync(IUser user, DateTime end, string data, IGuild guild, IGuildUser from, bool selfunverify, List<string> keep,
         IRole muteRole, bool dry, string locale)
     {
         if (selfunverify && muteRole == null) muteRole = await GetMutedRoleAsync(guild);
-        var guildUser = user as IGuildUser ?? guild.GetUser(user.Id);
+        var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
 
         await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end, keep?.Count ?? 0, locale);
         var profile = await ProfileGenerator.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole, locale);

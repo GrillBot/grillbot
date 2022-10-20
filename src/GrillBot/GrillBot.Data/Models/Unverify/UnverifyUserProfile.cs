@@ -32,7 +32,7 @@ public class UnverifyUserProfile
         ChannelsToRemove = new List<ChannelOverride>();
     }
 
-    public Task ReturnRolesAsync(RequestOptions options = null) 
+    public Task ReturnRolesAsync(RequestOptions options = null)
         => Destination.AddRolesAsync(RolesToRemove, options);
 
     public async Task ReturnChannelsAsync(IGuild guild, RequestOptions options = null)
@@ -46,18 +46,17 @@ public class UnverifyUserProfile
         }
     }
 
-    public Task RemoveRolesAsync(RequestOptions options = null) 
+    public Task RemoveRolesAsync(RequestOptions options = null)
         => Destination.RemoveRolesAsync(RolesToRemove, options);
 
-    public async Task RemoveChannelsAsync(SocketGuild guild, RequestOptions options = null)
+    public async Task RemoveChannelsAsync(IGuild guild, RequestOptions options = null)
     {
-        var channels = ChannelsToRemove
-            .Select(o => new { Channel = guild.GetChannel(o.ChannelId), Perms = o.Permissions })
-            .Where(o => o.Channel != null);
-
-        foreach (var channel in channels)
+        foreach (var channelToRemove in ChannelsToRemove)
         {
-            await channel.Channel.RemovePermissionOverwriteAsync(Destination, options);
+            var channel = await guild.GetChannelAsync(channelToRemove.ChannelId);
+            if (channel == null) continue;
+
+            await channel.RemovePermissionOverwriteAsync(Destination, options);
         }
     }
 }

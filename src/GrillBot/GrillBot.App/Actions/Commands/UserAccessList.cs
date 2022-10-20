@@ -36,7 +36,7 @@ public class UserAccessList : CommandAction
             .WithCurrentTimestamp();
     }
 
-    private void SetPage(EmbedBuilder builder, List<EmbedFieldBuilder> fields, int page, out int pagesCount)
+    private void SetPage(EmbedBuilder builder, IReadOnlyList<EmbedFieldBuilder> fields, int page, out int pagesCount)
     {
         if (fields.Count == 0)
         {
@@ -107,7 +107,7 @@ public class UserAccessList : CommandAction
         return SplitToPages(fields, embed).Count;
     }
 
-    private List<List<EmbedFieldBuilder>> SplitToPages(List<EmbedFieldBuilder> fields, EmbedBuilder embed)
+    private static List<List<EmbedFieldBuilder>> SplitToPages(IReadOnlyList<EmbedFieldBuilder> fields, EmbedBuilder embed)
     {
         var embedClone = embed.Build().ToEmbedBuilder();
         var pages = new List<List<EmbedFieldBuilder>>();

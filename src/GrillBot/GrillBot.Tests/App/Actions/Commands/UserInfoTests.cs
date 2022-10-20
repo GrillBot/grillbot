@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Linq;
+using Discord;
 using GrillBot.App.Actions.Commands;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
@@ -15,8 +16,8 @@ public class UserInfoTests : CommandActionTest<UserInfo>
     private static readonly IRole RoleWithColor = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
     private static readonly IGuild EmptyGuild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetRoleAction(RoleWithColor).Build();
 
-    private static readonly IGuildUser GuildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(EmptyGuild).SetRoles(new[] { RoleWithColor })
-        .SetActiveDevices(new[] { ClientType.Desktop }).SetPremiumSinceDate(DateTimeOffset.Now).Build();
+    private static readonly IGuildUser GuildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(EmptyGuild)
+        .SetRoles(Enumerable.Repeat(RoleWithColor, 50)).SetActiveDevices(new[] { ClientType.Desktop }).SetPremiumSinceDate(DateTimeOffset.Now).Build();
 
     protected override IGuild Guild { get; }
         = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { GuildUser }).Build();

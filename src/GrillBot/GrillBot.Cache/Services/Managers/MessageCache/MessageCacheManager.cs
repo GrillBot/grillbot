@@ -141,7 +141,7 @@ public class MessageCacheManager : IMessageCacheManager
         await ProcessDownloadedMessages(messages);
     }
 
-    public async Task DownloadMessagesAsync(IMessageChannel channel, int limit = DiscordConfig.MaxMessagesPerBatch)
+    private async Task DownloadMessagesAsync(IMessageChannel channel, int limit = DiscordConfig.MaxMessagesPerBatch)
     {
         var messages = await DownloadMessagesFromChannelAsync(channel, null, limit);
         await ProcessDownloadedMessages(messages);
@@ -259,29 +259,6 @@ public class MessageCacheManager : IMessageCacheManager
 
             await ProcessDownloadedMessages(new List<IMessage> { message }, forceReload);
             return message;
-        }
-        finally
-        {
-            Semaphore.Release();
-        }
-    }
-
-    public async Task<IMessage?> GetLastMessageAsync(IChannel? channel = null, IUser? author = null, IGuild? guild = null)
-    {
-        await Semaphore.WaitAsync();
-
-        try
-        {
-            await using var cache = CacheBuilder.CreateRepository();
-
-            var indexes = await cache.MessageIndexRepository.GetMessagesAsync(author?.Id ?? 0, channel?.Id ?? 0, guild?.Id ?? 0);
-            if (indexes.Count == 0) return null;
-
-            return indexes
-                .Select(index => index.MessageId.ToUlong())
-                .Where(id => !DeletedMessages.Contains(id))
-                .Select(id => Messages[id])
-                .MaxBy(o => o.Id);
         }
         finally
         {

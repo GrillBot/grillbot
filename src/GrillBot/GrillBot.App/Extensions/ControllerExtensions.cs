@@ -7,13 +7,6 @@ namespace GrillBot.App.Extensions;
 
 public static class ControllerExtensions
 {
-    public static void StoreParameters(this Controller controller, IApiObject apiObject)
-    {
-        controller.HttpContext.RequestServices
-            .GetRequiredService<ApiRequest>()
-            .AddParameters(apiObject);
-    }
-
     public static void StoreParameters(this Controller controller, IApiObject[] apiObjects)
     {
         controller.HttpContext.RequestServices

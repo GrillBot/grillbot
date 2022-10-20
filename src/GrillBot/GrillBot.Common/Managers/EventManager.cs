@@ -1,6 +1,5 @@
 ﻿using CircularBuffer;
 using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using GrillBot.Common.Extensions;
@@ -15,22 +14,19 @@ public class EventManager
 
     private DiscordSocketClient DiscordClient { get; }
     private InteractionService InteractionService { get; }
-    private CommandService CommandService { get; }
 
     private CircularBuffer<string> EventLog { get; }
     private Dictionary<string, ulong> Statistics { get; }
 
-    public EventManager(DiscordSocketClient discordClient, InteractionService interactionService, CommandService commandService)
+    public EventManager(DiscordSocketClient discordClient, InteractionService interactionService)
     {
         DiscordClient = discordClient;
         InteractionService = interactionService;
-        CommandService = commandService;
         EventLog = new CircularBuffer<string>(1000);
         Statistics = new Dictionary<string, ulong>();
 
         DiscordClient.InteractionCreated += InteractionCreated;
         InteractionService.InteractionExecuted += InteractionExecuted;
-        CommandService.CommandExecuted += CommandExecuted;
         DiscordClient.MessageReceived += MessageReceived;
         DiscordClient.ReactionAdded += (_, _, reaction) => Reaction(reaction, true);
         DiscordClient.ReactionRemoved += (_, _, reaction) => Reaction(reaction, false);
@@ -119,14 +115,6 @@ public class EventManager
 
     private Task MessageReceived(SocketMessage msg) =>
         AddToLog(nameof(MessageReceived), msg.Id.ToString(), msg.Author.GetFullName(), $"#{msg.Channel.Name}", $"ContentLength:{msg.Content.Length}", $"Attachments:{msg.Attachments.Count}");
-
-    private Task CommandExecuted(Optional<CommandInfo> command, ICommandContext context, Discord.Commands.IResult result)
-    {
-        if (!command.IsSpecified) return Task.CompletedTask;
-
-        return AddToLog(nameof(CommandExecuted), command.Value.Name, command.Value.Module.Name, context.User.GetFullName(), $"Guild:{context.Guild?.Name ?? "NoGuild"}",
-            $"Channel:{context.Channel.Name}", result.IsSuccess.ToString(), result.ErrorReason);
-    }
 
     private Task InteractionExecuted(ICommandInfo command, IInteractionContext context, IResult result)
     {

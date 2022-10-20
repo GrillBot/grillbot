@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using GrillBot.App;
 using GrillBot.App.Infrastructure.TypeReaders;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.TestHelpers;

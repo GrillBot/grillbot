@@ -85,20 +85,6 @@ public class UsersController : Controller
     }
 
     /// <summary>
-    /// Gets non paginated list of user available text commands.
-    /// </summary>
-    [HttpGet("me/commands")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CommandGroup>>> GetAvailableCommandsAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetCommandsHelp>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
-
-    /// <summary>
     /// Get non paginated list of available commands from external service.
     /// </summary>
     /// <response code="200">Success</response>

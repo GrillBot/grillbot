@@ -11,8 +11,7 @@ public class GetEventLogTests : ApiActionTest<GetEventLog>
     {
         var discordClient = DiscordHelper.CreateClient();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var commandService = DiscordHelper.CreateCommandsService();
-        var eventManager = new EventManager(discordClient, interactionService, commandService);
+        var eventManager = new EventManager(discordClient, interactionService);
 
         return new GetEventLog(ApiRequestContext, eventManager);
     }

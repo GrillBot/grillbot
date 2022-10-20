@@ -14,14 +14,6 @@ public static class CollectionExtensions
         return result;
     }
 
-    public static IEnumerable<IEnumerable<T>> SplitInParts<T>(this IEnumerable<T> source, int partSize)
-    {
-        var sourceData = source as List<T> ?? source.ToList();
-
-        for (var i = 0; i < Math.Ceiling((double)sourceData.Count / partSize); i++)
-            yield return sourceData.Skip(i * partSize).Take(partSize);
-    }
-
     public static IEnumerable<TSource> Flatten<TSource>(this IEnumerable<TSource> source, Func<TSource, IEnumerable<TSource>?> getChildren)
     {
         foreach (var item in source)

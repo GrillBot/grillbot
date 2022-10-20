@@ -13,7 +13,6 @@ public class LoggingManager
     private InteractionService InteractionService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-
     public LoggingManager(DiscordSocketClient discordClient, CommandService commandService, InteractionService interactionService, IServiceProvider serviceProvider)
     {
         DiscordClient = discordClient;
@@ -55,7 +54,4 @@ public class LoggingManager
 
     public Task ErrorAsync(string source, string message, Exception exception)
         => OnLogAsync(new LogMessage(LogSeverity.Error, source, message, exception));
-
-    public Task InvokeAsync(LogMessage message)
-        => OnLogAsync(message);
 }

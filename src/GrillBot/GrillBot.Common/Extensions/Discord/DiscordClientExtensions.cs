@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 
 namespace GrillBot.Common.Extensions.Discord;
 
@@ -21,27 +20,6 @@ public static class DiscordClientExtensions
         }
 
         return user;
-    }
-
-    public static async Task<IUser?> FindUserAsync(this BaseSocketClient client, ulong id, CancellationToken cancellationToken = default)
-    {
-        var user = client.GetUser(id);
-
-        if (user != null)
-            return user;
-
-        foreach (var guild in client.Guilds)
-        {
-            user = guild.GetUser(id);
-
-            if (user != null)
-                return user;
-        }
-
-        if (client.LoginState != LoginState.LoggedIn)
-            return null;
-
-        return await client.Rest.GetUserAsync(id, new RequestOptions { CancelToken = cancellationToken });
     }
 
     public static async Task<IUser?> FindUserAsync(this IDiscordClient client, ulong id)
@@ -83,12 +61,6 @@ public static class DiscordClientExtensions
 
         return await guilds
             .FindAllAsync(async g => await g.GetUserAsync(userId) != null);
-    }
-
-    public static IEnumerable<SocketGuild> FindMutualGuilds(this BaseSocketClient client, ulong userId)
-    {
-        return client.Guilds
-            .Where(o => o.GetUser(userId) != null);
     }
 
     public static async Task<ITextChannel?> FindTextChannelAsync(this IDiscordClient client, ulong id)

@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Enums.Internal;
 
@@ -26,7 +25,7 @@ public class ChannelService
         DiscordClient.MessageDeleted += OnMessageRemovedAsync;
     }
 
-    private async Task OnMessageReceivedAsync(SocketUserMessage message)
+    private async Task OnMessageReceivedAsync(SocketMessage message)
     {
         var argPos = 0;
 
@@ -74,69 +73,5 @@ public class ChannelService
 
         userChannel.Count--;
         await repository.CommitAsync();
-    }
-
-    private async Task<List<SocketTextChannel>> GetTopMostActiveChannelsOfUserAsync(IUser user, IGuild guild, int take)
-    {
-        await using var repositor = DatabaseBuilder.CreateRepository();
-
-        var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
-        var topChannels = await repositor.Channel.GetTopChannelsOfUserAsync(guildUser, take, true);
-
-        // User not have any active channel.
-        if (topChannels.Count == 0) return new List<SocketTextChannel>();
-
-        var channelIds = topChannels.ConvertAll(o => o.ChannelId);
-        var channels = new List<SocketTextChannel>();
-        foreach (var channelId in channelIds)
-        {
-            if (await guild.GetTextChannelAsync(channelId.ToUlong()) is SocketTextChannel channel)
-                channels.Add(channel);
-        }
-
-        return channels;
-    }
-
-    /// <summary>
-    /// Finds last message from user in cache. If message wasn't found bot will use statistics and refresh cache and tries find message.
-    /// </summary>
-    public async Task<IUserMessage> GetLastMsgFromUserAsync(IGuild guild, IUser loggedUser)
-    {
-        var lastCachedMsgFromAuthor = await MessageCache.GetLastMessageAsync(guild: guild, author: loggedUser);
-        if (lastCachedMsgFromAuthor is IUserMessage lastMessage) return lastMessage;
-
-        // Using statistics and finding most active channel will help find channel where logged user have any message.
-        // This eliminates the need to browser channels and finds some activity.
-        var mostActiveChannels = await GetTopMostActiveChannelsOfUserAsync(loggedUser, guild, 10);
-        foreach (var channel in mostActiveChannels)
-        {
-            lastMessage = await TryFindLastMessageFromUserAsync(channel, loggedUser, true);
-            if (lastMessage != null) return lastMessage;
-        }
-
-        var socketGuild = DiscordClient.GetGuild(guild.Id);
-        return socketGuild.TextChannels
-            .SelectMany(o => o.CachedMessages)
-            .Where(o => o.Author.Id == loggedUser.Id)
-            .MaxBy(o => o.Id) as IUserMessage;
-    }
-
-    private async Task<IUserMessage> TryFindLastMessageFromUserAsync(ISocketMessageChannel channel, IUser loggedUser, bool canTryDownload)
-    {
-        var lastMessage = new[]
-        {
-            channel.CachedMessages.Where(o => o.Author.Id == loggedUser.Id).MaxBy(o => o.Id),
-            await MessageCache.GetLastMessageAsync(channel: channel, author: loggedUser)
-        }.Where(o => o != null).MaxBy(o => o.Id);
-
-        if (lastMessage != null)
-            return (IUserMessage)lastMessage;
-
-        if (!canTryDownload)
-            return null;
-
-        // Try reload cache and try find message.
-        await MessageCache.DownloadMessagesAsync(channel);
-        return await TryFindLastMessageFromUserAsync(channel, loggedUser, false);
     }
 }

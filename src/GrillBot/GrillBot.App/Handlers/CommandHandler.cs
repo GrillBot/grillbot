@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
 using GrillBot.Common.Extensions.Discord;
@@ -59,11 +58,6 @@ public class CommandHandler
 
             switch (result.Error.Value)
             {
-                case CommandError.Unsuccessful when result is CommandRedirectResult crr && !string.IsNullOrEmpty(crr.NewCommand):
-                    CommandsPerformanceCounter.StartTask(context);
-                    await CommandService.ExecuteAsync(context, crr.NewCommand, Provider);
-                    break;
-
                 case CommandError.ObjectNotFound when result is ParseResult parseResult && typeof(IUser).IsAssignableFrom(parseResult.ErrorParameter.Type):
                     reply = "Bohužel jsem nenalezl uživatele, kterého jsi zadal/a.";
                     break;
@@ -74,15 +68,10 @@ public class CommandHandler
                 case CommandError.ObjectNotFound:
                     reply = result.ErrorReason;
                     break;
-
-                case CommandError.BadArgCount:
-                    CommandsPerformanceCounter.StartTask(context);
-                    await CommandService.ExecuteAsync(context, $"help {context.Message.Content[1..]}", Provider);
-                    break;
-
                 case CommandError.Exception:
                     await context.Message.AddReactionAsync(new Emoji("❌"));
                     break;
+                case CommandError.BadArgCount:
                 case CommandError.UnknownCommand:
                 case CommandError.MultipleMatches:
                     break;

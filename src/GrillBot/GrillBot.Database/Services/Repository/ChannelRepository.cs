@@ -157,29 +157,6 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<List<GuildChannel>> GetTopChannelsOfUserAsync(IGuildUser user, int take, bool disableTracking = false)
-    {
-        using (Counter.Create("Database"))
-        {
-            var query = Context.UserChannels
-                .Where(o =>
-                    o.Channel.ChannelType == ChannelType.Text &&
-                    o.GuildId == user.GuildId.ToString() &&
-                    o.UserId == user.Id.ToString() &&
-                    o.Count > 0 &&
-                    (o.Channel.Flags & (long)ChannelFlags.Deleted) == 0
-                )
-                .OrderByDescending(o => o.Count)
-                .Select(o => o.Channel)
-                .Take(take);
-
-            if (disableTracking)
-                query = query.AsNoTracking();
-
-            return await query.ToListAsync();
-        }
-    }
-
     public async Task<List<GuildChannel>> GetChildChannelsAsync(ulong parentChannelId, ulong? guildId = null)
     {
         using (Counter.Create("Database"))

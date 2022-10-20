@@ -75,12 +75,4 @@ public class GuildUserRepository : RepositoryBase
                 .ToListAsync();
         }
     }
-
-    public async Task<bool> ExistsUserWithOldPointsAsync()
-    {
-        using (CreateCounter())
-        {
-            return await Context.GuildUsers.AnyAsync(o => o.Points > 0);
-        }
-    }
 }

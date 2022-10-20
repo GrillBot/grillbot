@@ -106,9 +106,9 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
         Repositories.Clear();
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         Repositories.Clear();
-        return Context.DisposeAsync();
+        await Context.DisposeAsync();
     }
 }

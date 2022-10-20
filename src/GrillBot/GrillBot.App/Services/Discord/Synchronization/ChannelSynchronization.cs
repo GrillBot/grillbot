@@ -98,11 +98,8 @@ public class ChannelSynchronization : SynchronizationBase
         foreach (var threadChannel in await guild.GetThreadChannelsAsync())
         {
             var channel = guildChannels.Find(o => o.IsThread() && o.ChannelId == threadChannel.Id.ToString() && o.ParentChannelId == threadChannel.CategoryId.ToString());
-            if(channel == null) continue;
 
-            channel.Update(threadChannel);
-            foreach (var userStatistics in channel.Users.Where(o => o.FirstMessageAt == DateTime.MinValue))
-                userStatistics.FirstMessageAt = threadChannel.CreatedAt.LocalDateTime;
+            channel?.Update(threadChannel);
         }
     }
 }

@@ -179,7 +179,7 @@ public class UserInfo : CommandAction
     private async Task SetChannelInfoAsync(EmbedBuilder builder, IGuildUser user, GrillBotRepository repository)
     {
         if (OverLimit) return;
-        var (mostActiveChanel, lastActiveChannel) = await repository.Channel.GetTopChannelStatsOfUserAsync(user);
+        var (lastActiveChannel, mostActiveChanel) = await repository.Channel.GetTopChannelStatsOfUserAsync(user);
 
         if (mostActiveChanel != null)
             AddField(builder, "MostActiveChannel", $"<#{mostActiveChanel.ChannelId}> ({mostActiveChanel.Count})", false);

@@ -2,7 +2,6 @@
 using GrillBot.App.Infrastructure.Preconditions.TextBased;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common;
-using GrillBot.Data.Exceptions;
 using ModuleBase = GrillBot.App.Infrastructure.Commands.ModuleBase;
 
 namespace GrillBot.App.Modules.TextBased.Unverify;
@@ -100,26 +99,8 @@ public class UnverifyModule : ModuleBase
     }
 
     [Command("update")]
-    [Summary("Aktualizace času u záznamu o dočasném odebrání přístupu.\n" +
-             "Formát data o novém konci unverify je stejný jako při zadávání unverify.\n" +
-             "Identifikace uživatele je stejná jako u příkazu `{prefix}unverify remove`." +
-             "Celý příkaz vypadá např.: `{prefix}unverify update @GrillBot 1h`")]
-    public async Task UnverifyUpdateAsync([Name("kdo")] IGuildUser user, [Name("novy datum konce")] DateTime end)
-    {
-        try
-        {
-            var fromUser = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
-            var message = await UnverifyService.UpdateUnverifyAsync(user, Context.Guild, end, fromUser, "cs");
-            await ReplyAsync(message);
-        }
-        catch (Exception ex)
-        {
-            if (ex is not ValidationException && ex is not NotFoundException)
-                throw;
-
-            await ReplyAsync(ex.Message);
-        }
-    }
+    [TextCommandDeprecated(AlternativeCommand = "/unverify update")]
+    public Task UnverifyUpdateAsync(IGuildUser user, DateTime end) => Task.CompletedTask;
 
     [Command("list")]
     [TextCommandDeprecated(AlternativeCommand = "/unverify list")]

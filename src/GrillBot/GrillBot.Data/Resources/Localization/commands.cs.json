@@ -486,6 +486,18 @@
     "list": {
       "name": "list",
       "description": "Seznam uživatelů kteří mají odebraný přístup."
+    },
+    "update": {
+      "name": "update",
+      "description": "Aktualizace konce odebrání přístupu.",
+      "user": {
+        "name": "uzivatel",
+        "description": "Cílový uživatel"
+      },
+      "new-end": {
+        "name": "novy-konec",
+        "description": "Datum a čas nového konce."
+      }
     }
   }
 }

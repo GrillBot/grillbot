@@ -111,4 +111,12 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 
         return command;
     }
+
+    protected ScopedCommand<TAction> GetActionAsCommand<TAction>() where TAction : ApiAction
+    {
+        var command = new ScopedCommand<TAction>(ServiceProvider.CreateScope());
+        command.Command.UpdateContext(Locale, Context.User);
+
+        return command;
+    }
 }

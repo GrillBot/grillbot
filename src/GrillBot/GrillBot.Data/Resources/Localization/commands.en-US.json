@@ -486,6 +486,18 @@
     "list": {
       "name": "list",
       "description": "List of members that have removed access."
+    },
+    "update": {
+      "name": "update",
+      "description": "Update datetime of end of access removal.",
+      "user": {
+        "name": "user",
+        "description": "User that have removed access."
+      },
+      "new-end": {
+        "name": "new-end",
+        "description": "Datetime of new end."
+      }
     }
   }
 }

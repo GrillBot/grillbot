@@ -4,6 +4,7 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Unverify;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.API.Unverify;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;
 
@@ -39,5 +40,23 @@ public class UnverifyModule : InteractionsModuleBase
     {
         var handler = new UnverifyListPaginationHandler(page, ServiceProvider);
         await handler.ProcessAsync(Context);
+    }
+
+    [SlashCommand("update", "Updates time of an existing unverify")]
+    public async Task UpdateUnverifyAsync(IGuildUser user, DateTime newEnd)
+    {
+        using var action = GetActionAsCommand<Actions.Api.V1.Unverify.UpdateUnverify>();
+
+        try
+        {
+            await action.Command.ProcessAsync(Context.Guild.Id, user.Id, new UpdateUnverifyParams { EndAt = newEnd });
+        }
+        catch (Exception ex)
+        {
+            if (ex is NotFoundException or ValidationException)
+                await SetResponseAsync(ex.Message);
+
+            throw;
+        }
     }
 }

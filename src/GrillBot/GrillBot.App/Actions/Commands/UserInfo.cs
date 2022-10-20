@@ -81,7 +81,26 @@ public class UserInfo : CommandAction
     private void SetRoles(EmbedBuilder builder, IGuildUser user)
     {
         var roles = user.GetRoles().Select(o => o.Mention).ToList();
-        AddField(builder, "Roles", roles.Any() ? string.Join(" ", roles) : Texts["User/InfoEmbed/NoRoles", Locale], false);
+        if (roles.Count == 0)
+        {
+            AddField(builder, "Roles", Texts["User/InfoEmbed/NoRoles", Locale], false);
+            return;
+        }
+
+        var fieldValue = new StringBuilder();
+        foreach (var role in roles)
+        {
+            if (fieldValue.Length + role.Length + 1 >= EmbedFieldBuilder.MaxFieldValueLength)
+            {
+                AddField(builder, "Roles", fieldValue.ToString().Trim(), false);
+                fieldValue.Clear();
+            }
+
+            fieldValue.Append(role).Append(' ');
+        }
+
+        if (fieldValue.Length > 0)
+            AddField(builder, "Roles", fieldValue.ToString(), false);
     }
 
     private void SetGuildInfo(EmbedBuilder builder, IGuildUser user)

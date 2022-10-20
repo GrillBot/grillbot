@@ -74,6 +74,8 @@ public class UnverifyChecker
         var botRolePosition = currentUser.GetRoles().Max(o => o.Position);
 
         var userRoles = user.GetRoles().ToList();
+        if (userRoles.Count == 0) return;
+
         var userMaxRolePosition = userRoles.Max(o => o.Position);
 
         if (userMaxRolePosition <= botRolePosition)

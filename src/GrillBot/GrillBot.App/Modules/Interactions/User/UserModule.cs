@@ -24,15 +24,11 @@ public class UserModule : Infrastructure.Commands.InteractionsModuleBase
         bool secret = false
     )
     {
-        var visibleChannels = await Context.Guild.GetAvailableChannelsAsync(user);
-        visibleChannels = visibleChannels.FindAll(o => o is not ICategoryChannel);
+        await DeferAsync(secret);
+        using var command = GetCommand<Actions.Commands.UserAccessList>();
 
-        var embed = new EmbedBuilder()
-            .WithUserAccessList(visibleChannels, user, Context.User, Context.Guild, 0, out var pagesCount)
-            .Build();
-
-        var components = ComponentsHelper.CreatePaginationComponents(0, pagesCount, "user_access");
-        await SetResponseAsync(embed: embed, components: components, secret: secret);
+        var (embed, paginationComponents) = await command.Command.ProcessAsync(user, 0);
+        await SetResponseAsync(embed: embed, components: paginationComponents, secret: secret);
     }
 
     [UserCommand("Seznam oprávnění")]
@@ -46,7 +42,7 @@ public class UserModule : Infrastructure.Commands.InteractionsModuleBase
     [ComponentInteraction("user_access:*", ignoreGroupNames: true)]
     public async Task HandleAccessListPaginationAsync(int page)
     {
-        var handler = new UserAccessListHandler(Context.Client, page);
+        var handler = new UserAccessListHandler(ServiceProvider, page);
         await handler.ProcessAsync(Context);
     }
 

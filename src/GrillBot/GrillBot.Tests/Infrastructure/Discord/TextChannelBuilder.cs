@@ -76,8 +76,12 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
 
     public TextChannelBuilder SetGetUsersAction(IEnumerable<IGuildUser> users)
     {
-        var enumerable = new List<IReadOnlyCollection<IGuildUser>> { users.ToList().AsReadOnly() }.ToAsyncEnumerable();
+        var usersData = users.ToList();
+        var enumerable = new List<IReadOnlyCollection<IGuildUser>> { usersData.AsReadOnly() }.ToAsyncEnumerable();
         Mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(enumerable);
+
+        foreach (var user in usersData)
+            Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(x => x == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
         return this;
     }
 
@@ -101,6 +105,13 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
                 Mock.Setup(o => o.GetPermissionOverwrite(It.Is<IUser>(u => u.Id == overwrite.TargetId))).Returns(overwrite.Permissions);
         }
 
+        return this;
+    }
+
+    public TextChannelBuilder SetCategory(ICategoryChannel category)
+    {
+        Mock.Setup(o => o.CategoryId).Returns(category.Id);
+        Mock.Setup(o => o.GetCategoryAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(category);
         return this;
     }
 }

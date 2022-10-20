@@ -403,6 +403,11 @@
       "UsedInviteRow": "**{0}**\nZaložil: **{1}** (**{2}**)",
       "VanityInvite": "Univerzální pozvánka",
       "WebAdminDetails": "Nepodařilo se sem vložit všechny informace které měly, ostatní informace jsou dostupné ve webové administraci."
+    },
+    "AccessList": {
+      "Title": "Seznam přístupů pro uživatele {0}",
+      "NoAccess": "Uživatel nemá přístup do žádného kanálu.",
+      "WithoutCategory": "Bez kategorie"
     }
   },
   "Emojization": {

@@ -384,6 +384,11 @@
       "UsedInviteRow": "**{0}**\nCreated by: **{1}** (**{2}**)",
       "VanityInvite": "Universal invite",
       "WebAdminDetails": "It was not possible to insert all the information they had here, the other information is available in the web administration."
+    },
+    "AccessList": {
+      "Title": "Access list of user {0}",
+      "NoAccess": "User not have access to any channel.",
+      "WithoutCategory": "Without category"
     }
   },
   "Emojization": {

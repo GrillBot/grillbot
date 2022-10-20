@@ -1,17 +1,16 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.User;
 
 public class UserAccessListHandler : ComponentInteractionHandler
 {
-    private IDiscordClient DiscordClient { get; }
+    private IServiceProvider ServiceProvider { get; }
     private int Page { get; }
 
-    public UserAccessListHandler(IDiscordClient discordClient, int page)
+    public UserAccessListHandler(IServiceProvider serviceProvider, int page)
     {
-        DiscordClient = discordClient;
+        ServiceProvider = serviceProvider;
         Page = page;
     }
 
@@ -23,27 +22,18 @@ public class UserAccessListHandler : ComponentInteractionHandler
             return;
         }
 
-        var guild = await DiscordClient.GetGuildAsync(metadata.GuildId);
-        if (guild == null)
-        {
-            await context.Interaction.DeferAsync();
-            return;
-        }
-
-        var forUser = await guild.GetUserAsync(metadata.ForUserId);
+        var forUser = await context.Guild.GetUserAsync(metadata.ForUserId);
         if (forUser == null)
         {
             await context.Interaction.DeferAsync();
             return;
         }
 
-        var visibleChannels = await guild.GetAvailableChannelsAsync(forUser);
-        visibleChannels = visibleChannels.FindAll(o => o is not ICategoryChannel);
+        using var scope = ServiceProvider.CreateScope();
+        var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.UserAccessList>();
+        action.Init(context);
 
-        // We calculate a new view to get PagesCount without knowing if this is possible. Because we need to get the number of pages.
-        // After this operation we will generate another embed because the page can still change.
-        new EmbedBuilder().WithUserAccessList(visibleChannels, forUser, context.User, guild, 0, out var pagesCount);
-
+        var pagesCount = await action.ComputePagesCount(forUser);
         var newPage = CheckNewPageNumber(Page, pagesCount);
         if (newPage == metadata.Page)
         {
@@ -51,13 +41,11 @@ public class UserAccessListHandler : ComponentInteractionHandler
             return;
         }
 
-        var result = new EmbedBuilder()
-            .WithUserAccessList(visibleChannels, forUser, context.User, guild, newPage, out pagesCount);
-
+        var (embed, paginationComponents) = await action.ProcessAsync(forUser, newPage);
         await component.UpdateAsync(msg =>
         {
-            msg.Components = ComponentsHelper.CreatePaginationComponents(newPage, pagesCount, "user_access");
-            msg.Embed = result.Build();
+            msg.Components = paginationComponents;
+            msg.Embed = embed;
         });
     }
 }

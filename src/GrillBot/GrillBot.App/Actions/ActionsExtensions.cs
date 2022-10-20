@@ -153,7 +153,8 @@ public static class ActionsExtensions
             .AddScoped<Commands.PermissionsCleaner>()
             .AddScoped<Commands.PermissionsReader>()
             .AddScoped<Commands.RolesReader>()
-            .AddScoped<Commands.UserInfo>();
+            .AddScoped<Commands.UserInfo>()
+            .AddScoped<Commands.UserAccessList>();
         
         return services;
     }

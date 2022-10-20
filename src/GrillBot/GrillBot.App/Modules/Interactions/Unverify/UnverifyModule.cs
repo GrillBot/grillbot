@@ -49,7 +49,8 @@ public class UnverifyModule : InteractionsModuleBase
 
         try
         {
-            await action.Command.ProcessAsync(Context.Guild.Id, user.Id, new UpdateUnverifyParams { EndAt = newEnd });
+            var result = await action.Command.ProcessAsync(Context.Guild.Id, user.Id, new UpdateUnverifyParams { EndAt = newEnd });
+            await SetResponseAsync(result);
         }
         catch (Exception ex)
         {
@@ -58,5 +59,15 @@ public class UnverifyModule : InteractionsModuleBase
 
             throw;
         }
+    }
+
+    [SlashCommand("remove", "Remove an active unverify.")]
+    [RequireBotPermission(GuildPermission.ManageRoles)]
+    public async Task RemoveUnverifyAsync(IGuildUser user)
+    {
+        using var action = GetActionAsCommand<Actions.Api.V1.Unverify.RemoveUnverify>();
+
+        var result = await action.Command.ProcessAsync(Context.Guild.Id, user.Id);
+        await SetResponseAsync(result);
     }
 }

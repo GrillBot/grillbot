@@ -498,6 +498,14 @@
         "name": "novy-konec",
         "description": "Datum a čas nového konce."
       }
+    },
+    "remove": {
+      "name": "remove",
+      "description": "Přečasné vrácení přístupu uživateli.",
+      "user": {
+        "name": "uzivatel",
+        "description": "Uživatel, kterému má být vrácen přístup."
+      }
     }
   }
 }

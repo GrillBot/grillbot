@@ -498,6 +498,14 @@
         "name": "new-end",
         "description": "Datetime of new end."
       }
+    },
+    "remove": {
+      "name": "remove",
+      "description": "Early return of user access",
+      "user": {
+        "name": "user",
+        "description": "User to whom access is to be returned."
+      }
     }
   }
 }

@@ -67,36 +67,8 @@ public class UnverifyModule : ModuleBase
     }
 
     [Command("remove")]
-    [Summary("Předčasné vrácení přístupu.\n" +
-             "Zadává se identifikace uživatele. To znamená ID uživatele, tag, nebo jméno\n" +
-             "Celý příkaz pak vypadá např.: {prefix}unverify remove @GrillBot")]
-    [RequireBotPermission(GuildPermission.AddReactions, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění přidávat reakce.")]
-    [RequireBotPermission(GuildPermission.ManageRoles, ErrorMessage = "Nemohu provést tento příkaz, protože nemám oprávnění spravovat oprávnění kanálů a role.")]
-    public async Task RemoveUnverifyAsync([Name("kdo")] IGuildUser user)
-    {
-        var success = true;
-
-        try
-        {
-            await Context.Message.AddReactionAsync(Emote.Parse(Configuration["Discord:Emotes:Loading"]));
-
-            var fromUser = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
-            var message = await UnverifyService.RemoveUnverifyAsync(Context.Guild, fromUser, user, "cs");
-            await ReplyAsync(message);
-        }
-        catch (Exception)
-        {
-            success = false;
-            throw;
-        }
-        finally
-        {
-            await Context.Message.RemoveAllReactionsAsync();
-
-            if (success)
-                await Context.Message.AddReactionAsync(Emojis.Ok);
-        }
-    }
+    [TextCommandDeprecated(AlternativeCommand = "/unverify remove")]
+    public Task RemoveUnverifyAsync(IGuildUser user) => Task.CompletedTask;
 
     [Command("update")]
     [TextCommandDeprecated(AlternativeCommand = "/unverify update")]

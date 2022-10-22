@@ -106,9 +106,15 @@
       "TopTen": "TOP 10 users"
     },
     "GetChannelboard": {
-      "UserNotFound": "The user who called the command could not be found.",
       "NoAccess": "You don't have access to any channels.",
-      "NoActivity": "No channel activity has been recorded so far."
+      "NoActivity": "No channel activity has been recorded so far.",
+      "Counts": {
+        "One": "{0:N0} message",
+        "TwoToFour": "{0:N0} messages",
+        "FiveAndMore": "{0:N0} messages"
+      },
+      "Row": "**{0}.** #{1} ({2})",
+      "Title": "Channel activity statistics"
     },
     "PostMessage": {
       "GuildNotFound": "Failed to find server.",

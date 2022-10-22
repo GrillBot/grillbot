@@ -215,13 +215,18 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<Dictionary<string, (long count, DateTime firstMessageAt, DateTime lastMessageAt)>> GetAvailableStatsAsync(IGuild guild, IEnumerable<string> availableChannelIds)
+    public async Task<Dictionary<string, (long count, DateTime firstMessageAt, DateTime lastMessageAt)>> GetAvailableStatsAsync(IGuild guild, IEnumerable<string> availableChannelIds,
+        bool showInvisible = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.UserChannels.AsNoTracking()
-                .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString() && availableChannelIds.Contains(o.ChannelId))
-                .GroupBy(o => o.ChannelId)
+                .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString() && availableChannelIds.Contains(o.ChannelId));
+
+            if (!showInvisible)
+                query = query.Where(o => (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0);
+
+            var groupQuery = query.GroupBy(o => o.ChannelId)
                 .Select(o => new
                 {
                     ChannelId = o.Key,

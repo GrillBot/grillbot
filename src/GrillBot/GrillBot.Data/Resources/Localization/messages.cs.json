@@ -106,9 +106,15 @@
       "TopTen": "TOP 10 uživatelů"
     },
     "GetChannelboard": {
-      "UserNotFound": "Nepodařilo se dohledat uživatele, který zavolal příkaz.",
       "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
-      "NoActivity": "Doteď nebyla zaznamenána žádná aktivita v kanálech."
+      "NoActivity": "Doteď nebyla zaznamenána žádná aktivita v kanálech.",
+      "Counts": {
+        "One": "{0:N0} zpráva",
+        "TwoToFour": "{0:N0} zprávy",
+        "FiveAndMore": "{0:N0} zpráv"
+      },
+      "Row": "**{0}.** #{1} ({2})",
+      "Title": "Statistika aktivity v kanálech"
     },
     "PostMessage": {
       "GuildNotFound": "Nepodařilo se najít server.",

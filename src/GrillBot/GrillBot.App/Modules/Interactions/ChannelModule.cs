@@ -6,6 +6,7 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Data.Exceptions;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Enums.Internal;
 
@@ -172,47 +173,24 @@ public class ChannelModule : InteractionsModuleBase
     [SlashCommand("board", "TOP 10 channel statistics you can access.")]
     public async Task GetChannelboardAsync()
     {
-        var user = Context.User as IGuildUser ?? await Context.Client.TryFindGuildUserAsync(Context.Guild.Id, Context.User.Id);
-        if (user == null)
-            throw new InvalidOperationException(GetText(nameof(GetChannelboardAsync), "UserNotFound"));
+        using var command = GetCommand<Actions.Commands.GetChannelboard>();
 
-        var availableChannels = await Context.Guild.GetAvailableChannelsAsync(user, true);
-        if (availableChannels.Count == 0)
+        try
         {
-            await SetResponseAsync(GetText(nameof(GetChannelboardAsync), "NoAccess"));
-            return;
+            var (embed, paginationComponents) = await command.Command.ProcessAsync(0);
+            await SetResponseAsync(embed: embed, components: paginationComponents);
         }
-
-        var availableChannelIds = availableChannels.ConvertAll(o => o.Id.ToString());
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var channels = await repository.Channel.GetVisibleChannelsAsync(Context.Guild.Id, availableChannelIds, true);
-
-        if (channels.Count == 0)
+        catch (NotFoundException ex)
         {
-            await SetResponseAsync(GetText(nameof(GetChannelboardAsync), "NoActivity"));
-            return;
+            await SetResponseAsync(ex.Message);
         }
-
-        var data = channels
-            .Select(o => new { o.ChannelId, Count = o.Users.Sum(x => x.Count) })
-            .OrderByDescending(o => o.Count)
-            .Take(10)
-            .ToDictionary(o => o.ChannelId, o => o.Count);
-
-        var embed = new EmbedBuilder()
-            .WithChannelboard(user, Context.Guild, data, id => Context.Guild.GetTextChannel(id), 0);
-
-        var pagesCount = (int)Math.Ceiling(channels.Count / 10.0D);
-        var components = ComponentsHelper.CreatePaginationComponents(0, pagesCount, "channelboard");
-        await SetResponseAsync(embed: embed.Build(), components: components);
     }
 
     [RequireSameUserAsAuthor]
     [ComponentInteraction("channelboard:*", ignoreGroupNames: true)]
     public async Task HandleChannelboardPaginationAsync(int page)
     {
-        var handler = new ChannelboardPaginationHandler(Context.Client, DatabaseBuilder, page);
+        var handler = new ChannelboardPaginationHandler(ServiceProvider, page);
         await handler.ProcessAsync(Context);
     }
 }

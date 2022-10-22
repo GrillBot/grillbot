@@ -33,13 +33,12 @@ public class GetChannelboard : ApiAction
     {
         var result = new List<ChannelboardItem>();
         var loggedGuildUser = await guild.GetUserAsync(ApiContext.GetUserId());
-        var availableChannels = await guild.GetAvailableChannelsAsync(loggedGuildUser, true);
+        var availableChannels = await guild.GetAvailableChannelsAsync(loggedGuildUser, true, false);
         if (availableChannels.Count == 0) return result;
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var availableChannelIds = availableChannels.ConvertAll(o => o.Id.ToString());
-        var statistics = await repository.Channel.GetAvailableStatsAsync(guild, availableChannelIds);
+        var statistics = await repository.Channel.GetAvailableStatsAsync(guild, availableChannels.Select(o => o.Id.ToString()), true);
         if (statistics.Count == 0) return result;
 
         var channels = await repository.Channel.GetVisibleChannelsAsync(guild.Id, statistics.Keys.ToList(), true, true);

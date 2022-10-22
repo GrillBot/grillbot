@@ -154,7 +154,8 @@ public static class ActionsExtensions
             .AddScoped<Commands.RolesReader>()
             .AddScoped<Commands.UserInfo>()
             .AddScoped<Commands.UserAccessList>()
-            .AddScoped<Commands.Unverify.UnverifyList>();
+            .AddScoped<Commands.Unverify.UnverifyList>()
+            .AddScoped<Commands.GetChannelboard>();
         
         return services;
     }

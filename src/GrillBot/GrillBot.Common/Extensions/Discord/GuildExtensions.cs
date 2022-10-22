@@ -13,10 +13,11 @@ public static class GuildExtensions
     public static int CalculateFileUploadLimit(this IGuild guild)
         => Convert.ToInt32(guild.MaxUploadLimit / 1000000);
 
-    public static async Task<List<IGuildChannel>> GetAvailableChannelsAsync(this IGuild guild, IGuildUser user, bool onlyText = false)
+    public static async Task<List<IGuildChannel>> GetAvailableChannelsAsync(this IGuild guild, IGuildUser user, bool onlyText = false, bool suppressThreads = true)
     {
-        var allChannels = (onlyText ? (await guild.GetTextChannelsAsync()).OfType<IGuildChannel>().ToList() : (await guild.GetChannelsAsync()).ToList())
-            .Where(o => o is not IThreadChannel);
+        var allChannels = onlyText ? (await guild.GetTextChannelsAsync()).OfType<IGuildChannel>().ToList() : (await guild.GetChannelsAsync()).AsEnumerable();
+        if (suppressThreads)
+            allChannels = allChannels.Where(o => o is not IThreadChannel);
 
         return await allChannels.FindAllAsync(o => o.HaveAccessAsync(user));
     }

@@ -235,7 +235,7 @@ public class ChannelRepository : RepositoryBase
                     FirstMessageAt = o.Min(x => x.FirstMessageAt)
                 });
 
-            return await query.ToDictionaryAsync(o => o.ChannelId, o => (o.Count, o.FirstMessageAt, o.LastMessageAt));
+            return await groupQuery.ToDictionaryAsync(o => o.ChannelId, o => (o.Count, o.FirstMessageAt, o.LastMessageAt));
         }
     }
 }

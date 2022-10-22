@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure.IO;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;

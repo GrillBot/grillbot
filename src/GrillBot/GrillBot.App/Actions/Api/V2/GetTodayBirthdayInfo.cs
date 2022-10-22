@@ -39,7 +39,7 @@ public class GetTodayBirthdayInfo : ApiAction
             var discordUser = await DiscordClient.FindUserAsync(user.Id.ToUlong());
             if (discordUser == null) continue;
 
-            var age = user.BirthdayAcceptYear ? user.Birthday!.Value.ComputeAge() : (int?)null;
+            var age = user.BirthdayAcceptYear ? ComputeAge(user.Birthday!.Value) : (int?)null;
             result.Add((discordUser, age));
         }
 
@@ -72,5 +72,14 @@ public class GetTodayBirthdayInfo : ApiAction
         }
 
         return result;
+    }
+
+    private static int ComputeAge(DateTime dateTime)
+    {
+        var today = DateTime.Today;
+        var age = today.Year - dateTime.Year;
+        if (dateTime.Date > today.AddYears(-age)) age--;
+
+        return age;
     }
 }

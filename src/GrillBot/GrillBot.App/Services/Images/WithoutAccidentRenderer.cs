@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.FileStorage;
 using GrillBot.Data.Resources.Misc;
 using ImageMagick;

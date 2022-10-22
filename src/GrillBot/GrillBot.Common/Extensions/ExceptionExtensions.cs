@@ -19,6 +19,6 @@ public static class ExceptionExtensions
         return user ?? client.CurrentUser;
     }
 
-    public static ValidationException ToBadRequestValidation(this ValidationException exception, object? value, params string[] memberNames)
-        => new ValidationException(new ValidationResult(exception.Message, memberNames), null, value);
+    public static ValidationException ToBadRequestValidation(this ValidationException exception, object? value, params string[] memberNames) =>
+        new(new ValidationResult(exception.Message, memberNames), null, value);
 }

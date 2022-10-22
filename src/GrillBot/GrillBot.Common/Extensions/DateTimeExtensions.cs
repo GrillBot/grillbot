@@ -10,13 +10,4 @@ public static class DateTimeExtensions
 
     public static string ToCzechFormat(this DateTimeOffset dateTime, bool withoutTime = false, bool withMiliseconds = false)
         => dateTime.LocalDateTime.ToCzechFormat(withoutTime, withMiliseconds);
-
-    public static int ComputeAge(this DateTime dateTime)
-    {
-        var today = DateTime.Today;
-        var age = today.Year - dateTime.Year;
-        if (dateTime.Date > today.AddYears(-age)) age--;
-
-        return age;
-    }
 }

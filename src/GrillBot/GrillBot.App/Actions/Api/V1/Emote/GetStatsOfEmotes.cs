@@ -21,7 +21,7 @@ public class GetStatsOfEmotes : ApiAction
 
     public async Task<PaginatedResponse<EmoteStatItem>> ProcessAsync(EmotesListParams parameters, bool unsupported)
     {
-        var supportedEmotes = EmotesCache.GetEmotes().ConvertAll(o => o.Guild.ToString());
+        var supportedEmotes = EmotesCache.GetEmotes().ConvertAll(o => o.Emote.ToString());
 
         await using var repository = DatabaseBuilder.CreateRepository();
 

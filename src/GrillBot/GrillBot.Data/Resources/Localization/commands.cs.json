@@ -501,7 +501,7 @@
     },
     "remove": {
       "name": "remove",
-      "description": "Přečasné vrácení přístupu uživateli.",
+      "description": "Předčasné vrácení přístupu uživateli.",
       "user": {
         "name": "uzivatel",
         "description": "Uživatel, kterému má být vrácen přístup."
@@ -541,7 +541,7 @@
     },
     "fun": {
       "name": "fun",
-      "description": "Falešné fdebrání přístupu uživateli.",
+      "description": "Falešné odebrání přístupu uživateli.",
       "end": {
         "name": "konec",
         "description": "Datum a čas konce odebrání přístupu."
@@ -552,23 +552,23 @@
       },
       "user": {
         "name": "uzivatel",
-        "description": "1. Uživatel"
+        "description": "První uživatel"
       },
       "user2": {
-        "name": "2uzivatel",
-        "description": "2. Uživatel"
+        "name": "druhy-uzivatel",
+        "description": "Druhý uživatel"
       },
       "user3": {
-        "name":"3uzivatel",
-        "description": "3. Uživatel"
+        "name":"treti-uzivatel",
+        "description": "Třetí uživatel"
       },
       "user4": {
-        "name":"4uzivatel",
-        "description": "4. Uživatel"
+        "name":"ctvrty-uzivatel",
+        "description": "Čtvrtý uživatel"
       },
       "user5": {
-        "name":"5uzivatel",
-        "description": "5. Uživatel"
+        "name":"paty-uzivatel",
+        "description": "Pátý uživatel"
       }
     }
   }

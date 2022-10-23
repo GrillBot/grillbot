@@ -485,14 +485,14 @@
     "description": "Temporary access removal in the guild.",
     "list": {
       "name": "list",
-      "description": "List of members that have removed access."
+      "description": "List of members with removed access."
     },
     "update": {
       "name": "update",
-      "description": "Update datetime of end of access removal.",
+      "description": "Update the datetime of access removal.",
       "user": {
         "name": "user",
-        "description": "User that have removed access."
+        "description": "User with removed access."
       },
       "new-end": {
         "name": "new-end",

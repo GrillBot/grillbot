@@ -57,7 +57,8 @@ public class CancelRemindTests : ApiActionTest<CancelRemind>
             FromUserId = fromUserId.ToString(),
             ToUserId = toUserId.ToString(),
             OriginalMessageId = (Consts.MessageId - 1).ToString(),
-            RemindMessageId = remindMessageId?.ToString()
+            RemindMessageId = remindMessageId?.ToString(),
+            Language = "cs"
         });
         await Repository.CommitAsync();
     }

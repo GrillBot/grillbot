@@ -139,7 +139,8 @@ public class RemindPostponeReactionHandlerTests : ReactionEventHandlerTest<Remin
             Postpone = 0,
             RemindMessageId = Consts.MessageId.ToString(),
             ToUser = User.FromDiscord(user),
-            ToUserId = user.Id.ToString()
+            ToUserId = user.Id.ToString(),
+            Language = "cs"
         };
 
         await Repository.AddAsync(remind);

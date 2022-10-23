@@ -63,7 +63,8 @@ public class GetReminderListTests : ApiActionTest<GetReminderList>
             At = DateTime.Now,
             FromUserId = Consts.UserId.ToString(),
             ToUserId = Consts.UserId.ToString(),
-            Message = "Test"
+            Message = "Test",
+            Language = "cs"
         });
         await Repository.CommitAsync();
     }

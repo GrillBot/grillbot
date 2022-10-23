@@ -133,7 +133,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
             ToUserId = to.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
-            Id = 5
+            Id = 5,
+            Language = "cs"
         });
 
         await Repository.CommitAsync();
@@ -160,7 +161,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
             ToUserId = middle.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
-            Id = 6
+            Id = 6,
+            Language = "cs"
         });
 
         await Repository.CommitAsync();
@@ -183,7 +185,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
             ToUserId = to.Id.ToString(),
             Message = "Message",
             OriginalMessageId = "12345",
-            Id = 6
+            Id = 6,
+            Language = "cs"
         });
 
         await Repository.CommitAsync();
@@ -209,7 +212,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
             Message = "Message",
             OriginalMessageId = "12345",
             ToUser = Database.Entity.User.FromDiscord(User),
-            ToUserId = User.Id.ToString()
+            ToUserId = User.Id.ToString(),
+            Language = "cs"
         };
         await Repository.AddAsync(remind);
         await Repository.CommitAsync();

@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Emotes;
+using GrillBot.Common.Managers.Emotes;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Data.Models.AuditLog;
@@ -9,11 +9,11 @@ namespace GrillBot.App.Actions.Api.V1.Emote;
 
 public class MergeStats : ApiAction
 {
-    private EmotesCacheService CacheService { get; }
+    private IEmoteCache CacheService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriter AuditLogWriter { get; }
 
-    public MergeStats(ApiRequestContext apiContext, EmotesCacheService cacheService, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter) : base(apiContext)
+    public MergeStats(ApiRequestContext apiContext, IEmoteCache cacheService, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter) : base(apiContext)
     {
         CacheService = cacheService;
         DatabaseBuilder = databaseBuilder;
@@ -64,8 +64,7 @@ public class MergeStats : ApiAction
 
     private void ValidateMerge(MergeEmoteStatsParams @params)
     {
-        if (@params.SuppressValidations) return;
-        var supportedEmotes = CacheService.GetSupportedEmotes().ConvertAll(o => o.Item1.ToString());
+        var supportedEmotes = CacheService.GetEmotes().ConvertAll(o => o.Emote.ToString());
 
         if (!supportedEmotes.Contains(@params.DestinationEmoteId))
         {

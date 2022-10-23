@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Actions.Api.V1.Emote;
-using GrillBot.App.Services.Emotes;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 
@@ -9,16 +9,20 @@ public class GetSupportedEmotesTests : ApiActionTest<GetSupportedEmotes>
 {
     protected override GetSupportedEmotes CreateAction()
     {
-        var client = DiscordHelper.CreateClient();
-        var cache = new EmotesCacheService(client);
+        var emote = EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.PepeJamEmote));
+        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
 
-        return new GetSupportedEmotes(ApiRequestContext, cache, TestServices.AutoMapper.Value);
+        var emotesCache = new EmotesCacheBuilder()
+            .AddEmote(emote, guild)
+            .Build();
+
+        return new GetSupportedEmotes(ApiRequestContext, emotesCache, TestServices.AutoMapper.Value);
     }
 
     [TestMethod]
     public void Process()
     {
         var result = Action.Process();
-        Assert.AreEqual(0, result.Count);
+        Assert.AreEqual(1, result.Count);
     }
 }

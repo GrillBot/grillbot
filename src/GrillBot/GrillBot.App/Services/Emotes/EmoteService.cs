@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Emotes;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 
@@ -12,15 +12,15 @@ public class EmoteService
 {
     private string CommandPrefix { get; }
     private IMessageCacheManager MessageCache { get; }
-    private EmotesCacheService EmotesCacheService { get; }
+    private IEmoteCache EmoteCache { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     public EmoteService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
-        IMessageCacheManager messageCache, EmotesCacheService emotesCacheService)
+        IMessageCacheManager messageCache, IEmoteCache emoteCache)
     {
         CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
-        EmotesCacheService = emotesCacheService;
+        EmoteCache = emoteCache;
         MessageCache = messageCache;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
@@ -33,11 +33,11 @@ public class EmoteService
 
     private async Task OnMessageReceivedAsync(SocketMessage message)
     {
-        var supportedEmotes = EmotesCacheService.GetSupportedEmotes().ConvertAll(o => o.Item1);
+        var supportedEmotes = EmoteCache.GetEmotes().ConvertAll(o => o.Emote);
 
         if (supportedEmotes.Count == 0) return; // Ignore events when no supported emotes is available.
         if (!message.TryLoadMessage(out var msg)) return; // Ignore messages from bots.
-        if (string.IsNullOrEmpty(message.Content)) return; // Ignore empty messages.
+        if (string.IsNullOrEmpty(msg?.Content)) return; // Ignore empty messages.
         if (msg.IsCommand(DiscordClient.CurrentUser, CommandPrefix)) return; // Ignore commands.
         if (msg.Channel is not SocketTextChannel textChannel) return; // Ignore DMs.
 
@@ -78,14 +78,14 @@ public class EmoteService
     {
         if (!messageChannel.HasValue || messageChannel.Value is not ITextChannel) return;
 
-        var supportedEmotes = EmotesCacheService.GetSupportedEmotes();
+        var supportedEmotes = EmoteCache.GetEmotes().ConvertAll(o => o.Emote);
         if (supportedEmotes.Count == 0) return;
 
         var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, null, true);
         if (msg is not IUserMessage userMessage) return;
         if (userMessage.IsCommand(DiscordClient.CurrentUser, CommandPrefix)) return;
 
-        var emotes = msg.GetEmotesFromMessage(supportedEmotes.ConvertAll(o => o.Item1)).ToList();
+        var emotes = msg.GetEmotesFromMessage(supportedEmotes).ToList();
 
         if (emotes.Count == 0) return;
         if (msg.Author is not IGuildUser guildUser) return;
@@ -107,12 +107,12 @@ public class EmoteService
 
     private async Task OnReactionAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction, ReactionEvents @event)
     {
-        var supportedEmotes = EmotesCacheService.GetSupportedEmotes();
+        var supportedEmotes = EmoteCache.GetEmotes();
 
         if (!channel.HasValue || channel.Value is not SocketTextChannel textChannel) return;
         if (supportedEmotes.Count == 0) return;
         if (reaction.Emote is not Emote emote) return;
-        if (!supportedEmotes.Any(o => o.Item1.IsEqual(emote))) return;
+        if (!supportedEmotes.Any(o => o.Emote.IsEqual(emote))) return;
 
         var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, channel.Value);
         var reactionUser = (reaction.User.IsSpecified ? reaction.User.Value : textChannel.Guild.GetUser(reaction.UserId)) as IGuildUser;

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using GrillBot.App.Services.Emotes;
+using GrillBot.Common.Managers.Emotes;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Models;
@@ -8,11 +8,11 @@ namespace GrillBot.App.Actions.Api.V1.Emote;
 
 public class GetStatsOfEmotes : ApiAction
 {
-    private EmotesCacheService EmotesCache { get; }
+    private IEmoteCache EmotesCache { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
 
-    public GetStatsOfEmotes(ApiRequestContext apiContext, EmotesCacheService emotesCache, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper) : base(apiContext)
+    public GetStatsOfEmotes(ApiRequestContext apiContext, IEmoteCache emotesCache, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper) : base(apiContext)
     {
         EmotesCache = emotesCache;
         DatabaseBuilder = databaseBuilder;
@@ -21,7 +21,7 @@ public class GetStatsOfEmotes : ApiAction
 
     public async Task<PaginatedResponse<EmoteStatItem>> ProcessAsync(EmotesListParams parameters, bool unsupported)
     {
-        var supportedEmotes = EmotesCache.GetSupportedEmotes().ConvertAll(o => o.Item1.ToString());
+        var supportedEmotes = EmotesCache.GetEmotes().ConvertAll(o => o.Guild.ToString());
 
         await using var repository = DatabaseBuilder.CreateRepository();
 

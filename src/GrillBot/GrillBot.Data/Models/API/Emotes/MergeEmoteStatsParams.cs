@@ -2,8 +2,6 @@
 using GrillBot.Data.Infrastructure.Validation;
 using System.ComponentModel.DataAnnotations;
 using GrillBot.Common.Infrastructure;
-using Newtonsoft.Json;
-using NSwag.Annotations;
 
 namespace GrillBot.Data.Models.API.Emotes;
 
@@ -16,10 +14,6 @@ public class MergeEmoteStatsParams : IApiObject
     [Required(ErrorMessage = "Pro sloučení je vyžadován EmoteId.")]
     [EmoteId(ErrorMessage = "EmoteId není ve správném formátu.")]
     public string DestinationEmoteId { get; set; }
-
-    [JsonIgnore]
-    [OpenApiIgnore]
-    public bool SuppressValidations { get; set; }
 
     public Dictionary<string, string> SerializeForLog()
     {

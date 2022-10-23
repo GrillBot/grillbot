@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
+using GrillBot.Common.Managers.Emotes;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
@@ -17,6 +18,7 @@ public static class ManagersExtensions
             .AddSingleton<CounterManager>()
             .AddScoped<ApiRequestContext>()
             .AddSingleton<EventManager>()
+            .AddSingleton<IEmoteCache, EmoteCache>()
             .AddLoggingServices();
     }
 

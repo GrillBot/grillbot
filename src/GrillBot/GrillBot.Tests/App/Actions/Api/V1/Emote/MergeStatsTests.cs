@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Discord;
 using GrillBot.App.Actions.Api.V1.Emote;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Emotes;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -12,13 +12,17 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 [TestClass]
 public class MergeStatsTests : ApiActionTest<MergeStats>
 {
+    private static readonly IGuild Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+
     protected override MergeStats CreateAction()
     {
-        var discordClient = DiscordHelper.CreateClient();
-        var cache = new EmotesCacheService(discordClient);
+        var emotesCache = new EmotesCacheBuilder()
+            .AddEmote(EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.PepeJamEmote)), Guild)
+            .AddEmote(EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.FeelsHighManEmote)), Guild)
+            .Build();
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
 
-        return new MergeStats(ApiRequestContext, cache, DatabaseBuilder, auditLogWriter);
+        return new MergeStats(ApiRequestContext, emotesCache, DatabaseBuilder, auditLogWriter);
     }
 
     [TestMethod]
@@ -28,7 +32,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
     {
         var parameters = new MergeEmoteStatsParams
         {
-            DestinationEmoteId = Consts.PepeJamEmote,
+            DestinationEmoteId = Consts.OnlineEmoteId,
             SourceEmoteId = Consts.FeelsHighManEmote
         };
 
@@ -38,18 +42,17 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
-        await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(guild, guildUser));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
+        await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(Guild, guildUser));
         await Repository.AddCollectionAsync(new[]
         {
             new Database.Entity.EmoteStatisticItem
             {
                 EmoteId = Consts.PepeJamEmote,
                 FirstOccurence = DateTime.MinValue,
-                GuildId = guild.Id.ToString(),
+                GuildId = Guild.Id.ToString(),
                 LastOccurence = DateTime.MaxValue,
                 UseCount = 1,
                 UserId = Consts.UserId.ToString()
@@ -58,7 +61,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
             {
                 EmoteId = Consts.FeelsHighManEmote,
                 FirstOccurence = DateTime.MinValue,
-                GuildId = guild.Id.ToString(),
+                GuildId = Guild.Id.ToString(),
                 LastOccurence = DateTime.MaxValue,
                 UseCount = 1,
                 UserId = Consts.UserId.ToString()
@@ -70,8 +73,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
         var mergeParams = new MergeEmoteStatsParams
         {
             DestinationEmoteId = Consts.FeelsHighManEmote,
-            SourceEmoteId = Consts.PepeJamEmote,
-            SuppressValidations = true
+            SourceEmoteId = Consts.PepeJamEmote
         };
 
         var result = await Action.ProcessAsync(mergeParams);
@@ -84,8 +86,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
         var mergeParams = new MergeEmoteStatsParams
         {
             DestinationEmoteId = Consts.FeelsHighManEmote,
-            SourceEmoteId = Consts.PepeJamEmote,
-            SuppressValidations = true
+            SourceEmoteId = Consts.PepeJamEmote
         };
 
         var result = await Action.ProcessAsync(mergeParams);
@@ -95,18 +96,17 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
     [TestMethod]
     public async Task ProcessAsync_NothingInDestination()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
         await Repository.AddAsync(new Database.Entity.EmoteStatisticItem
         {
             EmoteId = Consts.PepeJamEmote,
             FirstOccurence = new DateTime(2022, 6, 21, 23, 30, 45),
-            Guild = Database.Entity.Guild.FromDiscord(guild),
-            GuildId = guild.Id.ToString(),
+            Guild = Database.Entity.Guild.FromDiscord(Guild),
+            GuildId = Guild.Id.ToString(),
             LastOccurence = DateTime.MaxValue,
             UseCount = 1,
-            User = Database.Entity.GuildUser.FromDiscord(guild, guildUser),
+            User = Database.Entity.GuildUser.FromDiscord(Guild, guildUser),
             UserId = Consts.UserId.ToString()
         });
 
@@ -115,8 +115,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
         var mergeParams = new MergeEmoteStatsParams
         {
             DestinationEmoteId = Consts.FeelsHighManEmote,
-            SourceEmoteId = Consts.PepeJamEmote,
-            SuppressValidations = true
+            SourceEmoteId = Consts.PepeJamEmote
         };
 
         var result = await Action.ProcessAsync(mergeParams);

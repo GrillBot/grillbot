@@ -37,7 +37,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CreateRemindAsync_NotInFuture()
     {
-        await Service.CreateRemindAsync(null, null, DateTime.MinValue, null, 0);
+        await Service.CreateRemindAsync(null, null, DateTime.MinValue, null, 0, "cs");
     }
 
     [TestMethod]
@@ -46,7 +46,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     public async Task CreateRemindAsync_MinimalTime()
     {
         var at = DateTime.Now.AddSeconds(10);
-        await Service.CreateRemindAsync(null, null, at, null, 0);
+        await Service.CreateRemindAsync(null, null, at, null, 0, "cs");
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     public async Task CreateRemindAsync_EmptyMessage()
     {
         var at = DateTime.Now.AddHours(12);
-        await Service.CreateRemindAsync(null, null, at, null, 0);
+        await Service.CreateRemindAsync(null, null, at, null, 0, "cs");
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     public async Task CreateRemindAsync_LongMessage()
     {
         var at = DateTime.Now.AddHours(12);
-        await Service.CreateRemindAsync(null, null, at, new string('-', 2048), 0);
+        await Service.CreateRemindAsync(null, null, at, new string('-', 2048), 0, "cs");
     }
 
     [TestMethod]
@@ -72,7 +72,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     {
         var at = DateTime.Now.AddDays(1);
 
-        await Service.CreateRemindAsync(User, User, at, "msg", 970428820521893889);
+        await Service.CreateRemindAsync(User, User, at, "msg", 970428820521893889, "cs");
         Assert.IsTrue(true);
     }
 
@@ -82,7 +82,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator.Replace("1", "5")).Build();
         var at = DateTime.Now.AddDays(1);
 
-        await Service.CreateRemindAsync(User, to, at, "msg", 970428820521893889);
+        await Service.CreateRemindAsync(User, to, at, "msg", 970428820521893889, "cs");
         Assert.IsTrue(true);
     }
 
@@ -105,7 +105,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_NotFound()
     {
-        await Service.CopyAsync(42, User);
+        await Service.CopyAsync(42, User, "cs");
     }
 
     [TestMethod]
@@ -114,8 +114,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
     public async Task CopyAsync_SameUser()
     {
         var at = DateTime.Now.AddDays(1);
-        var id = await Service.CreateRemindAsync(User, User, at, "msg", 970428820521893889);
-        await Service.CopyAsync(id, User);
+        var id = await Service.CreateRemindAsync(User, User, at, "msg", 970428820521893889, "cs");
+        await Service.CopyAsync(id, User, "cs");
     }
 
     [TestMethod]
@@ -137,7 +137,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         });
 
         await Repository.CommitAsync();
-        await Service.CopyAsync(5, to);
+        await Service.CopyAsync(5, to, "cs");
     }
 
     [TestMethod]
@@ -164,7 +164,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         });
 
         await Repository.CommitAsync();
-        await Service.CopyAsync(6, to);
+        await Service.CopyAsync(6, to, "cs");
     }
 
     [TestMethod]
@@ -187,7 +187,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
         });
 
         await Repository.CommitAsync();
-        await Service.CopyAsync(6, to);
+        await Service.CopyAsync(6, to, "cs");
     }
 
     [TestMethod]

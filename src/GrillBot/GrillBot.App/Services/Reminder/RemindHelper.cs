@@ -21,8 +21,7 @@ public class RemindHelper
 
     public async Task<string> ProcessRemindAsync(Database.Entity.RemindMessage remind, bool force)
     {
-        // TODO Use client localization. Save it when creating a reminder item.
-        var embed = await CreateRemindEmbedAsync(remind, "cs", force);
+        var embed = await CreateRemindEmbedAsync(remind, force);
 
         var destination = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
         if (destination == null) return NotSentRemind;
@@ -42,10 +41,11 @@ public class RemindHelper
         }
     }
 
-    private async Task<EmbedBuilder> CreateRemindEmbedAsync(Database.Entity.RemindMessage remind, string locale, bool force = false)
+    private async Task<EmbedBuilder> CreateRemindEmbedAsync(Database.Entity.RemindMessage remind, bool force = false)
     {
         const string localeBase = "RemindModule/NotifyMessage/";
 
+        var locale = TextsManager.FixLocale(remind.Language);
         var embed = new EmbedBuilder()
             .WithAuthor(DiscordClient.CurrentUser)
             .WithColor(force ? Color.Gold : Color.Green)

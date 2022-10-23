@@ -38,4 +38,7 @@ public class RemindMessage
 
     [StringLength(30)]
     public string? OriginalMessageId { get; set; }
+
+    [Required]
+    public string Language { get; set; } = null!;
 }

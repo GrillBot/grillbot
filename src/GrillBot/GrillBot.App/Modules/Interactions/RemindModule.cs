@@ -38,7 +38,7 @@ public class RemindModule : InteractionsModuleBase
             await DeferAsync(secret);
 
             var originalMessage = await Context.Interaction.GetOriginalResponseAsync();
-            var remindId = await RemindService.CreateRemindAsync(Context.User, who, at, message, originalMessage.Id);
+            var remindId = await RemindService.CreateRemindAsync(Context.User, who, at, message, originalMessage.Id, Locale);
 
             var buttons = secret ? null : new ComponentBuilder().WithButton(customId: $"remind_copy:{remindId}", emote: Emojis.PersonRisingHand).Build();
             var msg = GetText(nameof(CreateAsync), "Success") + (secret ? "" : " " + GetText(nameof(CreateAsync), "CopyMessage").FormatWith(Emojis.PersonRisingHand.ToString()));
@@ -98,7 +98,7 @@ public class RemindModule : InteractionsModuleBase
 
         try
         {
-            await RemindService.CopyAsync(remindId, Context.User);
+            await RemindService.CopyAsync(remindId, Context.User, Locale);
         }
         catch (ValidationException ex)
         {

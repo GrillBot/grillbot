@@ -24,7 +24,7 @@ public class RemindService
         RemindHelper = new RemindHelper(client, texts);
     }
 
-    public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
+    public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId, string locale)
     {
         if (DateTime.Now > at)
             throw new ValidationException("Datum a čas upozornění musí být v budoucnosti.");
@@ -65,7 +65,8 @@ public class RemindService
             FromUser = fromUser,
             Message = message,
             OriginalMessageId = originalMessageId.ToString(),
-            ToUser = toUser
+            ToUser = toUser,
+            Language = TextsManager.FixLocale(locale)
         };
 
         await repository.AddAsync(remind);
@@ -86,7 +87,7 @@ public class RemindService
         return await repository.Remind.GetRemindersPageAsync(forUser, page);
     }
 
-    public async Task CopyAsync(long originalRemindId, IUser toUser)
+    public async Task CopyAsync(long originalRemindId, IUser toUser, string locale)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
         var original = await repository.Remind.FindRemindByIdAsync(originalRemindId);
@@ -113,7 +114,7 @@ public class RemindService
         if (fromUser == null)
             throw new ValidationException("Uživatel, který založil toto upozornění se nepodařilo dohledat");
 
-        await CreateRemindAsync(fromUser, toUser, original.At, original.Message, original.OriginalMessageId!.ToUlong());
+        await CreateRemindAsync(fromUser, toUser, original.At, original.Message, original.OriginalMessageId!.ToUlong(), locale);
     }
 
     public async Task<List<long>> GetRemindIdsForProcessAsync()

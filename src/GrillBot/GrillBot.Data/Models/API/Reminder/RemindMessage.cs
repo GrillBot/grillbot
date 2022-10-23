@@ -12,6 +12,7 @@ public class RemindMessage
     public string Message { get; set; }
     public int Postpone { get; set; }
     public bool Notified { get; set; }
+    public string Language { get; set; }
 }
 
 public class RemindMappingProfile : AutoMapper.Profile

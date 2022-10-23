@@ -194,13 +194,6 @@ public class RemindServiceTests : ServiceTest<RemindService>
     }
 
     [TestMethod]
-    public async Task GetProcessableReminderIdsAsync()
-    {
-        var result = await Service.GetRemindIdsForProcessAsync();
-        Assert.AreEqual(0, result.Count);
-    }
-
-    [TestMethod]
     public async Task GetRemindSuggestionsAsync()
     {
         var remind = new Database.Entity.RemindMessage

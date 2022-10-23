@@ -25,4 +25,10 @@ public class ComponentInteractionBuilder : BuilderBase<IComponentInteraction>
         Mock.Setup(o => o.Message).Returns(message);
         return this;
     }
+
+    public ComponentInteractionBuilder SetDmInteraction(bool isDmInteraction = true)
+    {
+        Mock.Setup(o => o.IsDMInteraction).Returns(isDmInteraction);
+        return this;
+    }
 }

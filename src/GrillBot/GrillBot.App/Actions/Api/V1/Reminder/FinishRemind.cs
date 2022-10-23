@@ -8,24 +8,35 @@ using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Reminder;
 
-public class CancelRemind : ApiAction
+public class FinishRemind : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriter AuditLogWriter { get; }
     private ITextsManager Texts { get; }
     private RemindHelper RemindHelper { get; }
+    private IDiscordClient DiscordClient { get; }
 
     public bool IsGone { get; private set; }
     public bool IsAuthorized { get; private set; }
     public string ErrorMessage { get; private set; }
 
-    public CancelRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, IDiscordClient discordClient, ITextsManager texts) : base(apiContext)
+    private bool IsCancel => ApiContext.GetUserId() != DiscordClient.CurrentUser.Id;
+
+    public FinishRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, IDiscordClient discordClient, ITextsManager texts) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         AuditLogWriter = auditLogWriter;
         Texts = texts;
+        DiscordClient = discordClient;
 
         RemindHelper = new RemindHelper(discordClient, texts);
+    }
+
+    public void ResetState()
+    {
+        IsGone = false;
+        IsAuthorized = false;
+        ErrorMessage = null;
     }
 
     public async Task ProcessAsync(long id, bool notify, bool isService)
@@ -60,7 +71,9 @@ public class CancelRemind : ApiAction
     private void CheckAndSetAuthorization(Database.Entity.RemindMessage message, bool isService)
     {
         var @operator = ApiContext.LoggedUser!;
-        IsAuthorized = isService || message.FromUserId == @operator.Id.ToString() || message.ToUserId == @operator.Id.ToString();
+
+        // Only user who created remind, receiver, current bot (in the scheduled job) or authorized user in the web administration can cancel/process notify.
+        IsAuthorized = isService || message.FromUserId == @operator.Id.ToString() || message.ToUserId == @operator.Id.ToString() || @operator.Id == DiscordClient.CurrentUser.Id;
 
         if (!IsAuthorized)
             ErrorMessage = Texts["RemindModule/CancelRemind/InvalidOperator", ApiContext.Language];
@@ -69,13 +82,16 @@ public class CancelRemind : ApiAction
     private async Task ProcessRemindAsync(Database.Entity.RemindMessage remind, bool notify)
     {
         if (notify)
-            remind.RemindMessageId = await RemindHelper.ProcessRemindAsync(remind, true);
+            remind.RemindMessageId = await RemindHelper.ProcessRemindAsync(remind, IsCancel);
         else
             remind.RemindMessageId = RemindHelper.NotSentRemind;
     }
 
     private async Task CreateLogItemAsync(Database.Entity.RemindMessage remind, bool notify)
     {
+        // Is not required create log item while processing from scheduled jobs.
+        if (!IsCancel) return;
+
         var logItem = new AuditLogDataWrapper(AuditLogItemType.Info, $"Bylo stornováno upozornění s ID {remind.Id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(), null,
             null, ApiContext.LoggedUser);
         await AuditLogWriter.StoreAsync(logItem);

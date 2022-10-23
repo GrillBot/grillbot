@@ -59,7 +59,7 @@ public class RemindModule : InteractionsModuleBase
     )
     {
         using var scope = ServiceProvider.CreateScope();
-        var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.CancelRemind>();
+        var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.FinishRemind>();
         action.UpdateContext(Locale, Context.User);
         await action.ProcessAsync(id, notify, false);
 
@@ -114,5 +114,12 @@ public class RemindModule : InteractionsModuleBase
 
         if (canDefer)
             await DeferAsync();
+    }
+
+    [ComponentInteraction("remind_postpone:*", ignoreGroupNames: true)]
+    public async Task HandleRemindPostponeAsync(int hours)
+    {
+        var handler = new RemindPostponeHandler(hours, ServiceProvider);
+        await handler.ProcessAsync(Context);
     }
 }

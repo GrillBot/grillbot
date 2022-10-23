@@ -13,7 +13,6 @@ public class RemindService
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
-    private RemindHelper RemindHelper { get; }
 
     public RemindService(IDiscordClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts)
     {
@@ -21,7 +20,6 @@ public class RemindService
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
-        RemindHelper = new RemindHelper(client, texts);
     }
 
     public async Task<long> CreateRemindAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId, string locale)
@@ -115,23 +113,6 @@ public class RemindService
             throw new ValidationException("Uživatel, který založil toto upozornění se nepodařilo dohledat");
 
         await CreateRemindAsync(fromUser, toUser, original.At, original.Message, original.OriginalMessageId!.ToUlong(), locale);
-    }
-
-    public async Task<List<long>> GetRemindIdsForProcessAsync()
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.Remind.GetRemindIdsForProcessAsync();
-    }
-
-    public async Task ProcessRemindFromJobAsync(long id)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var remind = await repository.Remind.FindRemindByIdAsync(id);
-        if (remind == null) return;
-
-        remind.RemindMessageId = await RemindHelper.ProcessRemindAsync(remind, false);
-        await repository.CommitAsync();
     }
 
     public async Task<Dictionary<long, string>> GetRemindSuggestionsAsync(IUser user, string locale)

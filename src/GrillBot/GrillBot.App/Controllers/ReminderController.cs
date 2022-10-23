@@ -58,7 +58,7 @@ public class ReminderController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Gone)]
     public async Task<ActionResult> CancelRemindAsync(long id, [FromQuery] bool notify = false)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.CancelRemind>();
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.FinishRemind>();
         await action.ProcessAsync(id, notify, true);
 
         if (action.IsGone)

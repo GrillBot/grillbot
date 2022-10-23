@@ -18,7 +18,16 @@ public abstract class ComponentInteractionHandler
         return embed.TryParseMetadata(out metadata);
     }
 
-    protected int CheckNewPageNumber(int newPage, int maxPages)
+    protected static bool TryParseMesasge(IDiscordInteraction interaction, out IUserMessage message)
+    {
+        message = null;
+        if (interaction is not IComponentInteraction componentInteraction) return false;
+
+        message = componentInteraction.Message;
+        return true;
+    }
+
+    protected static int CheckNewPageNumber(int newPage, int maxPages)
     {
         if (newPage >= maxPages) return maxPages - 1;
         return newPage < 0 ? 0 : newPage;

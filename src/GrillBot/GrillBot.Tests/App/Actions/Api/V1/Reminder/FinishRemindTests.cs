@@ -9,20 +9,21 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Actions.Api.V1.Reminder;
 
 [TestClass]
-public class CancelRemindTests : ApiActionTest<CancelRemind>
+public class FinishRemindTests : ApiActionTest<FinishRemind>
 {
     private IUser[] Users { get; set; }
 
-    protected override CancelRemind CreateAction()
+    protected override FinishRemind CreateAction()
     {
         var message = new UserMessageBuilder().SetId(Consts.MessageId).Build();
         Users = new[]
         {
             new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build(),
-            new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build()
+            new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build(),
+            new UserBuilder().SetIdentity(Consts.UserId + 5, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build()
         };
 
-        var client = new ClientBuilder().SetGetUserAction(Users).SetSelfUser(new SelfUserBuilder(Users[0]).Build()).Build();
+        var client = new ClientBuilder().SetGetUserAction(Users).SetSelfUser(new SelfUserBuilder(Users[2]).Build()).Build();
         var texts = new TextsBuilder()
             .AddText("RemindModule/CancelRemind/NotFound", "cs", "NotFound")
             .AddText("RemindModule/CancelRemind/AlreadyCancelled", "cs", "AlreadyCancelled")
@@ -40,7 +41,7 @@ public class CancelRemindTests : ApiActionTest<CancelRemind>
             .Build();
 
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        return new CancelRemind(ApiRequestContext, DatabaseBuilder, auditLogWriter, client, texts);
+        return new FinishRemind(ApiRequestContext, DatabaseBuilder, auditLogWriter, client, texts);
     }
 
     private async Task InitDataAsync(ulong fromUserId, ulong toUserId, ulong? remindMessageId)
@@ -119,5 +120,15 @@ public class CancelRemindTests : ApiActionTest<CancelRemind>
         Assert.IsFalse(Action.IsGone);
         Assert.IsTrue(Action.IsAuthorized);
         Assert.IsTrue(string.IsNullOrEmpty(Action.ErrorMessage));
+    }
+
+    [TestMethod]
+    public void ResetState()
+    {
+        Action.ResetState();
+        
+        Assert.IsNull(Action.ErrorMessage);
+        Assert.IsFalse(Action.IsAuthorized);
+        Assert.IsFalse(Action.IsGone);
     }
 }

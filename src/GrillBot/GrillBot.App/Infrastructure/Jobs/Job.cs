@@ -13,7 +13,7 @@ public abstract class Job : IJob
     private AuditLogWriter AuditLogWriter { get; }
     protected IDiscordClient DiscordClient { get; }
     private InitManager InitManager { get; }
-    private LoggingManager LoggingManager { get; }
+    protected LoggingManager LoggingManager { get; }
 
     private string JobName => GetType().Name;
 

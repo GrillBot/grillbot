@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.Interactions;
 using GrillBot.App.Actions;
 using GrillBot.App.Handlers;
-using GrillBot.App.Infrastructure;
 using GrillBot.App.Services;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Birthday;
@@ -110,15 +109,8 @@ public class Startup
 
         services
             .AddSingleton<CommandHandler>()
-            .AddSingleton<ReactionHandler>()
             .AddSingleton<InteractionHandler>()
             .AddServices();
-
-        var reactionHandlerType = typeof(ReactionEventHandler);
-        reactionHandlerType.Assembly.GetTypes()
-            .Where(o => !o.IsAbstract && reactionHandlerType.IsAssignableFrom(o))
-            .ToList()
-            .ForEach(o => services.AddSingleton(typeof(ReactionEventHandler), o));
 
         services.AddHttpClient("MathJS", c =>
         {

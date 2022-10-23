@@ -257,7 +257,7 @@
         "Options": "Možnosti"
       },
       "Postponed": "Toto upozornění bylo odloženo už {0}x",
-      "Options": "Pokud si přeješ toto upozornění posunout, tak klikni na příslušnou reakci podle počtu hodin."
+      "Options": "Pokud si přeješ toto upozornění posunout, tak klikni na příslušné tlačítko podle počtu hodin."
     }
   },
   "SearchingModule": {

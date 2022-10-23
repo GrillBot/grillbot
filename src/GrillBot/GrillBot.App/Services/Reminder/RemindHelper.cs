@@ -28,17 +28,33 @@ public class RemindHelper
 
         try
         {
-            var msg = await destination.SendMessageAsync(embed: embed.Build());
-            if (force) return msg.Id.ToString();
-
-            var hours = Emojis.NumberToEmojiMap.Where(o => o.Key > 0).Select(o => o.Value);
-            await msg.AddReactionsAsync(hours);
+            var postponeComponents = !force ? CreatePostponeComponents() : null;
+            var msg = await destination.SendMessageAsync(embed: embed.Build(), components: postponeComponents);
             return msg.Id.ToString();
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
         {
             return NotSentRemind;
         }
+    }
+
+    private static MessageComponent CreatePostponeComponents()
+    {
+        var builder = new ComponentBuilder();
+        var row = new ActionRowBuilder();
+        var emojisMap = Emojis.NumberToEmojiMap.Values.ToList();
+
+        for (var i = 1; i < emojisMap.Count; i++)
+        {
+            var item = emojisMap[i];
+            row.AddComponent(new ButtonBuilder(customId: $"remind_postpone:{i}", emote: item).Build());
+            if (i % ActionRowBuilder.MaxChildCount != 0 && i != emojisMap.Count - 1) continue;
+
+            builder.AddRow(row);
+            row = new ActionRowBuilder();
+        }
+
+        return builder.Build();
     }
 
     private async Task<EmbedBuilder> CreateRemindEmbedAsync(Database.Entity.RemindMessage remind, bool force = false)

@@ -10,4 +10,10 @@ public class DiscordInteractionBuilder : BuilderBase<IDiscordInteraction>
         Mock.Setup(o => o.CreatedAt).Returns(SnowflakeUtils.FromSnowflake(id));
         return this;
     }
+
+    public DiscordInteractionBuilder SetDmInteraction(bool isDmInteraction = true)
+    {
+        Mock.Setup(o => o.IsDMInteraction).Returns(isDmInteraction);
+        return this;
+    }
 }

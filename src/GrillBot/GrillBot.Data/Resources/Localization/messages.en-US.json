@@ -257,7 +257,7 @@
         "Options": "Options"
       },
       "Postponed": "This reminder has already been snoozed {0}x",
-      "Options": "If you wish to postpone this reminder, click on the appropriate reaction according to the count of hours."
+      "Options": "If you wish to postpone this reminder, click on the appropriate button according to the count of hours."
     }
   },
   "SearchingModule": {

@@ -85,12 +85,19 @@ public class TextsManager : ITextsManager
 
     public CultureInfo GetCulture(string locale)
     {
-        return !IsSupportedLocale(locale) ? new CultureInfo(DefaultLocale) : new CultureInfo(locale);
+        return !IsSupportedLocale(locale) ? new CultureInfo(DefaultLocale) : new CultureInfo(FixLocale(locale));
     }
 
     public static bool IsSupportedLocale(string locale)
         => SupportedLocales.Contains(FixLocale(locale));
 
     public static string FixLocale(string locale)
-        => locale == "cs-CZ" ? "cs" : locale;
+    {
+        return locale switch
+        {
+            "cs-CZ" => "cs",
+            "en-GB" => "en-US",
+            _ => locale
+        };
+    }
 }

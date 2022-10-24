@@ -26,7 +26,7 @@ public class DateTimeConverter : ConverterBase<DateTime>
         { new Regex("^(^(te[dď]|now|(te|za)raz)$)$", RegexOptions), () => DateTime.Now } // teď, ted, now, teraz, zaraz
     };
 
-    private Regex TimeShiftRegex { get; } = new(@"(\d+)(m|h|d|M|y|r)", RegexOptions);
+    private Regex TimeShiftRegex { get; } = new(@"(\d+)(m|h|d|w|M|y|r)", RegexOptions);
 
     public override Task<DateTime> ConvertAsync(string value)
     {
@@ -55,10 +55,13 @@ public class DateTimeConverter : ConverterBase<DateTime>
                 case "d": // days
                     result = result.AddDays(timeValue);
                     break;
-                case "M":
+                case "w":
+                    result = result.AddDays(timeValue * 7);
+                    break;
+                case "M": // Months
                     result = result.AddMonths(timeValue);
                     break;
-                case "r":
+                case "r": // Years
                 case "y":
                     result = result.AddYears(timeValue);
                     break;

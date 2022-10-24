@@ -28,7 +28,7 @@ public class SearchingService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.Guild.GetOrCreateRepositoryAsync(guild);
+        await repository.Guild.GetOrCreateGuildAsync(guild);
         await repository.User.GetOrCreateUserAsync(user);
         await repository.GuildUser.GetOrCreateGuildUserAsync(user);
         await repository.Channel.GetOrCreateChannelAsync(channel);

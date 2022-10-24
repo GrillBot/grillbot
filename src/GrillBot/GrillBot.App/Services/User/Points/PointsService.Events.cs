@@ -15,7 +15,7 @@ public partial class PointsService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.Guild.GetOrCreateRepositoryAsync(textChannel.Guild);
+        await repository.Guild.GetOrCreateGuildAsync(textChannel.Guild);
         var userEntity = await repository.User.GetOrCreateUserAsync(guildUserEntity);
         var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(guildUserEntity);
         var guildChannel = await repository.Channel.GetOrCreateChannelAsync(textChannel);
@@ -76,7 +76,7 @@ public partial class PointsService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.Guild.GetOrCreateRepositoryAsync(user.Guild);
+        await repository.Guild.GetOrCreateGuildAsync(user.Guild);
         var userEntity = await repository.User.GetOrCreateUserAsync(user);
         var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
         var channelEntity = await repository.Channel.GetOrCreateChannelAsync(textChannel);

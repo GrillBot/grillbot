@@ -26,7 +26,7 @@ public class AuditLogWriter
         await using var repository = DatabaseBuilder.CreateRepository();
 
         foreach (var item in items.Where(o => o.Guild != null).DistinctBy(o => o.Guild.Id))
-            await repository.Guild.GetOrCreateRepositoryAsync(item.Guild);
+            await repository.Guild.GetOrCreateGuildAsync(item.Guild);
 
         foreach (var item in items.Where(o => o.Guild != null && o.Channel != null).DistinctBy(o => o.Channel.Id))
             await repository.Channel.GetOrCreateChannelAsync(item.Channel);

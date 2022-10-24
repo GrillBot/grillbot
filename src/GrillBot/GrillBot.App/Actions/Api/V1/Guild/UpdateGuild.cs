@@ -29,7 +29,7 @@ public class UpdateGuild : ApiAction
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbGuild = await repository.Guild.GetOrCreateRepositoryAsync(guild);
+        var dbGuild = await repository.Guild.GetOrCreateGuildAsync(guild);
         if (!string.IsNullOrEmpty(parameters.AdminChannelId) && await guild.GetTextChannelAsync(parameters.AdminChannelId.ToUlong()) == null)
             ThrowValidationException("AdminChannelNotFound", parameters.AdminChannelId, nameof(parameters.AdminChannelId));
         else

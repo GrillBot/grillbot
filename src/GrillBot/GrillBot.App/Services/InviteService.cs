@@ -61,7 +61,7 @@ public class InviteService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.Guild.GetOrCreateRepositoryAsync(guild);
+        await repository.Guild.GetOrCreateGuildAsync(guild);
         await repository.User.GetOrCreateUserAsync(user);
 
         if (usedInvite.CreatorId != null)

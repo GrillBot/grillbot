@@ -82,7 +82,7 @@ public class UnverifyService
             {
                 Channels = profile.ChannelsToRemove.ConvertAll(o => new GuildChannelOverride { AllowValue = o.AllowValue, ChannelId = o.ChannelId, DenyValue = o.DenyValue }),
                 EndAt = profile.End,
-                Guild = await repository.Guild.GetOrCreateRepositoryAsync(guild),
+                Guild = await repository.Guild.GetOrCreateGuildAsync(guild),
                 Reason = profile.Reason,
                 Roles = profile.RolesToRemove.ConvertAll(o => o.Id.ToString()),
                 SetOperationId = unverifyLog.Id,

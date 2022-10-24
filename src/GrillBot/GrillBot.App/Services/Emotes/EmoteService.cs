@@ -47,7 +47,7 @@ public class EmoteService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var guild = await repository.Guild.GetOrCreateRepositoryAsync(textChannel.Guild);
+        var guild = await repository.Guild.GetOrCreateGuildAsync(textChannel.Guild);
         var user = await repository.GuildUser.GetOrCreateGuildUserAsync(guildUser);
 
         foreach (var emote in emotes)
@@ -121,7 +121,7 @@ public class EmoteService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.Guild.GetOrCreateRepositoryAsync(textChannel.Guild);
+        await repository.Guild.GetOrCreateGuildAsync(textChannel.Guild);
         await repository.User.GetOrCreateUserAsync(author);
         if (reactionUser != null)
             await repository.User.GetOrCreateUserAsync(reactionUser);

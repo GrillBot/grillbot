@@ -9,7 +9,7 @@ public partial class PointsService
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.Guild.GetOrCreateRepositoryAsync(toUser.Guild);
+        await repository.Guild.GetOrCreateGuildAsync(toUser.Guild);
         await repository.User.GetOrCreateUserAsync(toUser);
         var guildUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
@@ -31,7 +31,7 @@ public partial class PointsService
 
         var fromGuildUser = await repository.GuildUser.FindGuildUserAsync(fromUser);
         await repository.User.GetOrCreateUserAsync(toUser);
-        await repository.Guild.GetOrCreateRepositoryAsync(toUser.Guild);
+        await repository.Guild.GetOrCreateGuildAsync(toUser.Guild);
         var toGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
         var fromUserTransaction = CreateTransaction(fromGuildUser, null, 0, true);

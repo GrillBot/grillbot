@@ -35,7 +35,7 @@ public class PointsLeaderboardTests : CommandActionTest<PointsLeaderboard>
 
     private async Task InitDataAsync()
     {
-        await Repository.Guild.GetOrCreateRepositoryAsync(Guild);
+        await Repository.Guild.GetOrCreateGuildAsync(Guild);
         await Repository.User.GetOrCreateUserAsync(User);
         await Repository.GuildUser.GetOrCreateGuildUserAsync(User);
 

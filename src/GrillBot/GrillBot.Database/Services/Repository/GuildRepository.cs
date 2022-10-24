@@ -15,9 +15,9 @@ public class GuildRepository : RepositoryBase
     {
     }
 
-    public async Task<Guild> GetOrCreateRepositoryAsync(IGuild guild)
+    public async Task<Guild> GetOrCreateGuildAsync(IGuild guild)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var entity = await FindGuildAsync(guild);
             if (entity != null)
@@ -32,7 +32,7 @@ public class GuildRepository : RepositoryBase
 
     public async Task<Guild?> FindGuildAsync(IGuild guild, bool disableTracking = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Guilds
                 .Include(o => o.GuildEvents)
@@ -52,7 +52,7 @@ public class GuildRepository : RepositoryBase
 
     public async Task<Guild?> FindGuildByIdAsync(ulong id, bool disableTracking = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Guilds
                 .Include(o => o.GuildEvents)
@@ -66,7 +66,7 @@ public class GuildRepository : RepositoryBase
 
     public async Task<PaginatedResponse<Guild>> GetGuildListAsync(IQueryableModel<Guild> model, PaginatedParams pagination)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<Guild>.CreateWithEntityAsync(query, pagination);
@@ -75,7 +75,7 @@ public class GuildRepository : RepositoryBase
 
     public async Task<GuildDatabaseReport> GetDatabaseReportDataAsync(ulong guildId)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Guilds.AsNoTracking()
                 .Where(o => o.Id == guildId.ToString())
@@ -101,7 +101,7 @@ public class GuildRepository : RepositoryBase
 
     public async Task<bool> ExistsAsync(IGuild guild)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Guilds.AsNoTracking()
                 .AnyAsync(o => o.Id == guild.Id.ToString());

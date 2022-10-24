@@ -40,7 +40,7 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
 
     private async Task InitSummariesAsync()
     {
-        await Repository.Guild.GetOrCreateRepositoryAsync(Guild);
+        await Repository.Guild.GetOrCreateGuildAsync(Guild);
         await Repository.User.GetOrCreateUserAsync(User);
         await Repository.GuildUser.GetOrCreateGuildUserAsync(User);
 

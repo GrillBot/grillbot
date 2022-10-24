@@ -40,7 +40,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
 
     private async Task InitDataAsync()
     {
-        await Repository.Guild.GetOrCreateRepositoryAsync(Guild);
+        await Repository.Guild.GetOrCreateGuildAsync(Guild);
         await Repository.User.GetOrCreateUserAsync(GuildUser);
         await Repository.GuildUser.GetOrCreateGuildUserAsync(GuildUser);
         await Repository.CommitAsync();

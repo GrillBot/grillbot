@@ -36,7 +36,7 @@ public class ChannelService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.Guild.GetOrCreateRepositoryAsync(textChannel.Guild);
+        await repository.Guild.GetOrCreateGuildAsync(textChannel.Guild);
         await repository.User.GetOrCreateUserAsync(author);
 
         var channel = await repository.Channel.GetOrCreateChannelAsync(textChannel, ChannelsIncludeUsersMode.IncludeAll);

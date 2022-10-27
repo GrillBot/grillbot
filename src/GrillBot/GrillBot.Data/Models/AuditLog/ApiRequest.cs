@@ -20,6 +20,7 @@ public class ApiRequest
     public string StatusCode { get; set; }
     public Dictionary<string, string> Parameters { get; set; } = new();
     public string Language { get; set; }
+    public string ApiGroupName { get; set; }
 
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)

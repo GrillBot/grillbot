@@ -101,6 +101,7 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Statistics.GetApiStatistics>()
             .AddScoped<Api.V1.Statistics.GetAuditLogStatistics>()
+            .AddScoped<Api.V1.Statistics.GetAvgTimes>()
             .AddScoped<Api.V1.Statistics.GetCommandStatistics>()
             .AddScoped<Api.V1.Statistics.GetDatabaseStatus>()
             .AddScoped<Api.V1.Statistics.GetEventStatistics>()

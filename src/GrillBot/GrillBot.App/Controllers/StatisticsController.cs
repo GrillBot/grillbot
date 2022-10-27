@@ -184,7 +184,20 @@ public class StatisticsController : Controller
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetEventStatistics>();
         var result = action.Process();
-        
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get average execution times.
+    /// </summary>
+    [HttpGet("avg-times")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<AvgExecutionTimes>> GetAvgTimesAsync()
+    {
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetAvgTimes>();
+        var result = await action.ProcessAsync();
+
         return Ok(result);
     }
 }

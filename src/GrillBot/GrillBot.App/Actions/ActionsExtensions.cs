@@ -136,7 +136,8 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()
             .AddScoped<Api.V2.GetRubbergodUserKarma>()
-            .AddScoped<Api.V2.Events.CreateScheduledEvent>();
+            .AddScoped<Api.V2.Events.CreateScheduledEvent>()
+            .AddScoped<Api.V2.Events.UpdateScheduledEvent>();
 
         return services;
     }

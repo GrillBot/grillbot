@@ -38,23 +38,25 @@ public class ExceptionFilter : IAsyncExceptionFilter
                 context.ExceptionHandled = true;
                 context.Result = new StatusCodeResult(400);
                 ApiRequest.StatusCode = "400 (BadRequest)";
-                return;
+                break;
             case ValidationException validationException:
                 if (validationException.ValidationResult.MemberNames.Any())
-                {
                     SetValidationError(context, validationException);
-                    return;
-                }
-
                 break;
             case NotFoundException:
                 SetNotFound(context);
-                return;
+                break;
+            case ForbiddenAccessException:
+                SetForbidden(context);
+                break;
+            case GrillBotException:
+                context.ExceptionHandled = true;
+                context.Result = new ObjectResult(new MessageResponse(context.Exception.Message)) { StatusCode = StatusCodes.Status500InternalServerError };
+                break;
         }
 
-        ApiRequest.StatusCode = "500 (InternalServerError)";
-        if (context.Exception is GrillBotException)
-            context.Result = new ObjectResult(new MessageResponse(context.Exception.Message)) { StatusCode = StatusCodes.Status500InternalServerError };
+        if (!string.IsNullOrEmpty(ApiRequest.StatusCode))
+            ApiRequest.StatusCode = "500 (InternalServerError)";
 
         var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, ApiRequestContext.LoggedUser);
         await AuditLogWriter.StoreAsync(wrapper);
@@ -82,5 +84,12 @@ public class ExceptionFilter : IAsyncExceptionFilter
         context.ExceptionHandled = true;
         context.Result = new NotFoundObjectResult(new MessageResponse(context.Exception.Message));
         ApiRequest.StatusCode = "404 (NotFound)";
+    }
+
+    private void SetForbidden(ExceptionContext context)
+    {
+        context.ExceptionHandled = true;
+        context.Result = new ObjectResult(new MessageResponse(context.Exception.Message)) { StatusCode = StatusCodes.Status403Forbidden };
+        ApiRequest.StatusCode = "403 (Forbidden)";
     }
 }

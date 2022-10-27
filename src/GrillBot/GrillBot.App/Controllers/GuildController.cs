@@ -82,7 +82,7 @@ public class GuildController : Controller
     }
 
     /// <summary>
-    /// Create a guild scheduled event in the guild.
+    /// Create a guild scheduled event.
     /// </summary>
     /// <param name="guildId">Guild ID</param>
     /// <param name="parameters">Event definition.</param>
@@ -103,5 +103,30 @@ public class GuildController : Controller
         var result = await action.ProcessAsync(guildId, parameters);
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Update a guild scheduled event.
+    /// </summary>
+    /// <param name="guildId">Guild ID</param>
+    /// <param name="eventId">Event ID</param>
+    /// <param name="parameters">New definition of the event. Set only updated properties.</param>
+    /// <response code="200">Success.</response>
+    /// <response code="400">Validation failed.</response>
+    /// <response code="404">Guild or event wasn't found.</response>
+    [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
+    [HttpPatch("{guildId}/event/{eventId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> UpdateScheduledEventAsync(ulong guildId, ulong eventId, [FromBody] ScheduledEventParams parameters)
+    {
+        ApiAction.Init(this, parameters);
+
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V2.Events.UpdateScheduledEvent>();
+        await action.ProcessAsync(guildId, eventId, parameters);
+
+        return Ok();
     }
 }

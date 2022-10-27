@@ -142,4 +142,20 @@ public class GuildBuilder : BuilderBase<IGuild>
             It.IsAny<DateTimeOffset?>(), It.IsAny<ulong?>(), It.IsAny<string>(), It.IsAny<Image?>(), It.IsAny<RequestOptions>())).ReturnsAsync(@event);
         return this;
     }
+
+    public GuildBuilder SetGetEventsAction(IEnumerable<IGuildScheduledEvent> events)
+    {
+        var eventsData = events.ToList().AsReadOnly();
+        Mock.Setup(o => o.GetEventsAsync(It.IsAny<RequestOptions>())).ReturnsAsync(eventsData);
+
+        foreach (var @event in eventsData)
+            SetGetEventAction(@event);
+        return this;
+    }
+
+    public GuildBuilder SetGetEventAction(IGuildScheduledEvent @event)
+    {
+        Mock.Setup(o => o.GetEventAsync(It.Is<ulong>(x => x == @event.Id), It.IsAny<RequestOptions>())).ReturnsAsync(@event);
+        return this;
+    }
 }

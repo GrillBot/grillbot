@@ -12,21 +12,21 @@ public class ScheduledEventParams : IApiObject
 {
     /// <summary>
     /// The name of the event.
+    /// Required for new events.
     /// </summary>
-    [Required]
     [StringLength(100, MinimumLength = 1)]
     public string Name { get; set; }
-    
+
     /// <summary>
     /// The start time of the event.
+    /// Required for new events, otherwise if value not changed set <see cref="DateTime.MinValue"/>.
     /// </summary>
-    [Required]
     public DateTime StartAt { get; set; }
 
     /// <summary>
     /// End time of the event.
+    /// Required for new events, otherwise if value not changed set <see cref="DateTime.MinValue"/>.
     /// </summary>
-    [Required]
     public DateTime EndAt { get; set; }
 
     /// <summary>
@@ -37,8 +37,8 @@ public class ScheduledEventParams : IApiObject
 
     /// <summary>
     /// Location of the event.
+    /// Required for new events.
     /// </summary>
-    [Required]
     [StringLength(100, MinimumLength = 1)]
     public string Location { get; set; }
 

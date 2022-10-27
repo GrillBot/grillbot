@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Extensions;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Guilds.GuildEvents;
@@ -18,6 +19,7 @@ public class CreateScheduledEvent : ApiAction
 
     public async Task<ulong> ProcessAsync(ulong guildId, ScheduledEventParams parameters)
     {
+        ValidateInput(parameters);
         var guild = await FindGuildAsync(guildId);
         var endTime = new DateTimeOffset(parameters.EndAt);
         var startTime = new DateTimeOffset(parameters.StartAt);
@@ -42,9 +44,19 @@ public class CreateScheduledEvent : ApiAction
     }
 
     private static Image? CreateImage(byte[] image)
-    {
-        if (image == null || image.Length == 0) return null;
+        => image == null || image.Length == 0 ? null : new Image(new MemoryStream(image));
 
-        return new Image(new MemoryStream(image));
+    private void ValidateInput(ScheduledEventParams parameters)
+    {
+        const string textsPrefix = "GuildScheduledEvents/Required/";
+
+        if (string.IsNullOrEmpty(parameters.Name))
+            throw new ValidationException(Texts[textsPrefix + "Name", ApiContext.Language]).ToBadRequestValidation(null, nameof(parameters.Name));
+        if (parameters.StartAt == DateTime.MinValue)
+            throw new ValidationException(Texts[textsPrefix + "StartAt", ApiContext.Language]).ToBadRequestValidation(DateTime.MinValue, nameof(parameters.StartAt));
+        if (parameters.EndAt == DateTime.MinValue)
+            throw new ValidationException(Texts[textsPrefix + "EndAt", ApiContext.Language]).ToBadRequestValidation(DateTime.MinValue, nameof(parameters.EndAt));
+        if (string.IsNullOrEmpty(parameters.Location))
+            throw new ValidationException(Texts[textsPrefix + "Location", ApiContext.Language]).ToBadRequestValidation(DateTime.MinValue, nameof(parameters.Location));
     }
 }

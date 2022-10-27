@@ -489,6 +489,14 @@
     }
   },
   "GuildScheduledEvents": {
-    "GuildNotFound": "Unable to find guild."
+    "GuildNotFound": "Unable to find guild.",
+    "EventNotFound": "Unable to find event.",
+    "Required": {
+      "Name": "Name is required.",
+      "StartAt": "Is necessary to set start time of the event.",
+      "EndAt": "Is necessary to set end time of the event.",
+      "Location": "Event location is required."
+    },
+    "ForbiddenAccess": "This event wasn't created via bot."
   }
 }

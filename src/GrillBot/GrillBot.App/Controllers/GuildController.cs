@@ -113,12 +113,14 @@ public class GuildController : Controller
     /// <param name="parameters">New definition of the event. Set only updated properties.</param>
     /// <response code="200">Success.</response>
     /// <response code="400">Validation failed.</response>
+    /// <response code="403">Event wasn't created by a bot</response>
     /// <response code="404">Guild or event wasn't found.</response>
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
     [HttpPatch("{guildId}/event/{eventId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateScheduledEventAsync(ulong guildId, ulong eventId, [FromBody] ScheduledEventParams parameters)
     {
@@ -126,6 +128,30 @@ public class GuildController : Controller
 
         var action = ServiceProvider.GetRequiredService<Actions.Api.V2.Events.UpdateScheduledEvent>();
         await action.ProcessAsync(guildId, eventId, parameters);
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// Cancel a guild scheduled event.
+    /// </summary>
+    /// <param name="guildId">Guild ID</param>
+    /// <param name="eventId">Event ID</param>
+    /// <response code="200">Success.</response>
+    /// <response code="400">Validation failed. Event finished or is cancelled.</response>
+    /// <response code="403">Event wasn't created by a bot.</response>
+    /// <response code="404">Guild or event wasn't found.</response>
+    [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
+    [HttpDelete("{guildId}/event/{eventId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> CancelScheduledEventAsync(ulong guildId, ulong eventId)
+    {
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V2.Events.CancelScheduledEvent>();
+        await action.ProcessAsync(guildId, eventId);
 
         return Ok();
     }

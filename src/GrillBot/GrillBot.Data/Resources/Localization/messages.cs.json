@@ -497,6 +497,7 @@
       "EndAt": "Je nutné zadat konec události.",
       "Location": "Místo události je povinné."
     },
-    "ForbiddenAccess": "Tato událost nebyla vytvořena prostřednictvím bota."
+    "ForbiddenAccess": "Tato událost nebyla vytvořena prostřednictvím bota.",
+    "CannotCancelEventEnded": "Nelze zrušit již ukončenou událost."
   }
 }

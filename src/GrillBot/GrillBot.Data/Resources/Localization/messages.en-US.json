@@ -497,6 +497,7 @@
       "EndAt": "Is necessary to set end time of the event.",
       "Location": "Event location is required."
     },
-    "ForbiddenAccess": "This event wasn't created via bot."
+    "ForbiddenAccess": "This event wasn't created via bot.",
+    "CannotCancelEventEnded": "Cannot cancel cancelled event."
   }
 }

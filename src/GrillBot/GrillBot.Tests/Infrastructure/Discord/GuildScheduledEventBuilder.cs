@@ -10,6 +10,7 @@ public class GuildScheduledEventBuilder : BuilderBase<IGuildScheduledEvent>
         Mock.Setup(o => o.ModifyAsync(It.IsAny<Action<GuildScheduledEventsProperties>>(), It.IsAny<RequestOptions>()))
             .Callback<Action<GuildScheduledEventsProperties>, RequestOptions>((func, _) => func(new GuildScheduledEventsProperties()))
             .Returns(Task.CompletedTask);
+        Mock.Setup(o => o.EndAsync(It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
     }
 
     public GuildScheduledEventBuilder SetId(ulong id)
@@ -21,6 +22,18 @@ public class GuildScheduledEventBuilder : BuilderBase<IGuildScheduledEvent>
     public GuildScheduledEventBuilder SetCreator(IUser user)
     {
         Mock.Setup(o => o.Creator).Returns(user);
+        return this;
+    }
+
+    public GuildScheduledEventBuilder SetStatus(GuildScheduledEventStatus status)
+    {
+        Mock.Setup(o => o.Status).Returns(status);
+        return this;
+    }
+
+    public GuildScheduledEventBuilder SetEndDate(DateTimeOffset? endTime)
+    {
+        Mock.Setup(o => o.EndTime).Returns(endTime);
         return this;
     }
 }

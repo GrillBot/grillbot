@@ -137,7 +137,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()
             .AddScoped<Api.V2.GetRubbergodUserKarma>()
             .AddScoped<Api.V2.Events.CreateScheduledEvent>()
-            .AddScoped<Api.V2.Events.UpdateScheduledEvent>();
+            .AddScoped<Api.V2.Events.UpdateScheduledEvent>()
+            .AddScoped<Api.V2.Events.CancelScheduledEvent>();
 
         return services;
     }
@@ -158,7 +159,7 @@ public static class ActionsExtensions
             .AddScoped<Commands.UserAccessList>()
             .AddScoped<Commands.Unverify.UnverifyList>()
             .AddScoped<Commands.GetChannelboard>();
-        
+
         return services;
     }
 }

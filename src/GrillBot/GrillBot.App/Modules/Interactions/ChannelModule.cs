@@ -161,7 +161,7 @@ public class ChannelModule : InteractionsModuleBase
             if (!channelData.HasFlag(ChannelFlags.StatsHidden))
             {
                 var topTenQuery = channelData.Users.OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt).Take(10);
-                var topTenData = topTenQuery.Select((o, i) => $"**{i + 1,2}.** {Context.Guild.GetUser(o.UserId.ToUlong())?.GetDisplayName()} ({FormatHelper.FormatMessagesToCzech(o.Count)})");
+                var topTenData = topTenQuery.Select((o, i) => $"**{i + 1,2}.** {o.User!.FullName(true)} ({FormatHelper.FormatMessagesToCzech(o.Count)})");
 
                 channelEmbed.AddField(GetText(nameof(GetChannelInfoAsync), "TopTen"), string.Join("\n", topTenData));
             }

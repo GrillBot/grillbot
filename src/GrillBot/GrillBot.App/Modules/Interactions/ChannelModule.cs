@@ -158,7 +158,8 @@ public class ChannelModule : InteractionsModuleBase
             if (flagsData.Count > 0)
                 channelEmbed.AddField(GetText(nameof(GetChannelInfoAsync), "Configuration"), string.Join("\n", flagsData));
 
-            if (!channelData.HasFlag(ChannelFlags.StatsHidden))
+            // Show statistics only if channel not have hidden stats or command was executed in the channel with hidden stats.
+            if (!channelData.HasFlag(ChannelFlags.StatsHidden) || channel.Id == Context.Channel.Id)
             {
                 var topTenQuery = channelData.Users.OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt).Take(10);
                 var topTenData = topTenQuery.Select((o, i) => $"**{i + 1,2}.** {o.User!.FullName(true)} ({FormatHelper.FormatMessagesToCzech(o.Count)})");

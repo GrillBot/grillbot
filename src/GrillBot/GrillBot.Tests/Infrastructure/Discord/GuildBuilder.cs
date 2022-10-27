@@ -135,4 +135,11 @@ public class GuildBuilder : BuilderBase<IGuild>
         Mock.Setup(o => o.GetEmotesAsync(It.IsAny<RequestOptions>())).ReturnsAsync(data);
         return this;
     }
+
+    public GuildBuilder SetCreateEventAction(IGuildScheduledEvent @event)
+    {
+        Mock.Setup(o => o.CreateEventAsync(It.IsAny<string>(), It.IsAny<DateTimeOffset>(), It.IsAny<GuildScheduledEventType>(), It.IsAny<GuildScheduledEventPrivacyLevel>(), It.IsAny<string>(),
+            It.IsAny<DateTimeOffset?>(), It.IsAny<ulong?>(), It.IsAny<string>(), It.IsAny<Image?>(), It.IsAny<RequestOptions>())).ReturnsAsync(@event);
+        return this;
+    }
 }

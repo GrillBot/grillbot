@@ -487,5 +487,8 @@
       "True": "Ano",
       "False": "Ne"
     }
+  },
+  "GuildScheduledEvents": {
+    "GuildNotFound": "Nepodařilo se najít server."
   }
 }

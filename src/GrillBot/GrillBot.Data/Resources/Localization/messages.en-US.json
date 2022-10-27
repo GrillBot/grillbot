@@ -487,5 +487,8 @@
       "True": "Yes",
       "False": "No"
     }
+  },
+  "GuildScheduledEvents": {
+    "GuildNotFound": "Unable to find guild."
   }
 }

@@ -1,10 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
+using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Data.Models.API.Guilds.GuildEvents;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +15,6 @@ namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/guild")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
 [ExcludeFromCodeCoverage]
 public class GuildController : Controller
@@ -32,6 +34,7 @@ public class GuildController : Controller
     [HttpPost("list")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromBody] GetGuildListParams parameters)
     {
         ApiAction.Init(this, parameters);
@@ -48,6 +51,7 @@ public class GuildController : Controller
     [HttpGet("{id}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id)
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetGuildDetail>();
@@ -66,12 +70,37 @@ public class GuildController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams parameters)
     {
         ApiAction.Init(this, parameters);
 
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.UpdateGuild>();
         var result = await action.ProcessAsync(id, parameters);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Create a guild scheduled event in the guild.
+    /// </summary>
+    /// <param name="guildId">Guild ID</param>
+    /// <param name="parameters">Event definition.</param>
+    /// <response code="200">Success. Returns discord ID of the event.</response>
+    /// <response code="400">Validation failed.</response>
+    /// <response code="404">Guild not found.</response>
+    [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
+    [HttpPost("{guildId}/event")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ulong>> CreateScheduledEventAsync(ulong guildId, [FromBody] ScheduledEventParams parameters)
+    {
+        ApiAction.Init(this, parameters);
+
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V2.Events.CreateScheduledEvent>();
+        var result = await action.ProcessAsync(guildId, parameters);
 
         return Ok(result);
     }

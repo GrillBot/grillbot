@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Helpers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Statistics;

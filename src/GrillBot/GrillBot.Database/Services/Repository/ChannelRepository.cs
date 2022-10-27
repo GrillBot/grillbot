@@ -127,7 +127,6 @@ public class ChannelRepository : RepositoryBase
                     o.Count > 0 &&
                     o.GuildId == user.GuildId.ToString() &&
                     o.UserId == user.Id.ToString() &&
-                    (o.Channel.Flags & (long)ChannelFlags.StatsHidden) == 0 &&
                     (o.Channel.Flags & (long)ChannelFlags.Deleted) == 0 &&
                     o.Channel.ChannelType != ChannelType.Category
                 );

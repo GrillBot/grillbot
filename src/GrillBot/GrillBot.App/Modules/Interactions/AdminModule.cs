@@ -30,6 +30,7 @@ public class AdminModule : InteractionsModuleBase
     }
 
     [SlashCommand("send", "Send message to command")]
+    [SuppressDefer]
     public async Task SendMessageToChannelAsync(ITextChannel channel, string content = null, string reference = null, IAttachment attachment = null)
     {
         await DeferAsync(true);

@@ -5,6 +5,7 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Cooldown;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Exceptions;
 
@@ -24,6 +25,7 @@ public class MemeModule : InteractionsModuleBase
     }
 
     [SlashCommand("kasparek", "He asks your mom what kind of **** you have.")]
+    [CooldownCheck(CooldownType.User, 60 * 60, 1)]
     public Task GetRandomLengthAsync()
     {
         var random = RandomizationService.GetOrCreateGenerator("Kasparek");

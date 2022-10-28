@@ -499,5 +499,6 @@
     },
     "ForbiddenAccess": "Tato událost nebyla vytvořena prostřednictvím bota.",
     "CannotCancelEventEnded": "Nelze zrušit již ukončenou událost."
-  }
+  },
+  "CooldownEnabled": "Voláš tento příkaz často. Chvíli počkej. Příkaz můžeš znovu zavolat za {0}."
 }

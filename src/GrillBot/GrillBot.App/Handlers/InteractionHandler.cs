@@ -73,7 +73,7 @@ public class InteractionHandler
 
             if (!string.IsNullOrEmpty(reply))
             {
-                if (!context.Interaction.HasResponded)
+                if (!context.Interaction.HasResponded && (new DateTimeOffset(DateTime.UtcNow) - context.Interaction.CreatedAt).TotalSeconds <= 3.0)
                 {
                     await context.Interaction.RespondAsync(reply, ephemeral: true);
                     return;

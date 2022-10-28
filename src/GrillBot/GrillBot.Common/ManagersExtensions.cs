@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Cooldown;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Emotes;
 using GrillBot.Common.Managers.Localization;
@@ -19,7 +20,8 @@ public static class ManagersExtensions
             .AddScoped<ApiRequestContext>()
             .AddSingleton<EventManager>()
             .AddSingleton<IEmoteCache, EmoteCache>()
-            .AddLoggingServices();
+            .AddLoggingServices()
+            .AddSingleton<CooldownManager>();
     }
 
     public static IServiceCollection AddLocalization(this IServiceCollection services, string basePath, string fileMask)

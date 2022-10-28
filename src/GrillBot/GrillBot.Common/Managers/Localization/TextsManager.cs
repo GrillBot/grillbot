@@ -81,7 +81,7 @@ public class TextsManager : ITextsManager
         return Data.TryGetValue(textId, out var value) ? value : null;
     }
 
-    private static string GetKey(string id, string locale) => $"{id}#{locale}";
+    private static string GetKey(string id, string locale) => $"{id}#{FixLocale(locale)}";
 
     public CultureInfo GetCulture(string locale)
     {

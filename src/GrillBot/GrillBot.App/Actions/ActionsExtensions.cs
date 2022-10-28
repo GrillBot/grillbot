@@ -159,7 +159,8 @@ public static class ActionsExtensions
             .AddScoped<Commands.UserInfo>()
             .AddScoped<Commands.UserAccessList>()
             .AddScoped<Commands.Unverify.UnverifyList>()
-            .AddScoped<Commands.GetChannelboard>();
+            .AddScoped<Commands.GetChannelboard>()
+            .AddScoped<Commands.UnsuccessCommandAttempt>();
 
         return services;
     }

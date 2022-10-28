@@ -11,6 +11,12 @@ public static class CommandBuilder
             .WithParameter("user_id", userId);
     }
 
+    public static DirectMessageCommand CreateSlashCommandListCommand()
+    {
+        return new DirectMessageCommand("Help")
+            .WithParameter("command", "slash_commands");
+    }
+
     public static DirectMessageCommand CreateKarmaCommand(SortParams sort, PaginatedParams pagination)
     {
         return new DirectMessageCommand("Karma")

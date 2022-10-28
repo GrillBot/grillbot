@@ -500,5 +500,6 @@
     "ForbiddenAccess": "Tato událost nebyla vytvořena prostřednictvím bota.",
     "CannotCancelEventEnded": "Nelze zrušit již ukončenou událost."
   },
-  "CooldownEnabled": "Voláš tento příkaz často. Chvíli počkej. Příkaz můžeš znovu zavolat za {0}."
+  "CooldownEnabled": "Voláš tento příkaz často. Chvíli počkej. Příkaz můžeš znovu zavolat za {0}.",
+  "ClickOnCommand": "Před odesláním lomítkového příkazu je nezbytné kliknout na automatický doplňovač"
 }

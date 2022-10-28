@@ -500,5 +500,6 @@
     "ForbiddenAccess": "This event wasn't created via bot.",
     "CannotCancelEventEnded": "Cannot cancel cancelled event."
   },
-  "CooldownEnabled": "You're executing this command often. Wait a moment. You can execute this command again after {0}"
+  "CooldownEnabled": "You're executing this command often. Wait a moment. You can execute this command again after {0}",
+  "ClickOnCommand": "Before sending slash command you need to click on autocomplete"
 }

@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -34,6 +35,12 @@ public class Guild
     
     [StringLength(30)]
     public string? VoteChannelId { get; set; }
+    
+    public DateTime? EmoteSuggestionsFrom { get; set; }
+    public DateTime? EmoteSuggestionsTo { get; set; }
+    
+    [StringLength(30)]
+    public string? BotRoomChannelId { get; set; }
 
     public ISet<GuildUser> Users { get; set; }
     public ISet<Invite> Invites { get; set; }
@@ -43,7 +50,6 @@ public class Guild
     public ISet<UnverifyLog> UnverifyLogs { get; set; }
     public ISet<AuditLogItem> AuditLogs { get; set; }
     public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
-    public ISet<GuildEvent> GuildEvents { get; set; }
 
     public Guild()
     {
@@ -55,7 +61,6 @@ public class Guild
         Searches = new HashSet<SearchItem>();
         AuditLogs = new HashSet<AuditLogItem>();
         EmoteStatistics = new HashSet<EmoteStatisticItem>();
-        GuildEvents = new HashSet<GuildEvent>();
     }
 
     public static Guild FromDiscord(IGuild guild)

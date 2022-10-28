@@ -50,7 +50,13 @@ public class UpdateGuild : ApiAction
         else
             dbGuild.VoteChannelId = parameters.VoteChannelId;
 
-        UpdateGuildEvents(dbGuild, parameters);
+        if (!string.IsNullOrEmpty(parameters.BotRoomChannelId) && await guild.GetTextChannelAsync(parameters.BotRoomChannelId.ToUlong()) == null)
+            ThrowValidationException("BotRoomChannelNotFound", parameters.BotRoomChannelId, nameof(parameters.BotRoomChannelId));
+        else
+            dbGuild.BotRoomChannelId = parameters.BotRoomChannelId;
+
+        dbGuild.EmoteSuggestionsFrom = parameters.EmoteSuggestionsValidity?.From;
+        dbGuild.EmoteSuggestionsTo = parameters.EmoteSuggestionsValidity?.To;
 
         await repository.CommitAsync();
         return await GetGuildDetail.ProcessAsync(id);
@@ -59,28 +65,5 @@ public class UpdateGuild : ApiAction
     private void ThrowValidationException(string errorMessageId, object value, params string[] memberNames)
     {
         throw new ValidationException(new ValidationResult(Texts[$"GuildModule/UpdateGuild/{errorMessageId}", ApiContext.Language], memberNames), null, value);
-    }
-
-    private static void UpdateGuildEvents(Database.Entity.Guild guild, UpdateGuildParams parameters)
-    {
-        const string id = "EmoteSuggestions";
-
-        var guildEvent = guild.GuildEvents.FirstOrDefault(o => o.Id == id);
-        if (parameters.EmoteSuggestionsValidity == null)
-        {
-            if (guildEvent != null)
-                guild.GuildEvents.Remove(guildEvent);
-        }
-        else
-        {
-            if (guildEvent == null)
-            {
-                guildEvent = new Database.Entity.GuildEvent { Id = id };
-                guild.GuildEvents.Add(guildEvent);
-            }
-
-            guildEvent.From = parameters.EmoteSuggestionsValidity.From;
-            guildEvent.To = parameters.EmoteSuggestionsValidity.To;
-        }
     }
 }

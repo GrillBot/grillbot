@@ -21,6 +21,9 @@ public class UpdateGuildParams : IApiObject
     [DiscordId]
     public string VoteChannelId { get; set; }
 
+    [DiscordId]
+    public string BotRoomChannelId { get; set; }
+
     public RangeParams<DateTime> EmoteSuggestionsValidity { get; set; }
 
     public Dictionary<string, string> SerializeForLog()
@@ -30,7 +33,8 @@ public class UpdateGuildParams : IApiObject
             { nameof(MuteRoleId), MuteRoleId },
             { nameof(AdminChannelId), AdminChannelId },
             { nameof(EmoteSuggestionChannelId), EmoteSuggestionChannelId },
-            { nameof(VoteChannelId), VoteChannelId }
+            { nameof(VoteChannelId), VoteChannelId },
+            { nameof(BotRoomChannelId), BotRoomChannelId }
         };
 
         result.AddApiObject(EmoteSuggestionsValidity, nameof(EmoteSuggestionsValidity));

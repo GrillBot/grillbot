@@ -32,6 +32,7 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
             .AddText("GuildModule/UpdateGuild/MuteRoleNotFound", "cs", "MuteRoleNotFound")
             .AddText("GuildModule/UpdateGuild/EmoteSuggestionChannelNotFound", "cs", "EmoteSuggestionChannelNotFound")
             .AddText("GuildModule/UpdateGuild/VoteChannelNotFound", "cs", "VoteChannelNotFound")
+            .AddText("GuildModule/UpdateGuild/BotRoomChannelNotFound", "cs", "BotRoomChannelNotFound")
             .Build();
         var getGuildDetail = new GetGuildDetail(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client, CacheBuilder, texts);
         return new UpdateGuild(ApiRequestContext, client, DatabaseBuilder, getGuildDetail, texts);
@@ -55,26 +56,12 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
             MuteRoleId = Consts.RoleId.ToString(),
             VoteChannelId = Consts.ChannelId.ToString(),
             EmoteSuggestionChannelId = Consts.ChannelId.ToString(),
-            EmoteSuggestionsValidity = new RangeParams<DateTime> { From = DateTime.MinValue, To = DateTime.MaxValue }
+            EmoteSuggestionsValidity = new RangeParams<DateTime> { From = DateTime.MinValue, To = DateTime.MaxValue },
+            BotRoomChannelId = Consts.ChannelId.ToString()
         };
 
         var result = await Action.ProcessAsync(Consts.GuildId, parameters);
         GetGuildDetailTests.CheckSuccess(result, false);
-    }
-
-    [TestMethod]
-    public async Task ProcessAsync_RemoveEvents()
-    {
-        var guild = Database.Entity.Guild.FromDiscord(Guild);
-        guild.GuildEvents.Add(new Database.Entity.GuildEvent { Id = "EmoteSuggestions" });
-        await Repository.AddAsync(guild);
-        await Repository.CommitAsync();
-
-        var parameters = new UpdateGuildParams();
-        var result = await Action.ProcessAsync(Consts.GuildId, parameters);
-
-        Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.GuildEvents.Count);
     }
 
     [TestMethod]
@@ -86,7 +73,8 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
             new UpdateGuildParams { AdminChannelId = (Consts.ChannelId + 1).ToString() },
             new UpdateGuildParams { MuteRoleId = (Consts.RoleId + 1).ToString() },
             new UpdateGuildParams { EmoteSuggestionChannelId = (Consts.ChannelId + 1).ToString() },
-            new UpdateGuildParams { VoteChannelId = (Consts.ChannelId + 1).ToString() }
+            new UpdateGuildParams { VoteChannelId = (Consts.ChannelId + 1).ToString() },
+            new UpdateGuildParams { BotRoomChannelId = (Consts.ChannelId + 1).ToString() }
         };
 
         foreach (var @case in cases)

@@ -58,6 +58,9 @@ public class GetGuildDetail : ApiAction
         if (!string.IsNullOrEmpty(dbGuild.VoteChannelId))
             detail.VoteChannel = Mapper.Map<Data.Models.API.Channels.Channel>(await discordGuild.GetChannelAsync(dbGuild.VoteChannelId.ToUlong()));
 
+        if (!string.IsNullOrEmpty(dbGuild.BotRoomChannelId))
+            detail.BotRoomChannel = Mapper.Map<Data.Models.API.Channels.Channel>(await discordGuild.GetChannelAsync(dbGuild.BotRoomChannelId.ToUlong()));
+
         var guildUsers = await discordGuild.GetUsersAsync();
         detail.UserStatusReport = guildUsers
             .GroupBy(o => o.GetStatus())

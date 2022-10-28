@@ -24,7 +24,7 @@ public class SuggestionModule : InteractionsModuleBase
     }
 
     [SlashCommand("emote", "Submitting a proposal to add a new emote.")]
-    [RequireGuildEvent("EmoteSuggestions", "Aktuálně není období pro podávání návrhů na nové emoty.")]
+    [RequireValidEmoteSuggestions("Aktuálně není období pro podávání návrhů na nové emoty.")]
     public async Task SuggestEmoteAsync(
         [Summary("emote", "Option to design an emote based on an existing emote (from another server).")]
         IEmote emote = null,

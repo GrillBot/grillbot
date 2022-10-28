@@ -33,8 +33,5 @@ public class GuildsMappingProfile : AutoMapper.Profile
             .ForMember(dst => dst.MaxUploadLimit, opt => opt.MapFrom(src => src.CalculateFileUploadLimit()));
 
         CreateMap<SocketGuild, Guild>();
-
-        CreateMap<Database.Entity.GuildEvent, GuildEvent>()
-            .ForMember(dst => dst.Validity, opt => opt.MapFrom(src => new RangeParams<DateTime> { From = src.From, To = src.To }));
     }
 }

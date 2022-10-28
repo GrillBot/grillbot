@@ -56,11 +56,13 @@ public class GuildDetail : Guild
     /// Channel for emote suggestions.
     /// </summary>
     public Channel EmoteSuggestionChannel { get; set; }
-    
+
     /// <summary>
     /// Channel for public votes.
     /// </summary>
     public Channel VoteChannel { get; set; }
+
+    public Channel BotRoomChannel { get; set; }
 
     /// <summary>
     /// Maximum count of members.
@@ -87,8 +89,10 @@ public class GuildDetail : Guild
     /// </summary>
     public int MaxUploadLimit { get; set; }
 
+    public DateTime? EmoteSuggestionsFrom { get; set; }
+    public DateTime? EmoteSuggestionsTo { get; set; }
+
     public Dictionary<UserStatus, int> UserStatusReport { get; set; }
     public Dictionary<ClientType, int> ClientTypeReport { get; set; }
     public GuildDatabaseReport DatabaseReport { get; set; }
-    public List<GuildEvent> GuildEvents { get; set; }
 }

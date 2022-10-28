@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Services.User;
+﻿using System.Reflection;
+using GrillBot.App.Services.User;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -79,6 +80,7 @@ public class RequestFilter : IAsyncActionFilter
         ApiRequest.ActionName = descriptor.MethodInfo.Name;
         ApiRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
         ApiRequest.Method = context.HttpContext.Request.Method;
+        ApiRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().FirstOrDefault()?.GroupName ?? "V1").ToUpper();
 
         foreach (var item in context.HttpContext.Request.Query)
             ApiRequest.AddParameter(item.Key, item.Value.ToString());

@@ -41,6 +41,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
     public TargetIdFilter OverwriteUpdatedFilter { get; set; }
     public TargetIdFilter MemberRolesUpdatedFilter { get; set; }
     public TargetIdFilter MemberUpdatedFilter { get; set; }
+    public MessageDeletedFilter MessageDeletedFilter { get; set; }
     public bool OnlyFromStart { get; set; }
 
     /// <summary>
@@ -71,7 +72,8 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
             () => Types.Contains(AuditLogItemType.OverwriteDeleted) && OverwriteDeletedFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.OverwriteUpdated) && OverwriteUpdatedFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.MemberUpdated) && MemberUpdatedFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.MemberRoleUpdated) && MemberRolesUpdatedFilter?.IsSet() == true
+            () => Types.Contains(AuditLogItemType.MemberRoleUpdated) && MemberRolesUpdatedFilter?.IsSet() == true,
+            () => Types.Contains(AuditLogItemType.MessageDeleted) && MessageDeletedFilter?.IsSet() == true
         };
 
         return conditions.Any(o => o());
@@ -202,6 +204,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
         result.AddApiObject(OverwriteDeletedFilter, nameof(OverwriteDeletedFilter));
         result.AddApiObject(OverwriteUpdatedFilter, nameof(OverwriteUpdatedFilter));
         result.AddApiObject(MemberUpdatedFilter, nameof(MemberUpdatedFilter));
+        result.AddApiObject(MessageDeletedFilter, nameof(MessageDeletedFilter));
         result.AddApiObject(Sort, nameof(Sort));
         result.AddApiObject(Pagination, nameof(Pagination));
 

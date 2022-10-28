@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using GrillBot.App.Services.User;
+﻿using GrillBot.App.Services.User;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;

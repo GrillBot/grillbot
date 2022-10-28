@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.App.Services.AuditLog;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models;
@@ -48,9 +49,7 @@ public class GetAuditLogList : ApiAction
                 if (long.TryParse(items[i], out _))
                     continue;
 
-                var text = Texts["AuditLog/List/IdNotNumber", ApiContext.Language].FormatWith(i);
-                var result = new ValidationResult(text, new[] { $"{nameof(parameters.Ids)}[{i}]" });
-                throw new ValidationException(result, null, items[i]);
+                throw new ValidationException(Texts["AuditLog/List/IdNotNumber", ApiContext.Language].FormatWith(i)).ToBadRequestValidation(items[i], $"{nameof(parameters.Ids)}[{i}]");
             }
         }
 
@@ -60,8 +59,7 @@ public class GetAuditLogList : ApiAction
         if (!intersectTypes.Any())
             return;
 
-        throw new ValidationException(
-            new ValidationResult(Texts["AuditLog/List/TypesCombination", ApiContext.Language], new[] { nameof(parameters.ExcludedTypes), nameof(parameters.Types) }), null, intersectTypes);
+        throw new ValidationException(Texts["AuditLog/List/TypesCombination", ApiContext.Language]).ToBadRequestValidation(intersectTypes, nameof(parameters.ExcludedTypes), nameof(parameters.Types));
     }
 
     private async Task<List<long>> GetLogIdsAsync(AuditLogListParams parameters)
@@ -93,7 +91,8 @@ public class GetAuditLogList : ApiAction
             () => IsValidFilter(item, AuditLogItemType.OverwriteDeleted, parameters.OverwriteDeletedFilter),
             () => IsValidFilter(item, AuditLogItemType.OverwriteUpdated, parameters.OverwriteUpdatedFilter),
             () => IsValidFilter(item, AuditLogItemType.MemberUpdated, parameters.MemberUpdatedFilter),
-            () => IsValidFilter(item, AuditLogItemType.MemberRoleUpdated, parameters.MemberRolesUpdatedFilter)
+            () => IsValidFilter(item, AuditLogItemType.MemberRoleUpdated, parameters.MemberRolesUpdatedFilter),
+            () => IsValidFilter(item, AuditLogItemType.MessageDeleted, parameters.MessageDeletedFilter)
         };
 
         return conditions.Any(o => o());

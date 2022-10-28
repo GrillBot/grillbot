@@ -12,8 +12,4 @@ public class ChannelModule : ModuleBase
     [Command("board")]
     [TextCommandDeprecated(AlternativeCommand = "/channel board")]
     public Task GetChannelBoardAsync() => Task.CompletedTask;
-
-    [Command]
-    [TextCommandDeprecated(AlternativeCommand = "/channel info")]
-    public Task GetStatisticsOfChannelAsync(SocketTextChannel _) => Task.CompletedTask;
 }

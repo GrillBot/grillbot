@@ -7,7 +7,7 @@ namespace GrillBot.App.Modules.Interactions.User;
 [RequireUserPerms]
 public class UserMeModule : InteractionsModuleBase
 {
-    public UserMeModule(IServiceProvider serviceProvider) : base(null, serviceProvider)
+    public UserMeModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 

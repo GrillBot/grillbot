@@ -5,7 +5,6 @@ using System.Net.Http;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -14,7 +13,7 @@ public class MathModule : InteractionsModuleBase
 {
     private IHttpClientFactory HttpClientFactory { get; }
 
-    public MathModule(IHttpClientFactory httpClientFactory, ITextsManager texts) : base(texts)
+    public MathModule(IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         HttpClientFactory = httpClientFactory;
     }

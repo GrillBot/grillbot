@@ -14,7 +14,7 @@ public class PointsModule : InteractionsModuleBase
 {
     private PointsService PointsService { get; }
 
-    public PointsModule(PointsService pointsService, IServiceProvider serviceProvider) : base(serviceProvider: serviceProvider)
+    public PointsModule(PointsService pointsService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         PointsService = pointsService;
     }

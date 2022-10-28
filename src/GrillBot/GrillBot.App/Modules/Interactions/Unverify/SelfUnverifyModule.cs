@@ -3,7 +3,6 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common;
-using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;
 
@@ -13,15 +12,14 @@ public class SelfUnverifyModule : InteractionsModuleBase
     private IConfiguration Configuration { get; }
     private UnverifyService UnverifyService { get; }
 
-    public SelfUnverifyModule(IConfiguration configuration, ITextsManager texts, UnverifyService unverifyService) : base(texts)
+    public SelfUnverifyModule(IConfiguration configuration, UnverifyService unverifyService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         Configuration = configuration;
         UnverifyService = unverifyService;
     }
 
     [SlashCommand("selfunverify", "Temporarily remove access to yourself on the server.")]
-    [RequireBotPermission(GuildPermission.AddReactions)]
-    [RequireBotPermission(GuildPermission.ManageRoles)]
+    [RequireBotPermission(GuildPermission.AddReactions | GuildPermission.ManageRoles)]
     public async Task SelfUnverifyAsync(
         [Summary("end", "End date and time, or duration of access removal.")]
         DateTime end,

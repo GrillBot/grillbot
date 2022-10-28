@@ -11,11 +11,15 @@ namespace GrillBot.App.Modules.Interactions;
 [ExcludeFromCodeCoverage]
 public class PermissionsModule : InteractionsModuleBase
 {
+    public PermissionsModule() : base(null)
+    {
+    }
+
     [Group("remove", "Permissions removal processing")]
     [RequireBotPermission(GuildPermission.ManageChannels | GuildPermission.ManageRoles)]
     public class PermissionsRemoveSubModule : InteractionsModuleBase
     {
-        public PermissionsRemoveSubModule(IServiceProvider serviceProvider) : base(null, serviceProvider)
+        public PermissionsRemoveSubModule(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -34,7 +38,7 @@ public class PermissionsModule : InteractionsModuleBase
     [RequireBotPermission(GuildPermission.ManageChannels | GuildPermission.ManageRoles)]
     public class UselessPermissionsSubModule : InteractionsModuleBase
     {
-        public UselessPermissionsSubModule(IServiceProvider serviceProvider) : base(serviceProvider: serviceProvider)
+        public UselessPermissionsSubModule(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -72,7 +76,7 @@ public class PermissionsModule : InteractionsModuleBase
         {
             using var command = GetCommand<Actions.Commands.PermissionsCleaner>();
             command.Command.PermissionsReader.Init(Context);
-            
+
             command.Command.OnProgress = async progressBar => await SetResponseAsync(progressBar, suppressFollowUp: true);
             await command.Command.RemoveUselessPermissionsAsync();
         }

@@ -1,10 +1,10 @@
 ﻿using Discord.Interactions;
 using Discord.Net;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.App.Services.Suggestion;
-using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -16,15 +16,15 @@ public class SuggestionModule : InteractionsModuleBase
     private EmoteSuggestionService EmoteSuggestions { get; }
     private FeatureSuggestionService FeatureSuggestions { get; }
 
-    public SuggestionModule(EmoteSuggestionService emoteSuggestionService, FeatureSuggestionService featureSuggestions, ITextsManager texts) : base(texts)
+    public SuggestionModule(EmoteSuggestionService emoteSuggestionService, FeatureSuggestionService featureSuggestions, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         EmoteSuggestions = emoteSuggestionService;
-        CanDefer = false;
         FeatureSuggestions = featureSuggestions;
     }
 
     [SlashCommand("emote", "Submitting a proposal to add a new emote.")]
     [RequireValidEmoteSuggestions("Aktuálně není období pro podávání návrhů na nové emoty.")]
+    [DeferConfiguration(SuppressAuto = true)]
     public async Task SuggestEmoteAsync(
         [Summary("emote", "Option to design an emote based on an existing emote (from another server).")]
         IEmote emote = null,
@@ -107,7 +107,6 @@ public class SuggestionModule : InteractionsModuleBase
     {
         try
         {
-            await DeferAsync();
             await EmoteSuggestions.ProcessSuggestionsToVoteAsync(Context.Guild);
             await SetResponseAsync(GetText(nameof(ProcessEmoteSuggestionsAsync), "Success"));
         }
@@ -118,6 +117,7 @@ public class SuggestionModule : InteractionsModuleBase
     }
 
     [SlashCommand("feature", "Submission of a proposal for a new feature to GrillBot.")]
+    [DeferConfiguration(SuppressAuto = true)]
     public Task SuggestFeatureAsync()
     {
         var suggestionId = Guid.NewGuid().ToString();

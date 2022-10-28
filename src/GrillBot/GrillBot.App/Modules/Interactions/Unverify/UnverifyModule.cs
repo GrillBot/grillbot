@@ -16,7 +16,7 @@ namespace GrillBot.App.Modules.Interactions.Unverify;
 [ExcludeFromCodeCoverage]
 public class UnverifyModule : InteractionsModuleBase
 {
-    public UnverifyModule(IServiceProvider serviceProvider) : base(null, serviceProvider)
+    public UnverifyModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
@@ -93,7 +93,7 @@ public class UnverifyModule : InteractionsModuleBase
             await SetResponseAsync(ex.Message);
         }
     }
-    
+
     [SlashCommand("fun", "Set funverify to user.")]
     public async Task SetFunverifyAsync(DateTime end, string reason, IGuildUser user, IGuildUser user2 = null, IGuildUser user3 = null, IGuildUser user4 = null, IGuildUser user5 = null)
     {
@@ -108,7 +108,7 @@ public class UnverifyModule : InteractionsModuleBase
 
             await SetResponseAsync(result[0]);
             foreach (var msg in result.Skip(1)) await ReplyAsync(msg);
-            
+
             await Task.Delay(configuration.GetValue<int>("Unverify:FunverifySleepTime"));
             await Context.Channel.SendMessageAsync(configuration["Discord:Emotes:KappaLul"]);
         }

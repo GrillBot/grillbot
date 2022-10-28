@@ -6,7 +6,6 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Cooldown;
-using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -18,7 +17,7 @@ public class MemeModule : InteractionsModuleBase
     private RandomizationService RandomizationService { get; }
     private IConfiguration Configuration { get; }
 
-    public MemeModule(RandomizationService randomizationService, IConfiguration configuration, ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
+    public MemeModule(RandomizationService randomizationService, IConfiguration configuration, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         RandomizationService = randomizationService;
         Configuration = configuration;
@@ -86,11 +85,10 @@ public class MemeModule : InteractionsModuleBase
         => await EmojizeAsync(message.Content);
 
     [SlashCommand("reactjize", "Reactjize")]
-    [SuppressDefer]
     [RequireBotPermission(ChannelPermission.AddReactions)]
+    [DeferConfiguration(RequireEphemeral = true)]
     public async Task ReactjizeAsync(string message, IMessage reference)
     {
-        await DeferAsync(ephemeral: true);
         using var command = GetCommand<Actions.Commands.Emojization>();
 
         try
@@ -103,7 +101,7 @@ public class MemeModule : InteractionsModuleBase
                     await reference.AddReactionAsync(emote);
             }
 
-            await SetResponseAsync(Texts["Emojization/Done", Locale]);
+            await SetResponseAsync(Texts["Emojization/Done", Locale], secret: true);
         }
         catch (Exception ex) when (ex is ValidationException or GrillBotException)
         {

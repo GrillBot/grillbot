@@ -10,7 +10,7 @@ public class MockingModule : InteractionsModuleBase
 {
     private MockingService MockingService { get; }
 
-    public MockingModule(MockingService mockingService)
+    public MockingModule(MockingService mockingService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         MockingService = mockingService;
     }

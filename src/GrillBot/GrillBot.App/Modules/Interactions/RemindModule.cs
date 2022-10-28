@@ -1,11 +1,11 @@
 ﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Common;
 using GrillBot.Common.Helpers;
-using GrillBot.Common.Managers.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -16,12 +16,13 @@ public class RemindModule : InteractionsModuleBase
 {
     private RemindService RemindService { get; }
 
-    public RemindModule(RemindService remindService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
+    public RemindModule(RemindService remindService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         RemindService = remindService;
     }
 
     [SlashCommand("create", "Create a reminder for a specific date.")]
+    [DeferConfiguration(SuppressAuto = true)]
     public async Task CreateAsync(
         [Summary("who", "Designation of the user who wishes to receive notifications")]
         IUser who,

@@ -4,7 +4,6 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.App.Services.Emotes;
 using GrillBot.Common.Helpers;
-using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -14,7 +13,7 @@ public class EmoteModule : InteractionsModuleBase
 {
     private EmotesCommandService EmotesCommandService { get; }
 
-    public EmoteModule(EmotesCommandService emotesCommandService, ITextsManager texts) : base(texts)
+    public EmoteModule(EmotesCommandService emotesCommandService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         EmotesCommandService = emotesCommandService;
     }

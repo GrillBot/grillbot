@@ -5,7 +5,6 @@ using GrillBot.App.Modules.Implementations.Channels;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
-using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Enums.Internal;
@@ -16,12 +15,10 @@ namespace GrillBot.App.Modules.Interactions;
 [RequireUserPerms]
 public class ChannelModule : InteractionsModuleBase
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private FormatHelper FormatHelper { get; }
 
-    public ChannelModule(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, FormatHelper formatHelper, IServiceProvider serviceProvider) : base(texts, serviceProvider)
+    public ChannelModule(FormatHelper formatHelper, IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        DatabaseBuilder = databaseBuilder;
         FormatHelper = formatHelper;
     }
 

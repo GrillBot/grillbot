@@ -11,15 +11,14 @@ namespace GrillBot.App.Modules.Interactions;
 [ExcludeFromCodeCoverage]
 public class PinModule : InteractionsModuleBase
 {
-    public PinModule(IServiceProvider serviceProvider) : base(null, serviceProvider)
+    public PinModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
     [SlashCommand("purge", "Unpinn N messages")]
-    [SuppressDefer]
+    [DeferConfiguration(RequireEphemeral = true)]
     public async Task ProcessAsync(int count, ITextChannel channel = null)
     {
-        await DeferAsync(true);
         using var command = GetCommand<Actions.Commands.PurgePins>();
 
         var result = await command.Command.ProcessAsync(count, channel);

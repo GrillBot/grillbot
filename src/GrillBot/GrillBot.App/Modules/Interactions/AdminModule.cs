@@ -3,7 +3,6 @@ using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -13,16 +12,15 @@ namespace GrillBot.App.Modules.Interactions;
 [ExcludeFromCodeCoverage]
 public class AdminModule : InteractionsModuleBase
 {
-    public AdminModule(IServiceProvider serviceProvider, ITextsManager texts) : base(texts, serviceProvider)
+    public AdminModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
     [SlashCommand("clean_messages", "Deletes the last N messages from the channel.")]
     [RequireBotPermission(ChannelPermission.ManageMessages | ChannelPermission.ReadMessageHistory)]
-    [SuppressDefer]
+    [DeferConfiguration(RequireEphemeral = true)]
     public async Task CleanAsync(int count, ITextChannel channel = null)
     {
-        await DeferAsync(true);
         using var command = GetCommand<Actions.Commands.CleanChannelMessages>();
 
         var result = await command.Command.ProcessAsync(count, channel);
@@ -30,20 +28,19 @@ public class AdminModule : InteractionsModuleBase
     }
 
     [SlashCommand("send", "Send message to command")]
-    [SuppressDefer]
+    [DeferConfiguration(RequireEphemeral = true)]
     public async Task SendMessageToChannelAsync(ITextChannel channel, string content = null, string reference = null, IAttachment attachment = null)
     {
-        await DeferAsync(true);
         using var command = GetCommand<Actions.Commands.SendMessageToChannel>();
 
         try
         {
             await command.Command.ProcessAsync(channel, reference, content, new[] { attachment });
-            await SetResponseAsync(Texts["ChannelModule/PostMessage/Success", Locale]);
+            await SetResponseAsync(Texts["ChannelModule/PostMessage/Success", Locale], secret: true);
         }
         catch (ValidationException ex)
         {
-            await SetResponseAsync(ex.Message);
+            await SetResponseAsync(ex.Message, secret: true);
         }
     }
 }

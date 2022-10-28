@@ -5,7 +5,6 @@ using GrillBot.App.Services.User;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
-using GrillBot.Common.Managers.Localization;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -18,7 +17,7 @@ public class GuildModule : InteractionsModuleBase
     private UserService UserService { get; }
     private GuildHelper GuildHelper { get; }
 
-    public GuildModule(UserService userService, ITextsManager texts, GuildHelper guildHelper) : base(texts)
+    public GuildModule(UserService userService, GuildHelper guildHelper, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         UserService = userService;
         GuildHelper = guildHelper;

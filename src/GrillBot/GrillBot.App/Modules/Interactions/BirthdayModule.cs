@@ -4,7 +4,6 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Services.Birthday;
 using Microsoft.Extensions.DependencyInjection;
-using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -14,7 +13,7 @@ public class BirthdayModule : InteractionsModuleBase
 {
     private BirthdayService BirthdayService { get; }
 
-    public BirthdayModule(BirthdayService birthdayService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
+    public BirthdayModule(BirthdayService birthdayService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         BirthdayService = birthdayService;
     }

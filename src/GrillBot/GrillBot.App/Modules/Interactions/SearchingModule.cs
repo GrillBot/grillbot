@@ -4,7 +4,6 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
 using GrillBot.Common.Helpers;
-using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models.API.Searching;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +15,7 @@ public class SearchingModule : InteractionsModuleBase
 {
     private SearchingService SearchingService { get; }
 
-    public SearchingModule(SearchingService searchingService, ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
+    public SearchingModule(SearchingService searchingService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         SearchingService = searchingService;
     }

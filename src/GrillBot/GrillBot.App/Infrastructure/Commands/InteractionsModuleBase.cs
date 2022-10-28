@@ -9,9 +9,9 @@ namespace GrillBot.App.Infrastructure.Commands;
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands)]
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
-    protected bool CanDefer { get; set; } = true;
     protected ITextsManager Texts { get; }
     protected IServiceProvider ServiceProvider { get; }
+    protected GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     protected string Locale
     {
@@ -25,36 +25,52 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected CultureInfo Culture
         => string.IsNullOrEmpty(Locale) ? null : Texts.GetCulture(Locale);
 
-    protected InteractionsModuleBase(ITextsManager texts = null, IServiceProvider serviceProvider = null)
+    private bool IsBotRoom { get; set; }
+
+    protected InteractionsModuleBase(IServiceProvider serviceProvider)
     {
-        Texts = texts;
         ServiceProvider = serviceProvider;
+
+        if (ServiceProvider == null) return;
+        Texts = ServiceProvider.GetRequiredService<ITextsManager>();
+        DatabaseBuilder = ServiceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
     }
 
     /// <summary>
     /// Check whether Defer can be performed.
     /// </summary>
     /// <returns>
-    /// True if called command is not component command and command not contains secret switch named "secret" or "tajne".
-    /// In other case, it decides CanDefer parameter.
+    /// canDefer(False) if:
+    /// - Called command is component command.
+    /// - Contains "secret" or "tajne" parameter.
+    /// - Contains DeferConfigurationAttribute with SuppressAuto=true
+    ///
+    /// ephemeral(True) if:
+    /// - DeferConfigurationAttribute have RequireEphemeral=true
+    /// - BotRoom was configured and execution channel is not BotRoom. 
     /// </returns>
-    private bool CheckDefer(ICommandInfo command)
+    private async Task<(bool canDefer, bool ephemeral)> CheckDeferAsync(ICommandInfo command)
     {
-        if (command.Module.ComponentCommands.Any(c => c.Name == command.Name))
-            return false;
+        if (command.Module.ComponentCommands.Any(c => c.Name == command.Name)) return (false, false);
+        if (command.Parameters.Any(c => c.Name is "secret" or "tajne")) return (false, false);
 
-        if (command.Attributes.OfType<SuppressDeferAttribute>().Any())
-            return false;
+        var configuration = command.Attributes.OfType<DeferConfiguration>().FirstOrDefault() ?? new DeferConfiguration();
 
-        return !command.Parameters.Any(c => c.Name is "secret" or "tajne") && CanDefer;
+        if (configuration.SuppressAuto) return (false, false);
+        if (configuration.RequireEphemeral) return (true, true);
+
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var guild = (await repository.Guild.FindGuildAsync(Context.Guild, true))!;
+        IsBotRoom = string.IsNullOrEmpty(guild.BotRoomChannelId) || guild.BotRoomChannelId == Context.Channel.Id.ToString();
+        return (true, !IsBotRoom);
     }
 
     public override async Task BeforeExecuteAsync(ICommandInfo command)
     {
         await base.BeforeExecuteAsync(command);
 
-        if (CheckDefer(command))
-            await DeferAsync();
+        var (canDefer, ephemeral) = await CheckDeferAsync(command);
+        if (canDefer) await DeferAsync(ephemeral);
     }
 
     protected override async Task DeleteOriginalResponseAsync()
@@ -68,6 +84,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         IEnumerable<FileAttachment> attachments = default, RequestOptions requestOptions = null, bool secret = false, bool suppressFollowUp = false)
     {
         var attachmentsList = (attachments ?? Enumerable.Empty<FileAttachment>()).ToList();
+        secret = secret || !IsBotRoom;
 
         if (!Context.Interaction.HasResponded)
         {

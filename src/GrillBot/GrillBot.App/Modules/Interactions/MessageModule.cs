@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
-using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -9,10 +8,14 @@ namespace GrillBot.App.Modules.Interactions;
 [ExcludeFromCodeCoverage]
 public class MessageModule : InteractionsModuleBase
 {
+    public MessageModule() : base(null)
+    {
+    }
+
     [Group("clear", "Removal process of message")]
     public class MessageClearSubModule : InteractionsModuleBase
     {
-        public MessageClearSubModule(ITextsManager texts) : base(texts)
+        public MessageClearSubModule(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 

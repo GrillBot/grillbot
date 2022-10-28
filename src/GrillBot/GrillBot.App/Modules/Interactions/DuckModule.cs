@@ -3,7 +3,6 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Data.Models.Duck;
 using System.Net.Http;
 using GrillBot.App.Infrastructure.Commands;
-using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -13,7 +12,7 @@ public class DuckModule : InteractionsModuleBase
     private IHttpClientFactory HttpClientFactory { get; }
     private IConfiguration Configuration { get; }
 
-    public DuckModule(IHttpClientFactory httpClientFactory, IConfiguration configuration, ITextsManager texts) : base(texts)
+    public DuckModule(IHttpClientFactory httpClientFactory, IConfiguration configuration, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         HttpClientFactory = httpClientFactory;
         Configuration = configuration;

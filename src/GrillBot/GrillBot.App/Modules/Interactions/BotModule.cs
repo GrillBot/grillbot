@@ -3,7 +3,6 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Common.Extensions.Discord;
 using System.Diagnostics;
 using GrillBot.App.Infrastructure.Commands;
-using GrillBot.Common.Managers.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -12,7 +11,7 @@ namespace GrillBot.App.Modules.Interactions;
 [Group("bot", "Bot information and configuration commands.")]
 public class BotModule : InteractionsModuleBase
 {
-    public BotModule(ITextsManager texts) : base(texts)
+    public BotModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
@@ -46,7 +45,7 @@ public class BotModule : InteractionsModuleBase
     [Group("selfunverify", "Configuring selfunverify.")]
     public class SelfUnverifyConfig : InteractionsModuleBase
     {
-        public SelfUnverifyConfig(ITextsManager texts, IServiceProvider serviceProvider) : base(texts, serviceProvider)
+        public SelfUnverifyConfig(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 

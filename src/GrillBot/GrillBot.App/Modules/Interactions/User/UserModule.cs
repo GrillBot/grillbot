@@ -2,8 +2,6 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.User;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Interactions.User;
 
@@ -12,30 +10,25 @@ namespace GrillBot.App.Modules.Interactions.User;
 [DefaultMemberPermissions(GuildPermission.ViewAuditLog | GuildPermission.UseApplicationCommands)]
 public class UserModule : Infrastructure.Commands.InteractionsModuleBase
 {
-    public UserModule(IServiceProvider serviceProvider) : base(null, serviceProvider)
+    public UserModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
     [SlashCommand("access", "View a list of user permissions.")]
-    public async Task GetAccessListAsync(
-        [Summary("user", "User identification")]
-        IGuildUser user,
-        [Summary("secret", "View result privately?")] [Choice("Yes", "true")] [Choice("No", "false")]
-        bool secret = false
-    )
+    [DeferConfiguration(RequireEphemeral = true)]
+    public async Task GetAccessListAsync([Summary("user", "User identification")] IGuildUser user)
     {
-        await DeferAsync(secret);
         using var command = GetCommand<Actions.Commands.UserAccessList>();
 
         var (embed, paginationComponents) = await command.Command.ProcessAsync(user, 0);
-        await SetResponseAsync(embed: embed, components: paginationComponents, secret: secret);
+        await SetResponseAsync(embed: embed, components: paginationComponents, secret: true);
     }
 
     [UserCommand("Seznam oprávnění")]
-    [SuppressDefer]
+    [DeferConfiguration(RequireEphemeral = true)]
     public async Task GetAccessListFromContextMenuAsync(IGuildUser user)
     {
-        await GetAccessListAsync(user, true);
+        await GetAccessListAsync(user);
     }
 
     [RequireSameUserAsAuthor]

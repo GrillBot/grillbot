@@ -13,17 +13,15 @@ public class CommandHandler
     private CommandService CommandService { get; }
     private IServiceProvider Provider { get; }
     private IConfiguration Configuration { get; }
-    private AuditLogService AuditLogService { get; }
     private InitManager InitManager { get; }
     private DiscordSocketClient DiscordClient { get; }
 
     public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider provider, IConfiguration configuration,
-        AuditLogService auditLogService, InitManager initManager)
+        InitManager initManager)
     {
         CommandService = commandService;
         Provider = provider;
         Configuration = configuration;
-        AuditLogService = auditLogService;
         InitManager = initManager;
         DiscordClient = client;
 
@@ -46,12 +44,11 @@ public class CommandHandler
             await CommandService.ExecuteAsync(context, argumentPosition, Provider);
     }
 
-    private async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+    private static async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
     {
         // Null is success, because some modules returns null after success and library always returns ExecuteResult.
         result ??= ExecuteResult.FromSuccess();
 
-        var duration = CommandsPerformanceCounter.TaskFinished(context);
         if (!result.IsSuccess && result.Error != null)
         {
             var reply = "";
@@ -82,16 +79,6 @@ public class CommandHandler
             // Reply to command message with mentioning user
             if (!string.IsNullOrEmpty(reply))
                 await context.Message.ReplyAsync(reply, allowedMentions: new AllowedMentions { MentionRepliedUser = true });
-        }
-
-        if (result.Error != CommandError.UnknownCommand)
-        {
-            await AuditLogService.LogExecutedCommandAsync(command.Value, context, result, duration);
-        }
-        else
-        {
-            if (CommandsPerformanceCounter.TaskExists(context))
-                CommandsPerformanceCounter.TaskFinished(context);
         }
     }
 }

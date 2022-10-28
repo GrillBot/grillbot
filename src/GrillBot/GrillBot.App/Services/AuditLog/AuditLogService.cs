@@ -95,9 +95,6 @@ public class AuditLogService
             await @event.ProcessAsync();
     }
 
-    public Task LogExecutedCommandAsync(CommandInfo command, ICommandContext context, global::Discord.Commands.IResult result, int duration)
-        => HandleEventAsync(new ExecutedCommandEvent(this, AuditLogWriter, command, context, result, duration));
-
     public Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result,
         int duration)
     {

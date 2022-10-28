@@ -48,13 +48,24 @@ public class DirectApiService : IDirectApiService
     private async Task<string> GetResponseAsync(IConfiguration configuration, IUserMessage request)
     {
         var timeout = configuration.GetValue<int>("Timeout");
-        await Task.Delay(timeout);
+        var checks = configuration.GetValue<int>("Checks");
+        var delay = Convert.ToInt32(timeout / checks);
 
-        var messages = await request.Channel.GetMessagesAsync(mode: CacheMode.AllowDownload).FlattenAsync();
-        var response = messages.FirstOrDefault(o => IsValidResponse(o, request));
-        if (response == null) return null;
+        IMessage message = null;
+        for (var i = 0; i < checks; i++)
+        {
+            await Task.Delay(delay);
 
-        var attachment = await response.Attachments.First().DownloadAsync();
+            var messages = await request.Channel.GetMessagesAsync(request.Id, Direction.After).FlattenAsync();
+            var response = messages.FirstOrDefault(o => IsValidResponse(o, request));
+            if (response == null) continue;
+
+            message = response;
+            break;
+        }
+
+        if (message == null) return null;
+        var attachment = await message.Attachments.First().DownloadAsync();
         return attachment == null ? null : Encoding.UTF8.GetString(attachment);
     }
 

@@ -36,7 +36,6 @@ public class CommandHandler
         if (userMessage == null) return;
 
         var context = new SocketCommandContext(DiscordClient, userMessage);
-        CommandsPerformanceCounter.StartTask(context);
 
         var argumentPosition = 0;
         var prefix = Configuration.GetValue<string>("Discord:Commands:Prefix");

@@ -8,13 +8,7 @@ public static class CommandsPerformanceCounter
     private static string CreateContextKey(IInteractionContext context)
         => $"{context.Interaction.GetType().Name}|{context.User.Id}|{context.Interaction.Id}";
 
-    private static string CreateContextKey(global::Discord.Commands.ICommandContext context)
-        => $"TextBasedCommand|{context.User.Id}|{context.Message.Id}";
-
     public static void StartTask(IInteractionContext context)
-        => StartRunningTask(CreateContextKey(context));
-
-    public static void StartTask(global::Discord.Commands.ICommandContext context)
         => StartRunningTask(CreateContextKey(context));
 
     private static void StartRunningTask(string contextKey)
@@ -29,9 +23,6 @@ public static class CommandsPerformanceCounter
     }
 
     public static int TaskFinished(IInteractionContext context)
-        => RunningTaskFinished(CreateContextKey(context));
-
-    public static int TaskFinished(global::Discord.Commands.ICommandContext context)
         => RunningTaskFinished(CreateContextKey(context));
 
     private static int RunningTaskFinished(string contextKey)
@@ -55,9 +46,6 @@ public static class CommandsPerformanceCounter
     }
 
     public static bool TaskExists(IInteractionContext context)
-        => TaskExists(CreateContextKey(context));
-
-    public static bool TaskExists(global::Discord.Commands.ICommandContext context)
         => TaskExists(CreateContextKey(context));
 
     private static bool TaskExists(string contextKey)

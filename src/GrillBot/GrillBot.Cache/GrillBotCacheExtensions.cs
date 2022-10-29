@@ -29,15 +29,7 @@ public static class GrillBotCacheExtensions
         using var repository = builder.CreateRepository();
         repository.ProcessMigrations();
 
-        var messageIndexes = repository.MessageIndexRepository.GetMessagesAsync().Result;
-        if (messageIndexes.Count > 0) repository.RemoveCollection(messageIndexes);
-
-        var expiredDirectApiMessages = repository.DirectApiRepository.FindExpiredMessages();
-        if (expiredDirectApiMessages.Count > 0) repository.RemoveCollection(expiredDirectApiMessages);
-
-        var inviteMetadata = repository.InviteMetadataRepository.GetAllInvites();
-        if (inviteMetadata.Count > 0) repository.RemoveCollection(inviteMetadata);
-
-        repository.Commit();
+        repository.MessageIndexRepository.DeleteAllIndexes();
+        repository.InviteMetadataRepository.DeleteAllInvites();
     }
 }

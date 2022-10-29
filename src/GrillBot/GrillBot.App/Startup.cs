@@ -53,7 +53,8 @@ public class Startup
             AlwaysDownloadUsers = true,
             AlwaysResolveStickers = true,
             DefaultRetryMode = RetryMode.RetryRatelimit,
-            SuppressUnknownDispatchWarnings = true
+            SuppressUnknownDispatchWarnings = true,
+            LogGatewayIntentWarnings = false
         };
 
         var commandsConfig = new CommandServiceConfig
@@ -66,14 +67,15 @@ public class Startup
         var currentAssembly = Assembly.GetExecutingAssembly();
         var basePath = Path.GetDirectoryName(currentAssembly.Location)!;
         var localizationPath = Path.Combine(basePath, "Resources", "Localization");
-        
+
         var interactionsConfig = new InteractionServiceConfig
         {
             DefaultRunMode = Discord.Interactions.RunMode.Async,
             EnableAutocompleteHandlers = true,
             LogLevel = LogSeverity.Verbose,
             UseCompiledLambda = true,
-            LocalizationManager = new JsonLocalizationManager(localizationPath, "commands")
+            LocalizationManager = new JsonLocalizationManager(localizationPath, "commands"),
+            AutoServiceScopes = true
         };
 
         var discordClient = new DiscordSocketClient(discordConfig);
@@ -112,18 +114,8 @@ public class Startup
             .AddSingleton<InteractionHandler>()
             .AddServices();
 
-        services.AddHttpClient("MathJS", c =>
-        {
-            c.BaseAddress = new Uri(Configuration["Services:Math:Api"]);
-            c.Timeout = TimeSpan.FromMilliseconds(Configuration["Services:Math:Timeout"].ToInt());
-        });
-
-        services.AddHttpClient("KachnaOnline", c =>
-        {
-            c.BaseAddress = new Uri(Configuration["Services:KachnaOnline:Api"]);
-            c.Timeout = TimeSpan.FromMilliseconds(Configuration["Services:KachnaOnline:Timeout"].ToInt());
-        });
-
+        services.AddHttpClient(Configuration, "MathJS", "Math");
+        services.AddHttpClient(Configuration, "KachnaOnline", "KachnaOnline");
         services.AddHostedService<DiscordService>();
 
         services.AddOpenApiDoc("v1", "WebAdmin API", "API for web administrations", doc =>
@@ -148,7 +140,7 @@ public class Startup
                 Type = OpenApiSecuritySchemeType.ApiKey,
                 In = OpenApiSecurityApiKeyLocation.Header
             });
-            
+
             doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
         });
 

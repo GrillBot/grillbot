@@ -45,4 +45,12 @@ public class MessageIndexRepository : RepositoryBase
                 .FirstOrDefaultAsync(o => o.MessageId == messageId.ToString());
         }
     }
+
+    public void DeleteAllIndexes()
+    {
+        using (CreateCounter())
+        {
+            Context.Database.ExecuteSqlRaw("DELETE FROM public.\"MessageIndex\"");
+        }
+    }
 }

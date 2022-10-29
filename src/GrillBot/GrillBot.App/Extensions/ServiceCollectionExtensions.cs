@@ -1,4 +1,6 @@
-﻿using Quartz;
+﻿using GrillBot.Common.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 
 namespace GrillBot.App.Extensions;
 
@@ -20,5 +22,14 @@ public static class ServiceCollectionExtensions
                 else
                     opt.WithSimpleSchedule(builder => builder.RepeatForever().WithInterval(configuration.GetValue<TimeSpan>(configurationKey)));
             });
+    }
+    
+    public static IHttpClientBuilder AddHttpClient(this IServiceCollection services, IConfiguration configuration, string serviceId, string serviceConfigName)
+    {
+        return services.AddHttpClient(serviceId, client =>
+        {
+            client.BaseAddress = new Uri(configuration[$"Services:{serviceConfigName}:Api"]);
+            client.Timeout = TimeSpan.FromMilliseconds(configuration[$"Services:{serviceConfigName}:Timeout"].ToInt());
+        });
     }
 }

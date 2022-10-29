@@ -45,4 +45,12 @@ public class InviteMetadataRepository : RepositoryBase
                 .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.Code == metadata.Code);
         }
     }
+
+    public void DeleteAllInvites()
+    {
+        using (CreateCounter())
+        {
+            Context.Database.ExecuteSqlRaw("DELETE FROM public.\"InviteMetadata\"");
+        }
+    }
 }

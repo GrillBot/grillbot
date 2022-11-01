@@ -109,7 +109,6 @@ public class RemindModule : InteractionsModuleBase
         catch (InvalidOperationException ex)
         {
             await RespondAsync(ex.Message, ephemeral: true);
-            await ((SocketMessageComponent)Context.Interaction).UpdateAsync(o => o.Components = null);
             canDefer = false;
         }
 

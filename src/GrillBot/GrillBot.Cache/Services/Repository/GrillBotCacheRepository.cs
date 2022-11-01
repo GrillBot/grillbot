@@ -16,7 +16,6 @@ public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
         Repositories = new List<RepositoryBase>();
     }
 
-    public DirectApiRepository DirectApiRepository => GetOrCreateRepository<DirectApiRepository>();
     public MessageIndexRepository MessageIndexRepository => GetOrCreateRepository<MessageIndexRepository>();
     public StatisticsRepository StatisticsRepository => GetOrCreateRepository<StatisticsRepository>();
     public ProfilePictureRepository ProfilePictureRepository => GetOrCreateRepository<ProfilePictureRepository>();
@@ -25,8 +24,7 @@ public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {
         var repository = Repositories.OfType<TRepository>().FirstOrDefault();
-        if (repository != null)
-            return repository;
+        if (repository != null) return repository;
 
         repository = Activator.CreateInstance(typeof(TRepository), Context, CounterManager) as TRepository;
         if (repository == null)

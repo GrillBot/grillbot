@@ -16,7 +16,6 @@ public class StatisticsRepository : RepositoryBase
             return new Dictionary<string, int>
             {
                 { nameof(Context.MessageIndex), await Context.MessageIndex.CountAsync() },
-                { nameof(Context.DirectApiMessages), await Context.DirectApiMessages.CountAsync() },
                 { nameof(Context.ProfilePictures), await Context.ProfilePictures.CountAsync() },
                 { nameof(Context.InviteMetadata), await Context.InviteMetadata.CountAsync() }
             };

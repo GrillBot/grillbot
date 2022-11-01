@@ -18,7 +18,6 @@ public class GrillBotCacheContext : DbContext
     }
 
     public DbSet<MessageIndex> MessageIndex => Set<MessageIndex>();
-    public DbSet<DirectApiMessage> DirectApiMessages => Set<DirectApiMessage>();
     public DbSet<ProfilePicture> ProfilePictures => Set<ProfilePicture>();
     public DbSet<InviteMetadata> InviteMetadata => Set<InviteMetadata>();
 }

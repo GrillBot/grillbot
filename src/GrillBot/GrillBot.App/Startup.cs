@@ -27,18 +27,17 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Common;
-using GrillBot.Common.Extensions;
 
 namespace GrillBot.App;
 
 public class Startup
 {
+    public IConfiguration Configuration { get; }
+    
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
     }
-
-    public IConfiguration Configuration { get; }
 
     public void ConfigureServices(IServiceCollection services)
     {

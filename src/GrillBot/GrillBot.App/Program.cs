@@ -8,11 +8,9 @@ global using System.IO;
 global using Discord;
 global using Discord.Rest;
 global using Discord.WebSocket;
-global using GrillBot.Data;
 global using GrillBot.Database;
 global using GrillBot.Database.Services;
 global using System.ComponentModel.DataAnnotations;
-global using System.ComponentModel;
 global using Microsoft.Extensions.Configuration;
 global using Newtonsoft.Json;
 global using Newtonsoft.Json.Linq;
@@ -20,23 +18,29 @@ global using System.Globalization;
 global using System.Text;
 global using Humanizer;
 global using Humanizer.Localisation;
-global using Microsoft.EntityFrameworkCore;
 global using System.Collections.Concurrent;
 global using GrillBot.App.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
 
-namespace GrillBot.App
+namespace GrillBot.App;
+
+public static class Program
 {
-    static public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+        CreateHostBuilder(args).Build().Run();
     }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .UseSerilog((context, services, configuration) => configuration
+                .ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services)
+                .Enrich.FromLogContext()
+                .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+            )
+            .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
 }

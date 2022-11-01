@@ -17,10 +17,9 @@ public static class TypeReadersExtensions
 
     public static void RegisterTypeConverters(this InteractionService service)
     {
+        service.AddTypeConverter<IMessage>(new MessageTypeConverter());
+        service.AddTypeConverter<IEmote>(new EmotesTypeConverter());
         service.AddTypeConverter<bool>(new BooleanTypeConverter());
         service.AddTypeConverter<DateTime>(new DateTimeTypeConverter());
-        service.AddTypeConverter<IEmote>(new EmotesTypeConverter());
-        service.AddTypeConverter<Guid>(new GuidTypeConverter());
-        service.AddTypeConverter<IMessage>(new MessageTypeConverter());
     }
 }

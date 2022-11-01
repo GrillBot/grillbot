@@ -1,5 +1,4 @@
 ﻿using Discord.Commands;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
@@ -19,49 +18,31 @@ public class MessageConverter : ConverterBase<IMessage>
 
     public override async Task<IMessage> ConvertAsync(string value)
     {
+        var messageCache = ServiceProvider.GetRequiredService<IMessageCacheManager>();
         if (ulong.TryParse(value, out var messageId))
         {
-            var messageCache = ServiceProvider.GetRequiredService<IMessageCacheManager>();
             var message = await messageCache.GetAsync(messageId, Channel);
-
-            if (message != null)
-                return message;
+            if (message != null) return message;
         }
 
         if (!Uri.IsWellFormedUriString(value, UriKind.Absolute))
-            throw new FormatException("Zadaná zpráva není ani identifikátor, ani odkaz.");
+            throw new FormatException(GetLocalizedText("Message/InvalidUri"));
 
         var uriMatch = MessageHelper.DiscordMessageUriRegex.Match(value);
-        if (!uriMatch.Success)
-            throw new UriFormatException("Zadaný odkaz není ve správném formátu odkazující na Discord zprávu.");
+        if (!uriMatch.Success) throw new UriFormatException(GetLocalizedText("Message/InvalidDiscordUriFormat"));
+        if (uriMatch.Groups[1].Value == "@me") throw new InvalidOperationException(GetLocalizedText("Message/DmUnsupported")); // Is DM
 
-        if (uriMatch.Groups[1].Value == "@me")
-        {
-            // Is DM
-            throw new InvalidOperationException("Použití odkazů na soukromou konverzaci není podporován. Pokud chceš použít soukromou konverzaci, " +
-                                                "pak zavolej příkaz v soukromé konverzaci s identifikátorem zprávy.");
-        }
-
-        if (!ulong.TryParse(uriMatch.Groups[1].Value, out var guildId))
-            throw new FormatException("Nesprávný formát identifikátoru serveru.");
-
+        if (!ulong.TryParse(uriMatch.Groups[1].Value, out var guildId)) throw new FormatException(GetLocalizedText("Message/InvalidGuildIdentifier"));
         var guild = await Client.GetGuildAsync(guildId);
-        if (guild == null)
-            throw new NotFoundException("Identifikátor serveru v odkazu odkazuje na server, kde se bot nenachází.");
+        if (guild == null) throw new NotFoundException(GetLocalizedText("Message/GuildNotFound"));
 
-        if (!ulong.TryParse(uriMatch.Groups[2].Value, out var channelId))
-            throw new FormatException("Nesprávný formát identifikátoru kanálu.");
-
+        if (!ulong.TryParse(uriMatch.Groups[2].Value, out var channelId)) throw new FormatException(GetLocalizedText("Message/ChannelIdInvalidFormat"));
         var channel = await guild.GetTextChannelAsync(channelId);
-        if (channel == null)
-            throw new NotFoundException("Identifikátor kanálu v odkazu odkazuje na neexistující kanál.");
+        if (channel == null) throw new NotFoundException(GetLocalizedText("Message/ChannelNotFound"));
 
-        if (!ulong.TryParse(uriMatch.Groups[3].Value, out var msgId))
-            throw new FormatException("Nesprávný formát identifikátoru zprávy.");
-
-        var msg = await channel.GetMessageAsync(msgId);
-        if (msg == null)
-            throw new NotFoundException("Identifikátor zprávy v odkazu odkazuje na neexistující zprávu.");
+        if (!ulong.TryParse(uriMatch.Groups[3].Value, out var msgId)) throw new FormatException(GetLocalizedText("Message/InvalidMessageIdFormat"));
+        var msg = await messageCache.GetAsync(msgId, channel);
+        if (msg == null) throw new NotFoundException(GetLocalizedText("Message/UnknownMessage"));
 
         return msg;
     }

@@ -501,5 +501,21 @@
     "CannotCancelEventEnded": "Cannot cancel cancelled event."
   },
   "CooldownEnabled": "You're executing this command often. Wait a moment. You can execute this command again after {0}",
-  "ClickOnCommand": "Before sending slash command you need to click on autocomplete"
+  "ClickOnCommand": "Before sending slash command you need to click on autocomplete",
+  "TypeConverters": {
+    "BooleanInvalidValue": "Provided string is not valid boolean value. Allowed values is only true or false.",
+    "DateTimeInvalidFormat": "Provided string is not valid datetime.",
+    "EmoteInvalidFormat": "Provided emoji could not be found.",
+    "Message": {
+      "InvalidUri": "Provided message identification is not identifier or link.",
+      "InvalidDiscordUriFormat": "The link provided does not have a valid Discord message linking format.",
+      "DmUnsupported": "Using links to private conversation is not supported. If you want use private conversation, call command in the private conversation with message identifier.",
+      "InvalidGuildIdentifier": "Provided guild identifier has no valid format.",
+      "GuildNotFound": "The guild with the specified identifier was not found.",
+      "ChannelIdInvalidFormat": "Provided channel identifier has no valid format.",
+      "ChannelNotFound": "The channel with the specified identifier was not found.",
+      "InvalidMessageIdFormat": "Provided message identifier has no valid format.",
+      "UnknownMessage": "The message with the specified identifier was not found."
+    }
+  }
 }

@@ -1,4 +1,6 @@
 ﻿using Discord.Commands;
+using GrillBot.Common.Managers.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
@@ -11,6 +13,7 @@ public abstract class ConverterBase
     protected IUser User { get; }
     private IUserMessage UserMessage { get; }
     private IDiscordInteraction Interaction { get; }
+    private ITextsManager Texts { get; }
 
     private ConverterBase(IServiceProvider provider, IDiscordClient client, IGuild guild, IMessageChannel channel,
         IUser user, IUserMessage message, IDiscordInteraction interaction)
@@ -22,6 +25,7 @@ public abstract class ConverterBase
         User = user;
         UserMessage = message;
         Interaction = interaction;
+        Texts = ServiceProvider.GetRequiredService<ITextsManager>();
     }
 
     protected ConverterBase(IServiceProvider provider, ICommandContext context)
@@ -33,6 +37,9 @@ public abstract class ConverterBase
         : this(provider, context?.Client, context?.Guild, context?.Channel, context?.User, null, context?.Interaction)
     {
     }
+
+    protected string GetLocalizedText(string id)
+        => Texts[$"TypeConverters/{id}", Interaction.UserLocale];
 }
 
 public abstract class ConverterBase<TResult> : ConverterBase

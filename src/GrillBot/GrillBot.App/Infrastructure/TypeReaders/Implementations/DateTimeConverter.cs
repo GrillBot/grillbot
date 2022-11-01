@@ -70,6 +70,6 @@ public class DateTimeConverter : ConverterBase<DateTime>
             timeShift = timeShift.NextMatch();
         }
 
-        return !timeShiftMatched ? Task.FromException<DateTime>(new InvalidOperationException("Datum a čas není ve správném formátu.")) : Task.FromResult(result);
+        return !timeShiftMatched ? Task.FromException<DateTime>(new InvalidOperationException(GetLocalizedText("DateTimeInvalidFormat"))) : Task.FromResult(result);
     }
 }

@@ -501,5 +501,21 @@
     "CannotCancelEventEnded": "Nelze zrušit již ukončenou událost."
   },
   "CooldownEnabled": "Voláš tento příkaz často. Chvíli počkej. Příkaz můžeš znovu zavolat za {0}.",
-  "ClickOnCommand": "Před odesláním lomítkového příkazu je nezbytné kliknout na automatický doplňovač"
+  "ClickOnCommand": "Před odesláním lomítkového příkazu je nezbytné kliknout na automatický doplňovač",
+  "TypeConverters": {
+    "BooleanInvalidValue": "Zadaná hodnota není platná hodnota typu boolean. Povolené hodnoty jsou pouze true/false.",
+    "DateTimeInvalidFormat": "Zadaná hodnota není platné datum a čas.",
+    "EmoteInvalidFormat": "Zadaný emote se nepodařilo najít a současně to není unicode emoji.",
+    "Message": {
+      "InvalidUri": "Zadaná zpráva není ani identifikátor ani odkaz.",
+      "InvalidDiscordUriFormat": "Zadaný odkaz není ve správném formátu odkazující na Discord zprávu.",
+      "DmUnsupported": "Použití odkazů na soukromou konverzaci není podporován. Pokud chceš použít soukromou konverzaci, pak zavolej příkaz v soukromé konverzaci s identifikátorem zprávy.",
+      "InvalidGuildIdentifier": "Nesprávný formát identifikátoru serveru.",
+      "GuildNotFound": "Identifikátor serveru v odkazu odkazuje na server, kde se bot nenachází.",
+      "ChannelIdInvalidFormat": "Nesprávný formát identifikátoru kanálu.",
+      "ChannelNotFound": "Identifikátor kanálu v odkazu odkazuje na neexistující kanál.",
+      "InvalidMessageIdFormat": "Nesprávný formát identifikátoru zprávy.",
+      "UnknownMessage": "Identifikátor zprávy v odkazu odkazuje na neexistující zprávu."
+    }
+  }
 }

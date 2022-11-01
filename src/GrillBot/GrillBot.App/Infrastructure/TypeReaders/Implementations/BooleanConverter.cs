@@ -1,14 +1,9 @@
-﻿using Discord.Commands;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
 public class BooleanConverter : ConverterBase<bool?>
 {
-    public BooleanConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
-    {
-    }
-
     public BooleanConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
     {
     }

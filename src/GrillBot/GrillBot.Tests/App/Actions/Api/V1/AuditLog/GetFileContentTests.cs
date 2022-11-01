@@ -32,10 +32,7 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_ItemNotFound()
-    {
-        await Action.ProcessAsync(1, 1);
-    }
+    public async Task ProcessAsync_ItemNotFound() => await Action.ProcessAsync(1, 1);
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
@@ -89,13 +86,13 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
 
         var item = new AuditLogItem
         {
-            ChannelId = Consts.ChannelId.ToString(),
+            GuildChannel = GuildChannel.FromDiscord(channel, ChannelType.Text),
             CreatedAt = DateTime.UtcNow,
             Data = "{}",
-            GuildId = Consts.GuildId.ToString(),
-            ProcessedUserId = Consts.UserId.ToString(),
+            ProcessedUser = Database.Entity.User.FromDiscord(user),
             Type = AuditLogItemType.MessageDeleted,
-            Id = 1
+            Id = 1,
+            Guild = Database.Entity.Guild.FromDiscord(guild)
         };
 
         if (withFiles)
@@ -109,9 +106,6 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
         }
 
         await Repository.AddAsync(item);
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
-        await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();
     }
 }

@@ -39,27 +39,6 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
     }
 
     [TestMethod]
-    public async Task ProcessAsync_NoDataInMap()
-    {
-        await Repository.AddAsync(new AuditLogItem
-        {
-            ChannelId = Consts.ChannelId.ToString(),
-            CreatedAt = DateTime.UtcNow,
-            Data = "",
-            GuildId = Consts.GuildId.ToString(),
-            ProcessedUserId = Consts.UserId.ToString(),
-            Type = AuditLogItemType.Info
-        });
-        await Repository.CommitAsync();
-
-        var filter = new AuditLogListParams();
-        var result = await Action.ProcessAsync(filter);
-
-        Assert.IsNotNull(result);
-        Assert.AreEqual(1, result.TotalItemsCount);
-    }
-
-    [TestMethod]
     public async Task ProcessAsync_WithFilter()
     {
         await InitAllTypesAsync();
@@ -78,7 +57,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
         var result = await Action.ProcessAsync(filter);
 
         Assert.IsNotNull(result);
-        Assert.IsTrue(result.TotalItemsCount > 0);
+        Assert.AreNotEqual(0, result.TotalItemsCount);
     }
 
     [TestMethod]
@@ -146,7 +125,13 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
             MemberUpdatedFilter = new TargetIdFilter { TargetId = Consts.UserId.ToString() },
             OverwriteCreatedFilter = new TargetIdFilter { TargetId = Consts.UserId.ToString() },
             OverwriteUpdatedFilter = new TargetIdFilter { TargetId = Consts.UserId.ToString() },
-            OverwriteDeletedFilter = new TargetIdFilter { TargetId = Consts.UserId.ToString() }
+            OverwriteDeletedFilter = new TargetIdFilter { TargetId = Consts.UserId.ToString() },
+            MessageDeletedFilter = new MessageDeletedFilter
+            {
+                AuthorId = Consts.UserId.ToString(),
+                ContainsEmbed = false,
+                ContentContains = "Test"
+            }
         };
 
         var result = await Action.ProcessAsync(filter);
@@ -184,6 +169,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
 
         var items = new (AuditLogItemType, object)[]
         {
+            (AuditLogItemType.Info, ""),
             (AuditLogItemType.Info, "Info"),
             (AuditLogItemType.Warning, "Warning"),
             (AuditLogItemType.Error, "Error"),
@@ -202,7 +188,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
             (AuditLogItemType.UserLeft, new UserLeftGuildData()),
             (AuditLogItemType.UserJoined, new UserJoinedAuditData()),
             (AuditLogItemType.MessageEdited, new MessageEditedData()),
-            (AuditLogItemType.MessageDeleted, new MessageDeletedData()),
+            (AuditLogItemType.MessageDeleted, new MessageDeletedData { Data = new MessageData() }),
             (AuditLogItemType.InteractionCommand, new InteractionCommandExecuted()),
             (AuditLogItemType.ThreadDeleted, new AuditThreadInfo()),
             (AuditLogItemType.JobCompleted, new JobExecutionData { JobName = "Job" }),

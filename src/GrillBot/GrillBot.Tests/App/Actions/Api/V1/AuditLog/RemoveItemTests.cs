@@ -29,48 +29,7 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
             File.Delete("Temp.txt");
     }
 
-    [TestMethod]
-    [ExpectedException(typeof(NotFoundException))]
-    [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_NotFound()
-    {
-        await Action.ProcessAsync(1);
-    }
-
-    [TestMethod]
-    public async Task ProcessAsync_WithoutFiles()
-    {
-        const int id = 1;
-
-        await Repository.AddAsync(new Database.Entity.AuditLogItem
-        {
-            Type = AuditLogItemType.Info,
-            CreatedAt = DateTime.Now,
-            Id = id,
-            Data = "Info"
-        });
-        await Repository.CommitAsync();
-        await Action.ProcessAsync(id);
-    }
-
-    [TestMethod]
-    public async Task ProcessAsync_WithFiles_FileNotOnDisk()
-    {
-        await InitFullLogItemAsync();
-        await Action.ProcessAsync(1);
-    }
-
-    [TestMethod]
-    public async Task ProcessAsync_WithFiles_FileOnDisk()
-    {
-        await InitFullLogItemAsync();
-        await File.WriteAllBytesAsync("Temp.txt", new byte[] { 1, 2, 3, 4, 5 });
-
-        await Action.ProcessAsync(1);
-        Assert.IsFalse(File.Exists("Temp.txt"));
-    }
-
-    private async Task InitFullLogItemAsync()
+    private async Task InitDataAsync(bool withFiles)
     {
         var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
         var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
@@ -87,14 +46,48 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
             ProcessedUser = Database.Entity.User.FromDiscord(user)
         };
 
-        logItem.Files.Add(new Database.Entity.AuditLogFileMeta
+        if (withFiles)
         {
-            Filename = "Temp.txt",
-            Id = 1,
-            Size = 5
-        });
+            logItem.Files.Add(new Database.Entity.AuditLogFileMeta
+            {
+                Filename = "Temp.txt",
+                Id = 1,
+                Size = 5
+            });
+        }
 
         await Repository.AddAsync(logItem);
         await Repository.CommitAsync();
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(NotFoundException))]
+    [ExcludeFromCodeCoverage]
+    public async Task ProcessAsync_NotFound() => await Action.ProcessAsync(1);
+
+    [TestMethod]
+    public async Task ProcessAsync_WithoutFiles()
+    {
+        const int id = 1;
+
+        await InitDataAsync(false);
+        await Action.ProcessAsync(id);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_WithFiles_FileNotOnDisk()
+    {
+        await InitDataAsync(true);
+        await Action.ProcessAsync(1);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_WithFiles_FileOnDisk()
+    {
+        await InitDataAsync(true);
+        await File.WriteAllBytesAsync("Temp.txt", new byte[] { 1, 2, 3, 4, 5 });
+
+        await Action.ProcessAsync(1);
+        Assert.IsFalse(File.Exists("Temp.txt"));
     }
 }

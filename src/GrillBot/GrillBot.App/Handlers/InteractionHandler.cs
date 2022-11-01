@@ -37,10 +37,9 @@ public class InteractionHandler
 
     private async Task HandleUnsuccessfulAttempt(SocketMessage message)
     {
-        if (!message.Content.StartsWith('/')) return;
+        if (!InitManager.Get() || !message.Content.StartsWith('/') || message.Channel is IDMChannel) return;
 
         using var scope = Provider.CreateScope();
-
         var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.UnsuccessCommandAttempt>();
         await action.ProcessAsync(message);
     }

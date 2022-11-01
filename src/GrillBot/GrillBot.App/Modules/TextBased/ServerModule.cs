@@ -34,26 +34,6 @@ public class ServerModule : ModuleBase
         [TextCommandDeprecated(AlternativeCommand = "/guild info")]
         public Task InfoAsync() => Task.CompletedTask;
 
-        [Group("perms")]
-        public class GuildPermissionsSubModule : ModuleBase
-        {
-            [Command("clear")]
-            [TextCommandDeprecated(AlternativeCommand = "/permissions remove all")]
-            public Task ClearPermissionsInChannelAsync(IGuildChannel channel, params IUser[] excludedUsers) => Task.CompletedTask;
-
-            [Group("useless")]
-            public class GuildUselessPermissionsSubModule : ModuleBase
-            {
-                [Command("check")]
-                [TextCommandDeprecated(AlternativeCommand = "/permissions useless check")]
-                public Task CheckUselessPermissionsAsync() => Task.CompletedTask;
-
-                [Command("clear")]
-                [TextCommandDeprecated(AlternativeCommand = "/permissions useless clear")]
-                public Task RemoveUselessPermissionsAsync(Guid? sessionId = null) => Task.CompletedTask;
-            }
-        }
-
         [Group("react")]
         public class GuildReactSubModule : ModuleBase
         {

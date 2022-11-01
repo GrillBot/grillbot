@@ -9,12 +9,10 @@ public static class TypeReadersExtensions
 {
     public static void RegisterTypeReaders(this CommandService commandService)
     {
-        commandService.AddTypeReader<Guid>(new GuidTypeReader());
         commandService.AddTypeReader<IMessage>(new MessageTypeReader(), true);
         commandService.AddTypeReader<IEmote>(new EmotesTypeReader());
         commandService.AddTypeReader<IUser>(new UserTypeReader(), true);
         commandService.AddTypeReader<DateTime>(new DateTimeTypeReader(), true);
-        commandService.AddTypeReader<bool>(new BooleanTypeReader(), true);
     }
 
     public static void RegisterTypeConverters(this InteractionService service)

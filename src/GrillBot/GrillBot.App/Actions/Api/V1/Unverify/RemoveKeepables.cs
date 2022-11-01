@@ -42,6 +42,6 @@ public class RemoveKeepables : ApiAction
 
     private void ThrowValidationException(string errorId, object value, params object[] args)
     {
-        throw new ValidationException(new ValidationResult(Texts[$"SelfUnverifyModule/Keepables/{errorId}", ApiContext.Language].FormatWith(args)), null, value);
+        throw new ValidationException(new ValidationResult(Texts[$"Unverify/SelfUnverify/Keepables/{errorId}", ApiContext.Language].FormatWith(args)), null, value);
     }
 }

@@ -59,7 +59,7 @@ public class BotModule : InteractionsModuleBase
 
             if (data.Count == 0)
             {
-                await SetResponseAsync(GetText(nameof(ListAsync), "NoKeepables"));
+                await SetResponseAsync(Texts["Unverify/SelfUnverify/Keepables/List/NoKeepables", Locale]);
                 return;
             }
 
@@ -67,12 +67,12 @@ public class BotModule : InteractionsModuleBase
                 .WithColor(Color.Blue)
                 .WithCurrentTimestamp()
                 .WithFooter(Context.User)
-                .WithTitle(GetText(nameof(ListAsync), "Title"));
+                .WithTitle(Texts["Unverify/SelfUnverify/Keepables/List/Title", Locale]);
 
             foreach (var grp in data.GroupBy(o => string.Join("|", o.Value)))
             {
                 string fieldGroupResult;
-                var keys = string.Join(", ", grp.Select(o => o.Key == "_" ? GetText(nameof(ListAsync), "Other") : o.Key));
+                var keys = string.Join(", ", grp.Select(o => o.Key == "_" ? Texts["Unverify/SelfUnverify/Keepables/List/Other", Locale] : o.Key));
 
                 var fieldGroupBuilder = new StringBuilder();
                 foreach (var item in grp.First().Value)

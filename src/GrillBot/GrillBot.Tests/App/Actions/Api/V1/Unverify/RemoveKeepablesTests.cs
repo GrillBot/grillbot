@@ -11,8 +11,8 @@ public class RemoveKeepablesTests : ApiActionTest<RemoveKeepables>
     protected override RemoveKeepables CreateAction()
     {
         var texts = new TextsBuilder()
-            .AddText("SelfUnverifyModule/Keepables/GroupNotExists", "cs", "GroupNotExists")
-            .AddText("SelfUnverifyModule/Keepables/NotExists", "cs", "NotExists")
+            .AddText("Unverify/SelfUnverify/Keepables/GroupNotExists", "cs", "GroupNotExists")
+            .AddText("Unverify/SelfUnverify/Keepables/NotExists", "cs", "NotExists")
             .Build();
 
         return new RemoveKeepables(ApiRequestContext, DatabaseBuilder, texts);

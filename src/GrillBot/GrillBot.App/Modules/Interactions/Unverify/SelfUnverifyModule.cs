@@ -51,7 +51,7 @@ public class SelfUnverifyModule : InteractionsModuleBase
             }
             else
             {
-                await SetResponseAsync(GetText(nameof(SelfUnverifyAsync), "GenericError"));
+                await SetResponseAsync(Texts["Unverify/SelfUnverify/GenericError", Locale]);
                 throw;
             }
         }

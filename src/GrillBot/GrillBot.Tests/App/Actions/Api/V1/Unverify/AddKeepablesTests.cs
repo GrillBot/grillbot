@@ -12,7 +12,7 @@ public class AddKeepablesTests : ApiActionTest<AddKeepables>
     protected override AddKeepables CreateAction()
     {
         var texts = new TextsBuilder()
-            .AddText("SelfUnverifyModule/Keepables/Exists", "cs", "Exists")
+            .AddText("Unverify/SelfUnverify/Keepables/Exists", "cs", "Exists")
             .Build();
 
         return new AddKeepables(ApiRequestContext, DatabaseBuilder, texts);

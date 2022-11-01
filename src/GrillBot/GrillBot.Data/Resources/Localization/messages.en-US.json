@@ -1,14 +1,4 @@
 ﻿{
-  "SelfUnverifyModule": {
-    "SelfUnverify": {
-      "GenericError": "Selfunverify failed."
-    },
-    "Keepables": {
-      "Exists": "Keepable role or channel {0}/{1} already exists.",
-      "GroupNotExists": "The retainable role or channel group {0} does not exist.",
-      "NotExists": "Keepable role or channel {0}/{1} does not exist."
-    }
-  },
   "BirthdayModule": {
     "Add": {
       "Success": "Date of birth has been saved successfully."
@@ -41,13 +31,6 @@
       "Swagger": "Swagger",
       "PrivateAdmin": "Administration (Only admins)",
       "PublicAdmin": "Administration (For everyone)"
-    }
-  },
-  "SelfUnverifyConfig": {
-    "List": {
-      "NoKeepables": "No keepable accesses were found.",
-      "Title": "Keepable roles and channels",
-      "Other": "Other"
     }
   },
   "ChannelModule": {
@@ -341,6 +324,19 @@
       "Boolean": {
         "True": "Yes",
         "False": "No"
+      }
+    },
+    "SelfUnverify": {
+      "GenericError": "Selfunverify failed.",
+      "Keepables": {
+        "Exists": "Keepable role or channel {0}/{1} already exists.",
+        "GroupNotExists": "The retainable role or channel group {0} does not exist.",
+        "NotExists": "Keepable role or channel {0}/{1} does not exist.",
+        "List": {
+          "NoKeepables": "No keepable accesses were found.",
+          "Title": "Keepable roles and channels",
+          "Other": "Other"
+        }
       }
     }
   },

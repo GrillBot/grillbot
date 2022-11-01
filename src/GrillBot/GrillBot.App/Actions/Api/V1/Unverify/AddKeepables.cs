@@ -43,7 +43,7 @@ public class AddKeepables : ApiAction
         if (!await repository.SelfUnverify.KeepableExistsAsync(parameter.Group, parameter.Name)) return;
 
         throw new ValidationException(
-            new ValidationResult(Texts["SelfUnverifyModule/Keepables/Exists", ApiContext.Language].FormatWith(parameter.Group, parameter.Name),
+            new ValidationResult(Texts["Unverify/SelfUnverify/Keepables/Exists", ApiContext.Language].FormatWith(parameter.Group, parameter.Name),
                 new[] { nameof(parameter.Group), nameof(parameter.Name) }), null, parameter
         );
     }

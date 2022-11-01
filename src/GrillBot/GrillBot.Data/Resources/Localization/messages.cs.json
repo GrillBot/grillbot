@@ -1,14 +1,4 @@
 ﻿{
-  "SelfUnverifyModule": {
-    "SelfUnverify": {
-      "GenericError": "Provedení selfunverify se nezdařilo."
-    },
-    "Keepables": {
-      "Exists": "Ponechatelná role nebo kanál {0}/{1} již existuje.",
-      "GroupNotExists": "Skupina ponechatelných rolí nebo kanálů {0} neexistuje.",
-      "NotExists": "Ponechatelná role nebo kanál {0}/{1} neexistuje."
-    }
-  },
   "BirthdayModule": {
     "Add": {
       "Success": "Datum narození bylo úspěšně uloženo."
@@ -41,13 +31,6 @@
       "Swagger": "Swagger",
       "PrivateAdmin": "Administrace (Vyšší role)",
       "PublicAdmin": "Administrace (Pro každého)"
-    }
-  },
-  "SelfUnverifyConfig": {
-    "List": {
-      "NoKeepables": "Nebyly nalezeny žádné ponechatelné přístupy.",
-      "Title": "Ponechatelné role a kanály",
-      "Other": "Ostatní"
     }
   },
   "ChannelModule": {
@@ -341,6 +324,19 @@
       "Boolean": {
         "True": "Ano",
         "False": "Ne"
+      }
+    },
+    "SelfUnverify": {
+      "GenericError": "Provedení selfunverify se nezdařilo.",
+      "Keepables": {
+        "Exists": "Ponechatelná role nebo kanál {0}/{1} již existuje.",
+        "GroupNotExists": "Skupina ponechatelných rolí nebo kanálů {0} neexistuje.",
+        "NotExists": "Ponechatelná role nebo kanál {0}/{1} neexistuje.",
+        "List": {
+          "NoKeepables": "Nebyly nalezeny žádné ponechatelné přístupy.",
+          "Title": "Ponechatelné role a kanály",
+          "Other": "Ostatní"
+        }
       }
     }
   },

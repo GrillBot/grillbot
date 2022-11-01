@@ -79,7 +79,7 @@ public class RequestFilter : IAsyncActionFilter
         ApiRequest.ActionName = descriptor.MethodInfo.Name;
         ApiRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
         ApiRequest.Method = context.HttpContext.Request.Method;
-        ApiRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().FirstOrDefault()?.GroupName ?? "V1").ToUpper();
+        ApiRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
 
         foreach (var item in context.HttpContext.Request.Query)
             ApiRequest.AddParameter(item.Key, item.Value.ToString());

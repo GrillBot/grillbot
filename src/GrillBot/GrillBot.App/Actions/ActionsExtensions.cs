@@ -91,6 +91,11 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Reminder.FinishRemind>()
             .AddScoped<Api.V1.Reminder.GetReminderList>();
+        
+        // Scheduled jobs
+        services
+            .AddScoped<Api.V1.ScheduledJobs.GetScheduledJobs>()
+            .AddScoped<Api.V1.ScheduledJobs.RunScheduledJob>();
 
         // Searching
         services
@@ -105,7 +110,6 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Statistics.GetCommandStatistics>()
             .AddScoped<Api.V1.Statistics.GetDatabaseStatus>()
             .AddScoped<Api.V1.Statistics.GetEventStatistics>()
-            .AddScoped<Api.V1.Statistics.GetJobStatistics>()
             .AddScoped<Api.V1.Statistics.GetUnverifyStatistics>();
 
         // System

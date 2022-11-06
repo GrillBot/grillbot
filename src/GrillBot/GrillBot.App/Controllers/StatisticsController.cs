@@ -119,20 +119,6 @@ public class StatisticsController : Controller
     }
 
     /// <summary>
-    /// Get statistics of planned background jobs.
-    /// </summary>
-    /// <response code="200">Returns statistics of planned jobs.</response>
-    [HttpGet("jobs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<StatisticItem>>> GetJobStatisticsAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetJobStatistics>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
-
-    /// <summary>
     /// Get statistics about API by date and year.
     /// </summary>
     /// <response code="200">Returns dictionary of api requests per date (Year-Month, Count).</response>

@@ -382,10 +382,6 @@
         "name": "attachment",
         "description": "Ability to design an emote based on an image."
       }
-    },
-    "feature": {
-      "name": "feature",
-      "description": "Submission of a proposal for a new feature to GrillBot."
     }
   },
   "process_emote_suggestions": {

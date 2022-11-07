@@ -265,9 +265,6 @@
     },
     "ProcessEmoteSuggestions": {
       "Success": "Hlasování pro schválené emoty bylo spuštěno"
-    },
-    "FeatureSuggestionSubmitted": {
-      "Success": "Tvůj návrh na přidání feature byl úspěšně zpracován."
     }
   },
   "Unverify": {

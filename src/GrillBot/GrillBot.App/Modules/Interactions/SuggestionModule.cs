@@ -14,12 +14,10 @@ namespace GrillBot.App.Modules.Interactions;
 public class SuggestionModule : InteractionsModuleBase
 {
     private EmoteSuggestionService EmoteSuggestions { get; }
-    private FeatureSuggestionService FeatureSuggestions { get; }
 
-    public SuggestionModule(EmoteSuggestionService emoteSuggestionService, FeatureSuggestionService featureSuggestions, IServiceProvider serviceProvider) : base(serviceProvider)
+    public SuggestionModule(EmoteSuggestionService emoteSuggestionService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         EmoteSuggestions = emoteSuggestionService;
-        FeatureSuggestions = featureSuggestions;
     }
 
     [SlashCommand("emote", "Submitting a proposal to add a new emote.")]
@@ -113,54 +111,6 @@ public class SuggestionModule : InteractionsModuleBase
         catch (GrillBotException ex)
         {
             await SetResponseAsync(ex.Message);
-        }
-    }
-
-    [SlashCommand("feature", "Submission of a proposal for a new feature to GrillBot.")]
-    [DeferConfiguration(SuppressAuto = true)]
-    public Task SuggestFeatureAsync()
-    {
-        var suggestionId = Guid.NewGuid().ToString();
-        FeatureSuggestions.InitSession(suggestionId);
-
-        return RespondWithModalAsync<FeatureSuggestionModal>($"suggestions_feature:{suggestionId}");
-    }
-
-    [ModalInteraction("suggestions_feature:*", ignoreGroupNames: true)]
-    public async Task FeatureSuggestionSubmittedAsync(string sessionId, FeatureSuggestionModal modal)
-    {
-        try
-        {
-            await FeatureSuggestions.ProcessSessionAsync(sessionId, Context.User, modal);
-            await Context.User.SendMessageAsync(GetText(nameof(FeatureSuggestionSubmittedAsync), "Success"));
-        }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-        {
-            // User have blocked DMs from bots. User problem, not ours.
-        }
-        catch (Exception ex)
-        {
-            switch (ex)
-            {
-                case HttpException { DiscordCode: DiscordErrorCode.CannotSendMessageToUser }:
-                    return;
-                case ValidationException:
-                case NotFoundException:
-                    try
-                    {
-                        await Context.User.SendMessageAsync(ex.Message);
-                    }
-                    catch (HttpException ex1) when (ex1.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-                    {
-                        // User have blocked DMs from bots. User problem, not ours.
-                    }
-
-                    break;
-            }
-        }
-        finally
-        {
-            await DeferAsync();
         }
     }
 }

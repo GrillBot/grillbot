@@ -382,10 +382,6 @@
         "name": "attachment",
         "description": "Možnost navrhnout emote na základě obrázku."
       }
-    },
-    "feature": {
-      "name": "feature",
-      "description": "Podání návrhu na novou feature do GrillBot."
     }
   },
   "process_emote_suggestions": {

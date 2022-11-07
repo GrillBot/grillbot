@@ -265,9 +265,6 @@
     },
     "ProcessEmoteSuggestions": {
       "Success": "Voting for approved emotes has started."
-    },
-    "FeatureSuggestionSubmitted": {
-      "Success": "Your suggestion to add a feature has been successfully processed."
     }
   },
   "Unverify": {

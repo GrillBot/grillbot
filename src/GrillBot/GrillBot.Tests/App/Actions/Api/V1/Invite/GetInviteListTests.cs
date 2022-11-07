@@ -13,8 +13,7 @@ public class GetInviteListTests : ApiActionTest<GetInviteList>
         return new GetInviteList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value);
     }
 
-    [TestMethod]
-    public async Task ProcessAsync_WithoutFilter()
+    private async Task InitDataAsync()
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
@@ -26,6 +25,12 @@ public class GetInviteListTests : ApiActionTest<GetInviteList>
         guildUser.UsedInvite = new Database.Entity.Invite { Code = Consts.InviteCode, CreatorId = Consts.UserId.ToString(), GuildId = Consts.GuildId.ToString() };
         await Repository.AddAsync(guildUser);
         await Repository.CommitAsync();
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_WithoutFilter()
+    {
+        await InitDataAsync();
 
         var result = await Action.ProcessAsync(new GetInviteListParams());
         Assert.AreEqual(1, result.TotalItemsCount);
@@ -40,10 +45,25 @@ public class GetInviteListTests : ApiActionTest<GetInviteList>
             CreatedFrom = DateTime.MinValue,
             CreatedTo = DateTime.MaxValue,
             CreatorId = Consts.UserId.ToString(),
-            GuildId = Consts.GuildId.ToString()
+            GuildId = Consts.GuildId.ToString(),
+            Sort = { Descending = true }
         };
 
         var result = await Action.ProcessAsync(filter);
         Assert.AreEqual(0, result.TotalItemsCount);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_UseCount_Sort()
+    {
+        await InitDataAsync();
+
+        var filter = new GetInviteListParams { Sort = { OrderBy = "UseCount" } };
+        var result = await Action.ProcessAsync(filter);
+        Assert.AreEqual(1, result.TotalItemsCount);
+
+        filter.Sort.Descending = true;
+        result = await Action.ProcessAsync(filter);
+        Assert.AreEqual(1, result.TotalItemsCount);
     }
 }

@@ -27,7 +27,7 @@ public class SelfUnverifyRepository : RepositoryBase
         }
     }
 
-    public async Task<List<SelfunverifyKeepable>> GetKeepablesAsync(string? group = null)
+    public async Task<List<SelfunverifyKeepable>> GetKeepablesAsync(string? group = null, bool exactMatch = false)
     {
         using (CreateCounter())
         {
@@ -36,7 +36,7 @@ public class SelfUnverifyRepository : RepositoryBase
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(group))
-                query = query.Where(o => o.GroupName.StartsWith(group.ToLower()));
+                query = exactMatch ? query.Where(o => o.GroupName == group.ToLower()) : query.Where(o => o.GroupName.StartsWith(group.ToLower()));
 
             return await query.ToListAsync();
         }

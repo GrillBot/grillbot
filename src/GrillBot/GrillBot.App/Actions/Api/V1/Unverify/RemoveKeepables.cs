@@ -23,7 +23,7 @@ public class RemoveKeepables : ApiAction
             if (!await repository.SelfUnverify.KeepableExistsAsync(group))
                 ThrowValidationException("GroupNotExists", group, group);
 
-            var items = await repository.SelfUnverify.GetKeepablesAsync(group);
+            var items = await repository.SelfUnverify.GetKeepablesAsync(group, true);
             if (items.Count > 0)
                 repository.RemoveCollection(items);
         }

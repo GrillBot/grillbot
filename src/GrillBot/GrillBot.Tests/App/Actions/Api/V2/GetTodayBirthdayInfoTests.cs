@@ -16,8 +16,8 @@ public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
     {
         Users = new[]
         {
-            new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build(),
-            new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).Build()
+            new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build(),
+            new UserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).Build()
         };
 
         var client = new ClientBuilder()
@@ -57,7 +57,7 @@ public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
         var withoutYear = Database.Entity.User.FromDiscord(Users[0]);
         withoutYear.Birthday = new DateTime(0001, now.Month, now.Day);
 
-        var unknownUser = Database.Entity.User.FromDiscord(new UserBuilder().SetIdentity(Consts.UserId + 4, Consts.Username, Consts.Discriminator).Build());
+        var unknownUser = Database.Entity.User.FromDiscord(new UserBuilder(Consts.UserId + 4, Consts.Username, Consts.Discriminator).Build());
         unknownUser.Birthday = new DateTime(0001, now.Month, now.Day);
 
         await Repository.AddCollectionAsync(new[] { withoutYear, withYear, unknownUser });

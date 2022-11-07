@@ -16,9 +16,9 @@ public class GetSearchingListTests : ApiActionTest<GetSearchingList>
 
     protected override GetSearchingList CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
-        TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetGetChannelsAction(new[] { TextChannel }).Build();
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
 

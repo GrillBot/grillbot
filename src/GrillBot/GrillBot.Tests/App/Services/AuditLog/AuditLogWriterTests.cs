@@ -18,9 +18,9 @@ public class AuditLogWriterTests : ServiceTest<AuditLogWriter>
     [TestMethod]
     public async Task StoreAsync_Success()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var items = new List<AuditLogDataWrapper>
         {
@@ -39,8 +39,8 @@ public class AuditLogWriterTests : ServiceTest<AuditLogWriter>
     [TestMethod]
     public async Task StoreItemAsync_Success()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
         await Service.StoreAsync(new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: user, discordAuditLogItemId: "12345"));
         Assert.IsTrue(true);

@@ -15,9 +15,9 @@ public class RemoveSearchesTests : ApiActionTest<RemoveSearches>
 
     private async Task InitDataAsync()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
-        var textChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        var textChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         var guild = guildBuilder.SetGetUsersAction(new[] { user }).SetGetChannelsAction(new[] { textChannel }).Build();
 
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));

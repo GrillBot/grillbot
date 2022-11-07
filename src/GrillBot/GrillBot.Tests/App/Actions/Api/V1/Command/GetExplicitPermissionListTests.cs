@@ -10,8 +10,8 @@ public class GetExplicitPermissionListTests : ApiActionTest<GetExplicitPermissio
 {
     protected override GetExplicitPermissionList CreateAction()
     {
-        var role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetRoles(new[] { role }).Build();
+        var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetRoles(new[] { role }).Build();
         var client = new ClientBuilder().SetGetGuildsAction(new[] { guild }).Build();
 
         return new GetExplicitPermissionList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client);
@@ -20,7 +20,7 @@ public class GetExplicitPermissionListTests : ApiActionTest<GetExplicitPermissio
     [TestMethod]
     public async Task ProcessAsync_WithoutSearch()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.AddCollectionAsync(new[]

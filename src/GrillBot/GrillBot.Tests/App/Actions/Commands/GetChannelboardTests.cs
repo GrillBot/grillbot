@@ -10,16 +10,16 @@ namespace GrillBot.Tests.App.Actions.Commands;
 [TestClass]
 public class GetChannelboardTests : CommandActionTest<GetChannelboard>
 {
-    private static readonly IGuild EmptyGuild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+    private static readonly IGuild EmptyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
-    private static readonly IGuildUser GuildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<ulong>()).SetGuild(EmptyGuild)
+    private static readonly IGuildUser GuildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<ulong>()).SetGuild(EmptyGuild)
         .SetGuildPermissions(GuildPermissions.All).Build();
 
-    private static readonly ITextChannel TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGetUsersAction(new[] { GuildUser }).SetGuild(EmptyGuild)
+    private static readonly ITextChannel TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGetUsersAction(new[] { GuildUser }).SetGuild(EmptyGuild)
         .SetPermissions(Enumerable.Empty<Overwrite>()).Build();
 
     protected override IGuild Guild { get; }
-        = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetChannelsAction(new[] { TextChannel }).Build();
+        = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetChannelsAction(new[] { TextChannel }).Build();
 
     protected override IMessageChannel Channel => TextChannel;
     protected override IGuildUser User => GuildUser;

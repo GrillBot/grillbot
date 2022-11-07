@@ -18,9 +18,9 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
 
     protected override UpdateGuild CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        var textChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
-        var role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        var textChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
+        var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         Guild = guildBuilder.SetGetChannelsAction(new[] { textChannel }).SetRoles(new[] { role }).SetGetUsersAction(Enumerable.Empty<IGuildUser>()).Build();
 
         var client = new ClientBuilder()

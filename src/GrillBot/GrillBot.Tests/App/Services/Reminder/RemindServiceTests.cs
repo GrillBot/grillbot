@@ -14,9 +14,8 @@ public class RemindServiceTests : ServiceTest<RemindService>
 
     protected override RemindService CreateService()
     {
-        User = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var guild = new GuildBuilder()
-            .SetIdentity(Consts.GuildId, Consts.GuildName)
+        User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName)
             .Build();
 
         var discordClient = new ClientBuilder()
@@ -79,7 +78,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [TestMethod]
     public async Task CreateRemindAsync_AnotherUser()
     {
-        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator.Replace("1", "5")).Build();
+        var to = new UserBuilder(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator.Replace("1", "5")).Build();
         var at = DateTime.Now.AddDays(1);
 
         await Service.CreateRemindAsync(User, to, at, "msg", 970428820521893889, "cs");
@@ -123,7 +122,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_Finished()
     {
-        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
+        var to = new UserBuilder(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
         await Repository.User.GetOrCreateUserAsync(to);
         await Repository.User.GetOrCreateUserAsync(User);
         await Repository.AddAsync(new Database.Entity.RemindMessage
@@ -146,9 +145,9 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_UserNotFound()
     {
-        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
-        var middle = new UserBuilder().SetIdentity(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
-        var third = new UserBuilder().SetIdentity(Consts.UserId + 3, Consts.Username + "XX", Consts.Discriminator).Build();
+        var to = new UserBuilder(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
+        var middle = new UserBuilder(Consts.UserId + 2, Consts.Username + "2", Consts.Discriminator).Build();
+        var third = new UserBuilder(Consts.UserId + 3, Consts.Username + "XX", Consts.Discriminator).Build();
 
         await Repository.User.GetOrCreateUserAsync(to);
         await Repository.User.GetOrCreateUserAsync(User);
@@ -174,7 +173,7 @@ public class RemindServiceTests : ServiceTest<RemindService>
     [ExcludeFromCodeCoverage]
     public async Task CopyAsync_MultipleSame()
     {
-        var to = new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
+        var to = new UserBuilder(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).Build();
 
         await Repository.User.GetOrCreateUserAsync(to);
         await Repository.User.GetOrCreateUserAsync(User);

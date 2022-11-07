@@ -16,7 +16,7 @@ public class UserServiteTests : ServiceTest<UserService>
     [TestMethod]
     public async Task CheckUserFlagsAsync_NotFound()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var result = await Service.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
 
         Assert.IsFalse(result);
@@ -25,7 +25,7 @@ public class UserServiteTests : ServiceTest<UserService>
     [TestMethod]
     public async Task CheckUserFlagsAsync_Found_NotAdmin()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         await Repository.User.GetOrCreateUserAsync(user);
         await Repository.CommitAsync();
 
@@ -36,7 +36,7 @@ public class UserServiteTests : ServiceTest<UserService>
     [TestMethod]
     public async Task CheckUserFlagsAsync_Found_Admin()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var userEntity = Database.Entity.User.FromDiscord(user);
         userEntity.Flags |= (int)UserFlags.BotAdmin;
 

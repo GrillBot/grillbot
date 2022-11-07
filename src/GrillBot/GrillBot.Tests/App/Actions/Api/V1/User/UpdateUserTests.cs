@@ -20,7 +20,7 @@ public class UpdateUserTests : ApiActionTest<UpdateUser>
 
     private async Task InitDataAsync()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();

@@ -20,9 +20,9 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
 
     protected override UpdateUnverify CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        var message = new UserMessageBuilder().SetId(Consts.MessageId).Build();
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(message).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        var message = new UserMessageBuilder(Consts.MessageId).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(message).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).Build();
 
         var client = new ClientBuilder()

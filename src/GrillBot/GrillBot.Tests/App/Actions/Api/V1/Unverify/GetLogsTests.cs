@@ -22,8 +22,8 @@ public class GetLogsTests : ApiActionTest<GetLogs>
 
     protected override GetLogs CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetUserAction(User).Build();
 
         var client = new ClientBuilder()

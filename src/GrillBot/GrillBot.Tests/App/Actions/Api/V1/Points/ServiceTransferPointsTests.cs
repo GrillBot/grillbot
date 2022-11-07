@@ -19,10 +19,10 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
 
     protected override ServiceTransferPoints CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
-        var anotherUser = new GuildUserBuilder().SetIdentity(User).SetId(Consts.UserId + 1).SetGuild(guildBuilder.Build()).Build();
-        var botUser = new GuildUserBuilder().SetIdentity(User).SetId(Consts.UserId + 2).AsBot().Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        var anotherUser = new GuildUserBuilder(User).SetId(Consts.UserId + 1).SetGuild(guildBuilder.Build()).Build();
+        var botUser = new GuildUserBuilder(User).SetId(Consts.UserId + 2).AsBot().Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User, botUser, anotherUser }).Build();
 
         var discordClient = DiscordHelper.CreateClient();

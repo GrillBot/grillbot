@@ -6,8 +6,10 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class ChannelBuilder : BuilderBase<IChannel>
 {
-    public ChannelBuilder SetIdentity(ulong id, string name)
-        => SetId(id).SetName(name);
+    public ChannelBuilder(ulong id, string name)
+    {
+        SetId(id).SetName(name);
+    }
 
     public ChannelBuilder SetId(ulong id)
     {

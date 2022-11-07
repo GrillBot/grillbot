@@ -12,9 +12,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateUnverifyMessageToChannel_Selfunverify()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
         var texts = new TextsBuilder()
@@ -28,8 +27,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateUnverifyMessageToChannel_Unverify()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
@@ -44,8 +43,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateUnverifyPMMessage_Selfunverify()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
@@ -60,9 +59,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateUnverifyPMMessage_Unverify()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var toUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
         var texts = new TextsBuilder()
@@ -76,7 +74,7 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateUpdatePmMessage()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var end = new DateTime(2022, 02, 04);
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/PrivateUpdate", "cs", "{0},{1}")
@@ -89,9 +87,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateUpdateChannelMessage()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/UpdateToChannel", "cs", "{0},{1}")
@@ -104,7 +101,7 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateRemoveAccessManuallyPmMessage()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/PrivateManuallyRemovedUnverify", "cs", "{0}")
             .Build();
@@ -116,9 +113,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateRemoveAccessManuallyToChannel()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/ManuallyRemoveToChannel", "cs", "{0}")
             .Build();
@@ -130,9 +126,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateRemoveAccessManuallyFailed()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var exception = new Exception("Test");
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/ManuallyRemoveFailed", "cs", "{0}({1})")
@@ -145,9 +140,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateRemoveAccessUnverifyNotFound()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/RemoveAccessUnverifyNotFound", "cs", "{0}")
             .Build();
@@ -159,9 +153,8 @@ public class UnverifyMessageGeneratorTests
     [TestMethod]
     public void CreateUnverifyFailedToChannel()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/UnverifyFailedToChannel", "cs", "{0}")
             .Build();

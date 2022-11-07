@@ -32,7 +32,7 @@ public class GetRubbergodUserKarmaTests : ApiActionTest<GetRubbergodUserKarma>
             .Build();
         var client = new ClientBuilder()
             .SetGetGuildsAction(Enumerable.Empty<IGuild>())
-            .SetGetUserAction(new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build())
+            .SetGetUserAction(new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build())
             .Build();
 
         return new GetRubbergodUserKarma(ApiRequestContext, directApi, client, TestServices.AutoMapper.Value);

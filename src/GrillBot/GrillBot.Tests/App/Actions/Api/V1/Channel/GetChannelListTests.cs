@@ -15,11 +15,11 @@ public class GetChannelListTests : ApiActionTest<GetChannelList>
 
     protected override GetChannelList CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
 
-        TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
+        TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetTextChannelAction(TextChannel).Build();
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildAction(Guild)

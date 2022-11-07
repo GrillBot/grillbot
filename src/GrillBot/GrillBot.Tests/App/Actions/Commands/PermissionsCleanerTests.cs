@@ -15,22 +15,19 @@ public class PermissionsCleanerTests : CommandActionTest<PermissionsCleaner>
             .Concat(Enumerable.Range(0, 50).Select(o => new Overwrite(Consts.UserId + (ulong)o, PermissionTarget.User, new OverwritePermissions(ulong.MaxValue, 0))))
             .ToArray();
 
-    private static readonly ITextChannel TextChannel = new TextChannelBuilder()
-        .SetIdentity(Consts.ChannelId, Consts.ChannelName)
-        .SetGuild(new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build())
+    private static readonly ITextChannel TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName)
+        .SetGuild(new GuildBuilder(Consts.GuildId, Consts.GuildName).Build())
         .SetPermissions(Overwrites)
         .Build();
 
     private static readonly IGuildUser[] Users =
-        Enumerable.Range(0, 50)
-            .Select(o => new GuildUserBuilder().SetIdentity(Consts.UserId + (ulong)o, Consts.Username, Consts.Discriminator).SetGuildPermissions(GuildPermissions.All).Build())
-            .ToArray();
+        Enumerable.Range(0, 50).Select(o => new GuildUserBuilder(Consts.UserId + (ulong)o, Consts.Username, Consts.Discriminator).SetGuildPermissions(GuildPermissions.All).Build()).ToArray();
 
     protected override IGuildUser User => Users[0];
     protected override IMessageChannel Channel => TextChannel;
 
     protected override IGuild Guild { get; } =
-        new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Users).SetGetChannelsAction(new[] { TextChannel }).Build();
+        new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Users).SetGetChannelsAction(new[] { TextChannel }).Build();
 
     protected override PermissionsCleaner CreateAction()
     {
@@ -51,7 +48,7 @@ public class PermissionsCleanerTests : CommandActionTest<PermissionsCleaner>
             return Task.CompletedTask;
         };
 
-        var excludedUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var excludedUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         await Action.ClearAllPermissionsAsync(TextChannel, new[] { excludedUser });
     }
 

@@ -10,14 +10,11 @@ public class GetRolesTests : ApiActionTest<GetRoles>
 {
     protected override GetRoles CreateAction()
     {
-        var role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
         var guild = guildBuilder.SetRoles(new[] { role }).SetGetUsersAction(new[] { user }).Build();
-
-        var client = new ClientBuilder()
-            .SetGetGuildsAction(new[] { guild })
-            .Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { guild }).Build();
 
         return new GetRoles(ApiRequestContext, client);
     }

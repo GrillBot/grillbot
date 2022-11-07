@@ -8,17 +8,17 @@ namespace GrillBot.Tests.App.Actions.Commands;
 [TestClass]
 public class CleanChannelMessagesTests : CommandActionTest<CleanChannelMessages>
 {
-    private static readonly IGuildUser Author = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+    private static readonly IGuildUser Author = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
     private static readonly IUserMessage[] Messages =
     {
-        new UserMessageBuilder().SetId(SnowflakeUtils.ToSnowflake(DateTimeOffset.Now.AddDays(-30))).SetAuthor(Author).Build(),
-        new UserMessageBuilder().SetId(SnowflakeUtils.ToSnowflake(DateTimeOffset.Now)).SetAuthor(Author).Build(),
-        new UserMessageBuilder().SetId(SnowflakeUtils.ToSnowflake(DateTimeOffset.Now)).AsPinned().SetAuthor(Author).Build()
+        new UserMessageBuilder(SnowflakeUtils.ToSnowflake(DateTimeOffset.Now.AddDays(-30))).SetAuthor(Author).Build(),
+        new UserMessageBuilder(SnowflakeUtils.ToSnowflake(DateTimeOffset.Now)).SetAuthor(Author).Build(),
+        new UserMessageBuilder(SnowflakeUtils.ToSnowflake(DateTimeOffset.Now)).AsPinned().SetAuthor(Author).Build()
     };
 
-    protected override IMessageChannel Channel { get; } = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGetMessagesAsync(Messages).Build();
-    protected override IDiscordInteraction Interaction { get; } = new DiscordInteractionBuilder().SetId(Consts.InteractionId).Build();
+    protected override IMessageChannel Channel { get; } = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGetMessagesAsync(Messages).Build();
+    protected override IDiscordInteraction Interaction { get; } = new DiscordInteractionBuilder(Consts.InteractionId).Build();
     protected override IGuildUser User => Author;
 
     protected override CleanChannelMessages CreateAction()

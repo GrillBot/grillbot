@@ -163,9 +163,9 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
 
     private async Task InitAllTypesAsync()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var items = new (AuditLogItemType, object)[]
         {

@@ -13,10 +13,10 @@ namespace GrillBot.Tests.App.Actions.Commands;
 public class EmojizationTests : CommandActionTest<Emojization>
 {
     protected override IDiscordInteraction Interaction { get; }
-        = new DiscordInteractionBuilder().Build();
+        = new DiscordInteractionBuilder(Consts.InteractionId).Build();
 
     protected override IGuild Guild { get; }
-        = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { EmoteHelper.CreateGuildEmote(Emote.Parse(Consts.PepeJamEmote)) }).Build();
+        = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { EmoteHelper.CreateGuildEmote(Emote.Parse(Consts.PepeJamEmote)) }).Build();
 
     protected override Emojization CreateAction()
     {

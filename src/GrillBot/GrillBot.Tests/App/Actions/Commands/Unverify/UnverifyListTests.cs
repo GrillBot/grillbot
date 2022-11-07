@@ -17,17 +17,17 @@ namespace GrillBot.Tests.App.Actions.Commands.Unverify;
 [TestClass]
 public class UnverifyListTests : CommandActionTest<UnverifyList>
 {
-    private static readonly IRole Role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).SetColor(Color.Green).Build();
-    private static readonly IGuild EmptyGuild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-    private static readonly IGuildUser GuildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(EmptyGuild).Build();
+    private static readonly IRole Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).SetColor(Color.Green).Build();
+    private static readonly IGuild EmptyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+    private static readonly IGuildUser GuildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(EmptyGuild).Build();
 
     private static readonly ITextChannel[] Channels =
     {
-        new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(EmptyGuild).Build(),
-        new TextChannelBuilder().SetIdentity(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(EmptyGuild).Build()
+        new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(EmptyGuild).Build(),
+        new TextChannelBuilder(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(EmptyGuild).Build()
     };
 
-    private static readonly IGuild GuildData = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetRoleAction(Role).SetGetUsersAction(new[] { GuildUser })
+    private static readonly IGuild GuildData = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetRoleAction(Role).SetGetUsersAction(new[] { GuildUser })
         .SetGetTextChannelsAction(Channels).Build();
 
     protected override IGuild Guild => GuildData;

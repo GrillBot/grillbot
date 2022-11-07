@@ -15,14 +15,14 @@ public class GetUserListTests : ApiActionTest<GetUserList>
 
     protected override GetUserList CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
 
         Guilds = new[]
         {
             guildBuilder.SetGetUsersAction(new[] { User }).Build(),
-            new GuildBuilder().SetIdentity(Consts.GuildId + 1, Consts.GuildName + "2").Build(),
-            new GuildBuilder().SetIdentity(Consts.GuildId + 2, Consts.GuildName + "3").Build()
+            new GuildBuilder(Consts.GuildId + 1, Consts.GuildName + "2").Build(),
+            new GuildBuilder(Consts.GuildId + 2, Consts.GuildName + "3").Build()
         };
 
         var client = new ClientBuilder()

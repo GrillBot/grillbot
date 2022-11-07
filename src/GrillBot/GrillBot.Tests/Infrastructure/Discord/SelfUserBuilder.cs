@@ -6,17 +6,16 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class SelfUserBuilder : BuilderBase<ISelfUser>
 {
-    public SelfUserBuilder()
+    public SelfUserBuilder(ulong id, string username, string discriminator)
     {
+        SetId(id);
+        SetUsername(username);
+        SetDiscriminator(discriminator);
     }
 
-    public SelfUserBuilder(IUser user)
+    public SelfUserBuilder(IUser user) : this(user.Id, user.Username, user.Discriminator)
     {
-        SetIdentity(user.Id, user.Username, user.Discriminator);
     }
-
-    public SelfUserBuilder SetIdentity(ulong id, string username, string discriminator)
-        => SetId(id).SetUsername(username).SetDiscriminator(discriminator);
 
     public SelfUserBuilder SetId(ulong id)
     {

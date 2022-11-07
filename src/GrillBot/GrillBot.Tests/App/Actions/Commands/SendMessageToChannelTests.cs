@@ -12,8 +12,9 @@ namespace GrillBot.Tests.App.Actions.Commands;
 [TestClass]
 public class SendMessageToChannelTests : CommandActionTest<SendMessageToChannel>
 {
-    private static readonly ITextChannel TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(new GuildBuilder().SetId(Consts.GuildId).Build()).Build();
-    private static readonly IGuild GuildData = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetChannelsAction(new[] { TextChannel }).Build();
+    private static readonly ITextChannel TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(new GuildBuilder(Consts.GuildId, Consts.GuildName).Build()).Build();
+
+    private static readonly IGuild GuildData = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetChannelsAction(new[] { TextChannel }).Build();
 
     protected override IMessageChannel Channel => TextChannel;
     protected override IGuild Guild => GuildData;

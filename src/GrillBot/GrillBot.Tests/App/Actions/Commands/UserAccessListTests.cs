@@ -10,21 +10,19 @@ namespace GrillBot.Tests.App.Actions.Commands;
 public class UserAccessListTests : CommandActionTest<UserAccessList>
 {
     private static readonly ICategoryChannel Category = new CategoryBuilder().Build();
-    private static readonly IGuild EmptyGuild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+    private static readonly IGuild EmptyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
     private static readonly Overwrite Overwrite = new(Consts.UserId + 3, PermissionTarget.User, new OverwritePermissions(0, int.MaxValue));
 
-    private static readonly IGuildUser GuildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<IRole>()).SetGuild(EmptyGuild)
+    private static readonly IGuildUser GuildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<IRole>()).SetGuild(EmptyGuild)
         .Build();
 
     private static readonly ITextChannel[] Channels = Enumerable
-        .Repeat(new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetPermissions(new[] { Overwrite }).SetGetUsersAction(new[] { GuildUser }).SetCategory(Category).Build(),
-            15 * 25).Concat(new[] { new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGetUsersAction(new[] { GuildUser }).SetPermissions(new[] { Overwrite }).Build() })
-        .ToArray();
+        .Repeat(new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetPermissions(new[] { Overwrite }).SetGetUsersAction(new[] { GuildUser }).SetCategory(Category).Build(),
+            15 * 25).Concat(new[] { new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGetUsersAction(new[] { GuildUser }).SetPermissions(new[] { Overwrite }).Build() }).ToArray();
 
-    private static readonly IGuildUser UserWithoutChannels = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<IRole>())
-        .SetGuild(EmptyGuild).Build();
+    private static readonly IGuildUser UserWithoutChannels = new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<IRole>()).SetGuild(EmptyGuild).Build();
 
-    private static readonly IGuild GuildData = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetChannelsAction(Channels).Build();
+    private static readonly IGuild GuildData = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetChannelsAction(Channels).Build();
 
     protected override IMessageChannel Channel => Channels[0];
     protected override IGuild Guild => GuildData;

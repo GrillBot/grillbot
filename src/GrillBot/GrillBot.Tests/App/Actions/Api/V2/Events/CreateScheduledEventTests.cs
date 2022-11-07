@@ -22,8 +22,8 @@ public class CreateScheduledEventTests : ApiActionTest<CreateScheduledEvent>
             .AddText("GuildScheduledEvents/Required/Location", "cs", "Location")
             .Build();
 
-        var guildEvent = new GuildScheduledEventBuilder().SetId(Consts.GuildEventId).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetCreateEventAction(guildEvent).Build();
+        var guildEvent = new GuildScheduledEventBuilder(Consts.GuildEventId).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetCreateEventAction(guildEvent).Build();
         var discordClient = new ClientBuilder().SetGetGuildAction(guild).Build();
 
         return new CreateScheduledEvent(ApiRequestContext, discordClient, texts);

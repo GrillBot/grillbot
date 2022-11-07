@@ -15,7 +15,7 @@ public class GuildSynchronizationTests : ServiceTest<GuildSynchronization>
     [TestMethod]
     public async Task GuildUpdatedAsync_GuildNotFound()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
         await Service.GuildUpdatedAsync(guild);
         Assert.IsTrue(true);
@@ -24,7 +24,7 @@ public class GuildSynchronizationTests : ServiceTest<GuildSynchronization>
     [TestMethod]
     public async Task GuildUpdatedAsync_Ok()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
         await Repository.CommitAsync();

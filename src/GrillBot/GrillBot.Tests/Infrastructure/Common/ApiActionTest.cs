@@ -28,7 +28,7 @@ public abstract class ApiActionTest<TAction> : ActionTest<TAction> where TAction
     {
         return new ApiRequestContext
         {
-            LoggedUser = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username + "-" + role, Consts.Discriminator).Build(),
+            LoggedUser = new UserBuilder(Consts.UserId, Consts.Username + "-" + role, Consts.Discriminator).Build(),
             LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Role, role),

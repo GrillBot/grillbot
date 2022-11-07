@@ -19,7 +19,7 @@ public class CreateTokenTests : ApiActionTest<CreateToken>
 
     protected override CreateToken CreateAction()
     {
-        User = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         Client = new ClientBuilder()
             .SetGetUserAction(User)

@@ -18,12 +18,12 @@ public class GetChannelSimpleListTests : ApiActionTest<GetChannelSimpleList>
 
     protected override GetChannelSimpleList CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.Username);
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.Username);
 
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
-        TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).SetGetUsersAction(new[] { User }).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).SetGetUsersAction(new[] { User }).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetGetTextChannelsAction(new[] { TextChannel }).Build();
-        AnotherChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(Guild).Build();
+        AnotherChannel = new TextChannelBuilder(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(Guild).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })

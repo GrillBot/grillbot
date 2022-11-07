@@ -10,7 +10,7 @@ public class GetSupportedEmotesTests : ApiActionTest<GetSupportedEmotes>
     protected override GetSupportedEmotes CreateAction()
     {
         var emote = EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.PepeJamEmote));
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
         var emotesCache = new EmotesCacheBuilder()
             .AddEmote(emote, guild)

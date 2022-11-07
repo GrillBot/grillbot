@@ -15,7 +15,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     [TestMethod]
     public async Task UserUpdatedAsync_UserNotFound()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         await Service.UserUpdatedAsync(user);
         Assert.IsTrue(true);
@@ -24,7 +24,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     [TestMethod]
     public async Task UserUpdatedAsync_Ok()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();
@@ -35,10 +35,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     [TestMethod]
     public async Task UserUpdatedAsync_Bot()
     {
-        var selfUser = new SelfUserBuilder()
-            .SetId(Consts.UserId).SetUsername(Consts.Username).SetDiscriminator(Consts.Discriminator)
-            .AsBot().Build();
-
+        var selfUser = new SelfUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).AsBot().Build();
         await Repository.AddAsync(Database.Entity.User.FromDiscord(selfUser));
         await Repository.CommitAsync();
 
@@ -49,16 +46,8 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     [TestMethod]
     public async Task InitBotAdminAsync_NewUser()
     {
-        var owner = new UserBuilder()
-            .SetId(Consts.UserId)
-            .SetUsername(Consts.Username)
-            .SetDiscriminator(Consts.Discriminator)
-            .AsBot()
-            .Build();
-
-        var application = new ApplicationBuilder()
-            .SetOwner(owner)
-            .Build();
+        var owner = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).AsBot().Build();
+        var application = new ApplicationBuilder().SetOwner(owner).Build();
 
         await UserSynchronization.InitBotAdminAsync(Repository, application);
     }
@@ -66,13 +55,7 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
     [TestMethod]
     public async Task InitBotAdminAsync_Exists()
     {
-        var owner = new UserBuilder()
-            .SetId(Consts.UserId)
-            .SetUsername(Consts.Username)
-            .SetDiscriminator(Consts.Discriminator)
-            .AsBot()
-            .Build();
-
+        var owner = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).AsBot().Build();
         await Repository.AddAsync(Database.Entity.User.FromDiscord(owner));
         await Repository.CommitAsync();
 

@@ -13,17 +13,17 @@ namespace GrillBot.Tests.App.Actions.Commands;
 [TestClass]
 public class UserInfoTests : CommandActionTest<UserInfo>
 {
-    private static readonly IRole RoleWithColor = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
-    private static readonly IGuild EmptyGuild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetRoleAction(RoleWithColor).Build();
+    private static readonly IRole RoleWithColor = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
+    private static readonly IGuild EmptyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetRoleAction(RoleWithColor).Build();
 
-    private static readonly IGuildUser GuildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(EmptyGuild)
+    private static readonly IGuildUser GuildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(EmptyGuild)
         .SetRoles(Enumerable.Repeat(RoleWithColor, 50)).SetActiveDevices(new[] { ClientType.Desktop }).SetPremiumSinceDate(DateTimeOffset.Now).Build();
 
     protected override IGuild Guild { get; }
-        = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { GuildUser }).Build();
+        = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { GuildUser }).Build();
 
     protected override IMessageChannel Channel { get; }
-        = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(EmptyGuild).Build();
+        = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(EmptyGuild).Build();
 
     protected override IGuildUser User => GuildUser;
 

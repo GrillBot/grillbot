@@ -13,7 +13,7 @@ public class GetGuildListTests : ApiActionTest<GetGuildList>
 
     protected override GetGuildList CreateAction()
     {
-        Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Array.Empty<IGuildUser>()).Build();
+        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Array.Empty<IGuildUser>()).Build();
         var client = new ClientBuilder().SetGetGuildAction(Guild).Build();
 
         return new GetGuildList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client);
@@ -32,7 +32,7 @@ public class GetGuildListTests : ApiActionTest<GetGuildList>
     public async Task ProcessAsync_WithoutFilter()
     {
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(new GuildBuilder().SetIdentity(Consts.GuildId + 1, Consts.GuildName).Build()));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(new GuildBuilder(Consts.GuildId + 1, Consts.GuildName).Build()));
         await Repository.CommitAsync();
 
         var filter = new GetGuildListParams();

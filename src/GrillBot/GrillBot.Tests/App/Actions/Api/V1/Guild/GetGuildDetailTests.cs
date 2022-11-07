@@ -18,10 +18,10 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
 
     protected override GetGuildDetail CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetStatus(UserStatus.Online).Build();
-        Role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetStatus(UserStatus.Online).Build();
+        Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         Guild = guildBuilder.SetGetChannelsAction(new[] { TextChannel }).SetGetUsersAction(new[] { User }).SetRoles(new[] { Role }).Build();
 
         var client = new ClientBuilder()
@@ -45,7 +45,7 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
     [TestMethod]
     public async Task ProcessAsync_WithoutDiscordGuild()
     {
-        var anotherGuild = new GuildBuilder().SetIdentity(Consts.GuildId + 1, Consts.GuildName).Build();
+        var anotherGuild = new GuildBuilder(Consts.GuildId + 1, Consts.GuildName).Build();
         await InitGuildAsync(anotherGuild, false);
 
         var result = await Action.ProcessAsync(anotherGuild.Id);

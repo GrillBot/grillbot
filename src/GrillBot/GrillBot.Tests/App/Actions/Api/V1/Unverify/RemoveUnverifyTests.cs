@@ -25,10 +25,10 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
 
     protected override RemoveUnverify CreateAction()
     {
-        Role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        var message = new UserMessageBuilder().SetId(Consts.MessageId).Build();
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(message).Build();
+        Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        var message = new UserMessageBuilder(Consts.MessageId).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(message).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetGetChannelsAction(Enumerable.Empty<ITextChannel>()).Build();
 
         var client = new ClientBuilder()

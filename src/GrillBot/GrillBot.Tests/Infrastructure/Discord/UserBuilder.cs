@@ -7,9 +7,11 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class UserBuilder : BuilderBase<IUser>
 {
-    public UserBuilder SetIdentity(ulong id, string username, string discriminator)
+    public UserBuilder(ulong id, string username, string discriminator)
     {
-        return SetId(id).SetUsername(username).SetDiscriminator(discriminator);
+        SetId(id);
+        SetUsername(username);
+        SetDiscriminator(discriminator);
     }
 
     public UserBuilder SetId(ulong id)
@@ -43,12 +45,6 @@ public class UserBuilder : BuilderBase<IUser>
     public UserBuilder SetUsername(string username)
     {
         Mock.Setup(o => o.Username).Returns(username);
-        return this;
-    }
-
-    public UserBuilder SetStatus(UserStatus status)
-    {
-        Mock.Setup(o => o.Status).Returns(status);
         return this;
     }
 

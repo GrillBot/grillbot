@@ -16,8 +16,8 @@ public class GetSummaryGraphDataTests : ApiActionTest<GetSummaryGraphData>
     [TestMethod]
     public async Task GetGraphDataAsync()
     {
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.AddAsync(new Database.Entity.PointsTransactionSummary

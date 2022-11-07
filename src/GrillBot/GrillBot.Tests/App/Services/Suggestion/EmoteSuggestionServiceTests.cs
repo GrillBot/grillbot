@@ -25,15 +25,13 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
 
     protected override EmoteSuggestionService CreateService()
     {
-        var guildBuilder = new GuildBuilder()
-            .SetIdentity(Consts.GuildId, Consts.GuildName);
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
 
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
-
-        var voteChannelBuilder = new TextChannelBuilder().SetIdentity(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(guildBuilder.Build());
-        VoteMessage = new UserMessageBuilder().SetId(Consts.MessageId + 1).SetGetReactionUsersAction(new[] { User }).SetAuthor(User).SetChannel(voteChannelBuilder.Build()).Build();
-        var suggestionChannelBuilder = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build());
-        SuggestionMessage = new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(User).SetChannel(suggestionChannelBuilder.Build()).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        var voteChannelBuilder = new TextChannelBuilder(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(guildBuilder.Build());
+        VoteMessage = new UserMessageBuilder(Consts.MessageId + 1).SetGetReactionUsersAction(new[] { User }).SetAuthor(User).SetChannel(voteChannelBuilder.Build()).Build();
+        var suggestionChannelBuilder = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build());
+        SuggestionMessage = new UserMessageBuilder(Consts.MessageId).SetAuthor(User).SetChannel(suggestionChannelBuilder.Build()).Build();
 
         SuggestionChannel = suggestionChannelBuilder.SetGetMessageAsync(SuggestionMessage).Build();
         VoteChannel = voteChannelBuilder.SetGetMessageAsync(VoteMessage).SetSendFileAction("VoteStartedFile.png", VoteMessage).Build();
@@ -89,9 +87,9 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
     {
         const string filename = "File.png";
 
-        var message = new UserMessageBuilder().SetId(Consts.MessageId).SetContent("Content").Build();
-        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetSendFileAction(filename, message).Build();
-        var guild = new GuildBuilder().SetId(Consts.GuildId).SetName(Consts.GuildName).SetGetTextChannelAction(channel).Build();
+        var message = new UserMessageBuilder(Consts.MessageId).SetContent("Content").Build();
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetSendFileAction(filename, message).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelAction(channel).Build();
 
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
         guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
@@ -100,7 +98,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
         await Repository.CommitAsync();
 
         var suggestionId = Guid.NewGuid().ToString();
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var attachment = new AttachmentBuilder().SetFilename(filename).SetUrl("https://www.google.com/images/searchbox/desktop_searchbox_sprites318_hr.png").Build();
 
         var modalData = new EmoteSuggestionModal { EmoteName = "Name" };

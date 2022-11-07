@@ -26,7 +26,7 @@ public class ComponentInteractionBuilder : BuilderBase<IComponentInteraction>
         return this;
     }
 
-    public ComponentInteractionBuilder SetDmInteraction(bool isDmInteraction = true)
+    public ComponentInteractionBuilder AsDmInteraction(bool isDmInteraction = true)
     {
         Mock.Setup(o => o.IsDMInteraction).Returns(isDmInteraction);
         return this;

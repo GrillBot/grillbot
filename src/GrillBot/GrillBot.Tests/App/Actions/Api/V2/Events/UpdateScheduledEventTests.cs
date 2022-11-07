@@ -20,12 +20,11 @@ public class UpdateScheduledEventTests : ApiActionTest<UpdateScheduledEvent>
 
         var events = new[]
         {
-            new GuildScheduledEventBuilder().SetId(Consts.GuildEventId).SetCreator(ApiRequestContext.LoggedUser).Build(),
-            new GuildScheduledEventBuilder().SetId(Consts.GuildEventId + 1)
-                .SetCreator(new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).Build()).Build()
+            new GuildScheduledEventBuilder(Consts.GuildEventId).SetCreator(ApiRequestContext.LoggedUser).Build(),
+            new GuildScheduledEventBuilder(Consts.GuildEventId + 1).SetCreator(new UserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).Build()).Build()
         };
 
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetEventsAction(events).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetEventsAction(events).Build();
         var discordClient = new ClientBuilder().SetGetGuildAction(guild).SetSelfUser(new SelfUserBuilder(ApiRequestContext.LoggedUser).Build()).Build();
 
         return new UpdateScheduledEvent(ApiRequestContext, discordClient, texts);

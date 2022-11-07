@@ -17,7 +17,7 @@ public class UserHearthbeatServiceTests : ServiceTest<UserHearthbeatService>
 
     private async Task InitDataAsync()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
         await Repository.CommitAsync();
@@ -32,7 +32,7 @@ public class UserHearthbeatServiceTests : ServiceTest<UserHearthbeatService>
                 new Claim(ClaimTypes.Role, !isPublic ? "Admin" : "User"),
                 new Claim(ClaimTypes.NameIdentifier, Consts.UserId.ToString())
             })),
-            LoggedUser = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build()
+            LoggedUser = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build()
         };
     }
 

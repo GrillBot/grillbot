@@ -13,8 +13,8 @@ public class GetPointsLeaderboardTests : ApiActionTest<GetPointsLeaderboard>
 
     protected override GetPointsLeaderboard CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).Build();
 
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();

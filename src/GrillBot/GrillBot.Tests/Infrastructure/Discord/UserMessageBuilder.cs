@@ -9,12 +9,14 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class UserMessageBuilder : BuilderBase<IUserMessage>
 {
-    public UserMessageBuilder()
+    public UserMessageBuilder(ulong id)
     {
         Mock.Setup(o => o.DeleteAsync(It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
         Mock.Setup(o => o.ModifyAsync(It.IsAny<Action<MessageProperties>>(), It.IsAny<RequestOptions>()))
             .Callback<Action<MessageProperties>, RequestOptions>((func, _) => func(new MessageProperties()))
             .Returns(Task.CompletedTask);
+
+        SetId(id);
     }
 
     public UserMessageBuilder SetId(ulong id)
@@ -39,12 +41,6 @@ public class UserMessageBuilder : BuilderBase<IUserMessage>
     public UserMessageBuilder SetChannel(IMessageChannel channel)
     {
         Mock.Setup(o => o.Channel).Returns(channel);
-        return this;
-    }
-
-    public UserMessageBuilder SetEmbeds(IEnumerable<IEmbed> embeds)
-    {
-        Mock.Setup(o => o.Embeds).Returns(embeds.ToList().AsReadOnly());
         return this;
     }
 

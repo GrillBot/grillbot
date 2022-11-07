@@ -23,18 +23,13 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
     protected override DiscordExceptionHandler CreateService()
     {
-        Channel = new TextChannelBuilder()
-            .SetIdentity(Consts.ChannelId, Consts.ChannelName)
-            .Build();
+        Channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
 
-        var guild = new GuildBuilder()
-            .SetIdentity(Consts.GuildId, Consts.GuildName)
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName)
             .SetGetTextChannelAction(Channel)
             .Build();
 
-        User = new SelfUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .Build();
+        User = new SelfUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildAction(guild)

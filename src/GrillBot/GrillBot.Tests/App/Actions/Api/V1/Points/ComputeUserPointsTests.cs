@@ -15,8 +15,8 @@ public class ComputeUserPointsTests : ApiActionTest<ComputeUserPoints>
 
     protected override ComputeUserPoints CreateAction()
     {
-        var userBuilder = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator);
-        Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { userBuilder.Build() }).Build();
+        var userBuilder = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator);
+        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { userBuilder.Build() }).Build();
         User = userBuilder.SetGuild(Guild).Build();
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).SetGetUserAction(User).Build();
 

@@ -10,16 +10,15 @@ public class GuildBuilder : BuilderBase<IGuild>
 {
     private IRole EveryoneRole { get; }
 
-    public GuildBuilder()
+    public GuildBuilder(ulong id, string name)
     {
-        EveryoneRole = new RoleBuilder().SetIdentity(Consts.GuildId, "@everyone").Build();
+        EveryoneRole = new RoleBuilder(Consts.GuildId, "@everyone").Build();
 
+        SetId(id);
+        SetName(name);
         SetRoles(new[] { EveryoneRole });
         SetEveryoneRole(EveryoneRole);
     }
-
-    public GuildBuilder SetIdentity(ulong id, string name)
-        => SetId(id).SetName(name);
 
     public GuildBuilder SetId(ulong id)
     {
@@ -119,12 +118,6 @@ public class GuildBuilder : BuilderBase<IGuild>
     {
         Mock.Setup(o => o.VanityURLCode).Returns(invite.Code);
         Mock.Setup(o => o.GetVanityInviteAsync(It.IsAny<RequestOptions>())).ReturnsAsync(invite);
-        return this;
-    }
-
-    public GuildBuilder SetGetCurrentUserAction(IGuildUser user)
-    {
-        Mock.Setup(o => o.GetCurrentUserAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
         return this;
     }
 

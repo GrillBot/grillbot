@@ -12,7 +12,7 @@ public class BirthdayServiceTests : ServiceTest<BirthdayService>
 
     protected override BirthdayService CreateService()
     {
-        User = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         return new BirthdayService(DatabaseBuilder);
     }
 

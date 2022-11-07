@@ -14,12 +14,11 @@ public class RefreshMetadataTests : ApiActionTest<RefreshMetadata>
 {
     protected override RefreshMetadata CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        var admin = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetGuildPermissions(GuildPermissions.All).Build();
-        var standardUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build())
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        var admin = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetGuildPermissions(GuildPermissions.All).Build();
+        var standardUser = new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build())
             .SetGuildPermissions(new GuildPermissions(viewChannel: true, sendMessages: true)).Build();
-        var guildWithoutInvites = new GuildBuilder().SetIdentity(Consts.GuildId + 1, Consts.GuildName + "2").SetGetUsersAction(new[] { admin }).SetGetInvitesAction(Enumerable.Empty<IInviteMetadata>())
-            .Build();
+        var guildWithoutInvites = new GuildBuilder(Consts.GuildId + 1, Consts.GuildName + "2").SetGetUsersAction(new[] { admin }).SetGetInvitesAction(Enumerable.Empty<IInviteMetadata>()).Build();
 
         var vanityInvite = new InviteMetadataBuilder().SetCode(Consts.VanityInviteCode).SetGuild(guildBuilder.Build()).Build();
         var invite = new InviteMetadataBuilder().SetCode(Consts.InviteCode).SetGuild(guildBuilder.Build()).Build();

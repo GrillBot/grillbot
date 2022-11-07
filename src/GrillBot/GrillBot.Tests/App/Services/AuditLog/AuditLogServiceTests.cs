@@ -37,7 +37,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         };
 
         await Repository.AddAsync(item);
-        await Repository.AddAsync(new Database.Entity.Guild { Id = "12345", Name = "Guild" });
+        await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
         await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test" });
         await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });
@@ -49,8 +49,8 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     {
         await FillDataAsync();
 
-        var channel = new ChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new ChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var types = new[] { AuditLogItemType.InteractionCommand };
 
         var result = await Service.GetDiscordAuditLogIdsAsync(guild, channel, types, DateTime.MinValue);
@@ -78,10 +78,7 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
     [TestMethod]
     public async Task GetGuildFromChannelAsync_GuildChannel()
     {
-        var channel = new TextChannelBuilder()
-            .SetIdentity(Consts.ChannelId, Consts.ChannelName)
-            .SetGuild(new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build()).Build();
-
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(new GuildBuilder(Consts.GuildId, Consts.GuildName).Build()).Build();
         var guild = await Service.GetGuildFromChannelAsync(channel, 0);
         Assert.IsNotNull(guild);
     }

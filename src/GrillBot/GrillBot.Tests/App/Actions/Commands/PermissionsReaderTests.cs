@@ -20,26 +20,22 @@ public class PermissionsReaderTests : CommandActionTest<PermissionsReader>
         new(Consts.RoleId, PermissionTarget.Role, new OverwritePermissions(ulong.MaxValue, ulong.MaxValue))
     };
 
-    private static readonly ITextChannel TextChannel = new TextChannelBuilder()
-        .SetIdentity(Consts.ChannelId, Consts.ChannelName)
-        .SetPermissions(Permissions)
-        .Build();
+    private static readonly ITextChannel TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetPermissions(Permissions).Build();
 
-    private static readonly IRole Role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
-    private static readonly IGuild EmptyGuild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetRoleAction(Role).Build();
+    private static readonly IRole Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
+    private static readonly IGuild EmptyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetRoleAction(Role).Build();
 
     private static readonly IGuildUser[] Users =
     {
-        new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(new[] { Role }).SetGuild(EmptyGuild).Build(),
-        new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetRoles(new[] { Role }).SetGuild(EmptyGuild).Build(),
-        new GuildUserBuilder().SetIdentity(Consts.UserId + 3, Consts.Username, Consts.Discriminator).SetGuildPermissions(GuildPermissions.All).SetGuild(EmptyGuild).Build(),
-        new GuildUserBuilder().SetIdentity(Consts.UserId + 4, Consts.Username, Consts.Discriminator).SetRoles(new[] { Role }).SetGuild(EmptyGuild).Build(),
-        new GuildUserBuilder().SetIdentity(Consts.UserId + 5, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<IRole>()).SetGuild(EmptyGuild).Build(),
-        new GuildUserBuilder().SetIdentity(Consts.UserId + 6, Consts.Username, Consts.Discriminator).Build()
+        new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(new[] { Role }).SetGuild(EmptyGuild).Build(),
+        new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetRoles(new[] { Role }).SetGuild(EmptyGuild).Build(),
+        new GuildUserBuilder(Consts.UserId + 3, Consts.Username, Consts.Discriminator).SetGuildPermissions(GuildPermissions.All).SetGuild(EmptyGuild).Build(),
+        new GuildUserBuilder(Consts.UserId + 4, Consts.Username, Consts.Discriminator).SetRoles(new[] { Role }).SetGuild(EmptyGuild).Build(),
+        new GuildUserBuilder(Consts.UserId + 5, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<IRole>()).SetGuild(EmptyGuild).Build(),
+        new GuildUserBuilder(Consts.UserId + 6, Consts.Username, Consts.Discriminator).Build()
     };
 
-    private static readonly IGuild MyGuild = new GuildBuilder()
-        .SetIdentity(Consts.GuildId, Consts.GuildName)
+    private static readonly IGuild MyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName)
         .SetGetUsersAction(Users)
         .SetGetChannelsAction(new[] { TextChannel })
         .Build();

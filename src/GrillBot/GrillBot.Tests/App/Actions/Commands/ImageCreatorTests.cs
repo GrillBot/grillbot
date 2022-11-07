@@ -11,8 +11,8 @@ namespace GrillBot.Tests.App.Actions.Commands;
 [TestClass]
 public class ImageCreatorTests : CommandActionTest<ImageCreator>
 {
-    protected override IGuild Guild { get; } = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-    protected override IGuildUser User { get; } = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+    protected override IGuild Guild { get; } = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+    protected override IGuildUser User { get; } = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
     protected override ImageCreator CreateAction()
     {

@@ -30,7 +30,7 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
     [TestMethod]
     public async Task CheckRequirementsAsync_GuildNotFound()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
         var provider = CreateProvider();
 
@@ -41,7 +41,7 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
     [TestMethod]
     public async Task CheckRequirementsAsync_MissingConfiguration()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
         var provider = CreateProvider();
 
@@ -55,7 +55,7 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
     [TestMethod]
     public async Task CheckRequirementsAsync_MissingChannel()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
         var provider = CreateProvider();
 
@@ -71,8 +71,8 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
     [TestMethod]
     public async Task CheckRequirementsAsync_Success()
     {
-        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).Build();
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetTextChannelAction(channel).Build();
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelAction(channel).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
         var provider = CreateProvider();
 

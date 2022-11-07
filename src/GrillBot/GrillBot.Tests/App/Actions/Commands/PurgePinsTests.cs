@@ -8,21 +8,21 @@ namespace GrillBot.Tests.App.Actions.Commands;
 [TestClass]
 public class PurgePinsTests : CommandActionTest<PurgePins>
 {
-    private static readonly IGuildUser Author = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+    private static readonly IGuildUser Author = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
     private static readonly IUserMessage[] Messages =
     {
-        new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
-        new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
-        new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
-        new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
-        new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
-        new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
-        new UserMessageBuilder().SetId(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
+        new UserMessageBuilder(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
+        new UserMessageBuilder(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
+        new UserMessageBuilder(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
+        new UserMessageBuilder(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
+        new UserMessageBuilder(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
+        new UserMessageBuilder(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
+        new UserMessageBuilder(Consts.MessageId).SetAuthor(Author).AsPinned().Build(),
     };
 
     protected override IMessageChannel Channel { get; }
-        = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGetPinnedMessagesAction(Messages).Build();
+        = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGetPinnedMessagesAction(Messages).Build();
 
     protected override IGuildUser User => Author;
 

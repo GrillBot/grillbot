@@ -16,8 +16,8 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
     [TestMethod]
     public async Task GuildMemberUpdatedAsync_UserNotFound()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Service.GuildMemberUpdatedAsync(user);
         Assert.IsTrue(true);
@@ -26,11 +26,11 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
     [TestMethod]
     public async Task GuildMemberUpdatedAsync_Ok()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(user.Guild));
+        await Repository.AddAsync(Guild.FromDiscord(user.Guild));
         await Repository.AddAsync(GuildUser.FromDiscord(user.Guild, user));
         await Repository.CommitAsync();
 
@@ -40,11 +40,11 @@ public class GuildUserSynchronizationTests : ServiceTest<GuildUserSynchronizatio
     [TestMethod]
     public async Task GuildMemberUpdatedAsync_Bot()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).AsBot().Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).AsBot().Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(user.Guild));
+        await Repository.AddAsync(Guild.FromDiscord(user.Guild));
         await Repository.AddAsync(GuildUser.FromDiscord(user.Guild, user));
         await Repository.CommitAsync();
 

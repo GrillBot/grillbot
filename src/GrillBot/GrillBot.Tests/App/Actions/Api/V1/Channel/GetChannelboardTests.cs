@@ -14,10 +14,10 @@ public class GetChannelboardTests : ApiActionTest<GetChannelboard>
 
     protected override GetChannelboard CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
 
-        TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetTextChannelsAction(new[] { TextChannel }).SetGetUserAction(User).Build();
 
         var discordClient = new ClientBuilder().SetGetUserAction(User).SetGetGuildsAction(new List<IGuild> { Guild }).Build();

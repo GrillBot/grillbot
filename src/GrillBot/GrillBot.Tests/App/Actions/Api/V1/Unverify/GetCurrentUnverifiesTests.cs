@@ -20,8 +20,8 @@ public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
 
     protected override GetCurrentUnverifies CreateAction()
     {
-        Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
+        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })

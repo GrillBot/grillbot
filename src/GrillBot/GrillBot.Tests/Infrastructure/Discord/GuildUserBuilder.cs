@@ -8,7 +8,7 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class GuildUserBuilder : BuilderBase<IGuildUser>
 {
-    public GuildUserBuilder()
+    public GuildUserBuilder(ulong id, string username, string discriminator)
     {
         Mock.Setup(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
         Mock.Setup(o => o.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
@@ -23,16 +23,14 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
             .Returns(Task.CompletedTask);
         Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>()))
             .Returns(Task.CompletedTask);
+
+        SetId(id);
+        SetUsername(username);
+        SetDiscriminator(discriminator);
     }
 
-    public GuildUserBuilder SetIdentity(ulong id, string username, string discriminator)
+    public GuildUserBuilder(IUser user) : this(user.Id, user.Username, user.Discriminator)
     {
-        return SetId(id).SetUsername(username).SetDiscriminator(discriminator);
-    }
-
-    public GuildUserBuilder SetIdentity(IUser user)
-    {
-        return SetIdentity(user.Id, user.Username, user.Discriminator);
     }
 
     public GuildUserBuilder SetGuildPermissions(GuildPermissions permissions)

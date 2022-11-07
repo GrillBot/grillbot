@@ -25,12 +25,12 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
 
     protected override RecoverState CreateAction()
     {
-        Role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
-        var anotherRole = new RoleBuilder().SetIdentity(Consts.RoleId + 1, Consts.RoleName).Build();
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { anotherRole }).Build();
+        Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
+        var anotherRole = new RoleBuilder(Consts.RoleId + 1, Consts.RoleName).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { anotherRole }).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetRoles(new[] { Role }).Build();
-        AnotherUser = new GuildUserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
+        AnotherUser = new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })

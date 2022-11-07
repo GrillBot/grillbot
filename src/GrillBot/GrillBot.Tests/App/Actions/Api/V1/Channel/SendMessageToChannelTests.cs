@@ -14,12 +14,9 @@ public class SendMessageToChannelTests : ApiActionTest<SendMessageToChannel>
 {
     protected override SendMessageToChannel CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        var message = new UserMessageBuilder().SetId(Consts.MessageId).Build();
-        var textChannel = new TextChannelBuilder()
-            .SetIdentity(Consts.ChannelId, Consts.ChannelName)
-            .SetSendFilesAction(message).SetSendMessageAction(message)
-            .Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        var message = new UserMessageBuilder(Consts.MessageId).Build();
+        var textChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetSendFilesAction(message).SetSendMessageAction(message).Build();
         guildBuilder.SetGetTextChannelAction(textChannel);
 
         var texts = new TextsBuilder()

@@ -12,7 +12,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 [TestClass]
 public class MergeStatsTests : ApiActionTest<MergeStats>
 {
-    private static readonly IGuild Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+    private static readonly IGuild Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
     protected override MergeStats CreateAction()
     {
@@ -42,7 +42,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
         await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(Guild, guildUser));
@@ -96,7 +96,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
     [TestMethod]
     public async Task ProcessAsync_NothingInDestination()
     {
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
         await Repository.AddAsync(new Database.Entity.EmoteStatisticItem
         {

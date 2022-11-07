@@ -14,8 +14,7 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
 
     protected override EmotesCommandService CreateService()
     {
-        Guild = new GuildBuilder()
-            .SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
         var dcClient = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })
@@ -29,16 +28,14 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
     [ExcludeFromCodeCoverage]
     public async Task GetInfoAsync_NotEmote()
     {
-        var user = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         await Service.GetInfoAsync(Emojis.Ok, user);
     }
 
     [TestMethod]
     public async Task GetInfoAsync_Emote_WithData()
     {
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(Guild).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
         await Repository.AddAsync(new Database.Entity.EmoteStatisticItem
         {
@@ -62,9 +59,7 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
     [TestMethod]
     public async Task GetInfoAsync_Emote_WithoutData()
     {
-        var user = new GuildUserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetGuild(Guild).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
         var emote = Emote.Parse("<a:PepeJAMJAM:600070651814084629>");
         var result = await Service.GetInfoAsync(emote, user);

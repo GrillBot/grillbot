@@ -4,6 +4,11 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 
 public class DiscordInteractionBuilder : BuilderBase<IDiscordInteraction>
 {
+    public DiscordInteractionBuilder(ulong id)
+    {
+        SetId(id);
+    }
+
     public DiscordInteractionBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);
@@ -11,7 +16,7 @@ public class DiscordInteractionBuilder : BuilderBase<IDiscordInteraction>
         return this;
     }
 
-    public DiscordInteractionBuilder SetDmInteraction(bool isDmInteraction = true)
+    public DiscordInteractionBuilder AsDmInteraction(bool isDmInteraction = true)
     {
         Mock.Setup(o => o.IsDMInteraction).Returns(isDmInteraction);
         return this;

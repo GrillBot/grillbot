@@ -13,8 +13,8 @@ public class GetAvailableGuildsTests : ApiActionTest<GetAvailableGuilds>
 
     protected override GetAvailableGuilds CreateAction()
     {
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetUserAction(user).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUserAction(user).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })

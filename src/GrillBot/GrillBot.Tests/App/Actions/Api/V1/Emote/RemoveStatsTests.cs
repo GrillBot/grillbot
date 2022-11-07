@@ -25,8 +25,8 @@ public class RemoveStatsTests : ApiActionTest<RemoveStats>
     [TestMethod]
     public async Task ProcessAsync_WithEmotes()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var guildUser = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Repository.AddAsync(new EmoteStatisticItem
         {

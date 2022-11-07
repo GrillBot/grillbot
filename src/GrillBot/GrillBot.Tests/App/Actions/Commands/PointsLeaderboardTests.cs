@@ -13,10 +13,10 @@ namespace GrillBot.Tests.App.Actions.Commands;
 public class PointsLeaderboardTests : CommandActionTest<PointsLeaderboard>
 {
     protected override IGuild Guild { get; }
-        = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
+        = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
     protected override IGuildUser User { get; }
-        = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build()).Build();
+        = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(new GuildBuilder(Consts.GuildId, Consts.GuildName).Build()).Build();
 
     protected override PointsLeaderboard CreateAction()
     {

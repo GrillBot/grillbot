@@ -10,8 +10,8 @@ public class ClearMessageCacheTests : ApiActionTest<ClearMessageCache>
 {
     protected override ClearMessageCache CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        var channel = new TextChannelBuilder().SetGuild(guildBuilder.Build()).SetIdentity(Consts.ChannelId, Consts.ChannelName).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         var guild = guildBuilder.SetGetTextChannelAction(channel).Build();
 
         var client = new ClientBuilder().SetGetGuildAction(guild).Build();

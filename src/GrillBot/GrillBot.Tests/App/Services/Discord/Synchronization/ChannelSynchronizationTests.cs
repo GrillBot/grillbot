@@ -17,8 +17,8 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ChannelDeletedAsync_ChannelNotFound()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
         await Service.ChannelDeletedAsync(channel);
         Assert.IsTrue(true);
@@ -27,10 +27,10 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ChannelDeletedAsync_Ok_WithoutThreads()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        await Repository.AddAsync(Guild.FromDiscord(guild));
         await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
         await Repository.CommitAsync();
 
@@ -41,11 +41,11 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ChannelDeletedAsync_Ok()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
-        var thread = new ThreadBuilder().SetIdentity(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).SetType(ThreadType.PrivateThread).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
+        var thread = new ThreadBuilder(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).SetType(ThreadType.PrivateThread).Build();
 
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        await Repository.AddAsync(Guild.FromDiscord(guild));
         await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
         await Repository.AddAsync(GuildChannel.FromDiscord(thread, ChannelType.PrivateThread));
         await Repository.CommitAsync();
@@ -57,14 +57,8 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ThreadDeletedAsync_NotFound()
     {
-        var guild = new GuildBuilder()
-            .SetId(Consts.GuildId).SetName(Consts.GuildName)
-            .Build();
-
-        var thread = new ThreadBuilder()
-            .SetId(Consts.ThreadId).SetName(Consts.ThreadName)
-            .SetGuild(guild)
-            .Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var thread = new ThreadBuilder(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).Build();
 
         await Service.ThreadDeletedAsync(thread);
         Assert.IsTrue(true);
@@ -73,11 +67,11 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
     [TestMethod]
     public async Task ThreadDeletedAsync_Ok()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var channel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
-        var thread = new ThreadBuilder().SetIdentity(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
+        var thread = new ThreadBuilder(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).Build();
 
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        await Repository.AddAsync(Guild.FromDiscord(guild));
         await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
         await Repository.AddAsync(GuildChannel.FromDiscord(thread, ChannelType.PrivateThread));
         await Repository.CommitAsync();

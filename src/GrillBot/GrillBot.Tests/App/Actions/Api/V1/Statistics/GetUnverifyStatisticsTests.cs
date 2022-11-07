@@ -15,8 +15,8 @@ public class GetUnverifyStatisticsTests : ApiActionTest<GetUnverifyStatistics>
 
     private async Task InitDataAsync()
     {
-        var guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        var user = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
 
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));

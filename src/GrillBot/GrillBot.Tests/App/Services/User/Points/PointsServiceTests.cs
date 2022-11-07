@@ -21,11 +21,9 @@ public class PointsServiceTests : ServiceTest<PointsService>
 
     protected override PointsService CreateService()
     {
-        User = new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .SetAvatar(Consts.AvatarId).Build();
-        var userBuilder = new GuildUserBuilder().SetIdentity(User).SetAvatar(Consts.AvatarId);
-        Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetGetUserAction(userBuilder.Build())
-            .Build();
+        User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetAvatar(Consts.AvatarId).Build();
+        var userBuilder = new GuildUserBuilder(User).SetAvatar(Consts.AvatarId);
+        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUserAction(userBuilder.Build()).Build();
         GuildUser = userBuilder.SetGuild(Guild).Build();
 
         var texts = new TextsBuilder().Build();

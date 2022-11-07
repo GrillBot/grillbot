@@ -15,12 +15,12 @@ public class FinishRemindTests : ApiActionTest<FinishRemind>
 
     protected override FinishRemind CreateAction()
     {
-        var message = new UserMessageBuilder().SetId(Consts.MessageId).Build();
+        var message = new UserMessageBuilder(Consts.MessageId).Build();
         Users = new[]
         {
-            new UserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build(),
-            new UserBuilder().SetIdentity(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build(),
-            new UserBuilder().SetIdentity(Consts.UserId + 5, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build()
+            new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build(),
+            new UserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build(),
+            new UserBuilder(Consts.UserId + 5, Consts.Username, Consts.Discriminator).SetSendMessageAction(message).Build()
         };
 
         var client = new ClientBuilder().SetGetUserAction(Users).SetSelfUser(new SelfUserBuilder(Users[2]).Build()).Build();

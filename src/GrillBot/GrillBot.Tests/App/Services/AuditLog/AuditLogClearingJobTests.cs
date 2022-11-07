@@ -12,7 +12,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
 {
     protected override AuditLogClearingJob CreateJob()
     {
-        var selfUser = new SelfUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        var selfUser = new SelfUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var client = new ClientBuilder().SetSelfUser(selfUser).Build();
 
         var configuration = TestServices.Configuration.Value;

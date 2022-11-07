@@ -15,8 +15,8 @@ public class GetTransactionListTests : ApiActionTest<GetTransactionList>
 
     protected override GetTransactionList CreateAction()
     {
-        Guild = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).Build();
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
+        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         return new GetTransactionList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value);
     }

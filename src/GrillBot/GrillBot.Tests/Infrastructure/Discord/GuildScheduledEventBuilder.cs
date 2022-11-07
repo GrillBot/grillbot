@@ -5,12 +5,14 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 
 public class GuildScheduledEventBuilder : BuilderBase<IGuildScheduledEvent>
 {
-    public GuildScheduledEventBuilder()
+    public GuildScheduledEventBuilder(ulong id)
     {
         Mock.Setup(o => o.ModifyAsync(It.IsAny<Action<GuildScheduledEventsProperties>>(), It.IsAny<RequestOptions>()))
             .Callback<Action<GuildScheduledEventsProperties>, RequestOptions>((func, _) => func(new GuildScheduledEventsProperties()))
             .Returns(Task.CompletedTask);
         Mock.Setup(o => o.EndAsync(It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
+
+        SetId(id);
     }
 
     public GuildScheduledEventBuilder SetId(ulong id)

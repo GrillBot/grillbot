@@ -16,8 +16,8 @@ public class GetChannelDetailTests : ApiActionTest<GetChannelDetail>
 
     protected override GetChannelDetail CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
+        var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
+        TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetTextChannelAction(TextChannel).Build();
 
         var texts = new TextsBuilder()

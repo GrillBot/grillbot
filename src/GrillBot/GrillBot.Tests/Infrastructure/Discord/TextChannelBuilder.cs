@@ -8,13 +8,13 @@ namespace GrillBot.Tests.Infrastructure.Discord;
 [ExcludeFromCodeCoverage]
 public class TextChannelBuilder : BuilderBase<ITextChannel>
 {
-    public TextChannelBuilder()
+    public TextChannelBuilder(ulong id, string name)
     {
         Mock.Setup(o => o.DeleteMessagesAsync(It.IsAny<IEnumerable<IMessage>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
-    }
 
-    public TextChannelBuilder SetIdentity(ulong id, string name)
-        => SetId(id).SetName(name);
+        SetId(id);
+        SetName(name);
+    }
 
     public TextChannelBuilder SetId(ulong id)
     {

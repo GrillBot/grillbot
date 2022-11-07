@@ -12,10 +12,7 @@ public class EmoteSuggestionEmbedBuilderTests
     [TestMethod]
     public void Build_ApprovedVote()
     {
-        var user = new UserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .Build();
-
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var entity = new EmoteSuggestion
         {
             CreatedAt = DateTime.Now,
@@ -35,10 +32,7 @@ public class EmoteSuggestionEmbedBuilderTests
     [TestMethod]
     public void Build_WithDescription()
     {
-        var user = new UserBuilder()
-            .SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator)
-            .Build();
-
+        var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var entity = new EmoteSuggestion
         {
             CreatedAt = DateTime.Now,

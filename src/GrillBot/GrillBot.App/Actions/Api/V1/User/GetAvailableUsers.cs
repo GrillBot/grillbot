@@ -14,13 +14,13 @@ public class GetAvailableUsers : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<Dictionary<string, string>> ProcessAsync(bool? bots)
+    public async Task<Dictionary<string, string>> ProcessAsync(bool? bots, ulong? guildId)
     {
         var mutualGuilds = await GetMutualGuildsAsync();
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var data = await repository.User.GetFullListOfUsers(bots, mutualGuilds);
+        var data = await repository.User.GetFullListOfUsers(bots, mutualGuilds, guildId);
         return data.ToDictionary(o => o.Id, o => o.FullName());
     }
 

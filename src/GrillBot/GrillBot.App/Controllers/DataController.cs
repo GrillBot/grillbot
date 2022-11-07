@@ -87,10 +87,10 @@ public class DataController : Controller
     [HttpGet("users")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null)
+    public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null, ulong? guildId = null)
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetAvailableUsers>();
-        var result = await action.ProcessAsync(bots);
+        var result = await action.ProcessAsync(bots, guildId);
 
         return Ok(result);
     }

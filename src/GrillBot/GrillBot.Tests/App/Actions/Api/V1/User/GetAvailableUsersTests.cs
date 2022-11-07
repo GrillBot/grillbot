@@ -22,30 +22,36 @@ public class GetAvailableUsersTests : ApiActionTest<GetAvailableUsers>
         return new GetAvailableUsers(ApiRequestContext, client, DatabaseBuilder);
     }
 
+    private async Task InitDataAsync()
+    {
+        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
+        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
+        await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(Guild, User));
+        await Repository.CommitAsync();
+    }
+
     [TestMethod]
     public async Task ProcessAsync_All()
     {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.CommitAsync();
+        await InitDataAsync();
 
-        var result = await Action.ProcessAsync(null);
+        var result = await Action.ProcessAsync(null, null);
         Assert.AreEqual(1, result.Count);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Bots()
     {
-        var result = await Action.ProcessAsync(true);
+        var result = await Action.ProcessAsync(true, null);
         Assert.AreEqual(0, result.Count);
     }
-    
+
     [TestMethod]
     public async Task ProcessAsync_Users()
     {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.CommitAsync();
+        await InitDataAsync();
 
-        var result = await Action.ProcessAsync(false);
+        var result = await Action.ProcessAsync(false, null);
         Assert.AreEqual(1, result.Count);
     }
 
@@ -53,7 +59,16 @@ public class GetAvailableUsersTests : ApiActionTest<GetAvailableUsers>
     [ApiConfiguration(true)]
     public async Task ProcessAsync_AsPublic()
     {
-        var result = await Action.ProcessAsync(null);
+        var result = await Action.ProcessAsync(null, null);
         Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_WithGuild()
+    {
+        await InitDataAsync();
+
+        var result = await Action.ProcessAsync(null, Guild.Id);
+        Assert.AreEqual(1, result.Count);
     }
 }

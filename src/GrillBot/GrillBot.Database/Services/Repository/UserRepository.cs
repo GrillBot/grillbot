@@ -133,7 +133,7 @@ public class UserRepository : RepositoryBase
         }
     }
 
-    public async Task<List<User>> GetFullListOfUsers(bool? bots, IEnumerable<string>? mutualGuildIds)
+    public async Task<List<User>> GetFullListOfUsers(bool? bots, IEnumerable<string>? mutualGuildIds, ulong? guildId)
     {
         using (CreateCounter())
         {
@@ -151,6 +151,8 @@ public class UserRepository : RepositoryBase
 
             if (mutualGuildIds != null)
                 query = query.Where(o => o.Guilds.Any(x => mutualGuildIds.Contains(x.GuildId)));
+            if (guildId != null)
+                query = query.Where(o => o.Guilds.Any(x => x.GuildId == guildId.Value.ToString()));
 
             return await query
                 .OrderBy(o => o.Username)

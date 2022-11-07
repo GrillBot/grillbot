@@ -23,7 +23,7 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
     public DateTime? CreatedTo { get; set; }
 
     /// <summary>
-    /// Available: Code, CreatedAt, Creator.
+    /// Available: Code, CreatedAt, Creator, UseCount.
     /// Default: Code
     /// </summary>
     public SortParams Sort { get; set; } = new() { OrderBy = "Code" };
@@ -73,6 +73,11 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
             {
                 true => query.OrderByDescending(o => !string.IsNullOrEmpty(o.Creator.Nickname) ? o.Creator.Nickname : o.Creator.User.Username),
                 _ => query.OrderBy(o => !string.IsNullOrEmpty(o.Creator.Nickname) ? o.Creator.Nickname : o.Creator.User.Username),
+            },
+            "UseCount" => Sort.Descending switch
+            {
+                true => query.OrderByDescending(o => o.UsedUsers.Count).ThenByDescending(o => o.Code),
+                _ => query.OrderBy(o => o.UsedUsers.Count).ThenBy(o => o.Code)
             },
             _ => Sort.Descending switch
             {

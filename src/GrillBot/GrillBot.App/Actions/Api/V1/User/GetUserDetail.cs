@@ -6,6 +6,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Data.Models.API.Users;
@@ -91,6 +92,7 @@ public class GetUserDetail : ApiAction
         SetUnverify(detail, entity.Unverify, guildUser, guild);
         await SetNicknameHistoryAsync(detail, guildUser, repository);
         await SetVisibleChannelsAsync(detail, guildUser, guild);
+        detail.Roles = Mapper.Map<List<Role>>(guildUser.GetRoles().OrderByDescending(o => o.Position).ToList());
     }
 
     private void SetUnverify(GuildUserDetail detail, Database.Entity.Unverify unverify, IGuildUser user, IGuild guild)

@@ -23,8 +23,9 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
 
     protected override GetUserDetail CreateAction()
     {
-        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName);
-        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
+        var role = new RoleBuilder().SetIdentity(Consts.RoleId, Consts.RoleName).Build();
+        var guildBuilder = new GuildBuilder().SetIdentity(Consts.GuildId, Consts.GuildName).SetRoles(new[] { role });
+        User = new GuildUserBuilder().SetIdentity(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { role }).Build();
         TextChannel = new TextChannelBuilder().SetIdentity(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetGetChannelsAction(new[] { TextChannel }).Build();
 

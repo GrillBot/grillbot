@@ -31,10 +31,10 @@ public class TargetIdFilter : IExtendedFilter, IApiObject
     }
 
     private bool IsValidMemberTarget(MemberUpdatedData data)
-        => data.Target.Id.ToString() == TargetId;
+        => (!string.IsNullOrEmpty(data.Target.UserId) ? data.Target.UserId : data.Target.Id.ToString()) == TargetId;
 
     private bool IsValidOverwrite(AuditOverwriteInfo overwriteInfo)
-        => overwriteInfo.TargetId.ToString() == TargetId;
+        => (!string.IsNullOrEmpty(overwriteInfo.TargetIdValue) ? overwriteInfo.TargetIdValue : overwriteInfo.TargetId.ToString()) == TargetId;
 
     public Dictionary<string, string> SerializeForLog()
     {

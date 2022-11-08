@@ -116,7 +116,7 @@ public class GetUserDetail : ApiAction
         var auditLogs = await repository.AuditLog.GetSimpleDataAsync(auditLogParams);
         detail.NicknameHistory = auditLogs
             .Select(o => JsonConvert.DeserializeObject<MemberUpdatedData>(o.Data, AuditLogWriter.SerializerSettings))
-            .Where(o => o != null && o.Target.Id == user.Id && o.Nickname != null)
+            .Where(o => o?.Nickname != null && (!string.IsNullOrEmpty(o.Target.UserId) ? o.Target.UserId : o.Target.Id.ToString()) == user.Id.ToString())
             .SelectMany(o => new[] { o.Nickname.Before, o.Nickname.After })
             .Where(o => !string.IsNullOrEmpty(o) && (string.IsNullOrEmpty(user.Nickname) || user.Nickname != o))
             .Distinct()

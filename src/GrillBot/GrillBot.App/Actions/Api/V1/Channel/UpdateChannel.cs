@@ -16,14 +16,16 @@ public class UpdateChannel : ApiAction
     private AutoReplyService AutoReplyService { get; }
     private AuditLogWriter AuditLogWriter { get; }
     private ITextsManager Texts { get; }
+    private AuditLogService AuditLogService { get; }
 
     public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AutoReplyService autoReplyService, AuditLogWriter auditLogWriter,
-        ITextsManager texts) : base(apiContext)
+        ITextsManager texts, AuditLogService auditLogService) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         AutoReplyService = autoReplyService;
         AuditLogWriter = auditLogWriter;
         Texts = texts;
+        AuditLogService = auditLogService;
     }
 
     public async Task ProcessAsync(ulong id, UpdateChannelParams parameters)
@@ -45,7 +47,9 @@ public class UpdateChannel : ApiAction
         if (reloadAutoReply)
             await AutoReplyService.InitAsync();
 
-        var logItem = new AuditLogDataWrapper(AuditLogItemType.ChannelUpdated, new Diff<AuditChannelInfo>(before, new AuditChannelInfo(channel)), processedUser: ApiContext.LoggedUser);
+        var guild = await AuditLogService.GetGuildFromChannelAsync(null, id);
+        var guildChannel = guild == null ? null : await guild.GetChannelAsync(id);
+        var logItem = new AuditLogDataWrapper(AuditLogItemType.ChannelUpdated, new Diff<AuditChannelInfo>(before, new AuditChannelInfo(channel)), guild, guildChannel, ApiContext.LoggedUser);
         await AuditLogWriter.StoreAsync(logItem);
     }
 }

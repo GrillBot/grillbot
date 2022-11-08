@@ -107,6 +107,15 @@ public class AuditLogRepository : RepositoryBase
         }
     }
 
+    public async Task<AuditLogItem?> FindLogItemByDiscordIdAsync(ulong auditLogId, AuditLogItemType type)
+    {
+        using (CreateCounter())
+        {
+            return await Context.AuditLogs
+                .FirstOrDefaultAsync(o => o.DiscordAuditLogItemId == auditLogId.ToString() && o.Type == type);
+        }
+    }
+
     public async Task<Dictionary<AuditLogItemType, int>> GetStatisticsByTypeAsync()
     {
         using (CreateCounter())

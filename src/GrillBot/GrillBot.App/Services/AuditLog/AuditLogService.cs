@@ -52,7 +52,7 @@ public class AuditLogService
             await HandleEventAsync(@event);
             if (@event.Finished) NextAllowedRoleUpdateEvent = DateTime.Now.AddSeconds(30);
         };
-        DiscordClient.ThreadDeleted += thread => HandleEventAsync(new ThreadDeletedEvent(this, AuditLogWriter, thread));
+        DiscordClient.ThreadDeleted += thread => HandleEventAsync(new ThreadDeletedEvent(this, AuditLogWriter, thread, ServiceProvider));
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class AuditLogService
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var channelEntity = await repository.Channel.FindChannelByIdAsync(channelId, null, true);
+        var channelEntity = await repository.Channel.FindChannelByIdAsync(channelId, null, true, includeDeleted: true);
         if (channelEntity == null)
             return null;
 

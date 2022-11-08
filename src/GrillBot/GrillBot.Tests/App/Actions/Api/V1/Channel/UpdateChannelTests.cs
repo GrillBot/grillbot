@@ -31,8 +31,9 @@ public class UpdateChannelTests : ApiActionTest<UpdateChannel>
         var texts = new TextsBuilder()
             .AddText("ChannelModule/ChannelDetail/ChannelNotFound", "cs", "ChannelNotFound")
             .Build();
+        var auditLogService = new AuditLogService(discordClient, DatabaseBuilder, initManager, auditLogWriter, ServiceProvider);
 
-        return new UpdateChannel(ApiRequestContext, DatabaseBuilder, autoReplyService, auditLogWriter, texts);
+        return new UpdateChannel(ApiRequestContext, DatabaseBuilder, autoReplyService, auditLogWriter, texts, auditLogService);
     }
 
     [TestMethod]

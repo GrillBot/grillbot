@@ -1,5 +1,4 @@
 ﻿using Discord;
-using GrillBot.Common.Extensions;
 using System;
 
 namespace GrillBot.Data.Models.AuditLog;
@@ -7,6 +6,8 @@ namespace GrillBot.Data.Models.AuditLog;
 public class AuditUserInfo : IComparable
 {
     public ulong Id { get; set; }
+    public string UserId { get; set; }
+
     public string Username { get; set; }
     public string Discriminator { get; set; }
 
@@ -16,14 +17,14 @@ public class AuditUserInfo : IComparable
 
     public AuditUserInfo(IUser user)
     {
-        Id = user.Id;
+        UserId = user.Id.ToString();
         Username = user.Username;
         Discriminator = user.Discriminator;
     }
 
     public AuditUserInfo(Database.Entity.User user)
     {
-        Id = user.Id.ToUlong();
+        UserId = user.Id;
         Username = user.Username;
         Discriminator = user.Discriminator;
     }
@@ -31,19 +32,13 @@ public class AuditUserInfo : IComparable
     public override string ToString() => string.IsNullOrEmpty(Discriminator) ? Username : $"{Username}#{Discriminator}";
 
     public int CompareTo(object obj)
-    {
-        return obj is AuditUserInfo user && user.Id == Id ? 0 : 1;
-    }
+        => obj is AuditUserInfo user && (user.Id == Id || user.UserId == UserId) ? 0 : 1;
 
     public override bool Equals(object obj)
-    {
-        return obj is AuditUserInfo info && Id == info.Id;
-    }
+        => obj is AuditUserInfo info && (Id == info.Id || UserId == info.UserId);
 
     public override int GetHashCode()
-    {
-        return Id.ToString().GetHashCode();
-    }
+        => (!string.IsNullOrEmpty(UserId) ? UserId : Id.ToString()).GetHashCode();
 
     public static bool operator ==(AuditUserInfo left, AuditUserInfo right) => left != null && left.CompareTo(right) == 0;
     public static bool operator !=(AuditUserInfo left, AuditUserInfo right) => left != null && left.CompareTo(right) != 0;

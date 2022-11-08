@@ -5,6 +5,8 @@ namespace GrillBot.Data.Models.AuditLog;
 public class AuditRoleInfo
 {
     public ulong Id { get; set; }
+    public string RoleId { get; set; }
+    
     public string Name { get; set; }
     public uint Color { get; set; }
 
@@ -12,7 +14,7 @@ public class AuditRoleInfo
 
     public AuditRoleInfo(ulong id, string name, Color color)
     {
-        Id = id;
+        RoleId = id.ToString();
         Name = name;
         Color = color.RawValue;
     }

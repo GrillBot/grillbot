@@ -29,7 +29,11 @@ public class AuditLogWriter
             await repository.Guild.GetOrCreateGuildAsync(item.Guild);
 
         foreach (var item in items.Where(o => o.Guild != null && o.Channel != null).DistinctBy(o => o.Channel.Id))
-            await repository.Channel.GetOrCreateChannelAsync(item.Channel);
+        {
+            var guildChannel = await item.Guild.GetChannelAsync(item.Channel.Id);
+            if (guildChannel != null)
+                await repository.Channel.GetOrCreateChannelAsync(guildChannel);
+        }
 
         foreach (var item in items.Where(o => o.ProcessedUser != null).DistinctBy(o => o.ProcessedUser.Id))
         {

@@ -38,7 +38,7 @@ public class MessageDeletedFilter : IExtendedFilter, IApiObject
 
         if (!string.IsNullOrEmpty(ContentContains) && (string.IsNullOrEmpty(data.Content) || !data.Content.Contains(ContentContains)))
             return false;
-        return !IsAuthorIdSet || data.Author.Id == ulong.Parse(AuthorId);
+        return !IsAuthorIdSet || data.Author.Id == ulong.Parse(AuthorId) || data.Author.UserId == AuthorId;
     }
 
     public Dictionary<string, string> SerializeForLog()

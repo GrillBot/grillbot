@@ -17,10 +17,14 @@ public class TextCommandDeprecatedAttribute : PreconditionAttribute
 
         if (!string.IsNullOrEmpty(AlternativeCommand))
         {
-            var interactionService = services.GetRequiredService<Discord.Interactions.InteractionService>();
-            var commands = await interactionService.RestClient.GetGuildApplicationCommands(context.Guild.Id);
-            var mentions = commands.GetCommandMentions();
-            var commandText = mentions.TryGetValue(AlternativeCommand[1..], out var mention) ? mention : $"`{AlternativeCommand}`";
+            var commandText = $"`{AlternativeCommand}`";
+            if (context.Guild != null)
+            {
+                var interactionService = services.GetRequiredService<Discord.Interactions.InteractionService>();
+                var commands = await interactionService.RestClient.GetGuildApplicationCommands(context.Guild.Id);
+                var mentions = commands.GetCommandMentions();
+                if (mentions.TryGetValue(AlternativeCommand[1..], out var mention)) commandText = mention;
+            }
 
             msgBuilder.Append($" Příkaz byl nahrazen příkazem {commandText}");
         }

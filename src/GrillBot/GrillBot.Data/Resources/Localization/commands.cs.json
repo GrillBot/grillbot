@@ -514,25 +514,9 @@
         "name": "duvod",
         "description": "Důvod odebrání přístupu."
       },
-      "user": {
-        "name": "uzivatel",
-        "description": "1. Uživatel"
-      },
-      "user2": {
-        "name": "2uzivatel",
-        "description": "2. Uživatel"
-      },
-      "user3": {
-        "name":"3uzivatel",
-        "description": "3. Uživatel"
-      },
-      "user4": {
-        "name":"4uzivatel",
-        "description": "4. Uživatel"
-      },
-      "user5": {
-        "name":"5uzivatel",
-        "description": "5. Uživatel"
+      "users": {
+        "name": "uzivatele",
+        "description": "Seznam uživatelů"
       }
     },
     "fun": {
@@ -546,25 +530,9 @@
         "name": "duvod",
         "description": "Důvod odebrání přístupu."
       },
-      "user": {
-        "name": "uzivatel",
-        "description": "První uživatel"
-      },
-      "user2": {
-        "name": "druhy-uzivatel",
-        "description": "Druhý uživatel"
-      },
-      "user3": {
-        "name":"treti-uzivatel",
-        "description": "Třetí uživatel"
-      },
-      "user4": {
-        "name":"ctvrty-uzivatel",
-        "description": "Čtvrtý uživatel"
-      },
-      "user5": {
-        "name":"paty-uzivatel",
-        "description": "Pátý uživatel"
+      "users": {
+        "name": "uzivatele",
+        "description": "Seznam uživatelů"
       }
     }
   }

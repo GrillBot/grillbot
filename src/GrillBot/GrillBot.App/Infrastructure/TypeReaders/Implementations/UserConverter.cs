@@ -44,6 +44,13 @@ public class UserConverter : ConverterBase<IUser>
         }
         else
         {
+            var match = Regex.Match(value, @"<@(\d+)>");
+            if (match.Success) // Mentions
+            {
+                var user = await Guild.GetUserAsync(Convert.ToUInt64(match.Groups[1].Value));
+                if (user != null) return user;
+            }
+
             var users = await Guild.GetUsersAsync();
             var matches = users
                 .Where(o => (!string.IsNullOrEmpty(o.Nickname) && o.Nickname.Contains(value, StringComparison.CurrentCultureIgnoreCase)) ||

@@ -509,6 +509,7 @@
       "ChannelNotFound": "The channel with the specified identifier was not found.",
       "InvalidMessageIdFormat": "Provided message identifier has no valid format.",
       "UnknownMessage": "The message with the specified identifier was not found."
-    }
+    },
+    "UserNotFound": "Provided user  `{0}` wasn't found."
   }
 }

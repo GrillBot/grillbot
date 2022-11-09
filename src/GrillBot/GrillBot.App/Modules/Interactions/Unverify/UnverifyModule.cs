@@ -75,15 +75,15 @@ public class UnverifyModule : InteractionsModuleBase
 
     [SlashCommand("set", "Set unverify to user.")]
     [RequireBotPermission(GuildPermission.ManageRoles)]
-    public async Task SetUnverifyAsync(DateTime end, string reason, IGuildUser user, IGuildUser user2 = null, IGuildUser user3 = null, IGuildUser user4 = null, IGuildUser user5 = null)
+    public async Task SetUnverifyAsync(DateTime end, string reason, IEnumerable<IUser> users)
     {
         using var scope = ServiceProvider.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<UnverifyService>();
 
         try
         {
-            var users = new[] { user, user2, user3, user4, user5 }.Where(o => o != null).ToList();
-            var result = await service.SetUnverifyAsync(users, end, reason, Context.Guild, Context.User, false, Locale);
+            var guildUsers = users.Select(o => o as IGuildUser ?? Context.Guild.GetUser(o.Id)).Where(o => o != null).ToList();
+            var result = await service.SetUnverifyAsync(guildUsers, end, reason, Context.Guild, Context.User, false, Locale);
 
             await SetResponseAsync(result[0]);
             foreach (var msg in result.Skip(1)) await ReplyAsync(msg);
@@ -95,7 +95,7 @@ public class UnverifyModule : InteractionsModuleBase
     }
 
     [SlashCommand("fun", "Set funverify to user.")]
-    public async Task SetFunverifyAsync(DateTime end, string reason, IGuildUser user, IGuildUser user2 = null, IGuildUser user3 = null, IGuildUser user4 = null, IGuildUser user5 = null)
+    public async Task SetFunverifyAsync(DateTime end, string reason, IEnumerable<IUser> users)
     {
         using var scope = ServiceProvider.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<UnverifyService>();
@@ -103,8 +103,8 @@ public class UnverifyModule : InteractionsModuleBase
 
         try
         {
-            var users = new[] { user, user2, user3, user4, user5 }.Where(o => o != null).ToList();
-            var result = await service.SetUnverifyAsync(users, end, reason, Context.Guild, Context.User, true, Locale);
+            var guildUsers = users.Select(o => o as IGuildUser ?? Context.Guild.GetUser(o.Id)).Where(o => o != null).ToList();
+            var result = await service.SetUnverifyAsync(guildUsers, end, reason, Context.Guild, Context.User, true, Locale);
 
             await SetResponseAsync(result[0]);
             foreach (var msg in result.Skip(1)) await ReplyAsync(msg);

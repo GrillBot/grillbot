@@ -34,7 +34,7 @@ public abstract class ConverterBase
     }
 
     protected ConverterBase(IServiceProvider provider, IInteractionContext context)
-        : this(provider, context?.Client, context?.Guild, context?.Channel, context?.User, null, context?.Interaction)
+        : this(provider, context.Client, context.Guild, context.Channel, context.User, null, context.Interaction)
     {
     }
 

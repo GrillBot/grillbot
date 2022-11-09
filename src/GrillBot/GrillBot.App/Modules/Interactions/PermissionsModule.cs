@@ -24,13 +24,13 @@ public class PermissionsModule : InteractionsModuleBase
         }
 
         [SlashCommand("all", "Remove all user permissions from channel.")]
-        public async Task ClearPermissionsFromChannelAsync(IGuildChannel channel, IGuildUser excludedUser = null)
+        public async Task ClearPermissionsFromChannelAsync(IGuildChannel channel, IEnumerable<IUser> excludedUsers = null)
         {
-            var excludedUsers = excludedUser != null ? new[] { excludedUser } : Array.Empty<IGuildUser>();
+            var users = excludedUsers?.Select(o => o as IGuildUser ?? Context.Guild.GetUser(o.Id)).Where(o => o != null).ToList();
 
             using var command = GetCommand<Actions.Commands.PermissionsCleaner>();
             command.Command.OnProgress = async progressBar => await SetResponseAsync(progressBar, suppressFollowUp: true);
-            await command.Command.ClearAllPermissionsAsync(channel, excludedUsers);
+            await command.Command.ClearAllPermissionsAsync(channel, users);
         }
     }
 

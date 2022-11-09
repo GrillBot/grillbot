@@ -514,25 +514,9 @@
         "name": "reason",
         "description": "Reason for removing access."
       },
-      "user": {
-        "name": "user",
-        "description": "First user"
-      },
-      "user2": {
-        "name": "second-user",
-        "description": "Second user"
-      },
-      "user3": {
-        "name":"third-user",
-        "description": "Third user"
-      },
-      "user4": {
-        "name":"fourth-user",
-        "description": "Fourth user"
-      },
-      "user5": {
-        "name":"fifth-user",
-        "description": "Fifth user"
+      "users": {
+        "name": "users",
+        "description": "List of users"
       }
     },
     "fun": {
@@ -546,25 +530,9 @@
         "name": "reason",
         "description": "Reason for removing access."
       },
-      "user": {
-        "name": "user",
-        "description": "First user"
-      },
-      "user2": {
-        "name": "second-user",
-        "description": "Second user"
-      },
-      "user3": {
-        "name":"third-user",
-        "description": "Third user"
-      },
-      "user4": {
-        "name":"fourth-user",
-        "description": "Fourth user"
-      },
-      "user5": {
-        "name":"fifth-user",
-        "description": "Fifth user"
+      "users": {
+        "name": "users",
+        "description": "List of users"
       }
     }
   }

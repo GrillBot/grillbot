@@ -80,6 +80,17 @@ public partial class PointsService
         if (inserted == 0 && updated == 0) return null; // Nothing to report, nothing was changed.
 
         var daysCount = Math.Round((dateTo - dateFrom).TotalDays);
-        return $"RecalculatePoints(Days:{daysCount}, Created:{inserted}, Updated:{updated}, %DURATION%)";
+
+        var parts = new[]
+        {
+            $"Days:{daysCount}",
+            $"Created:{inserted}, Updated:{updated}",
+            "%DURATION%",
+            $"Transactions:{transactions.Count}",
+            $"DateFrom:{dateFrom:o}, DateTo:{dateFrom:o}",
+            $"Guilds:{guilds.Count}, Users:{users.Count}"
+        };
+
+        return $"RecalculatePoints({string.Join(", ", parts)})";
     }
 }

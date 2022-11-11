@@ -16,31 +16,9 @@ public class GetCommandStatistics : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<List<StatisticItem>> ProcessTextCommandsAsync()
-    {
-        var logItems = await GetLogItemsAsync<CommandExecution>(AuditLogItemType.Command);
-
-        return logItems
-            .Where(o => !string.IsNullOrEmpty(o.data.Command))
-            .GroupBy(o => o.data.Command)
-            .Select(o => new StatisticItem
-            {
-                Key = o.Key,
-                FailedCount = o.Count(x => !x.data.IsSuccess),
-                Last = o.Max(x => x.createdAt),
-                MaxDuration = o.Max(x => x.data.Duration),
-                MinDuration = o.Min(x => x.data.Duration),
-                SuccessCount = o.Count(x => x.data.IsSuccess),
-                TotalDuration = o.Sum(x => x.data.Duration),
-                LastRunDuration = o.MaxBy(x => x.createdAt).data.Duration
-            })
-            .OrderByDescending(o => o.AvgDuration).ThenByDescending(o => o.SuccessCount + o.FailedCount).ThenBy(o => o.Key)
-            .ToList();
-    }
-
     public async Task<List<StatisticItem>> ProcessInteractionsAsync()
     {
-        var logItems = await GetLogItemsAsync<InteractionCommandExecuted>(AuditLogItemType.InteractionCommand);
+        var logItems = await GetLogItemsAsync();
 
         return logItems
             .GroupBy(o => o.data.FullName)
@@ -59,11 +37,11 @@ public class GetCommandStatistics : ApiAction
             .ToList();
     }
 
-    private async Task<List<(DateTime createdAt, TData data)>> GetLogItemsAsync<TData>(AuditLogItemType type)
+    private async Task<List<(DateTime createdAt, InteractionCommandExecuted data)>> GetLogItemsAsync()
     {
         var parameters = new AuditLogListParams
         {
-            Types = new List<AuditLogItemType> { type },
+            Types = new List<AuditLogItemType> { AuditLogItemType.InteractionCommand },
             IgnoreBots = true,
             Sort = null
         };
@@ -72,6 +50,6 @@ public class GetCommandStatistics : ApiAction
         var data = await repository.AuditLog.GetSimpleDataAsync(parameters);
 
         return data
-            .ConvertAll(o => (o.CreatedAt, JsonConvert.DeserializeObject<TData>(o.Data, AuditLogWriter.SerializerSettings)!));
+            .ConvertAll(o => (o.CreatedAt, JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogWriter.SerializerSettings)!));
     }
 }

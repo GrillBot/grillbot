@@ -203,6 +203,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
         result.AddApiObject(OverwriteCreatedFilter, nameof(OverwriteCreatedFilter));
         result.AddApiObject(OverwriteDeletedFilter, nameof(OverwriteDeletedFilter));
         result.AddApiObject(OverwriteUpdatedFilter, nameof(OverwriteUpdatedFilter));
+        result.AddApiObject(MemberRolesUpdatedFilter, nameof(MemberRolesUpdatedFilter));
         result.AddApiObject(MemberUpdatedFilter, nameof(MemberUpdatedFilter));
         result.AddApiObject(MessageDeletedFilter, nameof(MessageDeletedFilter));
         result.AddApiObject(Sort, nameof(Sort));

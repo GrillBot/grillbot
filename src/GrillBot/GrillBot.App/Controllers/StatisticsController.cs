@@ -65,19 +65,6 @@ public class StatisticsController : Controller
     }
 
     /// <summary>
-    /// Gets statistics about commands.
-    /// </summary>
-    [HttpGet("commands")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<StatisticItem>>> GetTextCommandStatisticsAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetCommandStatistics>();
-        var result = await action.ProcessTextCommandsAsync();
-
-        return Ok(result);
-    }
-
-    /// <summary>
     /// Gets statistics about interactions.
     /// </summary>
     [HttpGet("interactions")]

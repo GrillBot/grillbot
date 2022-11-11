@@ -24,7 +24,6 @@ public class GetCommandStatisticsTests : ApiActionTest<GetCommandStatistics>
         await Repository.AddCollectionAsync(new[]
         {
             CreateLogItem(new InteractionCommandExecuted { Name = "Inter", ModuleName = "Module", MethodName = "Method" }, true),
-            CreateLogItem(new CommandExecution { Command = "Command" }, false)
         });
         await Repository.CommitAsync();
     }
@@ -38,15 +37,6 @@ public class GetCommandStatisticsTests : ApiActionTest<GetCommandStatistics>
             CreatedAt = DateTime.Now,
             ProcessedUserId = Consts.UserId.ToString()
         };
-    }
-
-    [TestMethod]
-    public async Task ProcessTextCommandsAsync()
-    {
-        await InitDataAsync();
-
-        var result = await Action.ProcessTextCommandsAsync();
-        Assert.AreEqual(1, result.Count);
     }
 
     [TestMethod]

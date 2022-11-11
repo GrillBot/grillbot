@@ -1,7 +1,5 @@
 ﻿using Discord.Commands;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.AuditLog;
-using GrillBot.App.Services.Discord;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
 
@@ -35,7 +33,7 @@ public class CommandHandler
         if (!message.TryLoadMessage(out var userMessage)) return;
         if (userMessage == null) return;
 
-        var context = new SocketCommandContext(DiscordClient, userMessage);
+        var context = new SocketCommandContext(DiscordClient, (SocketUserMessage)userMessage);
 
         var argumentPosition = 0;
         var prefix = Configuration.GetValue<string>("Discord:Commands:Prefix");

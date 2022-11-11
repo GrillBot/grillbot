@@ -21,7 +21,7 @@ public class AutoReplyItem
     public long Flags { get; set; }
 
     [NotMapped]
-    public RegexOptions RegexOptions => RegexOptions.Multiline | (HaveFlags(AutoReplyFlags.CaseSensitive) ? RegexOptions.None : RegexOptions.IgnoreCase);
+    public RegexOptions RegexOptions => RegexOptions.Singleline | (HaveFlags(AutoReplyFlags.CaseSensitive) ? RegexOptions.None : RegexOptions.IgnoreCase);
 
     public bool HaveFlags(AutoReplyFlags flags)
         => (Flags & (long)flags) != 0;

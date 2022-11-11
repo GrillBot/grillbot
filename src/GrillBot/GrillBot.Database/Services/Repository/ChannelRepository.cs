@@ -76,12 +76,16 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<List<GuildChannel>> GetAllChannelsAsync(bool disableTracking = false, bool includeDeleted = true, bool includeUsers = false)
+    public async Task<List<GuildChannel>> GetAllChannelsAsync(bool disableTracking = false, bool includeDeleted = true, bool includeUsers = false, List<ChannelType>? channelTypes = null)
     {
         using (Counter.Create("Database"))
         {
             var usersIncludeMode = includeUsers ? ChannelsIncludeUsersMode.IncludeAll : ChannelsIncludeUsersMode.None;
-            return await GetBaseQuery(includeDeleted, disableTracking, usersIncludeMode).ToListAsync();
+            var query = GetBaseQuery(includeDeleted, disableTracking, usersIncludeMode);
+            if (channelTypes?.Count > 0)
+                query = query.Where(o => channelTypes.Contains(o.ChannelType));
+
+            return await query.ToListAsync();
         }
     }
 

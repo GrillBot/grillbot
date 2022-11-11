@@ -11,8 +11,6 @@ namespace GrillBot.App.Services;
 [Initializable]
 public class AutoReplyService
 {
-    private string Prefix { get; }
-
     private List<ulong> DisabledChannels { get; }
     private List<AutoReplyItem> Messages { get; }
     private SemaphoreSlim Semaphore { get; } = new(1);
@@ -21,10 +19,8 @@ public class AutoReplyService
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public AutoReplyService(IConfiguration configuration, DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder,
-        InitManager initManager)
+    public AutoReplyService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder, InitManager initManager)
     {
-        Prefix = configuration["Discord:Commands:Prefix"];
         Messages = new List<AutoReplyItem>();
         DisabledChannels = new List<ulong>();
         InitManager = initManager;
@@ -32,13 +28,7 @@ public class AutoReplyService
         DiscordClient = discordClient;
 
         DiscordClient.Ready += InitAsync;
-        DiscordClient.MessageReceived += message =>
-        {
-            if (!InitManager.Get()) return Task.CompletedTask;
-            if (!message.TryLoadMessage(out var userMessage)) return Task.CompletedTask;
-            if (userMessage.IsCommand(DiscordClient.CurrentUser, Prefix)) return Task.CompletedTask;
-            return DisabledChannels.Contains(message.Channel.Id) ? Task.CompletedTask : OnMessageReceivedAsync(userMessage);
-        };
+        DiscordClient.MessageReceived += OnMessageReceivedAsync;
     }
 
     public async Task InitAsync()
@@ -53,8 +43,9 @@ public class AutoReplyService
             Messages.Clear();
             Messages.AddRange(messages);
 
-            var disabledChannels = await repository.Channel.GetAllChannelsAsync(true, false);
-            disabledChannels = disabledChannels.FindAll(o => (o.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0);
+            var supportedChannelTypes = new List<ChannelType> { ChannelType.Forum, ChannelType.Stage, ChannelType.Text, ChannelType.Voice, ChannelType.PrivateThread, ChannelType.PublicThread };
+            var disabledChannels = await repository.Channel.GetAllChannelsAsync(true, false, false, supportedChannelTypes);
+            disabledChannels = disabledChannels.FindAll(o => o.HasFlag(ChannelFlags.AutoReplyDeactivated));
 
             DisabledChannels.Clear();
             DisabledChannels.AddRange(
@@ -67,8 +58,9 @@ public class AutoReplyService
         }
     }
 
-    private async Task OnMessageReceivedAsync(SocketMessage message)
+    private async Task OnMessageReceivedAsync(IMessage message)
     {
+        if (!CanReact(message)) return;
         await Semaphore.WaitAsync();
 
         try
@@ -83,5 +75,11 @@ public class AutoReplyService
         {
             Semaphore.Release();
         }
+    }
+
+    private bool CanReact(IMessage message)
+    {
+        return InitManager.Get() && message.TryLoadMessage(out var userMessage) && !userMessage!.IsInteractionCommand() &&
+               !DisabledChannels.Contains(message.Channel.Id);
     }
 }

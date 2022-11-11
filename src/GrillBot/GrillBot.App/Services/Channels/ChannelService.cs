@@ -25,7 +25,7 @@ public class ChannelService
         DiscordClient.MessageDeleted += OnMessageRemovedAsync;
     }
 
-    private async Task OnMessageReceivedAsync(SocketMessage message)
+    private async Task OnMessageReceivedAsync(IMessage message)
     {
         var argPos = 0;
 

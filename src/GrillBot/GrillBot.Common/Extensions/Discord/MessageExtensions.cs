@@ -1,11 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 
 namespace GrillBot.Common.Extensions.Discord;
 
 public static class MessageExtensions
 {
+    public static bool IsInteractionCommand(this IMessage message)
+        => message.Type is MessageType.ApplicationCommand or MessageType.ContextMenuCommand;
+
     public static bool IsCommand(this IUserMessage message, IUser user, string prefix)
     {
         var argPos = 0;
@@ -17,7 +19,7 @@ public static class MessageExtensions
         if (message.Content.Length < prefix.Length)
             return false;
 
-        var isInteractionCommand = message.Type is MessageType.ApplicationCommand or MessageType.ContextMenuCommand;
+        var isInteractionCommand = message.IsInteractionCommand();
 
         if (message is not IUserMessage msg) return isInteractionCommand;
         if (msg.HasMentionPrefix(user, ref argumentPosition) || msg.HasStringPrefix(prefix, ref argumentPosition))
@@ -26,11 +28,11 @@ public static class MessageExtensions
         return isInteractionCommand;
     }
 
-    public static bool TryLoadMessage(this SocketMessage message, out SocketUserMessage? userMessage)
+    public static bool TryLoadMessage(this IMessage message, out IUserMessage? userMessage)
     {
         userMessage = null;
 
-        if (message is not SocketUserMessage userMsg || !message.Author.IsUser())
+        if (message is not IUserMessage userMsg || !message.Author.IsUser())
             return false;
 
         userMessage = userMsg;

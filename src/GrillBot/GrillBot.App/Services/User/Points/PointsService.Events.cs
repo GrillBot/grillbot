@@ -6,7 +6,7 @@ namespace GrillBot.App.Services.User.Points;
 
 public partial class PointsService
 {
-    private async Task OnMessageReceivedAsync(SocketMessage message)
+    private async Task OnMessageReceivedAsync(IMessage message)
     {
         if (!CanIncrement(message)) return;
         if (message.Channel is not SocketTextChannel textChannel) return;

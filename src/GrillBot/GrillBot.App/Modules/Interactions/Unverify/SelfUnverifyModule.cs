@@ -9,12 +9,10 @@ namespace GrillBot.App.Modules.Interactions.Unverify;
 [RequireUserPerms]
 public class SelfUnverifyModule : InteractionsModuleBase
 {
-    private IConfiguration Configuration { get; }
     private UnverifyService UnverifyService { get; }
 
-    public SelfUnverifyModule(IConfiguration configuration, UnverifyService unverifyService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public SelfUnverifyModule(UnverifyService unverifyService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        Configuration = configuration;
         UnverifyService = unverifyService;
     }
 
@@ -27,14 +25,10 @@ public class SelfUnverifyModule : InteractionsModuleBase
         string keepables = null
     )
     {
-        var originalMessage = await Context.Interaction.GetOriginalResponseAsync();
-        var success = true;
         keepables ??= "";
 
         try
         {
-            await originalMessage.AddReactionAsync(Emote.Parse(Configuration.GetValue<string>("Discord:Emotes:Loading")));
-
             end = end.AddMinutes(1); // Strinct checks are only in unverify.
             var toKeep = keepables.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(o => o.ToUpper()).ToList();
             var guildUser = Context.User as SocketGuildUser ?? Context.Guild.GetUser(Context.User.Id);
@@ -43,8 +37,6 @@ public class SelfUnverifyModule : InteractionsModuleBase
         }
         catch (Exception ex)
         {
-            success = false;
-
             if (ex is ValidationException)
             {
                 await SetResponseAsync(ex.Message);
@@ -53,16 +45,6 @@ public class SelfUnverifyModule : InteractionsModuleBase
             {
                 await SetResponseAsync(Texts["Unverify/SelfUnverify/GenericError", Locale]);
                 throw;
-            }
-        }
-        finally
-        {
-            if (originalMessage != null)
-            {
-                await originalMessage.RemoveAllReactionsAsync();
-
-                if (success)
-                    await originalMessage.AddReactionAsync(Emojis.Ok);
             }
         }
     }

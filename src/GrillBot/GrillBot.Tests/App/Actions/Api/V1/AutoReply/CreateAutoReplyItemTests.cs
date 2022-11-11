@@ -13,7 +13,7 @@ public class CreateAutoReplyItemTests : ApiActionTest<CreateAutoReplyItem>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(TestServices.LoggerFactory.Value);
-        var service = new AutoReplyService(TestServices.Configuration.Value, discordClient, DatabaseBuilder, initManager);
+        var service = new AutoReplyService(discordClient, DatabaseBuilder, initManager);
 
         return new CreateAutoReplyItem(ApiRequestContext, service, DatabaseBuilder, TestServices.AutoMapper.Value);
     }

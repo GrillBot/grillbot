@@ -15,7 +15,7 @@ public class UpdateAutoReplyItemTests : ApiActionTest<UpdateAutoReplyItem>
     {
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(TestServices.LoggerFactory.Value);
-        var service = new AutoReplyService(TestServices.Configuration.Value, discordClient, DatabaseBuilder, initManager);
+        var service = new AutoReplyService(discordClient, DatabaseBuilder, initManager);
         var texts = new TextsBuilder()
             .AddText("AutoReply/NotFound", "cs", "NotFound")
             .Build();

@@ -26,7 +26,7 @@ public class UpdateChannelTests : ApiActionTest<UpdateChannel>
 
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(TestServices.LoggerFactory.Value);
-        var autoReplyService = new AutoReplyService(TestServices.Configuration.Value, discordClient, DatabaseBuilder, initManager);
+        var autoReplyService = new AutoReplyService(discordClient, DatabaseBuilder, initManager);
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var texts = new TextsBuilder()
             .AddText("ChannelModule/ChannelDetail/ChannelNotFound", "cs", "ChannelNotFound")

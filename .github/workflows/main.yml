@@ -37,4 +37,4 @@ jobs:
           sudo ln -s /usr/lib/libgdiplus.so /usr/lib/gdiplus.dll
           sudo fc-cache -fv
           sudo dotnet restore src/GrillBot
-          sudo dotnet test src/GrillBot --no-restore --test-adapter-path:. --logger:"junit;LogFilePath=.\test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"'
+          sudo dotnet test src/GrillBot --no-restore --test-adapter-path:. --logger:"junit;LogFilePath=.\test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"

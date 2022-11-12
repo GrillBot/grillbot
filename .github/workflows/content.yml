@@ -6,11 +6,13 @@ on:
     paths:
     - 'src/GrillBot/GrillBot.Data/Resources/Localization/*.json'
     - '**.md'
+    - '.github/workflows/content.yml'
   pull_request:
     types: [ opened, reopened, synchronize ]
     paths:
     - 'src/GrillBot/GrillBot.Data/Resources/Localization/*.json'
     - '**.md'
+    - '.github/workflows/content.yml'
 
 jobs:
   CheckMarkdownFiles:
@@ -29,5 +31,3 @@ jobs:
       - uses: actions/checkout@v2
       - name: JSON syntax
         uses: limitusus/json-syntax-check@v1
-        with:
-          pattern: "\\.json$"

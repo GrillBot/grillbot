@@ -32,4 +32,6 @@ jobs:
       - name: Tests
         shell: bash
         run: |
-          "sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list"
+          sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
+        securityContext:
+          privileged: true

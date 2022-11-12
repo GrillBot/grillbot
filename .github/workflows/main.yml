@@ -17,24 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 6.0.x
-      
-      - name: Install dependencies
-        run: dotnet restore src/GrillBot
-      
-      - name: Build
-        run: dotnet build src/GrillBot --no-restore -c Release
-      
-      - name: Tests
+
+      - name: Run build of testing image
         shell: bash
+        working-directory: src/GrillBot
         run: |
-          sudo sed -r -i 's/^deb(.*)$/deb\1 contrib/g' /etc/apt/sources.list
-          sudo apt-get update && sudo apt-get install -y --allow-unauthenticated ttf-mscorefonts-installer fontconfig libc6-dev libgdiplus libx11-dev cabextract xfonts-utils fonts-open-sans
-          sudo ln -s /usr/lib/libgdiplus.so /usr/lib/gdiplus.dll
-          sudo fc-cache -fv
-          sudo dotnet restore src/GrillBot
-          sudo dotnet test src/GrillBot --no-restore --test-adapter-path:. --logger:"junit;LogFilePath=.\test-result.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
+          sudo docker build -t grillbot-test-image -f ./Dockerfile.Test .
+          sudo docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}" | grep 'grillbot-test-image')

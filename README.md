@@ -13,7 +13,7 @@ Only debian based distros are tested. Funcionality cannot be guaranteed for othe
 
 ### Development requirements
 
-- Microsoft Visual Studio 2022 (or another IDE supports .NET)
+- Microsoft Visual Studio 2022, JetBrains Rider (or another IDE supports .NET)
 - [dotnet-ef](https://docs.microsoft.com/cs-cz/ef/core/cli/dotnet) utility (for code first migrations)
 
 ## Configuration

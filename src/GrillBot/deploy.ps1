@@ -11,7 +11,7 @@ if(!($?)) {
 }
 
 docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}" | findstr 'grillbot-test-image')
-# git push;
+git push;
 if(!($?)) {
     Write-Error -Message "Git push failed. Check repository";
     git push;

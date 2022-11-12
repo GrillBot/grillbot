@@ -4,13 +4,13 @@ on:
   push:
     branches: [ master ]
     paths:
-    - 'src/GrillBot/GrillBot.Data/Resources/Localization/*.json'
+    - '**.json'
     - '**.md'
     - '.github/workflows/content.yml'
   pull_request:
     types: [ opened, reopened, synchronize ]
     paths:
-    - 'src/GrillBot/GrillBot.Data/Resources/Localization/*.json'
+    - '**.json'
     - '**.md'
     - '.github/workflows/content.yml'
 

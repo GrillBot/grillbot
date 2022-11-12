@@ -1,0 +1,30 @@
+name: Project build and checks
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+    - 'src/GrillBot/GrillBot.Data/Resources/Localization/*.json'
+    - '**.md'
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+    paths-ignore:
+    - 'src/GrillBot/GrillBot.Data/Resources/Localization/*.json'
+    - '**.md'
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Install dependencies
+        run: dotnet restore src/GrillBot
+      - name: Build
+        run: dotnet build src/GrillBot --no-restore -c Release
+      - name: Tests
+        run: |
+          sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list

@@ -29,5 +29,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: JSON syntax
-        uses: limitusus/json-syntax-check@v1
+      - name: JSON syntax check
+        run: bash <(curl -s https://raw.githubusercontent.com/CICDToolbox/json-lint/master/pipeline.sh)

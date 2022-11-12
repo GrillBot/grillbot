@@ -1,0 +1,33 @@
+name: Check content (json, md, ...)
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+    - 'src/GrillBot/GrillBot.Data/Resources/Localization/*.json'
+    - '**.md'
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+    paths:
+    - 'src/GrillBot/GrillBot.Data/Resources/Localization/*.json'
+    - '**.md'
+
+jobs:
+  CheckMarkdownFiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: markdownlint
+        uses: nosborn/github-action-markdown-cli@v1.1.1
+        with:
+          files: .
+          args: "./README.md CONTRIBUTING.md SECURITY.md"
+
+  CheckJsonFiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: JSON syntax
+        uses: limitusus/json-syntax-check@v1
+        with:
+          pattern: "\\.json$"

@@ -4,13 +4,14 @@ if(!($?)) {
     exit;
 }
 
-dotnet test -v quiet --nologo -l:"console;verbosity=normal";
+docker build -t grillbot-test-image -f ./Dockerfile.Test .
 if(!($?)) {
-    Write-Error -Message "Unit tests failed. Push and deployment cancelled.";
+    Write-Error -Message "Tests failed. Push and deployment cancelled.";
     exit;
 }
 
-git push;
+docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}" | findstr 'grillbot-test-image')
+# git push;
 if(!($?)) {
     Write-Error -Message "Git push failed. Check repository";
     git push;

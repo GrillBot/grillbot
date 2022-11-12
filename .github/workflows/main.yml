@@ -32,7 +32,7 @@ jobs:
       - name: Tests
         shell: bash
         run: |
-          sudo ls /etc/apt/sources.list
+          sudo cat /etc/apt/sources.list
           sudo sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
           sudo apt-get update
           sudo apt-get install -y --allow-unauthenticated ttf-mscorefonts-installer fontconfig libc6-dev libgdiplus libx11-dev

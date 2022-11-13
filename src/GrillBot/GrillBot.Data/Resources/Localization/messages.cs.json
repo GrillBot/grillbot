@@ -511,5 +511,8 @@
       "UnknownMessage": "Identifikátor zprávy v odkazu odkazuje na neexistující zprávu."
     },
     "UserNotFound": "Zadaný uživatel `{0}` nebyl nalezen."
+  },
+  "PublicApiClients": {
+    "NotFound": "Požadovaný klient nebyl nalezen."
   }
 }

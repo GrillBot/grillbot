@@ -511,5 +511,8 @@
       "UnknownMessage": "The message with the specified identifier was not found."
     },
     "UserNotFound": "Provided user  `{0}` wasn't found."
+  },
+  "PublicApiClients": {
+    "NotFound": "Requested client wasn't found."
   }
 }

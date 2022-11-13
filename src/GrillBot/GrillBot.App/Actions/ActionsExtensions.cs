@@ -87,11 +87,19 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Points.ServiceIncrementPoints>()
             .AddScoped<Api.V1.Points.ServiceTransferPoints>();
 
+        // PublicApiClients
+        services
+            .AddScoped<Api.V1.PublicApiClients.GetPublicApiMethods>()
+            .AddScoped<Api.V1.PublicApiClients.CreateClient>()
+            .AddScoped<Api.V1.PublicApiClients.DeleteClient>()
+            .AddScoped<Api.V1.PublicApiClients.UpdateClient>()
+            .AddScoped<Api.V1.PublicApiClients.GetClientsList>();
+
         // Reminder
         services
             .AddScoped<Api.V1.Reminder.FinishRemind>()
             .AddScoped<Api.V1.Reminder.GetReminderList>();
-        
+
         // Scheduled jobs
         services
             .AddScoped<Api.V1.ScheduledJobs.GetScheduledJobs>()

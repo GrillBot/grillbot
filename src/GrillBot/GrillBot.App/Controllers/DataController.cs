@@ -108,4 +108,19 @@ public class DataController : Controller
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Get list of methods available from public api.
+    /// </summary>
+    /// <response code="200">Returns list of methods available from public api.</response>
+    [HttpGet("publicApi/methods")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<List<string>> GetPublicApiMethods()
+    {
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.PublicApiClients.GetPublicApiMethods>();
+        var result = action.Process();
+
+        return Ok(result);
+    }
 }

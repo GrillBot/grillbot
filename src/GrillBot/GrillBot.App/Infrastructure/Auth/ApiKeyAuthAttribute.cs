@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GrillBot.Database.Entity;
+using GrillBot.Database.Services.Repository;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,55 +10,72 @@ namespace GrillBot.App.Infrastructure.Auth;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
 {
-    private const string ApiKeyConfigKey = "Auth:ApiKeys";
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        var apiKey = GetApiKey(context);
+        if (string.IsNullOrEmpty(apiKey)) return;
 
-    public Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        var databaseFactory = context.HttpContext.RequestServices.GetRequiredService<GrillBotDatabaseBuilder>();
+        await using var repository = databaseFactory.CreateRepository();
+
+        var apiClient = await repository.ApiClientRepository.FindClientById(apiKey);
+        if (apiClient == null || apiClient.AllowedMethods.Count == 0)
+        {
+            AsUnauthorized(context);
+            return;
+        }
+
+        if (apiClient.AllowedMethods.Count == 1 && apiClient.AllowedMethods[0] == "*")
+        {
+            await IncrementStatsAsync(apiClient, repository);
+            await next();
+            return;
+        }
+
+        var descriptor = (ControllerActionDescriptor)context.ActionDescriptor;
+        var method = $"{descriptor.ControllerTypeInfo.Name}.{descriptor.MethodInfo.Name}";
+        if (!apiClient.AllowedMethods.Contains(method))
+        {
+            AsUnauthorized(context);
+            return;
+        }
+
+        await IncrementStatsAsync(apiClient, repository);
+        await next();
+    }
+
+    private static void AsUnauthorized(ActionExecutingContext context)
+    {
+        context.Result = new UnauthorizedResult();
+    }
+
+    private static string GetApiKey(ActionExecutingContext context)
     {
         var header = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
 
         if (!string.IsNullOrEmpty(header))
         {
             if (!header.StartsWith("ApiKey"))
-                return AsUnauthorized(context);
+            {
+                AsUnauthorized(context);
+                return null;
+            }
         }
         else
         {
             header ??= context.HttpContext.Request.Headers["ApiKey"].FirstOrDefault();
         }
 
-        if (string.IsNullOrEmpty(header))
-            return AsUnauthorized(context);
-
-        header = header.Replace("ApiKey", "").Trim();
-
-        var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>()
-            .GetSection($"{ApiKeyConfigKey}:{header}");
-
-        if (!configuration.Exists())
-            return AsUnauthorized(context);
-
-        var allowedMethods = configuration.GetSection("AuthorizedMethods")
-            .AsEnumerable()
-            .Select(o => o.Value)
-            .Where(o => !string.IsNullOrEmpty(o))
-            .ToList();
-
-        if (allowedMethods.Count == 0)
-            return AsUnauthorized(context);
-
-        if (allowedMethods.Count == 1 && allowedMethods[0] == "*")
-            return next();
-
-        if (context.ActionDescriptor is not ControllerActionDescriptor descriptor)
-            return AsUnauthorized(context);
-
-        var method = $"{descriptor.ControllerTypeInfo.Name}.{descriptor.MethodInfo.Name}";
-        return !allowedMethods.Contains(method) ? AsUnauthorized(context) : next();
+        if (!string.IsNullOrEmpty(header))
+            return header.Replace("ApiKey", "").Trim();
+        AsUnauthorized(context);
+        return null;
     }
 
-    private static Task AsUnauthorized(ActionExecutingContext context)
+    private static async Task IncrementStatsAsync(ApiClient apiClient, GrillBotRepository repository)
     {
-        context.Result = new UnauthorizedResult();
-        return Task.CompletedTask;
+        apiClient.UseCount++;
+        apiClient.LastUse = DateTime.Now;
+        await repository.CommitAsync();
     }
 }

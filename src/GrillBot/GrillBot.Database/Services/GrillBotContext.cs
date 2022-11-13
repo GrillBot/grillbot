@@ -140,4 +140,5 @@ public class GrillBotContext : DbContext
     public DbSet<EmoteSuggestion> EmoteSuggestions => Set<EmoteSuggestion>();
     public DbSet<PointsTransaction> PointsTransactions => Set<PointsTransaction>();
     public DbSet<PointsTransactionSummary> PointsTransactionSummaries => Set<PointsTransactionSummary>();
+    public DbSet<ApiClient> ApiClients => Set<ApiClient>();
 }

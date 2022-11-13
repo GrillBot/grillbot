@@ -17,5 +17,5 @@ if(!($?)) {
     git push;
 }
 
-docker build -t registry.gitlab.com/grillbot/grillbot .
-docker push registry.gitlab.com/grillbot/grillbot
+docker build -t ghcr.io/grillbot/grillbot .
+docker push ghcr.io/grillbot/grillbot

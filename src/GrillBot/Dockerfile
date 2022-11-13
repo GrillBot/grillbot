@@ -40,6 +40,7 @@ RUN mkdir -p /publish
 RUN dotnet publish /src/GrillBot.App -c Release -o /publish --no-restore -r linux-x64 --self-contained false
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 as FinalImage
+LABEL org.opencontainers.image.source https://github.com/grillbot/grillbot
 
 # Dependencies
 WORKDIR /app

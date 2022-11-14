@@ -2,7 +2,6 @@
 using System.Linq;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
-using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
@@ -83,7 +82,8 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
                             ChannelsToRemove = new List<ChannelOverride>(),
                             IsSelfUnverify = false,
                             RolesToKeep = new List<ulong>(),
-                            RolesToRemove = new List<ulong> { Role.Id }
+                            RolesToRemove = new List<ulong> { Role.Id },
+                            Language = "cs"
                         }),
                         Operation = UnverifyOperation.Unverify,
                         CreatedAt = DateTime.Now,

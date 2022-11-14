@@ -13,6 +13,7 @@ public class UnverifyLogSet
     public List<ChannelOverride> ChannelsToRemove { get; set; } = new();
     public string Reason { get; set; }
     public bool IsSelfUnverify { get; set; }
+    public string Language { get; set; }
 
     public static UnverifyLogSet FromProfile(UnverifyUserProfile profile)
     {
@@ -25,7 +26,8 @@ public class UnverifyLogSet
             RolesToKeep = profile.RolesToKeep.ConvertAll(o => o.Id),
             RolesToRemove = profile.RolesToRemove.ConvertAll(o => o.Id),
             Start = profile.Start,
-            IsSelfUnverify = profile.IsSelfUnverify
+            IsSelfUnverify = profile.IsSelfUnverify,
+            Language = profile.Language
         };
     }
 }

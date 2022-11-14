@@ -23,7 +23,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var fromUser = new GuildUserBuilder(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).SetGuild(guild).Build();
 
-        var profile = new UnverifyUserProfile(guildUser, DateTime.MinValue, DateTime.MaxValue, false);
+        var profile = new UnverifyUserProfile(guildUser, DateTime.MinValue, DateTime.MaxValue, false, "cs");
         var logItem = await Service.LogUnverifyAsync(profile, guild, fromUser);
 
         Assert.IsNotNull(logItem);
@@ -35,7 +35,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var profile = new UnverifyUserProfile(guildUser, DateTime.MinValue, DateTime.MaxValue, false);
+        var profile = new UnverifyUserProfile(guildUser, DateTime.MinValue, DateTime.MaxValue, false, "cs");
         var logItem = await Service.LogSelfunverifyAsync(profile, guild);
 
         Assert.IsNotNull(logItem);
@@ -52,8 +52,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var returnedRoles = new List<IRole> { new RoleBuilder(Consts.RoleId, Consts.RoleName).Build() };
         var returnedChannels = new List<ChannelOverride>();
 
-        await Service.LogRemoveAsync(returnedRoles, returnedChannels, guild, fromUser, toUser, false);
-        Assert.IsTrue(true);
+        await Service.LogRemoveAsync(returnedRoles, returnedChannels, guild, fromUser, toUser, false, "cs");
     }
 
     [TestMethod]
@@ -64,7 +63,6 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var fromUser = new GuildUserBuilder(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).SetGuild(guild).Build();
 
         await Service.LogUpdateAsync(DateTime.MinValue, DateTime.MaxValue, guild, fromUser, toUser);
-        Assert.IsTrue(true);
     }
 
     [TestMethod]
@@ -77,6 +75,5 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var fromUser = new GuildUserBuilder(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).SetGuild(guild).Build();
 
         await Service.LogRecoverAsync(returnedRoles, returnedChannels, guild, fromUser, toUser);
-        Assert.IsTrue(true);
     }
 }

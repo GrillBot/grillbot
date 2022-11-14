@@ -18,7 +18,7 @@ public class UnverifyProfileGenerator
 
     public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole, string locale)
     {
-        var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify)
+        var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify, locale)
         {
             Reason = !selfunverify ? ParseReason(data, locale) : null
         };
@@ -37,7 +37,7 @@ public class UnverifyProfileGenerator
         if (logData == null)
             throw new ArgumentException("Missing log data for unverify reconstruction.");
 
-        return new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify)
+        return new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify, logData.Language)
         {
             ChannelsToKeep = logData.ChannelsToKeep,
             ChannelsToRemove = logData.ChannelsToRemove,

@@ -1,8 +1,6 @@
 ﻿using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.Unverify;
-using GrillBot.Tests.Infrastructure;
 using GrillBot.Tests.Infrastructure.Discord;
-using System;
 
 namespace GrillBot.Tests.App.Services.Unverify;
 
@@ -15,7 +13,7 @@ public class UnverifyMessageGeneratorTests
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
-        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
+        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true, "cs");
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/UnverifyToChannelWithoutReason", "cs", "{0},{1}")
             .Build();
@@ -31,7 +29,7 @@ public class UnverifyMessageGeneratorTests
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
-        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
+        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false, "cs") { Reason = "Duvod" };
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/UnverifyToChannelWithReason", "cs", "{0},{1},{2}")
             .Build();
@@ -47,7 +45,7 @@ public class UnverifyMessageGeneratorTests
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
-        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true);
+        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true, "cs");
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/PrivateUnverifyWithoutReason", "cs", "{0},{1}")
             .Build();
@@ -62,7 +60,7 @@ public class UnverifyMessageGeneratorTests
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
-        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false) { Reason = "Duvod" };
+        var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false, "cs") { Reason = "Duvod" };
         var texts = new TextsBuilder()
             .AddText("Unverify/Message/PrivateUnverifyWithReason", "cs", "{0},{1},{2}")
             .Build();

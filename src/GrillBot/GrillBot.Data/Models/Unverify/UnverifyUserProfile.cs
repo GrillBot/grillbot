@@ -1,8 +1,6 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrillBot.Data.Models.Unverify;
@@ -18,13 +16,15 @@ public class UnverifyUserProfile
     public List<ChannelOverride> ChannelsToRemove { get; set; }
     public string Reason { get; set; }
     public bool IsSelfUnverify { get; set; }
+    public string Language { get; set; }
 
-    public UnverifyUserProfile(IGuildUser destination, DateTime start, DateTime end, bool isSelfUnverify)
+    public UnverifyUserProfile(IGuildUser destination, DateTime start, DateTime end, bool isSelfUnverify, string language)
     {
         Destination = destination;
         Start = start;
         End = end;
         IsSelfUnverify = isSelfUnverify;
+        Language = language;
 
         RolesToKeep = new List<IRole>();
         RolesToRemove = new List<IRole>();

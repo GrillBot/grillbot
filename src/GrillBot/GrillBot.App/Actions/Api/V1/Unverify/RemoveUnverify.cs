@@ -22,7 +22,7 @@ public class RemoveUnverify : ApiAction
     {
         var (guild, toUser, fromUser) = await InitAsync(guildId, userId);
 
-        return await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, ApiContext.Language, false, true);
+        return await UnverifyService.RemoveUnverifyAsync(guild, fromUser, toUser, false, true);
     }
 
     private async Task<(IGuild guild, IGuildUser toUser, IGuildUser fromUser)> InitAsync(ulong guildId, ulong userId)

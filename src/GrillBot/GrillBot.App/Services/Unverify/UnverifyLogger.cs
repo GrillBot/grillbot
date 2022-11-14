@@ -33,20 +33,22 @@ public class UnverifyLogger
         var data = new UnverifyLogRemove
         {
             ReturnedOverwrites = returnedChannels,
-            ReturnedRoles = returnedRoles.ConvertAll(o => o.Id)
+            ReturnedRoles = returnedRoles.ConvertAll(o => o.Id),
+            Language = "cs"
         };
 
         var currentUser = await guild.GetUserAsync(DiscordClient.CurrentUser.Id);
         await SaveAsync(UnverifyOperation.Autoremove, data, currentUser, guild, toUser);
     }
 
-    public Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to, bool fromWeb)
+    public Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to, bool fromWeb, string language)
     {
         var data = new UnverifyLogRemove
         {
             ReturnedOverwrites = returnedChannels,
             ReturnedRoles = returnedRoles.ConvertAll(o => o.Id),
-            FromWeb = fromWeb
+            FromWeb = fromWeb,
+            Language = language
         };
 
         return SaveAsync(UnverifyOperation.Remove, data, from, guild, to);

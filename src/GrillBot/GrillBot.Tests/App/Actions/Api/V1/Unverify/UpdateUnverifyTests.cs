@@ -2,13 +2,15 @@
 using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
-using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Unverify;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
+using Newtonsoft.Json;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 
@@ -50,20 +52,32 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     private async Task InitDataAsync(bool setUnverify, DateTime endAt)
     {
         await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(Guild, User));
+        await Repository.AddAsync(GuildUser.FromDiscord(Guild, User));
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
 
         if (setUnverify)
         {
             await Repository.AddAsync(new Database.Entity.Unverify
             {
-                Channels = new List<Database.Entity.GuildChannelOverride>(),
+                Channels = new List<GuildChannelOverride>(),
                 Reason = "Reason",
                 Roles = new List<string>(),
                 EndAt = endAt,
                 GuildId = Consts.GuildId.ToString(),
                 StartAt = DateTime.Now,
-                UserId = Consts.UserId.ToString()
+                UserId = Consts.UserId.ToString(),
+                UnverifyLog = new UnverifyLog
+                {
+                    Data = JsonConvert.SerializeObject(new GrillBot.Data.Models.Unverify.UnverifyLogSet
+                    {
+                        Language = "cs"
+                    }),
+                    Operation = UnverifyOperation.Selfunverify,
+                    CreatedAt = DateTime.Now,
+                    GuildId = Consts.GuildId.ToString(),
+                    FromUserId = Consts.UserId.ToString(),
+                    ToUserId = Consts.UserId.ToString()
+                }
             });
         }
 

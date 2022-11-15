@@ -11,7 +11,10 @@ namespace GrillBot.Cache.Services.Managers.MessageCache;
 
 public class MessageCacheManager : IMessageCacheManager
 {
+    private SemaphoreSlim ReaderLock { get; }
+    private SemaphoreSlim WriterLock { get; }
     private SemaphoreSlim Semaphore { get; }
+
     private Dictionary<ulong, IMessage> Messages { get; }
     private HashSet<ulong> DeletedMessages { get; }
     private HashSet<ulong> LoadedChannels { get; }
@@ -30,6 +33,8 @@ public class MessageCacheManager : IMessageCacheManager
         CacheBuilder = cacheBuilder;
         CounterManager = counterManager;
 
+        ReaderLock = new SemaphoreSlim(1);
+        WriterLock = new SemaphoreSlim(1);
         Semaphore = new SemaphoreSlim(1);
         Messages = new Dictionary<ulong, IMessage>();
         DeletedMessages = new HashSet<ulong>();
@@ -45,26 +50,39 @@ public class MessageCacheManager : IMessageCacheManager
 
     private async Task OnMessageReceivedAsync(SocketMessage message)
     {
-        await Semaphore.WaitAsync();
+        if (message.Channel is IDMChannel || !InitManager.Get()) return;
 
+        await ReaderLock.WaitAsync();
         try
         {
-            if (!InitManager.Get() || LoadedChannels.Contains(message.Channel.Id) || message.Channel is IDMChannel)
+            if (LoadedChannels.Contains(message.Channel.Id))
                 return;
+        }
+        finally
+        {
+            ReaderLock.Release();
+        }
 
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
+        try
+        {
             await DownloadMessagesAsync(message.Channel); // Download 100 latest messages.
             LoadedChannels.Add(message.Channel.Id);
         }
         finally
         {
-            Semaphore.Release();
+            ReaderLock.Release();
+            WriterLock.Release();
         }
     }
 
     private async Task OnMessageDeletedAsync(Cacheable<IMessage, ulong> msg, Cacheable<IMessageChannel, ulong> channel)
     {
-        await Semaphore.WaitAsync();
+        if (!channel.HasValue || channel.Value is IDMChannel || !InitManager.Get()) return;
 
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
         try
         {
             DeletedMessages.Add(msg.Id);
@@ -74,65 +92,68 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            Semaphore.Release();
+            ReaderLock.Release();
+            WriterLock.Release();
         }
     }
 
     private async Task OnChannelDeletedAsync(SocketChannel channel)
     {
-        await Semaphore.WaitAsync();
+        if (channel is IDMChannel || !InitManager.Get()) return;
 
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
         try
         {
-            if (channel is IDMChannel)
-                return;
-
             await using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id);
-            foreach (var msg in messages)
-                DeletedMessages.Add(msg.MessageId.ToUlong());
+            messages.ForEach(o => DeletedMessages.Add(o.MessageId.ToUlong()));
         }
         finally
         {
-            Semaphore.Release();
+            ReaderLock.Release();
+            WriterLock.Release();
         }
     }
 
     private async Task OnThreadDeletedAsync(Cacheable<SocketThreadChannel, ulong> thread)
     {
         if (!thread.HasValue) return;
-        await Semaphore.WaitAsync();
 
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
         try
         {
             await using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: thread.Value.Id, guildId: thread.Value.Guild.Id);
-            foreach (var msg in messages)
-                DeletedMessages.Add(msg.MessageId.ToUlong());
+            messages.ForEach(o => DeletedMessages.Add(o.MessageId.ToUlong()));
         }
         finally
         {
-            Semaphore.Release();
+            ReaderLock.Release();
+            WriterLock.Release();
         }
     }
 
     private async Task OnMessageUpdatedAsync(Cacheable<IMessage, ulong> _, SocketMessage after, ISocketMessageChannel channel)
     {
-        await Semaphore.WaitAsync();
+        if (channel is IDMChannel) return;
 
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
         try
         {
-            if (channel is IDMChannel)
-                return;
-
             MessagesForUpdate.Add(after.Id);
         }
         finally
         {
-            Semaphore.Release();
+            ReaderLock.Release();
+            WriterLock.Release();
         }
+
+        await Semaphore.WaitAsync();
     }
 
     private async Task DownloadMessagesAsync(IMessageChannel channel, ulong messageId, Direction direction, int limit = DiscordConfig.MaxMessagesPerBatch)
@@ -149,7 +170,7 @@ public class MessageCacheManager : IMessageCacheManager
 
     private async Task<IMessage?> DownloadMessageFromChannelAsync(IMessageChannel channel, ulong id)
     {
-        using (CounterManager.Create("Discord.API"))
+        using (CounterManager.Create("Discord"))
         {
             try
             {
@@ -165,7 +186,7 @@ public class MessageCacheManager : IMessageCacheManager
 
     private async Task<List<IMessage>> DownloadMessagesFromChannelAsync(IMessageChannel channel, (ulong messageId, Direction direction)? range = null, int limit = DiscordConfig.MaxMessagesPerBatch)
     {
-        using (CounterManager.Create("Discord.API"))
+        using (CounterManager.Create("Discord"))
         {
             try
             {
@@ -193,12 +214,9 @@ public class MessageCacheManager : IMessageCacheManager
         }
 
         var newMessages = messages.FindAll(o => !Messages.ContainsKey(o.Id));
-
         if (newMessages.Count > 0)
         {
-            foreach (var msg in newMessages)
-                Messages.Add(msg.Id, msg);
-
+            newMessages.ForEach(o => Messages.Add(o.Id, o));
             await CreateIndexesAsync(newMessages);
         }
     }
@@ -240,36 +258,42 @@ public class MessageCacheManager : IMessageCacheManager
 
     public async Task<IMessage?> GetAsync(ulong messageId, IMessageChannel? channel, bool includeRemoved = false, bool forceReload = false)
     {
-        await Semaphore.WaitAsync();
-
+        await ReaderLock.WaitAsync();
         try
         {
             if (!includeRemoved && DeletedMessages.Contains(messageId))
                 return null;
-
             if (Messages.ContainsKey(messageId) && !forceReload)
                 return Messages[messageId];
+        }
+        finally
+        {
+            ReaderLock.Release();
+        }
 
-            if (channel == null)
-                return null;
+        if (channel == null) return null;
 
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
+        try
+        {
             var message = await DownloadMessageFromChannelAsync(channel, messageId);
-            if (message == null)
-                return null;
+            if (message == null) return null;
 
             await ProcessDownloadedMessages(new List<IMessage> { message }, forceReload);
             return message;
         }
         finally
         {
-            Semaphore.Release();
+            ReaderLock.Release();
+            WriterLock.Release();
         }
     }
 
     public async Task<int> ClearAllMessagesFromChannelAsync(IChannel channel)
     {
-        await Semaphore.WaitAsync();
-
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
         try
         {
             await using var cache = CacheBuilder.CreateRepository();
@@ -288,16 +312,24 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            Semaphore.Release();
+            ReaderLock.Release();
+            WriterLock.Release();
         }
     }
 
     public async Task<string> ProcessScheduledTaskAsync()
     {
-        await Semaphore.WaitAsync();
-
         var report = new List<string>();
 
+        await ProcessDeletedMessagesAsync(report);
+        await ProcessUpdatedMessagesAsync(report);
+        return string.Join("\n", report);
+    }
+
+    private async Task ProcessDeletedMessagesAsync(ICollection<string> report)
+    {
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
         try
         {
             foreach (var id in DeletedMessages)
@@ -309,7 +341,20 @@ public class MessageCacheManager : IMessageCacheManager
             }
 
             DeletedMessages.Clear();
+        }
+        finally
+        {
+            ReaderLock.Release();
+            WriterLock.Release();
+        }
+    }
 
+    private async Task ProcessUpdatedMessagesAsync(ICollection<string> report)
+    {
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
+        try
+        {
             foreach (var id in MessagesForUpdate)
             {
                 if (!Messages.Remove(id, out var msg)) continue;
@@ -326,11 +371,11 @@ public class MessageCacheManager : IMessageCacheManager
             }
 
             MessagesForUpdate.Clear();
-            return string.Join("\n", report);
         }
         finally
         {
-            Semaphore.Release();
+            ReaderLock.Release();
+            WriterLock.Release();
         }
     }
 }

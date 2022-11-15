@@ -13,7 +13,6 @@ public class MessageCacheManager : IMessageCacheManager
 {
     private SemaphoreSlim ReaderLock { get; }
     private SemaphoreSlim WriterLock { get; }
-    private SemaphoreSlim Semaphore { get; }
 
     private Dictionary<ulong, IMessage> Messages { get; }
     private HashSet<ulong> DeletedMessages { get; }
@@ -25,8 +24,7 @@ public class MessageCacheManager : IMessageCacheManager
     private GrillBotCacheBuilder CacheBuilder { get; }
     private CounterManager CounterManager { get; }
 
-    public MessageCacheManager(DiscordSocketClient discordClient, InitManager initManager, GrillBotCacheBuilder cacheBuilder,
-        CounterManager counterManager)
+    public MessageCacheManager(DiscordSocketClient discordClient, InitManager initManager, GrillBotCacheBuilder cacheBuilder, CounterManager counterManager)
     {
         DiscordClient = discordClient;
         InitManager = initManager;
@@ -35,7 +33,6 @@ public class MessageCacheManager : IMessageCacheManager
 
         ReaderLock = new SemaphoreSlim(1);
         WriterLock = new SemaphoreSlim(1);
-        Semaphore = new SemaphoreSlim(1);
         Messages = new Dictionary<ulong, IMessage>();
         DeletedMessages = new HashSet<ulong>();
         LoadedChannels = new HashSet<ulong>();
@@ -152,8 +149,6 @@ public class MessageCacheManager : IMessageCacheManager
             ReaderLock.Release();
             WriterLock.Release();
         }
-
-        await Semaphore.WaitAsync();
     }
 
     private async Task DownloadMessagesAsync(IMessageChannel channel, ulong messageId, Direction direction, int limit = DiscordConfig.MaxMessagesPerBatch)

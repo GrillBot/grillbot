@@ -15,7 +15,7 @@ public class DataCacheManager
     {
         await using var repository = CacheBuilder.CreateRepository();
 
-        var entity = await repository.DataCache.FindItemAsync(key, true);
+        var entity = await repository.DataCache.FindItemAsync(key);
         if (entity == null)
         {
             entity = new DataCacheItem { Key = key };
@@ -34,7 +34,7 @@ public class DataCacheManager
         await using var repository = CacheBuilder.CreateRepository();
 
         await repository.DataCache.DeleteExpiredAsync();
-        var entity = await repository.DataCache.FindItemAsync(key, disableTracking: true);
+        var entity = await repository.DataCache.FindItemAsync(key, true);
         return entity?.Value;
     }
 }

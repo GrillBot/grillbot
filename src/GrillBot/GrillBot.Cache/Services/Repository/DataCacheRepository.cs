@@ -21,14 +21,11 @@ public class DataCacheRepository : RepositoryBase
         }
     }
 
-    public async Task<DataCacheItem?> FindItemAsync(string key, bool includeExpired = false, bool disableTracking = false)
+    public async Task<DataCacheItem?> FindItemAsync(string key, bool disableTracking = false)
     {
         using (CreateCounter())
         {
             var query = Context.DataCache.Where(o => o.Key == key);
-
-            if (!includeExpired)
-                query = query.Where(o => o.ValidTo >= DateTime.Now);
             if (disableTracking)
                 query = query.AsNoTracking();
 

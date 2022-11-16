@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.DirectApi;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -16,15 +17,17 @@ public class UnsuccessCommandAttempt : CommandAction
     private IDirectApiService DirectApi { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogService AuditLogService { get; }
+    private DataCacheManager DataCacheManager { get; }
 
     public UnsuccessCommandAttempt(ITextsManager texts, InteractionService interactionService, IDirectApiService directApi, GrillBotDatabaseBuilder databaseBuilder,
-        AuditLogService auditLogService)
+        AuditLogService auditLogService, DataCacheManager dataCacheManager)
     {
         Texts = texts;
         InteractionService = interactionService;
         DirectApi = directApi;
         DatabaseBuilder = databaseBuilder;
         AuditLogService = auditLogService;
+        DataCacheManager = dataCacheManager;
     }
 
     public async Task ProcessAsync(SocketMessage message)
@@ -58,9 +61,16 @@ public class UnsuccessCommandAttempt : CommandAction
 
     private async Task<bool> ExistsRubbergodCommandAsync(string[] parts)
     {
-        var rubbergodCommandsJson = await DirectApi.SendCommandAsync("Rubbergod", CommandBuilder.CreateSlashCommandListCommand());
-        var rubbergodCommands = JsonConvert.DeserializeObject<List<string>>(rubbergodCommandsJson ?? "[]")!;
+        var commands = await DataCacheManager.GetValueAsync("RubbergodCommands");
+        if (string.IsNullOrEmpty(commands) || commands == "[]")
+        {
+            commands = await DirectApi.SendCommandAsync("Rubbergod", CommandBuilder.CreateSlashCommandListCommand());
+            commands ??= "[]";
 
+            await DataCacheManager.SetValueAsync("RubbergodCommands", commands, DateTime.Now.AddDays(7));
+        }
+
+        var rubbergodCommands = JsonConvert.DeserializeObject<List<string>>(commands)!;
         return parts
             .Select((_, i) => string.Join(" ", parts.Take(i + 1)))
             .Any(cmd => rubbergodCommands.Any(x => x.StartsWith(cmd)));

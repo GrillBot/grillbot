@@ -46,11 +46,7 @@ public class EventManager
         DiscordClient.JoinedGuild += JoinedGuild;
         DiscordClient.GuildAvailable += GuildAvailable;
         DiscordClient.ThreadUpdated += (_, thread) => ThreadUpdated(thread);
-        DiscordClient.PresenceUpdated += (user, _, presence) => PresenceUpdated(user, presence);
     }
-
-    private Task PresenceUpdated(IUser user, IPresence presence)
-        => AddToLog(nameof(PresenceUpdated), user.GetFullName(), presence.Status.ToString());
 
     private Task ThreadUpdated(SocketGuildChannel thread)
         => AddToLog(nameof(ThreadUpdated), thread.Name);
@@ -127,17 +123,19 @@ public class EventManager
 
     private Task AddToLog(string method, params string[] parameters)
     {
+        var paramsData = parameters.Length == 0 ? "" : $" - {string.Join(", ", parameters)}";
+        var eventLogItem = $"{method} - {DateTime.Now.ToCzechFormat(withMiliseconds: true)}{paramsData}";
+
         lock (_locker)
         {
-            var paramsData = parameters.Length == 0 ? "" : $" - {string.Join(", ", parameters)}";
-            EventLog.PushFront($"{method} - {DateTime.Now.ToCzechFormat(withMiliseconds: true)}{paramsData}");
+            EventLog.PushFront(eventLogItem);
 
             if (!Statistics.ContainsKey(method))
                 Statistics.Add(method, 0);
             Statistics[method]++;
-
-            return Task.CompletedTask;
         }
+
+        return Task.CompletedTask;
     }
 
     public string[] GetEventLog()

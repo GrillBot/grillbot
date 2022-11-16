@@ -6,6 +6,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.AuditLog;
+using GrillBot.Data.Models.Rubbergod;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Commands;
@@ -36,7 +37,11 @@ public class UnsuccessCommandAttempt : CommandAction
 
         var reference = new MessageReference(message.Id, message.Channel.Id, failIfNotExists: false);
         var commandMention = await FindLocalCommandMentionAsync(parts, message.Channel);
-        if (string.IsNullOrEmpty(commandMention) && !await ExistsRubbergodCommandAsync(parts)) return;
+        if (string.IsNullOrEmpty(commandMention))
+        {
+            commandMention = await FindRubbergodCommandAsync(parts);
+            if (string.IsNullOrEmpty(commandMention)) return;
+        }
 
         var locale = await GetLastUserLocaleAsync(message.Author);
         var text = Texts["ClickOnCommand", locale] + (string.IsNullOrEmpty(commandMention) ? "" : $" ({commandMention})");
@@ -48,32 +53,55 @@ public class UnsuccessCommandAttempt : CommandAction
         var guild = await AuditLogService.GetGuildFromChannelAsync(channel, channel.Id);
         var commands = await InteractionService.RestClient.GetGuildApplicationCommands(guild.Id);
         var commandMentions = commands.GetCommandMentions();
+        return TryMatchMention(commandMentions, parts);
+    }
 
+    private async Task<string> FindRubbergodCommandAsync(IReadOnlyCollection<string> parts)
+    {
+        const string emptyData = "{}";
+
+        var commands = await DataCacheManager.GetValueAsync("RubbergodCommands");
+        if (string.IsNullOrEmpty(commands) || commands == emptyData)
+        {
+            commands = await DirectApi.SendCommandAsync("Rubbergod", CommandBuilder.CreateSlashCommandListCommand());
+            commands ??= emptyData;
+
+            await DataCacheManager.SetValueAsync("RubbergodCommands", commands, DateTime.Now.AddDays(7));
+        }
+
+        var rubbergodCommands = JsonConvert.DeserializeObject<Dictionary<string, RubbergodCog>>(commands)!;
+        var cmdMentions = GetRubbergodCommandMentions(rubbergodCommands);
+        return TryMatchMention(cmdMentions, parts);
+    }
+
+    private static string TryMatchMention(IReadOnlyDictionary<string, string> mentions, IReadOnlyCollection<string> parts)
+    {
         for (var i = 0; i < parts.Count; i++)
         {
             var command = string.Join(" ", parts.Take(i + 1));
-            if (commandMentions.TryGetValue(command, out var mention))
+            if (mentions.TryGetValue(command, out var mention))
                 return mention;
         }
 
         return null;
     }
 
-    private async Task<bool> ExistsRubbergodCommandAsync(string[] parts)
+    private static Dictionary<string, string> GetRubbergodCommandMentions(Dictionary<string, RubbergodCog> cogs)
     {
-        var commands = await DataCacheManager.GetValueAsync("RubbergodCommands");
-        if (string.IsNullOrEmpty(commands) || commands == "[]")
+        var result = new Dictionary<string, string>();
+        foreach (var cog in cogs.Where(o => o.Value?.Id != null))
         {
-            commands = await DirectApi.SendCommandAsync("Rubbergod", CommandBuilder.CreateSlashCommandListCommand());
-            commands ??= "[]";
+            if (cog.Value.Children.Count == 0)
+            {
+                result.Add(cog.Key, $"</{cog.Key}:{cog.Value.Id}>");
+                continue;
+            }
 
-            await DataCacheManager.SetValueAsync("RubbergodCommands", commands, DateTime.Now.AddDays(7));
+            foreach (var child in cog.Value.Children)
+                result.Add($"{cog.Key} {child}", $"</{cog.Key} {child}:{cog.Value.Id}>");
         }
 
-        var rubbergodCommands = JsonConvert.DeserializeObject<List<string>>(commands)!;
-        return parts
-            .Select((_, i) => string.Join(" ", parts.Take(i + 1)))
-            .Any(cmd => rubbergodCommands.Any(x => x.StartsWith(cmd)));
+        return result;
     }
 
     private async Task<string> GetLastUserLocaleAsync(IUser user)

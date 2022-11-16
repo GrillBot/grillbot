@@ -5,7 +5,7 @@ namespace GrillBot.Common.Extensions.Discord;
 
 public static class ApplicationCommandExtensions
 {
-    public static Dictionary<string, string> GetCommandMentions(this IReadOnlyCollection<RestGuildCommand> commands)
+    public static Dictionary<string, string> GetCommandMentions(this IEnumerable<RestGuildCommand> commands)
     {
         return commands.Where(o => o.Type == ApplicationCommandType.Slash)
             .SelectMany(ProcessCommand)

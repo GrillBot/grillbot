@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.FileStorage;
 using GrillBot.Data.Resources.Misc;
 using ImageMagick;
 
@@ -13,9 +12,13 @@ public sealed class WithoutAccidentRenderer : RendererBase, IDisposable
     private MagickImage Head { get; }
     private MagickImage Pliers { get; }
 
-    public WithoutAccidentRenderer(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
-        : base(fileStorageFactory, profilePictureManager)
+    private DataCacheManager DataCacheManager { get; }
+
+    public WithoutAccidentRenderer(ProfilePictureManager profilePictureManager, DataCacheManager dataCacheManager)
+        : base(null, profilePictureManager)
     {
+        DataCacheManager = dataCacheManager;
+
         Background = new MagickImage(MiscResources.xDaysBackground);
         Head = new MagickImage(MiscResources.xDaysHead);
         Pliers = new MagickImage(MiscResources.xDaysPliers);
@@ -74,13 +77,10 @@ public sealed class WithoutAccidentRenderer : RendererBase, IDisposable
 
     private async Task<int> GetLastErrorDays()
     {
-        var lastErrorInfo = await Cache.GetFileInfoAsync("Common", "LastErrorDate.txt");
-        if (!lastErrorInfo.Exists)
-            return 0;
+        var lastErorDate = await DataCacheManager.GetValueAsync("LastErrorDate");
+        if (string.IsNullOrEmpty(lastErorDate)) return 0;
 
-        var lastErrorData = await File.ReadAllTextAsync(lastErrorInfo.FullName);
-        var lastError = DateTime.Parse(lastErrorData.Trim());
-
+        var lastError = DateTime.Parse(lastErorDate);
         var totalDays = (DateTime.Now - lastError).TotalDays;
         return Convert.ToInt32(Math.Round(totalDays));
     }

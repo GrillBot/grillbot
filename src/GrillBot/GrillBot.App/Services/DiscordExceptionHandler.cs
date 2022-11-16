@@ -5,11 +5,12 @@ using Discord.Commands;
 using Discord.Net;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services.Images;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services;
 
@@ -17,17 +18,14 @@ public class DiscordExceptionHandler : ILoggingHandler
 {
     private IDiscordClient DiscordClient { get; }
     private IConfiguration Configuration { get; }
-    private FileStorageFactory FileStorage { get; }
     private ITextChannel LogChannel { get; set; }
-    private RendererFactory RendererFactory { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public DiscordExceptionHandler(IDiscordClient discordClient, IConfiguration configuration, FileStorageFactory fileStorage,
-        RendererFactory rendererFactory)
+    public DiscordExceptionHandler(IDiscordClient discordClient, IConfiguration configuration, IServiceProvider serviceProvider)
     {
         DiscordClient = discordClient;
         Configuration = configuration.GetSection("Discord:Logging");
-        FileStorage = fileStorage;
-        RendererFactory = rendererFactory;
+        ServiceProvider = serviceProvider;
     }
 
     public async Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception exception = null)
@@ -63,8 +61,7 @@ public class DiscordExceptionHandler : ILoggingHandler
             // 11 is magic constant represents error "Resource temporarily unavailable".
             () => exception is HttpRequestException && exception.InnerException is SocketException { ErrorCode: 11 },
             () => exception.InnerException is WebSocketException or WebSocketClosedException,
-            () => exception is TaskCanceledException && exception.InnerException is null,
-            () => exception is TimeoutException && exception.Message.Contains("Cannot respond to an interaction after 3 seconds!")
+            () => exception is TaskCanceledException && exception.InnerException is null
         };
 
         return cases.Any(@case => @case());
@@ -142,23 +139,17 @@ public class DiscordExceptionHandler : ILoggingHandler
     {
         var user = exception.GetUser(DiscordClient);
 
-        var renderer = RendererFactory.Create<WithoutAccidentRenderer>();
-        try
-        {
-            return await renderer!.RenderAsync(user, null, null, null, null);
-        }
-        finally
-        {
-            if (renderer is IDisposable disposable)
-                disposable.Dispose();
-        }
+        using var scope = ServiceProvider.CreateScope();
+        var renderer = scope.ServiceProvider.GetRequiredService<WithoutAccidentRenderer>();
+
+        return await renderer!.RenderAsync(user, null, null, null, null);
     }
 
     private async Task StoreLastErrorDateAsync()
     {
-        var cache = FileStorage.Create("Cache");
-        var lastErrorInfo = await cache.GetFileInfoAsync("Common", "LastErrorDate.txt");
-
-        await File.WriteAllTextAsync(lastErrorInfo.FullName, $"{DateTime.Now:o}\n");
+        using var scope = ServiceProvider.CreateScope();
+        var dataCacheManager = scope.ServiceProvider.GetRequiredService<DataCacheManager>();
+        
+        await dataCacheManager.SetValueAsync("LastErrorDate", DateTime.Now.ToString("o"), DateTime.MaxValue);
     }
 }

@@ -39,10 +39,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
         TemporaryFile = new TemporaryFile("png");
         File.WriteAllBytes(TemporaryFile.Path, new byte[] { 1, 2, 3 });
 
-        var fileStorage = new FileStorageMock(Configuration);
-        var rendererFactory = new RendererFactoryMock(TemporaryFile, fileStorage);
-
-        return new DiscordExceptionHandler(client, Configuration, fileStorage, rendererFactory);
+        return new DiscordExceptionHandler(client, Configuration, TestServices.InitializedProvider.Value);
     }
 
     public override void Cleanup()
@@ -99,8 +96,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
             new HttpRequestException("", resourceUnavailable),
             new("", new WebSocketException()),
             new("", new WebSocketClosedException(0)),
-            new TaskCanceledException(),
-            new TimeoutException("Cannot respond to an interaction after 3 seconds!")
+            new TaskCanceledException()
         };
 
         foreach (var @case in cases)

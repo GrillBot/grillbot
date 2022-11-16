@@ -37,7 +37,7 @@ public static class Extensions
             .AddSingleton<FileStorageFactory>();
 
         services
-            .AddSingleton<RendererFactory>();
+            .AddScoped<WithoutAccidentRenderer>();
 
         services
             .AddSingleton<Channels.ChannelService>();

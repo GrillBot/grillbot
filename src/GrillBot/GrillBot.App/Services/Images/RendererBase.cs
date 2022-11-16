@@ -14,8 +14,10 @@ public abstract class RendererBase
 
     protected RendererBase(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
     {
-        Cache = fileStorageFactory.Create("Cache");
         ProfilePictureManager = profilePictureManager;
+
+        if (fileStorageFactory != null)
+            Cache = fileStorageFactory.Create("Cache");
     }
 
     public virtual Task<string> RenderAsync(IUser user, ICommandContext commandContext)

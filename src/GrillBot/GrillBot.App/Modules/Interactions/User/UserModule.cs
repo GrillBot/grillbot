@@ -6,7 +6,7 @@ using GrillBot.App.Modules.Implementations.User;
 namespace GrillBot.App.Modules.Interactions.User;
 
 [Group("user", "User management")]
-[RequireUserPerms(GuildPermission.ViewAuditLog)]
+[RequireUserPerms]
 [DefaultMemberPermissions(GuildPermission.ViewAuditLog | GuildPermission.UseApplicationCommands)]
 public class UserModule : Infrastructure.Commands.InteractionsModuleBase
 {

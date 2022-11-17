@@ -8,7 +8,7 @@ namespace GrillBot.App.Modules.Interactions;
 [Group("role", "Roles management")]
 [ExcludeFromCodeCoverage]
 [RequireBotPermission(GuildPermission.ManageRoles)]
-[RequireUserPerms(AllowBooster = true)]
+[RequireUserPerms]
 public class RoleModule : InteractionsModuleBase
 {
     public RoleModule(IServiceProvider serviceProvider) : base(serviceProvider)

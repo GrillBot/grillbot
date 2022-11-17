@@ -43,9 +43,6 @@ public static class Extensions
             .AddSingleton<Channels.ChannelService>();
 
         services
-            .AddSingleton<Permissions.PermissionsService>();
-
-        services
             .AddSingleton<Reminder.RemindService>();
 
         services

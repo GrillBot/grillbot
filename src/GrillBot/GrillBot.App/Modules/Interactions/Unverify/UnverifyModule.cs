@@ -12,7 +12,7 @@ namespace GrillBot.App.Modules.Interactions.Unverify;
 
 [Group("unverify", "Unverify management")]
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands | GuildPermission.ManageRoles)]
-[RequireUserPerms(GuildPermission.ManageRoles)]
+[RequireUserPerms]
 [ExcludeFromCodeCoverage]
 public class UnverifyModule : InteractionsModuleBase
 {

@@ -6,7 +6,7 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 
 namespace GrillBot.App.Modules.Interactions;
 
-[RequireUserPerms(GuildPermission.ViewAuditLog)]
+[RequireUserPerms]
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands | GuildPermission.ViewAuditLog)]
 [Group("admin", "Administration commands")]
 [ExcludeFromCodeCoverage]

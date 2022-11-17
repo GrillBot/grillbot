@@ -7,7 +7,7 @@ using GrillBot.Common.Extensions.Discord;
 namespace GrillBot.App.Modules.Interactions;
 
 [Group("permissions", "Manage channel permissions.")]
-[RequireUserPerms(GuildPermission.Administrator)]
+[RequireUserPerms]
 [ExcludeFromCodeCoverage]
 public class PermissionsModule : InteractionsModuleBase
 {

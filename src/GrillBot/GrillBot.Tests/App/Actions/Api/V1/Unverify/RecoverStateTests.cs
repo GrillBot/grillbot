@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
-using GrillBot.App.Services.Permissions;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;

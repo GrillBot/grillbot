@@ -445,6 +445,11 @@
   "Permissions": {
     "Useless": {
       "CheckSummary": "Unnecessary permissions found: **{0}**\nCount of channels: **{1}**\nCount of users: **{2}**"
+    },
+    "Preconditions": {
+      "DmNotAllowed": "Commands in a private conversation is not allowed.",
+      "UserCommandsDisabled": "You have been banned from all commands.",
+      "ChannelDisabled": "In this channel is not abble to use commands."
     }
   },
   "MessageClearSubModule": {

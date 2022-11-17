@@ -44,7 +44,7 @@ public class ChannelRepository : RepositoryBase
     public async Task<GuildChannel?> FindChannelByIdAsync(ulong channelId, ulong? guildId = null, bool disableTracking = false,
         ChannelsIncludeUsersMode includeUsersMode = ChannelsIncludeUsersMode.None, bool includeParent = false, bool includeDeleted = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = GetBaseQuery(includeDeleted, disableTracking, includeUsersMode);
             if (guildId != null)

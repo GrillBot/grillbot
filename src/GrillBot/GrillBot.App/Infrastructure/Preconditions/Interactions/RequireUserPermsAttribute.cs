@@ -1,51 +1,55 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Services.Permissions;
-using GrillBot.App.Services.Permissions.Models;
+using GrillBot.Common.Managers.Localization;
+using GrillBot.Database.Enums;
+using GrillBot.Database.Services.Repository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.Preconditions.Interactions;
 
 public class RequireUserPermsAttribute : PreconditionAttribute
 {
-    public GuildPermission[] GuildPermissions { get; set; }
-    public ChannelPermission[] ChannelPermissions { get; set; }
-    public bool AllowBooster { get; set; }
-
-    public RequireUserPermsAttribute()
-    {
-    }
-
-    public RequireUserPermsAttribute(GuildPermission[] guildPermissions)
-    {
-        GuildPermissions = guildPermissions;
-    }
-
-    public RequireUserPermsAttribute(ChannelPermission[] channelPermissions)
-    {
-        ChannelPermissions = channelPermissions;
-    }
-
-    public RequireUserPermsAttribute(GuildPermission permission) : this(new[] { permission })
-    {
-    }
-
-    public RequireUserPermsAttribute(ChannelPermission permission) : this(new[] { permission })
-    {
-    }
-
     public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
     {
-        var service = services.GetRequiredService<PermissionsService>();
-        var request = new InteractionsCheckRequest
-        {
-            AllowBooster = AllowBooster,
-            ChannelPermissions = ChannelPermissions,
-            GuildPermissions = GuildPermissions,
-            CommandInfo = commandInfo,
-            InteractionContext = context
-        };
+        var texts = services.GetRequiredService<ITextsManager>();
+        var databaseBuilder = services.GetRequiredService<GrillBotDatabaseBuilder>();
+        var locale = context.Interaction.UserLocale;
 
-        var result = await service.CheckPermissionsAsync(request);
-        return string.IsNullOrEmpty(result) ? PreconditionResult.FromSuccess() : PreconditionResult.FromError(result);
+        await using var repository = databaseBuilder.CreateRepository();
+
+        try
+        {
+            CheckDms(context, texts);
+
+            var user = (await repository.User.FindUserAsync(context.User, true))!;
+            if (user.HaveFlags(UserFlags.BotAdmin)) return PreconditionResult.FromSuccess();
+
+            CheckUserDisabled(user, texts, locale);
+            await CheckChannelAsync(repository, (IGuildChannel)context.Channel, texts, locale);
+
+            return PreconditionResult.FromSuccess();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return PreconditionResult.FromError(ex.Message);
+        }
+    }
+
+    private static void CheckDms(IInteractionContext context, ITextsManager texts)
+    {
+        if (context.Interaction.IsDMInteraction)
+            throw new UnauthorizedAccessException(texts["Permissions/Preconditions/DmNotAllowed", context.Interaction.UserLocale]);
+    }
+
+    private static void CheckUserDisabled(Database.Entity.User user, ITextsManager texts, string locale)
+    {
+        if (user.HaveFlags(UserFlags.CommandsDisabled))
+            throw new UnauthorizedAccessException(texts["Permissions/Preconditions/UserCommandsDisabled", locale]);
+    }
+
+    private static async Task CheckChannelAsync(GrillBotRepository repository, IGuildChannel channel, ITextsManager texts, string locale)
+    {
+        var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.GuildId, true);
+        if (channelData == null || channelData.HasFlag(ChannelFlags.CommandsDisabled))
+            throw new UnauthorizedAccessException(texts["Permissions/Preconditions/ChannelDisabled", locale]);
     }
 }

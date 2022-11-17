@@ -66,21 +66,6 @@ public class DataController : Controller
     }
 
     /// <summary>
-    /// Get non-paginated commands list
-    /// </summary>
-    /// <response code="200">Success</response>
-    [HttpGet("commands")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public ActionResult<List<string>> GetCommandsList()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetCommandsList>();
-        var result = action.Process();
-
-        return Ok(result);
-    }
-
-    /// <summary>
     /// Gets non-paginated list of users.
     /// </summary>
     /// <response code="200">Success</response>

@@ -31,7 +31,6 @@ public class StatisticsRepository : RepositoryBase
                 { nameof(Context.Emotes), await Context.Emotes.CountAsync() },
                 { nameof(Context.Reminders), await Context.Reminders.CountAsync() },
                 { nameof(Context.SelfunverifyKeepables), await Context.SelfunverifyKeepables.CountAsync() },
-                { nameof(Context.ExplicitPermissions), await Context.ExplicitPermissions.CountAsync() },
                 { nameof(Context.AutoReplies), await Context.AutoReplies.CountAsync() },
                 { nameof(Context.EmoteSuggestions), await Context.EmoteSuggestions.CountAsync() },
                 { nameof(Context.PointsTransactions), await Context.PointsTransactions.CountAsync() },

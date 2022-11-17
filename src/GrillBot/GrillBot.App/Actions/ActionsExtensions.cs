@@ -48,12 +48,7 @@ public static class ActionsExtensions
 
         // Command
         services
-            .AddScoped<Api.V1.Command.CreateExplicitPermission>()
-            .AddScoped<Api.V1.Command.GetCommandsList>()
-            .AddScoped<Api.V1.Command.GetExplicitPermissionList>()
-            .AddScoped<Api.V1.Command.GetExternalCommands>()
-            .AddScoped<Api.V1.Command.RemoveExplicitPermission>()
-            .AddScoped<Api.V1.Command.SetExplicitPermissionState>();
+            .AddScoped<Api.V1.Command.GetExternalCommands>();
 
         // Emote
         services

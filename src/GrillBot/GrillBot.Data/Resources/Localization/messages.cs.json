@@ -363,10 +363,6 @@
   "AutoReply": {
     "NotFound": "Požadovaná automatická odpověď s ID {0} nebyla nalezena."
   },
-  "ExplicitPerms": {
-    "Conflict": "Explicitní oprávnění pro příkaz {0} ({1}) již existuje.",
-    "NotFound": "Explicitní oprávnění pro příkaz {0} ({1}) neexistuje."
-  },
   "User": {
     "NotFound": "Uživatel s tímto identifikátorem nebyl nalezen.",
     "UserStatus": {

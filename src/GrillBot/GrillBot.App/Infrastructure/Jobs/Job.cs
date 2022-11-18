@@ -81,11 +81,7 @@ public abstract class Job : IJob
     {
         var dataCacheManager = ServiceProvider.GetRequiredService<DataCacheManager>();
         var data = await dataCacheManager.GetValueAsync("DisabledJobs");
-        if (string.IsNullOrEmpty(data))
-        {
-            await dataCacheManager.SetValueAsync("DisabledJobs", "[]", DateTime.MaxValue);
-            data = "[]";
-        }
+        if (string.IsNullOrEmpty(data)) data = "[]";
 
         var disabledJobs = JsonConvert.DeserializeObject<List<string>>(data);
         return disabledJobs!.Contains(JobName);

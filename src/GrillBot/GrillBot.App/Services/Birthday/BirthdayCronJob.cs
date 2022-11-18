@@ -1,8 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V2;
 using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.App.Services.AuditLog;
-using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Logging;
 using Quartz;
 
 namespace GrillBot.App.Services.Birthday;
@@ -15,8 +12,8 @@ public class BirthdayCronJob : Job
     private GetTodayBirthdayInfo GetTodayBirthdayInfo { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public BirthdayCronJob(IConfiguration configuration, AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager,
-        LoggingManager loggingManager, GetTodayBirthdayInfo getTodayBirthdayInfo, GrillBotDatabaseBuilder databaseBuilder) : base(auditLogWriter, discordClient, initManager, loggingManager)
+    public BirthdayCronJob(IConfiguration configuration, IDiscordClient discordClient, GetTodayBirthdayInfo getTodayBirthdayInfo, GrillBotDatabaseBuilder databaseBuilder,
+        IServiceProvider serviceProvider) : base(serviceProvider)
     {
         Configuration = configuration;
         GetTodayBirthdayInfo = getTodayBirthdayInfo;

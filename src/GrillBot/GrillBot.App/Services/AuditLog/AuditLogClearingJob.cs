@@ -1,13 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.Common.Managers;
 using Quartz;
 using System.Xml.Linq;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.Managers.Logging;
-using GrillBot.Data.Models.API.AuditLog.Filters;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Services.AuditLog;
 
@@ -17,8 +10,7 @@ public class AuditLogClearingJob : Job
     private GrillBotDatabaseBuilder DbFactory { get; }
     private AuditClearingHelper Helper { get; }
 
-    public AuditLogClearingJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, GrillBotDatabaseBuilder dbFactory, InitManager initManager, AuditClearingHelper helper,
-        LoggingManager loggingManager) : base(auditLogWriter, discordClient, initManager, loggingManager)
+    public AuditLogClearingJob(GrillBotDatabaseBuilder dbFactory, AuditClearingHelper helper, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         DbFactory = dbFactory;
         Helper = helper;
@@ -29,7 +21,6 @@ public class AuditLogClearingJob : Job
         var expirationDate = DateTime.Now.AddYears(-1);
 
         await using var repository = DbFactory.CreateRepository();
-
         if (!await repository.AuditLog.ExistsExpiredItemAsync(expirationDate))
             return;
 

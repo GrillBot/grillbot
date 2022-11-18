@@ -1,8 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.Reminder;
 using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.App.Services.AuditLog;
-using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Logging;
 using Quartz;
 
 namespace GrillBot.App.Services.Reminder;
@@ -14,8 +11,7 @@ public class RemindCronJob : Job
     private FinishRemind FinishRemind { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public RemindCronJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager, LoggingManager loggingManager, FinishRemind finishRemind,
-        GrillBotDatabaseBuilder databaseBuilder) : base(auditLogWriter, discordClient, initManager, loggingManager)
+    public RemindCronJob(FinishRemind finishRemind, GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         DatabaseBuilder = databaseBuilder;
 

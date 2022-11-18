@@ -1,7 +1,4 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.App.Services.AuditLog;
-using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Logging;
 using Quartz;
 
 namespace GrillBot.App.Services.Unverify;
@@ -12,8 +9,7 @@ public class UnverifyCronJob : Job
 {
     private UnverifyService UnverifyService { get; }
 
-    public UnverifyCronJob(AuditLogWriter auditLogWriter, IDiscordClient discordClient, UnverifyService unverifyService, InitManager initManager, LoggingManager loggingManager) : base(auditLogWriter,
-        discordClient, initManager, loggingManager)
+    public UnverifyCronJob(UnverifyService unverifyService, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         UnverifyService = unverifyService;
     }

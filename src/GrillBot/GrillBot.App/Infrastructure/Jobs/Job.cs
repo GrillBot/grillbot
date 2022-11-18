@@ -4,13 +4,16 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using Quartz;
 using System.Reflection;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.Jobs;
 
 public abstract class Job : IJob
 {
-    private AuditLogWriter AuditLogWriter { get; }
+    private IServiceProvider ServiceProvider { get; }
+
     protected IDiscordClient DiscordClient { get; }
     private InitManager InitManager { get; }
     protected LoggingManager LoggingManager { get; }
@@ -20,22 +23,19 @@ public abstract class Job : IJob
     private bool RequireInitialization
         => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
 
-    private bool CanRun
-        => !RequireInitialization || InitManager.Get();
-
-    protected Job(AuditLogWriter auditLogWriter, IDiscordClient discordClient, InitManager initManager, LoggingManager loggingManager)
+    protected Job(IServiceProvider serviceProvider)
     {
-        AuditLogWriter = auditLogWriter;
-        DiscordClient = discordClient;
-        InitManager = initManager;
-        LoggingManager = loggingManager;
+        DiscordClient = serviceProvider.GetRequiredService<IDiscordClient>();
+        InitManager = serviceProvider.GetRequiredService<InitManager>();
+        LoggingManager = serviceProvider.GetRequiredService<LoggingManager>();
+        ServiceProvider = serviceProvider;
     }
 
     protected abstract Task RunAsync(IJobExecutionContext context);
 
     public async Task Execute(IJobExecutionContext context)
     {
-        if (!CanRun) return;
+        if (!await CanRunAsync()) return;
 
         await LoggingManager.InfoAsync(JobName, $"Triggered processing at {DateTime.Now}");
         var data = new JobExecutionData
@@ -53,19 +53,41 @@ public abstract class Job : IJob
         {
             data.Result = ex.ToString();
             data.WasError = true;
+
             await LoggingManager.ErrorAsync(JobName, "An error occured while job task processing.", ex);
         }
         finally
         {
             data.MarkFinished();
 
-            if (!string.IsNullOrEmpty(data.Result))
-            {
-                var item = new AuditLogDataWrapper(AuditLogItemType.JobCompleted, data, processedUser: DiscordClient.CurrentUser);
-                await AuditLogWriter.StoreAsync(item);
-            }
-
+            await WriteToAuditLogAsync(data);
             await LoggingManager.InfoAsync(JobName, $"Processing completed. Duration: {data.EndAt - data.StartAt}");
         }
+    }
+
+    private async Task WriteToAuditLogAsync(JobExecutionData executionData)
+    {
+        if (string.IsNullOrEmpty(executionData.Result)) return;
+
+        var auditLogWriter = ServiceProvider.GetRequiredService<AuditLogWriter>();
+        var logItem = new AuditLogDataWrapper(AuditLogItemType.JobCompleted, executionData, processedUser: DiscordClient.CurrentUser);
+        await auditLogWriter.StoreAsync(logItem);
+    }
+
+    private async Task<bool> CanRunAsync()
+        => (!RequireInitialization || InitManager.Get()) && !await IsJobDisabledAsync();
+
+    private async Task<bool> IsJobDisabledAsync()
+    {
+        var dataCacheManager = ServiceProvider.GetRequiredService<DataCacheManager>();
+        var data = await dataCacheManager.GetValueAsync("DisabledJobs");
+        if (string.IsNullOrEmpty(data))
+        {
+            await dataCacheManager.SetValueAsync("DisabledJobs", "[]", DateTime.MaxValue);
+            data = "[]";
+        }
+
+        var disabledJobs = JsonConvert.DeserializeObject<List<string>>(data);
+        return disabledJobs!.Contains(JobName);
     }
 }

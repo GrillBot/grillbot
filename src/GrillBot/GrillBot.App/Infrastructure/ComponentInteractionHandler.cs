@@ -12,8 +12,8 @@ public abstract class ComponentInteractionHandler
         component = interaction as SocketMessageComponent;
 
         var embed = component?.Message.Embeds.FirstOrDefault();
-        if (embed?.Footer == null || embed.Author == null)
-            return false;
+        if (embed == null) return false;
+        if (embed.Footer == null && embed.Author == null) return false;
 
         return embed.TryParseMetadata(out metadata);
     }

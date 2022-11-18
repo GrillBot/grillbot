@@ -154,6 +154,14 @@ public static class ActionsExtensions
 
     private static IServiceCollection AddCommandsActions(this IServiceCollection services)
     {
+        // Searching
+        services
+            .AddScoped<Commands.Searching.GetSearchingList>();
+
+        // Unverify
+        services
+            .AddScoped<Commands.Unverify.UnverifyList>();
+
         services
             .AddScoped<Commands.ImageCreator>()
             .AddScoped<Commands.Emojization>()
@@ -166,7 +174,6 @@ public static class ActionsExtensions
             .AddScoped<Commands.RolesReader>()
             .AddScoped<Commands.UserInfo>()
             .AddScoped<Commands.UserAccessList>()
-            .AddScoped<Commands.Unverify.UnverifyList>()
             .AddScoped<Commands.GetChannelboard>()
             .AddScoped<Commands.UnsuccessCommandAttempt>();
 

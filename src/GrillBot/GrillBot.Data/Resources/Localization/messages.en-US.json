@@ -249,6 +249,13 @@
     },
     "RemoveSearch": {
       "Success": "The search was successfully deleted."
+    },
+    "List": {
+      "Embed": {
+        "Title": "Searching in the channel #{0}",
+        "NoItems": "No one searching in the channel #{0} yet.",
+        "NoItemsWithQuery": "No one searching in the channel #{0} yet. Try use another search query."
+      }
     }
   },
   "SuggestionModule": {

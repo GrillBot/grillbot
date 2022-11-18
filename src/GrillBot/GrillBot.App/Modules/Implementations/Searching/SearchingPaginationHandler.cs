@@ -1,19 +1,17 @@
-﻿using GrillBot.App.Infrastructure;
-using GrillBot.Common.Helpers;
-using GrillBot.Data.Models.API.Searching;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Searching;
 
+[ExcludeFromCodeCoverage]
 public class SearchingPaginationHandler : ComponentInteractionHandler
 {
     private int Page { get; }
-    private IDiscordClient DiscordClient { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public SearchingPaginationHandler(IDiscordClient discordClient, IServiceProvider serviceProvider, int page)
+    public SearchingPaginationHandler(IServiceProvider serviceProvider, int page)
     {
-        DiscordClient = discordClient;
         Page = page;
         ServiceProvider = serviceProvider;
     }
@@ -26,42 +24,19 @@ public class SearchingPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var guild = await DiscordClient.GetGuildAsync(metadata.GuildId);
-        if (guild == null)
-        {
-            await context.Interaction.DeferAsync();
-            return;
-        }
-
-        var channel = await guild.GetTextChannelAsync(metadata.ChannelId);
+        var channel = await context.Guild.GetTextChannelAsync(metadata.ChannelId);
         if (channel == null)
         {
             await context.Interaction.DeferAsync();
             return;
         }
 
-        var parameters = new GetSearchingListParams
-        {
-            Pagination = { Page = 0, PageSize = EmbedBuilder.MaxFieldCount },
-            Sort = { Descending = false, OrderBy = "Id" },
-            ChannelId = channel.Id.ToString(),
-            GuildId = guild.Id.ToString(),
-            MessageQuery = metadata.MessageQuery
-        };
-
         using var scope = ServiceProvider.CreateScope();
 
-        var databaseBuilder = scope.ServiceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
-        await using var repository = databaseBuilder.CreateRepository();
+        var command = scope.ServiceProvider.GetRequiredService<Actions.Commands.Searching.GetSearchingList>();
+        command.Init(context);
 
-        var searchesCount = await repository.Searching.GetSearchesCountAsync(parameters, new List<string>());
-        if (searchesCount == 0)
-        {
-            await context.Interaction.DeferAsync();
-            return;
-        }
-
-        var pagesCount = (int)Math.Ceiling(searchesCount / (double)EmbedBuilder.MaxFieldCount);
+        var pagesCount = await command.ComputePagesCountAsync(metadata.MessageQuery, channel);
         var newPage = CheckNewPageNumber(Page, pagesCount);
         if (newPage == metadata.Page)
         {
@@ -69,16 +44,12 @@ public class SearchingPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Searching.GetSearchingList>();
-        parameters.Pagination.Page = newPage;
-        var searches = await action.ProcessAsync(parameters);
-        var result = new EmbedBuilder()
-            .WithSearching(searches, channel, guild, newPage, context.User, metadata.MessageQuery);
+        var (embed, paginationComponent) = await command.ProcessAsync(newPage, metadata.MessageQuery, channel);
 
         await component.UpdateAsync(msg =>
         {
-            msg.Components = ComponentsHelper.CreatePaginationComponents(newPage, pagesCount, "search");
-            msg.Embed = result.Build();
+            msg.Components = paginationComponent;
+            msg.Embed = embed;
         });
     }
 }

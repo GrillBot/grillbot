@@ -1,16 +1,15 @@
-﻿using Discord.Interactions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.App.Services;
-using GrillBot.Common.Helpers;
-using GrillBot.Data.Models.API.Searching;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("search", "Searching")]
+[ExcludeFromCodeCoverage]
 public class SearchingModule : InteractionsModuleBase
 {
     private SearchingService SearchingService { get; }
@@ -28,37 +27,17 @@ public class SearchingModule : InteractionsModuleBase
         string query = null
     )
     {
-        channel ??= (ITextChannel)Context.Channel;
+        using var command = GetCommand<Actions.Commands.Searching.GetSearchingList>();
+        var (embed, paginationComponent) = await command.Command.ProcessAsync(0, query, channel);
 
-        var parameters = new GetSearchingListParams
-        {
-            Pagination = { Page = 0, PageSize = EmbedBuilder.MaxFieldCount },
-            Sort = { Descending = false, OrderBy = "Id" },
-            ChannelId = channel.Id.ToString(),
-            GuildId = Context.Guild.Id.ToString(),
-            MessageQuery = query
-        };
-
-        using var scope = ServiceProvider.CreateScope();
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Searching.GetSearchingList>();
-        action.UpdateContext(Locale, Context.User);
-        
-        var list = await action.ProcessAsync(parameters);
-        var pagesCount = (int)Math.Ceiling(list.TotalItemsCount / (double)EmbedBuilder.MaxFieldCount);
-
-        var embed = new EmbedBuilder()
-            .WithSearching(list, channel, Context.Guild, 0, Context.User, query);
-
-        var components = ComponentsHelper.CreatePaginationComponents(0, pagesCount, "search");
-        await SetResponseAsync(embed: embed.Build(), components: components);
+        await SetResponseAsync(embed: embed, components: paginationComponent);
     }
 
     [RequireSameUserAsAuthor]
     [ComponentInteraction("search:*", ignoreGroupNames: true)]
     public async Task HandleSearchingListPaginationAsync(int page)
     {
-        var handler = new SearchingPaginationHandler(Context.Client, ServiceProvider, page);
+        var handler = new SearchingPaginationHandler(ServiceProvider, page);
         await handler.ProcessAsync(Context);
     }
 

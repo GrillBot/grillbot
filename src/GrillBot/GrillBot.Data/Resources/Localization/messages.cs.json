@@ -249,6 +249,13 @@
     },
     "RemoveSearch": {
       "Success": "Hledání bylo úspěšně smazáno."
+    },
+    "List": {
+      "Embed": {
+        "Title": "Hledání v kanálu #{0}",
+        "NoItems": "V kanálu {0} zatím nikdo nic nehledá.",
+        "NoItemsWithQuery": "V kanálu {0} zatím nikdo nic nehledá. Zkus jiný vyhledávací podřetězec."
+      }
     }
   },
   "SuggestionModule": {

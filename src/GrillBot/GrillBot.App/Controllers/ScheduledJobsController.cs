@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions.Api.V1.ScheduledJobs;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Jobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -38,7 +39,7 @@ public class ScheduledJobsController : Controller
     }
 
     /// <summary>
-    /// Trigger scheduled job.
+    /// Trigger a scheduled job.
     /// </summary>
     /// <response code="200"></response>
     [HttpPost]
@@ -47,7 +48,23 @@ public class ScheduledJobsController : Controller
     {
         var action = ServiceProvider.GetRequiredService<RunScheduledJob>();
         await action.ProcessAsync(jobName);
-        
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// Update an existing job.
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <response code="404">Job wasn't found.</response>
+    [HttpPut]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> UpdateJobAsync(string jobName, bool enabled)
+    {
+        var action = ServiceProvider.GetRequiredService<UpdateJob>();
+        await action.ProcessAsync(jobName, enabled);
+
         return Ok();
     }
 }

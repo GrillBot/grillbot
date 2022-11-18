@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Actions.Api.V1.ScheduledJobs;
 using GrillBot.App.Services;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -7,7 +8,6 @@ using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Quartz;
 using Newtonsoft.Json;
 using Quartz.Impl;
-using Quartz.Impl.Triggers;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.ScheduledJobs;
 
@@ -25,8 +25,9 @@ public class GetScheduledJobsTests : ApiActionTest<GetScheduledJobs>
             .Build();
 
         var schedulerFactory = new SchedulerFactoryBuilder().SetGetSchedulerAction(scheduler).Build();
+        var dataCacheManager = new DataCacheManager(CacheBuilder);
 
-        return new GetScheduledJobs(ApiRequestContext, DatabaseBuilder, schedulerFactory);
+        return new GetScheduledJobs(ApiRequestContext, DatabaseBuilder, schedulerFactory, dataCacheManager);
     }
 
     private async Task InitDataAsync()

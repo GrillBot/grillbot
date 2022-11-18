@@ -515,5 +515,8 @@
   },
   "PublicApiClients": {
     "NotFound": "Requested client wasn't found."
+  },
+  "Jobs": {
+    "NotFound": "Unable to find job {0}."
   }
 }

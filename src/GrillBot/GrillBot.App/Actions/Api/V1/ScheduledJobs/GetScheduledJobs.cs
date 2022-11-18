@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Services.AuditLog;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Jobs;
@@ -13,11 +14,13 @@ public class GetScheduledJobs : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ISchedulerFactory SchedulerFactory { get; }
+    private DataCacheManager DataCacheManager { get; }
 
-    public GetScheduledJobs(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ISchedulerFactory schedulerFactory) : base(apiContext)
+    public GetScheduledJobs(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ISchedulerFactory schedulerFactory, DataCacheManager dataCacheManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         SchedulerFactory = schedulerFactory;
+        DataCacheManager = dataCacheManager;
     }
 
     public async Task<List<ScheduledJob>> ProcessAsync()
@@ -27,11 +30,12 @@ public class GetScheduledJobs : ApiAction
         var result = new List<ScheduledJob>();
         var jobKeys = await scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup());
         var runningJobs = await scheduler.GetCurrentlyExecutingJobs();
+        var disabledJobs = await GetDisabledJobsAsync();
 
         foreach (var jobKey in jobKeys.OrderBy(o => o.Name))
         {
             var logs = logItems.TryGetValue(jobKey.Name, out var logsData) ? logsData : new List<JobExecutionData>();
-            var job = await GetJobAsync(jobKey, logs, runningJobs, scheduler);
+            var job = await GetJobAsync(jobKey, logs, runningJobs, scheduler, disabledJobs);
 
             result.Add(job);
         }
@@ -39,7 +43,8 @@ public class GetScheduledJobs : ApiAction
         return result;
     }
 
-    private static async Task<ScheduledJob> GetJobAsync(JobKey key, IReadOnlyList<JobExecutionData> logs, IEnumerable<IJobExecutionContext> runningJobs, IScheduler scheduler)
+    private static async Task<ScheduledJob> GetJobAsync(JobKey key, IReadOnlyList<JobExecutionData> logs, IEnumerable<IJobExecutionContext> runningJobs, IScheduler scheduler,
+        ICollection<string> disabledJobs)
     {
         var trigger = await scheduler.GetTrigger(new TriggerKey($"{key.Name}-Trigger"));
         var newestItem = logs.Count == 0 ? null : logs[0];
@@ -50,7 +55,7 @@ public class GetScheduledJobs : ApiAction
             StartCount = logs.Count,
             Running = runningJobs.Any(o => o.JobDetail.Key.Name == key.Name),
             NextRun = trigger!.GetNextFireTimeUtc()!.Value.LocalDateTime,
-            IsActive = true,
+            IsActive = !disabledJobs.Contains(key.Name),
             LastRunDuration = newestItem?.Duration(),
             LastRun = newestItem?.StartAt,
             MaxTime = int.MinValue,
@@ -86,5 +91,11 @@ public class GetScheduledJobs : ApiAction
             .Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriter.SerializerSettings)!)
             .GroupBy(o => o.JobName)
             .ToDictionary(o => o.Key, o => o.ToList());
+    }
+
+    private async Task<List<string>> GetDisabledJobsAsync()
+    {
+        var data = await DataCacheManager.GetValueAsync("DisabledJobs");
+        return string.IsNullOrEmpty(data) ? new List<string>() : JsonConvert.DeserializeObject<List<string>>(data);
     }
 }

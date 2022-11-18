@@ -98,7 +98,8 @@ public static class ActionsExtensions
         // Scheduled jobs
         services
             .AddScoped<Api.V1.ScheduledJobs.GetScheduledJobs>()
-            .AddScoped<Api.V1.ScheduledJobs.RunScheduledJob>();
+            .AddScoped<Api.V1.ScheduledJobs.RunScheduledJob>()
+            .AddScoped<Api.V1.ScheduledJobs.UpdateJob>();
 
         // Searching
         services

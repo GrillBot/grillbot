@@ -83,9 +83,7 @@ public class MessageCacheManager : IMessageCacheManager
         try
         {
             DeletedMessages.Add(msg.Id);
-
-            if (channel.HasValue && channel.Value is not IDMChannel)
-                await DownloadMessagesAsync(channel.Value, msg.Id, Direction.Around); // Download 100 messages around deleted message.
+            await DownloadMessagesAsync(channel.Value, msg.Id, Direction.Around); // Download 100 messages around deleted message.
         }
         finally
         {
@@ -189,7 +187,7 @@ public class MessageCacheManager : IMessageCacheManager
                     ? (await channel.GetMessagesAsync(range.Value.messageId, range.Value.direction, limit).FlattenAsync()).ToList()
                     : (await channel.GetMessagesAsync(limit).FlattenAsync()).ToList();
             }
-            catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.InternalServerError)
+            catch (HttpException ex) when (ex.HttpCode is HttpStatusCode.InternalServerError or HttpStatusCode.ServiceUnavailable)
             {
                 // Catches errors from discord API. Internal server error are expected.
                 return new List<IMessage>();

@@ -157,7 +157,8 @@ public static class ActionsExtensions
         // Reminder
         services
             .AddScoped<Commands.Reminder.CreateRemind>()
-            .AddScoped<Commands.Reminder.CopyRemind>();
+            .AddScoped<Commands.Reminder.CopyRemind>()
+            .AddScoped<Commands.Reminder.GetSuggestions>();
         
         // Searching
         services

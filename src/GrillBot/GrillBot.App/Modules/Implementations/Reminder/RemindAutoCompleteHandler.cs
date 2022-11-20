@@ -1,18 +1,22 @@
-﻿using Discord.Interactions;
-using GrillBot.App.Services.Reminder;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
+using GrillBot.App.Actions.Commands.Reminder;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;
 
+[ExcludeFromCodeCoverage]
 public class RemindAutoCompleteHandler : AutocompleteHandler
 {
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter,
         IServiceProvider services)
     {
-        var service = services.GetRequiredService<RemindService>();
-        var suggestions = await service.GetRemindSuggestionsAsync(context.User, autocompleteInteraction.UserLocale);
+        using var scope = services.CreateScope();
+        
+        var getSuggestions = scope.ServiceProvider.GetRequiredService<GetSuggestions>();
+        getSuggestions.Init(context);
 
-        var result = suggestions.Select(o => new AutocompleteResult(o.Value, o.Key));
+        var result = await getSuggestions.ProcessAsync();
         return AutocompletionResult.FromSuccess(result);
     }
 }

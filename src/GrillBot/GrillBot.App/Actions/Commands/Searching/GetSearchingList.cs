@@ -23,12 +23,12 @@ public class GetSearchingList : CommandAction
 
     public async Task<(Embed embed, MessageComponent paginationComponent)> ProcessAsync(int page, string query, IChannel channel)
     {
-        GetSearchingListAction.UpdateContext(Context.Interaction.UserLocale, Context.User);
+        GetSearchingListAction.UpdateContext(Locale, Context.User);
         channel ??= Context.Channel;
 
         var parameters = CreateParameters(page, query, channel);
         var list = await GetSearchingListAction.ProcessAsync(parameters);
-        var pagesCount = ComputePagesCountAsync(list.TotalItemsCount);
+        var pagesCount = ComputePagesCount(list.TotalItemsCount);
         var embed = CreateEmbed(list, page, query, channel);
         var paginationComponents = ComponentsHelper.CreatePaginationComponents(page, pagesCount, "search");
 
@@ -41,10 +41,10 @@ public class GetSearchingList : CommandAction
 
         var parameters = CreateParameters(0, query, channel);
         var totalCount = await repository.Searching.GetSearchesCountAsync(parameters, new List<string>());
-        return ComputePagesCountAsync(totalCount);
+        return ComputePagesCount(totalCount);
     }
 
-    private static int ComputePagesCountAsync(long totalCount)
+    private static int ComputePagesCount(long totalCount)
         => (int)Math.Ceiling(totalCount / (double)EmbedBuilder.MaxFieldCount);
 
     private GetSearchingListParams CreateParameters(int page, string query, IChannel channel)

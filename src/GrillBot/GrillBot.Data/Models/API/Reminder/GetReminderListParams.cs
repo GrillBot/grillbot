@@ -87,7 +87,7 @@ public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessa
             "At" => Sort.Descending switch
             {
                 true => query.OrderByDescending(o => o.At).ThenByDescending(o => o.Id),
-                _ => query.OrderBy(o => o.At).ThenBy(o => o.At)
+                _ => query.OrderBy(o => o.At).ThenBy(o => o.Id)
             },
             _ => Sort.Descending switch
             {

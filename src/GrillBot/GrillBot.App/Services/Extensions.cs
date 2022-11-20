@@ -43,9 +43,6 @@ public static class Extensions
             .AddSingleton<Channels.ChannelService>();
 
         services
-            .AddSingleton<Reminder.RemindService>();
-
-        services
             .AddSingleton<Suggestion.SuggestionSessionService>()
             .AddSingleton<Suggestion.EmoteSuggestionService>()
             .AddSingleton<Suggestion.EmoteSuggestionsEventManager>();

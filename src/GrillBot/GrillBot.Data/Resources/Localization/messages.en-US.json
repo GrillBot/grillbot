@@ -259,6 +259,13 @@
       "WasCancelled": "This reminder has been cancelled.",
       "WasSent": "This reminder has already been sent.",
       "CopyExists": "You have already created this notification once from the button. You cannot create another one."
+    },
+    "List": {
+      "Embed": {
+        "Title": "List of pending reminders for user {0}",
+        "NoItems": "There are no reminders pending for user {0}.",
+        "RowTitle": "#{0} - From {1} at {2} (in {3})"
+      }
     }
   },
   "SearchingModule": {

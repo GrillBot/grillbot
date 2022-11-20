@@ -5,9 +5,7 @@ using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Common;
-using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -15,11 +13,8 @@ namespace GrillBot.App.Modules.Interactions;
 [RequireUserPerms]
 public class RemindModule : InteractionsModuleBase
 {
-    private RemindService RemindService { get; }
-
-    public RemindModule(RemindService remindService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public RemindModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        RemindService = remindService;
     }
 
     [SlashCommand("create", "Create a reminder for a specific date.")]
@@ -61,13 +56,11 @@ public class RemindModule : InteractionsModuleBase
         bool notify = false
     )
     {
-        using var scope = ServiceProvider.CreateScope();
-        var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.FinishRemind>();
-        action.UpdateContext(Locale, Context.User);
-        await action.ProcessAsync(id, notify, false);
+        using var action = GetActionAsCommand<Actions.Api.V1.Reminder.FinishRemind>();
+        await action.Command.ProcessAsync(id, notify, false);
 
-        if (action.IsGone || !action.IsAuthorized)
-            await SetResponseAsync(action.ErrorMessage);
+        if (action.Command.IsGone || !action.Command.IsAuthorized)
+            await SetResponseAsync(action.Command.ErrorMessage);
         else
             await SetResponseAsync(GetText(nameof(CancelRemindAsync), notify ? "CancelledWithNotify" : "Cancelled"));
     }
@@ -75,22 +68,17 @@ public class RemindModule : InteractionsModuleBase
     [SlashCommand("list", "List of currently pending reminders.")]
     public async Task RemindListAsync()
     {
-        var data = await RemindService.GetRemindersAsync(Context.User, 0);
-        var remindsCount = await RemindService.GetRemindersCountAsync(Context.User);
-        var pagesCount = (int)Math.Ceiling(remindsCount / (double)EmbedBuilder.MaxFieldCount);
-
-        var embed = await new EmbedBuilder()
-            .WithRemindListAsync(data, Context.Client, Context.User, Context.User, 0);
-
-        var components = ComponentsHelper.CreatePaginationComponents(0, pagesCount, "remind");
-        await SetResponseAsync(embed: embed.Build(), components: components);
+        using var command = GetCommand<Actions.Commands.Reminder.GetReminderList>();
+        var (embed, paginationComponent) = await command.Command.ProcessAsync(0);
+        
+        await SetResponseAsync(embed: embed, components: paginationComponent);
     }
 
     [RequireSameUserAsAuthor]
     [ComponentInteraction("remind:*", ignoreGroupNames: true)]
     public async Task HandleRemindListPaginationAsync(int page)
     {
-        var handler = new RemindPaginationHandler(RemindService, Context.Client, page);
+        var handler = new RemindPaginationHandler(page, ServiceProvider);
         await handler.ProcessAsync(Context);
     }
 

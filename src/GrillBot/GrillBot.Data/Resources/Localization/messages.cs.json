@@ -259,6 +259,13 @@
       "WasCancelled": "Toto upozornění bylo zrušeno.",
       "WasSent": "Toto upozornění již bylo odesláno.",
       "CopyExists": "Toto upozornění jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další."
+    },
+    "List": {
+      "Embed": {
+        "Title": "Seznam čekajících upozornění pro {0}",
+        "NoItems": "Pro uživatele {0} nečekají žádné upozornění.",
+        "RowTitle": "#{0} - Od {1} v {2} (za {3})"
+      }
     }
   },
   "SearchingModule": {

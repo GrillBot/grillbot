@@ -1,21 +1,19 @@
-﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Reminder;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Helpers;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;
 
+[ExcludeFromCodeCoverage]
 public class RemindPaginationHandler : ComponentInteractionHandler
 {
-    private IDiscordClient DiscordClient { get; }
-    private RemindService RemindService { get; }
     private int Page { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public RemindPaginationHandler(RemindService remindService, IDiscordClient discordClient, int page)
+    public RemindPaginationHandler(int page, IServiceProvider serviceProvider)
     {
-        RemindService = remindService;
         Page = page;
-        DiscordClient = discordClient;
+        ServiceProvider = serviceProvider;
     }
 
     public override async Task ProcessAsync(IInteractionContext context)
@@ -26,21 +24,18 @@ public class RemindPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var forUser = await DiscordClient.FindUserAsync(metadata.OfUser);
-        if (forUser == null)
+        using var scope = ServiceProvider.CreateScope();
+
+        var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.Reminder.GetReminderList>();
+        action.Init(context);
+
+        var pagesCount = await action.ComputePagesCountAsync();
+        if (pagesCount == 0)
         {
             await context.Interaction.DeferAsync();
             return;
         }
 
-        var remindsCount = await RemindService.GetRemindersCountAsync(forUser);
-        if (remindsCount == 0)
-        {
-            await context.Interaction.DeferAsync();
-            return;
-        }
-
-        var pagesCount = (int)Math.Ceiling(remindsCount / (double)EmbedBuilder.MaxFieldCount);
         var newPage = CheckNewPageNumber(Page, pagesCount);
         if (newPage == metadata.Page)
         {
@@ -48,14 +43,12 @@ public class RemindPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var reminders = await RemindService.GetRemindersAsync(forUser, newPage);
-        var result = await new EmbedBuilder()
-            .WithRemindListAsync(reminders, DiscordClient, forUser, context.User, newPage);
+        var (embed, paginationComponent) = await action.ProcessAsync(Page);
 
         await component.UpdateAsync(msg =>
         {
-            msg.Components = ComponentsHelper.CreatePaginationComponents(newPage, pagesCount, "remind");
-            msg.Embed = result.Build();
+            msg.Components = paginationComponent;
+            msg.Embed = embed;
         });
     }
 }

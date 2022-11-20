@@ -41,34 +41,19 @@ public class RemindRepository : RepositoryBase
         using (CreateCounter())
         {
             return await Context.Reminders
-                .FirstOrDefaultAsync(o => o.RemindMessageId == messageId && o.At < DateTime.Now);
+                .FirstOrDefaultAsync(o => o.RemindMessageId == messageId);
         }
     }
 
-    public async Task<int> GetRemindersCountAsync(IUser forUser)
+    public async Task<int> GetRemindersCountAsync(IQueryableModel<RemindMessage> model)
     {
         using (CreateCounter())
         {
-            return await Context.Reminders.AsNoTracking()
-                .CountAsync(o => o.ToUserId == forUser.Id.ToString() && o.RemindMessageId == null);
+            return await CreateQuery(model, true).CountAsync();
         }
     }
 
-    public async Task<List<RemindMessage>> GetRemindersPageAsync(IUser forUser, int page)
-    {
-        using (CreateCounter())
-        {
-            return await Context.Reminders.AsNoTracking()
-                .Where(o => o.ToUserId == forUser.Id.ToString() && o.RemindMessageId == null)
-                .OrderBy(o => o.At).ThenBy(o => o.Id)
-                .Skip(page * EmbedBuilder.MaxFieldCount)
-                .Take(EmbedBuilder.MaxFieldCount)
-                .ToListAsync();
-        }
-    }
-
-    public async Task<PaginatedResponse<RemindMessage>> GetRemindListAsync(IQueryableModel<RemindMessage> model,
-        PaginatedParams pagination)
+    public async Task<PaginatedResponse<RemindMessage>> GetRemindListAsync(IQueryableModel<RemindMessage> model, PaginatedParams pagination)
     {
         using (CreateCounter())
         {

@@ -45,13 +45,19 @@ public class UnverifyModule : InteractionsModuleBase
     }
 
     [SlashCommand("update", "Updates time of an existing unverify")]
-    public async Task UpdateUnverifyAsync(IGuildUser user, DateTime newEnd)
+    public async Task UpdateUnverifyAsync(IGuildUser user, DateTime newEnd, [Discord.Interactions.MaxLength(500)] string reason = null)
     {
         using var action = GetActionAsCommand<Actions.Api.V1.Unverify.UpdateUnverify>();
 
         try
         {
-            var result = await action.Command.ProcessAsync(Context.Guild.Id, user.Id, new UpdateUnverifyParams { EndAt = newEnd });
+            var parameters = new UpdateUnverifyParams
+            {
+                Reason = reason,
+                EndAt = newEnd
+            };
+
+            var result = await action.Command.ProcessAsync(Context.Guild.Id, user.Id, parameters);
             await SetResponseAsync(result);
         }
         catch (Exception ex)

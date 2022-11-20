@@ -126,37 +126,6 @@ public class UnverifyService
         return selfunverify ? Logger.LogSelfunverifyAsync(profile, guild) : Logger.LogUnverifyAsync(profile, guild, from);
     }
 
-    public async Task<string> UpdateUnverifyAsync(IGuildUser user, IGuild guild, DateTime newEnd, IGuildUser fromUser, string locale)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var dbUser = await repository.GuildUser.FindGuildUserAsync(user, includeAll: true);
-        if (dbUser?.Unverify == null)
-            throw new NotFoundException(Texts["Unverify/Update/UnverifyNotFound", locale]);
-        
-        if ((dbUser.Unverify.EndAt - DateTime.Now).TotalSeconds <= 30.0)
-            throw new ValidationException(Texts["Unverify/Update/NotEnoughTime", locale]).ToBadRequestValidation(newEnd, nameof(newEnd));
-
-        var logData = JsonConvert.DeserializeObject<UnverifyLogSet>(dbUser.Unverify.UnverifyLog!.Data)!;
-        await Logger.LogUpdateAsync(DateTime.Now, newEnd, guild, fromUser, user);
-
-        dbUser.Unverify.EndAt = newEnd;
-        dbUser.Unverify.StartAt = DateTime.Now;
-        await repository.CommitAsync();
-
-        try
-        {
-            var dmMessage = MessageGenerator.CreateUpdatePmMessage(guild, newEnd, logData.Language ?? locale);
-            await user.SendMessageAsync(dmMessage);
-        }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-        {
-            // User have disabled DMs.
-        }
-
-        return MessageGenerator.CreateUpdateChannelMessage(user, newEnd, locale);
-    }
-
     public async Task<string> RemoveUnverifyAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false, bool fromWeb = false)
     {
         try

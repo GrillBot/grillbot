@@ -16,7 +16,7 @@ public class GuildUserRepository : RepositoryBase
 
     public async Task<GuildUser> GetOrCreateGuildUserAsync(IGuildUser user, bool includeAll = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var entity = await FindGuildUserAsync(user, false, includeAll);
             if (entity != null)
@@ -31,7 +31,7 @@ public class GuildUserRepository : RepositoryBase
 
     public async Task<GuildUser?> FindGuildUserAsync(IGuildUser user, bool disableTracking = false, bool includeAll = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.GuildUsers
                 .Include(o => o.Guild).Include(o => o.User)
@@ -59,7 +59,7 @@ public class GuildUserRepository : RepositoryBase
 
     public async Task<bool> ExistsAsync(IGuildUser user)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.GuildUsers.AsNoTracking()
                 .AnyAsync(o => o.UserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString());
@@ -68,7 +68,7 @@ public class GuildUserRepository : RepositoryBase
 
     public async Task<List<GuildUser>> GetAllUsersAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.GuildUsers
                 .Include(o => o.User)

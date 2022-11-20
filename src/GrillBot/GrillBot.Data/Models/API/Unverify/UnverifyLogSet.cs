@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Discord.WebSocket;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace GrillBot.Data.Models.API.Unverify;
@@ -15,4 +13,5 @@ public class UnverifyLogSet
     public List<string> ChannelIdsToRemove { get; set; }
     public string Reason { get; set; }
     public bool IsSelfUnverify { get; set; }
+    public string Language { get; set; }
 }

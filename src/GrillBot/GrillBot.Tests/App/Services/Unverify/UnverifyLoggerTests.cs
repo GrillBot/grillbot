@@ -62,7 +62,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var fromUser = new GuildUserBuilder(Consts.UserId + 1, Consts.Username + "2", Consts.Discriminator).SetGuild(guild).Build();
 
-        await Service.LogUpdateAsync(DateTime.MinValue, DateTime.MaxValue, guild, fromUser, toUser);
+        await Service.LogUpdateAsync(DateTime.MinValue, DateTime.MaxValue, guild, fromUser, toUser, "Reason");
     }
 
     [TestMethod]

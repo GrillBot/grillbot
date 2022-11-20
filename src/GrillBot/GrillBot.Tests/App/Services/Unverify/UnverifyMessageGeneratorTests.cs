@@ -1,12 +1,34 @@
 ﻿using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Models.Unverify;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Services.Unverify;
 
 [TestClass]
-public class UnverifyMessageGeneratorTests
+public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerator>
 {
+    protected override UnverifyMessageGenerator CreateService()
+    {
+        var texts = new TextsBuilder()
+            .AddText("Unverify/Message/UnverifyToChannelWithoutReason", "cs", "{0},{1}")
+            .AddText("Unverify/Message/UnverifyToChannelWithReason", "cs", "{0},{1},{2}")
+            .AddText("Unverify/Message/PrivateUnverifyWithoutReason", "cs", "{0},{1}")
+            .AddText("Unverify/Message/PrivateUnverifyWithReason", "cs", "{0},{1},{2}")
+            .AddText("Unverify/Message/PrivateUpdate", "cs", "{0},{1}")
+            .AddText("Unverify/Message/PrivateUpdateWithReason", "cs", "{0},{1},{2}")
+            .AddText("Unverify/Message/UpdateToChannel", "cs", "{0},{1}")
+            .AddText("Unverify/Message/UpdateToChannelWithReason", "cs", "{0},{1},{2}")
+            .AddText("Unverify/Message/PrivateManuallyRemovedUnverify", "cs", "{0}")
+            .AddText("Unverify/Message/ManuallyRemoveToChannel", "cs", "{0}")
+            .AddText("Unverify/Message/ManuallyRemoveFailed", "cs", "{0}({1})")
+            .AddText("Unverify/Message/RemoveAccessUnverifyNotFound", "cs", "{0}")
+            .AddText("Unverify/Message/UnverifyFailedToChannel", "cs", "{0}")
+            .Build();
+    
+        return new UnverifyMessageGenerator(texts);
+    }
+
     [TestMethod]
     public void CreateUnverifyMessageToChannel_Selfunverify()
     {
@@ -14,10 +36,7 @@ public class UnverifyMessageGeneratorTests
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true, "cs");
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/UnverifyToChannelWithoutReason", "cs", "{0},{1}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateUnverifyMessageToChannel(profile, "cs");
+        var result = Service.CreateUnverifyMessageToChannel(profile, "cs");
 
         Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00", result);
     }
@@ -30,10 +49,7 @@ public class UnverifyMessageGeneratorTests
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false, "cs") { Reason = "Duvod" };
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/UnverifyToChannelWithReason", "cs", "{0},{1},{2}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateUnverifyMessageToChannel(profile, "cs");
+        var result = Service.CreateUnverifyMessageToChannel(profile, "cs");
 
         Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00,Duvod", result);
     }
@@ -46,10 +62,7 @@ public class UnverifyMessageGeneratorTests
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true, "cs");
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/PrivateUnverifyWithoutReason", "cs", "{0},{1}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateUnverifyPmMessage(profile, guild, "cs");
+        var result = Service.CreateUnverifyPmMessage(profile, guild, "cs");
 
         Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00", result);
     }
@@ -61,10 +74,7 @@ public class UnverifyMessageGeneratorTests
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false, "cs") { Reason = "Duvod" };
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/PrivateUnverifyWithReason", "cs", "{0},{1},{2}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateUnverifyPmMessage(profile, guild, "cs");
+        var result = Service.CreateUnverifyPmMessage(profile, guild, "cs");
 
         Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00,Duvod", result);
     }
@@ -74,12 +84,19 @@ public class UnverifyMessageGeneratorTests
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var end = new DateTime(2022, 02, 04);
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/PrivateUpdate", "cs", "{0},{1}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateUpdatePmMessage(guild, end, "cs");
+        var result = Service.CreateUpdatePmMessage(guild, end, null, "cs");
 
         Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00", result);
+    }
+
+    [TestMethod]
+    public void CreateUpdatePmMessageWithReason()
+    {
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var end = new DateTime(2022, 02, 04);
+        var result = Service.CreateUpdatePmMessage(guild, end, "Reason", "cs");
+
+        Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00,Reason", result);
     }
 
     [TestMethod]
@@ -88,22 +105,27 @@ public class UnverifyMessageGeneratorTests
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/UpdateToChannel", "cs", "{0},{1}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateUpdateChannelMessage(guildUser, end, "cs");
+        var result = Service.CreateUpdateChannelMessage(guildUser, end, null, "cs");
 
         Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00", result);
+    }
+    
+    [TestMethod]
+    public void CreateUpdateChannelMessageWithReason()
+    {
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+        var end = new DateTime(2022, 02, 04);
+        var result = Service.CreateUpdateChannelMessage(guildUser, end, "Reason", "cs");
+
+        Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00,Reason", result);
     }
 
     [TestMethod]
     public void CreateRemoveAccessManuallyPmMessage()
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/PrivateManuallyRemovedUnverify", "cs", "{0}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateRemoveAccessManuallyPmMessage(guild, "cs");
+        var result = Service.CreateRemoveAccessManuallyPmMessage(guild, "cs");
 
         Assert.AreEqual("GrillBot-Guild-Name", result);
     }
@@ -113,10 +135,7 @@ public class UnverifyMessageGeneratorTests
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/ManuallyRemoveToChannel", "cs", "{0}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateRemoveAccessManuallyToChannel(guildUser, "cs");
+        var result = Service.CreateRemoveAccessManuallyToChannel(guildUser, "cs");
 
         Assert.AreEqual("GrillBot-User-Username#1234", result);
     }
@@ -127,10 +146,7 @@ public class UnverifyMessageGeneratorTests
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var exception = new Exception("Test");
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/ManuallyRemoveFailed", "cs", "{0}({1})")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateRemoveAccessManuallyFailed(guildUser, exception, "cs");
+        var result = Service.CreateRemoveAccessManuallyFailed(guildUser, exception, "cs");
 
         Assert.AreEqual("GrillBot-User-Username#1234(Test)", result);
     }
@@ -140,10 +156,7 @@ public class UnverifyMessageGeneratorTests
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/RemoveAccessUnverifyNotFound", "cs", "{0}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateRemoveAccessUnverifyNotFound(guildUser, "cs");
+        var result = Service.CreateRemoveAccessUnverifyNotFound(guildUser, "cs");
 
         Assert.AreEqual("GrillBot-User-Username#1234", result);
     }
@@ -153,10 +166,7 @@ public class UnverifyMessageGeneratorTests
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/UnverifyFailedToChannel", "cs", "{0}")
-            .Build();
-        var result = new UnverifyMessageGenerator(texts).CreateUnverifyFailedToChannel(guildUser, "cs");
+        var result = Service.CreateUnverifyFailedToChannel(guildUser, "cs");
 
         Assert.AreEqual("GrillBot-User-Username#1234", result);
     }

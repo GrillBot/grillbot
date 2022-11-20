@@ -33,19 +33,21 @@ public class UnverifyMessageGenerator
             : Texts["Unverify/Message/PrivateUnverifyWithReason", locale].FormatWith(guild.Name, endDateTime, profile.Reason);
     }
 
-    public string CreateUpdatePmMessage(IGuild guild, DateTime endDateTime, string locale)
+    public string CreateUpdatePmMessage(IGuild guild, DateTime endDateTime, string reason, string locale)
     {
         var formatedEnd = endDateTime.ToCzechFormat();
 
-        return Texts["Unverify/Message/PrivateUpdate", locale].FormatWith(guild.Name, formatedEnd);
+        var textId = string.IsNullOrEmpty(reason) ? "PrivateUpdate" : "PrivateUpdateWithReason";
+        return Texts[$"Unverify/Message/{textId}", locale].FormatWith(guild.Name, formatedEnd, reason);
     }
 
-    public string CreateUpdateChannelMessage(IGuildUser user, DateTime endDateTime, string locale)
+    public string CreateUpdateChannelMessage(IGuildUser user, DateTime endDateTime, string reason, string locale)
     {
         var username = user.GetDisplayName();
         var formatedEnd = endDateTime.ToCzechFormat();
 
-        return Texts["Unverify/Message/UpdateToChannel", locale].FormatWith(username, formatedEnd);
+        var textId = string.IsNullOrEmpty(reason) ? "UpdateToChannel" : "UpdateToChannelWithReason";
+        return Texts[$"Unverify/Message/{textId}", locale].FormatWith(username, formatedEnd, reason);
     }
 
     public string CreateRemoveAccessManuallyPmMessage(IGuild guild, string locale)

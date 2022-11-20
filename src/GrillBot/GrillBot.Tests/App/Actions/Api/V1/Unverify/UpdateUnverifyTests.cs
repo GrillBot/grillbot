@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
 using GrillBot.App.Services.Unverify;
-using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;
@@ -18,67 +17,72 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
 {
     private IGuild Guild { get; set; }
-    private IGuildUser User { get; set; }
+    private IGuildUser[] Users { get; set; }
 
     protected override UpdateUnverify CreateAction()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
-        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(message).Build();
-        Guild = guildBuilder.SetGetUsersAction(new[] { User }).Build();
+        Users = new[]
+        {
+            new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(message).Build(),
+            new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(null, true).Build()
+        };
+        Guild = guildBuilder.SetGetUsersAction(Users).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })
             .Build();
 
-        var discordClient = DiscordHelper.CreateClient();
         var texts = new TextsBuilder()
             .AddText("Unverify/Update/UnverifyNotFound", "cs", "UnverifyNotFound")
             .AddText("Unverify/Message/PrivateUpdate", "cs", "PrivateUpdate")
             .AddText("Unverify/Message/UpdateToChannel", "cs", "UpdateToChannel")
+            .AddText("Unverify/Message/PrivateUpdateWithReason", "cs", "PrivateUpdateWithReason")
+            .AddText("Unverify/Message/UpdateToChannelWithReason", "cs", "UpdateToChannelWithReason")
             .Build();
-        var unverifyChecker = new UnverifyChecker(DatabaseBuilder, TestServices.Configuration.Value, TestServices.TestingEnvironment.Value, texts);
-        var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder, texts);
         var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
-        var commandService = DiscordHelper.CreateCommandsService();
-        var interactions = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingManager = new LoggingManager(discordClient, commandService, interactions, ServiceProvider);
         var messageGenerator = new UnverifyMessageGenerator(texts);
-        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, unverifyLogger, DatabaseBuilder, loggingManager, texts, messageGenerator, client);
 
-        return new UpdateUnverify(ApiRequestContext, client, unverifyService, texts);
+        return new UpdateUnverify(ApiRequestContext, client, texts, DatabaseBuilder, unverifyLogger, messageGenerator);
     }
 
     private async Task InitDataAsync(bool setUnverify, DateTime endAt)
     {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(GuildUser.FromDiscord(Guild, User));
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
+        foreach (var user in Users)
+        {
+            await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
+            await Repository.AddAsync(GuildUser.FromDiscord(Guild, user));
+        }
 
         if (setUnverify)
         {
-            await Repository.AddAsync(new Database.Entity.Unverify
+            foreach (var user in Users)
             {
-                Channels = new List<GuildChannelOverride>(),
-                Reason = "Reason",
-                Roles = new List<string>(),
-                EndAt = endAt,
-                GuildId = Consts.GuildId.ToString(),
-                StartAt = DateTime.Now,
-                UserId = Consts.UserId.ToString(),
-                UnverifyLog = new UnverifyLog
+                await Repository.AddAsync(new Database.Entity.Unverify
                 {
-                    Data = JsonConvert.SerializeObject(new GrillBot.Data.Models.Unverify.UnverifyLogSet
-                    {
-                        Language = "cs"
-                    }),
-                    Operation = UnverifyOperation.Selfunverify,
-                    CreatedAt = DateTime.Now,
+                    Channels = new List<GuildChannelOverride>(),
+                    Reason = "Reason",
+                    Roles = new List<string>(),
+                    EndAt = endAt,
                     GuildId = Consts.GuildId.ToString(),
-                    FromUserId = Consts.UserId.ToString(),
-                    ToUserId = Consts.UserId.ToString()
-                }
-            });
+                    StartAt = DateTime.Now,
+                    UserId = user.Id.ToString(),
+                    UnverifyLog = new UnverifyLog
+                    {
+                        Data = JsonConvert.SerializeObject(new GrillBot.Data.Models.Unverify.UnverifyLogSet
+                        {
+                            Language = "cs"
+                        }),
+                        Operation = UnverifyOperation.Selfunverify,
+                        CreatedAt = DateTime.Now,
+                        GuildId = Consts.GuildId.ToString(),
+                        FromUserId = user.Id.ToString(),
+                        ToUserId = user.Id.ToString()
+                    }
+                });
+            }
         }
 
         await Repository.CommitAsync();
@@ -94,7 +98,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_DestUserNotFound()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 1, null);
+        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 2, null);
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
@@ -123,5 +127,27 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.AreEqual("UpdateToChannel", result);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_Success_WithReason()
+    {
+        await InitDataAsync(true, DateTime.Now.AddDays(1));
+
+        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
+
+        Assert.IsFalse(string.IsNullOrEmpty(result));
+        Assert.AreEqual("UpdateToChannelWithReason", result);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_Success_WithDisabledDms()
+    {
+        await InitDataAsync(true, DateTime.Now.AddDays(1));
+
+        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 1, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
+
+        Assert.IsFalse(string.IsNullOrEmpty(result));
+        Assert.AreEqual("UpdateToChannelWithReason", result);
     }
 }

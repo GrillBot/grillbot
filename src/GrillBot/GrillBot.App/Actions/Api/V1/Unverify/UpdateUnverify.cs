@@ -1,4 +1,6 @@
-﻿using GrillBot.App.Services.Unverify;
+﻿using Discord.Net;
+using GrillBot.App.Services.Unverify;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
@@ -9,21 +11,37 @@ namespace GrillBot.App.Actions.Api.V1.Unverify;
 public class UpdateUnverify : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
-    private UnverifyService UnverifyService { get; }
     private ITextsManager Texts { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private UnverifyLogger UnverifyLogger { get; }
+    private UnverifyMessageGenerator MessageGenerator { get; }
 
-    public UpdateUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, UnverifyService unverifyService, ITextsManager texts) : base(apiContext)
+    public UpdateUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyLogger unverifyLogger,
+        UnverifyMessageGenerator messageGenerator) : base(apiContext)
     {
         DiscordClient = discordClient;
-        UnverifyService = unverifyService;
         Texts = texts;
+        DatabaseBuilder = databaseBuilder;
+        UnverifyLogger = unverifyLogger;
+        MessageGenerator = messageGenerator;
     }
 
     public async Task<string> ProcessAsync(ulong guildId, ulong userId, UpdateUnverifyParams parameters)
     {
         var (guild, fromUser, toUser) = await InitAsync(guildId, userId);
 
-        return await UnverifyService.UpdateUnverifyAsync(toUser, guild, parameters.EndAt, fromUser, ApiContext.Language);
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var user = await repository.GuildUser.FindGuildUserAsync(toUser, includeAll: true);
+        EnsureValidUser(user, parameters.EndAt);
+        await UnverifyLogger.LogUpdateAsync(DateTime.Now, parameters.EndAt, guild, fromUser, toUser, parameters.Reason);
+
+        user!.Unverify!.EndAt = parameters.EndAt;
+        user.Unverify.StartAt = DateTime.Now;
+        await repository.CommitAsync();
+
+        await SendNotificationAsync(toUser, parameters.EndAt, parameters.Reason, user);
+        return MessageGenerator.CreateUpdateChannelMessage(toUser, parameters.EndAt, parameters.Reason, ApiContext.Language);
     }
 
     private async Task<(IGuild guild, IGuildUser fromUser, IGuildUser toUser)> InitAsync(ulong guildId, ulong userId)
@@ -42,5 +60,29 @@ public class UpdateUnverify : ApiAction
             throw new NotFoundException(Texts["Unverify/GuildNotFound", ApiContext.Language]);
         if (toUser == null)
             throw new NotFoundException(Texts["Unverify/DestUserNotFound", ApiContext.Language]);
+    }
+
+    private void EnsureValidUser(Database.Entity.GuildUser user, DateTime endAt)
+    {
+        if (user?.Unverify == null)
+            throw new NotFoundException(Texts["Unverify/Update/UnverifyNotFound", ApiContext.Language]);
+        if ((user.Unverify.EndAt - DateTime.Now).TotalSeconds <= 30.0)
+            throw new ValidationException(Texts["Unverify/Update/NotEnoughTime", ApiContext.Language]).ToBadRequestValidation(endAt, nameof(endAt));
+    }
+
+    private async Task SendNotificationAsync(IGuildUser toUser, DateTime newEnd, string reason, Database.Entity.GuildUser userEntity)
+    {
+        try
+        {
+            var locale = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(userEntity.Unverify!.UnverifyLog!.Data)!.Language
+                         ?? ApiContext.Language;
+
+            var dmMessage = MessageGenerator.CreateUpdatePmMessage(toUser.Guild, newEnd, reason, locale);
+            await toUser.SendMessageAsync(dmMessage);
+        }
+        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
+        {
+            // User have disabled DMs.
+        }
     }
 }

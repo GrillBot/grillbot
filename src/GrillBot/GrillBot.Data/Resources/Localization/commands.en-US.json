@@ -493,6 +493,10 @@
       "new-end": {
         "name": "new-end",
         "description": "Datetime of new end."
+      },
+      "reason": {
+        "name": "reason",
+        "description": "Optional reason, why was time updated."
       }
     },
     "remove": {

@@ -9,12 +9,16 @@ public class UpdateUnverifyParams : IApiObject
 {
     [Required]
     public DateTime EndAt { get; set; }
+    
+    [StringLength(500)]
+    public string Reason { get; set; }
 
     public Dictionary<string, string> SerializeForLog()
     {
         return new Dictionary<string, string>
         {
-            { nameof(EndAt), EndAt.ToString("o") }
+            { nameof(EndAt), EndAt.ToString("o") },
+            { nameof(Reason), Reason }
         };
     }
 }

@@ -85,7 +85,8 @@ public class GetLogs : ApiAction
                     Reason = jsonData.Reason,
                     RolesToKeep = jsonData.RolesToKeep.ConvertAll(o => Mapper.Map<Role>(guild.GetRole(o))),
                     RolesToRemove = jsonData.RolesToRemove.ConvertAll(o => Mapper.Map<Role>(guild.GetRole(o))),
-                    Start = jsonData.Start
+                    Start = jsonData.Start,
+                    Language = jsonData.Language
                 };
             }
                 break;
@@ -95,7 +96,8 @@ public class GetLogs : ApiAction
                 result.UpdateData = new UnverifyLogUpdate
                 {
                     End = jsonData.End,
-                    Start = jsonData.Start
+                    Start = jsonData.Start,
+                    Reason = jsonData.Reason
                 };
             }
                 break;

@@ -493,6 +493,10 @@
       "new-end": {
         "name": "novy-konec",
         "description": "Datum a čas nového konce."
+      },
+      "reason": {
+        "name": "duvod",
+        "description": "Volitelný důvod, proč byla doba uživateli aktualizována."
       }
     },
     "remove": {

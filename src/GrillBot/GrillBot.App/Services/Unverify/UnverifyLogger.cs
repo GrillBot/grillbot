@@ -54,12 +54,13 @@ public class UnverifyLogger
         return SaveAsync(UnverifyOperation.Remove, data, from, guild, to);
     }
 
-    public Task LogUpdateAsync(DateTime start, DateTime end, IGuild guild, IGuildUser from, IGuildUser to)
+    public Task LogUpdateAsync(DateTime start, DateTime end, IGuild guild, IGuildUser from, IGuildUser to, string reason)
     {
         var data = new UnverifyLogUpdate
         {
             End = end,
-            Start = start
+            Start = start,
+            Reason = reason
         };
 
         return SaveAsync(UnverifyOperation.Update, data, from, guild, to);
@@ -90,9 +91,9 @@ public class UnverifyLogger
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.GuildUser.GetOrCreateGuildUserAsync(from, true);
+        await repository.GuildUser.GetOrCreateGuildUserAsync(from);
         if (from != toUser)
-            await repository.GuildUser.GetOrCreateGuildUserAsync(toUser, true);
+            await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
 
         await repository.AddAsync(entity);
         await repository.CommitAsync();

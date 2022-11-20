@@ -111,9 +111,9 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
         return this;
     }
 
-    public GuildUserBuilder SetSendMessageAction(IUserMessage message)
+    public GuildUserBuilder SetSendMessageAction(IUserMessage message, bool disabledDms = false)
     {
-        var dmChannel = new DmChannelBuilder().SetSendMessageAction(message).Build();
+        var dmChannel = new DmChannelBuilder().SetSendMessageAction(message, disabledDms).Build();
         Mock.Setup(o => o.CreateDMChannelAsync(It.IsAny<RequestOptions>())).ReturnsAsync(dmChannel);
         return this;
     }

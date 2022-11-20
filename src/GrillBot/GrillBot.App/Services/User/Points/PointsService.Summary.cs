@@ -38,8 +38,8 @@ public partial class PointsService
     {
         if (transactions.Count == 0) return null; // Nothing to process.
 
-        var dateFrom = transactions.Count == 0 ? DateTime.Now.AddYears(-1) : transactions.Min(o => o.AssingnedAt).AddDays(-1);
-        var dateTo = transactions.Count == 0 ? DateTime.Now.AddYears(1) : transactions.Max(o => o.AssingnedAt).AddDays(1);
+        var dateFrom = transactions.Min(o => o.AssingnedAt).Date;
+        var dateTo = transactions.Max(o => o.AssingnedAt).Date.Add(new TimeSpan(23, 59, 59));
         var guilds = transactions.Select(o => o.GuildId).Distinct().ToList();
         var users = transactions.Select(o => o.UserId).Distinct().ToList();
 
@@ -56,8 +56,8 @@ public partial class PointsService
             });
 
         // Check and set new summaries.
-        var updated = 0;
-        var inserted = 0;
+        var updatedCount = 0;
+        var newItems = new List<PointsTransactionSummary>();
         foreach (var summary in newSummaries)
         {
             if (summaries.ContainsKey(summary.SummaryId))
@@ -68,28 +68,34 @@ public partial class PointsService
 
                 oldSummary.MessagePoints = summary.MessagePoints;
                 oldSummary.ReactionPoints = summary.ReactionPoints;
-                updated++;
+                updatedCount++;
             }
             else
             {
-                await repository.AddAsync(summary);
-                inserted++;
+                newItems.Add(summary);
             }
         }
 
-        if (inserted == 0 && updated == 0) return null; // Nothing to report, nothing was changed.
+        if (newItems.Count > 0)
+        {
+            await repository.AddCollectionAsync(newItems);
+        }
+        else
+        {
+            if (updatedCount == 0) return null; // Nothing to report, nothing was changed.
+        }
 
         var daysCount = Math.Round((dateTo - dateFrom).TotalDays);
-
         var parts = new[]
         {
             $"Days:{daysCount}",
-            $"Created:{inserted}, Updated:{updated}",
+            newItems.Count > 0 ? $"Created:{newItems.Count}" : "",
+            updatedCount > 0 ? $"Updated:{updatedCount}" : "",
             "%DURATION%",
             $"Transactions:{transactions.Count}",
-            $"DateFrom:{dateFrom:o}, DateTo:{dateFrom:o}",
+            $"DateFrom:{dateFrom:o}, DateTo:{dateTo:o}",
             $"Guilds:{guilds.Count}, Users:{users.Count}"
-        };
+        }.Where(o => !string.IsNullOrEmpty(o));
 
         return $"RecalculatePoints({string.Join(", ", parts)})";
     }

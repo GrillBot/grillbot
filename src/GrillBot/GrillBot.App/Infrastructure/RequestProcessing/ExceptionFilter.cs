@@ -50,11 +50,11 @@ public class ExceptionFilter : IAsyncExceptionFilter
                 SetForbidden(context);
                 break;
             case GrillBotException:
-                context.ExceptionHandled = true;
                 context.Result = new ObjectResult(new MessageResponse(context.Exception.Message)) { StatusCode = StatusCodes.Status500InternalServerError };
                 break;
         }
 
+        if (context.ExceptionHandled) return;
         if (!string.IsNullOrEmpty(ApiRequest.StatusCode))
             ApiRequest.StatusCode = "500 (InternalServerError)";
 

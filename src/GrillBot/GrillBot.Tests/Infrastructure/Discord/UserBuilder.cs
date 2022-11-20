@@ -14,6 +14,10 @@ public class UserBuilder : BuilderBase<IUser>
         SetDiscriminator(discriminator);
     }
 
+    public UserBuilder(IUser user) : this(user.Id, user.Username, user.Discriminator)
+    {
+    }
+
     public UserBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);

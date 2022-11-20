@@ -154,6 +154,11 @@ public static class ActionsExtensions
 
     private static IServiceCollection AddCommandsActions(this IServiceCollection services)
     {
+        // Reminder
+        services
+            .AddScoped<Commands.Reminder.CreateRemind>()
+            .AddScoped<Commands.Reminder.CopyRemind>();
+        
         // Searching
         services
             .AddScoped<Commands.Searching.GetSearchingList>();

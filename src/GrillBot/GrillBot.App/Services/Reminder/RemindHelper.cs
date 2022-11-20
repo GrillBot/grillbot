@@ -88,4 +88,7 @@ public class RemindHelper
 
         return embed;
     }
+
+    public static MessageComponent CreateCopyButton(long remindId)
+        => new ComponentBuilder().WithButton(customId: $"remind_copy:{remindId}", emote: Emojis.PersonRisingHand).Build();
 }

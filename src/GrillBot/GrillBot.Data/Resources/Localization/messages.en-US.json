@@ -215,7 +215,18 @@
   "RemindModule": {
     "Create": {
       "Success": "A reminder has been created.",
-      "CopyMessage": "If anyone wishes to receive this notification as well, please click the {0} button."
+      "CopyMessage": "If anyone wishes to receive this notification as well, please click the {0} button.",
+      "Validation": {
+        "MustInFuture": "The reminder date and time must be in the future.",
+        "MinimalTimeTemplate": "The reminder date and time must be later than {0}.",
+        "MinimalTime": {
+          "One": "{0:N0} minute",
+          "TwoToFour": "{0:N0} minutes",
+          "FiveAndMore": "{0:N0} minutes"
+        },
+        "MessageRequired": "The reminder text is required.",
+        "MaxLengthExceeded": "The reminder text can have only 1024 characters."
+      }
     },
     "CancelRemind": {
       "Cancelled": "The reminder was successfully canceled.",
@@ -241,6 +252,13 @@
       },
       "Postponed": "This reminder has already been snoozed {0}x",
       "Options": "If you wish to postpone this reminder, click on the appropriate button according to the count of hours."
+    },
+    "Copy": {
+      "RemindNotFound": "Unable to find original reminder.",
+      "SelfCopy": "You created this notification, you cannot receive the same.",
+      "WasCancelled": "This reminder has been cancelled.",
+      "WasSent": "This reminder has already been sent.",
+      "CopyExists": "You have already created this notification once from the button. You cannot create another one."
     }
   },
   "SearchingModule": {

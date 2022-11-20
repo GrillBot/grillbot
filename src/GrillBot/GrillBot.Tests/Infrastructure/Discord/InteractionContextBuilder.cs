@@ -27,4 +27,10 @@ public class InteractionContextBuilder : BuilderBase<IInteractionContext>
         Mock.Setup(o => o.Channel).Returns(channel);
         return this;
     }
+
+    public InteractionContextBuilder SetClient(IDiscordClient client)
+    {
+        Mock.Setup(o => o.Client).Returns(client);
+        return this;
+    }
 }

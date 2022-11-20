@@ -6,6 +6,7 @@ using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Common;
 using GrillBot.Common.Helpers;
+using GrillBot.Data.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -34,14 +35,15 @@ public class RemindModule : InteractionsModuleBase
         bool secret = false
     )
     {
+        await DeferAsync(secret);
+
+        var originalMessage = await Context.Interaction.GetOriginalResponseAsync();
         try
         {
-            await DeferAsync(secret);
+            using var command = GetCommand<Actions.Commands.Reminder.CreateRemind>();
+            var remindId = await command.Command.ProcessAsync(Context.User, who, at, message, originalMessage.Id);
 
-            var originalMessage = await Context.Interaction.GetOriginalResponseAsync();
-            var remindId = await RemindService.CreateRemindAsync(Context.User, who, at, message, originalMessage.Id, Locale);
-
-            var buttons = secret ? null : new ComponentBuilder().WithButton(customId: $"remind_copy:{remindId}", emote: Emojis.PersonRisingHand).Build();
+            var buttons = secret ? null : RemindHelper.CreateCopyButton(remindId);
             var msg = GetText(nameof(CreateAsync), "Success") + (secret ? "" : " " + GetText(nameof(CreateAsync), "CopyMessage").FormatWith(Emojis.PersonRisingHand.ToString()));
             await SetResponseAsync(msg, components: buttons, secret: secret);
         }
@@ -97,16 +99,17 @@ public class RemindModule : InteractionsModuleBase
     {
         var canDefer = true;
 
+        using var command = GetCommand<Actions.Commands.Reminder.CopyRemind>();
         try
         {
-            await RemindService.CopyAsync(remindId, Context.User, Locale);
+            await command.Command.ProcessAsync(remindId);
         }
         catch (ValidationException ex)
         {
             await RespondAsync(ex.Message, ephemeral: true);
             canDefer = false;
         }
-        catch (InvalidOperationException ex)
+        catch (NotFoundException ex)
         {
             await RespondAsync(ex.Message, ephemeral: true);
             canDefer = false;

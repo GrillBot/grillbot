@@ -215,7 +215,18 @@
   "RemindModule": {
     "Create": {
       "Success": "Připomenutí bylo vytvořeno.",
-      "CopyMessage": "Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {0}"
+      "CopyMessage": "Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {0}",
+      "Validation": {
+        "MustInFuture": "Datum a čas upozornění musí být v budoucnosti.",
+        "MinimalTimeTemplate": "Datum a čas upozornění musí být později než {0}",
+        "MinimalTime": {
+          "One": "{0:N0} minuta",
+          "TwoToFour": "{0:N0} minuty",
+          "FiveAndMore": "{0:N0} minut"
+        },
+        "MessageRequired": "Text upozornění je povinný.",
+        "MaxLengthExceeded": "Zpráva může být dlouhá maximálně 1024 znaků."
+      }
     },
     "CancelRemind": {
       "Cancelled": "Upozornění bylo úspěšně zrušeno.",
@@ -241,6 +252,13 @@
       },
       "Postponed": "Toto upozornění bylo odloženo už {0}x",
       "Options": "Pokud si přeješ toto upozornění posunout, tak klikni na příslušné tlačítko podle počtu hodin."
+    },
+    "Copy": {
+      "RemindNotFound": "Upozornění nebylo nalezeno.",
+      "SelfCopy": "Toto upozornění jsi založil, nemůžeš dostat to stejné.",
+      "WasCancelled": "Toto upozornění bylo zrušeno.",
+      "WasSent": "Toto upozornění již bylo odesláno.",
+      "CopyExists": "Toto upozornění jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další."
     }
   },
   "SearchingModule": {

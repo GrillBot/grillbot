@@ -94,8 +94,10 @@ public class ChannelInfo : CommandAction
     private async Task SetThreadInfoAsync(EmbedBuilder builder, IGuildChannel channel)
     {
         var parentChannelId = ((IThreadChannel)channel).CategoryId!.Value!;
-        var parentChannel = await Context.Guild.GetTextChannelAsync(parentChannelId);
-        builder.AddField(Texts["ChannelModule/ChannelInfo/Channel", Locale], parentChannel.GetMention(), true);
+        var parentChannel = await Context.Guild.GetChannelAsync(parentChannelId);
+
+        if (parentChannel != null)
+            builder.AddField(Texts["ChannelModule/ChannelInfo/Channel", Locale], parentChannel.GetMention(), true);
     }
 
     private void SetPermissionsInfo(EmbedBuilder builder, IGuildChannel channel)

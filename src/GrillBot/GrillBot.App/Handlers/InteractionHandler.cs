@@ -3,7 +3,6 @@ using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
-using GrillBot.Common;
 using GrillBot.Common.Managers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -71,9 +70,7 @@ public class InteractionHandler
                     reply = result.ErrorReason;
                     break;
                 case InteractionCommandError.Exception:
-                    var originalMessage = await context.Interaction.GetOriginalResponseAsync();
-                    if (originalMessage != null)
-                        await originalMessage.AddReactionAsync(Emojis.Nok);
+                    reply = $"Error: {result.ErrorReason}";
                     break;
                 case InteractionCommandError.UnknownCommand:
                 case InteractionCommandError.BadArgs:

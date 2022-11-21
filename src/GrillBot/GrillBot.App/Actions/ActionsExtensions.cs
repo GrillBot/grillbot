@@ -170,6 +170,7 @@ public static class ActionsExtensions
             .AddScoped<Commands.Unverify.UnverifyList>();
 
         services
+            .AddScoped<Commands.ChannelInfo>()
             .AddScoped<Commands.ImageCreator>()
             .AddScoped<Commands.Emojization>()
             .AddScoped<Commands.PointsLeaderboard>()

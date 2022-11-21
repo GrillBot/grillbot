@@ -34,11 +34,15 @@
     }
   },
   "ChannelModule": {
-    "GetChannelInfo": {
-      "UserNotFound": "Nepodařilo se dohledat uživatele, který zavolal příkaz.",
+    "ChannelInfo": {
       "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
       "CreatedAt": "Vytvořen",
       "MemberCount": "Počet členů",
+      "MemberCountValue": {
+        "One": "{0:N0} člen",
+        "TwoToFour": "{0:N0} členové",
+        "FiveAndMore": "{0:N0} členů"
+      },
       "NewsChannelTitle": "Informace o kanálu s novinkami",
       "VoiceChannelTitle": "Informace o hlasovém kanálu",
       "ThreadChannelTitle": "Informace o vláknu",

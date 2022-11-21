@@ -15,9 +15,7 @@ public class FormatHelper
         Texts = texts;
     }
 
-    public static string FormatMembersToCzech(long count) => Format(count, "člen", "členové", "členů");
     public static string FormatBooleanToCzech(bool val) => val ? "Ano" : "Ne";
-    public static string FormatMessagesToCzech(long count) => Format(count, "zpráva", "zprávy", "zpráv");
     public static string FormatPointsToCzech(long count) => Format(count, "bod", "body", "bodů");
 
     public static string Format(long count, string oneSuffix, string twoToFour, string fiveAndMore)

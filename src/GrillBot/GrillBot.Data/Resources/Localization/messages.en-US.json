@@ -34,11 +34,15 @@
     }
   },
   "ChannelModule": {
-    "GetChannelInfo": {
-      "UserNotFound": "The user who called the command could not be found.",
+    "ChannelInfo": {
       "NoAccess": "I can't give you channel info because you don't have access to it.",
       "CreatedAt": "Created",
       "MemberCount": "Member count",
+      "MemberCountValue": {
+        "One": "{0:N0} member",
+        "TwoToFour": "{0:N0} members",
+        "FiveAndMore": "{0:N0} members"
+      },
       "NewsChannelTitle": "News feed information",
       "VoiceChannelTitle": "Voice channel information",
       "ThreadChannelTitle": "Thread information",

@@ -37,4 +37,10 @@ public class ThreadBuilder : BuilderBase<IThreadChannel>
         Mock.Setup(o => o.Type).Returns(type);
         return this;
     }
+
+    public ThreadBuilder SetParentChannel(IGuildChannel channel)
+    {
+        Mock.Setup(o => o.CategoryId).Returns(channel.Id);
+        return this;
+    }
 }

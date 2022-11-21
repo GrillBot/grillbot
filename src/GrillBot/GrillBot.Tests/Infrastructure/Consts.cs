@@ -24,4 +24,6 @@ public static class Consts
     public const string VanityInviteCode = "vanity";
     public const ulong InteractionId = 1026904103261048873;
     public const ulong GuildEventId = 1034850751920472115;
+    public const ulong ForumId = 1006473144682418257;
+    public const string ForumName = "GrillBot-Forum-Name";
 }

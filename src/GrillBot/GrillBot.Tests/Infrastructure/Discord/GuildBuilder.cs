@@ -20,6 +20,12 @@ public class GuildBuilder : BuilderBase<IGuild>
         SetEveryoneRole(EveryoneRole);
     }
 
+    public GuildBuilder(IGuild guild) : this(guild.Id, guild.Name)
+    {
+        SetRoles(guild.Roles);
+        SetEveryoneRole(guild.EveryoneRole);
+    }
+
     public GuildBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);

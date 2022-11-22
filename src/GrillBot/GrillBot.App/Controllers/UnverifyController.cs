@@ -41,18 +41,16 @@ public class UnverifyController : Controller
     /// <summary>
     /// Removes unverify
     /// </summary>
-    /// <param name="guildId">Guild ID</param>
-    /// <param name="userId">User Id</param>
     /// <response code="200">Success</response>
     /// <response code="404">Unverify or guild not found.</response>
     [HttpDelete("{guildId}/{userId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId)
+    public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId, bool force = false)
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.RemoveUnverify>();
-        var result = await action.ProcessAsync(guildId, userId);
+        var result = await action.ProcessAsync(guildId, userId, force);
 
         return Ok(new MessageResponse(result));
     }

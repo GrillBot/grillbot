@@ -52,7 +52,8 @@ public static class Extensions
             .AddSingleton<Unverify.UnverifyLogger>()
             .AddSingleton<Unverify.UnverifyMessageGenerator>()
             .AddSingleton<Unverify.UnverifyProfileGenerator>()
-            .AddSingleton<Unverify.UnverifyService>();
+            .AddSingleton<Unverify.UnverifyService>()
+            .AddScoped<Unverify.UnverifyHelper>();
 
         services
             .AddSingleton<User.Points.PointsService>();

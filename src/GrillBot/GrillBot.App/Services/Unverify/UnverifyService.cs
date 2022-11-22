@@ -126,94 +126,6 @@ public class UnverifyService
         return selfunverify ? Logger.LogSelfunverifyAsync(profile, guild) : Logger.LogUnverifyAsync(profile, guild, from);
     }
 
-    public async Task<string> RemoveUnverifyAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser, bool isAuto = false, bool fromWeb = false)
-    {
-        try
-        {
-            await using var repository = DatabaseBuilder.CreateRepository();
-
-            var dbUser = await repository.GuildUser.FindGuildUserAsync(toUser, includeAll: true);
-            if (dbUser?.Unverify == null)
-                return MessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser, "cs");
-
-            var profile = UnverifyProfileGenerator.Reconstruct(dbUser.Unverify, toUser, guild);
-            var language = profile.Language ?? "cs";
-            await LogRemoveAsync(profile.RolesToRemove, profile.ChannelsToRemove, toUser, guild, fromUser, isAuto, fromWeb, language);
-
-            var muteRole = await GetMutedRoleAsync(guild);
-            if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id))
-                await profile.Destination.RemoveRoleAsync(muteRole);
-
-            await profile.ReturnChannelsAsync(guild);
-            await profile.ReturnRolesAsync();
-
-            dbUser.Unverify = null;
-            await repository.CommitAsync();
-
-            if (isAuto)
-                return MessageGenerator.CreateRemoveAccessManuallyToChannel(toUser, language);
-
-            try
-            {
-                var dmMessage = MessageGenerator.CreateRemoveAccessManuallyPmMessage(guild, language);
-                await toUser.SendMessageAsync(dmMessage);
-            }
-            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-            {
-                // User have disabled DMs.
-            }
-
-            return MessageGenerator.CreateRemoveAccessManuallyToChannel(toUser, language);
-        }
-        catch (Exception ex) when (!isAuto)
-        {
-            await LoggingManager.ErrorAsync("Unverify/Remove", "An error occured when unverify returning access.", ex);
-            return MessageGenerator.CreateRemoveAccessManuallyFailed(toUser, ex, "cs");
-        }
-    }
-
-    private Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> channels, IGuildUser user, IGuild guild, IGuildUser fromUser, bool isAuto, bool fromWeb, string language)
-    {
-        return isAuto ? Logger.LogAutoremoveAsync(returnedRoles, channels, user, guild) : Logger.LogRemoveAsync(returnedRoles, channels, guild, fromUser, user, fromWeb, language);
-    }
-
-    public async Task UnverifyAutoremoveAsync(ulong guildId, ulong userId)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        try
-        {
-            var unverify = await repository.Unverify.FindUnverifyAsync(guildId, userId);
-            if (unverify == null) return;
-
-            var guild = DiscordSocketClient.GetGuild(guildId);
-            if (guild == null)
-            {
-                repository.Remove(unverify);
-                return;
-            }
-
-            await guild.DownloadUsersAsync();
-            var user = guild.GetUser(userId);
-
-            if (user == null)
-            {
-                repository.Remove(unverify);
-                return;
-            }
-
-            await RemoveUnverifyAsync(guild, guild.CurrentUser, user, true);
-        }
-        catch (Exception ex)
-        {
-            await LoggingManager.ErrorAsync("Unverify/Autoremove", $"An error occured when unverify returning access ({guildId}/{userId}).", ex);
-        }
-        finally
-        {
-            await repository.CommitAsync();
-        }
-    }
-
     private async Task OnUserLeftAsync(IGuild guild, IUser user)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -298,11 +210,5 @@ public class UnverifyService
 
         if (mutedRole != null)
             await user.RemoveRoleAsync(mutedRole);
-    }
-
-    public async Task<List<(ulong guildId, ulong userId)>> GetPendingUnverifiesForRemoveAsync()
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.Unverify.GetPendingUnverifyIdsAsync();
     }
 }

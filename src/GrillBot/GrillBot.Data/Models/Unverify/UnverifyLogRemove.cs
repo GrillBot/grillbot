@@ -8,4 +8,5 @@ public class UnverifyLogRemove
     public List<ChannelOverride> ReturnedOverwrites { get; set; } = new();
     public bool FromWeb { get; set; }
     public string Language { get; set; }
+    public bool Force { get; set; }
 }

@@ -68,7 +68,9 @@ public class GetLogs : ApiAction
                 {
                     ReturnedChannelIds = jsonData.ReturnedOverwrites.ConvertAll(o => o.ChannelId.ToString()),
                     ReturnedRoles = jsonData.ReturnedRoles.ConvertAll(o => Mapper.Map<Role>(guild.GetRole(o))),
-                    FromWeb = jsonData.FromWeb
+                    FromWeb = jsonData.FromWeb,
+                    Force = jsonData.Force,
+                    Language = jsonData.Language
                 };
             }
                 break;

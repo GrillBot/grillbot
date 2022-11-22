@@ -52,7 +52,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
         var returnedRoles = new List<IRole> { new RoleBuilder(Consts.RoleId, Consts.RoleName).Build() };
         var returnedChannels = new List<ChannelOverride>();
 
-        await Service.LogRemoveAsync(returnedRoles, returnedChannels, guild, fromUser, toUser, false, "cs");
+        await Service.LogRemoveAsync(returnedRoles, returnedChannels, guild, fromUser, toUser, false, false, "cs");
     }
 
     [TestMethod]

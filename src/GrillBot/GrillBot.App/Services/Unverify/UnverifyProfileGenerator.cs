@@ -37,7 +37,7 @@ public class UnverifyProfileGenerator
         if (logData == null)
             throw new ArgumentException("Missing log data for unverify reconstruction.");
 
-        return new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify, logData.Language)
+        return new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify, logData.Language ?? "cs")
         {
             ChannelsToKeep = logData.ChannelsToKeep,
             ChannelsToRemove = logData.ChannelsToRemove,

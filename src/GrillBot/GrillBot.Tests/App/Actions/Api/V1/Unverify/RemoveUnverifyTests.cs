@@ -18,7 +18,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 [TestClass]
 public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
 {
-    private IGuild Guild { get; set; }
+    private IGuild[] Guilds { get; set; }
     private IGuildUser User { get; set; }
     private IRole Role { get; set; }
 
@@ -28,10 +28,15 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(message).Build();
-        Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetGetChannelsAction(Enumerable.Empty<ITextChannel>()).Build();
+        Guilds = new[]
+        {
+            guildBuilder.SetGetUsersAction(new[] { User }).SetGetChannelsAction(Enumerable.Empty<ITextChannel>()).Build(),
+            new GuildBuilder(Consts.GuildId + 1, Consts.GuildName).Build()
+        };
 
         var client = new ClientBuilder()
-            .SetGetGuildsAction(new[] { Guild })
+            .SetSelfUser(new SelfUserBuilder(User).Build())
+            .SetGetGuildsAction(new[] { Guilds[0] })
             .Build();
 
         var texts = new TextsBuilder()
@@ -42,38 +47,34 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
             .Build();
 
         var discordClient = DiscordHelper.CreateClient();
-        var unverifyChecker = new UnverifyChecker(DatabaseBuilder, TestServices.Configuration.Value, TestServices.TestingEnvironment.Value, texts);
-        var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder, texts);
         var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
         var commandService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
         var loggingManager = new LoggingManager(discordClient, commandService, interactions, ServiceProvider);
         var messageGenerator = new UnverifyMessageGenerator(texts);
-        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, unverifyLogger, DatabaseBuilder, loggingManager, texts, messageGenerator, client);
+        var unverifyHelper = new UnverifyHelper(DatabaseBuilder);
 
-        return new RemoveUnverify(ApiRequestContext, client, unverifyService, texts);
+        return new RemoveUnverify(ApiRequestContext, client, texts, DatabaseBuilder, messageGenerator, unverifyLogger, loggingManager, unverifyHelper);
     }
 
-    private async Task InitDataAsync(bool setUnverify, bool excludeLogItem)
+    private async Task InitDataAsync(bool setUnverify, bool excludeLogItem, bool excludeLogItemData)
     {
         await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(Guild, User));
-        await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
+        foreach (var guild in Guilds)
+        {
+            await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(guild, User));
+            await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
+        }
 
         if (setUnverify)
         {
-            await Repository.AddAsync(new Database.Entity.Unverify
+            if (!excludeLogItem)
             {
-                Channels = new List<Database.Entity.GuildChannelOverride>(),
-                Reason = "Reason",
-                Roles = new List<string> { Role.Id.ToString() },
-                EndAt = DateTime.Now,
-                GuildId = Consts.GuildId.ToString(),
-                StartAt = DateTime.Now,
-                UnverifyLog = !excludeLogItem
-                    ? new Database.Entity.UnverifyLog
-                    {
-                        Data = JsonConvert.SerializeObject(new UnverifyLogSet
+                await Repository.AddAsync(new Database.Entity.UnverifyLog
+                {
+                    Data = excludeLogItemData
+                        ? ""
+                        : JsonConvert.SerializeObject(new UnverifyLogSet
                         {
                             End = DateTime.Now,
                             Reason = "Reason",
@@ -85,14 +86,39 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
                             RolesToRemove = new List<ulong> { Role.Id },
                             Language = "cs"
                         }),
-                        Operation = UnverifyOperation.Unverify,
-                        CreatedAt = DateTime.Now,
-                        GuildId = Consts.GuildId.ToString(),
-                        FromUserId = Consts.UserId.ToString(),
-                        ToUserId = Consts.UserId.ToString()
-                    }
-                    : null,
-                UserId = Consts.UserId.ToString()
+                    Operation = UnverifyOperation.Unverify,
+                    CreatedAt = DateTime.Now,
+                    GuildId = Consts.GuildId.ToString(),
+                    FromUserId = Consts.UserId.ToString(),
+                    ToUserId = Consts.UserId.ToString(),
+                    Id = 1
+                });
+            }
+
+            await Repository.AddCollectionAsync(new[]
+            {
+                new Database.Entity.Unverify
+                {
+                    Channels = new List<Database.Entity.GuildChannelOverride>(),
+                    Reason = "Reason",
+                    Roles = new List<string> { Role.Id.ToString() },
+                    EndAt = DateTime.Now,
+                    GuildId = Consts.GuildId.ToString(),
+                    StartAt = DateTime.Now,
+                    UserId = Consts.UserId.ToString(),
+                    SetOperationId = excludeLogItem ? 0 : 1
+                },
+                new Database.Entity.Unverify
+                {
+                    Channels = new List<Database.Entity.GuildChannelOverride>(),
+                    Reason = "Reason",
+                    Roles = new List<string> { Role.Id.ToString() },
+                    EndAt = DateTime.Now,
+                    GuildId = (Consts.GuildId + 1).ToString(),
+                    StartAt = DateTime.Now,
+                    UserId = Consts.UserId.ToString(),
+                    SetOperationId = 0
+                }
             });
         }
 
@@ -114,7 +140,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     [TestMethod]
     public async Task ProcessAsync_WithoutUnverify()
     {
-        await InitDataAsync(false, true);
+        await InitDataAsync(false, true, true);
 
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
 
@@ -126,7 +152,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     [ApiConfiguration(canInitProvider: true)]
     public async Task ProcessAsync_FailedReconstruction()
     {
-        await InitDataAsync(true, true);
+        await InitDataAsync(true, false, true);
 
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
 
@@ -135,11 +161,29 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     }
 
     [TestMethod]
-    public async Task ProcessAsync_Success()
-    {
-        await InitDataAsync(true, false);
+    public async Task ProcessAsync_Success() => await ProcessSuccessAsync(false);
 
-        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
+    [TestMethod]
+    public async Task ProcessAsync_Autoremove()
+    {
+        await InitDataAsync(true, false, false);
+        await Action.ProcessAutoRemoveAsync(Consts.GuildId, Consts.UserId);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_Autoremove_AfterFail()
+    {
+        await InitDataAsync(true, false, false);
+        await Action.ProcessAutoRemoveAsync(Consts.GuildId + 1, Consts.UserId);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_ForceRemove() => await ProcessSuccessAsync(true);
+
+    private async Task ProcessSuccessAsync(bool force)
+    {
+        await InitDataAsync(true, false, false);
+        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, force);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.AreEqual("ManuallyRemoveToChannel", result);

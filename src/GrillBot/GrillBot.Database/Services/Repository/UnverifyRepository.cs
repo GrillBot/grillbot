@@ -59,16 +59,13 @@ public class UnverifyRepository : RepositoryBase
         }
     }
 
-    public async Task<List<(ulong guildId, ulong userId)>> GetPendingUnverifyIdsAsync()
+    public async Task<Unverify?> GetFirstPendingUnverifyAsync()
     {
         using (CreateCounter())
         {
-            var data = await Context.Unverifies.AsNoTracking()
-                .Where(o => o.EndAt <= DateTime.Now)
-                .Select(o => new { o.GuildId, o.UserId })
-                .ToListAsync();
-
-            return data.ConvertAll(o => (o.GuildId.ToUlong(), o.UserId.ToUlong()));
+            return await Context.Unverifies.AsNoTracking()
+                .Include(o => o.GuildUser!.User).Include(o => o.Guild)
+                .FirstOrDefaultAsync(o => o.EndAt <= DateTime.Now);
         }
     }
 

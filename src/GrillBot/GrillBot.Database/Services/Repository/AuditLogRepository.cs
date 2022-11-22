@@ -73,13 +73,16 @@ public class AuditLogRepository : RepositoryBase
             .Where(o => o.CreatedAt <= expiredAt);
     }
 
-    public async Task<List<AuditLogItem>> GetSimpleDataAsync(IQueryableModel<AuditLogItem> model)
+    public async Task<List<AuditLogItem>> GetSimpleDataAsync(IQueryableModel<AuditLogItem> model, int? count = null)
     {
         using (CreateCounter())
         {
-            return await CreateQuery(model, true)
-                .Select(o => new AuditLogItem { Id = o.Id, Type = o.Type, Data = o.Data, CreatedAt = o.CreatedAt })
-                .ToListAsync();
+            var query = CreateQuery(model, true)
+                .Select(o => new AuditLogItem { Id = o.Id, Type = o.Type, Data = o.Data, CreatedAt = o.CreatedAt });
+            if (count != null)
+                query = query.Take(count.Value);
+
+            return await query.ToListAsync();
         }
     }
 

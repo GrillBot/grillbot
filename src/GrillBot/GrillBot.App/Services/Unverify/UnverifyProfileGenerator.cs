@@ -16,9 +16,10 @@ public class UnverifyProfileGenerator
         Texts = texts;
     }
 
-    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole, string locale)
+    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole,
+        string userLocale, string locale)
     {
-        var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify, locale)
+        var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify, userLocale)
         {
             Reason = !selfunverify ? ParseReason(data, locale) : null
         };

@@ -22,6 +22,7 @@ public class UnverifyService
     private ITextsManager Texts { get; }
     private UnverifyMessageGenerator MessageGenerator { get; }
     private IDiscordClient DiscordClient { get; }
+    private UnverifyHelper UnverifyHelper { get; }
 
     public UnverifyService(DiscordSocketClient discordSocketClient, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder,
         LoggingManager loggingManager, ITextsManager texts, UnverifyMessageGenerator messageGenerator, IDiscordClient discordClient)
@@ -35,6 +36,7 @@ public class UnverifyService
         Texts = texts;
         MessageGenerator = messageGenerator;
         DiscordClient = discordClient;
+        UnverifyHelper = new UnverifyHelper(databaseBuilder); 
 
         DiscordSocketClient.UserLeft += OnUserLeftAsync;
     }
@@ -61,7 +63,9 @@ public class UnverifyService
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
 
         await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end, keep?.Count ?? 0, locale);
-        var profile = await ProfileGenerator.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole, locale);
+
+        var userLanguage = await UnverifyHelper.GetUserLanguageAsync(guildUser, locale, selfunverify);
+        var profile = await ProfileGenerator.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole, userLanguage, locale);
 
         if (dry)
             return MessageGenerator.CreateUnverifyMessageToChannel(profile, locale);
@@ -93,7 +97,7 @@ public class UnverifyService
 
             try
             {
-                var dmMessage = MessageGenerator.CreateUnverifyPmMessage(profile, guild, locale);
+                var dmMessage = MessageGenerator.CreateUnverifyPmMessage(profile, guild, userLanguage);
                 await profile.Destination.SendMessageAsync(dmMessage);
             }
             catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)

@@ -37,6 +37,7 @@ public class RemoveUnverify : ApiAction
     {
         try
         {
+            UpdateContext("cs", DiscordClient.CurrentUser);
             IsAutoRemove = true;
             await ProcessAsync(guildId, userId);
         }

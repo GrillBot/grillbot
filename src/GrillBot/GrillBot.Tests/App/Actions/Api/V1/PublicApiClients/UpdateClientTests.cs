@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions.Api.V1.PublicApiClients;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.API.ApiClients;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;
 
@@ -17,7 +18,7 @@ public class UpdateClientTests : ApiActionTest<UpdateClient>
 
     private async Task InitDataAsync(string id)
     {
-        await Repository.AddAsync(new ApiClient { Id = id });
+        await Repository.AddAsync(new ApiClient { Id = id, Name = "Name" });
         await Repository.CommitAsync();
     }
 
@@ -27,7 +28,12 @@ public class UpdateClientTests : ApiActionTest<UpdateClient>
         var id = Guid.NewGuid().ToString();
         await InitDataAsync(id);
 
-        await Action.ProcessAsync(id, new List<string>());
+        var parameters = new ApiClientParams
+        {
+            Name = "ApiAction",
+            AllowedMethods = new List<string> { "*" }
+        };
+        await Action.ProcessAsync(id, parameters);
     }
 
     [TestMethod]
@@ -35,6 +41,6 @@ public class UpdateClientTests : ApiActionTest<UpdateClient>
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
     {
-        await Action.ProcessAsync(Guid.NewGuid().ToString(), new List<string>());
+        await Action.ProcessAsync(Guid.NewGuid().ToString(), new ApiClientParams());
     }
 }

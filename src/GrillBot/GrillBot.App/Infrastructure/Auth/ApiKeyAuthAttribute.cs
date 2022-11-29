@@ -25,13 +25,6 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
             return;
         }
 
-        if (apiClient.AllowedMethods.Count == 1 && apiClient.AllowedMethods[0] == "*")
-        {
-            await IncrementStatsAsync(apiClient, repository);
-            await next();
-            return;
-        }
-
         var descriptor = (ControllerActionDescriptor)context.ActionDescriptor;
         var method = $"{descriptor.ControllerTypeInfo.Name}.{descriptor.MethodInfo.Name}";
         if (!apiClient.AllowedMethods.Contains(method))

@@ -1,5 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api.V1.PublicApiClients;
+using GrillBot.Data.Models.API;
+using GrillBot.Data.Models.API.ApiClients;
 using GrillBot.Database.Entity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -41,12 +44,16 @@ public class PublicApiClientsController : Controller
     /// Create new client.
     /// </summary>
     /// <response code="200"></response>
+    /// <response code="400">Validation failed</response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> CreateClientAsync([FromBody] List<string> allowedMethods)
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> CreateClientAsync([FromBody] ApiClientParams parameters)
     {
+        ApiAction.Init(this, parameters);
+
         var action = ServiceProvider.GetRequiredService<CreateClient>();
-        await action.ProcessAsync(allowedMethods);
+        await action.ProcessAsync(parameters);
 
         return Ok();
     }
@@ -58,7 +65,7 @@ public class PublicApiClientsController : Controller
     /// <response code="404">Client wasn't found</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteClientAsync(string id)
     {
         var action = ServiceProvider.GetRequiredService<DeleteClient>();
@@ -71,14 +78,18 @@ public class PublicApiClientsController : Controller
     /// Update existing client.
     /// </summary>
     /// <response code="200"></response>
+    /// <response code="400">Validation failed</response>
     /// <response code="404">Client wasn't found.</response>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> UpdateClientAsync(string id, List<string> allowedMethods)
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> UpdateClientAsync(string id, [FromBody] ApiClientParams parameters)
     {
+        ApiAction.Init(this, parameters);
+
         var action = ServiceProvider.GetRequiredService<UpdateClient>();
-        await action.ProcessAsync(id, allowedMethods);
+        await action.ProcessAsync(id, parameters);
 
         return Ok();
     }

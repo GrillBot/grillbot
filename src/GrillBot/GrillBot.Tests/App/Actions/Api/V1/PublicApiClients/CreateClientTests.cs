@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.PublicApiClients;
+using GrillBot.Data.Models.API.ApiClients;
 using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.PublicApiClients;
@@ -14,7 +15,12 @@ public class CreateClientTests : ApiActionTest<CreateClient>
     [TestMethod]
     public async Task ProcessAsync()
     {
-        await Action.ProcessAsync(new List<string> { "*" });
+        var parameters = new ApiClientParams
+        {
+            Name = "ApiAction",
+            AllowedMethods = new List<string> { "*" }
+        };
+        await Action.ProcessAsync(parameters);
 
         var clients = await Repository.ApiClientRepository.GetClientsAsync();
         Assert.IsTrue(clients.Count > 0);

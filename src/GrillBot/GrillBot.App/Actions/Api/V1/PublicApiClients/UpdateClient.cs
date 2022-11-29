@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models.API.ApiClients;
 
 namespace GrillBot.App.Actions.Api.V1.PublicApiClients;
 
@@ -15,7 +16,7 @@ public class UpdateClient : ApiAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(string id, List<string> allowedMethods)
+    public async Task ProcessAsync(string id, ApiClientParams parameters)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -23,7 +24,8 @@ public class UpdateClient : ApiAction
         if (apiClient == null)
             throw new NotFoundException(Texts["PublicApiClients/NotFound", ApiContext.Language]);
 
-        apiClient.AllowedMethods = allowedMethods;
+        apiClient.AllowedMethods = parameters.AllowedMethods;
+        apiClient.Name = parameters.Name;
         await repository.CommitAsync();
     }
 }

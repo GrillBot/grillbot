@@ -17,7 +17,7 @@ public class DeleteClientTests : ApiActionTest<DeleteClient>
 
     private async Task InitDataAsync(string id)
     {
-        await Repository.AddAsync(new ApiClient { Id = id });
+        await Repository.AddAsync(new ApiClient { Id = id, Name = "Name" });
         await Repository.CommitAsync();
     }
 

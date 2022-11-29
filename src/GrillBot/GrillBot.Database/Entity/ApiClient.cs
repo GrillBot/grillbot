@@ -11,6 +11,10 @@ public class ApiClient
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public string Id { get; set; } = null!;
 
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; } = null!;
+
     [Column(TypeName = "jsonb")]
     public List<string> AllowedMethods { get; set; } = new();
     

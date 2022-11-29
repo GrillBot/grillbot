@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Data.Models.API.ApiClients;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Actions.Api.V1.PublicApiClients;
@@ -12,12 +13,13 @@ public class CreateClient : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task ProcessAsync(List<string> allowedMethods)
+    public async Task ProcessAsync(ApiClientParams parameters)
     {
         var entity = new ApiClient
         {
             Id = Guid.NewGuid().ToString(),
-            AllowedMethods = allowedMethods
+            AllowedMethods = parameters.AllowedMethods,
+            Name = parameters.Name
         };
 
         await using var repository = DatabaseBuilder.CreateRepository();

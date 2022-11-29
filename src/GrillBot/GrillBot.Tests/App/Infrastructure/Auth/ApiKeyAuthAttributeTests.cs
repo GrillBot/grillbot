@@ -70,10 +70,9 @@ public class ApiKeyAuthAttributeTests
 
         await repository.AddCollectionAsync(new[]
         {
-            new ApiClient { Id = "963258740" },
-            new ApiClient { Id = "963258741", AllowedMethods = new List<string> { "AuthController.GetRedirectLink" } },
-            new ApiClient { Id = "963258742", AllowedMethods = new List<string> { "*" } },
-            new ApiClient { Id = "963258743", AllowedMethods = new List<string> { "GetLink" } },
+            new ApiClient { Name = "Test", Id = "963258740" },
+            new ApiClient { Name = "Test", Id = "963258741", AllowedMethods = new List<string> { "AuthController.GetRedirectLink" } },
+            new ApiClient { Name = "Test", Id = "963258743", AllowedMethods = new List<string> { "GetLink" } },
         });
         await repository.CommitAsync();
     }
@@ -126,18 +125,6 @@ public class ApiKeyAuthAttributeTests
         await attribute.OnActionExecutionAsync(context, Delegate);
         Assert.IsInstanceOfType(context.Result, typeof(UnauthorizedResult));
         Assert.IsFalse(_wasCalled);
-    }
-
-    [TestMethod]
-    public async Task OnActionExecutionAsync_AllowAll()
-    {
-        var headers = new HeaderDictionary { { "ApiKey", "963258742" } };
-        var context = CreateContext(headers);
-        await InitDataAsync(context);
-
-        var attribute = new ApiKeyAuthAttribute();
-        await attribute.OnActionExecutionAsync(context, Delegate);
-        Assert.IsTrue(_wasCalled);
     }
 
     [TestMethod]

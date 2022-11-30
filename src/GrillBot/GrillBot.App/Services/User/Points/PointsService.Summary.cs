@@ -38,22 +38,11 @@ public partial class PointsService
     {
         if (transactions.Count == 0) return null; // Nothing to process.
 
-        var dateFrom = transactions.Min(o => o.AssingnedAt).Date;
-        var dateTo = transactions.Max(o => o.AssingnedAt).Date.Add(new TimeSpan(23, 59, 59));
-        var guilds = transactions.Select(o => o.GuildId).Distinct().ToList();
-        var users = transactions.Select(o => o.UserId).Distinct().ToList();
-
-        var summaries = await repository.Points.GetSummariesAsync(dateFrom, dateTo, guilds, users);
+        var (dateFrom, dateTo, guilds, users) = GetSummaryMetadata(transactions);
+        var summaries = repository.Points.GetSummaries(dateFrom, dateTo, guilds, users);
         var newSummaries = transactions
             .GroupBy(o => new { o.GuildId, o.UserId, o.AssingnedAt.Date })
-            .Select(o => new PointsTransactionSummary
-            {
-                GuildId = o.Key.GuildId,
-                UserId = o.Key.UserId,
-                Day = o.Key.Date,
-                MessagePoints = o.Where(x => !x.IsReaction()).Sum(x => x.Points),
-                ReactionPoints = o.Where(x => x.IsReaction()).Sum(x => x.Points)
-            });
+            .Select(o => ComputeSummary((o.Key.GuildId, o.Key.UserId, o.Key.Date), o));
 
         // Check and set new summaries.
         var updatedCount = 0;
@@ -63,8 +52,7 @@ public partial class PointsService
             if (summaries.ContainsKey(summary.SummaryId))
             {
                 var oldSummary = summaries[summary.SummaryId];
-                var itemChanged = oldSummary.MessagePoints != summary.MessagePoints || oldSummary.ReactionPoints != summary.ReactionPoints;
-                if (!itemChanged) continue;
+                if(oldSummary.TotalPoints == summary.TotalPoints) continue;
 
                 oldSummary.MessagePoints = summary.MessagePoints;
                 oldSummary.ReactionPoints = summary.ReactionPoints;
@@ -98,5 +86,46 @@ public partial class PointsService
         }.Where(o => !string.IsNullOrEmpty(o));
 
         return $"RecalculatePoints({string.Join(", ", parts)})";
+    }
+
+    private static (DateTime dateFrom, DateTime dateTo, HashSet<string> guilds, HashSet<string> users) GetSummaryMetadata(IEnumerable<PointsTransaction> transactions)
+    {
+        var dateFrom = DateTime.MaxValue;
+        var dateTo = DateTime.MinValue;
+        var guilds = new HashSet<string>();
+        var users = new HashSet<string>();
+
+        foreach (var transaction in transactions)
+        {
+            if (transaction.AssingnedAt.Date < dateFrom) dateFrom = transaction.AssingnedAt.Date;
+            if (transaction.AssingnedAt.Date > dateTo) dateTo = transaction.AssingnedAt.Date;
+
+            guilds.Add(transaction.GuildId);
+            users.Add(transaction.UserId);
+        }
+
+        return (dateFrom, dateTo.Date.Add(new TimeSpan(23, 59, 59)), guilds, users);
+    }
+
+    private static PointsTransactionSummary ComputeSummary((string GuildId, string UserId, DateTime Date) key, IEnumerable<PointsTransaction> transactions)
+    {
+        var summary = new PointsTransactionSummary
+        {
+            GuildId = key.GuildId,
+            UserId = key.UserId,
+            Day = key.Date,
+            MessagePoints = 0,
+            ReactionPoints = 0
+        };
+
+        foreach (var item in transactions)
+        {
+            if (item.IsReaction())
+                summary.ReactionPoints += item.Points;
+            else
+                summary.MessagePoints += item.Points;
+        }
+
+        return summary;
     }
 }

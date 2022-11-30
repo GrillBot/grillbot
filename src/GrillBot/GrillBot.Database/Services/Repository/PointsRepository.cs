@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -42,14 +43,7 @@ public class PointsRepository : RepositoryBase
                 .Where(o => o.MergedItemsCount == 0);
 
             if (onlyToday)
-            {
                 query = query.Where(o => o.AssingnedAt.Date == DateTime.Now.Date);
-            }
-            else
-            {
-                var yearBack = DateTime.Now.AddYears(-1).AddMonths(-1);
-                query = query.Where(o => o.AssingnedAt >= yearBack);
-            }
 
             if (guildUser != null)
                 query = query.Where(o => o.UserId == guildUser.Id.ToString() && o.GuildId == guildUser.GuildId.ToString());
@@ -58,14 +52,23 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<Dictionary<string, PointsTransactionSummary>> GetSummariesAsync(DateTime from, DateTime to, List<string> guilds, List<string> users)
+    public Dictionary<string, PointsTransactionSummary> GetSummaries(DateTime from, DateTime to, IEnumerable<string> guilds, IEnumerable<string> users)
     {
         using (CreateCounter())
         {
-            var query = Context.PointsTransactionSummaries
-                .Where(o => !o.IsMerged && o.Day >= from && o.Day <= to && guilds.Contains(o.GuildId) && users.Contains(o.UserId));
-            var data = await query.ToListAsync();
-            return data.ToDictionary(o => o.SummaryId, o => o);
+            var baseQuery = Context.PointsTransactionSummaries.Where(o => !o.IsMerged && o.Day >= from && o.Day <= to && guilds.Contains(o.GuildId));
+            var result = new Dictionary<string, PointsTransactionSummary>();
+
+            foreach (var usersGroup in users.Split(100))
+            {
+                foreach (var summary in baseQuery.Where(o => usersGroup.Contains(o.UserId)))
+                {
+                    if (!result.ContainsKey(summary.SummaryId))
+                        result.Add(summary.SummaryId, summary);
+                }
+            }
+
+            return result;
         }
     }
 

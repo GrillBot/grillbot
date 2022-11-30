@@ -33,5 +33,9 @@ public class PointsTransactionSummary
     public int MergedItemsCount { get; set; }
     public bool IsMerged { get; set; }
 
+    [NotMapped]
     public string SummaryId => $"{GuildId}|{UserId}{Day:o}";
+
+    [NotMapped]
+    public long TotalPoints => MessagePoints + ReactionPoints;
 }

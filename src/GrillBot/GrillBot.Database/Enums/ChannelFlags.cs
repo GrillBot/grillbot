@@ -30,5 +30,10 @@ public enum ChannelFlags : long
     /// <summary>
     /// Points counting in the channel is disabled.
     /// </summary>
-    PointsDeactivated = 16
+    PointsDeactivated = 16,
+    
+    /// <summary>
+    /// Commands are executed as ephemeral.
+    /// </summary>
+    EphemeralCommands = 32
 }

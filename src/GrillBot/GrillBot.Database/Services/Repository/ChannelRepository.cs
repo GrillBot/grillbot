@@ -241,4 +241,14 @@ public class ChannelRepository : RepositoryBase
             return await groupQuery.ToDictionaryAsync(o => o.ChannelId, o => (o.Count, o.FirstMessageAt, o.LastMessageAt));
         }
     }
+
+    public async Task<bool> IsChannelEphemeralAsync(IGuild guild, IChannel channel)
+    {
+        using (CreateCounter())
+        {
+            return await Context.Channels.AsNoTracking()
+                .Where(o => (o.Flags & (long)ChannelFlags.Deleted) == 0)
+                .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.ChannelId == channel.Id.ToString() && (o.Flags & (long)ChannelFlags.EphemeralCommands) != 0);
+        }
+    }
 }

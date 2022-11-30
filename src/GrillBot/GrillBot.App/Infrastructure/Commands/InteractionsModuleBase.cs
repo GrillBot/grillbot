@@ -25,7 +25,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected CultureInfo Culture
         => string.IsNullOrEmpty(Locale) ? null : Texts.GetCulture(Locale);
 
-    private bool IsBotRoom { get; set; }
+    private bool IsEphemeralChannel { get; set; }
 
     protected InteractionsModuleBase(IServiceProvider serviceProvider)
     {
@@ -47,7 +47,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     ///
     /// ephemeral(True) if:
     /// - DeferConfigurationAttribute have RequireEphemeral=true
-    /// - BotRoom was configured and execution channel is not BotRoom. 
+    /// - Channel was configured to execute command as ephemeral.
     /// </returns>
     private async Task<(bool canDefer, bool ephemeral)> CheckDeferAsync(ICommandInfo command)
     {
@@ -60,9 +60,8 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         if (configuration.RequireEphemeral) return (true, true);
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var guild = (await repository.Guild.FindGuildAsync(Context.Guild, true))!;
-        IsBotRoom = string.IsNullOrEmpty(guild.BotRoomChannelId) || guild.BotRoomChannelId == Context.Channel.Id.ToString();
-        return (true, !IsBotRoom);
+        IsEphemeralChannel = await repository.Channel.IsChannelEphemeralAsync(Context.Guild, Context.Channel);
+        return (true, IsEphemeralChannel);
     }
 
     public override async Task BeforeExecuteAsync(ICommandInfo command)
@@ -84,7 +83,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         IEnumerable<FileAttachment> attachments = default, RequestOptions requestOptions = null, bool secret = false, bool suppressFollowUp = false)
     {
         var attachmentsList = (attachments ?? Enumerable.Empty<FileAttachment>()).ToList();
-        secret = secret || !IsBotRoom;
+        secret = secret || !IsEphemeralChannel;
 
         if (!Context.Interaction.HasResponded)
         {

@@ -15,7 +15,7 @@ public class UserModule : Infrastructure.Commands.InteractionsModuleBase
     }
 
     [SlashCommand("access", "View a list of user permissions.")]
-    [DeferConfiguration(RequireEphemeral = true)]
+    [DeferConfiguration]
     public async Task GetAccessListAsync([Summary("user", "User identification")] IGuildUser user)
     {
         using var command = GetCommand<Actions.Commands.UserAccessList>();

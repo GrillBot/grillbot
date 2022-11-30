@@ -43,7 +43,14 @@ public class PointsRepository : RepositoryBase
                 .Where(o => o.MergedItemsCount == 0);
 
             if (onlyToday)
+            {
                 query = query.Where(o => o.AssingnedAt.Date == DateTime.Now.Date);
+            }
+            else
+            {
+                var yearBack = DateTime.Now.AddYears(-1).AddMonths(-1);
+                query = query.Where(o => o.AssingnedAt >= yearBack);
+            }
 
             if (guildUser != null)
                 query = query.Where(o => o.UserId == guildUser.Id.ToString() && o.GuildId == guildUser.GuildId.ToString());
@@ -238,10 +245,8 @@ public class PointsRepository : RepositoryBase
 
     private IQueryable<PointsTransaction> GetExpiredTransactionsBaseQuery()
     {
-        var expirationDate = DateTime.Now.AddYears(-1).AddMonths(-6);
+        var expirationDate = DateTime.Now.AddYears(-1).AddMonths(-2);
         return Context.PointsTransactions
-            .Include(o => o.GuildUser.User)
-            .Include(o => o.Guild)
             .Where(o => o.AssingnedAt <= expirationDate && o.MergedItemsCount == 0); // Select only expired and non merged records.
     }
 
@@ -263,10 +268,8 @@ public class PointsRepository : RepositoryBase
 
     private IQueryable<PointsTransactionSummary> GetExpiredSummariesBaseQuery()
     {
-        var expirationDate = DateTime.Now.AddYears(-1).AddMonths(-6).Date;
+        var expirationDate = DateTime.Now.AddYears(-1).AddMonths(-2).Date;
         return Context.PointsTransactionSummaries
-            .Include(o => o.Guild)
-            .Include(o => o.GuildUser.User)
             .Where(o => o.Day <= expirationDate && !o.IsMerged);
     }
 

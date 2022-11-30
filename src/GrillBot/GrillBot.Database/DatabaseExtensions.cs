@@ -14,6 +14,7 @@ public static class DatabaseExtensions
             {
                 b.UseNpgsql(connectionString);
                 b.EnableDetailedErrors();
+                b.EnableThreadSafetyChecks();
             }, optionsLifetime: ServiceLifetime.Singleton)
             .AddSingleton<GrillBotDatabaseBuilder>();
 

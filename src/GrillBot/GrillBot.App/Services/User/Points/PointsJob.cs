@@ -18,8 +18,8 @@ public class PointsJob : Job
         var report = new List<string>
         {
             await PointsService.MergeOldTransactionsAsync(),
-            await PointsService.MergeSummariesAsync(),
-            await PointsService.RecalculatePointsSummaryAsync()
+            await PointsService.RecalculatePointsSummaryAsync(),
+            await PointsService.MergeSummariesAsync()
         };
 
         context.Result = string.Join("\n", report.Where(o => o != null)).Trim();

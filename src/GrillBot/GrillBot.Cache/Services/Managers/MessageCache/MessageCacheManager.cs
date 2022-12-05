@@ -163,7 +163,7 @@ public class MessageCacheManager : IMessageCacheManager
 
     private async Task<IMessage?> DownloadMessageFromChannelAsync(IMessageChannel channel, ulong id)
     {
-        using (CounterManager.Create("Discord"))
+        using (CounterManager.Create("Discord.API.Messages"))
         {
             try
             {
@@ -179,7 +179,7 @@ public class MessageCacheManager : IMessageCacheManager
 
     private async Task<List<IMessage>> DownloadMessagesFromChannelAsync(IMessageChannel channel, (ulong messageId, Direction direction)? range = null, int limit = DiscordConfig.MaxMessagesPerBatch)
     {
-        using (CounterManager.Create("Discord"))
+        using (CounterManager.Create("Discord.API.Messages"))
         {
             try
             {

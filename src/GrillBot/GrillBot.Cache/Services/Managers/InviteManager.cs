@@ -21,7 +21,7 @@ public class InviteManager
     {
         var result = new List<IInviteMetadata>();
 
-        using (CounterManager.Create("Discord.API"))
+        using (CounterManager.Create("Discord.API.Invite"))
         {
             if (!string.IsNullOrEmpty(guild.VanityURLCode))
                 result.Add(await guild.GetVanityInviteAsync());

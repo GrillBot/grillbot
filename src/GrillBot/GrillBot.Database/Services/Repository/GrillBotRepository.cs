@@ -71,7 +71,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
 
     public async Task<int> CommitAsync()
     {
-        using (CounterManager.Create("Database"))
+        using (CounterManager.Create("Database.Commit"))
         {
             return await Context.SaveChangesAsync();
         }
@@ -84,7 +84,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
 
     public void ProcessMigrations()
     {
-        using (CounterManager.Create("Database"))
+        using (CounterManager.Create("Database.Migrations"))
         {
             if (Context.Database.GetPendingMigrations().Any())
                 Context.Database.Migrate();
@@ -93,7 +93,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
 
     public async Task ProcessMigrationsAsync()
     {
-        using (CounterManager.Create("Database"))
+        using (CounterManager.Create("Database.Migrations"))
         {
             if ((await Context.Database.GetPendingMigrationsAsync()).Any())
                 await Context.Database.MigrateAsync();

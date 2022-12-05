@@ -59,7 +59,7 @@ public class ChannelRepository : RepositoryBase
     public async Task<List<GuildChannel>> GetVisibleChannelsAsync(ulong guildId, List<string> channelIds, bool disableTracking = false,
         bool showInvisible = false)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = GetBaseQuery(false, disableTracking, ChannelsIncludeUsersMode.IncludeExceptInactive)
                 .Where(o =>
@@ -78,7 +78,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<List<GuildChannel>> GetAllChannelsAsync(bool disableTracking = false, bool includeDeleted = true, bool includeUsers = false, List<ChannelType>? channelTypes = null)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var usersIncludeMode = includeUsers ? ChannelsIncludeUsersMode.IncludeAll : ChannelsIncludeUsersMode.None;
             var query = GetBaseQuery(includeDeleted, disableTracking, usersIncludeMode);
@@ -91,7 +91,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<List<GuildChannel>> GetAllChannelsAsync(List<string> guildIds, bool ignoreThreads, bool disableTracking = false, ChannelFlags filterFlags = ChannelFlags.None)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = GetBaseQuery(false, disableTracking, ChannelsIncludeUsersMode.None)
                 .Where(o => guildIds.Contains(o.GuildId));
@@ -107,7 +107,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<GuildChannel> GetOrCreateChannelAsync(IGuildChannel channel, ChannelsIncludeUsersMode includeUsersMode = ChannelsIncludeUsersMode.None)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var entity = await GetBaseQuery(true, false, includeUsersMode)
                 .FirstOrDefaultAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString());
@@ -124,7 +124,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<long> GetMessagesCountOfUserAsync(IGuildUser user)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.UserChannels.AsNoTracking()
                 .Where(o =>
@@ -141,7 +141,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<(GuildUserChannel? lastActive, GuildUserChannel? mostActive)> GetTopChannelStatsOfUserAsync(IGuildUser user)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var baseQuery = Context.UserChannels.AsNoTracking()
                 .Where(o =>
@@ -162,7 +162,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<List<GuildChannel>> GetChildChannelsAsync(ulong parentChannelId, ulong? guildId = null)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Channels
                 .Where(o =>
@@ -179,7 +179,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<GuildChannel?> FindThreadAsync(IThreadChannel thread)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Channels
                 .Where(o =>
@@ -197,7 +197,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<PaginatedResponse<GuildChannel>> GetChannelListAsync(IQueryableModel<GuildChannel> model, PaginatedParams pagination)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<GuildChannel>.CreateWithEntityAsync(query, pagination);
@@ -206,7 +206,7 @@ public class ChannelRepository : RepositoryBase
 
     public async Task<PaginatedResponse<GuildUserChannel>> GetUserChannelListAsync(ulong channelId, PaginatedParams pagination)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.UserChannels.AsNoTracking()
                 .Include(o => o.User!.User)

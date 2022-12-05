@@ -33,7 +33,7 @@ public class EmoteSuggestionRepository : RepositoryBase
 
     public async Task<EmoteSuggestion?> FindSuggestionByMessageId(ulong guildId, ulong messageId)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = GetBaseQuery(guildId);
             return await query.FirstOrDefaultAsync(o => o.SuggestionMessageId == messageId.ToString());
@@ -42,7 +42,7 @@ public class EmoteSuggestionRepository : RepositoryBase
 
     public async Task<List<EmoteSuggestion>> FindSuggestionsForProcessingAsync(IGuild guild)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = GetBaseQuery(guild.Id)
                 .Where(o => o.ApprovedForVote != null && o.VoteMessageId == null)
@@ -54,7 +54,7 @@ public class EmoteSuggestionRepository : RepositoryBase
 
     public async Task<List<EmoteSuggestion>> FindSuggestionsForFinishAsync(IGuild guild)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = GetBaseQuery(guild.Id)
                 .Where(o => !o.VoteFinished && o.ApprovedForVote == true && o.VoteMessageId != null && o.VoteEndsAt != null && o.VoteEndsAt.Value < DateTime.Now);
@@ -65,7 +65,7 @@ public class EmoteSuggestionRepository : RepositoryBase
 
     public async Task<PaginatedResponse<EmoteSuggestion>> GetSuggestionListAsync(IQueryableModel<EmoteSuggestion> model, PaginatedParams pagination)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<EmoteSuggestion>.CreateWithEntityAsync(query, pagination);

@@ -15,7 +15,7 @@ public class AutoReplyRepository : RepositoryBase
 
     public async Task<List<AutoReplyItem>> GetAllAsync()
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.AutoReplies.AsNoTracking()
                 .OrderBy(o => o.Id).ToListAsync();
@@ -24,7 +24,7 @@ public class AutoReplyRepository : RepositoryBase
 
     public async Task<AutoReplyItem?> FindReplyByIdAsync(long id)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.AutoReplies
                 .FirstOrDefaultAsync(o => o.Id == id);

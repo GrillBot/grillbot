@@ -55,23 +55,15 @@ public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
 
     public async Task CommitAsync()
     {
-        using (CounterManager.Create("Cache"))
+        using (CounterManager.Create("Cache.Commit"))
         {
             await Context.SaveChangesAsync();
         }
     }
 
-    public void Commit()
-    {
-        using (CounterManager.Create("Cache"))
-        {
-            Context.SaveChanges();
-        }
-    }
-
     public void ProcessMigrations()
     {
-        using (CounterManager.Create("Cache"))
+        using (CounterManager.Create("Cache.Migrations"))
         {
             if (Context.Database.GetPendingMigrations().Any())
                 Context.Database.Migrate();

@@ -3,6 +3,7 @@
 public class CounterManager
 {
     private List<CounterItem> ActiveCounters { get; } = new();
+    private Dictionary<string, CounterStats> Stats { get; } = new();
     private readonly object _lock = new();
 
     public CounterItem Create(string section)
@@ -20,7 +21,11 @@ public class CounterManager
     {
         lock (_lock)
         {
-            ActiveCounters.RemoveAll(o => o.Section == item.Section && o.Id == item.Id);
+           ActiveCounters.RemoveAll(o => o.Section == item.Section && o.Id == item.Id);
+
+            if (!Stats.ContainsKey(item.Section))
+                Stats.Add(item.Section, new CounterStats { Section = item.Section });
+            Stats[item.Section].Increment((DateTime.Now - item.StartAt).TotalMilliseconds);
         }
     }
 
@@ -34,6 +39,16 @@ public class CounterManager
                 .OrderByDescending(o => o.Count)
                 .ThenBy(o => o.Key)
                 .ToDictionary(o => o.Key, o => o.Count);
+        }
+    }
+
+    public List<CounterStats> GetStatistics()
+    {
+        lock (_lock)
+        {
+            return Stats.Values
+                .OrderBy(o => o.Section)
+                .ToList();
         }
     }
 }

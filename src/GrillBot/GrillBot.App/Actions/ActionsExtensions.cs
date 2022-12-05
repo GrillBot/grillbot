@@ -119,8 +119,8 @@ public static class ActionsExtensions
         // System
         services
             .AddScoped<Api.V1.System.ChangeBotStatus>()
-            .AddScoped<Api.V1.System.GetDiagnostics>()
-            .AddScoped<Api.V1.System.GetEventLog>();
+            .AddScoped<Api.V1.System.GetEventLog>()
+            .AddScoped<Api.V1.System.GetDashboard>();
 
         // Unverify
         services

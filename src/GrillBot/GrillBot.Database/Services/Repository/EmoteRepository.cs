@@ -18,7 +18,7 @@ public class EmoteRepository : RepositoryBase
     public async Task<List<EmoteStatItem>> GetEmoteStatisticsDataAsync(IQueryableModel<EmoteStatisticItem> model,
         IEnumerable<string> emoteIds, bool unsupported)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = CreateQuery(model, true);
             query = unsupported ? query.Where(o => !emoteIds.Contains(o.EmoteId)) : query.Where(o => emoteIds.Contains(o.EmoteId));
@@ -30,7 +30,7 @@ public class EmoteRepository : RepositoryBase
 
     public async Task<List<EmoteStatisticItem>> FindStatisticsByEmoteIdAsync(string emoteId)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Emotes
                 .Where(o => o.EmoteId == emoteId)
@@ -40,7 +40,7 @@ public class EmoteRepository : RepositoryBase
 
     public async Task<EmoteStatItem?> GetStatisticsOfEmoteAsync(IEmote emote)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var baseQuery = Context.Emotes.AsNoTracking()
                 .Where(o => o.UseCount > 0);
@@ -67,7 +67,7 @@ public class EmoteRepository : RepositoryBase
 
     public async Task<List<EmoteStatisticItem>> GetTopUsersOfUsage(IEmote emote, int count)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             var query = Context.Emotes.AsNoTracking()
                 .Where(o => o.UseCount > 0 && o.EmoteId == emote.ToString())
@@ -81,7 +81,7 @@ public class EmoteRepository : RepositoryBase
 
     public async Task<EmoteStatisticItem?> FindStatisticAsync(IEmote emote, IUser user, IGuild guild)
     {
-        using (Counter.Create("Database"))
+        using (CreateCounter())
         {
             return await Context.Emotes
                 .FirstOrDefaultAsync(o => o.EmoteId == emote.ToString() && o.UserId == user.Id.ToString() && o.GuildId == guild.Id.ToString());

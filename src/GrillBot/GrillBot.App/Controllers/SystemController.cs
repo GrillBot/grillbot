@@ -23,20 +23,6 @@ public class SystemController : Controller
     }
 
     /// <summary>
-    /// Gets diagnostics data about application.
-    /// </summary>
-    /// <response code="200">Success</response>
-    [HttpGet("diag")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public ActionResult<DiagnosticsInfo> GetDiagnostics()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.System.GetDiagnostics>();
-        var result = action.Process();
-
-        return Ok(result);
-    }
-
-    /// <summary>
     /// Changes bot account status and set bot's status activity.
     /// </summary>
     /// <response code="200">Success</response>
@@ -59,6 +45,19 @@ public class SystemController : Controller
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.System.GetEventLog>();
         var result = action.Process();
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get live dashboard.
+    /// </summary>
+    [HttpGet("dashboard")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Dashboard>> GetDashboardAsync()
+    {
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.System.GetDashboard>();
+        var result = await action.ProcessAsync();
+
         return Ok(result);
     }
 }

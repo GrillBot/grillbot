@@ -3,11 +3,11 @@ using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.PresenceUpdated;
 
-public class UserSynchronizationHandler : IPresenceUpdatedEvent
+public class UserPresenceSynchronizationHandler : IPresenceUpdatedEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public UserSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder)
+    public UserPresenceSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder)
     {
         DatabaseBuilder = databaseBuilder;
     }

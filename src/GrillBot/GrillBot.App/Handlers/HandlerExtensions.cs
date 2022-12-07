@@ -12,7 +12,10 @@ public static class HandlerExtensions
             .AddSingleton<InteractionHandler>();
 
         services
-            .AddScoped<IPresenceUpdatedEvent, PresenceUpdated.UserSynchronizationHandler>();
+            .AddScoped<IPresenceUpdatedEvent, PresenceUpdated.UserPresenceSynchronizationHandler>();
+
+        services
+            .AddScoped<IMessageReceivedEvent, MessageReceived.PointsMessageReceivedHandler>();
 
         return services;
     }

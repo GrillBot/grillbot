@@ -9,8 +9,8 @@ namespace GrillBot.Database.Services.Repository;
 
 public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
 {
-    private GrillBotContext Context { get; }
-    private List<RepositoryBase> Repositories { get; } = new();
+    private GrillBotContext Context { get; set; }
+    private List<RepositoryBase> Repositories { get; set; } = new();
     private CounterManager CounterManager { get; }
 
     public GrillBotRepository(GrillBotContext context, CounterManager counterManager)
@@ -102,13 +102,21 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
 
     public void Dispose()
     {
-        Repositories.Clear();
+        Context.ChangeTracker.Clear();
         Context.Dispose();
+        Context = null!;
+
+        Repositories.Clear();
+        Repositories = null!;
     }
 
     public async ValueTask DisposeAsync()
     {
         Repositories.Clear();
+        Repositories = null!;
+
+        Context.ChangeTracker.Clear();
         await Context.DisposeAsync();
+        Context = null!;
     }
 }

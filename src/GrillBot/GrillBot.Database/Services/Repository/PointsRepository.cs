@@ -35,22 +35,15 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<List<PointsTransaction>> GetAllTransactionsAsync(bool onlyToday, IGuildUser? guildUser)
+    public async Task<List<PointsTransaction>> GetAllTransactionsAsync(bool full, IGuildUser? guildUser)
     {
         using (CreateCounter())
         {
             var query = Context.PointsTransactions.AsNoTracking()
                 .Where(o => o.MergedItemsCount == 0);
 
-            if (onlyToday)
-            {
-                query = query.Where(o => o.AssingnedAt.Date == DateTime.Now.Date);
-            }
-            else
-            {
-                var yearBack = DateTime.Now.AddYears(-1).AddMonths(-1);
-                query = query.Where(o => o.AssingnedAt >= yearBack);
-            }
+            var dateLimit = full ? DateTime.Now.AddYears(-1).AddMonths(-1) : DateTime.Now.AddDays(-2);
+            query = query.Where(o => o.AssingnedAt >= dateLimit);
 
             if (guildUser != null)
                 query = query.Where(o => o.UserId == guildUser.Id.ToString() && o.GuildId == guildUser.GuildId.ToString());

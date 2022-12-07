@@ -6,37 +6,6 @@ namespace GrillBot.App.Services.User.Points;
 
 public partial class PointsService
 {
-    private async Task OnMessageReceivedAsync(IMessage message)
-    {
-        if (!CanIncrement(message)) return;
-        if (message.Channel is not SocketTextChannel textChannel) return;
-
-        var guildUserEntity = message.Author as IGuildUser ?? textChannel.Guild.GetUser(message.Author.Id);
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        await repository.Guild.GetOrCreateGuildAsync(textChannel.Guild);
-        var userEntity = await repository.User.GetOrCreateUserAsync(guildUserEntity);
-        var guildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(guildUserEntity);
-        var guildChannel = await repository.Channel.GetOrCreateChannelAsync(textChannel);
-
-        var userPointsDisabled = (guildUser.User ?? userEntity).HaveFlags(UserFlags.PointsDisabled);
-        if (guildChannel.HasFlag(ChannelFlags.PointsDeactivated) || userPointsDisabled)
-            return;
-
-        var transaction = CreateTransaction(guildUser, null, message.Id, false);
-        if (transaction == null || transaction.Points == 0) return;
-
-        var migrated = CreateMigratedTransaction(guildUser, transaction);
-        if (migrated != null && !await repository.Points.ExistsTransactionAsync(migrated))
-            await repository.AddAsync(migrated);
-
-        if (!await repository.Points.ExistsTransactionAsync(transaction))
-            await repository.AddAsync(transaction);
-        await repository.CommitAsync();
-        await RecalculatePointsSummaryAsync(repository, true, new List<IGuildUser> { guildUserEntity });
-    }
-
     private async Task OnMessageDeletedAsync(Cacheable<IMessage, ulong> msg, Cacheable<IMessageChannel, ulong> channel)
     {
         if (!channel.HasValue || channel.Value is not IGuildChannel guildChannel) return;

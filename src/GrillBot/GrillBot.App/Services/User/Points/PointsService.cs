@@ -35,7 +35,6 @@ public partial class PointsService
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
 
-        DiscordClient.MessageReceived += message => message.TryLoadMessage(out var msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
         DiscordClient.ReactionAdded += OnReactionAddedAsync;
         DiscordClient.MessageDeleted += OnMessageDeletedAsync;
         DiscordClient.ReactionRemoved += OnReactionRemovedAsync;

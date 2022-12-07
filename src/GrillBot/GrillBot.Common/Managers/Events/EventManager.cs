@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,9 +13,9 @@ public class EventManager
     private InitManager InitManager { get; }
     private CounterManager CounterManager { get; }
 
-    public EventManager(DiscordSocketClient discordClient, IServiceProvider serviceProvider, InitManager initManager, CounterManager counterManager)
+    public EventManager(IDiscordClient discordClient, IServiceProvider serviceProvider, InitManager initManager, CounterManager counterManager)
     {
-        DiscordClient = discordClient;
+        DiscordClient = (DiscordSocketClient)discordClient;
         ServiceProvider = serviceProvider;
         InitManager = initManager;
         CounterManager = counterManager;
@@ -25,6 +26,7 @@ public class EventManager
     private void InitEvents()
     {
         DiscordClient.PresenceUpdated += (user, before, after) => ProcessEventAsync<IPresenceUpdatedEvent>(@event => @event.ProcessAsync(user, before, after));
+        DiscordClient.MessageReceived += message => ProcessEventAsync<IMessageReceivedEvent>(@event => @event.ProcessAsync(message));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

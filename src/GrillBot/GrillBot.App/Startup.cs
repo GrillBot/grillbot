@@ -110,7 +110,9 @@ public class Startup
 
         services
             .AddHandlers()
-            .AddServices();
+            .AddServices()
+            .AddManagers();
+        ManagersExtensions.AddHelpers(services);
 
         services.AddHttpClient(Configuration, "MathJS", "Math");
         services.AddHttpClient(Configuration, "KachnaOnline", "KachnaOnline");

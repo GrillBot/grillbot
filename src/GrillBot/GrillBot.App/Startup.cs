@@ -33,7 +33,7 @@ namespace GrillBot.App;
 public class Startup
 {
     public IConfiguration Configuration { get; }
-    
+
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
@@ -109,8 +109,7 @@ public class Startup
         services.AddAutoMapper(new[] { new[] { currentAssembly }, referencedAssemblies }.SelectMany(o => o));
 
         services
-            .AddSingleton<CommandHandler>()
-            .AddSingleton<InteractionHandler>()
+            .AddHandlers()
             .AddServices();
 
         services.AddHttpClient(Configuration, "MathJS", "Math");

@@ -11,8 +11,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using System.Reflection;
+using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services.Discord;
 
@@ -83,6 +85,8 @@ public class DiscordService : IHostedService
 
     private void InitServices()
     {
+        Provider.GetRequiredService<EventManager>();
+
         var currentAssembly = Assembly.GetExecutingAssembly();
 
         var initializable = currentAssembly

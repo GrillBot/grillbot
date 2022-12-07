@@ -71,11 +71,6 @@ public class DiscordSyncService
             () => Channels.ThreadUpdatedAsync(after),
             () => before.HasValue && (before.Value.Name != after.Name || before.Value.IsArchived != after.IsArchived)
         );
-
-        DiscordClient.PresenceUpdated += (user, before, after) => RunAsync(
-            () => Users.PresenceUpdatedAsync(user, after),
-            () => before != null && after != null && before.GetStatus() != after.GetStatus()
-        );
     }
 
     private async Task RunAsync(Func<Task> syncFunction, Func<bool> check = null)

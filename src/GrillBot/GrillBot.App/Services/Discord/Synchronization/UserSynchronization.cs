@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Actions;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Database.Enums;
+﻿using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Services.Discord.Synchronization;
@@ -26,16 +24,5 @@ public class UserSynchronization : SynchronizationBase
         var botOwner = await repository.User.GetOrCreateUserAsync(application.Owner);
         botOwner.Flags |= (int)UserFlags.BotAdmin;
         botOwner.Flags &= ~(int)UserFlags.NotUser;
-    }
-
-    public async Task PresenceUpdatedAsync(IUser user, SocketPresence after)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var dbUser = await repository.User.FindUserAsync(user);
-        if (dbUser == null) return;
-
-        dbUser.Status = after.GetStatus();
-        await repository.CommitAsync();
     }
 }

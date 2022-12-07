@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
@@ -9,13 +9,13 @@ public class RemoveAutoReplyItem : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
-    private AutoReplyService Service { get; }
+    private AutoReplyManager AutoReplyManager { get; }
 
-    public RemoveAutoReplyItem(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, AutoReplyService service) : base(apiContext)
+    public RemoveAutoReplyItem(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, AutoReplyManager autoReplyManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
-        Service = service;
+        AutoReplyManager = autoReplyManager;
     }
 
     public async Task ProcessAsync(long id)
@@ -28,6 +28,6 @@ public class RemoveAutoReplyItem : ApiAction
 
         repository.Remove(entity);
         await repository.CommitAsync();
-        await Service.InitAsync();
+        await AutoReplyManager.InitAsync();
     }
 }

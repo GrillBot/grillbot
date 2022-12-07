@@ -17,7 +17,8 @@ public static class ServiceExtensions
     public static IServiceCollection AddManagers(this IServiceCollection services)
     {
         services
-            .AddScoped<PointsRecalculationManager>();
+            .AddScoped<PointsRecalculationManager>()
+            .AddSingleton<AutoReplyManager>();
         return services;
     }
 }

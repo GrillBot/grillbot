@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using GrillBot.App.Services;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
@@ -9,17 +9,17 @@ namespace GrillBot.App.Actions.Api.V1.AutoReply;
 
 public class UpdateAutoReplyItem : ApiAction
 {
-    private AutoReplyService Service { get; }
+    private AutoReplyManager AutoReplyManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
     private ITextsManager Texts { get; }
 
-    public UpdateAutoReplyItem(ApiRequestContext apiContext, AutoReplyService service, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, ITextsManager texts) : base(apiContext)
+    public UpdateAutoReplyItem(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, ITextsManager texts, AutoReplyManager autoReplyManager) : base(apiContext)
     {
-        Service = service;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         Texts = texts;
+        AutoReplyManager = autoReplyManager;
     }
 
     public async Task<AutoReplyItem> ProcessAsync(long id, AutoReplyItemParams parameters)
@@ -35,7 +35,7 @@ public class UpdateAutoReplyItem : ApiAction
         entity.Reply = parameters.Reply;
 
         await repository.CommitAsync();
-        await Service.InitAsync();
+        await AutoReplyManager.InitAsync();
 
         return Mapper.Map<AutoReplyItem>(entity);
     }

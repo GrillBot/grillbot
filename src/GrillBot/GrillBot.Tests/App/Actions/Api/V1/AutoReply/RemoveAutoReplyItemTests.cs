@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions.Api.V1.AutoReply;
-using GrillBot.App.Services;
-using GrillBot.Common.Managers;
+using GrillBot.App.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Tests.Infrastructure.Common;
 
@@ -15,11 +14,9 @@ public class RemoveAutoReplyItemTests : ApiActionTest<RemoveAutoReplyItem>
         var texts = new TextsBuilder()
             .AddText("AutoReply/NotFound", "cs", "NotFound")
             .Build();
-        var discordClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(TestServices.LoggerFactory.Value);
-        var service = new AutoReplyService(discordClient, DatabaseBuilder, initManager);
+        var manager = new AutoReplyManager(DatabaseBuilder);
 
-        return new RemoveAutoReplyItem(ApiRequestContext, DatabaseBuilder, texts, service);
+        return new RemoveAutoReplyItem(ApiRequestContext, DatabaseBuilder, texts, manager);
     }
 
     [TestMethod]

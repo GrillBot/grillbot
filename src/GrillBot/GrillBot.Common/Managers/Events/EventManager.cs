@@ -27,13 +27,15 @@ public class EventManager
     {
         DiscordClient.PresenceUpdated += (user, before, after) => ProcessEventAsync<IPresenceUpdatedEvent>(@event => @event.ProcessAsync(user, before, after));
         DiscordClient.MessageReceived += message => ProcessEventAsync<IMessageReceivedEvent>(@event => @event.ProcessAsync(message));
+        DiscordClient.Ready += () => ProcessEventAsync<IReadyEvent>(@event => @event.ProcessAsync());
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)
     {
-        if (!InitManager.Get()) return;
+        var eventType = typeof(TInterface);
+        var eventName = eventType.Name[1..];
+        if (eventType != typeof(IReadyEvent) && !InitManager.Get()) return;
 
-        var eventName = typeof(TInterface).Name[1..];
         using (CounterManager.Create($"Events.{eventName}"))
         {
             using var scope = ServiceProvider.CreateScope();
@@ -42,5 +44,8 @@ public class EventManager
             var actions = services.Select(processAction);
             await Task.WhenAll(actions);
         }
+
+        if (eventType == typeof(IReadyEvent))
+            InitManager.Set(true);
     }
 }

@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services;
+﻿using GrillBot.App.Managers;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -13,19 +13,19 @@ namespace GrillBot.App.Actions.Api.V1.Channel;
 public class UpdateChannel : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AutoReplyService AutoReplyService { get; }
+    private AutoReplyManager AutoReplyManager { get; }
     private AuditLogWriter AuditLogWriter { get; }
     private ITextsManager Texts { get; }
     private AuditLogService AuditLogService { get; }
 
-    public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AutoReplyService autoReplyService, AuditLogWriter auditLogWriter,
-        ITextsManager texts, AuditLogService auditLogService) : base(apiContext)
+    public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter,
+        ITextsManager texts, AuditLogService auditLogService, AutoReplyManager autoReplyManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AutoReplyService = autoReplyService;
         AuditLogWriter = auditLogWriter;
         Texts = texts;
         AuditLogService = auditLogService;
+        AutoReplyManager = autoReplyManager;
     }
 
     public async Task ProcessAsync(ulong id, UpdateChannelParams parameters)
@@ -45,7 +45,7 @@ public class UpdateChannel : ApiAction
         if (!success) return;
 
         if (reloadAutoReply)
-            await AutoReplyService.InitAsync();
+            await AutoReplyManager.InitAsync();
 
         var guild = await AuditLogService.GetGuildFromChannelAsync(null, id);
         var guildChannel = guild == null ? null : await guild.GetChannelAsync(id);

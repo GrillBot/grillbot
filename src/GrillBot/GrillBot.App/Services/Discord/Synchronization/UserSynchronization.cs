@@ -18,11 +18,4 @@ public class UserSynchronization : SynchronizationBase
 
         await repository.CommitAsync();
     }
-
-    public static async Task InitBotAdminAsync(GrillBotRepository repository, IApplication application)
-    {
-        var botOwner = await repository.User.GetOrCreateUserAsync(application.Owner);
-        botOwner.Flags |= (int)UserFlags.BotAdmin;
-        botOwner.Flags &= ~(int)UserFlags.NotUser;
-    }
 }

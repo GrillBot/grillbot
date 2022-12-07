@@ -42,27 +42,4 @@ public class UserSynchronizationTests : ServiceTest<UserSynchronization>
         await Service.UserUpdatedAsync(selfUser);
         Assert.IsTrue(true);
     }
-
-    [TestMethod]
-    public async Task InitBotAdminAsync_NewUser()
-    {
-        var owner = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).AsBot().Build();
-        var application = new ApplicationBuilder().SetOwner(owner).Build();
-
-        await UserSynchronization.InitBotAdminAsync(Repository, application);
-    }
-
-    [TestMethod]
-    public async Task InitBotAdminAsync_Exists()
-    {
-        var owner = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).AsBot().Build();
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(owner));
-        await Repository.CommitAsync();
-
-        var application = new ApplicationBuilder()
-            .SetOwner(owner)
-            .Build();
-
-        await UserSynchronization.InitBotAdminAsync(Repository, application);
-    }
 }

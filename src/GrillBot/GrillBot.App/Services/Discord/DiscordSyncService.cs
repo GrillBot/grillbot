@@ -91,10 +91,7 @@ public class DiscordSyncService
     private async Task OnReadyAsync()
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-
         await ProcessChannelInitializationAsync(repository);
-        await ProcessUsersInitializationAsync(repository);
-        await ProcessBotAdminInitialization(repository);
     }
 
     private async Task ProcessChannelInitializationAsync(GrillBotRepository repository)
@@ -109,22 +106,6 @@ public class DiscordSyncService
 
         foreach (var guild in DiscordClient.Guilds)
             await ChannelSynchronization.InitChannelsAsync(guild, channels);
-        await repository.CommitAsync();
-    }
-
-    private async Task ProcessUsersInitializationAsync(GrillBotRepository repository)
-    {
-        var dbUsers = await repository.GuildUser.GetAllUsersAsync();
-        dbUsers.ForEach(o => o.User!.Status = UserStatus.Offline);
-
-        foreach (var guild in DiscordClient.Guilds)
-            await GuildUserSynchronization.InitUsersAsync(guild, dbUsers);
-        await repository.CommitAsync();
-    }
-
-    private async Task ProcessBotAdminInitialization(GrillBotRepository repository)
-    {
-        await UserSynchronization.InitBotAdminAsync(repository, await DiscordClient.GetApplicationInfoAsync());
         await repository.CommitAsync();
     }
 }

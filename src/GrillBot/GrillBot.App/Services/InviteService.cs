@@ -3,10 +3,8 @@ using GrillBot.App.Services.AuditLog;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Models;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services;
 
@@ -17,28 +15,16 @@ public class InviteService
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriter AuditLogWriter { get; }
     private InviteManager InviteManager { get; }
-    private IServiceProvider ServiceProvider { get; }
 
-    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, InviteManager inviteManager, IServiceProvider serviceProvider)
+    public InviteService(DiscordSocketClient discordClient, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, InviteManager inviteManager)
     {
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;
         AuditLogWriter = auditLogWriter;
         InviteManager = inviteManager;
-        ServiceProvider = serviceProvider;
 
-        DiscordClient.Ready += InitAsync;
         DiscordClient.UserJoined += user => user.IsUser() ? OnUserJoinedAsync(user) : Task.CompletedTask;
         DiscordClient.InviteCreated += OnInviteCreated;
-    }
-
-    private async Task InitAsync()
-    {
-        using var scope = ServiceProvider.CreateScope();
-        scope.ServiceProvider.GetRequiredService<ApiRequestContext>().LoggedUser = DiscordClient.CurrentUser;
-
-        var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.RefreshMetadata>();
-        await action.ProcessAsync(false);
     }
 
     private async Task OnUserJoinedAsync(SocketGuildUser user)

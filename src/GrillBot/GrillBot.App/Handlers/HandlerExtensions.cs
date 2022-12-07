@@ -23,7 +23,8 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IReadyEvent, Ready.CommandsRegistration>()
-            .AddScoped<IReadyEvent, Ready.AutoReplyReadyEvent>();
+            .AddScoped<IReadyEvent, Ready.AutoReplyReadyEvent>()
+            .AddScoped<IReadyEvent, Ready.InviteReadyHandler>();
 
         return services;
     }

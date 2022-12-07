@@ -8,7 +8,6 @@ public static class HandlerExtensions
     public static IServiceCollection AddHandlers(this IServiceCollection services)
     {
         services
-            .AddSingleton<CommandHandler>()
             .AddSingleton<InteractionHandler>();
 
         services
@@ -16,7 +15,8 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IMessageReceivedEvent, MessageReceived.PointsMessageReceivedHandler>()
-            .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelMessageReceivedHandler>();
+            .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelMessageReceivedHandler>()
+            .AddScoped<IMessageReceivedEvent, MessageReceived.UnsucessCommandHandler>();
 
         return services;
     }

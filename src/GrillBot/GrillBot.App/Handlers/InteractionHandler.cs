@@ -4,7 +4,6 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
 using GrillBot.Common.Managers;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers;
 
@@ -31,16 +30,6 @@ public class InteractionHandler
         InteractionService.AutocompleteCommandExecuted += OnCommandExecutedAsync;
         InteractionService.ComponentCommandExecuted += OnCommandExecutedAsync;
         InteractionService.ModalCommandExecuted += OnCommandExecutedAsync;
-        DiscordClient.MessageReceived += HandleUnsuccessfulAttempt;
-    }
-
-    private async Task HandleUnsuccessfulAttempt(SocketMessage message)
-    {
-        if (!InitManager.Get() || !message.Content.StartsWith('/') || message.Channel is IDMChannel) return;
-
-        using var scope = Provider.CreateScope();
-        var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.UnsuccessCommandAttempt>();
-        await action.ProcessAsync(message);
     }
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)

@@ -19,7 +19,8 @@ public static class ServiceExtensions
     {
         services
             .AddScoped<PointsRecalculationManager>()
-            .AddSingleton<AutoReplyManager>();
+            .AddSingleton<AutoReplyManager>()
+            .AddSingleton<EmoteChainManager>();
         return services;
     }
 }

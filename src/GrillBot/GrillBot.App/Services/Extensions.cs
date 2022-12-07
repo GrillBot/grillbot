@@ -27,7 +27,6 @@ public static class Extensions
 
         services
             .AddSingleton<Emotes.EmoteService>()
-            .AddSingleton<Emotes.EmoteChainService>()
             .AddSingleton<Emotes.EmotesCommandService>();
 
         services

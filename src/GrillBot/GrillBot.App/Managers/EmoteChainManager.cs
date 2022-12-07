@@ -1,26 +1,17 @@
-﻿using Discord.Commands;
-using GrillBot.App.Infrastructure;
-using GrillBot.Common.Extensions.Discord;
+﻿namespace GrillBot.App.Managers;
 
-namespace GrillBot.App.Services.Emotes;
-
-[Initializable]
-public class EmoteChainService
+public class EmoteChainManager
 {
     // Dictionary<GuildID|ChannelID, List<UserID, Message>>
     private Dictionary<string, List<Tuple<ulong, string>>> LastMessages { get; }
     private int RequiredCount { get; }
 
     private readonly object _locker = new();
-    private DiscordSocketClient DiscordClient { get; }
 
-    public EmoteChainService(IConfiguration configuration, DiscordSocketClient client)
+    public EmoteChainManager(IConfiguration configuration)
     {
         RequiredCount = configuration.GetValue<int>("Emotes:ChainRequiredCount");
         LastMessages = new Dictionary<string, List<Tuple<ulong, string>>>();
-        DiscordClient = client;
-
-        DiscordClient.MessageReceived += msg => msg.TryLoadMessage(out var message) ? OnMessageReceivedAsync(message) : Task.CompletedTask;
     }
 
     private void Cleanup(IGuildChannel channel)
@@ -37,25 +28,15 @@ public class EmoteChainService
         if (LastMessages.ContainsKey(key)) LastMessages[key].Clear();
     }
 
-    private Task OnMessageReceivedAsync(IUserMessage message)
+    public async Task ProcessChainAsync(IMessage message)
     {
-        if (RequiredCount < 1) return Task.CompletedTask;
-        var context = new CommandContext(DiscordClient, message);
-
-        return context.IsPrivate ? Task.CompletedTask : ProcessChainAsync(context);
-    }
-
-    private async Task ProcessChainAsync(ICommandContext context)
-    {
-        if (context.Channel is not ITextChannel channel) return;
-        var author = context.Message.Author;
-        var content = context.Message.Content;
+        if (message.Channel is not ITextChannel channel) return;
         var key = GetKey(channel);
 
         if (!LastMessages.ContainsKey(key))
             LastMessages.Add(key, new List<Tuple<ulong, string>>(RequiredCount));
 
-        if (!IsValidMessage(context.Message, context.Guild, channel))
+        if (!IsValidMessage(message, channel.Guild, channel))
         {
             Cleanup(channel);
             return;
@@ -63,8 +44,8 @@ public class EmoteChainService
 
         var group = LastMessages[key];
 
-        if (group.All(o => o.Item1 != author.Id))
-            group.Add(new Tuple<ulong, string>(author.Id, content));
+        if (group.All(o => o.Item1 != message.Author.Id))
+            group.Add(new Tuple<ulong, string>(message.Author.Id, message.Content));
 
         if (group.Count == RequiredCount)
         {

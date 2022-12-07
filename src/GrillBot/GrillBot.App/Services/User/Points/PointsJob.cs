@@ -4,6 +4,7 @@ using Quartz;
 namespace GrillBot.App.Services.User.Points;
 
 [DisallowConcurrentExecution]
+[DisallowUninitialized]
 public class PointsJob : Job
 {
     private PointsService PointsService { get; }

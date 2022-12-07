@@ -25,7 +25,8 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.CommandsRegistration>()
             .AddScoped<IReadyEvent, Ready.AutoReplyReadyEvent>()
             .AddScoped<IReadyEvent, Ready.InviteReadyHandler>()
-            .AddScoped<IReadyEvent, Ready.UserInitSynchronization>();
+            .AddScoped<IReadyEvent, Ready.UserInitSynchronization>()
+            .AddScoped<IReadyEvent, Ready.ChannelInitSynchronization>();
 
         return services;
     }

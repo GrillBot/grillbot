@@ -2,7 +2,6 @@
 using GrillBot.App.Services.Discord.Synchronization;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
-using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Services.Discord;
 
@@ -31,9 +30,7 @@ public class DiscordSyncService
         Guilds = new GuildSynchronization(DatabaseBuilder);
         GuildUsers = new GuildUserSynchronization(DatabaseBuilder);
 
-        DiscordClient.Ready += OnReadyAsync;
         DiscordClient.UserJoined += user => RunAsync(() => GuildUsers.UserJoinedAsync(user));
-
         DiscordClient.GuildMemberUpdated += (before, after) => RunAsync(
             () => GuildUsers.GuildMemberUpdatedAsync(after),
             () => before.HasValue && (before.Value.Nickname != after.Nickname || before.Value.Username != after.Username || before.Value.Discriminator != after.Discriminator)
@@ -86,26 +83,5 @@ public class DiscordSyncService
         }
 
         await syncFunction();
-    }
-
-    private async Task OnReadyAsync()
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        await ProcessChannelInitializationAsync(repository);
-    }
-
-    private async Task ProcessChannelInitializationAsync(GrillBotRepository repository)
-    {
-        var channels = await repository.Channel.GetAllChannelsAsync();
-        foreach (var channel in channels)
-        {
-            channel.MarkDeleted(true);
-            channel.RolePermissionsCount = 0;
-            channel.UserPermissionsCount = 0;
-        }
-
-        foreach (var guild in DiscordClient.Guilds)
-            await ChannelSynchronization.InitChannelsAsync(guild, channels);
-        await repository.CommitAsync();
     }
 }

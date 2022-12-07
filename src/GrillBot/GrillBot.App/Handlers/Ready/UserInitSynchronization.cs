@@ -23,10 +23,10 @@ public class UserInitSynchronization : IReadyEvent
 
     private async Task ProcessMemberSynchronizationAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var users = await repository.GuildUser.GetAllUsersAsync();
         var guilds = await DiscordClient.GetGuildsAsync();
+
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var users = await repository.GuildUser.GetAllUsersAsync();
 
         foreach (var guild in guilds)
         {

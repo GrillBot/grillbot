@@ -1,6 +1,4 @@
-﻿using GrillBot.Database.Entity;
-
-namespace GrillBot.App.Services.Discord.Synchronization;
+﻿namespace GrillBot.App.Services.Discord.Synchronization;
 
 public class ChannelSynchronization : SynchronizationBase
 {
@@ -61,45 +59,5 @@ public class ChannelSynchronization : SynchronizationBase
 
         channel.Update(after);
         await repository.CommitAsync();
-    }
-
-    public static async Task InitChannelsAsync(IGuild guild, List<GuildChannel> databaseChannels)
-    {
-        var guildChannels = databaseChannels.FindAll(o => o.GuildId == guild.Id.ToString());
-
-        foreach (var categoryChannel in await guild.GetCategoriesAsync())
-        {
-            var category = guildChannels.Find(o => o.IsCategory() && o.ChannelId == categoryChannel.Id.ToString());
-
-            category?.Update(categoryChannel);
-        }
-
-        foreach (var textChannel in await guild.GetTextChannelsAsync())
-        {
-            var channel = guildChannels.Find(o => o.IsText() && o.ChannelId == textChannel.Id.ToString());
-
-            channel?.Update(textChannel);
-        }
-
-        foreach (var voiceChannel in await guild.GetVoiceChannelsAsync())
-        {
-            var channel = guildChannels.Find(o => o.IsVoice() && o.ChannelId == voiceChannel.Id.ToString());
-
-            channel?.Update(voiceChannel);
-        }
-
-        foreach (var stageChannel in await guild.GetStageChannelsAsync())
-        {
-            var channel = guildChannels.Find(o => o.IsStage() && o.ChannelId == stageChannel.Id.ToString());
-
-            channel?.Update(stageChannel);
-        }
-
-        foreach (var threadChannel in await guild.GetThreadChannelsAsync())
-        {
-            var channel = guildChannels.Find(o => o.IsThread() && o.ChannelId == threadChannel.Id.ToString() && o.ParentChannelId == threadChannel.CategoryId.ToString());
-
-            channel?.Update(threadChannel);
-        }
     }
 }

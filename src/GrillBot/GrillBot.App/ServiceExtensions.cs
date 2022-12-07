@@ -9,7 +9,8 @@ public static class ServiceExtensions
     public static IServiceCollection AddHelpers(this IServiceCollection services)
     {
         services
-            .AddScoped<PointsHelper>();
+            .AddScoped<PointsHelper>()
+            .AddScoped<EmoteHelper>();
 
         return services;
     }

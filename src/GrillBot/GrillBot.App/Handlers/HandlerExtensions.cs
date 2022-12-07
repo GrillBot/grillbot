@@ -17,7 +17,8 @@ public static class HandlerExtensions
             .AddScoped<IMessageReceivedEvent, MessageReceived.PointsMessageReceivedHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelMessageReceivedHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.UnsucessCommandHandler>()
-            .AddScoped<IMessageReceivedEvent, MessageReceived.AutoReplyHandler>();
+            .AddScoped<IMessageReceivedEvent, MessageReceived.AutoReplyHandler>()
+            .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteMessageReceivedHandler>();
 
         services
             .AddScoped<IReadyEvent, Ready.AutoReplyReadyEvent>();

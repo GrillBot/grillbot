@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -85,6 +86,25 @@ public class EmoteRepository : RepositoryBase
         {
             return await Context.Emotes
                 .FirstOrDefaultAsync(o => o.EmoteId == emote.ToString() && o.UserId == user.Id.ToString() && o.GuildId == guild.Id.ToString());
+        }
+    }
+
+    public async Task<EmoteStatisticItem> GetOrCreateStatisticAsync(IEmote emote, IUser user, IGuild guild)
+    {
+        using (CreateCounter())
+        {
+            var entity = await FindStatisticAsync(emote, user, guild);
+            if (entity != null) return entity;
+
+            entity = new EmoteStatisticItem
+            {
+                GuildId = guild.Id.ToString(),
+                EmoteId = emote.ToString()!,
+                FirstOccurence = DateTime.Now,
+                UserId = user.Id.ToString()
+            };
+            await Context.AddAsync(entity);
+            return entity;
         }
     }
 }

@@ -25,53 +25,9 @@ public class EmoteService
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
 
-        DiscordClient.MessageReceived += OnMessageReceivedAsync;
         DiscordClient.MessageDeleted += OnMessageRemovedAsync;
         DiscordClient.ReactionAdded += (msg, channel, reaction) => OnReactionAsync(msg, channel, reaction, ReactionEvents.Added);
         DiscordClient.ReactionRemoved += (msg, channel, reaction) => OnReactionAsync(msg, channel, reaction, ReactionEvents.Removed);
-    }
-
-    private async Task OnMessageReceivedAsync(SocketMessage message)
-    {
-        var supportedEmotes = EmoteCache.GetEmotes().ConvertAll(o => o.Emote);
-
-        if (supportedEmotes.Count == 0) return; // Ignore events when no supported emotes is available.
-        if (!message.TryLoadMessage(out var msg)) return; // Ignore messages from bots.
-        if (string.IsNullOrEmpty(msg?.Content)) return; // Ignore empty messages.
-        if (msg.IsCommand(DiscordClient.CurrentUser, CommandPrefix)) return; // Ignore commands.
-        if (msg.Channel is not SocketTextChannel textChannel) return; // Ignore DMs.
-
-        var emotes = message.GetEmotesFromMessage(supportedEmotes).ToList();
-        if (emotes.Count == 0) return;
-        if (msg.Author is not IGuildUser guildUser) return;
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var guild = await repository.Guild.GetOrCreateGuildAsync(textChannel.Guild);
-        var user = await repository.GuildUser.GetOrCreateGuildUserAsync(guildUser);
-
-        foreach (var emote in emotes)
-        {
-            var dbEmote = await repository.Emote.FindStatisticAsync(emote, guildUser, textChannel.Guild);
-
-            if (dbEmote == null)
-            {
-                dbEmote = new EmoteStatisticItem
-                {
-                    EmoteId = emote.ToString(),
-                    FirstOccurence = DateTime.Now,
-                    Guild = guild,
-                    User = user
-                };
-
-                await repository.AddAsync(dbEmote);
-            }
-
-            dbEmote.LastOccurence = DateTime.Now;
-            dbEmote.UseCount++;
-        }
-
-        await repository.CommitAsync();
     }
 
     private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> messageChannel)

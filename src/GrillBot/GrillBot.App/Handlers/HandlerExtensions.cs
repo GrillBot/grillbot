@@ -15,7 +15,8 @@ public static class HandlerExtensions
             .AddScoped<IPresenceUpdatedEvent, PresenceUpdated.UserPresenceSynchronizationHandler>();
 
         services
-            .AddScoped<IMessageReceivedEvent, MessageReceived.PointsMessageReceivedHandler>();
+            .AddScoped<IMessageReceivedEvent, MessageReceived.PointsMessageReceivedHandler>()
+            .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelMessageReceivedHandler>();
 
         return services;
     }

@@ -12,7 +12,7 @@ public class GetEventStatisticsTests : ApiActionTest<GetEventStatistics>
         var discordClient = DiscordHelper.CreateClient();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
 
-        var eventManager = new EventManager(discordClient, interactionService);
+        var eventManager = new EventLogManager(discordClient, interactionService);
         return new GetEventStatistics(ApiRequestContext, eventManager);
     }
 

@@ -18,7 +18,7 @@ public static class ManagersExtensions
             .AddSingleton<InitManager>()
             .AddSingleton<CounterManager>()
             .AddScoped<ApiRequestContext>()
-            .AddSingleton<EventManager>()
+            .AddSingleton<EventLogManager>()
             .AddSingleton<IEmoteCache, EmoteCache>()
             .AddLoggingServices()
             .AddSingleton<CooldownManager>();

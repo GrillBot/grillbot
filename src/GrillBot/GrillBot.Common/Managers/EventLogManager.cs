@@ -8,7 +8,7 @@ using IResult = Discord.Interactions.IResult;
 
 namespace GrillBot.Common.Managers;
 
-public class EventManager
+public class EventLogManager
 {
     private readonly object _locker = new();
 
@@ -18,7 +18,7 @@ public class EventManager
     private CircularBuffer<string> EventLog { get; }
     private Dictionary<string, ulong> Statistics { get; }
 
-    public EventManager(DiscordSocketClient discordClient, InteractionService interactionService)
+    public EventLogManager(DiscordSocketClient discordClient, InteractionService interactionService)
     {
         DiscordClient = discordClient;
         InteractionService = interactionService;

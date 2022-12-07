@@ -5,13 +5,13 @@ namespace GrillBot.App.Actions.Api.V1.Statistics;
 
 public class GetEventStatistics : ApiAction
 {
-    private EventManager EventManager { get; }
+    private EventLogManager EventLogManager { get; }
 
-    public GetEventStatistics(ApiRequestContext apiContext, EventManager eventManager) : base(apiContext)
+    public GetEventStatistics(ApiRequestContext apiContext, EventLogManager eventLogManager) : base(apiContext)
     {
-        EventManager = eventManager;
+        EventLogManager = eventLogManager;
     }
 
     public Dictionary<string, ulong> Process()
-        => EventManager.GetStatistics();
+        => EventLogManager.GetStatistics();
 }

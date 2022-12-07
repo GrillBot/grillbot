@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using Discord.Interactions;
-using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.App.Services.AuditLog;
@@ -25,23 +24,19 @@ public class DiscordService : IHostedService
     private IServiceProvider Provider { get; }
     private CommandService CommandService { get; }
     private IWebHostEnvironment Environment { get; }
-    private InitManager InitManager { get; }
     private InteractionService InteractionService { get; }
     private AuditLogWriter AuditLogWriter { get; }
-    private LoggingManager LoggingManager { get; }
 
     public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-        IWebHostEnvironment webHostEnvironment, InitManager initManager, InteractionService interactionService, AuditLogWriter auditLogWriter, EventLogManager _, LoggingManager loggingManager)
+        IWebHostEnvironment webHostEnvironment, InteractionService interactionService, AuditLogWriter auditLogWriter)
     {
         DiscordSocketClient = client;
         Configuration = configuration;
         Provider = provider;
         CommandService = commandService;
         Environment = webHostEnvironment;
-        InitManager = initManager;
         InteractionService = interactionService;
         AuditLogWriter = auditLogWriter;
-        LoggingManager = loggingManager;
 
         DiscordSocketClient.Log += OnLogAsync;
         CommandService.Log += OnLogAsync;
@@ -49,29 +44,9 @@ public class DiscordService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var token = Configuration.GetValue<string>("Discord:Token");
-
         InitServices();
-        DiscordSocketClient.Ready += async () =>
-        {
-            if (InteractionService.Modules.Count > 0)
-            {
-                foreach (var guild in DiscordSocketClient.Guilds)
-                {
-                    try
-                    {
-                        await InteractionService.RegisterCommandsToGuildAsync(guild.Id);
-                    }
-                    catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.MissingOAuth2Scope)
-                    {
-                        await LoggingManager.ErrorAsync("Event(Ready)", $"Guild {guild.Name} not have OAuth2 scope for interaction registration.", ex);
-                    }
-                }
-            }
 
-            InitManager.Set(true);
-        };
-
+        var token = Configuration.GetValue<string>("Discord:Token");
         CommandService.RegisterTypeReaders();
         InteractionService.RegisterTypeConverters();
 
@@ -85,10 +60,11 @@ public class DiscordService : IHostedService
 
     private void InitServices()
     {
+        Provider.GetRequiredService<LoggingManager>();
+        Provider.GetRequiredService<EventLogManager>();
         Provider.GetRequiredService<EventManager>();
 
         var currentAssembly = Assembly.GetExecutingAssembly();
-
         var initializable = currentAssembly
             .GetTypes()
             .Where(o => o.Assembly == currentAssembly && o.IsClass && !o.IsAbstract && o.GetCustomAttribute<InitializableAttribute>() != null)

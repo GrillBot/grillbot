@@ -22,6 +22,7 @@ public static class HandlerExtensions
             .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteChainHandler>();
 
         services
+            .AddScoped<IReadyEvent, Ready.CommandsRegistration>()
             .AddScoped<IReadyEvent, Ready.AutoReplyReadyEvent>();
 
         return services;

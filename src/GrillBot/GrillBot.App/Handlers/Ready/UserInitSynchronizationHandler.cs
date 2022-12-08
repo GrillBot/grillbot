@@ -4,12 +4,12 @@ using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Handlers.Ready;
 
-public class UserInitSynchronization : IReadyEvent
+public class UserInitSynchronizationHandler : IReadyEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
 
-    public UserInitSynchronization(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
+    public UserInitSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
     {
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;

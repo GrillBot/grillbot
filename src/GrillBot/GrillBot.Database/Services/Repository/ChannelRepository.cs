@@ -252,12 +252,20 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
+    public async Task<GuildUserChannel?> FindUserChannelAsync(IGuildChannel channel, IUser user)
+    {
+        using (CreateCounter())
+        {
+            return await Context.UserChannels
+                .FirstOrDefaultAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString() && o.UserId == user.Id.ToString());
+        }
+    }
+
     public async Task<GuildUserChannel> GetOrCreateUserChannelAsync(IGuildChannel channel, IUser user)
     {
         using (CreateCounter())
         {
-            var userChannel = await Context.UserChannels
-                .FirstOrDefaultAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString() && o.UserId == user.Id.ToString());
+            var userChannel = await FindUserChannelAsync(channel, user);
             if (userChannel != null) return userChannel;
 
             userChannel = new GuildUserChannel

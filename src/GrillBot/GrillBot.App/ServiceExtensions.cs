@@ -10,7 +10,8 @@ public static class ServiceExtensions
     {
         services
             .AddScoped<PointsHelper>()
-            .AddScoped<EmoteHelper>();
+            .AddScoped<EmoteHelper>()
+            .AddScoped<DownloadHelper>();
 
         return services;
     }

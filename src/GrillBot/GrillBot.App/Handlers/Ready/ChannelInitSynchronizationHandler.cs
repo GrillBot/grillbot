@@ -2,12 +2,12 @@
 
 namespace GrillBot.App.Handlers.Ready;
 
-public class ChannelInitSynchronization : IReadyEvent
+public class ChannelInitSynchronizationHandler : IReadyEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
 
-    public ChannelInitSynchronization(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
+    public ChannelInitSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
     {
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;

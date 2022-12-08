@@ -36,7 +36,6 @@ public partial class PointsService
         Texts = texts;
 
         DiscordClient.ReactionAdded += OnReactionAddedAsync;
-        DiscordClient.MessageDeleted += OnMessageDeletedAsync;
         DiscordClient.ReactionRemoved += OnReactionRemovedAsync;
 
         TrophyImage = new MagickImage(MiscResources.trophy, MagickFormat.Png);

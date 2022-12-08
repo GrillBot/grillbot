@@ -5,13 +5,13 @@ using GrillBot.Common.Managers.Logging;
 
 namespace GrillBot.App.Handlers.Ready;
 
-public class CommandsRegistration : IReadyEvent
+public class CommandsRegistrationHandler : IReadyEvent
 {
     private InteractionService InteractionService { get; }
     private IDiscordClient DiscordClient { get; }
     private LoggingManager LoggingManager { get; }
 
-    public CommandsRegistration(InteractionService interactionService, IDiscordClient discordClient, LoggingManager loggingManager)
+    public CommandsRegistrationHandler(InteractionService interactionService, IDiscordClient discordClient, LoggingManager loggingManager)
     {
         InteractionService = interactionService;
         DiscordClient = discordClient;

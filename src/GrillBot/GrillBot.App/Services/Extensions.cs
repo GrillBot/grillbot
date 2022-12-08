@@ -36,12 +36,8 @@ public static class Extensions
             .AddScoped<WithoutAccidentRenderer>();
 
         services
-            .AddSingleton<Channels.ChannelService>();
-
-        services
             .AddSingleton<Suggestion.SuggestionSessionService>()
-            .AddSingleton<Suggestion.EmoteSuggestionService>()
-            .AddSingleton<Suggestion.EmoteSuggestionsEventManager>();
+            .AddSingleton<Suggestion.EmoteSuggestionService>();
 
         services
             .AddSingleton<Unverify.UnverifyChecker>()

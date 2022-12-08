@@ -11,7 +11,11 @@ public static class HandlerExtensions
             .AddSingleton<InteractionHandler>();
 
         services
-            .AddScoped<IPresenceUpdatedEvent, PresenceUpdated.UserPresenceSynchronizationHandler>();
+            .AddScoped<IMessageDeleted, MessageDeleted.AuditMessageDeleted>()
+            .AddScoped<IMessageDeleted, MessageDeleted.PointsMessageDeletedHandler>()
+            .AddScoped<IMessageDeleted, MessageDeleted.ChannelMessageDeletedHandler>()
+            .AddScoped<IMessageDeleted, MessageDeleted.EmoteMessageDeletedHandler>()
+            .AddScoped<IMessageDeleted, MessageDeleted.EmoteSuggestionsMessageDeletedHandler>();
 
         services
             .AddScoped<IMessageReceivedEvent, MessageReceived.PointsMessageReceivedHandler>()
@@ -22,11 +26,14 @@ public static class HandlerExtensions
             .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteChainHandler>();
 
         services
-            .AddScoped<IReadyEvent, Ready.CommandsRegistration>()
-            .AddScoped<IReadyEvent, Ready.AutoReplyReadyEvent>()
+            .AddScoped<IPresenceUpdatedEvent, PresenceUpdated.UserPresenceSynchronizationHandler>();
+
+        services
+            .AddScoped<IReadyEvent, Ready.CommandsRegistrationHandler>()
+            .AddScoped<IReadyEvent, Ready.AutoReplyReadyHandler>()
             .AddScoped<IReadyEvent, Ready.InviteReadyHandler>()
-            .AddScoped<IReadyEvent, Ready.UserInitSynchronization>()
-            .AddScoped<IReadyEvent, Ready.ChannelInitSynchronization>();
+            .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
+            .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
 
         return services;
     }

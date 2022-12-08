@@ -3,11 +3,11 @@ using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.Ready;
 
-public class AutoReplyReadyEvent : IReadyEvent
+public class AutoReplyReadyHandler : IReadyEvent
 {
     private AutoReplyManager AutoReplyManager { get; }
 
-    public AutoReplyReadyEvent(AutoReplyManager autoReplyManager)
+    public AutoReplyReadyHandler(AutoReplyManager autoReplyManager)
     {
         AutoReplyManager = autoReplyManager;
     }

@@ -1,36 +1,10 @@
-﻿using GrillBot.Common.Extensions;
-using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.User.Points;
 
 public partial class PointsService
 {
-    private async Task OnMessageDeletedAsync(Cacheable<IMessage, ulong> msg, Cacheable<IMessageChannel, ulong> channel)
-    {
-        if (!channel.HasValue || channel.Value is not IGuildChannel guildChannel) return;
-        var message = msg.HasValue ? msg.Value : await MessageCache.GetAsync(msg.Id, channel.Value, true);
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var transactions = await repository.Points.GetTransactionsAsync(msg.Id, guildChannel.Guild, null);
-        if (transactions.Count == 0) return;
-
-        repository.RemoveCollection(transactions);
-        await repository.CommitAsync();
-
-        var onlyToday = transactions.All(o => o.AssingnedAt.Date == DateTime.Now.Date);
-
-        var usersForUpdate = new List<IGuildUser>();
-        if (message != null)
-        {
-            foreach (var userId in transactions.Select(o => o.UserId.ToUlong()).Distinct())
-                usersForUpdate.Add(await guildChannel.Guild.GetUserAsync(userId));
-        }
-
-        await RecalculatePointsSummaryAsync(repository, onlyToday, usersForUpdate);
-    }
-
     private async Task OnReactionAddedAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
     {
         if (!channel.HasValue || channel.Value is not ITextChannel textChannel) return; // Only guilds

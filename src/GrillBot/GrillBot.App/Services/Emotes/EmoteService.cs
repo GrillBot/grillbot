@@ -10,55 +10,20 @@ namespace GrillBot.App.Services.Emotes;
 [Initializable]
 public class EmoteService
 {
-    private string CommandPrefix { get; }
     private IMessageCacheManager MessageCache { get; }
     private IEmoteCache EmoteCache { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public EmoteService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration,
-        IMessageCacheManager messageCache, IEmoteCache emoteCache)
+    public EmoteService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IMessageCacheManager messageCache, IEmoteCache emoteCache)
     {
-        CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         EmoteCache = emoteCache;
         MessageCache = messageCache;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
 
-        DiscordClient.MessageDeleted += OnMessageRemovedAsync;
         DiscordClient.ReactionAdded += (msg, channel, reaction) => OnReactionAsync(msg, channel, reaction, ReactionEvents.Added);
         DiscordClient.ReactionRemoved += (msg, channel, reaction) => OnReactionAsync(msg, channel, reaction, ReactionEvents.Removed);
-    }
-
-    private async Task OnMessageRemovedAsync(Cacheable<IMessage, ulong> message, Cacheable<IMessageChannel, ulong> messageChannel)
-    {
-        if (!messageChannel.HasValue || messageChannel.Value is not ITextChannel) return;
-
-        var supportedEmotes = EmoteCache.GetEmotes().ConvertAll(o => o.Emote);
-        if (supportedEmotes.Count == 0) return;
-
-        var msg = message.HasValue ? message.Value : await MessageCache.GetAsync(message.Id, null, true);
-        if (msg is not IUserMessage userMessage) return;
-        if (userMessage.IsCommand(DiscordClient.CurrentUser, CommandPrefix)) return;
-
-        var emotes = msg.GetEmotesFromMessage(supportedEmotes).ToList();
-
-        if (emotes.Count == 0) return;
-        if (msg.Author is not IGuildUser guildUser) return;
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        if (!await repository.GuildUser.ExistsAsync(guildUser)) return;
-
-        foreach (var emote in emotes)
-        {
-            var dbEmote = await repository.Emote.FindStatisticAsync(emote, guildUser, guildUser.Guild);
-            if (dbEmote == null || dbEmote.UseCount == 0) continue;
-
-            dbEmote.UseCount--;
-        }
-
-        await repository.CommitAsync();
     }
 
     private async Task OnReactionAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction, ReactionEvents @event)

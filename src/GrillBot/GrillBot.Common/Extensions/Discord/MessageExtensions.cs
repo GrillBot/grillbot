@@ -8,7 +8,7 @@ public static class MessageExtensions
     public static bool IsInteractionCommand(this IMessage message)
         => message.Type is MessageType.ApplicationCommand or MessageType.ContextMenuCommand;
 
-    public static bool IsCommand(this IUserMessage message, IUser user, string prefix)
+    public static bool IsCommand(this IMessage message, IUser user, string prefix)
     {
         var argPos = 0;
         return IsCommand(message, ref argPos, user, prefix);

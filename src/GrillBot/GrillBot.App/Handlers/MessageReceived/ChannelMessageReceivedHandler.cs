@@ -39,8 +39,7 @@ public class ChannelMessageReceivedHandler : IMessageReceivedEvent
         textChannel = message.Channel as ITextChannel;
         author = message.Author as IGuildUser;
 
-        var argPos = 0;
         var commandPrefix = Configuration.GetValue<string>("Discord:Commands:Prefix");
-        return !message.IsCommand(ref argPos, DiscordClient.CurrentUser, commandPrefix) && textChannel != null && author != null;
+        return !message.IsCommand(DiscordClient.CurrentUser, commandPrefix) && textChannel != null && author != null;
     }
 }

@@ -3,7 +3,7 @@ using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
-public class EmoteSuggestionsMessageDeletedHandler : IMessageDeleted
+public class EmoteSuggestionsMessageDeletedHandler : IMessageDeletedEvent
 {
     private IMessageCacheManager MessageCache { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }

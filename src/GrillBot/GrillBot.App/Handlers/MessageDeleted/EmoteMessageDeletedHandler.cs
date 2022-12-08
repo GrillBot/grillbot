@@ -5,7 +5,7 @@ using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
-public class EmoteMessageDeletedHandler : IMessageDeleted
+public class EmoteMessageDeletedHandler : IMessageDeletedEvent
 {
     private EmoteHelper EmoteHelper { get; }
     private IConfiguration Configuration { get; }

@@ -11,7 +11,7 @@ using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
-public class AuditMessageDeleted : IMessageDeleted
+public class AuditMessageDeletedHandler : IMessageDeletedEvent
 {
     private IMessageCacheManager MessageCache { get; }
     private FileStorageFactory FileStorage { get; }
@@ -19,7 +19,7 @@ public class AuditMessageDeleted : IMessageDeleted
     private CounterManager CounterManager { get; }
     private DownloadHelper DownloadHelper { get; }
 
-    public AuditMessageDeleted(IMessageCacheManager messageCache, FileStorageFactory fileStorage, AuditLogWriter auditLogWriter, CounterManager counterManager, DownloadHelper downloadHelper)
+    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, FileStorageFactory fileStorage, AuditLogWriter auditLogWriter, CounterManager counterManager, DownloadHelper downloadHelper)
     {
         MessageCache = messageCache;
         FileStorage = fileStorage;

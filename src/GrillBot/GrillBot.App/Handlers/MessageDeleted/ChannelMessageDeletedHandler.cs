@@ -4,7 +4,7 @@ using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
-public class ChannelMessageDeletedHandler : IMessageDeleted
+public class ChannelMessageDeletedHandler : IMessageDeletedEvent
 {
     private IMessageCacheManager MessageCache { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }

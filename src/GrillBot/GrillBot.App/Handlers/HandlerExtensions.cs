@@ -11,11 +11,11 @@ public static class HandlerExtensions
             .AddSingleton<InteractionHandler>();
 
         services
-            .AddScoped<IMessageDeleted, MessageDeleted.AuditMessageDeleted>()
-            .AddScoped<IMessageDeleted, MessageDeleted.PointsMessageDeletedHandler>()
-            .AddScoped<IMessageDeleted, MessageDeleted.ChannelMessageDeletedHandler>()
-            .AddScoped<IMessageDeleted, MessageDeleted.EmoteMessageDeletedHandler>()
-            .AddScoped<IMessageDeleted, MessageDeleted.EmoteSuggestionsMessageDeletedHandler>();
+            .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()
+            .AddScoped<IMessageDeletedEvent, MessageDeleted.PointsMessageDeletedHandler>()
+            .AddScoped<IMessageDeletedEvent, MessageDeleted.ChannelMessageDeletedHandler>()
+            .AddScoped<IMessageDeletedEvent, MessageDeleted.EmoteMessageDeletedHandler>()
+            .AddScoped<IMessageDeletedEvent, MessageDeleted.EmoteSuggestionsMessageDeletedHandler>();
 
         services
             .AddScoped<IMessageReceivedEvent, MessageReceived.PointsMessageReceivedHandler>()

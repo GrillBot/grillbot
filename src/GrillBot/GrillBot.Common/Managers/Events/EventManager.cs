@@ -28,7 +28,7 @@ public class EventManager
         DiscordClient.PresenceUpdated += (user, before, after) => ProcessEventAsync<IPresenceUpdatedEvent>(@event => @event.ProcessAsync(user, before, after));
         DiscordClient.MessageReceived += message => ProcessEventAsync<IMessageReceivedEvent>(@event => @event.ProcessAsync(message));
         DiscordClient.Ready += () => ProcessEventAsync<IReadyEvent>(@event => @event.ProcessAsync());
-        DiscordClient.MessageDeleted += (msg, channel) => ProcessEventAsync<IMessageDeleted>(@event => @event.ProcessAsync(msg, channel));
+        DiscordClient.MessageDeleted += (msg, channel) => ProcessEventAsync<IMessageDeletedEvent>(@event => @event.ProcessAsync(msg, channel));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

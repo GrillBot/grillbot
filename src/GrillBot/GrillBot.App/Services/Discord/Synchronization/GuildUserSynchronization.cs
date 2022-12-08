@@ -6,8 +6,6 @@ public class GuildUserSynchronization : SynchronizationBase
     {
     }
 
-    public Task GuildMemberUpdatedAsync(IGuildUser after) => UserJoinedAsync(after);
-
     public async Task UserJoinedAsync(IGuildUser user)
     {
         await using var repository = DatabaseBuilder.CreateRepository();

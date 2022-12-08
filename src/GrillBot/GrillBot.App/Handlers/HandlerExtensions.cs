@@ -11,6 +11,12 @@ public static class HandlerExtensions
             .AddSingleton<InteractionHandler>();
 
         services
+            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.UserUpdatedSyncHandler>()
+            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.ServerBoosterHandler>()
+            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserUpdatedHandler>()
+            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserRoleUpdatedHandler>();
+
+        services
             .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.PointsMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.ChannelMessageDeletedHandler>()

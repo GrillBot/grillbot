@@ -31,11 +31,6 @@ public class DiscordSyncService
         GuildUsers = new GuildUserSynchronization(DatabaseBuilder);
 
         DiscordClient.UserJoined += user => RunAsync(() => GuildUsers.UserJoinedAsync(user));
-        DiscordClient.GuildMemberUpdated += (before, after) => RunAsync(
-            () => GuildUsers.GuildMemberUpdatedAsync(after),
-            () => before.HasValue && (before.Value.Nickname != after.Nickname || before.Value.Username != after.Username || before.Value.Discriminator != after.Discriminator)
-        );
-
         DiscordClient.JoinedGuild += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
         DiscordClient.GuildAvailable += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
 

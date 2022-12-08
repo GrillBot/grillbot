@@ -26,7 +26,7 @@ public class AuditLogRepository : RepositoryBase
                 .Where(o => o.DiscordAuditLogItemId != null && o.CreatedAt >= after);
 
             if (guild != null)
-                query = query.Where(o => o.GuildId != guild.Id.ToString());
+                query = query.Where(o => o.GuildId == guild.Id.ToString());
 
             if (channel != null)
                 query = query.Where(o => o.ChannelId == channel.Id.ToString());

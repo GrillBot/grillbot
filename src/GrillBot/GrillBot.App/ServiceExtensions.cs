@@ -21,7 +21,8 @@ public static class ServiceExtensions
         services
             .AddScoped<PointsRecalculationManager>()
             .AddSingleton<AutoReplyManager>()
-            .AddSingleton<EmoteChainManager>();
+            .AddSingleton<EmoteChainManager>()
+            .AddSingleton<AuditLogManager>();
         return services;
     }
 }

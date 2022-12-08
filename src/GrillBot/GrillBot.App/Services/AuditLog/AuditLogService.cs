@@ -1,5 +1,4 @@
-﻿using Discord.Commands;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.AuditLog.Events;
 using GrillBot.Common.Extensions;
@@ -18,7 +17,6 @@ public class AuditLogService
     private IServiceProvider ServiceProvider { get; }
 
     private Dictionary<ulong, DateTime> NextAllowedChannelUpdateEvent { get; } = new();
-    private DateTime NextAllowedRoleUpdateEvent { get; set; }
 
     public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, InitManager initManager, AuditLogWriter auditLogWriter, IServiceProvider serviceProvider)
     {
@@ -44,13 +42,6 @@ public class AuditLogService
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new EmotesUpdatedEvent(this, AuditLogWriter, before, after));
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new GuildUpdatedEvent(this, AuditLogWriter, before, after));
         DiscordClient.UserUnbanned += (user, guild) => HandleEventAsync(new UserUnbannedEvent(this, AuditLogWriter, guild, user));
-        DiscordClient.GuildMemberUpdated += (before, after) => HandleEventAsync(new MemberUpdatedEvent(this, AuditLogWriter, before, after));
-        DiscordClient.GuildMemberUpdated += async (before, after) =>
-        {
-            var @event = new MemberRolesUpdatedEvent(this, AuditLogWriter, before, after, NextAllowedRoleUpdateEvent);
-            await HandleEventAsync(@event);
-            if (@event.Finished) NextAllowedRoleUpdateEvent = DateTime.Now.AddSeconds(30);
-        };
         DiscordClient.ThreadDeleted += thread => HandleEventAsync(new ThreadDeletedEvent(this, AuditLogWriter, thread, ServiceProvider));
     }
 

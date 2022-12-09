@@ -55,7 +55,6 @@ public static class Extensions
             .AddScoped<User.UserHearthbeatService>();
 
         services
-            .AddSingleton<InviteService>()
             .AddSingleton<MockingService>()
             .AddSingleton<RandomizationService>()
             .AddSingleton<SearchingService>();

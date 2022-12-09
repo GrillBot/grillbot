@@ -17,6 +17,9 @@ public static class HandlerExtensions
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserRoleUpdatedHandler>();
 
         services
+            .AddScoped<IInviteCreatedEvent, InviteCreated.InviteToCacheHandler>();
+
+        services
             .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.PointsMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.ChannelMessageDeletedHandler>()

@@ -27,7 +27,6 @@ public class AuditLogService
         ServiceProvider = serviceProvider;
 
         DiscordClient.UserLeft += (guild, user) => HandleEventAsync(new UserLeftEvent(this, AuditLogWriter, guild, user));
-        DiscordClient.UserJoined += user => HandleEventAsync(new UserJoinedEvent(this, AuditLogWriter, user));
         DiscordClient.MessageUpdated += (before, after, channel) => HandleEventAsync(new MessageEditedEvent(this, AuditLogWriter, ServiceProvider, before, after, channel));
         DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, AuditLogWriter, channel));
         DiscordClient.ChannelDestroyed += channel => HandleEventAsync(new ChannelDeletedEvent(this, AuditLogWriter, channel));

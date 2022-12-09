@@ -15,7 +15,6 @@ public class DiscordSyncService
     private ChannelSynchronization Channels { get; }
     private UserSynchronization Users { get; }
     private GuildSynchronization Guilds { get; }
-    private GuildUserSynchronization GuildUsers { get; }
 
     private bool MigrationsChecked { get; set; }
 
@@ -28,9 +27,7 @@ public class DiscordSyncService
         Channels = new ChannelSynchronization(DatabaseBuilder);
         Users = new UserSynchronization(DatabaseBuilder);
         Guilds = new GuildSynchronization(DatabaseBuilder);
-        GuildUsers = new GuildUserSynchronization(DatabaseBuilder);
 
-        DiscordClient.UserJoined += user => RunAsync(() => GuildUsers.UserJoinedAsync(user));
         DiscordClient.JoinedGuild += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
         DiscordClient.GuildAvailable += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
 

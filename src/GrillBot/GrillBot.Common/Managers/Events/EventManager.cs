@@ -30,13 +30,14 @@ public class EventManager
         DiscordClient.Ready += () => ProcessEventAsync<IReadyEvent>(@event => @event.ProcessAsync());
         DiscordClient.MessageDeleted += (msg, channel) => ProcessEventAsync<IMessageDeletedEvent>(@event => @event.ProcessAsync(msg, channel));
         DiscordClient.GuildMemberUpdated += (before, after) => ProcessEventAsync<IGuildMemberUpdatedEvent>(@event => @event.ProcessAsync(before.Value, after));
+        DiscordClient.UserJoined += user => ProcessEventAsync<IUserJoinedEvent>(@event => @event.ProcessAsync(user));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)
     {
         var eventType = typeof(TInterface);
         var eventName = eventType.Name[1..];
-        if (eventType != typeof(IReadyEvent) && !InitManager.Get()) return;
+        if (!InitManager.Get() && eventType != typeof(IReadyEvent)) return;
 
         using (CounterManager.Create($"Events.{eventName}"))
         {

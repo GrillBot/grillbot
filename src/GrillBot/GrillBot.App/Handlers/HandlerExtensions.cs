@@ -41,6 +41,11 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
 
+        services
+            .AddScoped<IUserJoinedEvent, UserJoined.InviteUserJoinedHandler>()
+            .AddScoped<IUserJoinedEvent, UserJoined.UserJoinedSyncHandler>()
+            .AddScoped<IUserJoinedEvent, UserJoined.AuditUserJoinedHandler>();
+
         return services;
     }
 }

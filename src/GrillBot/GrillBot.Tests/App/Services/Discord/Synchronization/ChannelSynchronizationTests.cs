@@ -53,30 +53,4 @@ public class ChannelSynchronizationTests : ServiceTest<ChannelSynchronization>
         await Service.ChannelDeletedAsync(channel);
         Assert.IsTrue(true);
     }
-
-    [TestMethod]
-    public async Task ThreadDeletedAsync_NotFound()
-    {
-        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
-        var thread = new ThreadBuilder(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).Build();
-
-        await Service.ThreadDeletedAsync(thread);
-        Assert.IsTrue(true);
-    }
-
-    [TestMethod]
-    public async Task ThreadDeletedAsync_Ok()
-    {
-        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
-        var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
-        var thread = new ThreadBuilder(Consts.ThreadId, Consts.ThreadName).SetGuild(guild).Build();
-
-        await Repository.AddAsync(Guild.FromDiscord(guild));
-        await Repository.AddAsync(GuildChannel.FromDiscord(channel, ChannelType.Text));
-        await Repository.AddAsync(GuildChannel.FromDiscord(thread, ChannelType.PrivateThread));
-        await Repository.CommitAsync();
-
-        await Service.ThreadDeletedAsync(thread);
-        Assert.IsTrue(true);
-    }
 }

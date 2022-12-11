@@ -30,13 +30,13 @@ public class AuditLogService
         DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, AuditLogWriter, channel));
         DiscordClient.ChannelDestroyed += channel => HandleEventAsync(new ChannelDeletedEvent(this, AuditLogWriter, channel));
         DiscordClient.UserUnbanned += (user, guild) => HandleEventAsync(new UserUnbannedEvent(this, AuditLogWriter, guild, user));
-        DiscordClient.ThreadDeleted += thread => HandleEventAsync(new ThreadDeletedEvent(this, AuditLogWriter, thread, ServiceProvider));
     }
 
     /// <summary>
     /// Tries find guild from channel. If channel is DM method will return null;
     /// If channel is null and channelId is filled (typical usage for <see cref="Cacheable{TEntity, TId}"/>) method tries find guild with database data.
     /// </summary>
+    [Obsolete("Use ChannelHelper.GetGuildFromChannelAsync")]
     public async Task<IGuild> GetGuildFromChannelAsync(IChannel channel, ulong channelId)
     {
         switch (channel)

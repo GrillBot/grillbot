@@ -27,18 +27,6 @@ public class ChannelSynchronization : SynchronizationBase
         await repository.CommitAsync();
     }
 
-    public async Task ThreadDeletedAsync(IThreadChannel threadChannel)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var thread = await repository.Channel.FindThreadAsync(threadChannel);
-        if (thread == null) return;
-
-        thread.Update(threadChannel);
-        thread.MarkDeleted(true);
-        await repository.CommitAsync();
-    }
-
     public async Task ThreadUpdatedAsync(IThreadChannel after)
     {
         await using var repository = DatabaseBuilder.CreateRepository();

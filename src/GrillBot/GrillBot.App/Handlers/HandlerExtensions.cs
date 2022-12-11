@@ -53,6 +53,10 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.InviteReadyHandler>()
             .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
+        
+        services
+            .AddScoped<IThreadDeletedEvent, ThreadDeleted.SyncThreadDeletedHandler>()
+            .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();
 
         services
             .AddScoped<IUserJoinedEvent, UserJoined.InviteUserJoinedHandler>()

@@ -34,6 +34,8 @@ public class EventManager
         DiscordClient.InviteCreated += invite => ProcessEventAsync<IInviteCreatedEvent>(@event => @event.ProcessAsync(invite));
         DiscordClient.ChannelUpdated += (before, after) => ProcessEventAsync<IChannelUpdatedEvent>(@event => @event.ProcessAsync(before, after));
         DiscordClient.GuildUpdated += (before, after) => ProcessEventAsync<IGuildUpdatedEvent>(@event => @event.ProcessAsync(before, after));
+        DiscordClient.ThreadDeleted += thread => ProcessEventAsync<IThreadDeletedEvent>(@event => @event.ProcessAsync(thread.HasValue ? thread.Value : null, thread.Id));
+
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

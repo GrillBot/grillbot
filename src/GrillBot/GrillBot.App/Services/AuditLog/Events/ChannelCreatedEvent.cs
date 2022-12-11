@@ -24,7 +24,7 @@ public class ChannelCreatedEvent : AuditEventBase
 
         if (auditLog == null) return;
 
-        var data = new AuditChannelInfo(auditLog.Data as ChannelCreateAuditLogData);
+        var data = new AuditChannelInfo(auditLog.Data as ChannelCreateAuditLogData, channel);
         var item = new AuditLogDataWrapper(AuditLogItemType.ChannelCreated, data, channel.Guild, channel, auditLog.User, auditLog.Id.ToString());
         await AuditLogWriter.StoreAsync(item);
     }

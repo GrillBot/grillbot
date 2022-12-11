@@ -32,6 +32,7 @@ public class EventManager
         DiscordClient.GuildMemberUpdated += (before, after) => ProcessEventAsync<IGuildMemberUpdatedEvent>(@event => @event.ProcessAsync(before.Value, after));
         DiscordClient.UserJoined += user => ProcessEventAsync<IUserJoinedEvent>(@event => @event.ProcessAsync(user));
         DiscordClient.InviteCreated += invite => ProcessEventAsync<IInviteCreatedEvent>(@event => @event.ProcessAsync(invite));
+        DiscordClient.ChannelUpdated += (before, after) => ProcessEventAsync<IChannelUpdatedEvent>(@event => @event.ProcessAsync(before, after));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

@@ -24,7 +24,7 @@ public class ChannelDeletedEvent : AuditEventBase
 
         if (auditLog == null) return;
 
-        var data = new AuditChannelInfo(auditLog.Data as ChannelDeleteAuditLogData, (channel as SocketTextChannel)?.Topic);
+        var data = new AuditChannelInfo(auditLog.Data as ChannelDeleteAuditLogData, channel);
         var item = new AuditLogDataWrapper(AuditLogItemType.ChannelDeleted, data, channel.Guild, channel, auditLog.User, auditLog.Id.ToString());
         await AuditLogWriter.StoreAsync(item);
     }

@@ -49,15 +49,4 @@ public class ChannelSynchronization : SynchronizationBase
         thread.Update(after);
         await repository.CommitAsync();
     }
-
-    public async Task ChannelUpdatedAsync(ITextChannel after)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var channel = await repository.Channel.FindChannelByIdAsync(after.Id, after.GuildId);
-        if (channel == null) return;
-
-        channel.Update(after);
-        await repository.CommitAsync();
-    }
 }

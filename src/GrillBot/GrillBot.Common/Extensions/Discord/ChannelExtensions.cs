@@ -66,12 +66,30 @@ public static class ChannelExtensions
             if (textChannel.Topic != anotherTextChannel.Topic) return false;
         }
 
-        if (channel is not IVoiceChannel voiceChannel || another is not IVoiceChannel anotherVoiceChannel)
-            return true;
+        if (channel is IVoiceChannel voiceChannel && another is IVoiceChannel anotherVoiceChannel)
+        {
+            if (voiceChannel.Bitrate != anotherVoiceChannel.Bitrate) return false;
+            if (voiceChannel.CategoryId != anotherVoiceChannel.CategoryId) return false;
+            if (voiceChannel.UserLimit != anotherVoiceChannel.UserLimit) return false;
+        }
 
-        if (voiceChannel.Bitrate != anotherVoiceChannel.Bitrate) return false;
-        if (voiceChannel.CategoryId != anotherVoiceChannel.CategoryId) return false;
-        return voiceChannel.UserLimit == anotherVoiceChannel.UserLimit;
+        if (channel is IThreadChannel thread && another is IThreadChannel anotherThread)
+        {
+            if (thread.IsArchived != anotherThread.IsArchived) return false;
+            if (thread.IsLocked != anotherThread.IsLocked) return false;
+            if (thread.ArchiveTimestamp != anotherThread.ArchiveTimestamp) return false;
+            if (thread.AutoArchiveDuration != anotherThread.AutoArchiveDuration) return false;
+        }
+
+        if (channel is IForumChannel forum && another is IForumChannel anotherForum)
+        {
+            if (forum.IsNsfw != anotherForum.IsNsfw) return false;
+            if (forum.Topic != anotherForum.Topic) return false;
+            if (!forum.Tags.Select(o => o.Id).SequenceEqual(anotherForum.Tags.Select(o => o.Id))) return false;
+            if (forum.DefaultAutoArchiveDuration != anotherForum.DefaultAutoArchiveDuration) return false;
+        }
+
+        return true;
     }
 
     public static bool HaveCategory(this IGuildChannel channel)

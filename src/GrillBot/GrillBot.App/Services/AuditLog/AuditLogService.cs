@@ -16,7 +16,6 @@ public class AuditLogService
     private AuditLogWriter AuditLogWriter { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    private Dictionary<ulong, DateTime> NextAllowedChannelUpdateEvent { get; } = new();
 
     public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, InitManager initManager, AuditLogWriter auditLogWriter, IServiceProvider serviceProvider)
     {
@@ -30,14 +29,6 @@ public class AuditLogService
         DiscordClient.MessageUpdated += (before, after, channel) => HandleEventAsync(new MessageEditedEvent(this, AuditLogWriter, ServiceProvider, before, after, channel));
         DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, AuditLogWriter, channel));
         DiscordClient.ChannelDestroyed += channel => HandleEventAsync(new ChannelDeletedEvent(this, AuditLogWriter, channel));
-        DiscordClient.ChannelUpdated += (before, after) => HandleEventAsync(new ChannelUpdatedEvent(this, AuditLogWriter, before, after));
-        DiscordClient.ChannelUpdated += async (_, after) =>
-        {
-            var nextAllowedEvent = NextAllowedChannelUpdateEvent.TryGetValue(after.Id, out var at) ? at : DateTime.MinValue;
-            await HandleEventAsync(new OverwriteChangedEvent(this, AuditLogWriter, after, nextAllowedEvent));
-            nextAllowedEvent = DateTime.Now.AddMinutes(1);
-            NextAllowedChannelUpdateEvent[after.Id] = nextAllowedEvent;
-        };
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new EmotesUpdatedEvent(this, AuditLogWriter, before, after));
         DiscordClient.GuildUpdated += (before, after) => HandleEventAsync(new GuildUpdatedEvent(this, AuditLogWriter, before, after));
         DiscordClient.UserUnbanned += (user, guild) => HandleEventAsync(new UserUnbannedEvent(this, AuditLogWriter, guild, user));

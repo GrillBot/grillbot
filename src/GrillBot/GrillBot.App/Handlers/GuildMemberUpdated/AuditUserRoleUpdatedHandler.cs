@@ -26,14 +26,10 @@ public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
     {
         if (!CanProcess(before, after)) return;
 
+        AuditLogManager.OnMemberRoleUpdatedEvent(after.GuildId, DateTime.Now.AddMinutes(1));
         var ignoredLogIdsAsync = await GetIgnoredAuditLogIdsAsync(after.Guild);
         var auditLogs = await GetAuditLogsAsync(after.Guild, ignoredLogIdsAsync, after);
-
-        if (auditLogs.Count == 0)
-        {
-            AuditLogManager.UpdateMemberRoleDateAsync(after.GuildId, DateTime.Now.AddMinutes(1));
-            return;
-        }
+        if (auditLogs.Count == 0) return;
 
         var items = new List<AuditLogDataWrapper>();
         foreach (var log in auditLogs)
@@ -52,11 +48,10 @@ public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
         }
 
         await AuditLogWriter.StoreAsync(items);
-        AuditLogManager.UpdateMemberRoleDateAsync(after.GuildId, DateTime.Now.AddMinutes(1));
     }
 
     private bool CanProcess(IGuildUser before, IGuildUser after)
-        => before != null && DateTime.Now >= AuditLogManager.GetNextMemberRoleDateTime(after.GuildId) && !before.RoleIds.SequenceEqual(after.RoleIds);
+        => before != null && DateTime.Now >= AuditLogManager.GetNextMemberRoleEvent(after.GuildId) && !before.RoleIds.SequenceEqual(after.RoleIds);
 
     private async Task<List<ulong>> GetIgnoredAuditLogIdsAsync(IGuild guild)
     {
@@ -66,7 +61,7 @@ public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
         return await repository.AuditLog.GetDiscordAuditLogIdsAsync(guild, null, new[] { AuditLogItemType.MemberRoleUpdated }, timeLimit);
     }
 
-    private async Task<List<IAuditLogEntry>> GetAuditLogsAsync(IGuild guild, List<ulong> ignoredLogIds, IUser user)
+    private async Task<List<IAuditLogEntry>> GetAuditLogsAsync(IGuild guild, ICollection<ulong> ignoredLogIds, IUser user)
     {
         IReadOnlyCollection<IAuditLogEntry> auditLogs;
         using (CounterManager.Create("Discord.API.AuditLog"))

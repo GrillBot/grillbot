@@ -11,7 +11,8 @@ public static class ServiceExtensions
         services
             .AddScoped<PointsHelper>()
             .AddScoped<EmoteHelper>()
-            .AddScoped<DownloadHelper>();
+            .AddScoped<DownloadHelper>()
+            .AddScoped<ChannelHelper>();
 
         return services;
     }

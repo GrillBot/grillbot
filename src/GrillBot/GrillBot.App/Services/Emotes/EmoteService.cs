@@ -23,7 +23,6 @@ public class EmoteService
         DatabaseBuilder = databaseBuilder;
 
         DiscordClient.ReactionAdded += (msg, channel, reaction) => OnReactionAsync(msg, channel, reaction, ReactionEvents.Added);
-        DiscordClient.ReactionRemoved += (msg, channel, reaction) => OnReactionAsync(msg, channel, reaction, ReactionEvents.Removed);
     }
 
     private async Task OnReactionAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction, ReactionEvents @event)
@@ -63,15 +62,7 @@ public class EmoteService
                 break;
             }
             case ReactionEvents.Removed:
-            {
-                if (reactionUser != null)
-                {
-                    await EmoteStats_OnReactionRemovedAsync(repository, reactionUser, emote, textChannel.Guild);
-                    await Guild_OnReactionRemovedAsync(repository, textChannel.Guild, reactionUserEntity, authorUserEntity);
-                }
-
                 break;
-            }
             default:
                 throw new ArgumentOutOfRangeException(nameof(@event), @event, null);
         }
@@ -101,16 +92,6 @@ public class EmoteService
         dbEmote.LastOccurence = DateTime.Now;
     }
 
-    private static async Task EmoteStats_OnReactionRemovedAsync(GrillBotRepository repository, IGuildUser user, IEmote emote, IGuild guild)
-    {
-        if (!await repository.GuildUser.ExistsAsync(user)) return;
-
-        var dbEmote = await repository.Emote.FindStatisticAsync(emote, user, guild);
-        if (dbEmote == null || dbEmote.UseCount == 0) return;
-
-        dbEmote.UseCount--;
-    }
-
     #endregion
 
     #region GivenAndObtainedEmotes
@@ -119,17 +100,6 @@ public class EmoteService
     {
         messageAuthorEntity.ObtainedReactions++;
         reactingUserEntity.GivenReactions++;
-    }
-
-    private static async Task Guild_OnReactionRemovedAsync(GrillBotRepository repository, IGuild guild, GuildUser reactingUserEntity, GuildUser messageAuthorEntity)
-    {
-        if (!await repository.Guild.ExistsAsync(guild)) return;
-
-        if (reactingUserEntity.GivenReactions > 0)
-            reactingUserEntity.GivenReactions--;
-
-        if (messageAuthorEntity.ObtainedReactions > 0)
-            messageAuthorEntity.ObtainedReactions--;
     }
 
     #endregion

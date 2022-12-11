@@ -35,7 +35,7 @@ public class EventManager
         DiscordClient.ChannelUpdated += (before, after) => ProcessEventAsync<IChannelUpdatedEvent>(@event => @event.ProcessAsync(before, after));
         DiscordClient.GuildUpdated += (before, after) => ProcessEventAsync<IGuildUpdatedEvent>(@event => @event.ProcessAsync(before, after));
         DiscordClient.ThreadDeleted += thread => ProcessEventAsync<IThreadDeletedEvent>(@event => @event.ProcessAsync(thread.HasValue ? thread.Value : null, thread.Id));
-
+        DiscordClient.ReactionRemoved += (message, channel, reaction) => ProcessEventAsync<IReactionRemovedEvent>(@event => @event.ProcessAsync(message, channel, reaction));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

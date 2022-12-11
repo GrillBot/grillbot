@@ -93,4 +93,7 @@ public class PointsHelper
 
         return result;
     }
+
+    public static string CreateReactionId(SocketReaction reaction)
+        => $"{reaction.Emote}_{reaction.UserId}";
 }

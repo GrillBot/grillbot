@@ -41,27 +41,6 @@ public partial class PointsService
         await RecalculatePointsSummaryAsync(repository, true, new List<IGuildUser> { user });
     }
 
-    private async Task OnReactionRemovedAsync(Cacheable<IUserMessage, ulong> message, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
-    {
-        if (!channel.HasValue || channel.Value is not IGuildChannel guildChannel) return;
-        if (reaction.Emote is not Emote || !guildChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote))) return;
-
-        var user = reaction.User.IsSpecified ? reaction.User.Value as IGuildUser : null;
-        user ??= await guildChannel.Guild.GetUserAsync(reaction.UserId);
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var reactionId = CreateReactionId(reaction);
-        var transaction = await repository.Points.FindTransactionAsync(guildChannel.Guild, message.Id, reactionId, user);
-        if (transaction == null) return;
-
-        repository.Remove(transaction);
-        await repository.CommitAsync();
-
-        var onlyToday = transaction.AssingnedAt.Date == DateTime.Now.Date;
-        await RecalculatePointsSummaryAsync(repository, onlyToday, new List<IGuildUser> { user });
-    }
-
     private static string CreateReactionId(SocketReaction reaction)
         => $"{reaction.Emote}_{reaction.UserId}";
 }

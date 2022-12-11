@@ -36,11 +36,6 @@ public class DiscordSyncService
             () => before.Username != after.Username || before.Discriminator != after.Discriminator || before.IsUser() != after.IsUser()
         );
 
-        DiscordClient.ChannelDestroyed += channel => RunAsync(
-            () => Channels.ChannelDeletedAsync(channel as ITextChannel),
-            () => channel is ITextChannel
-        );
-
         DiscordClient.ThreadUpdated += (before, after) => RunAsync(
             () => Channels.ThreadUpdatedAsync(after),
             () => before.HasValue && (before.Value.Name != after.Name || before.Value.IsArchived != after.IsArchived)

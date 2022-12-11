@@ -6,8 +6,6 @@ public class GuildSynchronization : SynchronizationBase
     {
     }
 
-    public Task GuildUpdatedAsync(IGuild after) => GuildAvailableAsync(after);
-
     public async Task GuildAvailableAsync(IGuild guild)
     {
         await using var repository = DatabaseBuilder.CreateRepository();

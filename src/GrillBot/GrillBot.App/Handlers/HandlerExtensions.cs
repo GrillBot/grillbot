@@ -22,6 +22,11 @@ public static class HandlerExtensions
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserRoleUpdatedHandler>();
 
         services
+            .AddScoped<IGuildUpdatedEvent, GuildUpdated.SyncGuildUpdatedHandler>()
+            .AddScoped<IGuildUpdatedEvent, GuildUpdated.AuditGuildUpdatedHandler>()
+            .AddScoped<IGuildUpdatedEvent, GuildUpdated.AuditEmotesGuildUpdatedHandler>();
+
+        services
             .AddScoped<IInviteCreatedEvent, InviteCreated.InviteToCacheHandler>();
 
         services

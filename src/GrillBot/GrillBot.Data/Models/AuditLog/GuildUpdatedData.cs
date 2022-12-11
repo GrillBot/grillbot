@@ -22,8 +22,16 @@ public class GuildUpdatedData
     public Diff<int> AfkTimeout { get; set; }
     public Diff<string> Name { get; set; }
     public Diff<MfaLevel> MfaLevel { get; set; }
+    public Diff<VerificationLevel> VerificationLevel { get; set; }
+    public Diff<ExplicitContentFilterLevel> ExplicitContentFilter { get; set; }
+    public Diff<GuildFeature> Features { get; set; }
+    public Diff<PremiumTier> PremiumTier { get; set; }
+    public Diff<SystemChannelMessageDeny> SystemChannelFlags { get; set; }
+    public Diff<NsfwLevel> NsfwLevel { get; set; }
 
-    public GuildUpdatedData() { }
+    public GuildUpdatedData()
+    {
+    }
 
     public GuildUpdatedData(SocketGuild before, SocketGuild after)
     {
@@ -60,6 +68,12 @@ public class GuildUpdatedData
         AfkTimeout = new Diff<int>(before.AFKTimeout, after.AFKTimeout);
         Name = new Diff<string>(before.Name, after.Name);
         MfaLevel = new Diff<MfaLevel>(before.MfaLevel, after.MfaLevel);
+        VerificationLevel = new Diff<VerificationLevel>(before.VerificationLevel, after.VerificationLevel);
+        ExplicitContentFilter = new Diff<ExplicitContentFilterLevel>(before.ExplicitContentFilter, after.ExplicitContentFilter);
+        Features = new Diff<GuildFeature>(before.Features.Value, after.Features.Value);
+        PremiumTier = new Diff<PremiumTier>(before.PremiumTier, after.PremiumTier);
+        SystemChannelFlags = new Diff<SystemChannelMessageDeny>(before.SystemChannelFlags, after.SystemChannelFlags);
+        NsfwLevel = new Diff<NsfwLevel>(before.NsfwLevel, after.NsfwLevel);
     }
 
     [OnSerializing]
@@ -77,5 +91,11 @@ public class GuildUpdatedData
         if (AfkChannel?.IsEmpty == true) AfkChannel = null;
         if (Name?.IsEmpty == true) Name = null;
         if (MfaLevel?.IsEmpty == true) MfaLevel = null;
+        if (VerificationLevel?.IsEmpty == true) VerificationLevel = null;
+        if (ExplicitContentFilter?.IsEmpty == true) ExplicitContentFilter = null;
+        if (Features?.IsEmpty == true) Features = null;
+        if (PremiumTier?.IsEmpty == true) PremiumTier = null;
+        if (SystemChannelFlags?.IsEmpty == true) SystemChannelFlags = null;
+        if (NsfwLevel?.IsEmpty == true) NsfwLevel = null;
     }
 }

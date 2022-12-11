@@ -25,14 +25,12 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
         var botUser = new GuildUserBuilder(User).SetId(Consts.UserId + 2).AsBot().Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User, botUser, anotherUser }).Build();
 
-        var discordClient = DiscordHelper.CreateClient();
-        var messageCache = new MessageCacheBuilder().Build();
         var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
         var texts = new TextsBuilder()
             .AddText("Points/Service/Transfer/UserIsBot", "cs", "UserIsBot{0}")
             .AddText("Points/Service/Transfer/InsufficientAmount", "cs", "InsufficientAmount{0}")
             .Build();
-        var pointsService = new PointsService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, messageCache, TestServices.Randomization.Value, profilePictureManager, texts);
+        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Randomization.Value, profilePictureManager, texts);
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
 
         return new ServiceTransferPoints(ApiRequestContext, pointsService, client, texts);

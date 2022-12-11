@@ -26,7 +26,6 @@ public static class Extensions
             .AddSingleton<Discord.DiscordSyncService>();
 
         services
-            .AddSingleton<Emotes.EmoteService>()
             .AddSingleton<Emotes.EmotesCommandService>();
 
         services

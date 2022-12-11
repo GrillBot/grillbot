@@ -3,8 +3,6 @@ using System.IO;
 using Discord;
 using GrillBot.App.Services.User.Points;
 using GrillBot.Cache.Services.Managers;
-using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;
@@ -27,13 +25,10 @@ public class PointsServiceTests : ServiceTest<PointsService>
         GuildUser = userBuilder.SetGuild(Guild).Build();
 
         var texts = new TextsBuilder().Build();
-        var discordClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
         var counterManager = TestServices.CounterManager.Value;
-        var messageCache = new MessageCacheManager(discordClient, initManager, CacheBuilder, counterManager);
         var profilePicture = new ProfilePictureManager(CacheBuilder, counterManager);
 
-        return new PointsService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, messageCache, TestServices.Randomization.Value, profilePicture, texts);
+        return new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Randomization.Value, profilePicture, texts);
     }
 
     private async Task InitDataAsync()

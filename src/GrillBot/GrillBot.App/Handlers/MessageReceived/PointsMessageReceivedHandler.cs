@@ -32,7 +32,7 @@ public class PointsMessageReceivedHandler : IMessageReceivedEvent
 
         var transaction = Helper.CreateTransaction(guildUserEntity, null, message.Id, false);
         var migratedTransaction = Helper.CreateMigratedTransaction(guildUserEntity, transaction);
-        var transactions = await Helper.FilterTransactionsAsync(repository, transaction, migratedTransaction);
+        var transactions = await PointsHelper.FilterTransactionsAsync(repository, transaction, migratedTransaction);
         if (transactions.Count == 0) return;
 
         await repository.AddCollectionAsync(transactions);

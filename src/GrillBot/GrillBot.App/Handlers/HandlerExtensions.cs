@@ -48,6 +48,10 @@ public static class HandlerExtensions
             .AddScoped<IPresenceUpdatedEvent, PresenceUpdated.UserPresenceSynchronizationHandler>();
 
         services
+            .AddScoped<IReactionAddedEvent, ReactionAdded.PointsReactionAddedHandler>()
+            .AddScoped<IReactionAddedEvent, ReactionAdded.EmoteStatsReactionAddedHandler>();
+
+        services
             .AddScoped<IReactionRemovedEvent, ReactionRemoved.PointsReactionRemovedHandler>()
             .AddScoped<IReactionRemovedEvent, ReactionRemoved.EmoteStatsReactionRemovedHandler>();
 

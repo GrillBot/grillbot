@@ -36,7 +36,7 @@ public class PointsReactionRemovedHandler : IReactionRemovedEvent
         await PointsRecalculation.ComputeSummariesAsync(full, new List<IGuildUser> { user });
     }
 
-    private bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction, out IGuildChannel channel)
+    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction, out IGuildChannel channel)
     {
         channel = cachedChannel.HasValue && cachedChannel.Value is IGuildChannel guildChannel ? guildChannel : null;
 

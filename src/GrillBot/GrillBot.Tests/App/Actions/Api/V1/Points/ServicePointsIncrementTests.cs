@@ -21,11 +21,9 @@ public class ServicePointsIncrementTests : ApiActionTest<ServiceIncrementPoints>
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).Build();
 
-        var discordClient = DiscordHelper.CreateClient();
-        var messageCache = new MessageCacheBuilder().Build();
         var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
         var texts = new TextsBuilder().Build();
-        var pointsService = new PointsService(discordClient, DatabaseBuilder, TestServices.Configuration.Value, messageCache, TestServices.Randomization.Value, profilePictureManager, texts);
+        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Randomization.Value, profilePictureManager, texts);
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
 
         return new ServiceIncrementPoints(ApiRequestContext, pointsService, client, texts);

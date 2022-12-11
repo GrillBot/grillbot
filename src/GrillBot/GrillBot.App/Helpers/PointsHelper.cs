@@ -79,7 +79,7 @@ public class PointsHelper
         return transaction;
     }
 
-    public async Task<List<PointsTransaction>> FilterTransactionsAsync(GrillBotRepository repository, params PointsTransaction[] transactions)
+    public static async Task<List<PointsTransaction>> FilterTransactionsAsync(GrillBotRepository repository, params PointsTransaction[] transactions)
     {
         var result = new List<PointsTransaction>();
 

@@ -75,6 +75,9 @@ public static class HandlerExtensions
             .AddScoped<IUserJoinedEvent, UserJoined.UserJoinedSyncHandler>()
             .AddScoped<IUserJoinedEvent, UserJoined.AuditUserJoinedHandler>();
 
+        services
+            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncUserUpdatedHandler>();
+
         return services;
     }
 }

@@ -13,7 +13,6 @@ public class DiscordSyncService
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     private ChannelSynchronization Channels { get; }
-    private UserSynchronization Users { get; }
     private GuildSynchronization Guilds { get; }
 
     private bool MigrationsChecked { get; set; }
@@ -25,16 +24,10 @@ public class DiscordSyncService
         DatabaseBuilder = databaseBuilder;
 
         Channels = new ChannelSynchronization(DatabaseBuilder);
-        Users = new UserSynchronization(DatabaseBuilder);
         Guilds = new GuildSynchronization(DatabaseBuilder);
 
         DiscordClient.JoinedGuild += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
         DiscordClient.GuildAvailable += guild => RunAsync(() => Guilds.GuildAvailableAsync(guild));
-
-        DiscordClient.UserUpdated += (before, after) => RunAsync(
-            () => Users.UserUpdatedAsync(after),
-            () => before.Username != after.Username || before.Discriminator != after.Discriminator || before.IsUser() != after.IsUser()
-        );
 
         DiscordClient.ThreadUpdated += (before, after) => RunAsync(
             () => Channels.ThreadUpdatedAsync(after),

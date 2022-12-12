@@ -71,6 +71,9 @@ public static class HandlerExtensions
             .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();
 
         services
+            .AddScoped<IThreadUpdatedEvent, ThreadUpdated.SyncThreadUpdatedHandler>();
+
+        services
             .AddScoped<IUserJoinedEvent, UserJoined.InviteUserJoinedHandler>()
             .AddScoped<IUserJoinedEvent, UserJoined.UserJoinedSyncHandler>()
             .AddScoped<IUserJoinedEvent, UserJoined.AuditUserJoinedHandler>();

@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -12,13 +13,15 @@ public class EventManager
     private IServiceProvider ServiceProvider { get; }
     private InitManager InitManager { get; }
     private CounterManager CounterManager { get; }
+    private InteractionService InteractionService { get; }
 
-    public EventManager(IDiscordClient discordClient, IServiceProvider serviceProvider, InitManager initManager, CounterManager counterManager)
+    public EventManager(IDiscordClient discordClient, IServiceProvider serviceProvider, InitManager initManager, CounterManager counterManager, InteractionService interactionService)
     {
         DiscordClient = (DiscordSocketClient)discordClient;
         ServiceProvider = serviceProvider;
         InitManager = initManager;
         CounterManager = counterManager;
+        InteractionService = interactionService;
 
         InitEvents();
     }
@@ -46,6 +49,12 @@ public class EventManager
         DiscordClient.JoinedGuild += guild => ProcessEventAsync<IJoinedGuildEvent>(@event => @event.ProcessAsync(guild));
         DiscordClient.GuildAvailable += guild => ProcessEventAsync<IGuildAvailableEvent>(@event => @event.ProcessAsync(guild));
         DiscordClient.ChannelCreated += channel => ProcessEventAsync<IChannelCreatedEvent>(@event => @event.ProcessAsync(channel));
+
+        InteractionService.SlashCommandExecuted += (command, context, result) => ProcessEventAsync<IInteractionCommandExecutedEvent>(@event => @event.ProcessAsync(command, context, result));
+        InteractionService.ContextCommandExecuted += (command, context, result) => ProcessEventAsync<IInteractionCommandExecutedEvent>(@event => @event.ProcessAsync(command, context, result));
+        InteractionService.AutocompleteCommandExecuted += (command, context, result) => ProcessEventAsync<IInteractionCommandExecutedEvent>(@event => @event.ProcessAsync(command, context, result));
+        InteractionService.ComponentCommandExecuted += (command, context, result) => ProcessEventAsync<IInteractionCommandExecutedEvent>(@event => @event.ProcessAsync(command, context, result));
+        InteractionService.ModalCommandExecuted += (command, context, result) => ProcessEventAsync<IInteractionCommandExecutedEvent>(@event => @event.ProcessAsync(command, context, result));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

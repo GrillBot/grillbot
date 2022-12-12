@@ -1,26 +1,18 @@
-﻿using Discord.Interactions;
-using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.AuditLog.Events;
+﻿using GrillBot.App.Infrastructure;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Managers;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.AuditLog;
 
 [Initializable]
 public class AuditLogService
 {
-    private InitManager InitManager { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogWriter AuditLogWriter { get; }
 
-    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, InitManager initManager, AuditLogWriter auditLogWriter)
+    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder)
     {
-        InitManager = initManager;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriter = auditLogWriter;
     }
 
     /// <summary>
@@ -48,34 +40,5 @@ public class AuditLogService
 
         var guildId = channelEntity.GuildId.ToUlong();
         return DiscordClient.GetGuild(guildId);
-    }
-
-    private async Task<bool> CanExecuteEvent(Func<Task<bool>> eventSpecificCheck = null)
-    {
-        if (!InitManager.Get()) return false;
-        if (eventSpecificCheck == null) return true;
-
-        return await eventSpecificCheck();
-    }
-
-    private async Task HandleEventAsync(AuditEventBase @event)
-    {
-        if (await CanExecuteEvent(@event.CanProcessAsync))
-            await @event.ProcessAsync();
-    }
-
-    public Task LogExecutedInteractionCommandAsync(ICommandInfo command, IInteractionContext context, global::Discord.Interactions.IResult result,
-        int duration)
-    {
-        return HandleEventAsync(new ExecutedInteractionCommandEvent(this, AuditLogWriter, command, context, result, duration));
-    }
-
-    /// <summary>
-    /// Gets IDs of audit log in discord.
-    /// </summary>
-    public async Task<List<ulong>> GetDiscordAuditLogIdsAsync(IGuild guild, IChannel channel, AuditLogItemType[] types, DateTime after)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.AuditLog.GetDiscordAuditLogIdsAsync(guild, channel, types, after);
     }
 }

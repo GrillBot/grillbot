@@ -37,6 +37,9 @@ public static class HandlerExtensions
             .AddScoped<IGuildUpdatedEvent, GuildUpdated.AuditEmotesGuildUpdatedHandler>();
 
         services
+            .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.AuditInteractionCommandHandler>();
+
+        services
             .AddScoped<IInviteCreatedEvent, InviteCreated.InviteToCacheHandler>();
 
         services

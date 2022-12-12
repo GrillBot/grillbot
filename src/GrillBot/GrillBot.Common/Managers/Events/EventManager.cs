@@ -39,6 +39,7 @@ public class EventManager
         DiscordClient.ReactionAdded += (message, channel, reaction) => ProcessEventAsync<IReactionAddedEvent>(@event => @event.ProcessAsync(message, channel, reaction));
         DiscordClient.ChannelDestroyed += channel => ProcessEventAsync<IChannelDestroyedEvent>(@event => @event.ProcessAsync(channel));
         DiscordClient.UserUpdated += (before, after) => ProcessEventAsync<IUserUpdatedEvent>(@event => @event.ProcessAsync(before, after));
+        DiscordClient.UserUnbanned += (user, guild) => ProcessEventAsync<IUserUnbannedEvent>(@event => @event.ProcessAsync(user, guild));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

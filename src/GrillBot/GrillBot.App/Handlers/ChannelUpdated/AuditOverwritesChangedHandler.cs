@@ -56,7 +56,7 @@ public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
     private async Task<List<IAuditLogEntry>> GetAuditLogsAsync(ICollection<ulong> ignoredLogIds, IGuildChannel channel)
     {
         var auditLogs = new List<IAuditLogEntry>();
-        using (CounterManager.Create("Discord.API.AuditLogs"))
+        using (CounterManager.Create("Discord.API.AuditLog"))
         {
             auditLogs.AddRange(await channel.Guild.GetAuditLogsAsync(actionType: ActionType.OverwriteCreated));
             auditLogs.AddRange(await channel.Guild.GetAuditLogsAsync(actionType: ActionType.OverwriteDeleted));

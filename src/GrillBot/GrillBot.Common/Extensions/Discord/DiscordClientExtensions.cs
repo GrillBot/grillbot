@@ -40,21 +40,6 @@ public static class DiscordClientExtensions
         return user;
     }
 
-    public static async Task<IGuildUser?> TryFindGuildUserAsync(this IDiscordClient client, ulong guildId, ulong userId)
-    {
-        var guild = await client.GetGuildAsync(guildId);
-        if (guild == null) return null;
-
-        return await guild.GetUserAsync(userId);
-    }
-
-    public static async Task<List<IRole>> GetRolesAsync(this IDiscordClient client)
-    {
-        return (await client.GetGuildsAsync())
-            .SelectMany(o => o.Roles)
-            .ToList();
-    }
-
     public static async Task<List<IGuild>> FindMutualGuildsAsync(this IDiscordClient client, ulong userId)
     {
         var guilds = (await client.GetGuildsAsync()).ToList();

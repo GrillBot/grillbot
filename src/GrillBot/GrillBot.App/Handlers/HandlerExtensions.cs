@@ -49,6 +49,9 @@ public static class HandlerExtensions
             .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteChainHandler>();
 
         services
+            .AddScoped<IMessageUpdatedEvent, MessageUpdated.AuditMessageUpdatedHandler>();
+
+        services
             .AddScoped<IPresenceUpdatedEvent, PresenceUpdated.UserPresenceSynchronizationHandler>();
 
         services

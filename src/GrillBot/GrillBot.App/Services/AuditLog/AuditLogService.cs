@@ -14,18 +14,14 @@ public class AuditLogService
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriter AuditLogWriter { get; }
-    private IServiceProvider ServiceProvider { get; }
 
-
-    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, InitManager initManager, AuditLogWriter auditLogWriter, IServiceProvider serviceProvider)
+    public AuditLogService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, InitManager initManager, AuditLogWriter auditLogWriter)
     {
         InitManager = initManager;
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
         AuditLogWriter = auditLogWriter;
-        ServiceProvider = serviceProvider;
 
-        DiscordClient.MessageUpdated += (before, after, channel) => HandleEventAsync(new MessageEditedEvent(this, AuditLogWriter, ServiceProvider, before, after, channel));
         DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, AuditLogWriter, channel));
     }
 

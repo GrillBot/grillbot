@@ -43,6 +43,8 @@ public class EventManager
         DiscordClient.UserLeft += (guild, user) => ProcessEventAsync<IUserLeftEvent>(@event => @event.ProcessAsync(guild, user));
         DiscordClient.ThreadUpdated += (before, after) => ProcessEventAsync<IThreadUpdatedEvent>(@event => @event.ProcessAsync(before.HasValue ? before.Value : null, before.Id, after));
         DiscordClient.MessageUpdated += (before, after, channel) => ProcessEventAsync<IMessageUpdatedEvent>(@event => @event.ProcessAsync(before, after, channel));
+        DiscordClient.JoinedGuild += guild => ProcessEventAsync<IJoinedGuildEvent>(@event => @event.ProcessAsync(guild));
+        DiscordClient.GuildAvailable += guild => ProcessEventAsync<IGuildAvailableEvent>(@event => @event.ProcessAsync(guild));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

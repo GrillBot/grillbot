@@ -20,6 +20,9 @@ public static class HandlerExtensions
             .AddScoped<IChannelUpdatedEvent, ChannelUpdated.SyncChannelUpdatedHandler>();
 
         services
+            .AddScoped<IGuildAvailableEvent, GuildAvailable.SyncGuildAvailableHandler>();
+
+        services
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.UserUpdatedSyncHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.ServerBoosterHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserUpdatedHandler>()
@@ -32,6 +35,9 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IInviteCreatedEvent, InviteCreated.InviteToCacheHandler>();
+
+        services
+            .AddScoped<IJoinedGuildEvent, JoinedGuild.SyncJoinedGuildHandler>();
 
         services
             .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()

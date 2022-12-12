@@ -23,9 +23,6 @@ public static class Extensions
             .AddSingleton<DirectApi.IDirectApiService, DirectApi.DirectApiService>();
 
         services
-            .AddSingleton<Discord.DiscordSyncService>();
-
-        services
             .AddSingleton<Emotes.EmotesCommandService>();
 
         services

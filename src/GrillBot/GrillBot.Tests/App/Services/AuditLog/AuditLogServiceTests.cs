@@ -17,9 +17,8 @@ public class AuditLogServiceTests : ServiceTest<AuditLogService>
         var discordClient = DiscordHelper.CreateClient();
         var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
-        var serviceProvider = TestServices.EmptyProvider.Value;
 
-        return new AuditLogService(discordClient, DatabaseBuilder, initManager, auditLogWriter, serviceProvider);
+        return new AuditLogService(discordClient, DatabaseBuilder, initManager, auditLogWriter);
     }
 
     private async Task FillDataAsync()

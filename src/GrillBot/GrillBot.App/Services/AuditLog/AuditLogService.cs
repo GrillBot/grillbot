@@ -21,8 +21,6 @@ public class AuditLogService
         DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
         AuditLogWriter = auditLogWriter;
-
-        DiscordClient.ChannelCreated += channel => HandleEventAsync(new ChannelCreatedEvent(this, AuditLogWriter, channel));
     }
 
     /// <summary>

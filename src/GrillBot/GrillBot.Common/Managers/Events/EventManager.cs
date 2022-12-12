@@ -45,6 +45,7 @@ public class EventManager
         DiscordClient.MessageUpdated += (before, after, channel) => ProcessEventAsync<IMessageUpdatedEvent>(@event => @event.ProcessAsync(before, after, channel));
         DiscordClient.JoinedGuild += guild => ProcessEventAsync<IJoinedGuildEvent>(@event => @event.ProcessAsync(guild));
         DiscordClient.GuildAvailable += guild => ProcessEventAsync<IGuildAvailableEvent>(@event => @event.ProcessAsync(guild));
+        DiscordClient.ChannelCreated += channel => ProcessEventAsync<IChannelCreatedEvent>(@event => @event.ProcessAsync(channel));
     }
 
     private async Task ProcessEventAsync<TInterface>(Func<TInterface, Task> processAction)

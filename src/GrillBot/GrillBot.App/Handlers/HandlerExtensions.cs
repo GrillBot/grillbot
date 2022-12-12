@@ -11,6 +11,9 @@ public static class HandlerExtensions
             .AddSingleton<InteractionHandler>();
 
         services
+            .AddScoped<IChannelCreatedEvent, ChannelCreated.AuditChannelCreatedHandler>();
+
+        services
             .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.SyncChannelDestroyedHandler>()
             .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>();
             

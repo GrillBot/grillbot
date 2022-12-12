@@ -76,6 +76,9 @@ public static class HandlerExtensions
             .AddScoped<IUserJoinedEvent, UserJoined.AuditUserJoinedHandler>();
 
         services
+            .AddScoped<IUserLeftEvent, UserLeft.AuditUserLeftHandler>();
+
+        services
             .AddScoped<IUserUnbannedEvent, UserUnbanned.AuditUserUnbannedHandler>();
 
         services

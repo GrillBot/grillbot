@@ -251,4 +251,34 @@ public class ChannelRepository : RepositoryBase
                 .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.ChannelId == channel.Id.ToString() && (o.Flags & (long)ChannelFlags.EphemeralCommands) != 0);
         }
     }
+
+    public async Task<GuildUserChannel?> FindUserChannelAsync(IGuildChannel channel, IUser user)
+    {
+        using (CreateCounter())
+        {
+            return await Context.UserChannels
+                .FirstOrDefaultAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString() && o.UserId == user.Id.ToString());
+        }
+    }
+
+    public async Task<GuildUserChannel> GetOrCreateUserChannelAsync(IGuildChannel channel, IUser user)
+    {
+        using (CreateCounter())
+        {
+            var userChannel = await FindUserChannelAsync(channel, user);
+            if (userChannel != null) return userChannel;
+
+            userChannel = new GuildUserChannel
+            {
+                ChannelId = channel.Id.ToString(),
+                GuildId = channel.GuildId.ToString(),
+                UserId = user.Id.ToString(),
+                FirstMessageAt = DateTime.Now,
+                Count = 0
+            };
+
+            await Context.AddAsync(userChannel);
+            return userChannel;
+        }
+    }
 }

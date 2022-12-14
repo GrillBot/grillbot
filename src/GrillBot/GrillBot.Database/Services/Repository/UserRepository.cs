@@ -123,16 +123,6 @@ public class UserRepository : RepositoryBase
         }
     }
 
-    public async Task<List<User>> FindAllUsersExceptBots()
-    {
-        using (CreateCounter())
-        {
-            return await Context.Users.AsNoTracking()
-                .Where(o => (o.Flags & (int)UserFlags.NotUser) == 0)
-                .ToListAsync();
-        }
-    }
-
     public async Task<List<User>> GetFullListOfUsers(bool? bots, IEnumerable<string>? mutualGuildIds, ulong? guildId)
     {
         using (CreateCounter())

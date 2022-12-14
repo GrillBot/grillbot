@@ -14,9 +14,6 @@ public static class Extensions
             .AddSingleton<AuditLog.AuditClearingHelper>();
 
         services
-            .AddSingleton<AutoReplyService>();
-
-        services
             .AddSingleton<Birthday.BirthdayService>();
 
         services
@@ -26,11 +23,6 @@ public static class Extensions
             .AddSingleton<DirectApi.IDirectApiService, DirectApi.DirectApiService>();
 
         services
-            .AddSingleton<Discord.DiscordSyncService>();
-
-        services
-            .AddSingleton<Emotes.EmoteService>()
-            .AddSingleton<Emotes.EmoteChainService>()
             .AddSingleton<Emotes.EmotesCommandService>();
 
         services
@@ -40,12 +32,8 @@ public static class Extensions
             .AddScoped<WithoutAccidentRenderer>();
 
         services
-            .AddSingleton<Channels.ChannelService>();
-
-        services
             .AddSingleton<Suggestion.SuggestionSessionService>()
-            .AddSingleton<Suggestion.EmoteSuggestionService>()
-            .AddSingleton<Suggestion.EmoteSuggestionsEventManager>();
+            .AddSingleton<Suggestion.EmoteSuggestionService>();
 
         services
             .AddSingleton<Unverify.UnverifyChecker>()
@@ -63,8 +51,6 @@ public static class Extensions
             .AddScoped<User.UserHearthbeatService>();
 
         services
-            .AddSingleton<BoosterService>()
-            .AddSingleton<InviteService>()
             .AddSingleton<MockingService>()
             .AddSingleton<RandomizationService>()
             .AddSingleton<SearchingService>();

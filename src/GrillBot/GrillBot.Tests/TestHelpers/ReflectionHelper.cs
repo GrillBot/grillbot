@@ -42,10 +42,10 @@ public class ReflectionHelper
         field.SetValue(instance, value);
     }
 
-    public static T CreateWithInternalConstructor<T>(params object[] constructorParameters) where T : class
+    public static T CreateWithInternalConstructor<T>(params object[] constructorParameters)
     {
         var constructor = typeof(T).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).FirstOrDefault();
-        if (constructor == null) return null;
+        if (constructor == null) return default;
 
         var instance = constructor.Invoke(constructorParameters);
         return (T)instance;

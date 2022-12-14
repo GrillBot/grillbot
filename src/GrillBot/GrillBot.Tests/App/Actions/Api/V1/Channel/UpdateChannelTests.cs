@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Channel;
-using GrillBot.App.Services;
+using GrillBot.App.Managers;
 using GrillBot.App.Services.AuditLog;
-using GrillBot.Common.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
@@ -25,15 +24,14 @@ public class UpdateChannelTests : ApiActionTest<UpdateChannel>
         Guild = guildBuilder.SetGetTextChannelAction(TextChannel).Build();
 
         var discordClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(TestServices.LoggerFactory.Value);
-        var autoReplyService = new AutoReplyService(discordClient, DatabaseBuilder, initManager);
+        var manager = new AutoReplyManager(DatabaseBuilder);
         var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
         var texts = new TextsBuilder()
             .AddText("ChannelModule/ChannelDetail/ChannelNotFound", "cs", "ChannelNotFound")
             .Build();
-        var auditLogService = new AuditLogService(discordClient, DatabaseBuilder, initManager, auditLogWriter, ServiceProvider);
+        var auditLogService = new AuditLogService(discordClient, DatabaseBuilder);
 
-        return new UpdateChannel(ApiRequestContext, DatabaseBuilder, autoReplyService, auditLogWriter, texts, auditLogService);
+        return new UpdateChannel(ApiRequestContext, DatabaseBuilder, auditLogWriter, texts, auditLogService, manager);
     }
 
     [TestMethod]

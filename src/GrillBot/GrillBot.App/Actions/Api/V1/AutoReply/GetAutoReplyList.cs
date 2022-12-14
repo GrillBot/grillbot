@@ -19,7 +19,7 @@ public class GetAutoReplyList : ApiAction
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var items = await repository.AutoReply.GetAllAsync();
+        var items = await repository.AutoReply.GetAllAsync(false);
         return Mapper.Map<List<AutoReplyItem>>(items);
     }
 }

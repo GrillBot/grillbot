@@ -26,4 +26,5 @@ public static class Consts
     public const ulong GuildEventId = 1034850751920472115;
     public const ulong ForumId = 1006473144682418257;
     public const string ForumName = "GrillBot-Forum-Name";
+    public const ulong AuditLogEntryId = 1051929488801419304;
 }

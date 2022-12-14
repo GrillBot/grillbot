@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.AutoReply;
-using GrillBot.App.Services;
-using GrillBot.Common.Managers;
+using GrillBot.App.Managers;
 using GrillBot.Data.Models.API.AutoReply;
 using GrillBot.Tests.Infrastructure.Common;
 
@@ -11,11 +10,8 @@ public class CreateAutoReplyItemTests : ApiActionTest<CreateAutoReplyItem>
 {
     protected override CreateAutoReplyItem CreateAction()
     {
-        var discordClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(TestServices.LoggerFactory.Value);
-        var service = new AutoReplyService(discordClient, DatabaseBuilder, initManager);
-
-        return new CreateAutoReplyItem(ApiRequestContext, service, DatabaseBuilder, TestServices.AutoMapper.Value);
+        var manager = new AutoReplyManager(DatabaseBuilder);
+        return new CreateAutoReplyItem(ApiRequestContext, manager, DatabaseBuilder, TestServices.AutoMapper.Value);
     }
 
     [TestMethod]

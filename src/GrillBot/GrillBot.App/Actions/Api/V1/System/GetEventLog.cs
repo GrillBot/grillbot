@@ -5,12 +5,12 @@ namespace GrillBot.App.Actions.Api.V1.System;
 
 public class GetEventLog : ApiAction
 {
-    private EventManager EventManager { get; }
+    private EventLogManager EventLogManager { get; }
 
-    public GetEventLog(ApiRequestContext apiContext, EventManager eventManager) : base(apiContext)
+    public GetEventLog(ApiRequestContext apiContext, EventLogManager eventLogManager) : base(apiContext)
     {
-        EventManager = eventManager;
+        EventLogManager = eventLogManager;
     }
 
-    public string[] Process() => EventManager.GetEventLog();
+    public string[] Process() => EventLogManager.GetEventLog();
 }

@@ -114,4 +114,10 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
         Mock.Setup(o => o.GetCategoryAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(category);
         return this;
     }
+
+    public TextChannelBuilder SetPosition(int position)
+    {
+        Mock.Setup(o => o.Position).Returns(position);
+        return this;
+    }
 }

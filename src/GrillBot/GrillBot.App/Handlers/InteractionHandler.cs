@@ -1,10 +1,8 @@
 ﻿using Discord.Interactions;
 using Discord.Net;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.App.Services.Discord;
 using GrillBot.Common.Managers;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers;
 
@@ -13,15 +11,13 @@ public class InteractionHandler
 {
     private InteractionService InteractionService { get; }
     private IServiceProvider Provider { get; }
-    private AuditLogService AuditLogService { get; }
     private InitManager InitManager { get; }
     private DiscordSocketClient DiscordClient { get; }
 
-    public InteractionHandler(DiscordSocketClient client, IServiceProvider provider, InteractionService interactionService, InitManager initManager, AuditLogService auditLogService)
+    public InteractionHandler(DiscordSocketClient client, IServiceProvider provider, InteractionService interactionService, InitManager initManager)
     {
         Provider = provider;
         InteractionService = interactionService;
-        AuditLogService = auditLogService;
         InitManager = initManager;
         DiscordClient = client;
 
@@ -31,16 +27,6 @@ public class InteractionHandler
         InteractionService.AutocompleteCommandExecuted += OnCommandExecutedAsync;
         InteractionService.ComponentCommandExecuted += OnCommandExecutedAsync;
         InteractionService.ModalCommandExecuted += OnCommandExecutedAsync;
-        DiscordClient.MessageReceived += HandleUnsuccessfulAttempt;
-    }
-
-    private async Task HandleUnsuccessfulAttempt(SocketMessage message)
-    {
-        if (!InitManager.Get() || !message.Content.StartsWith('/') || message.Channel is IDMChannel) return;
-
-        using var scope = Provider.CreateScope();
-        var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.UnsuccessCommandAttempt>();
-        await action.ProcessAsync(message);
     }
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)
@@ -53,7 +39,7 @@ public class InteractionHandler
         await InteractionService.ExecuteCommandAsync(context, Provider);
     }
 
-    private async Task OnCommandExecutedAsync(ICommandInfo command, IInteractionContext context, IResult result)
+    private static async Task OnCommandExecutedAsync(ICommandInfo command, IInteractionContext context, IResult result)
     {
         result ??= ExecuteResult.FromSuccess();
 
@@ -96,17 +82,6 @@ public class InteractionHandler
                     throw;
                 }
             }
-        }
-
-        if (result.Error != InteractionCommandError.UnknownCommand)
-        {
-            var duration = CommandsPerformanceCounter.TaskFinished(context);
-            await AuditLogService.LogExecutedInteractionCommandAsync(command, context, result, duration);
-        }
-        else
-        {
-            if (CommandsPerformanceCounter.TaskExists(context))
-                CommandsPerformanceCounter.TaskFinished(context);
         }
     }
 }

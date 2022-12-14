@@ -31,7 +31,7 @@ public class UnsuccessCommandAttempt : CommandAction
         DataCacheManager = dataCacheManager;
     }
 
-    public async Task ProcessAsync(SocketMessage message)
+    public async Task ProcessAsync(IMessage message)
     {
         var parts = message.Content[1..].Split(' ');
 

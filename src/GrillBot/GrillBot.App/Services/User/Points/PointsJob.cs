@@ -4,6 +4,7 @@ using Quartz;
 namespace GrillBot.App.Services.User.Points;
 
 [DisallowConcurrentExecution]
+[DisallowUninitialized]
 public class PointsJob : Job
 {
     private PointsService PointsService { get; }
@@ -15,13 +16,12 @@ public class PointsJob : Job
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        var report = new List<string>
-        {
-            await PointsService.MergeOldTransactionsAsync(),
-            await PointsService.RecalculatePointsSummaryAsync(),
-            await PointsService.MergeSummariesAsync()
-        };
+        var report = new StringBuilder();
+        
+        report.AppendLine(await PointsService.MergeOldTransactionsAsync());
+        report.AppendLine(await PointsService.RecalculatePointsSummaryAsync());
+        report.AppendLine(await PointsService.MergeSummariesAsync());
 
-        context.Result = string.Join("\n", report.Where(o => o != null)).Trim();
+        context.Result = report.ToString().TrimEnd('\n');
     }
 }

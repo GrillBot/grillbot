@@ -395,46 +395,6 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
 
     #endregion
 
-    #region Events
-
-    [TestMethod]
-    public async Task OnMessageDeletedAsync_SuggestionNotFound()
-    {
-        await Service.OnMessageDeletedAsync(SuggestionMessage, Guild);
-    }
-
-    [TestMethod]
-    public async Task OnMessageDeletedAsync_VoteFinished()
-    {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(CreateEntity(approvedForVote: true, voteFinished: true, voteEndsAt: DateTime.MaxValue));
-        await Repository.CommitAsync();
-
-        await Service.OnMessageDeletedAsync(SuggestionMessage, Guild);
-    }
-
-    [TestMethod]
-    public async Task OnMessageDeletedAsync_VoteRunning()
-    {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(CreateEntity(approvedForVote: true, voteFinished: false, voteEndsAt: DateTime.MaxValue));
-        await Repository.CommitAsync();
-
-        await Service.OnMessageDeletedAsync(SuggestionMessage, Guild);
-    }
-
-    [TestMethod]
-    public async Task OnMessageDeletedAsync_Success()
-    {
-        await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
-        await Repository.AddAsync(CreateEntity(approvedForVote: true));
-        await Repository.CommitAsync();
-
-        await Service.OnMessageDeletedAsync(SuggestionMessage, Guild);
-    }
-
-    #endregion
-
     #region Misc
 
     private EmoteSuggestion CreateEntity(ulong? voteMessageId = default, bool voteFinished = default, bool? approvedForVote = default, DateTime? voteEndsAt = default,

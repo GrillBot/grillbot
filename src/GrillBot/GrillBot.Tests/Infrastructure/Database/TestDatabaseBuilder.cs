@@ -11,7 +11,7 @@ public class TestDatabaseBuilder : GrillBotDatabaseBuilder
 {
     private GrillBotContext Context { get; set; }
 
-    public TestDatabaseBuilder() : base(null!)
+    public TestDatabaseBuilder() : base(null!, null!)
     {
     }
 

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using GrillBot.App.Services;
+using GrillBot.App.Managers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AutoReply;
 
@@ -7,13 +7,13 @@ namespace GrillBot.App.Actions.Api.V1.AutoReply;
 
 public class CreateAutoReplyItem : ApiAction
 {
-    private AutoReplyService Service { get; }
+    private AutoReplyManager AutoReplyManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
 
-    public CreateAutoReplyItem(ApiRequestContext apiContext, AutoReplyService service, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper) : base(apiContext)
+    public CreateAutoReplyItem(ApiRequestContext apiContext, AutoReplyManager autoReplyManager, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper) : base(apiContext)
     {
-        Service = service;
+        AutoReplyManager = autoReplyManager;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
     }
@@ -31,7 +31,7 @@ public class CreateAutoReplyItem : ApiAction
 
         await repository.AddAsync(entity);
         await repository.CommitAsync();
-        await Service.InitAsync();
+        await AutoReplyManager.InitAsync();
 
         return Mapper.Map<AutoReplyItem>(entity);
     }

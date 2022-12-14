@@ -1,7 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Cache.Services.Managers;
-using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Resources.Misc;
 using GrillBot.Database.Entity;
@@ -12,48 +10,23 @@ namespace GrillBot.App.Services.User.Points;
 [Initializable]
 public partial class PointsService
 {
-    private string CommandPrefix { get; }
     private IConfiguration Configuration { get; }
     private Random Random { get; }
-    private IMessageCacheManager MessageCache { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
-    private DiscordSocketClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
 
     private MagickImage TrophyImage { get; }
 
-    public PointsService(DiscordSocketClient client, GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, IMessageCacheManager messageCache,
-        RandomizationService randomizationService, ProfilePictureManager profilePictureManager, ITextsManager texts)
+    public PointsService(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, RandomizationService randomizationService, ProfilePictureManager profilePictureManager,
+        ITextsManager texts)
     {
-        CommandPrefix = configuration.GetValue<string>("Discord:Commands:Prefix");
         Configuration = configuration.GetSection("Points");
         Random = randomizationService.GetOrCreateGenerator("Points");
-        MessageCache = messageCache;
         ProfilePictureManager = profilePictureManager;
-        DiscordClient = client;
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
-
-        DiscordClient.MessageReceived += message => message.TryLoadMessage(out var msg) ? OnMessageReceivedAsync(msg) : Task.CompletedTask;
-        DiscordClient.ReactionAdded += OnReactionAddedAsync;
-        DiscordClient.MessageDeleted += OnMessageDeletedAsync;
-        DiscordClient.ReactionRemoved += OnReactionRemovedAsync;
-
         TrophyImage = new MagickImage(MiscResources.trophy, MagickFormat.Png);
-    }
-
-    private bool CanIncrement(IMessage message)
-    {
-        var argPos = 0;
-
-        if (message == null) return false;
-        if (!message.Author.IsUser()) return false;
-        if (string.IsNullOrEmpty(message.Content)) return false;
-        if (message.Content.Length < Configuration.GetValue<int>("MessageMinLength")) return false;
-        if (message.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix)) return false;
-        if (message is IUserMessage userMsg && userMsg.ReferencedMessage?.IsCommand(ref argPos, DiscordClient.CurrentUser, CommandPrefix) == true) return false;
-        return message.Type != MessageType.ApplicationCommand && message.Type != MessageType.ContextMenuCommand;
     }
 
     private PointsTransaction CreateTransaction(GuildUser user, string reactionId, ulong messageId, bool ignoreCooldown)

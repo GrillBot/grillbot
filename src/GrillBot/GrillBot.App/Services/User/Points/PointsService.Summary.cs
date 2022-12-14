@@ -24,7 +24,7 @@ public partial class PointsService
         }
         else
         {
-            toProcess.AddRange(await repository.Points.GetAllTransactionsAsync(false, null));
+            toProcess.AddRange(await repository.Points.GetAllTransactionsAsync(true, null));
         }
 
         var report = await RecalculatePointsSummaryAsync(repository, toProcess);

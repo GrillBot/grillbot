@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions.Api.V1.AutoReply;
-using GrillBot.App.Services;
-using GrillBot.Common.Managers;
+using GrillBot.App.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.AutoReply;
 using GrillBot.Tests.Infrastructure.Common;
@@ -13,14 +12,12 @@ public class UpdateAutoReplyItemTests : ApiActionTest<UpdateAutoReplyItem>
 {
     protected override UpdateAutoReplyItem CreateAction()
     {
-        var discordClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(TestServices.LoggerFactory.Value);
-        var service = new AutoReplyService(discordClient, DatabaseBuilder, initManager);
+        var manager = new AutoReplyManager(DatabaseBuilder);
         var texts = new TextsBuilder()
             .AddText("AutoReply/NotFound", "cs", "NotFound")
             .Build();
 
-        return new UpdateAutoReplyItem(ApiRequestContext, service, DatabaseBuilder, TestServices.AutoMapper.Value, texts);
+        return new UpdateAutoReplyItem(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, texts, manager);
     }
 
     [TestMethod]

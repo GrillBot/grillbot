@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Managers;
+﻿using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Models;
 
 namespace GrillBot.App.Actions.Api.V1.System;

@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.Statistics;
-using GrillBot.Common.Managers;
+using GrillBot.Common.Managers.Events;
 using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
@@ -9,10 +9,7 @@ public class GetEventStatisticsTests : ApiActionTest<GetEventStatistics>
 {
     protected override GetEventStatistics CreateAction()
     {
-        var discordClient = DiscordHelper.CreateClient();
-        var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-
-        var eventManager = new EventLogManager(discordClient, interactionService);
+        var eventManager = new EventLogManager();
         return new GetEventStatistics(ApiRequestContext, eventManager);
     }
 

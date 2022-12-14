@@ -12,17 +12,13 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     {
         Mock.Setup(o => o.AddRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
         Mock.Setup(o => o.AddRoleAsync(It.IsAny<ulong>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
-        Mock.Setup(o => o.AddRolesAsync(It.IsAny<IEnumerable<IRole>>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.CompletedTask);
-        Mock.Setup(o => o.AddRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.CompletedTask);
+        Mock.Setup(o => o.AddRolesAsync(It.IsAny<IEnumerable<IRole>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
+        Mock.Setup(o => o.AddRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
 
         Mock.Setup(o => o.RemoveRoleAsync(It.IsAny<IRole>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
         Mock.Setup(o => o.RemoveRoleAsync(It.IsAny<ulong>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
-        Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<IRole>>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.CompletedTask);
-        Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>()))
-            .Returns(Task.CompletedTask);
+        Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<IRole>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
+        Mock.Setup(o => o.RemoveRolesAsync(It.IsAny<IEnumerable<ulong>>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
 
         SetId(id);
         SetUsername(username);
@@ -121,6 +117,12 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
     public GuildUserBuilder SetPremiumSinceDate(DateTimeOffset? premiumSince)
     {
         Mock.Setup(o => o.PremiumSince).Returns(premiumSince);
+        return this;
+    }
+
+    public GuildUserBuilder SetNickname(string nickname)
+    {
+        Mock.Setup(o => o.Nickname).Returns(nickname);
         return this;
     }
 }

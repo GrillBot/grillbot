@@ -34,7 +34,6 @@ public class AuditEmotesGuildUpdatedHandler : IGuildUpdatedEvent
     private async Task<List<AuditLogDataWrapper>> GetDeletedEmotesAsync(IGuild before, IGuild after)
     {
         var removedEmotes = before.Emotes.Where(o => !after.Emotes.Contains(o)).ToList();
-        if (removedEmotes.Count == 0) return new List<AuditLogDataWrapper>();
 
         IReadOnlyCollection<IAuditLogEntry> auditLogs;
         using (CounterManager.Create("Discord.API.AuditLog"))

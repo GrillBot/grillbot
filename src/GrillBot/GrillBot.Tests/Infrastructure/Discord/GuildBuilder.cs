@@ -18,6 +18,8 @@ public class GuildBuilder : BuilderBase<IGuild>
         SetName(name);
         SetRoles(new[] { EveryoneRole });
         SetEveryoneRole(EveryoneRole);
+        SetFeatures(GuildFeature.None);
+        SetGetAuditLogsAction(new List<IAuditLogEntry>());
     }
 
     public GuildBuilder(IGuild guild) : this(guild.Id, guild.Name)
@@ -155,6 +157,20 @@ public class GuildBuilder : BuilderBase<IGuild>
     public GuildBuilder SetGetEventAction(IGuildScheduledEvent @event)
     {
         Mock.Setup(o => o.GetEventAsync(It.Is<ulong>(x => x == @event.Id), It.IsAny<RequestOptions>())).ReturnsAsync(@event);
+        return this;
+    }
+
+    public GuildBuilder SetGetAuditLogsAction(IReadOnlyCollection<IAuditLogEntry> entries)
+    {
+        Mock.Setup(o => o.GetAuditLogsAsync(It.IsAny<int>(), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>(), It.IsAny<ulong?>(), It.IsAny<ulong?>(), It.IsAny<ActionType?>())).ReturnsAsync(entries);
+        return this;
+    }
+
+    public GuildBuilder SetFeatures(GuildFeature value)
+    {
+        var guildFeatures = ReflectionHelper.CreateWithInternalConstructor<GuildFeatures>(value, Array.Empty<string>());
+        
+        Mock.Setup(o => o.Features).Returns(guildFeatures);
         return this;
     }
 }

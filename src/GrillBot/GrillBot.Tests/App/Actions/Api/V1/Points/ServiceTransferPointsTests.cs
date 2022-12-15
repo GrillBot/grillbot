@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Points;
 using GrillBot.App.Services.User.Points;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;
@@ -25,12 +24,11 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
         var botUser = new GuildUserBuilder(User).SetId(Consts.UserId + 2).AsBot().Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User, botUser, anotherUser }).Build();
 
-        var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
         var texts = new TextsBuilder()
             .AddText("Points/Service/Transfer/UserIsBot", "cs", "UserIsBot{0}")
             .AddText("Points/Service/Transfer/InsufficientAmount", "cs", "InsufficientAmount{0}")
             .Build();
-        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Randomization.Value, profilePictureManager, texts);
+        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Randomization.Value, texts);
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
 
         return new ServiceTransferPoints(ApiRequestContext, pointsService, client, texts);
@@ -42,14 +40,14 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
         await Repository.User.GetOrCreateUserAsync(User);
         await Repository.GuildUser.GetOrCreateGuildUserAsync(User);
 
-        await Repository.AddAsync(new PointsTransactionSummary
+        await Repository.AddAsync(new PointsTransaction
         {
-            Day = DateTime.Now.Date,
+            Points = 10,
+            UserId = Consts.UserId.ToString(),
             GuildId = Consts.GuildId.ToString(),
-            IsMerged = false,
-            MessagePoints = 10,
-            ReactionPoints = 10,
-            UserId = Consts.UserId.ToString()
+            AssingnedAt = DateTime.Now,
+            MessageId = SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
+            ReactionId = ""
         });
 
         await Repository.CommitAsync();

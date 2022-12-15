@@ -25,7 +25,7 @@ public class ComputeUserPoints : ApiAction
         var mutualGuilds = await GetGuildIdsAsync(userId.Value);
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var points = await repository.Points.GetPointsBoardDataAsync(mutualGuilds, null, userId.Value);
+        var points = await repository.Points.GetPointsBoardDataAsync(mutualGuilds, null, userId.Value, allColumns: true);
         return Mapper.Map<List<UserPointsItem>>(points);
     }
 

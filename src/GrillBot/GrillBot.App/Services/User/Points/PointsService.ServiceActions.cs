@@ -18,7 +18,6 @@ public partial class PointsService
 
         await repository.AddAsync(transaction);
         await repository.CommitAsync();
-        await RecalculatePointsSummaryAsync(repository, true, new List<IGuildUser> { toUser });
     }
 
     public async Task TransferPointsAsync(IGuildUser fromUser, IGuildUser toUser, int amount, string locale)
@@ -43,6 +42,5 @@ public partial class PointsService
         await repository.AddAsync(toUserTransaction);
 
         await repository.CommitAsync();
-        await RecalculatePointsSummaryAsync(repository, true, new List<IGuildUser> { fromUser, toUser });
     }
 }

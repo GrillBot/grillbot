@@ -24,7 +24,7 @@ public class GetPointsLeaderboard : ApiAction
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var data = await repository.Points.GetPointsBoardDataAsync(mutualGuilds.ConvertAll(o => o.Id.ToString()));
+        var data = await repository.Points.GetPointsBoardDataAsync(mutualGuilds.ConvertAll(o => o.Id.ToString()), allColumns: true);
         return Mapper.Map<List<UserPointsItem>>(data);
     }
 }

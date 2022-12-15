@@ -1,22 +1,35 @@
 ﻿using GrillBot.App.Infrastructure.IO;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
+using GrillBot.Data.Resources.Misc;
 using ImageMagick;
 
-namespace GrillBot.App.Services.User.Points;
+namespace GrillBot.App.Actions.Commands.Points;
 
-public partial class PointsService
+public sealed class PointsImage : CommandAction, IDisposable
 {
-    public async Task<TemporaryFile> GetPointsOfUserImageAsync(IGuild guild, IUser user)
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private ProfilePictureManager ProfilePictureManager { get; }
+    
+    private MagickImage TrophyImage { get; }
+
+    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager)
+    {
+        ProfilePictureManager = profilePictureManager;
+        DatabaseBuilder = databaseBuilder;
+        
+        TrophyImage = new MagickImage(MiscResources.trophy, MagickFormat.Png);
+    }
+
+    public async Task<TemporaryFile> ProcessAsync(IGuild guild, IUser user)
     {
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var guildUserEntity = await repository.GuildUser.FindGuildUserAsync(guildUser, true);
-
-        if (guildUserEntity == null)
+        if (!await repository.GuildUser.ExistsAsync(guildUser))
             throw new NotFoundException($"{user.GetDisplayName()} ještě neprojevil na serveru žádnou aktivitu.");
 
         const int height = 340;
@@ -78,5 +91,10 @@ public partial class PointsService
     {
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
         return new MagickImage(profilePicture.Data);
+    }
+
+    public void Dispose()
+    {
+        TrophyImage.Dispose();
     }
 }

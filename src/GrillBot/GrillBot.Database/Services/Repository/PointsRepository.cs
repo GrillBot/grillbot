@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Enums;
 using GrillBot.Database.Models;
 using GrillBot.Database.Models.Points;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +19,6 @@ public class PointsRepository : RepositoryBase
 
     // Only for testing purposes.
     public IEnumerable<PointsTransaction> GetAll() => Context.PointsTransactions.AsEnumerable();
-    public IEnumerable<PointsTransactionSummary> GetAllSummaries() => Context.PointsTransactionSummaries.AsEnumerable();
 
     public async Task<long> ComputePointsOfUserAsync(ulong guildId, ulong userId)
     {
@@ -29,9 +26,9 @@ public class PointsRepository : RepositoryBase
         {
             var yearBack = DateTime.Now.AddYears(-1);
 
-            return await Context.PointsTransactionSummaries.AsNoTracking()
-                .Where(o => !o.IsMerged && o.Day >= yearBack && o.GuildId == guildId.ToString() && o.UserId == userId.ToString())
-                .SumAsync(o => o.MessagePoints + o.ReactionPoints);
+            return await Context.PointsTransactions.AsNoTracking()
+                .Where(o => o.MergedItemsCount == 0 && o.AssingnedAt >= yearBack && o.GuildId == guildId.ToString() && o.UserId == userId.ToString())
+                .SumAsync(o => o.Points);
         }
     }
 
@@ -49,26 +46,6 @@ public class PointsRepository : RepositoryBase
                 query = query.Where(o => o.UserId == guildUser.Id.ToString() && o.GuildId == guildUser.GuildId.ToString());
 
             return await query.ToListAsync();
-        }
-    }
-
-    public Dictionary<string, PointsTransactionSummary> GetSummaries(DateTime from, DateTime to, IEnumerable<string> guilds, IEnumerable<string> users)
-    {
-        using (CreateCounter())
-        {
-            var baseQuery = Context.PointsTransactionSummaries.Where(o => !o.IsMerged && o.Day >= from && o.Day <= to && guilds.Contains(o.GuildId));
-            var result = new Dictionary<string, PointsTransactionSummary>();
-
-            foreach (var usersGroup in users.Split(100))
-            {
-                foreach (var summary in baseQuery.Where(o => usersGroup.Contains(o.UserId)))
-                {
-                    if (!result.ContainsKey(summary.SummaryId))
-                        result.Add(summary.SummaryId, summary);
-                }
-            }
-
-            return result;
         }
     }
 
@@ -115,23 +92,20 @@ public class PointsRepository : RepositoryBase
         {
             var yearBack = DateTime.Now.AddYears(-1);
 
-            var query = Context.PointsTransactionSummaries.AsNoTracking()
-                .Where(o => !o.IsMerged && o.GuildId == user.GuildId.ToString() && o.Day >= yearBack)
+            var query = Context.PointsTransactions.AsNoTracking()
+                .Where(o => o.MergedItemsCount == 0 && o.GuildId == user.GuildId.ToString() && o.AssingnedAt >= yearBack)
                 .GroupBy(o => o.UserId)
-                .Where(o => o.Sum(x => x.MessagePoints + x.ReactionPoints) > userPoints);
+                .Where(o => o.Sum(x => x.Points) > userPoints);
 
             var count = await query.CountAsync();
             return count + 1;
         }
     }
 
-    private IQueryable<PointBoardItem> GetPointsBoardQuery(IEnumerable<string> guildIds, ulong userId = 0)
+    private IQueryable<PointBoardItem> GetPointsBoardQuery(IEnumerable<string> guildIds, ulong userId = 0, bool allColumns = false)
     {
-        var baseQuery = Context.PointsTransactionSummaries.AsNoTracking()
-            .Where(o =>
-                (o.GuildUser.User!.Flags & (int)UserFlags.NotUser) == 0 &&
-                guildIds.Contains(o.GuildId)
-            );
+        var baseQuery = Context.PointsTransactions.AsNoTracking()
+            .Where(o => guildIds.Contains(o.GuildId));
 
         if (userId > 0)
             baseQuery = baseQuery.Where(o => o.UserId == userId.ToString());
@@ -140,14 +114,13 @@ public class PointsRepository : RepositoryBase
             .GroupBy(o => new { o.GuildId, o.UserId })
             .Select(o => new PointBoardItem
             {
-                PointsToday = o.Where(x => x.Day == DateTime.Now.Date).Sum(x => x.MessagePoints + x.ReactionPoints),
-                TotalPoints = o.Sum(x => x.MessagePoints + x.ReactionPoints),
-                PointsMonthBack = o.Where(x => x.Day >= DateTime.Now.AddMonths(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
-                PointsYearBack = o.Where(x => x.Day >= DateTime.Now.AddYears(-1).Date).Sum(x => x.MessagePoints + x.ReactionPoints),
+                PointsToday = allColumns ? o.Where(x => x.AssingnedAt.Date == DateTime.Now.Date).Sum(x => x.Points) : 0,
+                TotalPoints = allColumns ? o.Sum(x => x.Points) : 0,
+                PointsMonthBack = allColumns ? o.Where(x => x.AssingnedAt.Date >= DateTime.Now.AddMonths(-1).Date).Sum(x => x.Points) : 0,
+                PointsYearBack = o.Where(x => x.AssingnedAt.Date >= DateTime.Now.AddYears(-1).Date).Sum(x => x.Points),
                 GuildId = o.Key.GuildId,
                 UserId = o.Key.UserId
             })
-            .Where(o => o.TotalPoints > 0)
             .OrderByDescending(o => o.PointsYearBack)
             .AsQueryable();
     }
@@ -163,7 +136,7 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<List<PointBoardItem>> GetPointsBoardDataAsync(IEnumerable<string> guildIds, int? take = null, ulong userId = 0, int? skip = null)
+    public async Task<List<PointBoardItem>> GetPointsBoardDataAsync(IEnumerable<string> guildIds, int? take = null, ulong userId = 0, int? skip = null, bool allColumns = false)
     {
         var guildIdData = guildIds.ToList();
 
@@ -172,7 +145,7 @@ public class PointsRepository : RepositoryBase
             if (guildIdData.Count == 0)
                 return new List<PointBoardItem>();
 
-            var query = GetPointsBoardQuery(guildIdData, userId);
+            var query = GetPointsBoardQuery(guildIdData, userId, allColumns);
             if (skip != null)
                 query = query.Skip(skip.Value);
             if (take != null)
@@ -210,29 +183,19 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<PaginatedResponse<PointsTransactionSummary>> GetSummaryListAsync(IQueryableModel<PointsTransactionSummary> model, PaginatedParams parameters)
+    public async Task<List<(DateTime day, int messagePoints, int reactionPoints)>> GetGraphDataAsync(IQueryableModel<PointsTransaction> model)
     {
         using (CreateCounter())
         {
             var query = CreateQuery(model, true);
-            return await PaginatedResponse<PointsTransactionSummary>.CreateWithEntityAsync(query, parameters);
-        }
-    }
+            var groupedQuery = query.GroupBy(o => o.AssingnedAt.Date).Select(o => Tuple.Create(
+                o.Key,
+                o.Where(x => string.IsNullOrEmpty(x.ReactionId)).Sum(x => x.Points),
+                o.Where(x => !string.IsNullOrEmpty(x.ReactionId)).Sum(x => x.Points)
+            )).OrderBy(o => o.Item1);
 
-    public async Task<List<PointsTransactionSummary>> GetGraphDataAsync(IQueryableModel<PointsTransactionSummary> model)
-    {
-        using (CreateCounter())
-        {
-            var query = CreateQuery(model, true);
-
-            var groupedQuery = query.GroupBy(o => o.Day).Select(o => new PointsTransactionSummary
-            {
-                Day = o.Key,
-                MessagePoints = o.Sum(x => x.MessagePoints),
-                ReactionPoints = o.Sum(x => x.ReactionPoints)
-            }).OrderBy(o => o.Day);
-
-            return await groupedQuery.ToListAsync();
+            var data = await groupedQuery.ToListAsync();
+            return data.ConvertAll(o => (o.Item1, o.Item2, o.Item3));
         }
     }
 
@@ -256,29 +219,6 @@ public class PointsRepository : RepositoryBase
         using (CreateCounter())
         {
             return await GetExpiredTransactionsBaseQuery().ToListAsync();
-        }
-    }
-
-    private IQueryable<PointsTransactionSummary> GetExpiredSummariesBaseQuery()
-    {
-        var expirationDate = DateTime.Now.AddYears(-1).AddMonths(-2).Date;
-        return Context.PointsTransactionSummaries
-            .Where(o => o.Day <= expirationDate && !o.IsMerged);
-    }
-
-    public async Task<bool> ExistsExpiredSummariesAsync()
-    {
-        using (CreateCounter())
-        {
-            return await GetExpiredSummariesBaseQuery().AnyAsync();
-        }
-    }
-
-    public async Task<List<PointsTransactionSummary>> GetExpiredSummariesAsync()
-    {
-        using (CreateCounter())
-        {
-            return await GetExpiredSummariesBaseQuery().ToListAsync();
         }
     }
 

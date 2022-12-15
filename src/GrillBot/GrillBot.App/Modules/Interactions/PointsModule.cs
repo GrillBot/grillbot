@@ -1,9 +1,8 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Actions.Commands;
+using GrillBot.App.Actions.Commands.Points;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Points;
-using GrillBot.App.Services.User.Points;
 using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
@@ -12,20 +11,19 @@ namespace GrillBot.App.Modules.Interactions;
 [Group("points", "Points")]
 public class PointsModule : InteractionsModuleBase
 {
-    private PointsService PointsService { get; }
-
-    public PointsModule(PointsService pointsService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public PointsModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        PointsService = pointsService;
     }
 
     [UserCommand("Body uživatele")]
     [SlashCommand("where", "Get the current status of user points.")]
     public async Task GetUserPointsAsync(IUser user = null)
     {
+        using var command = GetCommand<PointsImage>();
+
         try
         {
-            using var img = await PointsService.GetPointsOfUserImageAsync(Context.Guild, user ?? Context.User);
+            using var img = await command.Command.ProcessAsync(Context.Guild, user ?? Context.User);
             await FollowupWithFileAsync(img.Path);
         }
         catch (NotFoundException ex)

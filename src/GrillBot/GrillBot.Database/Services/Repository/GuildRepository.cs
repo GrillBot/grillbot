@@ -86,21 +86,11 @@ public class GuildRepository : RepositoryBase
                     Users = g.Users.Count,
                     EmoteStats = g.EmoteStatistics.Count,
                     EmoteSuggestions = Context.EmoteSuggestions.Count(o => o.GuildId == g.Id),
-                    PointTransactions = Context.PointsTransactions.Count(o => o.GuildId == g.Id),
-                    PointTransactionSummaries = Context.PointsTransactionSummaries.Count(o => o.GuildId == g.Id)
+                    PointTransactions = Context.PointsTransactions.Count(o => o.GuildId == g.Id)
                 });
 
             var data = await query.FirstOrDefaultAsync();
             return data ?? new GuildDatabaseReport();
-        }
-    }
-
-    public async Task<bool> ExistsAsync(IGuild guild)
-    {
-        using (CreateCounter())
-        {
-            return await Context.Guilds.AsNoTracking()
-                .AnyAsync(o => o.Id == guild.Id.ToString());
         }
     }
 }

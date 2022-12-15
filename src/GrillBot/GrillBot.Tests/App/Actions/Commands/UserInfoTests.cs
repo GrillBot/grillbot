@@ -106,13 +106,14 @@ public class UserInfoTests : CommandActionTest<UserInfo>
             Id = 2
         });
 
-        await Repository.AddAsync(new PointsTransactionSummary
+        await Repository.AddAsync(new PointsTransaction
         {
-            Day = DateTime.Today,
+            AssingnedAt = DateTime.Today,
             GuildId = Consts.GuildId.ToString(),
-            MessagePoints = 50,
-            ReactionPoints = 50,
-            UserId = Consts.UserId.ToString()
+            Points = 100,
+            UserId = Consts.UserId.ToString(),
+            MessageId = SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
+            ReactionId = ""
         });
         await Repository.AddAsync(new GuildUserChannel
         {

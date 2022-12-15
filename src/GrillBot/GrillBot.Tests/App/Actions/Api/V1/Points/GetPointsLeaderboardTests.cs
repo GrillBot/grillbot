@@ -30,10 +30,10 @@ public class GetPointsLeaderboardTests : ApiActionTest<GetPointsLeaderboard>
 
         Assert.IsNotNull(result);
         Assert.AreEqual(1, result.Count);
-        Assert.AreEqual(100, result[0].TotalPoints);
-        Assert.AreEqual(100, result[0].PointsToday);
-        Assert.AreEqual(100, result[0].PointsMonthBack);
-        Assert.AreEqual(100, result[0].PointsYearBack);
+        Assert.AreEqual(50, result[0].TotalPoints);
+        Assert.AreEqual(50, result[0].PointsToday);
+        Assert.AreEqual(50, result[0].PointsMonthBack);
+        Assert.AreEqual(50, result[0].PointsYearBack);
     }
 
     private async Task InitDataAsync()
@@ -41,13 +41,14 @@ public class GetPointsLeaderboardTests : ApiActionTest<GetPointsLeaderboard>
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
         await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
         await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(Guild, User));
-        await Repository.AddAsync(new Database.Entity.PointsTransactionSummary
+        await Repository.AddAsync(new Database.Entity.PointsTransaction
         {
-            Day = DateTime.Today,
+            AssingnedAt = DateTime.Today,
             GuildId = Consts.GuildId.ToString(),
-            MessagePoints = 50,
-            ReactionPoints = 50,
-            UserId = Consts.UserId.ToString()
+            Points = 50,
+            UserId = Consts.UserId.ToString(),
+            MessageId = SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
+            ReactionId = ""
         });
         await Repository.CommitAsync();
     }

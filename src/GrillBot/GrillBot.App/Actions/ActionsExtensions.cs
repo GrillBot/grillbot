@@ -76,8 +76,7 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Points.ComputeUserPoints>()
             .AddScoped<Api.V1.Points.GetPointsLeaderboard>()
-            .AddScoped<Api.V1.Points.GetSummaries>()
-            .AddScoped<Api.V1.Points.GetSummaryGraphData>()
+            .AddScoped<Api.V1.Points.GetPointsGraphData>()
             .AddScoped<Api.V1.Points.GetTransactionList>()
             .AddScoped<Api.V1.Points.ServiceIncrementPoints>()
             .AddScoped<Api.V1.Points.ServiceTransferPoints>();
@@ -154,6 +153,11 @@ public static class ActionsExtensions
 
     private static IServiceCollection AddCommandsActions(this IServiceCollection services)
     {
+        // Points
+        services
+            .AddScoped<Commands.Points.PointsLeaderboard>()
+            .AddScoped<Commands.Points.PointsImage>();
+        
         // Reminder
         services
             .AddScoped<Commands.Reminder.CreateRemind>()
@@ -173,7 +177,6 @@ public static class ActionsExtensions
             .AddScoped<Commands.ChannelInfo>()
             .AddScoped<Commands.ImageCreator>()
             .AddScoped<Commands.Emojization>()
-            .AddScoped<Commands.PointsLeaderboard>()
             .AddScoped<Commands.CleanChannelMessages>()
             .AddScoped<Commands.PurgePins>()
             .AddScoped<Commands.SendMessageToChannel>()

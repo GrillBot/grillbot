@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.MessageReceived;
@@ -8,13 +7,11 @@ public class PointsMessageReceivedHandler : IMessageReceivedEvent
 {
     private PointsHelper Helper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private PointsRecalculationManager RecalculationManager { get; }
 
-    public PointsMessageReceivedHandler(PointsHelper helper, GrillBotDatabaseBuilder databaseBuilder, PointsRecalculationManager recalculationManager)
+    public PointsMessageReceivedHandler(PointsHelper helper, GrillBotDatabaseBuilder databaseBuilder)
     {
         Helper = helper;
         DatabaseBuilder = databaseBuilder;
-        RecalculationManager = recalculationManager;
     }
 
     public async Task ProcessAsync(IMessage message)
@@ -37,6 +34,5 @@ public class PointsMessageReceivedHandler : IMessageReceivedEvent
 
         await repository.AddCollectionAsync(transactions);
         await repository.CommitAsync();
-        await RecalculationManager.ComputeSummariesAsync(false, new List<IGuildUser> { guildUser });
     }
 }

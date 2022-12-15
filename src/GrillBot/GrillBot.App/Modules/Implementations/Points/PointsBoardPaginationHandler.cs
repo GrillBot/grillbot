@@ -23,7 +23,7 @@ public class PointsBoardPaginationHandler : ComponentInteractionHandler
         }
 
         using var scope = ServiceProvider.CreateScope();
-        var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.PointsLeaderboard>();
+        var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.Points.PointsLeaderboard>();
         action.Init(context);
 
         var pagesCount = await action.ComputePagesCountAsync();

@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Actions.Api.V1.Points;
+﻿using Discord;
+using GrillBot.App.Actions.Api.V1.Points;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -6,11 +7,11 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Actions.Api.V1.Points;
 
 [TestClass]
-public class GetSummaryGraphDataTests : ApiActionTest<GetSummaryGraphData>
+public class GetPointsGraphDataTests : ApiActionTest<GetPointsGraphData>
 {
-    protected override GetSummaryGraphData CreateAction()
+    protected override GetPointsGraphData CreateAction()
     {
-        return new GetSummaryGraphData(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value);
+        return new GetPointsGraphData(ApiRequestContext, DatabaseBuilder);
     }
 
     [TestMethod]
@@ -20,19 +21,20 @@ public class GetSummaryGraphDataTests : ApiActionTest<GetSummaryGraphData>
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
         await Repository.AddAsync(Database.Entity.User.FromDiscord(user));
-        await Repository.AddAsync(new Database.Entity.PointsTransactionSummary
+        await Repository.AddAsync(new Database.Entity.PointsTransaction
         {
-            Day = DateTime.Now.Date,
+            AssingnedAt = DateTime.Now.Date,
             Guild = Database.Entity.Guild.FromDiscord(guild),
             GuildId = Consts.GuildId.ToString(),
             GuildUser = Database.Entity.GuildUser.FromDiscord(guild, user),
-            MessagePoints = 50,
-            ReactionPoints = 50,
-            UserId = Consts.UserId.ToString()
+            Points = 100,
+            MessageId = SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
+            UserId = Consts.UserId.ToString(),
+            ReactionId = ""
         });
         await Repository.CommitAsync();
 
-        var filter = new GetPointsSummaryParams();
+        var filter = new GetPointTransactionsParams();
         var result = await Action.ProcessAsync(filter);
 
         Assert.AreEqual(1, result.Count);

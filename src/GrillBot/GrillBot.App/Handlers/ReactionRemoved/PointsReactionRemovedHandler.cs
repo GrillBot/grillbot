@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 
@@ -8,12 +7,10 @@ namespace GrillBot.App.Handlers.ReactionRemoved;
 public class PointsReactionRemovedHandler : IReactionRemovedEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private PointsRecalculationManager PointsRecalculation { get; }
 
-    public PointsReactionRemovedHandler(GrillBotDatabaseBuilder databaseBuilder, PointsRecalculationManager pointsRecalculation)
+    public PointsReactionRemovedHandler(GrillBotDatabaseBuilder databaseBuilder)
     {
         DatabaseBuilder = databaseBuilder;
-        PointsRecalculation = pointsRecalculation;
     }
 
     public async Task ProcessAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
@@ -31,14 +28,11 @@ public class PointsReactionRemovedHandler : IReactionRemovedEvent
 
         repository.Remove(transaction);
         await repository.CommitAsync();
-
-        var full = transaction.AssingnedAt.Date != DateTime.Now.Date;
-        await PointsRecalculation.ComputeSummariesAsync(full, new List<IGuildUser> { user });
     }
 
     private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction, out IGuildChannel channel)
     {
-        channel = cachedChannel.HasValue && cachedChannel.Value is IGuildChannel guildChannel ? guildChannel : null;
+        channel = cachedChannel is { HasValue: true, Value: IGuildChannel guildChannel } ? guildChannel : null;
 
         if (channel == null) return false;
         return reaction.Emote is Emote && channel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote));

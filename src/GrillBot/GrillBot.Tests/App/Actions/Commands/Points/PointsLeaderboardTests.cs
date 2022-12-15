@@ -1,13 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Discord;
-using GrillBot.App.Actions.Commands;
+using GrillBot.App.Actions.Commands.Points;
 using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
-namespace GrillBot.Tests.App.Actions.Commands;
+namespace GrillBot.Tests.App.Actions.Commands.Points;
 
 [TestClass]
 public class PointsLeaderboardTests : CommandActionTest<PointsLeaderboard>
@@ -39,13 +39,13 @@ public class PointsLeaderboardTests : CommandActionTest<PointsLeaderboard>
         await Repository.User.GetOrCreateUserAsync(User);
         await Repository.GuildUser.GetOrCreateGuildUserAsync(User);
 
-        await Repository.AddAsync(new PointsTransactionSummary
+        await Repository.AddAsync(new PointsTransaction
         {
-            Day = DateTime.Now.Date,
+            AssingnedAt = DateTime.Now.Date,
             GuildId = Consts.GuildId.ToString(),
-            IsMerged = false,
-            MessagePoints = 50,
-            ReactionPoints = 50,
+            ReactionId = "",
+            Points = 50,
+            MessageId = SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
             UserId = Consts.UserId.ToString()
         });
         await Repository.CommitAsync();

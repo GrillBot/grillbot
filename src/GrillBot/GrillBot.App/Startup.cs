@@ -22,7 +22,7 @@ using Quartz;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.App.Infrastructure.RequestProcessing;
-using GrillBot.App.Services.User.Points;
+using GrillBot.App.Jobs;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;

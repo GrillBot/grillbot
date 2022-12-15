@@ -6,7 +6,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Models.Points;
 
-namespace GrillBot.App.Actions.Commands;
+namespace GrillBot.App.Actions.Commands.Points;
 
 public class PointsLeaderboard : CommandAction
 {
@@ -29,7 +29,7 @@ public class PointsLeaderboard : CommandAction
 
         var skip = page * MaxItemsCount;
         var guildIds = new[] { Context.Guild.Id.ToString() };
-        var data = await repository.Points.GetPointsBoardDataAsync(guildIds, MaxItemsCount, skip: skip);
+        var data = await repository.Points.GetPointsBoardDataAsync(guildIds, MaxItemsCount, skip: skip, allColumns: false);
         if (data.Count == 0)
             throw new NotFoundException(Texts["Points/Board/NoActivity", Locale]);
 

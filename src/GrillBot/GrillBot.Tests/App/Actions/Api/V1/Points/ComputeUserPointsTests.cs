@@ -29,19 +29,20 @@ public class ComputeUserPointsTests : ApiActionTest<ComputeUserPoints>
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
         await Repository.AddAsync(Database.Entity.User.FromDiscord(User));
         await Repository.AddAsync(Database.Entity.GuildUser.FromDiscord(Guild, User));
-        await Repository.AddAsync(new Database.Entity.PointsTransactionSummary
+        await Repository.AddAsync(new Database.Entity.PointsTransaction
         {
-            Day = DateTime.Today,
+            Points = 1,
+            UserId = Consts.UserId.ToString(),
             GuildId = Consts.GuildId.ToString(),
-            MessagePoints = 1,
-            ReactionPoints = 1,
-            UserId = Consts.UserId.ToString()
+            AssingnedAt = DateTime.Today,
+            MessageId = SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
+            ReactionId = ""
         });
         await Repository.CommitAsync();
 
         var result = await Action.ProcessAsync(Consts.UserId);
         Assert.AreEqual(1, result.Count);
-        Assert.AreEqual(2, result.Sum(o => o.TotalPoints));
+        Assert.AreEqual(1, result.Sum(o => o.TotalPoints));
     }
 
     [TestMethod]

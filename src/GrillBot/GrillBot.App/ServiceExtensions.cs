@@ -20,7 +20,6 @@ public static class ServiceExtensions
     public static IServiceCollection AddManagers(this IServiceCollection services)
     {
         services
-            .AddScoped<PointsRecalculationManager>()
             .AddSingleton<AutoReplyManager>()
             .AddSingleton<EmoteChainManager>()
             .AddSingleton<AuditLogManager>();

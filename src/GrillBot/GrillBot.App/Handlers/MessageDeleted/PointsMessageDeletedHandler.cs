@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
@@ -9,13 +7,11 @@ public class PointsMessageDeletedHandler : IMessageDeletedEvent
 {
     private IMessageCacheManager MessageCache { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private PointsRecalculationManager PointsRecalculation { get; }
 
-    public PointsMessageDeletedHandler(IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder, PointsRecalculationManager pointsRecalculation)
+    public PointsMessageDeletedHandler(IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder)
     {
         MessageCache = messageCache;
         DatabaseBuilder = databaseBuilder;
-        PointsRecalculation = pointsRecalculation;
     }
 
     public async Task ProcessAsync(Cacheable<IMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel)
@@ -33,12 +29,5 @@ public class PointsMessageDeletedHandler : IMessageDeletedEvent
 
         repository.RemoveCollection(transactions);
         await repository.CommitAsync();
-
-        var fullCompute = transactions.Any(o => o.AssingnedAt.Date != DateTime.Now.Date);
-        var usersForUpdate = new List<IGuildUser>();
-        foreach (var userId in transactions.Select(o => o.UserId.ToUlong()).Distinct())
-            usersForUpdate.Add(await channel.GetUserAsync(userId));
-
-        await PointsRecalculation.ComputeSummariesAsync(fullCompute, usersForUpdate);
     }
 }

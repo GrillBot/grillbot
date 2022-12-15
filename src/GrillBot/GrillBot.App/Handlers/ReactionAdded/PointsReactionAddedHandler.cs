@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -11,14 +10,12 @@ public class PointsReactionAddedHandler : IReactionAddedEvent
     private IMessageCacheManager MessageCache { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private PointsHelper PointsHelper { get; }
-    private PointsRecalculationManager PointsRecalculation { get; }
 
-    public PointsReactionAddedHandler(IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder, PointsHelper pointsHelper, PointsRecalculationManager pointsRecalculation)
+    public PointsReactionAddedHandler(IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder, PointsHelper pointsHelper)
     {
         MessageCache = messageCache;
         DatabaseBuilder = databaseBuilder;
         PointsHelper = pointsHelper;
-        PointsRecalculation = pointsRecalculation;
     }
 
     public async Task ProcessAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
@@ -48,12 +45,11 @@ public class PointsReactionAddedHandler : IReactionAddedEvent
 
         await repository.AddCollectionAsync(transactions);
         await repository.CommitAsync();
-        await PointsRecalculation.ComputeSummariesAsync(false, new List<IGuildUser> { user });
     }
 
     private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction, out IGuildChannel channel)
     {
-        channel = cachedChannel.HasValue && cachedChannel.Value is IGuildChannel guildChannel ? guildChannel : null;
+        channel = cachedChannel is { HasValue: true, Value: IGuildChannel guildChannel } ? guildChannel : null;
         return channel != null && reaction.Emote is Emote && channel.Guild.Emotes.Any(o => o.IsEqual(reaction.Emote));
     }
 }

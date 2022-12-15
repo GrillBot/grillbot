@@ -48,7 +48,7 @@ public class DiscordExceptionHandler : ILoggingHandler
 
     private static bool IsIgnoredException(Exception exception)
     {
-        var cases = new Func<bool>[]
+        var cases = new[]
         {
             () => exception is GatewayReconnectException || exception.InnerException is GatewayReconnectException,
             () => exception.InnerException == null && exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase),
@@ -113,7 +113,7 @@ public class DiscordExceptionHandler : ILoggingHandler
                     embed.AddField("Přihlášený uživatel", apiException.LoggedUser.GetFullName());
 
                 var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
-                embed.AddField("Obsah chyby", msg);
+                embed.AddField("Obsah chyby", msg.Cut(EmbedFieldBuilder.MaxFieldValueLength));
                 break;
             }
             default:

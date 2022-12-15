@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Points;
 
 namespace GrillBot.App.Actions.Api.V1.Points;

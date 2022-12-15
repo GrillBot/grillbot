@@ -188,14 +188,16 @@ public class PointsRepository : RepositoryBase
         using (CreateCounter())
         {
             var query = CreateQuery(model, true);
-            var groupedQuery = query.GroupBy(o => o.AssingnedAt.Date).Select(o => Tuple.Create(
-                o.Key,
-                o.Where(x => string.IsNullOrEmpty(x.ReactionId)).Sum(x => x.Points),
-                o.Where(x => !string.IsNullOrEmpty(x.ReactionId)).Sum(x => x.Points)
-            )).OrderBy(o => o.Item1);
+            var group = query.GroupBy(o => o.AssingnedAt.Date);
+            var groupedQuery = group.Select(o => new
+            {
+                Date = o.Key,
+                MessagePoints = o.Where(x => string.IsNullOrEmpty(x.ReactionId)).Sum(x => x.Points),
+                ReactionPoints = o.Where(x => !string.IsNullOrEmpty(x.ReactionId)).Sum(x => x.Points)
+            }).OrderBy(o => o.Date);
 
             var data = await groupedQuery.ToListAsync();
-            return data.ConvertAll(o => (o.Item1, o.Item2, o.Item3));
+            return data.ConvertAll(o => (o.Date, o.MessagePoints, o.ReactionPoints));
         }
     }
 

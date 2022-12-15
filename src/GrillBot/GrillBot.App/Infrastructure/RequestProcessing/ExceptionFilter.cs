@@ -55,7 +55,7 @@ public class ExceptionFilter : IAsyncExceptionFilter
         }
 
         if (context.ExceptionHandled) return;
-        if (!string.IsNullOrEmpty(ApiRequest.StatusCode))
+        if (string.IsNullOrEmpty(ApiRequest.StatusCode))
             ApiRequest.StatusCode = "500 (InternalServerError)";
 
         var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, ApiRequestContext.LoggedUser);

@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Statistics;
@@ -50,6 +50,6 @@ public class GetCommandStatistics : ApiAction
         var data = await repository.AuditLog.GetSimpleDataAsync(parameters);
 
         return data
-            .ConvertAll(o => (o.CreatedAt, JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogWriter.SerializerSettings)!));
+            .ConvertAll(o => (o.CreatedAt, JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogWriteManager.SerializerSettings)!));
     }
 }

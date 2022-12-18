@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -39,6 +39,6 @@ public class UnverifyHelper
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var logs = await repository.AuditLog.GetSimpleDataAsync(parameters, 1);
-        return logs.Count == 0 ? TextsManager.DefaultLocale : JsonConvert.DeserializeObject<InteractionCommandExecuted>(logs[0].Data, AuditLogWriter.SerializerSettings)!.Locale;
+        return logs.Count == 0 ? TextsManager.DefaultLocale : JsonConvert.DeserializeObject<InteractionCommandExecuted>(logs[0].Data, AuditLogWriteManager.SerializerSettings)!.Locale;
     }
 }

@@ -3,7 +3,6 @@ using Discord;
 using Discord.Rest;
 using GrillBot.App.Handlers.GuildMemberUpdated;
 using GrillBot.App.Managers;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -24,7 +23,7 @@ public class AuditUserRoleUpdatedHandlerTests : HandlerTest<AuditUserRoleUpdated
             .SetGuild(guild).Build();
 
         AuditLogManager = new AuditLogManager();
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditUserRoleUpdatedHandler(AuditLogManager, TestServices.CounterManager.Value, DatabaseBuilder, auditLogWriter);
     }
 

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.User;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.AuditLog;
@@ -117,7 +117,7 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
             {
                 Nickname = new Diff<string>("A", "B"),
                 Target = new AuditUserInfo(User)
-            }, AuditLogWriter.SerializerSettings),
+            }, AuditLogWriteManager.SerializerSettings),
             Type = AuditLogItemType.MemberUpdated,
             CreatedAt = DateTime.Now,
             GuildId = Consts.GuildId.ToString(),

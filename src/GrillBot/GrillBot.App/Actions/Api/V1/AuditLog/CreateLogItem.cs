@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog;
@@ -8,12 +8,12 @@ namespace GrillBot.App.Actions.Api.V1.AuditLog;
 
 public class CreateLogItem : ApiAction
 {
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ITextsManager Texts { get; }
 
-    public CreateLogItem(ApiRequestContext apiContext, AuditLogWriter auditLogWriter, ITextsManager texts) : base(apiContext)
+    public CreateLogItem(ApiRequestContext apiContext, AuditLogWriteManager auditLogWriteManager, ITextsManager texts) : base(apiContext)
     {
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         Texts = texts;
     }
 
@@ -22,7 +22,7 @@ public class CreateLogItem : ApiAction
         ValidateParameters(request);
 
         var logItem = new AuditLogDataWrapper(request.GetAuditLogType(), request.Content, processedUser: ApiContext.LoggedUser);
-        await AuditLogWriter.StoreAsync(logItem);
+        await AuditLogWriteManager.StoreAsync(logItem);
     }
 
     private void ValidateParameters(ClientLogItemRequest request)

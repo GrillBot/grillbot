@@ -1,5 +1,6 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Helpers;
+using GrillBot.App.Managers;
 using GrillBot.App.Services.DirectApi;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
@@ -17,18 +18,18 @@ public class UnsuccessCommandAttempt : CommandAction
     private InteractionService InteractionService { get; }
     private IDirectApiService DirectApi { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogService AuditLogService { get; }
     private DataCacheManager DataCacheManager { get; }
+    private ChannelHelper ChannelHelper { get; }
 
     public UnsuccessCommandAttempt(ITextsManager texts, InteractionService interactionService, IDirectApiService directApi, GrillBotDatabaseBuilder databaseBuilder,
-        AuditLogService auditLogService, DataCacheManager dataCacheManager)
+        DataCacheManager dataCacheManager, ChannelHelper channelHelper)
     {
         Texts = texts;
         InteractionService = interactionService;
         DirectApi = directApi;
         DatabaseBuilder = databaseBuilder;
-        AuditLogService = auditLogService;
         DataCacheManager = dataCacheManager;
+        ChannelHelper = channelHelper;
     }
 
     public async Task ProcessAsync(IMessage message)
@@ -50,7 +51,7 @@ public class UnsuccessCommandAttempt : CommandAction
 
     private async Task<string> FindLocalCommandMentionAsync(IReadOnlyCollection<string> parts, IChannel channel)
     {
-        var guild = await AuditLogService.GetGuildFromChannelAsync(channel, channel.Id);
+        var guild = await ChannelHelper.GetGuildFromChannelAsync(channel, channel.Id);
         var commands = await InteractionService.RestClient.GetGuildApplicationCommands(guild.Id);
         var commandMentions = commands.GetCommandMentions();
         return TryMatchMention(commandMentions, parts);
@@ -118,7 +119,7 @@ public class UnsuccessCommandAttempt : CommandAction
         var data = await repository.AuditLog.GetSimpleDataAsync(filter);
         if (data.Count == 0) return "cs";
 
-        var logItem = JsonConvert.DeserializeObject<InteractionCommandExecuted>(data[0].Data, AuditLogWriter.SerializerSettings)!;
+        var logItem = JsonConvert.DeserializeObject<InteractionCommandExecuted>(data[0].Data, AuditLogWriteManager.SerializerSettings)!;
         return TextsManager.FixLocale(logItem.Locale);
     }
 }

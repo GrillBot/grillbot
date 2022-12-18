@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Helpers;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
@@ -14,18 +14,18 @@ public class UpdateChannel : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AutoReplyManager AutoReplyManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ITextsManager Texts { get; }
-    private AuditLogService AuditLogService { get; }
+    private ChannelHelper ChannelHelper { get; }
 
-    public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter,
-        ITextsManager texts, AuditLogService auditLogService, AutoReplyManager autoReplyManager) : base(apiContext)
+    public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, ITextsManager texts, AutoReplyManager autoReplyManager,
+        ChannelHelper channelHelper) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         Texts = texts;
-        AuditLogService = auditLogService;
         AutoReplyManager = autoReplyManager;
+        ChannelHelper = channelHelper;
     }
 
     public async Task ProcessAsync(ulong id, UpdateChannelParams parameters)
@@ -47,9 +47,9 @@ public class UpdateChannel : ApiAction
         if (reloadAutoReply)
             await AutoReplyManager.InitAsync();
 
-        var guild = await AuditLogService.GetGuildFromChannelAsync(null, id);
+        var guild = await ChannelHelper.GetGuildFromChannelAsync(null, id);
         var guildChannel = guild == null ? null : await guild.GetChannelAsync(id);
         var logItem = new AuditLogDataWrapper(AuditLogItemType.ChannelUpdated, new Diff<AuditChannelInfo>(before, new AuditChannelInfo(channel)), guild, guildChannel, ApiContext.LoggedUser);
-        await AuditLogWriter.StoreAsync(logItem);
+        await AuditLogWriteManager.StoreAsync(logItem);
     }
 }

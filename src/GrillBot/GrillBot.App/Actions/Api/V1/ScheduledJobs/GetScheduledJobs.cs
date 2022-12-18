@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -88,7 +88,7 @@ public class GetScheduledJobs : ApiAction
         var logItems = await repository.AuditLog.GetSimpleDataAsync(parameters);
 
         return logItems
-            .Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriter.SerializerSettings)!)
+            .Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriteManager.SerializerSettings)!)
             .GroupBy(o => o.JobName)
             .ToDictionary(o => o.Key, o => o.ToList());
     }

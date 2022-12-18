@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions.Api.V1.AuditLog;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Tests.Infrastructure.Common;
 
@@ -12,7 +12,7 @@ public class CreateLogItemTests : ApiActionTest<CreateLogItem>
 {
     protected override CreateLogItem CreateAction()
     {
-        var writer = new AuditLogWriter(DatabaseBuilder);
+        var writer = new AuditLogWriteManager(DatabaseBuilder);
         var texts = new TextsBuilder()
             .AddText("AuditLog/CreateLogItem/Required", "cs", "Required")
             .AddText("AuditLog/CreateLogItem/MultipleTypes", "cs", "MultipleTypes")

@@ -1,5 +1,5 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.App.Services.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models.AuditLog;
@@ -9,11 +9,11 @@ namespace GrillBot.App.Handlers.InteractionCommandExecuted;
 
 public class AuditInteractionCommandHandler : IInteractionCommandExecutedEvent
 {
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditInteractionCommandHandler(AuditLogWriter auditLogWriter)
+    public AuditInteractionCommandHandler(AuditLogWriteManager auditLogWriteManager)
     {
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
@@ -22,7 +22,7 @@ public class AuditInteractionCommandHandler : IInteractionCommandExecutedEvent
 
         var data = GrillBot.Data.Models.AuditLog.InteractionCommandExecuted.Create(context.Interaction, commandInfo, result, duration);
         var item = new AuditLogDataWrapper(AuditLogItemType.InteractionCommand, data, context.Guild, context.Channel as IGuildChannel, context.User);
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 
     private static bool Init(IResult result, IInteractionContext context, out int duration)

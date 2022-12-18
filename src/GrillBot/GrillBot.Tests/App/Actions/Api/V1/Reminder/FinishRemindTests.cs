@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Reminder;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -40,7 +40,7 @@ public class FinishRemindTests : ApiActionTest<FinishRemind>
             .AddText("RemindModule/NotifyMessage/Options", "cs", "Options")
             .Build();
 
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new FinishRemind(ApiRequestContext, DatabaseBuilder, auditLogWriter, client, texts);
     }
 

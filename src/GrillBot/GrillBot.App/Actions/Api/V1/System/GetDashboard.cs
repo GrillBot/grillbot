@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using GrillBot.App.Controllers;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Logging;
@@ -96,20 +96,20 @@ public class GetDashboard : ApiAction
 
             if (groupedData.TryGetValue(AuditLogItemType.Api, out var logs))
             {
-                var logItems = logs.ConvertAll(o => JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)!);
+                var logItems = logs.ConvertAll(o => JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriteManager.SerializerSettings)!);
                 dashboard.TodayAvgTimes["InternalApi"] = ComputeApiAvgTime(logItems, false);
                 dashboard.TodayAvgTimes["PublicApi"] = ComputeApiAvgTime(logItems, true);
             }
 
             if (groupedData.TryGetValue(AuditLogItemType.JobCompleted, out logs))
             {
-                var logItems = logs.Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriter.SerializerSettings)!);
+                var logItems = logs.Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriteManager.SerializerSettings)!);
                 dashboard.TodayAvgTimes["Jobs"] = (long)logItems.Average(o => Convert.ToInt64(o.Duration()));
             }
 
             if (groupedData.TryGetValue(AuditLogItemType.InteractionCommand, out logs))
             {
-                var logItems = logs.Select(o => JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogWriter.SerializerSettings)!);
+                var logItems = logs.Select(o => JsonConvert.DeserializeObject<InteractionCommandExecuted>(o.Data, AuditLogWriteManager.SerializerSettings)!);
                 dashboard.TodayAvgTimes["Commands"] = (long)logItems.Average(o => o.Duration);
             }
         }
@@ -196,7 +196,7 @@ public class GetDashboard : ApiAction
 
             var auditLogs = await repository.AuditLog.GetSimpleDataAsync(parameters, LogRowsSize);
             dashboard.Jobs = auditLogs
-                .Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriter.SerializerSettings)!)
+                .Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriteManager.SerializerSettings)!)
                 .Select(o => new DashboardJob
                 {
                     Duration = o.Duration(),
@@ -223,7 +223,7 @@ public class GetDashboard : ApiAction
 
             var auditLogs = await repository.AuditLog.GetSimpleDataAsync(parameters, LogRowsSize);
             dashboard.Commands = auditLogs
-                .Select(logItem => JsonConvert.DeserializeObject<InteractionCommandExecuted>(logItem.Data, AuditLogWriter.SerializerSettings)!)
+                .Select(logItem => JsonConvert.DeserializeObject<InteractionCommandExecuted>(logItem.Data, AuditLogWriteManager.SerializerSettings)!)
                 .Select(o => new DashboardCommand
                 {
                     Duration = o.Duration,

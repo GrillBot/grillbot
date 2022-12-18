@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -10,12 +10,12 @@ namespace GrillBot.App.Handlers.MessageUpdated;
 public class AuditMessageUpdatedHandler : IMessageUpdatedEvent
 {
     private IMessageCacheManager MessageCacheManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditMessageUpdatedHandler(IMessageCacheManager messageCacheManager, AuditLogWriter auditLogWriter)
+    public AuditMessageUpdatedHandler(IMessageCacheManager messageCacheManager, AuditLogWriteManager auditLogWriteManager)
     {
         MessageCacheManager = messageCacheManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(Cacheable<IMessage, ulong> before, IMessage after, IMessageChannel channel)
@@ -28,7 +28,7 @@ public class AuditMessageUpdatedHandler : IMessageUpdatedEvent
         var data = new MessageEditedData(oldMessage, after);
         var item = new AuditLogDataWrapper(AuditLogItemType.MessageEdited, data, textChannel.Guild, textChannel, author);
 
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 
     private static bool Init(IMessageChannel channel, IMessage before, IMessage after, out ITextChannel textChannel)

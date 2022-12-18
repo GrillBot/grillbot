@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Helpers;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models.AuditLog;
@@ -11,14 +11,14 @@ public class AuditThreadDeletedHandler : IThreadDeletedEvent
 {
     private ChannelHelper ChannelHelper { get; }
     private CounterManager CounterManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public AuditThreadDeletedHandler(ChannelHelper channelHelper, CounterManager counterManager, AuditLogWriter auditLogWriter, GrillBotDatabaseBuilder databaseBuilder)
+    public AuditThreadDeletedHandler(ChannelHelper channelHelper, CounterManager counterManager, AuditLogWriteManager auditLogWriteManager, GrillBotDatabaseBuilder databaseBuilder)
     {
         ChannelHelper = channelHelper;
         CounterManager = counterManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         DatabaseBuilder = databaseBuilder;
     }
 
@@ -33,7 +33,7 @@ public class AuditThreadDeletedHandler : IThreadDeletedEvent
         var data = new AuditThreadInfo(auditLog.Data as ThreadDeleteAuditLogData);
         var item = new AuditLogDataWrapper(AuditLogItemType.ThreadDeleted, data, guild, cachedThread, auditLog.User, auditLog.Id.ToString());
 
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
         await UpdateNonCachedChannelAsync(auditLog, cachedThread, threadId);
     }
 

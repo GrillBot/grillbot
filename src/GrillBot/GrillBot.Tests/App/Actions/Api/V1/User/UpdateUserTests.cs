@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions.Api.V1.User;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Tests.Infrastructure.Common;
@@ -14,7 +14,7 @@ public class UpdateUserTests : ApiActionTest<UpdateUser>
     protected override UpdateUser CreateAction()
     {
         var texts = new TextsBuilder().AddText("User/NotFound", "cs", "NotFound").Build();
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new UpdateUser(ApiRequestContext, DatabaseBuilder, auditLogWriter, texts);
     }
 

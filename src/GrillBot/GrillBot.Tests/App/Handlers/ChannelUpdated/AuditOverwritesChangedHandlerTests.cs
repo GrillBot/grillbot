@@ -3,7 +3,6 @@ using Discord;
 using Discord.Rest;
 using GrillBot.App.Handlers.ChannelUpdated;
 using GrillBot.App.Managers;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -22,7 +21,7 @@ public class AuditOverwritesChangedHandlerTests : HandlerTest<AuditOverwritesCha
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
         AuditLogManager = new AuditLogManager();
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
 
         return new AuditOverwritesChangedHandler(AuditLogManager, DatabaseBuilder, TestServices.CounterManager.Value, auditLogWriter);
     }

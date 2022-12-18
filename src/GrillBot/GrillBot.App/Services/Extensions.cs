@@ -9,11 +9,6 @@ public static class Extensions
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services
-            .AddSingleton<AuditLog.AuditLogService>()
-            .AddSingleton<AuditLog.AuditLogWriter>()
-            .AddSingleton<AuditLog.AuditClearingHelper>();
-
-        services
             .AddSingleton<Birthday.BirthdayService>();
 
         services

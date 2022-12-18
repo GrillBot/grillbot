@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
@@ -12,14 +12,14 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
 {
     private IDiscordClient DiscordClient { get; }
     private InviteManager InviteManager { get; }
-    private AuditLogWriter AuditLogWriterWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManagerWriteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public InviteUserJoinedHandler(IDiscordClient discordClient, InviteManager inviteManager, AuditLogWriter auditLogWriter, GrillBotDatabaseBuilder databaseBuilder)
+    public InviteUserJoinedHandler(IDiscordClient discordClient, InviteManager inviteManager, AuditLogWriteManager auditLogWriteManager, GrillBotDatabaseBuilder databaseBuilder)
     {
         DiscordClient = discordClient;
         InviteManager = inviteManager;
-        AuditLogWriterWriter = auditLogWriter;
+        AuditLogWriteManagerWriteManager = auditLogWriteManager;
         DatabaseBuilder = databaseBuilder;
     }
 
@@ -58,7 +58,7 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
         if (usedInvite == null)
         {
             var item = new AuditLogDataWrapper(AuditLogItemType.Warning, $"User {user.GetFullName()} ({user.Id}) used unknown invite.", guild, processedUser: user);
-            await AuditLogWriterWriter.StoreAsync(item);
+            await AuditLogWriteManagerWriteManager.StoreAsync(item);
             return;
         }
 

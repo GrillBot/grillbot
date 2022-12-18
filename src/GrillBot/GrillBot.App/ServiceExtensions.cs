@@ -22,7 +22,8 @@ public static class ServiceExtensions
         services
             .AddSingleton<AutoReplyManager>()
             .AddSingleton<EmoteChainManager>()
-            .AddSingleton<AuditLogManager>();
+            .AddSingleton<AuditLogManager>()
+            .AddSingleton<AuditLogWriteManager>();
         return services;
     }
 }

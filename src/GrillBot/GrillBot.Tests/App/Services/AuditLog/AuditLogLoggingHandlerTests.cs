@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Handlers.Logging;
+using GrillBot.App.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Services.AuditLog;
@@ -12,7 +13,7 @@ public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>
 
     protected override AuditLogLoggingHandler CreateService()
     {
-        var writer = new AuditLogWriter(DatabaseBuilder);
+        var writer = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditLogLoggingHandler(writer, Configuration);
     }
 

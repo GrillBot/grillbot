@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Helpers;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.FileStorage;
@@ -15,15 +15,16 @@ public class AuditMessageDeletedHandler : IMessageDeletedEvent
 {
     private IMessageCacheManager MessageCache { get; }
     private FileStorageFactory FileStorage { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private CounterManager CounterManager { get; }
     private DownloadHelper DownloadHelper { get; }
 
-    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, FileStorageFactory fileStorage, AuditLogWriter auditLogWriter, CounterManager counterManager, DownloadHelper downloadHelper)
+    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, FileStorageFactory fileStorage, AuditLogWriteManager auditLogWriteManager, CounterManager counterManager,
+        DownloadHelper downloadHelper)
     {
         MessageCache = messageCache;
         FileStorage = fileStorage;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         CounterManager = counterManager;
         DownloadHelper = downloadHelper;
     }
@@ -42,7 +43,7 @@ public class AuditMessageDeletedHandler : IMessageDeletedEvent
         var attachments = await GetAndStoreAttachmentsAsync(message);
         var item = new AuditLogDataWrapper(AuditLogItemType.MessageDeleted, data, textChannel.Guild, textChannel, removedBy, auditLog?.Id.ToString(), files: attachments);
 
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 
     private async Task<IAuditLogEntry> FindAuditLogAsync(IGuildChannel channel, IMessage message)

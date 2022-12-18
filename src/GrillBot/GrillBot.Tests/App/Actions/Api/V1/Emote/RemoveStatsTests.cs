@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.Emote;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -11,7 +11,7 @@ public class RemoveStatsTests : ApiActionTest<RemoveStats>
 {
     protected override RemoveStats CreateAction()
     {
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new RemoveStats(ApiRequestContext, DatabaseBuilder, auditLogWriter);
     }
 

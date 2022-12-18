@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Managers;
-using GrillBot.App.Services.AuditLog;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models;
@@ -13,14 +12,14 @@ public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
     private AuditLogManager AuditLogManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private CounterManager CounterManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditOverwritesChangedHandler(AuditLogManager auditLogManager, GrillBotDatabaseBuilder databaseBuilder, CounterManager counterManager, AuditLogWriter auditLogWriter)
+    public AuditOverwritesChangedHandler(AuditLogManager auditLogManager, GrillBotDatabaseBuilder databaseBuilder, CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         AuditLogManager = auditLogManager;
         DatabaseBuilder = databaseBuilder;
         CounterManager = counterManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IChannel before, IChannel after)
@@ -33,7 +32,7 @@ public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
         if (auditLogs.Count == 0) return;
 
         var logItems = TransformItems(auditLogs, guildChannel).ToList();
-        await AuditLogWriter.StoreAsync(logItems);
+        await AuditLogWriteManager.StoreAsync(logItems);
     }
 
     private bool Init(IChannel channel, out IGuildChannel guildChannelAfter)

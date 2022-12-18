@@ -1,9 +1,9 @@
-﻿using GrillBot.App.Services.AuditLog;
-using GrillBot.Common.Managers;
+﻿using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using Quartz;
 using System.Reflection;
+using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,7 +69,7 @@ public abstract class Job : IJob
     {
         if (string.IsNullOrEmpty(executionData.Result)) return;
 
-        var auditLogWriter = ServiceProvider.GetRequiredService<AuditLogWriter>();
+        var auditLogWriter = ServiceProvider.GetRequiredService<AuditLogWriteManager>();
         var logItem = new AuditLogDataWrapper(AuditLogItemType.JobCompleted, executionData, processedUser: DiscordClient.CurrentUser);
         await auditLogWriter.StoreAsync(logItem);
     }

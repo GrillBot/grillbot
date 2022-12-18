@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Invite;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Common.Attributes;
@@ -35,7 +35,7 @@ public class RefreshMetadataTests : ApiActionTest<RefreshMetadata>
             .Build();
 
         var inviteManager = new InviteManager(CacheBuilder, TestServices.CounterManager.Value);
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
 
         return new RefreshMetadata(ApiRequestContext, client, inviteManager, auditLogWriter);
     }

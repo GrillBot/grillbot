@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.Statistics;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
@@ -38,7 +38,7 @@ public class GetAvgTimesTests : ApiActionTest<GetAvgTimes>
     {
         return new Database.Entity.AuditLogItem
         {
-            Data = JsonConvert.SerializeObject(data, AuditLogWriter.SerializerSettings),
+            Data = JsonConvert.SerializeObject(data, AuditLogWriteManager.SerializerSettings),
             Type = type,
             CreatedAt = DateTime.Now,
             ProcessedUserId = Consts.UserId.ToString()

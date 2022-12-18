@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
@@ -9,13 +9,13 @@ namespace GrillBot.App.Infrastructure.RequestProcessing;
 public class ResultFilter : IAsyncResultFilter
 {
     private ApiRequest ApiRequest { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ApiRequestContext ApiRequestContext { get; }
 
-    public ResultFilter(ApiRequest apiRequest, AuditLogWriter auditLogWriter, ApiRequestContext apiRequestContext)
+    public ResultFilter(ApiRequest apiRequest, AuditLogWriteManager auditLogWriteManager, ApiRequestContext apiRequestContext)
     {
         ApiRequest = apiRequest;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         ApiRequestContext = apiRequestContext;
     }
 
@@ -29,6 +29,6 @@ public class ResultFilter : IAsyncResultFilter
 
         var processedUser = ApiRequestContext.LoggedUser;
         var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, processedUser, null, DateTime.Now);
-        await AuditLogWriter.StoreAsync(wrapper);
+        await AuditLogWriteManager.StoreAsync(wrapper);
     }
 }

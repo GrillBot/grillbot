@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -65,15 +65,15 @@ public class GetAvgTimes : ApiAction
             {
                 case AuditLogItemType.Api:
                 {
-                    var jsonData = JsonConvert.DeserializeObject<ApiRequest>(item.Data, AuditLogWriter.SerializerSettings)!;
+                    var jsonData = JsonConvert.DeserializeObject<ApiRequest>(item.Data, AuditLogWriteManager.SerializerSettings)!;
                     if (!jsonData.IsCorrupted()) deserializedData = jsonData;
                     break;
                 }
                 case AuditLogItemType.InteractionCommand:
-                    deserializedData = JsonConvert.DeserializeObject<InteractionCommandExecuted>(item.Data, AuditLogWriter.SerializerSettings);
+                    deserializedData = JsonConvert.DeserializeObject<InteractionCommandExecuted>(item.Data, AuditLogWriteManager.SerializerSettings);
                     break;
                 case AuditLogItemType.JobCompleted:
-                    deserializedData = JsonConvert.DeserializeObject<JobExecutionData>(item.Data, AuditLogWriter.SerializerSettings);
+                    deserializedData = JsonConvert.DeserializeObject<JobExecutionData>(item.Data, AuditLogWriteManager.SerializerSettings);
                     break;
             }
 

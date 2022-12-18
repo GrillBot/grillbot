@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.Statistics;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
@@ -48,7 +48,7 @@ public class GetApiStatisticsTests : ApiActionTest<GetApiStatistics>
             Type = AuditLogItemType.Api,
             CreatedAt = DateTime.Now,
             ProcessedUserId = Consts.UserId.ToString(),
-            Data = JsonConvert.SerializeObject(request, AuditLogWriter.SerializerSettings)
+            Data = JsonConvert.SerializeObject(request, AuditLogWriteManager.SerializerSettings)
         };
     }
 

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
@@ -115,7 +115,7 @@ public class GetUserDetail : ApiAction
 
         var auditLogs = await repository.AuditLog.GetSimpleDataAsync(auditLogParams);
         detail.NicknameHistory = auditLogs
-            .Select(o => JsonConvert.DeserializeObject<MemberUpdatedData>(o.Data, AuditLogWriter.SerializerSettings))
+            .Select(o => JsonConvert.DeserializeObject<MemberUpdatedData>(o.Data, AuditLogWriteManager.SerializerSettings))
             .Where(o => o?.Nickname != null && (!string.IsNullOrEmpty(o.Target.UserId) ? o.Target.UserId : o.Target.Id.ToString()) == user.Id.ToString())
             .SelectMany(o => new[] { o.Nickname.Before, o.Nickname.After })
             .Where(o => !string.IsNullOrEmpty(o) && (string.IsNullOrEmpty(user.Nickname) || user.Nickname != o))

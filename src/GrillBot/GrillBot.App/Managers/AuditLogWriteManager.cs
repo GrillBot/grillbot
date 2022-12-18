@@ -1,8 +1,8 @@
 ﻿using GrillBot.Data.Models.AuditLog;
 
-namespace GrillBot.App.Services.AuditLog;
+namespace GrillBot.App.Managers;
 
-public class AuditLogWriter
+public class AuditLogWriteManager
 {
     public static JsonSerializerSettings SerializerSettings => new()
     {
@@ -13,7 +13,7 @@ public class AuditLogWriter
 
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public AuditLogWriter(GrillBotDatabaseBuilder databaseBuilder)
+    public AuditLogWriteManager(GrillBotDatabaseBuilder databaseBuilder)
     {
         DatabaseBuilder = databaseBuilder;
     }

@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Emote;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -20,7 +20,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
             .AddEmote(EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.PepeJamEmote)), Guild)
             .AddEmote(EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.FeelsHighManEmote)), Guild)
             .Build();
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
 
         return new MergeStats(ApiRequestContext, emotesCache, DatabaseBuilder, auditLogWriter);
     }

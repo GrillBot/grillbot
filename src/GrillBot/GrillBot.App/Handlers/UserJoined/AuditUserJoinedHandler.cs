@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models.AuditLog;
@@ -8,11 +8,11 @@ namespace GrillBot.App.Handlers.UserJoined;
 
 public class AuditUserJoinedHandler : IUserJoinedEvent
 {
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditUserJoinedHandler(AuditLogWriter auditLogWriter)
+    public AuditUserJoinedHandler(AuditLogWriteManager auditLogWriteManager)
     {
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IGuildUser user)
@@ -21,6 +21,6 @@ public class AuditUserJoinedHandler : IUserJoinedEvent
 
         var data = new UserJoinedAuditData(guild);
         var item = new AuditLogDataWrapper(AuditLogItemType.UserJoined, data, guild, processedUser: user);
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 }

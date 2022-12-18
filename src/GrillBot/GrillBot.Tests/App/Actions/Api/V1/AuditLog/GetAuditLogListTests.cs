@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Discord;
 using GrillBot.App.Actions.Api.V1.AuditLog;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.AuditLog;
@@ -200,7 +200,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
             {
                 ChannelId = Consts.ChannelId.ToString(),
                 CreatedAt = DateTime.UtcNow,
-                Data = (item.Item1 > AuditLogItemType.Error ? JsonConvert.SerializeObject(item.Item2, AuditLogWriter.SerializerSettings) : item.Item2.ToString()) ?? string.Empty,
+                Data = (item.Item1 > AuditLogItemType.Error ? JsonConvert.SerializeObject(item.Item2, AuditLogWriteManager.SerializerSettings) : item.Item2.ToString()) ?? string.Empty,
                 GuildId = Consts.GuildId.ToString(),
                 ProcessedUserId = Consts.UserId.ToString(),
                 Type = item.Item1

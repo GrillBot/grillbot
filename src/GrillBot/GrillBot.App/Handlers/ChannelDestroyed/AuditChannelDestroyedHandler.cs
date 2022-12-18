@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models.AuditLog;
@@ -9,12 +9,12 @@ namespace GrillBot.App.Handlers.ChannelDestroyed;
 public class AuditChannelDestroyedHandler : IChannelDestroyedEvent
 {
     private CounterManager CounterManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditChannelDestroyedHandler(CounterManager counterManager, AuditLogWriter auditLogWriter)
+    public AuditChannelDestroyedHandler(CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         CounterManager = counterManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IChannel channel)
@@ -26,7 +26,7 @@ public class AuditChannelDestroyedHandler : IChannelDestroyedEvent
 
         var data = new AuditChannelInfo((ChannelDeleteAuditLogData)auditLog.Data, guildChannel);
         var item = new AuditLogDataWrapper(AuditLogItemType.ChannelDeleted, data, guildChannel.Guild, channel, auditLog.User, auditLog.Id.ToString());
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 
     private async Task<IAuditLogEntry> FindAuditLogAsync(IGuildChannel guildChannel)

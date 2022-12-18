@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.App.Services.Reminder;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -11,7 +11,7 @@ namespace GrillBot.App.Actions.Api.V1.Reminder;
 public class FinishRemind : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ITextsManager Texts { get; }
     private RemindHelper RemindHelper { get; }
     private IDiscordClient DiscordClient { get; }
@@ -22,10 +22,10 @@ public class FinishRemind : ApiAction
 
     private bool IsCancel => ApiContext.GetUserId() != DiscordClient.CurrentUser.Id;
 
-    public FinishRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, IDiscordClient discordClient, ITextsManager texts) : base(apiContext)
+    public FinishRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, IDiscordClient discordClient, ITextsManager texts) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         Texts = texts;
         DiscordClient = discordClient;
 
@@ -94,6 +94,6 @@ public class FinishRemind : ApiAction
 
         var logItem = new AuditLogDataWrapper(AuditLogItemType.Info, $"Bylo stornováno upozornění s ID {remind.Id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(), null,
             null, ApiContext.LoggedUser);
-        await AuditLogWriter.StoreAsync(logItem);
+        await AuditLogWriteManager.StoreAsync(logItem);
     }
 }

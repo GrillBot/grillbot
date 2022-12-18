@@ -1,8 +1,8 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using System.IO;
+using GrillBot.App.Jobs;
 using GrillBot.Database.Entity;
-using System.IO;
 
-namespace GrillBot.Tests.App.Services.AuditLog;
+namespace GrillBot.Tests.App.Jobs;
 
 [TestClass]
 public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
@@ -11,9 +11,8 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
     {
         var configuration = TestServices.Configuration.Value;
         var fileStorage = new FileStorageMock(configuration);
-        var auditClearingHelper = new AuditClearingHelper(fileStorage);
 
-        return new AuditLogClearingJob(DatabaseBuilder, auditClearingHelper, TestServices.InitializedProvider.Value);
+        return new AuditLogClearingJob(DatabaseBuilder, TestServices.InitializedProvider.Value, fileStorage);
     }
 
     [TestMethod]
@@ -42,7 +41,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
         await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
-        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234", Flags = int.MaxValue});
         await Repository.AddAsync(new Invite { Code = "ABCD", GuildId = "12345" });
         await Repository.CommitAsync();
 

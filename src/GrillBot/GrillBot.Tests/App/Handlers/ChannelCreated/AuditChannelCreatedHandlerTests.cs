@@ -2,7 +2,7 @@
 using Discord;
 using Discord.Rest;
 using GrillBot.App.Handlers.ChannelCreated;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
@@ -13,7 +13,7 @@ public class AuditChannelCreatedHandlerTests : HandlerTest<AuditChannelCreatedHa
 {
     protected override AuditChannelCreatedHandler CreateHandler()
     {
-        var writer = new AuditLogWriter(DatabaseBuilder);
+        var writer = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditChannelCreatedHandler(TestServices.CounterManager.Value, writer);
     }
 

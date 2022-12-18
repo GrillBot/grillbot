@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Rest;
 using GrillBot.App.Handlers.ChannelUpdated;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
@@ -17,7 +17,7 @@ public class AuditChannelUpdatedHandlerTests : HandlerTest<AuditChannelUpdatedHa
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditChannelUpdatedHandler(TestServices.CounterManager.Value, auditLogWriter);
     }
 

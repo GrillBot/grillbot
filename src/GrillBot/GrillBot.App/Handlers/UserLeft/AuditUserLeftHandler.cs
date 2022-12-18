@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models.AuditLog;
@@ -9,12 +9,12 @@ namespace GrillBot.App.Handlers.UserLeft;
 public class AuditUserLeftHandler : IUserLeftEvent
 {
     private CounterManager CounterManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditUserLeftHandler(CounterManager counterManager, AuditLogWriter auditLogWriter)
+    public AuditUserLeftHandler(CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         CounterManager = counterManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IGuild guild, IUser user)
@@ -26,7 +26,7 @@ public class AuditUserLeftHandler : IUserLeftEvent
 
         var data = new UserLeftGuildData(socketGuild, user, ban != null, ban?.Reason);
         var item = new AuditLogDataWrapper(AuditLogItemType.UserLeft, data, guild, processedUser: auditLog?.User ?? user, discordAuditLogItemId: auditLog?.Id.ToString());
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 
     private static async Task<bool> CanProcessAsync(IGuild guild, IUser user)

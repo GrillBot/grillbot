@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models.AuditLog;
@@ -9,12 +9,12 @@ namespace GrillBot.App.Handlers.GuildUpdated;
 public class AuditEmotesGuildUpdatedHandler : IGuildUpdatedEvent
 {
     private CounterManager CounterManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditEmotesGuildUpdatedHandler(CounterManager counterManager, AuditLogWriter auditLogWriter)
+    public AuditEmotesGuildUpdatedHandler(CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         CounterManager = counterManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IGuild before, IGuild after)
@@ -23,7 +23,7 @@ public class AuditEmotesGuildUpdatedHandler : IGuildUpdatedEvent
 
         // TODO Implement sticker support.
         var logItems = await GetDeletedEmotesAsync(before, after);
-        await AuditLogWriter.StoreAsync(logItems);
+        await AuditLogWriteManager.StoreAsync(logItems);
     }
 
     private static bool CanProcess(IGuild before, IGuild after)

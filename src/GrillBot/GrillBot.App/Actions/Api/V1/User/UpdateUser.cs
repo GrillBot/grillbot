@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
@@ -11,13 +11,13 @@ namespace GrillBot.App.Actions.Api.V1.User;
 public class UpdateUser : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ITextsManager Texts { get; }
 
-    public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter, ITextsManager texts) : base(apiContext)
+    public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, ITextsManager texts) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         Texts = texts;
     }
 
@@ -35,7 +35,7 @@ public class UpdateUser : ApiAction
         user.Flags = parameters.GetNewFlags(user.Flags);
 
         var auditLogItem = new AuditLogDataWrapper(AuditLogItemType.MemberUpdated, new MemberUpdatedData(before, user), processedUser: ApiContext.LoggedUser);
-        await AuditLogWriter.StoreAsync(auditLogItem);
+        await AuditLogWriteManager.StoreAsync(auditLogItem);
 
         await repository.CommitAsync();
     }

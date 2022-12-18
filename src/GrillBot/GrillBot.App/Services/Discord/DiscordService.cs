@@ -2,14 +2,13 @@
 using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.TypeReaders;
-using GrillBot.App.Services.AuditLog;
-using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using System.Reflection;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
@@ -25,10 +24,10 @@ public class DiscordService : IHostedService
     private CommandService CommandService { get; }
     private IWebHostEnvironment Environment { get; }
     private InteractionService InteractionService { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
     public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-        IWebHostEnvironment webHostEnvironment, InteractionService interactionService, AuditLogWriter auditLogWriter)
+        IWebHostEnvironment webHostEnvironment, InteractionService interactionService, AuditLogWriteManager auditLogWriteManager)
     {
         DiscordSocketClient = client;
         Configuration = configuration;
@@ -36,7 +35,7 @@ public class DiscordService : IHostedService
         CommandService = commandService;
         Environment = webHostEnvironment;
         InteractionService = interactionService;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
 
         DiscordSocketClient.Log += OnLogAsync;
         CommandService.Log += OnLogAsync;
@@ -103,7 +102,7 @@ public class DiscordService : IHostedService
         if (message.Exception is GatewayReconnectException && message.Exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase))
         {
             var item = new AuditLogDataWrapper(AuditLogItemType.Info, "Application restart after reconnect", null, null, DiscordSocketClient.CurrentUser);
-            await AuditLogWriter.StoreAsync(item);
+            await AuditLogWriteManager.StoreAsync(item);
 
             await Task.Delay(3000);
             Process.GetCurrentProcess().Kill();

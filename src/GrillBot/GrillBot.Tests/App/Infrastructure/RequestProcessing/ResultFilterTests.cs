@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Controllers;
 using GrillBot.App.Infrastructure.RequestProcessing;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Tests.Infrastructure.Common;
@@ -21,7 +21,7 @@ public class ResultFilterTests : ActionFilterTest<ResultFilter>
     {
         ApiRequest = new ApiRequest();
 
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new ResultFilter(ApiRequest, auditLogWriter, new ApiRequestContext());
     }
 

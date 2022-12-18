@@ -1,18 +1,19 @@
-﻿using GrillBot.Common.Exceptions;
+﻿using GrillBot.App.Managers;
+using GrillBot.Common.Exceptions;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
-namespace GrillBot.App.Services.AuditLog;
+namespace GrillBot.App.Handlers.Logging;
 
 public class AuditLogLoggingHandler : ILoggingHandler
 {
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private IConfiguration Configuration { get; }
 
-    public AuditLogLoggingHandler(AuditLogWriter auditLogWriter, IConfiguration configuration)
+    public AuditLogLoggingHandler(AuditLogWriteManager auditLogWriteManager, IConfiguration configuration)
     {
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         Configuration = configuration.GetSection("Discord:Logging");
     }
 
@@ -29,13 +30,13 @@ public class AuditLogLoggingHandler : ILoggingHandler
     public async Task WarningAsync(string source, string message, Exception exception = null)
     {
         var data = CreateWrapper(true, source, message, exception);
-        await AuditLogWriter.StoreAsync(data);
+        await AuditLogWriteManager.StoreAsync(data);
     }
 
     public async Task ErrorAsync(string source, string message, Exception exception)
     {
         var data = CreateWrapper(false, source, message, exception is ApiException apiException ? apiException.InnerException : exception);
-        await AuditLogWriter.StoreAsync(data);
+        await AuditLogWriteManager.StoreAsync(data);
     }
 
     private static AuditLogDataWrapper CreateWrapper(bool isWarning, string source, string message, Exception exception)

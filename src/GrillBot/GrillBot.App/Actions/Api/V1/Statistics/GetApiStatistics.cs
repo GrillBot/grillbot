@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Statistics;
@@ -71,7 +71,7 @@ public class GetApiStatistics : ApiAction
         var data = await repository.AuditLog.GetSimpleDataAsync(parameters);
 
         return data
-            .Select(o => (o.CreatedAt, JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriter.SerializerSettings)!))
+            .Select(o => (o.CreatedAt, JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriteManager.SerializerSettings)!))
             .Where(o => !o.Item2!.IsCorrupted())
             .ToList();
     }

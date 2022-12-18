@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models.AuditLog;
@@ -9,12 +9,12 @@ namespace GrillBot.App.Handlers.UserUnbanned;
 public class AuditUserUnbannedHandler : IUserUnbannedEvent
 {
     private CounterManager CounterManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditUserUnbannedHandler(CounterManager counterManager, AuditLogWriter auditLogWriter)
+    public AuditUserUnbannedHandler(CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         CounterManager = counterManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IUser user, IGuild guild)
@@ -24,7 +24,7 @@ public class AuditUserUnbannedHandler : IUserUnbannedEvent
 
         var data = new AuditUserInfo(user);
         var item = new AuditLogDataWrapper(AuditLogItemType.Unban, data, guild, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 
     private async Task<IAuditLogEntry> FindAuditLogAsync(IGuild guild, IUser user)

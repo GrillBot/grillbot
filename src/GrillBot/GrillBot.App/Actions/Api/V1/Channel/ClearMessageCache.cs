@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.AuditLog;
@@ -10,13 +10,13 @@ public class ClearMessageCache : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private IMessageCacheManager MessageCache { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public ClearMessageCache(ApiRequestContext apiContext, IDiscordClient discordClient, IMessageCacheManager messageCache, AuditLogWriter auditLogWriter) : base(apiContext)
+    public ClearMessageCache(ApiRequestContext apiContext, IDiscordClient discordClient, IMessageCacheManager messageCache, AuditLogWriteManager auditLogWriteManager) : base(apiContext)
     {
         DiscordClient = discordClient;
         MessageCache = messageCache;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(ulong guildId, ulong channelId)
@@ -29,6 +29,6 @@ public class ClearMessageCache : ApiAction
 
         var count = await MessageCache.ClearAllMessagesFromChannelAsync(channel);
         var logItem = new AuditLogDataWrapper(AuditLogItemType.Info, $"Byla ručně smazána cache zpráv kanálu. Smazaných zpráv: {count}", guild, channel, ApiContext.LoggedUser);
-        await AuditLogWriter.StoreAsync(logItem);
+        await AuditLogWriteManager.StoreAsync(logItem);
     }
 }

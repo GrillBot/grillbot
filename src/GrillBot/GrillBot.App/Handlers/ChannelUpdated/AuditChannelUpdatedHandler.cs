@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -11,12 +11,12 @@ namespace GrillBot.App.Handlers.ChannelUpdated;
 public class AuditChannelUpdatedHandler : IChannelUpdatedEvent
 {
     private CounterManager CounterManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditChannelUpdatedHandler(CounterManager counterManager, AuditLogWriter auditLogWriter)
+    public AuditChannelUpdatedHandler(CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         CounterManager = counterManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IChannel before, IChannel after)
@@ -29,7 +29,7 @@ public class AuditChannelUpdatedHandler : IChannelUpdatedEvent
         var auditData = (ChannelUpdateAuditLogData)auditLog?.Data;
         var data = CreateLogData(auditData, guildChannelBefore, guildChannelAfter);
         var item = new AuditLogDataWrapper(AuditLogItemType.ChannelUpdated, data, guildChannelAfter.Guild, guildChannelAfter, auditLog?.User, auditLog?.Id.ToString());
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 
     private static bool Init(IChannel before, IChannel after, out IGuildChannel guildChannelBefore, out IGuildChannel guildChannelAfter)

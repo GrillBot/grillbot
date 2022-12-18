@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Emotes;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Emotes;
@@ -11,13 +11,13 @@ public class MergeStats : ApiAction
 {
     private IEmoteCache CacheService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public MergeStats(ApiRequestContext apiContext, IEmoteCache cacheService, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriter auditLogWriter) : base(apiContext)
+    public MergeStats(ApiRequestContext apiContext, IEmoteCache cacheService, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager) : base(apiContext)
     {
         CacheService = cacheService;
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task<int> ProcessAsync(MergeEmoteStatsParams parameters)
@@ -58,7 +58,7 @@ public class MergeStats : ApiAction
         var logItem = new AuditLogDataWrapper(AuditLogItemType.Info,
             $"Provedeno sloučení emotů {parameters.SourceEmoteId} do {parameters.DestinationEmoteId}. Sloučeno záznamů: {sourceStats.Count}/{destinationStats.Count}",
             null, null, ApiContext.LoggedUser);
-        await AuditLogWriter.StoreAsync(logItem);
+        await AuditLogWriteManager.StoreAsync(logItem);
         return await repository.CommitAsync();
     }
 

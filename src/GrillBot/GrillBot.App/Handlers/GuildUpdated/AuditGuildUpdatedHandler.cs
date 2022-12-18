@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Data.Models.AuditLog;
@@ -9,12 +9,12 @@ namespace GrillBot.App.Handlers.GuildUpdated;
 public class AuditGuildUpdatedHandler : IGuildUpdatedEvent
 {
     private CounterManager CounterManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditGuildUpdatedHandler(CounterManager counterManager, AuditLogWriter auditLogWriter)
+    public AuditGuildUpdatedHandler(CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         CounterManager = counterManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IGuild before, IGuild after)
@@ -26,7 +26,7 @@ public class AuditGuildUpdatedHandler : IGuildUpdatedEvent
 
         var data = new GuildUpdatedData((SocketGuild)before, (SocketGuild)after);
         var item = new AuditLogDataWrapper(AuditLogItemType.GuildUpdated, data, after, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
-        await AuditLogWriter.StoreAsync(item);
+        await AuditLogWriteManager.StoreAsync(item);
     }
 
     private static bool CanProcess(IGuild before, IGuild after)

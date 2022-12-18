@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
@@ -16,14 +16,14 @@ namespace GrillBot.App.Infrastructure.RequestProcessing;
 public class ExceptionFilter : IAsyncExceptionFilter
 {
     private ApiRequest ApiRequest { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private LoggingManager LoggingManager { get; }
 
-    public ExceptionFilter(ApiRequest apiRequest, AuditLogWriter auditLogWriter, ApiRequestContext apiRequestContext, LoggingManager loggingManager)
+    public ExceptionFilter(ApiRequest apiRequest, AuditLogWriteManager auditLogWriteManager, ApiRequestContext apiRequestContext, LoggingManager loggingManager)
     {
         ApiRequest = apiRequest;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
         ApiRequestContext = apiRequestContext;
         LoggingManager = loggingManager;
     }
@@ -59,7 +59,7 @@ public class ExceptionFilter : IAsyncExceptionFilter
             ApiRequest.StatusCode = "500 (InternalServerError)";
 
         var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, ApiRequestContext.LoggedUser);
-        await AuditLogWriter.StoreAsync(wrapper);
+        await AuditLogWriteManager.StoreAsync(wrapper);
 
         var path = $"{ApiRequest.Method} {ApiRequest.Path}";
         var controllerInfo = $"{ApiRequest.ControllerName}.{ApiRequest.ActionName}";

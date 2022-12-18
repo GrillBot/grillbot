@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Rest;
 using GrillBot.App.Handlers.GuildMemberUpdated;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
@@ -12,7 +12,7 @@ public class AuditUserUpdatedHandlerTests : HandlerTest<AuditUserUpdatedHandler>
 {
     protected override AuditUserUpdatedHandler CreateHandler()
     {
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditUserUpdatedHandler(TestServices.CounterManager.Value, auditLogWriter);
     }
 

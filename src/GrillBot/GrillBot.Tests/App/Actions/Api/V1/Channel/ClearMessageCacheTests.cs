@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.Channel;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
@@ -16,7 +16,7 @@ public class ClearMessageCacheTests : ApiActionTest<ClearMessageCache>
 
         var client = new ClientBuilder().SetGetGuildAction(guild).Build();
         var messageCache = new MessageCacheBuilder().SetClearAllMessagesFromChannel(0).Build();
-        var auditLogWriter = new AuditLogWriter(DatabaseBuilder);
+        var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
 
         return new ClearMessageCache(ApiRequestContext, client, messageCache, auditLogWriter);
     }

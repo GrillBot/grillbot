@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.AuditLog;
+﻿using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
@@ -11,13 +11,13 @@ public class RefreshMetadata : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private InviteManager InviteManager { get; }
-    private AuditLogWriter AuditLogWriter { get; }
+    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public RefreshMetadata(ApiRequestContext apiContext, IDiscordClient discordClient, InviteManager inviteManager, AuditLogWriter auditLogWriter) : base(apiContext)
+    public RefreshMetadata(ApiRequestContext apiContext, IDiscordClient discordClient, InviteManager inviteManager, AuditLogWriteManager auditLogWriteManager) : base(apiContext)
     {
         DiscordClient = discordClient;
         InviteManager = inviteManager;
-        AuditLogWriter = auditLogWriter;
+        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task<Dictionary<string, int>> ProcessAsync(bool isReload)
@@ -41,7 +41,7 @@ public class RefreshMetadata : ApiAction
         var invites = await InviteManager.DownloadInvitesAsync(guild);
         if (invites.Count == 0) return 0;
 
-        await AuditLogWriter.StoreAsync(new AuditLogDataWrapper(AuditLogItemType.Info,
+        await AuditLogWriteManager.StoreAsync(new AuditLogDataWrapper(AuditLogItemType.Info,
             $"Invites for guild \"{guild.Name}\" was {(isReload ? "reloaded" : "loaded")}. Loaded invites: {invites.Count}", guild, processedUser: ApiContext.LoggedUser));
 
         await InviteManager.UpdateMetadataAsync(guild, invites);

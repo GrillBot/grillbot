@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using GrillBot.App.Services.AuditLog;
+using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -78,7 +78,7 @@ public class GetAuditLogList : ApiAction
 
     private static bool IsValidExtendedFilter(AuditLogListParams parameters, AuditLogItem item)
     {
-        var conditions = new Func<bool>[]
+        var conditions = new[]
         {
             () => IsValidFilter(item, AuditLogItemType.Info, parameters.InfoFilter),
             () => IsValidFilter(item, AuditLogItemType.Warning, parameters.WarningFilter),
@@ -102,7 +102,7 @@ public class GetAuditLogList : ApiAction
     {
         if (item.Type != type) return false; // Invalid type.
         if (filter == null || !filter.IsSet()) return true;
-        return filter.IsValid(item, AuditLogWriter.SerializerSettings);
+        return filter.IsValid(item, AuditLogWriteManager.SerializerSettings);
     }
 
     private AuditLogListItem Map(AuditLogItem entity)
@@ -114,23 +114,23 @@ public class GetAuditLogList : ApiAction
         mapped.Data = entity.Type switch
         {
             AuditLogItemType.Error or AuditLogItemType.Info or AuditLogItemType.Warning => entity.Data,
-            AuditLogItemType.Command => JsonConvert.DeserializeObject<CommandExecution>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.ChannelCreated or AuditLogItemType.ChannelDeleted => JsonConvert.DeserializeObject<AuditChannelInfo>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.ChannelUpdated => JsonConvert.DeserializeObject<Diff<AuditChannelInfo>>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.EmojiDeleted => JsonConvert.DeserializeObject<AuditEmoteInfo>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.GuildUpdated => JsonConvert.DeserializeObject<GuildUpdatedData>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.MemberRoleUpdated or AuditLogItemType.MemberUpdated => JsonConvert.DeserializeObject<MemberUpdatedData>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.MessageDeleted => JsonConvert.DeserializeObject<MessageDeletedData>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.MessageEdited => JsonConvert.DeserializeObject<MessageEditedData>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.OverwriteCreated or AuditLogItemType.OverwriteDeleted => JsonConvert.DeserializeObject<AuditOverwriteInfo>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.OverwriteUpdated => JsonConvert.DeserializeObject<Diff<AuditOverwriteInfo>>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.Unban => JsonConvert.DeserializeObject<AuditUserInfo>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.UserJoined => JsonConvert.DeserializeObject<UserJoinedAuditData>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.UserLeft => JsonConvert.DeserializeObject<UserLeftGuildData>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.InteractionCommand => JsonConvert.DeserializeObject<InteractionCommandExecuted>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, AuditLogWriter.SerializerSettings),
-            AuditLogItemType.Api => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, AuditLogWriter.SerializerSettings),
+            AuditLogItemType.Command => JsonConvert.DeserializeObject<CommandExecution>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.ChannelCreated or AuditLogItemType.ChannelDeleted => JsonConvert.DeserializeObject<AuditChannelInfo>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.ChannelUpdated => JsonConvert.DeserializeObject<Diff<AuditChannelInfo>>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.EmojiDeleted => JsonConvert.DeserializeObject<AuditEmoteInfo>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.GuildUpdated => JsonConvert.DeserializeObject<GuildUpdatedData>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.MemberRoleUpdated or AuditLogItemType.MemberUpdated => JsonConvert.DeserializeObject<MemberUpdatedData>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.MessageDeleted => JsonConvert.DeserializeObject<MessageDeletedData>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.MessageEdited => JsonConvert.DeserializeObject<MessageEditedData>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.OverwriteCreated or AuditLogItemType.OverwriteDeleted => JsonConvert.DeserializeObject<AuditOverwriteInfo>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.OverwriteUpdated => JsonConvert.DeserializeObject<Diff<AuditOverwriteInfo>>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.Unban => JsonConvert.DeserializeObject<AuditUserInfo>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.UserJoined => JsonConvert.DeserializeObject<UserJoinedAuditData>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.UserLeft => JsonConvert.DeserializeObject<UserLeftGuildData>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.InteractionCommand => JsonConvert.DeserializeObject<InteractionCommandExecuted>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.Api => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, AuditLogWriteManager.SerializerSettings),
             _ => null
         };
 

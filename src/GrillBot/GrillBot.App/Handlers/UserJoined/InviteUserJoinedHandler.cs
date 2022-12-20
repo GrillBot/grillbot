@@ -77,7 +77,7 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
             }
         }
 
-        var invite = await repository.Invite.FindInviteByCodeAsync(guild, usedInvite.Code);
+        var invite = await repository.Invite.FindInviteByCodeAsync(guild.Id, usedInvite.Code);
         if (invite == null)
         {
             invite = new Database.Entity.Invite

@@ -22,6 +22,8 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
     public DateTime? CreatedFrom { get; set; }
     public DateTime? CreatedTo { get; set; }
 
+    public bool ShowUnused { get; set; }
+
     /// <summary>
     /// Available: Code, CreatedAt, Creator, UseCount.
     /// Default: Code
@@ -40,7 +42,8 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
 
     public IQueryable<Database.Entity.Invite> SetQuery(IQueryable<Database.Entity.Invite> query)
     {
-        query = query.Where(o => o.UsedUsers.Count > 0);
+        if (!ShowUnused)
+            query = query.Where(o => o.UsedUsers.Count > 0);
 
         if (!string.IsNullOrEmpty(GuildId))
             query = query.Where(o => o.GuildId == GuildId);
@@ -95,7 +98,8 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
             { nameof(CreatorId), CreatorId },
             { nameof(Code), Code },
             { nameof(CreatedFrom), CreatedFrom?.ToString("o") },
-            { nameof(CreatedTo), CreatedTo?.ToString("o") }
+            { nameof(CreatedTo), CreatedTo?.ToString("o") },
+            { nameof(ShowUnused), ShowUnused.ToString() }
         };
 
         result.AddApiObject(Sort, nameof(Sort));

@@ -75,4 +75,14 @@ public class GuildUserRepository : RepositoryBase
                 .ToListAsync();
         }
     }
+
+    public async Task<List<GuildUser>> FindUsersWithInviteCode(ulong guildId, string code)
+    {
+        using (CreateCounter())
+        {
+            return await Context.GuildUsers
+                .Where(o => o.GuildId == guildId.ToString() && o.UsedInviteCode == code)
+                .ToListAsync();
+        }
+    }
 }

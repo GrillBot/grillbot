@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Discord;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models;
@@ -13,12 +12,12 @@ public class InviteRepository : RepositoryBase
     {
     }
 
-    public async Task<Invite?> FindInviteByCodeAsync(IGuild guild, string code)
+    public async Task<Invite?> FindInviteByCodeAsync(ulong guildId, string code)
     {
         using (CreateCounter())
         {
             return await Context.Invites
-                .FirstOrDefaultAsync(o => o.GuildId == guild.Id.ToString() && o.Code == code);
+                .FirstOrDefaultAsync(o => o.GuildId == guildId.ToString() && o.Code == code);
         }
     }
 

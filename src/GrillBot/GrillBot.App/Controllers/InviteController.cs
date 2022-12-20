@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Invites;
 using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -50,8 +51,8 @@ public class InviteController : Controller
     public async Task<ActionResult<Dictionary<string, int>>> RefreshMetadataCacheAsync()
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.RefreshMetadata>();
-        var result = await action.ProcessAsync(true); 
-        
+        var result = await action.ProcessAsync(true);
+
         return Ok(result);
     }
 
@@ -65,7 +66,23 @@ public class InviteController : Controller
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.GetMetadataCount>();
         var result = await action.ProcessAsync();
-        
+
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Delete invite.
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <response code="404">Unable to find invite.</response>
+    [HttpDelete("{guildId}/{code}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteInviteAsync(ulong guildId, string code)
+    {
+        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.DeleteInvite>();
+        await action.ProcessAsync(guildId, code);
+
+        return Ok();
     }
 }

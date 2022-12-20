@@ -556,5 +556,8 @@
   },
   "Jobs": {
     "NotFound": "Unable to find job {0}."
+  },
+  "Invite": {
+    "NotFound": "Unable to find invite with code {0}."
   }
 }

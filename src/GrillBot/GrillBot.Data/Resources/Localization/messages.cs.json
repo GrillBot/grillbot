@@ -556,5 +556,8 @@
   },
   "Jobs": {
     "NotFound": "Nepodařilo se nalézt naplánovanou úlohu {0}."
+  },
+  "Invite": {
+    "NotFound": "Nepodařilo se najít pozvánku s kódem {0}"
   }
 }

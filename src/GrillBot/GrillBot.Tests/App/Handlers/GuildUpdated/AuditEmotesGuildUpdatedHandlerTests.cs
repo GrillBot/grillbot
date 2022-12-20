@@ -20,7 +20,7 @@ public class AuditEmotesGuildUpdatedHandlerTests : HandlerTest<AuditEmotesGuildU
     public async Task ProcessAsync_CannotProcess()
     {
         var emote = Emote.Parse(Consts.PepeJamEmote);
-        var guildEmote = ReflectionHelper.CreateWithInternalConstructor<GuildEmote>(emote.Id, emote.Name, false, false, false, null, null);
+        var guildEmote = EmoteHelper.CreateGuildEmote(emote);
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new List<GuildEmote> { guildEmote }).Build();
         await Handler.ProcessAsync(guild, guild);
     }
@@ -32,7 +32,7 @@ public class AuditEmotesGuildUpdatedHandlerTests : HandlerTest<AuditEmotesGuildU
         var data = ReflectionHelper.CreateWithInternalConstructor<EmoteDeleteAuditLogData>(emote.Id, emote.Name);
         var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var entry = new AuditLogEntryBuilder(Consts.AuditLogEntryId).SetUser(user).SetActionType(ActionType.EmojiDeleted).SetData(data).Build();
-        var guildEmote = ReflectionHelper.CreateWithInternalConstructor<GuildEmote>(emote.Id, emote.Name, false, false, false, null, null);
+        var guildEmote = EmoteHelper.CreateGuildEmote(emote);
         var before = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { guildEmote }).Build();
         var after = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new List<GuildEmote>()).SetGetAuditLogsAction(new[] { entry }).Build();
 

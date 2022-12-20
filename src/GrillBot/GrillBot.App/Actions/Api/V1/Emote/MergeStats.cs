@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Managers.Emotes;
+﻿using GrillBot.App.Helpers;
+using GrillBot.App.Managers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Data.Models.AuditLog;
@@ -9,21 +9,20 @@ namespace GrillBot.App.Actions.Api.V1.Emote;
 
 public class MergeStats : ApiAction
 {
-    private IEmoteCache CacheService { get; }
+    private EmoteHelper EmoteHelper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public MergeStats(ApiRequestContext apiContext, IEmoteCache cacheService, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager) : base(apiContext)
+    public MergeStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, EmoteHelper emoteHelper) : base(apiContext)
     {
-        CacheService = cacheService;
         DatabaseBuilder = databaseBuilder;
         AuditLogWriteManager = auditLogWriteManager;
+        EmoteHelper = emoteHelper;
     }
 
     public async Task<int> ProcessAsync(MergeEmoteStatsParams parameters)
     {
-        ValidateMerge(parameters);
-
+        await ValidateMergeAsync(parameters);
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var sourceStats = await repository.Emote.FindStatisticsByEmoteIdAsync(parameters.SourceEmoteId);
@@ -62,10 +61,9 @@ public class MergeStats : ApiAction
         return await repository.CommitAsync();
     }
 
-    private void ValidateMerge(MergeEmoteStatsParams @params)
+    private async Task ValidateMergeAsync(MergeEmoteStatsParams @params)
     {
-        var supportedEmotes = CacheService.GetEmotes().ConvertAll(o => o.Emote.ToString());
-
+        var supportedEmotes = (await EmoteHelper.GetSupportedEmotesAsync()).ConvertAll(o => o.ToString());
         if (!supportedEmotes.Contains(@params.DestinationEmoteId))
         {
             throw new ValidationException(

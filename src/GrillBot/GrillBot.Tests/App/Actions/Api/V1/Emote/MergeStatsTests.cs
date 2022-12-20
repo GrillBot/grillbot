@@ -16,13 +16,17 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
 
     protected override MergeStats CreateAction()
     {
-        var emotesCache = new EmotesCacheBuilder()
-            .AddEmote(EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.PepeJamEmote)), Guild)
-            .AddEmote(EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.FeelsHighManEmote)), Guild)
-            .Build();
+        var emotes = new[]
+        {
+            EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.PepeJamEmote)),
+            EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.FeelsHighManEmote))
+        };
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(emotes).Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { guild }).Build();
+        var emoteHelper = new GrillBot.App.Helpers.EmoteHelper(client);
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
 
-        return new MergeStats(ApiRequestContext, emotesCache, DatabaseBuilder, auditLogWriter);
+        return new MergeStats(ApiRequestContext, DatabaseBuilder, auditLogWriter, emoteHelper);
     }
 
     [TestMethod]

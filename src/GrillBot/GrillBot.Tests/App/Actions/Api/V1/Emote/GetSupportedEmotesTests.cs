@@ -10,19 +10,17 @@ public class GetSupportedEmotesTests : ApiActionTest<GetSupportedEmotes>
     protected override GetSupportedEmotes CreateAction()
     {
         var emote = EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.PepeJamEmote));
-        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { emote }).Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { guild }).Build();
+        var emoteHelper = new GrillBot.App.Helpers.EmoteHelper(client);
 
-        var emotesCache = new EmotesCacheBuilder()
-            .AddEmote(emote, guild)
-            .Build();
-
-        return new GetSupportedEmotes(ApiRequestContext, emotesCache, TestServices.AutoMapper.Value);
+        return new GetSupportedEmotes(ApiRequestContext, TestServices.AutoMapper.Value, emoteHelper);
     }
 
     [TestMethod]
-    public void Process()
+    public async Task ProcessAsync()
     {
-        var result = Action.Process();
+        var result = await Action.ProcessAsync();
         Assert.AreEqual(1, result.Count);
     }
 }

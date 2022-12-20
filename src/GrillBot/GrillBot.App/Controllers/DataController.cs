@@ -86,10 +86,10 @@ public class DataController : Controller
     [HttpGet("emotes")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<List<EmoteItem>> GetSupportedEmotes()
+    public async Task<ActionResult<List<EmoteItem>>> GetSupportedEmotes()
     {
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetSupportedEmotes>();
-        var result = action.Process();
+        var result = await action.ProcessAsync();
 
         return Ok(result);
     }

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using GrillBot.Common.Managers.Emotes;
+using GrillBot.App.Helpers;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Emotes;
 
@@ -7,18 +7,18 @@ namespace GrillBot.App.Actions.Api.V1.Emote;
 
 public class GetSupportedEmotes : ApiAction
 {
-    private IEmoteCache Cache { get; }
+    private EmoteHelper EmoteHelper { get; }
     private IMapper Mapper { get; }
 
-    public GetSupportedEmotes(ApiRequestContext apiContext, IEmoteCache cache, IMapper mapper) : base(apiContext)
+    public GetSupportedEmotes(ApiRequestContext apiContext, IMapper mapper, EmoteHelper emoteHelper) : base(apiContext)
     {
-        Cache = cache;
+        EmoteHelper = emoteHelper;
         Mapper = mapper;
     }
 
-    public List<EmoteItem> Process()
+    public async Task<List<EmoteItem>> ProcessAsync()
     {
-        var emotes = Cache.GetEmotes();
+        var emotes = await EmoteHelper.GetSupportedEmotesAsync();
         return Mapper.Map<List<EmoteItem>>(emotes).OrderBy(o => o.Name).ToList();
     }
 }

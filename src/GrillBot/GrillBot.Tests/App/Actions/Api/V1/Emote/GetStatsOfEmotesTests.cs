@@ -2,6 +2,7 @@
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Models;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 
@@ -10,8 +11,13 @@ public class GetStatsOfEmotesTests : ApiActionTest<GetStatsOfEmotes>
 {
     protected override GetStatsOfEmotes CreateAction()
     {
-        var emotesCache = new EmotesCacheBuilder().Build();
-        return new GetStatsOfEmotes(ApiRequestContext, emotesCache, DatabaseBuilder, TestServices.AutoMapper.Value);
+        var parsedEmote = Discord.Emote.Parse(Consts.OnlineEmoteId);
+        var emote = EmoteHelper.CreateGuildEmote(parsedEmote);
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { emote }).Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { guild }).Build();
+
+        var emoteHelper = new GrillBot.App.Helpers.EmoteHelper(client);
+        return new GetStatsOfEmotes(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, emoteHelper);
     }
 
     [TestMethod]

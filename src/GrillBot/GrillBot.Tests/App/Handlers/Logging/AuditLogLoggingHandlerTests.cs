@@ -4,7 +4,7 @@ using GrillBot.App.Handlers.Logging;
 using GrillBot.App.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 
-namespace GrillBot.Tests.App.Services.AuditLog;
+namespace GrillBot.Tests.App.Handlers.Logging;
 
 [TestClass]
 public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>

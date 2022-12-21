@@ -5,10 +5,10 @@ using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
-namespace GrillBot.Tests.App.Services.AuditLog;
+namespace GrillBot.Tests.App.Managers;
 
 [TestClass]
-public class AuditLogWriterTests : ServiceTest<AuditLogWriteManager>
+public class AuditLogWriterManagerTests : ServiceTest<AuditLogWriteManager>
 {
     protected override AuditLogWriteManager CreateService()
     {

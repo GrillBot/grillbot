@@ -2,7 +2,7 @@
 using GrillBot.App.Infrastructure.Jobs;
 using Quartz;
 
-namespace GrillBot.App.Services.Birthday;
+namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 [DisallowUninitialized]
@@ -11,6 +11,7 @@ public class BirthdayCronJob : Job
     private IConfiguration Configuration { get; }
     private GetTodayBirthdayInfo GetTodayBirthdayInfo { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private new IDiscordClient DiscordClient { get; }
 
     public BirthdayCronJob(IConfiguration configuration, IDiscordClient discordClient, GetTodayBirthdayInfo getTodayBirthdayInfo, GrillBotDatabaseBuilder databaseBuilder,
         IServiceProvider serviceProvider) : base(serviceProvider)
@@ -19,6 +20,7 @@ public class BirthdayCronJob : Job
         GetTodayBirthdayInfo = getTodayBirthdayInfo;
         GetTodayBirthdayInfo.UpdateContext("cs", discordClient.CurrentUser);
         DatabaseBuilder = databaseBuilder;
+        DiscordClient = discordClient;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)

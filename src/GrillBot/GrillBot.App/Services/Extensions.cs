@@ -9,9 +9,6 @@ public static class Extensions
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services
-            .AddSingleton<Birthday.BirthdayService>();
-
-        services
             .AddScoped<CommandsHelp.ExternalCommandsHelpService>();
 
         services

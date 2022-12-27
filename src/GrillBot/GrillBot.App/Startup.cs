@@ -4,7 +4,6 @@ using Discord.Interactions;
 using GrillBot.App.Actions;
 using GrillBot.App.Handlers;
 using GrillBot.App.Services;
-using GrillBot.App.Services.Birthday;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Unverify;

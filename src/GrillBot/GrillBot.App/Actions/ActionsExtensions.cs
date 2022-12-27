@@ -154,18 +154,24 @@ public static class ActionsExtensions
 
     private static IServiceCollection AddCommandsActions(this IServiceCollection services)
     {
+        // Birthday
+        services
+            .AddScoped<Commands.Birthday.AddBirthday>()
+            .AddScoped<Commands.Birthday.HaveBirthday>()
+            .AddScoped<Commands.Birthday.RemoveBirthday>();
+
         // Points
         services
             .AddScoped<Commands.Points.PointsLeaderboard>()
             .AddScoped<Commands.Points.PointsImage>();
-        
+
         // Reminder
         services
             .AddScoped<Commands.Reminder.CreateRemind>()
             .AddScoped<Commands.Reminder.CopyRemind>()
             .AddScoped<Commands.Reminder.GetSuggestions>()
             .AddScoped<Commands.Reminder.GetReminderList>();
-        
+
         // Searching
         services
             .AddScoped<Commands.Searching.GetSearchingList>();

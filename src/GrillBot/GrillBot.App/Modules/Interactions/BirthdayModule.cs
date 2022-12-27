@@ -1,31 +1,26 @@
-﻿using Discord.Interactions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
 using GrillBot.App.Actions.Api.V2;
+using GrillBot.App.Actions.Commands.Birthday;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.App.Services.Birthday;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [Group("birthdays", "Birthdays")]
 [RequireUserPerms]
+[ExcludeFromCodeCoverage]
 public class BirthdayModule : InteractionsModuleBase
 {
-    private BirthdayService BirthdayService { get; }
-
-    public BirthdayModule(BirthdayService birthdayService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public BirthdayModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        BirthdayService = birthdayService;
     }
 
     [SlashCommand("today", "Finding out who's birthday is today.")]
     public async Task TodayBirthdayAsync()
     {
-        using var scope = ServiceProvider.CreateScope();
-
-        var action = scope.ServiceProvider.GetRequiredService<GetTodayBirthdayInfo>();
-        action.UpdateContext(Locale, Context.User);
-        var result = await action.ProcessAsync();
+        using var command = GetActionAsCommand<GetTodayBirthdayInfo>();
+        var result = await command.Command.ProcessAsync();
 
         await SetResponseAsync(result);
     }
@@ -36,11 +31,13 @@ public class BirthdayModule : InteractionsModuleBase
         DateTime when
     )
     {
-        await BirthdayService.AddBirthdayAsync(Context.User, when);
+        using var command = GetCommand<AddBirthday>();
+        await command.Command.ProcessAsync(when);
 
         if (Context.Guild.CurrentUser.GuildPermissions.ManageMessages)
         {
-            await ReplyAsync(Context.User.Mention + " " + GetText(nameof(AddAsync), "Success"), allowedMentions: new AllowedMentions { AllowedTypes = AllowedMentionTypes.Users });
+            await ReplyAsync(Context.User.Mention + " " + GetText(nameof(AddAsync), "Success"),
+                allowedMentions: new AllowedMentions { AllowedTypes = AllowedMentionTypes.Users });
             await DeleteOriginalResponseAsync();
         }
         else
@@ -52,14 +49,18 @@ public class BirthdayModule : InteractionsModuleBase
     [SlashCommand("remove", "Delete date of birth.")]
     public async Task RemoveAsync()
     {
-        await BirthdayService.RemoveBirthdayAsync(Context.User);
+        using var command = GetCommand<RemoveBirthday>();
+        await command.Command.ProcessAsync();
         await SetResponseAsync(GetText(nameof(RemoveAsync), "Success"));
     }
 
     [SlashCommand("have", "Ask if I have my birthday saved?")]
     public async Task HaveAsync()
     {
-        var localeKey = await BirthdayService.HaveBirthdayAsync(Context.User) ? "Yes" : "No";
+        using var command = GetCommand<HaveBirthday>();
+
+        var result = await command.Command.ProcessAsync();
+        var localeKey = result ? "Yes" : "No";
         await SetResponseAsync(GetText(nameof(HaveAsync), localeKey));
     }
 }

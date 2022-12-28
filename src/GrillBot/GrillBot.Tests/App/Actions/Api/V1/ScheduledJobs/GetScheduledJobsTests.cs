@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.ScheduledJobs;
-using GrillBot.App.Services;
+using GrillBot.App.Jobs;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;

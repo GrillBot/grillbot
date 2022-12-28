@@ -17,4 +17,10 @@ public class MessageCacheBuilder : BuilderBase<IMessageCacheManager>
         Mock.Setup(o => o.ClearAllMessagesFromChannelAsync(It.IsAny<IChannel>())).ReturnsAsync(count);
         return this;
     }
+
+    public MessageCacheBuilder SetProcessScheduledTaskAction(string returns)
+    {
+        Mock.Setup(o => o.ProcessScheduledTaskAsync()).ReturnsAsync(returns);
+        return this;
+    }
 }

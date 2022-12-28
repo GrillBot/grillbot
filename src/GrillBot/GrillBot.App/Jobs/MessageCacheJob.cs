@@ -2,7 +2,7 @@
 using GrillBot.Cache.Services.Managers.MessageCache;
 using Quartz;
 
-namespace GrillBot.App.Services;
+namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 [DisallowUninitialized]

@@ -16,14 +16,4 @@ public static class ServiceExtensions
 
         return services;
     }
-
-    public static IServiceCollection AddManagers(this IServiceCollection services)
-    {
-        services
-            .AddSingleton<AutoReplyManager>()
-            .AddSingleton<EmoteChainManager>()
-            .AddSingleton<AuditLogManager>()
-            .AddSingleton<AuditLogWriteManager>();
-        return services;
-    }
 }

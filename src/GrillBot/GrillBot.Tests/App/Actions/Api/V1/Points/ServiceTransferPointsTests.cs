@@ -28,7 +28,7 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
             .AddText("Points/Service/Transfer/UserIsBot", "cs", "UserIsBot{0}")
             .AddText("Points/Service/Transfer/InsufficientAmount", "cs", "InsufficientAmount{0}")
             .Build();
-        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Randomization.Value, texts);
+        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Random.Value, texts);
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
 
         return new ServiceTransferPoints(ApiRequestContext, pointsService, client, texts);

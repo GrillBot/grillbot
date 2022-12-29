@@ -2,7 +2,6 @@
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Cooldown;
 using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Managers.Emotes;
 using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
@@ -22,7 +21,8 @@ public static class ManagersExtensions
             .AddSingleton<EventLogManager>()
             .AddLoggingServices()
             .AddSingleton<CooldownManager>()
-            .AddSingleton<EventManager>();
+            .AddSingleton<EventManager>()
+            .AddSingleton<RandomizationManager>();
     }
 
     public static IServiceCollection AddLocalization(this IServiceCollection services, string basePath, string fileMask)

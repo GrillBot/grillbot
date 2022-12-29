@@ -1,14 +1,16 @@
-﻿using GrillBot.Common.Extensions;
+﻿using GrillBot.App.Managers;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Services;
 
 public class MockingService
 {
     private Emote MockingEmote { get; }
-    private Random Random { get; }
+    private RandomizationManager Random { get; } 
 
     // MaxMessageSize - 2xMocking emotes - Spaces
-    private int MaxMessageLength => DiscordConfig.MaxMessageSize - (2 * MockingEmote.ToString().Length) - 2;
+    private int MaxMessageLength => DiscordConfig.MaxMessageSize - 2 * MockingEmote.ToString().Length - 2;
 
     // Get maximum range value for a random number generator that decides if the char should be uppercase.
     // When the char is uppercased, the index is set to last element.
@@ -19,10 +21,10 @@ public class MockingService
     // even the second char is not uppercased, the next valid char has 100% chance.
     private readonly int[] _mockRandomCoefficient = { 1, 2, 5 };
 
-    public MockingService(IConfiguration configuration, RandomizationService randomizationService)
+    public MockingService(IConfiguration configuration, RandomizationManager random)
     {
         MockingEmote = Emote.Parse(configuration.GetValue<string>("Discord:Emotes:Mocking"));
-        Random = randomizationService.GetOrCreateGenerator("Mocking");
+        Random = random;
     }
 
     public string CreateMockingString(string original)
@@ -39,7 +41,7 @@ public class MockingService
         {
             // Letter 'i' cannot be uppercased and letter 'l' should be always uppercased.
             // This feature is here to prevent confusion of lowercase 'l' and uppercase 'i'
-            if (char.IsLetter(c) && c != 'i' && (c == 'l' || Random.Next(_mockRandomCoefficient[coeffIndex]) == 0))
+            if (char.IsLetter(c) && c != 'i' && (c == 'l' || Random.GetNext("Mock", _mockRandomCoefficient[coeffIndex]) == 0))
             {
                 resultBuilder.Append(char.ToUpperInvariant(c));
                 coeffIndex = _mockRandomCoefficient.Length - 1;

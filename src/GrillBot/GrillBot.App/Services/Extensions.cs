@@ -44,7 +44,6 @@ public static class Extensions
 
         services
             .AddSingleton<MockingService>()
-            .AddSingleton<RandomizationService>()
             .AddSingleton<SearchingService>();
 
         return services;

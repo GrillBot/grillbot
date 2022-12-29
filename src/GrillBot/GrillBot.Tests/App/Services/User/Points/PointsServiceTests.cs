@@ -21,7 +21,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
         GuildUser = userBuilder.SetGuild(Guild).Build();
 
         var texts = new TextsBuilder().Build();
-        return new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Randomization.Value, texts);
+        return new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Random.Value, texts);
     }
 
     private async Task InitDataAsync()

@@ -8,7 +8,7 @@ public class MockingServiceTests : ServiceTest<MockingService>
 {
     protected override MockingService CreateService()
     {
-        return new MockingService(TestServices.Configuration.Value, TestServices.Randomization.Value);
+        return new MockingService(TestServices.Configuration.Value, TestServices.Random.Value);
     }
 
     [TestMethod]

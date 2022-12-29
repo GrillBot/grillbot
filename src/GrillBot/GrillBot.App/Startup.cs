@@ -21,6 +21,7 @@ using GrillBot.App.Services.Suggestion;
 using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.App.Jobs;
+using GrillBot.App.Managers;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;

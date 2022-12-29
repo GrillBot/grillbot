@@ -3,8 +3,8 @@ using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.App.Services;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Cooldown;
 using GrillBot.Data.Exceptions;
 
@@ -14,12 +14,12 @@ namespace GrillBot.App.Modules.Interactions;
 [ExcludeFromCodeCoverage]
 public class MemeModule : InteractionsModuleBase
 {
-    private RandomizationService RandomizationService { get; }
+    private RandomizationManager Random { get; }
     private IConfiguration Configuration { get; }
 
-    public MemeModule(RandomizationService randomizationService, IConfiguration configuration, IServiceProvider serviceProvider) : base(serviceProvider)
+    public MemeModule(RandomizationManager random, IConfiguration configuration, IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        RandomizationService = randomizationService;
+        Random = random;
         Configuration = configuration;
     }
 
@@ -27,8 +27,7 @@ public class MemeModule : InteractionsModuleBase
     [CooldownCheck(CooldownType.User, 60 * 60, 1)]
     public Task GetRandomLengthAsync()
     {
-        var random = RandomizationService.GetOrCreateGenerator("Kasparek");
-        var value = random.Next(0, 50);
+        var value = Random.GetNext("Points", 0, 50);
         return SetResponseAsync($"{value}cm");
     }
 

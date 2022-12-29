@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Services;
-using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
@@ -10,13 +10,13 @@ public class PointsHelper
 {
     private IConfiguration Configuration { get; }
     private IDiscordClient DiscordClient { get; }
-    private Random Random { get; }
+    private RandomizationManager Random { get; }
 
-    public PointsHelper(IConfiguration configuration, IDiscordClient discordClient, RandomizationService randomization)
+    public PointsHelper(IConfiguration configuration, IDiscordClient discordClient, RandomizationManager random)
     {
         Configuration = configuration;
         DiscordClient = discordClient;
-        Random = randomization.GetOrCreateGenerator("Points");
+        Random = random;
     }
 
     public bool CanIncrementPoints(IMessage message)
@@ -49,7 +49,7 @@ public class PointsHelper
         var transaction = new PointsTransaction
         {
             GuildId = user.GuildId,
-            Points = Random.Next(range.GetValue<int>("From"), range.GetValue<int>("To")),
+            Points = Random.GetNext("Points", range.GetValue<int>("From"), range.GetValue<int>("To")),
             AssingnedAt = DateTime.Now,
             ReactionId = reactionId ?? "",
             MessageId = messageId > 0 ? messageId.ToString() : SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),

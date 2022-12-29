@@ -22,7 +22,7 @@ public class ServicePointsIncrementTests : ApiActionTest<ServiceIncrementPoints>
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).Build();
 
         var texts = new TextsBuilder().Build();
-        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Randomization.Value, texts);
+        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Random.Value, texts);
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
 
         return new ServiceIncrementPoints(ApiRequestContext, pointsService, client, texts);

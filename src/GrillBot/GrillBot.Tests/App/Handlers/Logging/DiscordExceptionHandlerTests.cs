@@ -5,12 +5,13 @@ using System.Net.WebSockets;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
+using GrillBot.App.Handlers.Logging;
 using GrillBot.App.Infrastructure.IO;
-using GrillBot.App.Services;
+using GrillBot.Common.Exceptions;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
-namespace GrillBot.Tests.App.Services;
+namespace GrillBot.Tests.App.Handlers.Logging;
 
 [TestClass]
 public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
@@ -164,5 +165,15 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
         await Service.CanHandleAsync(LogSeverity.Critical, source, exception);
         await Service.WarningAsync(source, message, exception);
+    }
+
+    [TestMethod]
+    public async Task ErrorAsync_ApiException()
+    {
+        var innerException = new ArgumentException();
+        var error = new ApiException("An error occured", innerException, User, "/api", "Test.Test");
+
+        await Service.CanHandleAsync(LogSeverity.Error, "API", error);
+        await Service.ErrorAsync("API", error.Message, error);
     }
 }

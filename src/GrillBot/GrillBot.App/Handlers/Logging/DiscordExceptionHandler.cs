@@ -1,7 +1,6 @@
 ﻿using System.Net.Http;
 using System.Net.Sockets;
 using System.Net.WebSockets;
-using Discord.Commands;
 using Discord.Net;
 using GrillBot.App.Infrastructure.IO;
 using GrillBot.App.Services.Images;
@@ -12,7 +11,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GrillBot.App.Services;
+namespace GrillBot.App.Handlers.Logging;
 
 public class DiscordExceptionHandler : ILoggingHandler
 {
@@ -96,13 +95,6 @@ public class DiscordExceptionHandler : ILoggingHandler
 
         switch (exception)
         {
-            case CommandException ce:
-                embed.WithTitle("Při provádění příkazu došlo k chybě")
-                    .AddField("Kanál", ce.Context.Channel.GetMention(), true)
-                    .AddField("Uživatel", ce.Context.User.Mention, true)
-                    .AddField("Zpráva", $"```{(ce.Context.Message.Content.Length < DiscordConfig.MaxMessageSize ? ce.Context.Message.Content : $"{ce.Context.Message.Content[..^6]}...")}```")
-                    .AddField("Skok na zprávu", ce.Context.Message.GetJumpUrl());
-                break;
             case ApiException apiException:
             {
                 embed.WithTitle("Při zpracování požadavku na API došlo k chybě")

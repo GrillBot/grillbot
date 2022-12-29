@@ -2,7 +2,7 @@
 
 public class CounterStats
 {
-    public string Section { get; set; }
+    public string Section { get; set; } = null!;
     public long TotalTime { get; set; }
     public long Count { get; set; }
 

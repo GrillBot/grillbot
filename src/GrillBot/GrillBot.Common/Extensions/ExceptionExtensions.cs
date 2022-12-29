@@ -11,7 +11,6 @@ public static class ExceptionExtensions
     {
         var user = exception switch
         {
-            Commands.CommandException commandException => commandException.Context?.User,
             ApiException apiException => apiException.LoggedUser,
             _ => null
         };

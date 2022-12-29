@@ -1,18 +1,16 @@
-﻿using Discord.Interactions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.App.Services;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
+[ExcludeFromCodeCoverage]
 public class MockingModule : InteractionsModuleBase
 {
-    private MockingService MockingService { get; }
-
-    public MockingModule(MockingService mockingService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public MockingModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        MockingService = mockingService;
     }
 
     [SlashCommand("mock", "Mocks the specified message")]
@@ -21,12 +19,18 @@ public class MockingModule : InteractionsModuleBase
         string message
     )
     {
-        return SetResponseAsync(content: MockingService.CreateMockingString(message));
+        using var command = GetCommand<Actions.Commands.Mock>();
+        var result = command.Command.Process(message);
+
+        return SetResponseAsync(result);
     }
 
     [MessageCommand("Mock")]
     public Task MockAsync(IMessage message)
     {
-        return SetResponseAsync(content: MockingService.CreateMockingString(message.Content));
+        using var command = GetCommand<Actions.Commands.Mock>();
+        var result = command.Command.Process(message.Content);
+
+        return SetResponseAsync(result);
     }
 }

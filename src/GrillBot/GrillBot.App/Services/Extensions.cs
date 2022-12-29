@@ -43,7 +43,6 @@ public static class Extensions
             .AddScoped<User.UserHearthbeatService>();
 
         services
-            .AddSingleton<MockingService>()
             .AddSingleton<SearchingService>();
 
         return services;

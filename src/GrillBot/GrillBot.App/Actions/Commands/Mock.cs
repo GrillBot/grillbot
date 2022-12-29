@@ -1,13 +1,12 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers;
 
-namespace GrillBot.App.Services;
+namespace GrillBot.App.Actions.Commands;
 
-public class MockingService
+public class Mock : CommandAction
 {
     private Emote MockingEmote { get; }
-    private RandomizationManager Random { get; } 
+    private RandomizationManager Random { get; }
 
     // MaxMessageSize - 2xMocking emotes - Spaces
     private int MaxMessageLength => DiscordConfig.MaxMessageSize - 2 * MockingEmote.ToString().Length - 2;
@@ -21,13 +20,13 @@ public class MockingService
     // even the second char is not uppercased, the next valid char has 100% chance.
     private readonly int[] _mockRandomCoefficient = { 1, 2, 5 };
 
-    public MockingService(IConfiguration configuration, RandomizationManager random)
+    public Mock(IConfiguration configuration, RandomizationManager random)
     {
         MockingEmote = Emote.Parse(configuration.GetValue<string>("Discord:Emotes:Mocking"));
         Random = random;
     }
 
-    public string CreateMockingString(string original)
+    public string Process(string original)
     {
         if (IsStringMocked(original))
             return original;
@@ -37,7 +36,7 @@ public class MockingService
         var resultBuilder = new StringBuilder();
         var coeffIndex = 0;
 
-        foreach (var c in original)
+        foreach (var c in original!)
         {
             // Letter 'i' cannot be uppercased and letter 'l' should be always uppercased.
             // This feature is here to prevent confusion of lowercase 'l' and uppercase 'i'

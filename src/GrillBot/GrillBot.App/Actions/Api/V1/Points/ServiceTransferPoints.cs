@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.User.Points;
+﻿using GrillBot.App.Helpers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
@@ -9,21 +9,43 @@ namespace GrillBot.App.Actions.Api.V1.Points;
 
 public class ServiceTransferPoints : ApiAction
 {
-    private PointsService PointsService { get; }
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private PointsHelper PointsHelper { get; }
 
-    public ServiceTransferPoints(ApiRequestContext apiContext, PointsService pointsService, IDiscordClient discordClient, ITextsManager texts) : base(apiContext)
+    public ServiceTransferPoints(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, PointsHelper pointsHelper) : base(apiContext)
     {
-        PointsService = pointsService;
         DiscordClient = discordClient;
+        PointsHelper = pointsHelper;
+        DatabaseBuilder = databaseBuilder;
         Texts = texts;
     }
 
     public async Task ProcessAsync(ulong guildId, ulong fromUserId, ulong toUserId, int amount)
     {
         var (from, to) = await GetAndCheckUsersAsync(guildId, fromUserId, toUserId);
-        await PointsService.TransferPointsAsync(from, to, amount, ApiContext.Language);
+
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var fromUserPoints = await repository.Points.ComputePointsOfUserAsync(from.GuildId, from.Id);
+        if (fromUserPoints < amount)
+            throw new ValidationException(Texts["Points/Service/Transfer/InsufficientAmount", ApiContext.Language].FormatWith(from.GetFullName())).ToBadRequestValidation(amount, nameof(from));
+
+        var fromGuildUser = await repository.GuildUser.FindGuildUserAsync(from);
+        await repository.User.GetOrCreateUserAsync(to);
+        await repository.Guild.GetOrCreateGuildAsync(to.Guild);
+        var toGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(to);
+
+        var fromUserTransaction = PointsHelper.CreateTransaction(fromGuildUser, null, 0, true);
+        var toUserTransaction = PointsHelper.CreateTransaction(toGuildUser, null, 0, true);
+
+        fromUserTransaction.Points = -amount;
+        toUserTransaction.Points = amount;
+
+        var transactions = await PointsHelper.FilterTransactionsAsync(repository, fromUserTransaction, toUserTransaction);
+        await repository.AddCollectionAsync(transactions);
+        await repository.CommitAsync();
     }
 
     private async Task<(IGuildUser from, IGuildUser to)> GetAndCheckUsersAsync(ulong guildId, ulong fromUserId, ulong toUserId)

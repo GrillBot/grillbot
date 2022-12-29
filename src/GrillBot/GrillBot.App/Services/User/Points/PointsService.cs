@@ -11,13 +11,11 @@ public partial class PointsService
     private IConfiguration Configuration { get; }
     private RandomizationManager Random { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private ITextsManager Texts { get; }
 
-    public PointsService(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, RandomizationManager random, ITextsManager texts)
+    public PointsService(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, RandomizationManager random)
     {
         Configuration = configuration.GetSection("Points");
         DatabaseBuilder = databaseBuilder;
-        Texts = texts;
         Random = random;
     }
 

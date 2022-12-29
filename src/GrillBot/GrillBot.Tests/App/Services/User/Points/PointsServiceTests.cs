@@ -20,8 +20,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUserAction(userBuilder.Build()).Build();
         GuildUser = userBuilder.SetGuild(Guild).Build();
 
-        var texts = new TextsBuilder().Build();
-        return new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Random.Value, texts);
+        return new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Random.Value);
     }
 
     private async Task InitDataAsync()
@@ -35,8 +34,6 @@ public class PointsServiceTests : ServiceTest<PointsService>
     private async Task InitTransactionsAsync()
     {
         await InitDataAsync();
-        await Service.IncrementPointsAsync(GuildUser, 100);
-        await Service.IncrementPointsAsync(GuildUser, 1100);
 
         await Repository.AddAsync(new PointsTransaction
         {

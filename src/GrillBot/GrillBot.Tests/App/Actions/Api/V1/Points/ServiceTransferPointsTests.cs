@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Points;
-using GrillBot.App.Services.User.Points;
+using GrillBot.App.Helpers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Tests.Infrastructure.Common;
@@ -28,10 +28,9 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
             .AddText("Points/Service/Transfer/UserIsBot", "cs", "UserIsBot{0}")
             .AddText("Points/Service/Transfer/InsufficientAmount", "cs", "InsufficientAmount{0}")
             .Build();
-        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Random.Value, texts);
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
-
-        return new ServiceTransferPoints(ApiRequestContext, pointsService, client, texts);
+        var pointsHelper = new PointsHelper(TestServices.Configuration.Value, client, TestServices.Random.Value);
+        return new ServiceTransferPoints(ApiRequestContext, client, texts, DatabaseBuilder, pointsHelper);
     }
 
     private async Task InitSummariesAsync()

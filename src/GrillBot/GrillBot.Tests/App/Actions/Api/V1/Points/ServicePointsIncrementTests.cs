@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Points;
-using GrillBot.App.Services.User.Points;
-using GrillBot.Cache.Services.Managers;
+using GrillBot.App.Helpers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -22,10 +21,9 @@ public class ServicePointsIncrementTests : ApiActionTest<ServiceIncrementPoints>
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).Build();
 
         var texts = new TextsBuilder().Build();
-        var pointsService = new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Random.Value, texts);
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
-
-        return new ServiceIncrementPoints(ApiRequestContext, pointsService, client, texts);
+        var pointsHelper = new PointsHelper(TestServices.Configuration.Value, client, TestServices.Random.Value);
+        return new ServiceIncrementPoints(ApiRequestContext, client, texts, DatabaseBuilder, pointsHelper);
     }
 
     [TestMethod]

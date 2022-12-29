@@ -27,11 +27,7 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })
             .Build();
-        var texts = new TextsBuilder()
-            .AddText("GuildModule/GuildDetail/NotFound", "cs", "GuildNotFound")
-            .Build();
-
-        return new GetGuildDetail(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client, CacheBuilder, texts);
+        return new GetGuildDetail(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client, CacheBuilder, TestServices.Texts.Value);
     }
 
     [TestMethod]

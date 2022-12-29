@@ -20,10 +20,9 @@ public class ServicePointsIncrementTests : ApiActionTest<ServiceIncrementPoints>
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).Build();
 
-        var texts = new TextsBuilder().Build();
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
         var pointsHelper = new PointsHelper(TestServices.Configuration.Value, client, TestServices.Random.Value);
-        return new ServiceIncrementPoints(ApiRequestContext, client, texts, DatabaseBuilder, pointsHelper);
+        return new ServiceIncrementPoints(ApiRequestContext, client, TestServices.Texts.Value, DatabaseBuilder, pointsHelper);
     }
 
     [TestMethod]

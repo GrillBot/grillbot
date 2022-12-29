@@ -20,13 +20,7 @@ public class GetSearchingListTests : CommandActionTest<GetSearchingList>
         var apiContext = new ApiRequestContext();
         var client = new ClientBuilder().Build();
         var apiAction = new GrillBot.App.Actions.Api.V1.Searching.GetSearchingList(apiContext, client, DatabaseBuilder, TestServices.AutoMapper.Value);
-        var texts = new TextsBuilder()
-            .AddText("SearchingModule/List/Embed/NoItems", "en-US", "NoItems")
-            .AddText("SearchingModule/List/Embed/NoItemsWithQuery", "en-US", "NoItemsWithQuery")
-            .AddText("SearchingModule/List/Embed/Title", "en-US", "Title")
-            .Build();
-
-        return InitAction(new GetSearchingList(apiAction, DatabaseBuilder, texts));
+        return InitAction(new GetSearchingList(apiAction, DatabaseBuilder, TestServices.Texts.Value));
     }
 
     private async Task InitDataAsync()

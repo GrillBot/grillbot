@@ -34,13 +34,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
             .SetGetGuildsAction(new[] { Guild })
             .Build();
 
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Update/UnverifyNotFound", "cs", "UnverifyNotFound")
-            .AddText("Unverify/Message/PrivateUpdate", "cs", "PrivateUpdate")
-            .AddText("Unverify/Message/UpdateToChannel", "cs", "UpdateToChannel")
-            .AddText("Unverify/Message/PrivateUpdateWithReason", "cs", "PrivateUpdateWithReason")
-            .AddText("Unverify/Message/UpdateToChannelWithReason", "cs", "UpdateToChannelWithReason")
-            .Build();
+        var texts = TestServices.Texts.Value;
         var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
         var messageGenerator = new UnverifyMessageGenerator(texts);
 
@@ -126,7 +120,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue });
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("UpdateToChannel", result);
+        Assert.AreEqual("GrillBot-User-Username#1234,31. 12. 9999 23:59:59", result);
     }
 
     [TestMethod]
@@ -137,7 +131,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("UpdateToChannelWithReason", result);
+        Assert.AreEqual("GrillBot-User-Username#1234,31. 12. 9999 23:59:59,Reason", result);
     }
 
     [TestMethod]
@@ -148,6 +142,6 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 1, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("UpdateToChannelWithReason", result);
+        Assert.AreEqual("GrillBot-User-Username#1234,31. 12. 9999 23:59:59,Reason", result);
     }
 }

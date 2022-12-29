@@ -19,10 +19,6 @@ public class SendMessageToChannelTests : ApiActionTest<SendMessageToChannel>
         var textChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetSendFilesAction(message).SetSendMessageAction(message).Build();
         guildBuilder.SetGetTextChannelAction(textChannel);
 
-        var texts = new TextsBuilder()
-            .AddText("ChannelModule/PostMessage/GuildNotFound", "cs", "GuildNotFound")
-            .AddText("ChannelModule/PostMessage/ChannelNotFound", "cs", "ChannelNotFound")
-            .Build();
         var client = new ClientBuilder()
             .SetGetGuildAction(guildBuilder.Build())
             .Build();
@@ -30,7 +26,7 @@ public class SendMessageToChannelTests : ApiActionTest<SendMessageToChannel>
             .SetGetAction(Consts.MessageId, message)
             .Build();
 
-        return new SendMessageToChannel(ApiRequestContext, texts, client, messageCache);
+        return new SendMessageToChannel(ApiRequestContext, TestServices.Texts.Value, client, messageCache);
     }
 
     protected override void Cleanup()

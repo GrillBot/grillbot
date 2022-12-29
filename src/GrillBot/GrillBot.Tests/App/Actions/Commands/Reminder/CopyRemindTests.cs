@@ -24,14 +24,7 @@ public class CopyRemindTests : CommandActionTest<CopyRemind>
 
     protected override CopyRemind CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("RemindModule/Copy/RemindNotFound", "en-US", "RemindNotFound")
-            .AddText("RemindModule/Copy/SelfCopy", "en-US", "SelfCopy")
-            .AddText("RemindModule/Copy/WasCancelled", "en-US", "WasCancelled")
-            .AddText("RemindModule/Copy/WasSent", "en-US", "WasSent")
-            .AddText("RemindModule/Copy/CopyExists", "en-US", "CopyExists")
-            .AddText("RemindModule/Copy/OriginalUserNotFound", "en-US", "OriginalUserNotFound")
-            .Build();
+        var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
         CreateRemind = new CreateRemind(texts, TestServices.Configuration.Value, formatHelper, DatabaseBuilder);
 

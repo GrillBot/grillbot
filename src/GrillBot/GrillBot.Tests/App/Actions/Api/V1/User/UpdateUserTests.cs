@@ -13,9 +13,8 @@ public class UpdateUserTests : ApiActionTest<UpdateUser>
 {
     protected override UpdateUser CreateAction()
     {
-        var texts = new TextsBuilder().AddText("User/NotFound", "cs", "NotFound").Build();
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
-        return new UpdateUser(ApiRequestContext, DatabaseBuilder, auditLogWriter, texts);
+        return new UpdateUser(ApiRequestContext, DatabaseBuilder, auditLogWriter, TestServices.Texts.Value);
     }
 
     private async Task InitDataAsync()

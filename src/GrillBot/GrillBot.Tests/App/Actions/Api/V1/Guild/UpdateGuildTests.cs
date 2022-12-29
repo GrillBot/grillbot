@@ -26,14 +26,7 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })
             .Build();
-        var texts = new TextsBuilder()
-            .AddText("GuildModule/GuildDetail/NotFound", "cs", "GuildNotFound")
-            .AddText("GuildModule/UpdateGuild/AdminChannelNotFound", "cs", "AdminChannelNotFound")
-            .AddText("GuildModule/UpdateGuild/MuteRoleNotFound", "cs", "MuteRoleNotFound")
-            .AddText("GuildModule/UpdateGuild/EmoteSuggestionChannelNotFound", "cs", "EmoteSuggestionChannelNotFound")
-            .AddText("GuildModule/UpdateGuild/VoteChannelNotFound", "cs", "VoteChannelNotFound")
-            .AddText("GuildModule/UpdateGuild/BotRoomChannelNotFound", "cs", "BotRoomChannelNotFound")
-            .Build();
+        var texts = TestServices.Texts.Value;
         var getGuildDetail = new GetGuildDetail(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client, CacheBuilder, texts);
         return new UpdateGuild(ApiRequestContext, client, DatabaseBuilder, getGuildDetail, texts);
     }

@@ -17,9 +17,7 @@ public class UpdateJobTests : ApiActionTest<UpdateJob>
             .SetGetJobKeysAction(new[] { Quartz.JobKey.Create("Job") })
             .Build();
         var schedulerFactory = new SchedulerFactoryBuilder().SetGetSchedulerAction(scheduler).Build();
-        var texts = new TextsBuilder().AddText("Jobs/NotFound", "cs", "NotFound").Build();
-
-        return new UpdateJob(ApiRequestContext, dataCacheManager, schedulerFactory, texts);
+        return new UpdateJob(ApiRequestContext, dataCacheManager, schedulerFactory, TestServices.Texts.Value);
     }
 
     [TestMethod]

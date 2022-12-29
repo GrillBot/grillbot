@@ -11,11 +11,7 @@ public class DeleteInviteTests : ApiActionTest<DeleteInvite>
 {
     protected override DeleteInvite CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("Invite/NotFound", "cs", "NotFound")
-            .Build();
-
-        return new DeleteInvite(ApiRequestContext, DatabaseBuilder, texts);
+        return new DeleteInvite(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value);
     }
 
     private async Task InitDataAsync()

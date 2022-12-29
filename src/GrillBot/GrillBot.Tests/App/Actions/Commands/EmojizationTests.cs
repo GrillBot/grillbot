@@ -20,14 +20,7 @@ public class EmojizationTests : CommandActionTest<Emojization>
 
     protected override Emojization CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("Emojization/NoContent", "en-US", "NoContent")
-            .AddText("Emojization/DuplicateChar", "en-US", "DuplicateChar")
-            .Build();
-
-        var action = new Emojization(texts);
-        action.Init(Context);
-        return action;
+        return InitAction(new Emojization(TestServices.Texts.Value));
     }
 
     [TestMethod]

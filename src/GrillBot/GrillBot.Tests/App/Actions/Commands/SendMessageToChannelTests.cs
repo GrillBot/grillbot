@@ -23,7 +23,7 @@ public class SendMessageToChannelTests : CommandActionTest<SendMessageToChannel>
     {
         var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 1, 2, 3, 4, 5 }) });
         var apiContext = new ApiRequestContext { Language = "en-US", LoggedUser = User };
-        var texts = new TextsBuilder().AddText("ChannelModule/PostMessage/NoContent", "en-US", "NoContent").Build();
+        var texts = TestServices.Texts.Value;
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
         var messageCache = new MessageCacheBuilder().Build();
         var action = new GrillBot.App.Actions.Api.V1.Channel.SendMessageToChannel(apiContext, texts, client, messageCache);

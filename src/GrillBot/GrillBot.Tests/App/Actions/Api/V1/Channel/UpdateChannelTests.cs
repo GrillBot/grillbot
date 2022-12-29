@@ -25,13 +25,10 @@ public class UpdateChannelTests : ApiActionTest<UpdateChannel>
 
         var manager = new AutoReplyManager(DatabaseBuilder);
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
-        var texts = new TextsBuilder()
-            .AddText("ChannelModule/ChannelDetail/ChannelNotFound", "cs", "ChannelNotFound")
-            .Build();
         var client = new ClientBuilder().SetGetGuildAction(Guild).Build();
         var channelHelper = new ChannelHelper(DatabaseBuilder, client);
 
-        return new UpdateChannel(ApiRequestContext, DatabaseBuilder, auditLogWriter, texts, manager, channelHelper);
+        return new UpdateChannel(ApiRequestContext, DatabaseBuilder, auditLogWriter, TestServices.Texts.Value, manager, channelHelper);
     }
 
     [TestMethod]

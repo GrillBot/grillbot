@@ -24,13 +24,9 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
         var botUser = new GuildUserBuilder(User).SetId(Consts.UserId + 2).AsBot().Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User, botUser, anotherUser }).Build();
 
-        var texts = new TextsBuilder()
-            .AddText("Points/Service/Transfer/UserIsBot", "cs", "UserIsBot{0}")
-            .AddText("Points/Service/Transfer/InsufficientAmount", "cs", "InsufficientAmount{0}")
-            .Build();
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
         var pointsHelper = new PointsHelper(TestServices.Configuration.Value, client, TestServices.Random.Value);
-        return new ServiceTransferPoints(ApiRequestContext, client, texts, DatabaseBuilder, pointsHelper);
+        return new ServiceTransferPoints(ApiRequestContext, client, TestServices.Texts.Value, DatabaseBuilder, pointsHelper);
     }
 
     private async Task InitSummariesAsync()

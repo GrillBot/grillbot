@@ -23,11 +23,7 @@ public class BirthdayCronJobTests : JobTest<BirthdayCronJob>
             .Build();
         var context = new ApiRequestContext();
         var configuration = TestServices.Configuration.Value;
-        var texts = new TextsBuilder()
-            .AddText("BirthdayModule/Info/Parts/WithYears", "cs", "WithYears")
-            .AddText("BirthdayModule/Info/Template/SingleForm", "cs", "SingleForm")
-            .Build();
-        var action = new GetTodayBirthdayInfo(context, DatabaseBuilder, client, configuration, texts);
+        var action = new GetTodayBirthdayInfo(context, DatabaseBuilder, client, configuration, TestServices.Texts.Value);
         var provider = TestServices.InitializedProvider.Value;
         provider.GetRequiredService<InitManager>().Set(true);
 

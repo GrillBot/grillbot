@@ -13,12 +13,7 @@ public class CreateLogItemTests : ApiActionTest<CreateLogItem>
     protected override CreateLogItem CreateAction()
     {
         var writer = new AuditLogWriteManager(DatabaseBuilder);
-        var texts = new TextsBuilder()
-            .AddText("AuditLog/CreateLogItem/Required", "cs", "Required")
-            .AddText("AuditLog/CreateLogItem/MultipleTypes", "cs", "MultipleTypes")
-            .Build();
-
-        return new CreateLogItem(ApiRequestContext, writer, texts);
+        return new CreateLogItem(ApiRequestContext, writer, TestServices.Texts.Value);
     }
 
     [TestMethod]

@@ -18,13 +18,7 @@ public class GetReminderListTests : CommandActionTest<GetReminderList>
     {
         var apiContext = new ApiRequestContext();
         var apiAction = new GrillBot.App.Actions.Api.V1.Reminder.GetReminderList(apiContext, DatabaseBuilder, TestServices.AutoMapper.Value);
-        var texts = new TextsBuilder()
-            .AddText("RemindModule/List/Embed/Title", "en-US", "{0}")
-            .AddText("RemindModule/List/Embed/NoItems", "en-US", "{0}")
-            .AddText("RemindModule/List/Embed/RowTitle", "en-US", "{0},{1},{2},{3}")
-            .Build();
-
-        return InitAction(new GetReminderList(apiAction, texts, DatabaseBuilder));
+        return InitAction(new GetReminderList(apiAction, TestServices.Texts.Value, DatabaseBuilder));
     }
 
     private async Task InitDataAsync()

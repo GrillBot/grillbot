@@ -34,11 +34,7 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
             .SetGetGuildsAction(new[] { Guild })
             .Build();
 
-        var texts = new TextsBuilder()
-            .AddText("User/NotFound", "cs", "NotFound")
-            .Build();
-
-        return new GetUserDetail(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client, texts);
+        return new GetUserDetail(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client, TestServices.Texts.Value);
     }
 
     private async Task InitDataAsync(ulong userId, bool withUnverify = true)

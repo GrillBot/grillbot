@@ -37,9 +37,7 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
             .Build();
 
         var discordClient = DiscordHelper.CreateClient();
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Recover/MemberNotFound", "cs", "MemberNotFound{0}")
-            .Build();
+        var texts = TestServices.Texts.Value;
         var unverifyChecker = new UnverifyChecker(DatabaseBuilder, TestServices.Configuration.Value, TestServices.TestingEnvironment.Value, texts);
         var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder, texts);
         var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);

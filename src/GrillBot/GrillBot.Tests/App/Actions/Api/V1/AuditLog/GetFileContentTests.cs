@@ -16,11 +16,7 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
     protected override GetFileContent CreateAction()
     {
         var fileStorage = new FileStorageMock(TestServices.Configuration.Value);
-        var texts = new TextsBuilder()
-            .AddText("AuditLog/GetFileContent/NotFound", "cs", "NotFound")
-            .Build();
-
-        return new GetFileContent(ApiRequestContext, DatabaseBuilder, fileStorage, texts);
+        return new GetFileContent(ApiRequestContext, DatabaseBuilder, fileStorage, TestServices.Texts.Value);
     }
 
     protected override void Cleanup()

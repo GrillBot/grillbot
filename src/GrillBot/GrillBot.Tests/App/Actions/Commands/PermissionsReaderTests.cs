@@ -46,8 +46,7 @@ public class PermissionsReaderTests : CommandActionTest<PermissionsReader>
 
     protected override PermissionsReader CreateAction()
     {
-        var texts = new TextsBuilder().AddText("Permissions/Useless/CheckSummary", "en-US", "{0}-{1}-{2}").Build();
-        return InitAction(new PermissionsReader(DatabaseBuilder, texts));
+        return InitAction(new PermissionsReader(DatabaseBuilder, TestServices.Texts.Value));
     }
 
     private async Task InitDataAsync()

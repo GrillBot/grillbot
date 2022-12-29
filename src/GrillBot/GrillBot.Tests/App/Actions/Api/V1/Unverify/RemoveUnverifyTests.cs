@@ -39,13 +39,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
             .SetGetGuildsAction(new[] { Guilds[0] })
             .Build();
 
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/RemoveAccessUnverifyNotFound", "cs", "RemoveAccessUnverifyNotFound")
-            .AddText("Unverify/Message/ManuallyRemoveFailed", "cs", "ManuallyRemoveFailed")
-            .AddText("Unverify/Message/ManuallyRemoveToChannel", "cs", "ManuallyRemoveToChannel")
-            .AddText("Unverify/Message/PrivateManuallyRemovedUnverify", "cs", "PrivateManuallyRemovedUnverify")
-            .Build();
-
+        var texts = TestServices.Texts.Value;
         var discordClient = DiscordHelper.CreateClient();
         var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
         var commandService = DiscordHelper.CreateCommandsService();
@@ -145,7 +139,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("RemoveAccessUnverifyNotFound", result);
+        Assert.AreEqual("GrillBot-User-Username#1234", result);
     }
 
     [TestMethod]
@@ -157,7 +151,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("ManuallyRemoveFailed", result);
+        Assert.AreEqual("GrillBot-User-Username#1234(Missing log data for unverify reconstruction.)", result);
     }
 
     [TestMethod]
@@ -186,6 +180,6 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, force);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("ManuallyRemoveToChannel", result);
+        Assert.AreEqual("GrillBot-User-Username#1234", result);
     }
 }

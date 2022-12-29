@@ -10,11 +10,7 @@ public class GetAutoReplyItemTests : ApiActionTest<GetAutoReplyItem>
 {
     protected override GetAutoReplyItem CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("AutoReply/NotFound", "cs", "NotFound")
-            .Build();
-
-        return new GetAutoReplyItem(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, texts);
+        return new GetAutoReplyItem(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, TestServices.Texts.Value);
     }
 
     [TestMethod]

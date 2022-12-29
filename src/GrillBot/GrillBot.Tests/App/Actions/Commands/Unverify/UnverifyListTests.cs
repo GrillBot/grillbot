@@ -35,22 +35,7 @@ public class UnverifyListTests : CommandActionTest<UnverifyList>
 
     protected override UnverifyList CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("Unverify/ListEmbed/NoUnverify", "en-US", "NoUnverify")
-            .AddText("Unverify/ListEmbed/Title", "en-US", "Title")
-            .AddText("Unverify/ListEmbed/Boolean/True", "en-US", "True")
-            .AddText("Unverify/ListEmbed/Boolean/False", "en-US", "False")
-            .AddText("Unverify/ListEmbed/Fields/StartAt", "en-US", "StartAt")
-            .AddText("Unverify/ListEmbed/Fields/EndAt", "en-US", "EndAt")
-            .AddText("Unverify/ListEmbed/Fields/EndFor", "en-US", "EndFor")
-            .AddText("Unverify/ListEmbed/Fields/Selfunverify", "en-US", "Selfunverify")
-            .AddText("Unverify/ListEmbed/Fields/Reason", "en-US", "Reason")
-            .AddText("Unverify/ListEmbed/Fields/RetainedRoles", "en-US", "RetainedRoles")
-            .AddText("Unverify/ListEmbed/Fields/RemovedRoles", "en-US", "RemovedRoles")
-            .AddText("Unverify/ListEmbed/Fields/RetainedChannels", "en-US", "RetainedChannels")
-            .AddText("Unverify/ListEmbed/Fields/RemovedChannels", "en-US", "RemovedChannels")
-            .Build();
-
+        var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
         return InitAction(new UnverifyList(DatabaseBuilder, texts, formatHelper));
     }

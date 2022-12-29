@@ -21,15 +21,7 @@ public class CreateRemindTests : CommandActionTest<CreateRemind>
 
     protected override CreateRemind CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("RemindModule/Create/Validation/MinimalTime/One", "en-US", "One")
-            .AddText("RemindModule/Create/Validation/MinimalTime/TwoToFour", "en-US", "TwoToFour")
-            .AddText("RemindModule/Create/Validation/MinimalTime/FiveAndMore", "en-US", "FiveAndMore")
-            .AddText("RemindModule/Create/Validation/MustInFuture", "en-US", "MustInFuture")
-            .AddText("RemindModule/Create/Validation/MinimalTimeTemplate", "en-US", "MinimalTimeTemplate,{0}")
-            .AddText("RemindModule/Create/Validation/MessageRequired", "en-US", "MessageRequired")
-            .AddText("RemindModule/Create/Validation/MaxLengthExceeded", "en-US", "MaxLengthExceeded")
-            .Build();
+        var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
 
         return InitAction(new CreateRemind(texts, TestServices.Configuration.Value, formatHelper, DatabaseBuilder));

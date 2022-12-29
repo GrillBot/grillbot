@@ -24,24 +24,8 @@ public class FinishRemindTests : ApiActionTest<FinishRemind>
         };
 
         var client = new ClientBuilder().SetGetUserAction(Users).SetSelfUser(new SelfUserBuilder(Users[2]).Build()).Build();
-        var texts = new TextsBuilder()
-            .AddText("RemindModule/CancelRemind/NotFound", "cs", "NotFound")
-            .AddText("RemindModule/CancelRemind/AlreadyCancelled", "cs", "AlreadyCancelled")
-            .AddText("RemindModule/CancelRemind/AlreadyNotified", "cs", "AlreadyNotified")
-            .AddText("RemindModule/CancelRemind/InvalidOperator", "cs", "InvalidOperator")
-            .AddText("RemindModule/NotifyMessage/ForceTitle", "cs", "ForceTitle")
-            .AddText("RemindModule/NotifyMessage/Title", "cs", "Title")
-            .AddText("RemindModule/NotifyMessage/Fields/Id", "cs", "Fields/Id")
-            .AddText("RemindModule/NotifyMessage/Fields/From", "cs", "Fields/From")
-            .AddText("RemindModule/NotifyMessage/Fields/Attention", "cs", "Fields/Attention")
-            .AddText("RemindModule/NotifyMessage/Postponed", "cs", "Postponed")
-            .AddText("RemindModule/NotifyMessage/Fields/Message", "cs", "Fields/Message")
-            .AddText("RemindModule/NotifyMessage/Fields/Options", "cs", "Fields/Options")
-            .AddText("RemindModule/NotifyMessage/Options", "cs", "Options")
-            .Build();
-
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
-        return new FinishRemind(ApiRequestContext, DatabaseBuilder, auditLogWriter, client, texts);
+        return new FinishRemind(ApiRequestContext, DatabaseBuilder, auditLogWriter, client, TestServices.Texts.Value);
     }
 
     private async Task InitDataAsync(ulong fromUserId, ulong toUserId, ulong? remindMessageId)

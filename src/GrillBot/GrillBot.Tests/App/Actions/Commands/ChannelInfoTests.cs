@@ -47,34 +47,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
 
     protected override ChannelInfo CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("ChannelModule/ChannelInfo/NoAccess", "en-US", "NoAccess")
-            .AddText("ChannelModule/ChannelInfo/CreatedAt", "en-US", "CreatedAt")
-            .AddText("ChannelModule/ChannelInfo/TextChannelTitle", "en-US", "TextChannelTitle")
-            .AddText("ChannelModule/ChannelInfo/MemberCountValue/One", "en-US", "One")
-            .AddText("ChannelModule/ChannelInfo/MemberCountValue/FiveAndMore", "en-US", "FiveAndMore")
-            .AddText("ChannelModule/ChannelInfo/MemberCount", "en-US", "MemberCount")
-            .AddText("ChannelModule/ChannelInfo/PermsCountValue/FiveAndMore", "en-US", "Zero")
-            .AddText("ChannelModule/ChannelInfo/PermsCountValue/One", "en-US", "One")
-            .AddText("ChannelModule/ChannelInfo/PermsCount", "en-US", "PermsCount")
-            .AddText("ChannelModule/ChannelInfo/PermsCountTitle", "en-US", "PermsCountTitle")
-            .AddText("ChannelModule/ChannelInfo/MessageCountValue/One", "en-US", "One")
-            .AddText("ChannelModule/ChannelInfo/MessageCountValue/FiveAndMore", "en-US", "FiveAndMore")
-            .AddText("ChannelModule/ChannelInfo/MessageCount", "en-US", "MessageCount")
-            .AddText("ChannelModule/ChannelInfo/FirstMessage", "en-US", "FirstMessage")
-            .AddText("ChannelModule/ChannelInfo/LastMessage", "en-US", "LastMessage")
-            .AddText("ChannelModule/ChannelInfo/TopTen", "en-US", "TopTen")
-            .AddText("ChannelModule/ChannelInfo/Configuration", "en-US", "Configuration")
-            .AddText("ChannelModule/ChannelInfo/Flags/CommandsDisabled", "en-US", "CommandsDisabled")
-            .AddText("ChannelModule/ChannelInfo/Flags/AutoReplyDeactivated", "en-US", "AutoReplyDeactivated")
-            .AddText("ChannelModule/ChannelInfo/Flags/StatsHidden", "en-US", "StatsHidden")
-            .AddText("ChannelModule/ChannelInfo/Channel", "en-US", "Channel")
-            .AddText("ChannelModule/ChannelInfo/TagsCountValue/FiveAndMore", "en-US", "FiveAndMore")
-            .AddText("ChannelModule/ChannelInfo/TagsCount", "en-US", "TagsCount")
-            .AddText("ChannelModule/ChannelInfo/PublicThreadCountValue/One", "en-US", "One")
-            .AddText("ChannelModule/ChannelInfo/PrivateThreadCountValue/One", "en-US", "One")
-            .AddText("ChannelModule/ChannelInfo/ThreadCount", "en-US", "ThreadCount")
-            .Build();
+        var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
 
         return InitAction(new ChannelInfo(texts, formatHelper, DatabaseBuilder));

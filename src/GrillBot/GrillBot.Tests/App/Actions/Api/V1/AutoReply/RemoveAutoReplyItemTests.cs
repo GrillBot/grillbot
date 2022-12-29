@@ -11,12 +11,8 @@ public class RemoveAutoReplyItemTests : ApiActionTest<RemoveAutoReplyItem>
 {
     protected override RemoveAutoReplyItem CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("AutoReply/NotFound", "cs", "NotFound")
-            .Build();
         var manager = new AutoReplyManager(DatabaseBuilder);
-
-        return new RemoveAutoReplyItem(ApiRequestContext, DatabaseBuilder, texts, manager);
+        return new RemoveAutoReplyItem(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value, manager);
     }
 
     [TestMethod]

@@ -11,8 +11,7 @@ public class DeleteClientTests : ApiActionTest<DeleteClient>
 {
     protected override DeleteClient CreateAction()
     {
-        var texts = new TextsBuilder().AddText("PublicApiClients/NotFound", "cs", "NotFound").Build();
-        return new DeleteClient(ApiRequestContext, DatabaseBuilder, texts);
+        return new DeleteClient(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value);
     }
 
     private async Task InitDataAsync(string id)

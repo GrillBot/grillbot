@@ -13,10 +13,7 @@ public class UnverifyCheckerTests
     public void ValidateUnverifyDate_Ends()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Validation/MinimalTime", "cs", "{0}")
-            .Build();
-        var service = new UnverifyChecker(null, configuration, null, texts);
+        var service = new UnverifyChecker(null, configuration, null, TestServices.Texts.Value);
 
         service.ValidateUnverifyDate(DateTime.MinValue, null, false, "cs");
     }
@@ -31,11 +28,7 @@ public class UnverifyCheckerTests
             { "Unverify:MinimalTimes:Selfunverify", (12 * 60).ToString() }
         });
 
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Validation/MinimalTime", "cs", "{0}")
-            .Build();
-        var service = new UnverifyChecker(null, configuration, null, texts);
-
+        var service = new UnverifyChecker(null, configuration, null, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, null, true, "cs");
     }
@@ -50,11 +43,7 @@ public class UnverifyCheckerTests
             { "Unverify:MinimalTimes:Unverify", (12 * 60).ToString() }
         });
 
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Validation/MinimalTime", "cs", "{0}")
-            .Build();
-        var service = new UnverifyChecker(null, configuration, null, texts);
-
+        var service = new UnverifyChecker(null, configuration, null, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, null, false, "cs");
     }
@@ -69,11 +58,7 @@ public class UnverifyCheckerTests
             { "Unverify:MinimalTimes:Selfunverify", (12 * 60).ToString() }
         });
 
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Validation/MinimalTime", "cs", "{0}")
-            .Build();
-        var service = new UnverifyChecker(null, configuration, null, texts);
-
+        var service = new UnverifyChecker(null, configuration, null, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, TimeSpan.FromDays(2), true, "cs");
     }

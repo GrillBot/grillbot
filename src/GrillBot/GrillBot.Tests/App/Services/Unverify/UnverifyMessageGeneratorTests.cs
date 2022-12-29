@@ -10,23 +10,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
 {
     protected override UnverifyMessageGenerator CreateService()
     {
-        var texts = new TextsBuilder()
-            .AddText("Unverify/Message/UnverifyToChannelWithoutReason", "cs", "{0},{1}")
-            .AddText("Unverify/Message/UnverifyToChannelWithReason", "cs", "{0},{1},{2}")
-            .AddText("Unverify/Message/PrivateUnverifyWithoutReason", "cs", "{0},{1}")
-            .AddText("Unverify/Message/PrivateUnverifyWithReason", "cs", "{0},{1},{2}")
-            .AddText("Unverify/Message/PrivateUpdate", "cs", "{0},{1}")
-            .AddText("Unverify/Message/PrivateUpdateWithReason", "cs", "{0},{1},{2}")
-            .AddText("Unverify/Message/UpdateToChannel", "cs", "{0},{1}")
-            .AddText("Unverify/Message/UpdateToChannelWithReason", "cs", "{0},{1},{2}")
-            .AddText("Unverify/Message/PrivateManuallyRemovedUnverify", "cs", "{0}")
-            .AddText("Unverify/Message/ManuallyRemoveToChannel", "cs", "{0}")
-            .AddText("Unverify/Message/ManuallyRemoveFailed", "cs", "{0}({1})")
-            .AddText("Unverify/Message/RemoveAccessUnverifyNotFound", "cs", "{0}")
-            .AddText("Unverify/Message/UnverifyFailedToChannel", "cs", "{0}")
-            .Build();
-    
-        return new UnverifyMessageGenerator(texts);
+        return new UnverifyMessageGenerator(TestServices.Texts.Value);
     }
 
     [TestMethod]

@@ -31,8 +31,7 @@ public class PermissionsCleanerTests : CommandActionTest<PermissionsCleaner>
 
     protected override PermissionsCleaner CreateAction()
     {
-        var texts = new TextsBuilder().Build();
-        var permissionsReader = new PermissionsReader(DatabaseBuilder, texts);
+        var permissionsReader = new PermissionsReader(DatabaseBuilder, TestServices.Texts.Value);
         permissionsReader.Init(Context);
 
         return InitAction(new PermissionsCleaner(permissionsReader));

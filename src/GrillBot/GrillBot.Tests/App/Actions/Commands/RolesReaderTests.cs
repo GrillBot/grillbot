@@ -29,30 +29,7 @@ public class RolesReaderTests : CommandActionTest<RolesReader>
 
     protected override RolesReader CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("Roles/ListTitle", "en-US", "ListTitle")
-            .AddText("Roles/MemberCounts/One", "en-US", "{0}")
-            .AddText("Roles/MemberCounts/TwoToFour", "en-US", "{0}")
-            .AddText("Roles/MemberCounts/FiveAndMore", "en-US", "{0}")
-            .AddText("Roles/Mentionable", "en-US", "Mentionable")
-            .AddText("Roles/Managed", "en-US", "Managed")
-            .AddText("Roles/PremiumSubscriberRole", "en-US", "PremiumSubscriberRole")
-            .AddText("Roles/RoleSummaryLine", "en-US", "RoleSummaryLine_{0}_{1}_{2}_{3}_{4}")
-            .AddText("Roles/GuildSummary", "en-US", "{0}_{1}_{2}")
-            .AddText("Roles/DetailTitle", "en-US", "{0}")
-            .AddText("Roles/DetailFields/CreatedAt", "en-US", "{0}")
-            .AddText("Roles/DetailFields/Everyone", "en-US", "{0}")
-            .AddText("Roles/DetailFields/Hoisted", "en-US", "{0}")
-            .AddText("Roles/DetailFields/Managed", "en-US", "{0}")
-            .AddText("Roles/DetailFields/Mentionable", "en-US", "{0}")
-            .AddText("Roles/DetailFields/MemberCount", "en-US", "{0}")
-            .AddText("Roles/DetailFields/BoosterRole", "en-US", "{0}")
-            .AddText("Roles/DetailFields/BotUser", "en-US", "{0}")
-            .AddText("Roles/DetailFields/Permissions", "en-US", "{0}")
-            .AddText("Roles/Boolean/True", "en-US", "Yes")
-            .AddText("Roles/Boolean/False", "en-US", "No")
-            .Build();
-
+        var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
         return InitAction(new RolesReader(formatHelper, texts));
     }

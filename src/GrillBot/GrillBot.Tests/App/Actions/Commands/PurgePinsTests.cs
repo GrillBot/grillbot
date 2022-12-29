@@ -28,8 +28,7 @@ public class PurgePinsTests : CommandActionTest<PurgePins>
 
     protected override PurgePins CreateAction()
     {
-        var texts = new TextsBuilder().AddText("Pins/UnpinCount", "en-US", "{0}").Build();
-        return InitAction(new PurgePins(texts));
+        return InitAction(new PurgePins(TestServices.Texts.Value));
     }
 
     [TestMethod]

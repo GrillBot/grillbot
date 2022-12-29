@@ -13,11 +13,7 @@ public class UpdateAutoReplyItemTests : ApiActionTest<UpdateAutoReplyItem>
     protected override UpdateAutoReplyItem CreateAction()
     {
         var manager = new AutoReplyManager(DatabaseBuilder);
-        var texts = new TextsBuilder()
-            .AddText("AutoReply/NotFound", "cs", "NotFound")
-            .Build();
-
-        return new UpdateAutoReplyItem(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, texts, manager);
+        return new UpdateAutoReplyItem(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, TestServices.Texts.Value, manager);
     }
 
     [TestMethod]

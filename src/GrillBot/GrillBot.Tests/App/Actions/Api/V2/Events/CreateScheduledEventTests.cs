@@ -14,19 +14,11 @@ public class CreateScheduledEventTests : ApiActionTest<CreateScheduledEvent>
 {
     protected override CreateScheduledEvent CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("GuildScheduledEvents/GuildNotFound", "cs", "GuildNotFound")
-            .AddText("GuildScheduledEvents/Required/Name", "cs", "Name")
-            .AddText("GuildScheduledEvents/Required/StartAt", "cs", "StartAt")
-            .AddText("GuildScheduledEvents/Required/EndAt", "cs", "EndAt")
-            .AddText("GuildScheduledEvents/Required/Location", "cs", "Location")
-            .Build();
-
         var guildEvent = new GuildScheduledEventBuilder(Consts.GuildEventId).Build();
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetCreateEventAction(guildEvent).Build();
         var discordClient = new ClientBuilder().SetGetGuildAction(guild).Build();
 
-        return new CreateScheduledEvent(ApiRequestContext, discordClient, texts);
+        return new CreateScheduledEvent(ApiRequestContext, discordClient, TestServices.Texts.Value);
     }
 
     [TestMethod]

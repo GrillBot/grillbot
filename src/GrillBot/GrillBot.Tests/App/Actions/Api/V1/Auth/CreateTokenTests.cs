@@ -24,11 +24,7 @@ public class CreateTokenTests : ApiActionTest<CreateToken>
         Client = new ClientBuilder()
             .SetGetUserAction(User)
             .Build();
-        Texts = new TextsBuilder()
-            .AddText("Auth/CreateToken/UserNotFound", "cs", "UserNotFound")
-            .AddText("Auth/CreateToken/PublicAdminBlocked", "cs", "PublicAdminBlocked")
-            .AddText("Auth/CreateToken/PrivateAdminDisabled", "cs", "PrivateAdminBlocked")
-            .Build();
+        Texts = TestServices.Texts.Value;
 
         var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"id\": \"" + Consts.UserId + "\"}") });
         return new CreateToken(ApiRequestContext, httpClientFactory, Client, Texts, DatabaseBuilder, TestServices.Configuration.Value);

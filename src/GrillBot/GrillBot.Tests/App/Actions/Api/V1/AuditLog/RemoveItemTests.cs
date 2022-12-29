@@ -15,11 +15,7 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
     protected override RemoveItem CreateAction()
     {
         var fileStorage = new FileStorageMock(TestServices.Configuration.Value);
-        var texts = new TextsBuilder()
-            .AddText("AuditLog/RemoveItem/NotFound", "cs", "NotFound")
-            .Build();
-
-        return new RemoveItem(ApiRequestContext, DatabaseBuilder, texts, fileStorage);
+        return new RemoveItem(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value, fileStorage);
     }
 
     [ExcludeFromCodeCoverage]

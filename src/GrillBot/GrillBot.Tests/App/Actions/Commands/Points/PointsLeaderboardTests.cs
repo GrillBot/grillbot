@@ -20,11 +20,7 @@ public class PointsLeaderboardTests : CommandActionTest<PointsLeaderboard>
 
     protected override PointsLeaderboard CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("Points/Board/Counts/FiveAndMore", "en-US", "{0} points")
-            .AddText("Points/Board/Row", "en-US", "**{0:N0}.** {1} ({2})")
-            .AddText("Points/Board/Title", "en-US", "Title")
-            .Build();
+        var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
 
         var action = new PointsLeaderboard(DatabaseBuilder, texts, formatHelper);

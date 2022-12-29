@@ -29,33 +29,7 @@ public class UserInfoTests : CommandActionTest<UserInfo>
 
     protected override UserInfo CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("User/InfoEmbed/Title", "en-US", "Title")
-            .AddText("User/UserStatus/Offline", "en-US", "Offline")
-            .AddText("User/InfoEmbed/Fields/State", "en-US", "State")
-            .AddText("User/InfoEmbed/Fields/CreatedAt", "en-US", "CreatedAt")
-            .AddText("User/InfoEmbed/Fields/ActiveDevices", "en-US", "ActiveDevices")
-            .AddText("User/InfoEmbed/Fields/Roles", "en-US", "Roles")
-            .AddText("User/InfoEmbed/NoRoles", "en-US", "NoRoles")
-            .AddText("User/InfoEmbed/Fields/JoinedAt", "en-US", "JoinedAt")
-            .AddText("User/InfoEmbed/Fields/PremiumSince", "en-US", "PremiumSince")
-            .AddText("User/InfoEmbed/Fields/Reactions", "en-US", "Reactions")
-            .AddText("User/InfoEmbed/Fields/Points", "en-US", "Points")
-            .AddText("User/InfoEmbed/Fields/MessageCount", "en-US", "MessageCount")
-            .AddText("User/InfoEmbed/Fields/UnverifyCount", "en-US", "UnverifyCount")
-            .AddText("User/InfoEmbed/Fields/SelfUnverifyCount", "en-US", "SelfUnverifyCount")
-            .AddText("User/InfoEmbed/Fields/UnverifyInfo", "en-US", "UnverifyInfo")
-            .AddText("User/InfoEmbed/ReasonRow", "en-US", "ReasonRow")
-            .AddText("User/InfoEmbed/UnverifyRow", "en-US", "UnverifyRow")
-            .AddText("User/InfoEmbed/UsedVanityInviteRow", "en-US", "UsedVanityInviteRow")
-            .AddText("User/InfoEmbed/UsedInviteRow", "en-US", "UsedInviteRow")
-            .AddText("User/InfoEmbed/VanityInvite", "en-US", "VanityInvite")
-            .AddText("User/InfoEmbed/Fields/UsedInvite", "en-US", "UsedInvite")
-            .AddText("User/InfoEmbed/Fields/MostActiveChannel", "en-US", "MostActiveChannel")
-            .AddText("User/InfoEmbed/Fields/LastMessageIn", "en-US", "LastMessageIn")
-            .Build();
-
-        return InitAction(new UserInfo(DatabaseBuilder, TestServices.Configuration.Value, texts));
+        return InitAction(new UserInfo(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Texts.Value));
     }
 
     private async Task InitDataAsync()

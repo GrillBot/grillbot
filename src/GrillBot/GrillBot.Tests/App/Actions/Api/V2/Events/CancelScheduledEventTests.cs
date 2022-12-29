@@ -13,12 +13,6 @@ public class CancelScheduledEventTests : ApiActionTest<CancelScheduledEvent>
 {
     protected override CancelScheduledEvent CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("GuildScheduledEvents/GuildNotFound", "cs", "GuildNotFound")
-            .AddText("GuildScheduledEvents/EventNotFound", "cs", "EventNotFound")
-            .AddText("GuildScheduledEvents/ForbiddenAccess", "cs", "Forbidden")
-            .Build();
-
         var events = new[]
         {
             new GuildScheduledEventBuilder(Consts.GuildEventId).SetCreator(ApiRequestContext.LoggedUser).SetStatus(GuildScheduledEventStatus.Scheduled).SetEndDate(DateTimeOffset.MaxValue)
@@ -30,7 +24,7 @@ public class CancelScheduledEventTests : ApiActionTest<CancelScheduledEvent>
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetEventsAction(events).Build();
         var discordClient = new ClientBuilder().SetGetGuildAction(guild).SetSelfUser(new SelfUserBuilder(ApiRequestContext.LoggedUser).Build()).Build();
 
-        return new CancelScheduledEvent(ApiRequestContext, discordClient, texts);
+        return new CancelScheduledEvent(ApiRequestContext, discordClient, TestServices.Texts.Value);
     }
 
     [TestMethod]

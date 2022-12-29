@@ -28,10 +28,7 @@ public class GetChannelSimpleListTests : ApiActionTest<GetChannelSimpleList>
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })
             .Build();
-        var texts = new TextsBuilder()
-            .Build();
-
-        return new GetChannelSimpleList(ApiRequestContext, client, TestServices.AutoMapper.Value, DatabaseBuilder, texts);
+        return new GetChannelSimpleList(ApiRequestContext, client, TestServices.AutoMapper.Value, DatabaseBuilder, TestServices.Texts.Value);
     }
 
     [TestMethod]

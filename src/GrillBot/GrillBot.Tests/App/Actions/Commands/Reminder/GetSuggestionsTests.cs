@@ -13,12 +13,7 @@ public class GetSuggestionsTests : CommandActionTest<GetSuggestions>
 
     protected override GetSuggestions CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("RemindModule/Suggestions/Incoming", "en-US", "{0}{1}{2}")
-            .AddText("RemindModule/Suggestions/Outgoing", "en-US", "{0}{1}{2}")
-            .Build();
-
-        return InitAction(new GetSuggestions(DatabaseBuilder, texts));
+        return InitAction(new GetSuggestions(DatabaseBuilder, TestServices.Texts.Value));
     }
 
     private async Task InitDataAsync()

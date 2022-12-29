@@ -26,16 +26,7 @@ public class GetChannelboardTests : CommandActionTest<GetChannelboard>
 
     protected override GetChannelboard CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("ChannelModule/GetChannelboard/NoActivity", "en-US", "NoActivity")
-            .AddText("ChannelModule/GetChannelboard/NoAccess", "en-US", "NoAccess")
-            .AddText("ChannelModule/GetChannelboard/Title", "en-US", "Title")
-            .AddText("ChannelModule/GetChannelboard/Row", "en-US", "Row")
-            .AddText("ChannelModule/GetChannelboard/Counts/One", "en-US", "One")
-            .AddText("ChannelModule/GetChannelboard/Counts/TwoToFour", "en-US", "TwoToFour")
-            .AddText("ChannelModule/GetChannelboard/Counts/FiveAndMore", "en-US", "FiveAndMore")
-            .Build();
-
+        var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
         return InitAction(new GetChannelboard(DatabaseBuilder, texts, formatHelper));
     }

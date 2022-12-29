@@ -30,13 +30,7 @@ public class UserAccessListTests : CommandActionTest<UserAccessList>
 
     protected override UserAccessList CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("User/AccessList/Title", "en-US", "Title")
-            .AddText("User/AccessList/NoAccess", "en-US", "NoAccess")
-            .AddText("User/AccessList/WithoutCategory", "en-US", "WithoutCategory")
-            .Build();
-
-        return InitAction(new UserAccessList(texts));
+        return InitAction(new UserAccessList(TestServices.Texts.Value));
     }
 
     [TestMethod]

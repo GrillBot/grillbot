@@ -21,11 +21,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
 {
     protected override GetAuditLogList CreateAction()
     {
-        var texts = new TextsBuilder()
-            .AddText("AuditLog/List/IdNotNumber", "cs", "{0}")
-            .Build();
-
-        return new GetAuditLogList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, texts);
+        return new GetAuditLogList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, TestServices.Texts.Value);
     }
 
     [TestMethod]

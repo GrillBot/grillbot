@@ -12,8 +12,7 @@ public class UpdateClientTests : ApiActionTest<UpdateClient>
 {
     protected override UpdateClient CreateAction()
     {
-        var texts = new TextsBuilder().AddText("PublicApiClients/NotFound", "cs", "NotFound").Build();
-        return new UpdateClient(ApiRequestContext, DatabaseBuilder, texts);
+        return new UpdateClient(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value);
     }
 
     private async Task InitDataAsync(string id)

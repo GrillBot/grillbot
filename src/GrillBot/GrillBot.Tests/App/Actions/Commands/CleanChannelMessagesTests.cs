@@ -23,8 +23,7 @@ public class CleanChannelMessagesTests : CommandActionTest<CleanChannelMessages>
 
     protected override CleanChannelMessages CreateAction()
     {
-        var texts = new TextsBuilder().AddText("ChannelModule/Clean/ResultMessage", "en-US", "{0}-{1}").Build();
-        return InitAction(new CleanChannelMessages(texts));
+        return InitAction(new CleanChannelMessages(TestServices.Texts.Value));
     }
 
     [TestMethod]

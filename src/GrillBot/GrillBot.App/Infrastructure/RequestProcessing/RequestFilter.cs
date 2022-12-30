@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.User;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -14,15 +14,14 @@ public class RequestFilter : IAsyncActionFilter
     private ApiRequest ApiRequest { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private IDiscordClient DiscordClient { get; }
-    private UserHearthbeatService UserHearthbeatService { get; }
+    private HearthbeatManager HearthbeatManager { get; }
 
-    public RequestFilter(ApiRequest apiRequest, ApiRequestContext apiRequestContext, IDiscordClient discordClient,
-        UserHearthbeatService userHearthbeatService)
+    public RequestFilter(ApiRequest apiRequest, ApiRequestContext apiRequestContext, IDiscordClient discordClient, HearthbeatManager hearthbeatManager)
     {
         ApiRequest = apiRequest;
         ApiRequestContext = apiRequestContext;
         DiscordClient = discordClient;
-        UserHearthbeatService = userHearthbeatService;
+        HearthbeatManager = hearthbeatManager;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -31,7 +30,7 @@ public class RequestFilter : IAsyncActionFilter
         await SetApiRequestContext(context);
 
         if (ApiRequestContext.LoggedUser != null)
-            await UserHearthbeatService.UpdateHearthbeatAsync(true, ApiRequestContext);
+            await HearthbeatManager.SetAsync(true, ApiRequestContext);
 
         if (!context.ModelState.IsValid)
         {

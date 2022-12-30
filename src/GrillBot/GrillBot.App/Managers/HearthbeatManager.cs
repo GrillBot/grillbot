@@ -2,18 +2,18 @@
 using GrillBot.Data.Exceptions;
 using GrillBot.Database.Enums;
 
-namespace GrillBot.App.Services.User;
+namespace GrillBot.App.Managers;
 
-public class UserHearthbeatService
+public class HearthbeatManager
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public UserHearthbeatService(GrillBotDatabaseBuilder databaseBuilder)
+    public HearthbeatManager(GrillBotDatabaseBuilder databaseBuilder)
     {
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task UpdateHearthbeatAsync(bool isActive, ApiRequestContext context)
+    public async Task SetAsync(bool isActive, ApiRequestContext context)
     {
         var isPublic = context.IsPublic();
 

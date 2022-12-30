@@ -39,8 +39,7 @@ public static class Extensions
             .AddSingleton<User.Points.PointsService>();
         
         services
-            .AddSingleton<User.UserService>()
-            .AddScoped<User.UserHearthbeatService>();
+            .AddSingleton<User.UserService>();
 
         services
             .AddSingleton<SearchingService>();

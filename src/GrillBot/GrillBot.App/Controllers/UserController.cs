@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Data.Models.API.Help;
 using Microsoft.AspNetCore.Http;
-using GrillBot.App.Services.User;
 using GrillBot.App.Infrastructure.Auth;
+using GrillBot.App.Managers;
 using GrillBot.Common.Models;
 using GrillBot.Database.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -133,10 +133,10 @@ public class UsersController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatOffAsync()
     {
-        var service = ServiceProvider.GetRequiredService<UserHearthbeatService>();
+        var service = ServiceProvider.GetRequiredService<HearthbeatManager>();
         var apiContext = ServiceProvider.GetRequiredService<ApiRequestContext>();
 
-        await service.UpdateHearthbeatAsync(false, apiContext);
+        await service.SetAsync(false, apiContext);
         return Ok();
     }
 

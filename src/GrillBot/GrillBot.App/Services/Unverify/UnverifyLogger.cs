@@ -93,9 +93,15 @@ public class UnverifyLogger
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
+        await repository.Guild.GetOrCreateGuildAsync(guild);
+        await repository.User.GetOrCreateUserAsync(from);
         await repository.GuildUser.GetOrCreateGuildUserAsync(from);
+
         if (from != toUser)
+        {
+            await repository.User.GetOrCreateUserAsync(toUser);
             await repository.GuildUser.GetOrCreateGuildUserAsync(toUser);
+        }
 
         await repository.AddAsync(entity);
         await repository.CommitAsync();

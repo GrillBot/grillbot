@@ -108,7 +108,7 @@ public class RemoveUnverify : ApiAction
         if (!IsForceRemove)
         {
             var muteRole = await UnverifyHelper.GetMuteRoleAsync(guild);
-            if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id))
+            if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id) && !profile.KeepMutedRole)
                 await profile.Destination.RemoveRoleAsync(muteRole);
 
             await profile.ReturnChannelsAsync(guild);

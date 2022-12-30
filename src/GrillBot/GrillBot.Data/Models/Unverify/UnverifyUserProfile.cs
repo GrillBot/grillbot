@@ -17,6 +17,7 @@ public class UnverifyUserProfile
     public string Reason { get; set; }
     public bool IsSelfUnverify { get; set; }
     public string Language { get; set; }
+    public bool KeepMutedRole { get; set; }
 
     public UnverifyUserProfile(IGuildUser destination, DateTime start, DateTime end, bool isSelfUnverify, string language)
     {

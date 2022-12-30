@@ -44,7 +44,8 @@ public class UnverifyProfileGenerator
             ChannelsToRemove = logData.ChannelsToRemove,
             Reason = logData.Reason,
             RolesToKeep = logData.RolesToKeep.Select(guild.GetRole).Where(o => o != null).ToList(),
-            RolesToRemove = logData.RolesToRemove.Select(guild.GetRole).Where(o => o != null).ToList()
+            RolesToRemove = logData.RolesToRemove.Select(guild.GetRole).Where(o => o != null).ToList(),
+            KeepMutedRole = logData.KeepMutedRole
         };
     }
 
@@ -76,11 +77,15 @@ public class UnverifyProfileGenerator
             }
         }
 
+        // Do not try remove muted role and roles managed by discord. 
         var unavailable = profile.RolesToRemove.FindAll(o => o.IsManaged || (mutedRole != null && o.Id == mutedRole.Id));
         if (unavailable.Count > 0)
         {
             profile.RolesToKeep.AddRange(unavailable);
             profile.RolesToRemove.RemoveAll(o => unavailable.Any(x => x.Id == o.Id));
+
+            // Keep muting role while access returning.
+            profile.KeepMutedRole = mutedRole != null && unavailable.Any(x => x.Id == mutedRole.Id);
         }
 
         foreach (var toKeep in keep)

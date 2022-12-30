@@ -36,7 +36,7 @@ public class UnverifyService
         Texts = texts;
         MessageGenerator = messageGenerator;
         DiscordClient = discordClient;
-        UnverifyHelper = new UnverifyHelper(databaseBuilder); 
+        UnverifyHelper = new UnverifyHelper(databaseBuilder);
 
         DiscordSocketClient.UserLeft += OnUserLeftAsync;
     }
@@ -79,7 +79,10 @@ public class UnverifyService
 
             await using var repository = DatabaseBuilder.CreateRepository();
 
+            await repository.Guild.GetOrCreateGuildAsync(guild);
+            await repository.User.GetOrCreateUserAsync(from);
             await repository.GuildUser.GetOrCreateGuildUserAsync(from);
+            await repository.User.GetOrCreateUserAsync(profile.Destination);
             var dbGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(profile.Destination, true);
 
             dbGuildUser.Unverify = new Database.Entity.Unverify

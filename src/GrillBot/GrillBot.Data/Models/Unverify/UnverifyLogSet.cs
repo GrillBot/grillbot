@@ -14,6 +14,7 @@ public class UnverifyLogSet
     public string Reason { get; set; }
     public bool IsSelfUnverify { get; set; }
     public string Language { get; set; }
+    public bool KeepMutedRole { get; set; }
 
     public static UnverifyLogSet FromProfile(UnverifyUserProfile profile)
     {
@@ -27,7 +28,8 @@ public class UnverifyLogSet
             RolesToRemove = profile.RolesToRemove.ConvertAll(o => o.Id),
             Start = profile.Start,
             IsSelfUnverify = profile.IsSelfUnverify,
-            Language = profile.Language
+            Language = profile.Language,
+            KeepMutedRole = profile.KeepMutedRole
         };
     }
 }

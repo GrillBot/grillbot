@@ -2,7 +2,7 @@
 using GrillBot.Database.Enums;
 using Quartz;
 
-namespace GrillBot.App.Services.User;
+namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 public class OnlineUsersCleanJob : Job

@@ -60,7 +60,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
         await Repository.AddAsync(GuildUser.FromDiscord(EmptyGuild, User));
 
         var channel = GuildChannel.FromDiscord(TextChannelWithDb, ChannelType.Text);
-        channel.Flags = (long)(ChannelFlags.CommandsDisabled | ChannelFlags.AutoReplyDeactivated | ChannelFlags.PointsDeactivated);
+        channel.Flags = (long)(ChannelFlag.CommandsDisabled | ChannelFlag.AutoReplyDeactivated | ChannelFlag.PointsDeactivated);
         channel.Users.Add(new GuildUserChannel
         {
             Count = 1,
@@ -73,7 +73,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
         await Repository.AddAsync(channel);
 
         var channelWithDisabledStats = GuildChannel.FromDiscord(TextChannelWithDbAndDisabledStats, ChannelType.Text);
-        channelWithDisabledStats.Flags = (long)ChannelFlags.StatsHidden;
+        channelWithDisabledStats.Flags = (long)ChannelFlag.StatsHidden;
         await Repository.AddAsync(channelWithDisabledStats);
 
         await Repository.CommitAsync();

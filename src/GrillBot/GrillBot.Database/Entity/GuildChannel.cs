@@ -64,7 +64,7 @@ public class GuildChannel
         return guildChannel;
     }
 
-    public bool HasFlag(ChannelFlags flags) => (Flags & (long)flags) != 0;
+    public bool HasFlag(Enums.ChannelFlag flag) => (Flags & (long)flag) != 0;
 
     public bool IsThread()
         => ChannelType is ChannelType.PublicThread or ChannelType.PrivateThread or ChannelType.NewsThread;
@@ -83,7 +83,7 @@ public class GuildChannel
 
     public void MarkDeleted(bool deleted)
     {
-        Flags = Flags.UpdateFlags((long)ChannelFlags.Deleted, deleted);
+        Flags = Flags.UpdateFlags((long)Enums.ChannelFlag.Deleted, deleted);
     }
 
     public void Update(IGuildChannel channel)

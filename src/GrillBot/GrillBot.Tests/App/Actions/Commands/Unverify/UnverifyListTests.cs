@@ -49,7 +49,7 @@ public class UnverifyListTests : CommandActionTest<UnverifyList>
         if (isSelfunverify)
         {
             var hiddenStatsChannel = GuildChannel.FromDiscord(Channels[0], ChannelType.Text);
-            hiddenStatsChannel.Flags |= (long)ChannelFlags.StatsHidden;
+            hiddenStatsChannel.Flags |= (long)ChannelFlag.StatsHidden;
             await Repository.AddAsync(hiddenStatsChannel);
         }
 

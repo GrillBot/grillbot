@@ -42,7 +42,7 @@ public class GetChannelDetail : ApiAction
             result.Threads = Mapper.Map<List<Data.Models.API.Channels.Channel>>(threads);
         }
 
-        if (channel.HasFlag(ChannelFlags.Deleted))
+        if (channel.HasFlag(ChannelFlag.Deleted))
             return result;
 
         var guild = await DiscordClient.GetGuildAsync(channel.GuildId.ToUlong(), CacheMode.CacheOnly);

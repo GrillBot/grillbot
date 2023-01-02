@@ -34,7 +34,7 @@ public class PointsHelper
     }
 
     public static bool CanIncrementPoints(User user, GuildChannel channel)
-        => !user.HaveFlags(UserFlags.PointsDisabled) && channel != null && !channel.HasFlag(ChannelFlags.PointsDeactivated);
+        => !user.HaveFlags(UserFlags.PointsDisabled) && channel != null && !channel.HasFlag(ChannelFlag.PointsDeactivated);
 
     public PointsTransaction CreateTransaction(GuildUser user, string reactionId, ulong messageId, bool ignoreCooldown)
     {

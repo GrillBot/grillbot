@@ -49,7 +49,7 @@ public class RequireUserPermsAttribute : PreconditionAttribute
     private static async Task CheckChannelAsync(GrillBotRepository repository, IGuildChannel channel, ITextsManager texts, string locale)
     {
         var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.GuildId, true);
-        if (channelData == null || channelData.HasFlag(ChannelFlags.CommandsDisabled))
+        if (channelData == null || channelData.HasFlag(ChannelFlag.CommandsDisabled))
             throw new UnauthorizedAccessException(texts["Permissions/Preconditions/ChannelDisabled", locale]);
     }
 }

@@ -48,7 +48,7 @@ public class UpdateChannelTests : ApiActionTest<UpdateChannel>
     public async Task ProcessAsync_ReloadAutoReply()
     {
         await InitChannelAsync();
-        await Action.ProcessAsync(Consts.ChannelId, new UpdateChannelParams { Flags = (long)ChannelFlags.AutoReplyDeactivated });
+        await Action.ProcessAsync(Consts.ChannelId, new UpdateChannelParams { Flags = (long)ChannelFlag.AutoReplyDeactivated });
     }
 
     private async Task InitChannelAsync()

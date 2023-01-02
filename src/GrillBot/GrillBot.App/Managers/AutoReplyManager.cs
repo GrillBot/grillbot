@@ -32,7 +32,7 @@ public class AutoReplyManager
 
             var supportedChannelTypes = new List<ChannelType> { ChannelType.Stage, ChannelType.Text, ChannelType.Voice, ChannelType.PrivateThread, ChannelType.PublicThread };
             var disabledChannels = await repository.Channel.GetAllChannelsAsync(true, false, false, supportedChannelTypes);
-            disabledChannels = disabledChannels.FindAll(o => o.HasFlag(ChannelFlags.AutoReplyDeactivated));
+            disabledChannels = disabledChannels.FindAll(o => o.HasFlag(ChannelFlag.AutoReplyDeactivated));
 
             DisabledChannels = disabledChannels.Select(o => o.ChannelId.ToUlong()).ToHashSet();
         }

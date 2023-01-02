@@ -149,13 +149,13 @@ public class ChannelInfo : CommandAction
         if (lastMessage != DateTime.MinValue)
             builder.AddField(Texts["ChannelModule/ChannelInfo/LastMessage", Locale], lastMessage.ToCzechFormat(), true);
 
-        var flagsData = Enum.GetValues<ChannelFlags>()
+        var flagsData = Enum.GetValues<ChannelFlag>()
             .Where(o => data.HasFlag(o))
             .Select(o => o switch
             {
-                ChannelFlags.CommandsDisabled => Texts["ChannelModule/ChannelInfo/Flags/CommandsDisabled", Locale],
-                ChannelFlags.AutoReplyDeactivated => Texts["ChannelModule/ChannelInfo/Flags/AutoReplyDeactivated", Locale],
-                ChannelFlags.StatsHidden => Texts["ChannelModule/ChannelInfo/Flags/StatsHidden", Locale],
+                ChannelFlag.CommandsDisabled => Texts["ChannelModule/ChannelInfo/Flags/CommandsDisabled", Locale],
+                ChannelFlag.AutoReplyDeactivated => Texts["ChannelModule/ChannelInfo/Flags/AutoReplyDeactivated", Locale],
+                ChannelFlag.StatsHidden => Texts["ChannelModule/ChannelInfo/Flags/StatsHidden", Locale],
                 _ => null
             })
             .Where(o => !string.IsNullOrEmpty(o))
@@ -164,7 +164,7 @@ public class ChannelInfo : CommandAction
             builder.AddField(Texts["ChannelModule/ChannelInfo/Configuration", Locale], string.Join("\n", flagsData));
 
         // Show statistics only if channel not have hidden stats or command was executed in the channel with hidden stats.
-        if ((!data.HasFlag(ChannelFlags.StatsHidden) || channel.Id == Context.Channel.Id) && data.Users.Count > 0)
+        if ((!data.HasFlag(ChannelFlag.StatsHidden) || channel.Id == Context.Channel.Id) && data.Users.Count > 0)
         {
             var topTenQuery = data.Users.OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt).Take(10);
             var topTenData = topTenQuery.Select((o, i) =>

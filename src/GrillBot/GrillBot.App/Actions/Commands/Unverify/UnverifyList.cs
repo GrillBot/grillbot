@@ -35,7 +35,7 @@ public class UnverifyList : CommandAction
 
         var user = await Context.Guild.GetUserAsync(unverify.UserId.ToUlong());
         var profile = UnverifyProfileGenerator.Reconstruct(unverify, user, Context.Guild);
-        var hiddenChannels = await repository.Channel.GetAllChannelsAsync(new List<string> { Context.Guild.Id.ToString() }, true, true, ChannelFlags.StatsHidden);
+        var hiddenChannels = await repository.Channel.GetAllChannelsAsync(new List<string> { Context.Guild.Id.ToString() }, true, true, ChannelFlag.StatsHidden);
         var hiddenChannelIds = hiddenChannels.Select(o => o.ChannelId.ToUlong()).ToHashSet();
 
         profile.ChannelsToRemove = profile.ChannelsToRemove.FindAll(o => !hiddenChannelIds.Contains(o.ChannelId));

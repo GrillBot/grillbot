@@ -38,11 +38,11 @@ public class GetChannelDetailTests : ApiActionTest<GetChannelDetail>
     [TestMethod]
     public async Task ProcessAsync_DeletedChannel()
     {
-        await InitChannelAsync((long)ChannelFlags.Deleted);
+        await InitChannelAsync((long)ChannelFlag.Deleted);
 
         var result = await Action.ProcessAsync(Consts.ChannelId);
         Assert.IsNotNull(result);
-        Assert.AreEqual((long)ChannelFlags.Deleted, result.Flags);
+        Assert.AreEqual((long)ChannelFlag.Deleted, result.Flags);
     }
 
     [TestMethod]

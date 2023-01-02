@@ -3,7 +3,7 @@
 namespace GrillBot.Database.Enums;
 
 [Flags]
-public enum ChannelFlags : long
+public enum ChannelFlag : long
 {
     None = 0,
 

@@ -48,7 +48,7 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>, IApiObject
             query = query.Where(o => o.ChannelType == ChannelType.Value);
 
         if (HideDeleted)
-            query = query.Where(o => (o.Flags & (long)ChannelFlags.Deleted) == 0);
+            query = query.Where(o => (o.Flags & (long)Database.Enums.ChannelFlag.Deleted) == 0);
 
         return query;
     }

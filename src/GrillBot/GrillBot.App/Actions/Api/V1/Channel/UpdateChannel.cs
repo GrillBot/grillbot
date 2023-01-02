@@ -37,7 +37,7 @@ public class UpdateChannel : ApiAction
             throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
         var before = new AuditChannelInfo(channel);
-        var reloadAutoReply = channel.HasFlag(ChannelFlags.AutoReplyDeactivated) != ((parameters.Flags & (long)ChannelFlags.AutoReplyDeactivated) != 0);
+        var reloadAutoReply = channel.HasFlag(ChannelFlag.AutoReplyDeactivated) != ((parameters.Flags & (long)ChannelFlag.AutoReplyDeactivated) != 0);
 
         channel.Flags = parameters.Flags;
 

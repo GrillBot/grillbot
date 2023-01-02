@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using System.Linq;
 using GrillBot.Common.Extensions.Discord;
 
@@ -12,7 +11,8 @@ public class ChannelsMappingProfile : AutoMapper.Profile
         CreateMap<IGuildChannel, Channel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
             .ForMember(dst => dst.Type, opt => opt.MapFrom(src => src.GetChannelType()))
-            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.HaveCategory() ? $"{src.Name} ({src.GetCategory().Name})" : src.Name));
+            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.HaveCategory() ? $"{src.Name} ({src.GetCategory().Name})" : src.Name))
+            .ForMember(dst => dst.Flags, opt => opt.Ignore());
 
         CreateMap<Database.Entity.GuildChannel, Channel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.ChannelId))
@@ -36,7 +36,8 @@ public class ChannelsMappingProfile : AutoMapper.Profile
                 opt.MapFrom(src => src.Users.Sum(o => o.Count));
             });
 
-        CreateMap<IGuildChannel, GuildChannelListItem>();
+        CreateMap<IGuildChannel, GuildChannelListItem>()
+            .ForMember(dst => dst.Flags, opt => opt.Ignore());
 
         CreateMap<Database.Entity.GuildChannel, ChannelboardItem>()
             .ForMember(dst => dst.Channel, opt => opt.MapFrom(src => src));

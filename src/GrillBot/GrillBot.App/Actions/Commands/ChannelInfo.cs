@@ -138,11 +138,12 @@ public class ChannelInfo : CommandAction
 
         // Do not show statistics if channel or parent channel have hidden stats.
         var hiddenStats = channelData.HasFlag(ChannelFlag.StatsHidden) || channelData.ParentChannel?.HasFlag(ChannelFlag.StatsHidden) == true;
-        var canShowStats = !hiddenStats || channel.Id == Context.Channel.Id;
+        var isInChannel = channel.Id == Context.Channel.Id || (channel is IThreadChannel { CategoryId: { } } thread && thread.CategoryId.Value == channel.Id);
+        var canShowStats = !hiddenStats || isInChannel;
         if (!canShowStats) return;
 
         var statistics = await repository.Channel.GetUserStatisticsAsync(channel, excludeThreads);
-        var visibleStatistics = statistics.FindAll(o => !o.Channel.HasFlag(ChannelFlag.StatsHidden));
+        var visibleStatistics = isInChannel ? statistics : statistics.FindAll(o => !o.Channel.HasFlag(ChannelFlag.StatsHidden));
         var messagesCount = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/MessageCountValue", Locale, visibleStatistics.Sum(o => o.Count));
         builder.AddField(Texts["ChannelModule/ChannelInfo/MessageCount", Locale], messagesCount, true);
 

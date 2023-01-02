@@ -138,7 +138,7 @@ public class ChannelInfo : CommandAction
 
         // Do not show statistics if channel or parent channel have hidden stats.
         var hiddenStats = channelData.HasFlag(ChannelFlag.StatsHidden) || channelData.ParentChannel?.HasFlag(ChannelFlag.StatsHidden) == true;
-        var isInChannel = channel.Id == Context.Channel.Id || (channel is IThreadChannel { CategoryId: { } } thread && thread.CategoryId.Value == channel.Id);
+        var isInChannel = channel.Id == Context.Channel.Id || (Context.Channel is IThreadChannel { CategoryId: { } } thread && thread.CategoryId.Value == channel.Id);
         var canShowStats = !hiddenStats || isInChannel;
         if (!canShowStats) return;
 
@@ -176,8 +176,7 @@ public class ChannelInfo : CommandAction
             var groupedStatistics = visibleStatistics
                 .GroupBy(o => o.UserId)
                 .OrderByDescending(o => o.Sum(x => x.Count))
-                .ThenByDescending(o => o.Max(x => x.LastMessageAt))
-                .Take(10);
+                .ThenByDescending(o => o.Max(x => x.LastMessageAt));
 
             var topTenData = new List<string>();
             var position = 0;
@@ -186,9 +185,11 @@ public class ChannelInfo : CommandAction
                 var messageCount = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/MessageCountValue", Locale, stats.Sum(x => x.Count));
                 var userId = stats.First().UserId.ToUlong();
                 var guildUser = await channel.Guild.GetUserAsync(userId);
+                if (guildUser == null) continue;
 
                 topTenData.Add($"**{position + 1,2}.** {guildUser.GetFullName()} ({messageCount})");
                 position++;
+                if (position == 10) break;
             }
 
             builder.AddField(Texts["ChannelModule/ChannelInfo/TopTen", Locale], string.Join("\n", topTenData));

@@ -18,7 +18,9 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     private static readonly ITextChannel TextChannelWithoutDb = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGetUsersAction(new[] { DefaultUserBuilder.Build() })
         .SetPermissions(AllowAll).Build();
 
-    private static readonly IGuild EmptyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelsAction(new[] { TextChannelWithoutDb }).Build();
+    private static readonly IGuild EmptyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelsAction(new[] { TextChannelWithoutDb })
+        .SetGetUsersAction(new[] { DefaultUserBuilder.Build() }).Build();
+
     private static readonly IGuildUser DefaultUser = DefaultUserBuilder.SetGuild(EmptyGuild).Build();
     private static readonly Overwrite[] DisabledPerms = { new(Consts.GuildId, PermissionTarget.Role, new OverwritePermissions(0, ulong.MaxValue)) };
     private static readonly IGuildChannel SecretChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(EmptyGuild).SetPermissions(DisabledPerms).Build();
@@ -60,7 +62,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
         await Repository.AddAsync(GuildUser.FromDiscord(EmptyGuild, User));
 
         var channel = GuildChannel.FromDiscord(TextChannelWithDb, ChannelType.Text);
-        channel.Flags = (long)(ChannelFlag.CommandsDisabled | ChannelFlag.AutoReplyDeactivated | ChannelFlag.PointsDeactivated);
+        channel.Flags = (long)(ChannelFlag.CommandsDisabled | ChannelFlag.AutoReplyDeactivated | ChannelFlag.EphemeralCommands | ChannelFlag.PointsDeactivated);
         channel.Users.Add(new GuildUserChannel
         {
             Count = 1,
@@ -82,7 +84,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     [TestMethod]
     public async Task ProcessAsync_WithoutAccess()
     {
-        var result = await Action.ProcessAsync(SecretChannel);
+        var result = await Action.ProcessAsync(SecretChannel, false);
 
         Assert.IsNull(result);
         Assert.IsFalse(Action.IsOk);
@@ -92,7 +94,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     [TestMethod]
     public async Task ProcessAsync_TextChannel_WithoutDb()
     {
-        var result = await Action.ProcessAsync(TextChannelWithoutDb);
+        var result = await Action.ProcessAsync(TextChannelWithoutDb, false);
 
         CheckValidEmbed(result);
         Assert.IsTrue(Action.IsOk);
@@ -103,7 +105,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     public async Task ProcessAsync_TextChannel_WithDb()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync(TextChannelWithDb);
+        var result = await Action.ProcessAsync(TextChannelWithDb, false);
 
         CheckValidEmbed(result);
         Assert.IsTrue(Action.IsOk);
@@ -114,7 +116,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     public async Task ProcessAsync_TextChannel_WithDbAndDisabledStats()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync(TextChannelWithDbAndDisabledStats);
+        var result = await Action.ProcessAsync(TextChannelWithDbAndDisabledStats, false);
 
         CheckValidEmbed(result);
         Assert.IsTrue(Action.IsOk);
@@ -124,7 +126,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     [TestMethod]
     public async Task ProcessAsync_Thread()
     {
-        var result = await Action.ProcessAsync(Thread);
+        var result = await Action.ProcessAsync(Thread, false);
 
         CheckValidEmbed(result);
         Assert.IsTrue(Action.IsOk);
@@ -134,7 +136,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     [TestMethod]
     public async Task ProcessAsync_Forum()
     {
-        var result = await Action.ProcessAsync(Forum);
+        var result = await Action.ProcessAsync(Forum, false);
 
         CheckValidEmbed(result);
         Assert.IsTrue(Action.IsOk);

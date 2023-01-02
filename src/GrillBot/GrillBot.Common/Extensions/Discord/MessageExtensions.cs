@@ -16,16 +16,11 @@ public static class MessageExtensions
 
     public static bool IsCommand(this IMessage message, ref int argumentPosition, IUser user, string prefix)
     {
-        if (message.Content.Length < prefix.Length)
-            return false;
-
         var isInteractionCommand = message.IsInteractionCommand();
+        if (isInteractionCommand) return true;
 
-        if (message is not IUserMessage msg) return isInteractionCommand;
-        if (msg.HasMentionPrefix(user, ref argumentPosition) || msg.HasStringPrefix(prefix, ref argumentPosition))
-            return true;
-
-        return isInteractionCommand;
+        if (message is not IUserMessage msg || message.Content.Length < prefix.Length) return false;
+        return msg.HasMentionPrefix(user, ref argumentPosition) || msg.HasStringPrefix(prefix, ref argumentPosition);
     }
 
     public static bool TryLoadMessage(this IMessage message, out IUserMessage? userMessage)

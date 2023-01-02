@@ -36,7 +36,7 @@ public class ChannelRepository : RepositoryBase
             query = query.AsNoTracking();
 
         if (!includeDeleted)
-            query = query.Where(o => (o.Flags & (long)Enums.ChannelFlag.Deleted) == 0);
+            query = query.Where(o => (o.Flags & (long)ChannelFlag.Deleted) == 0);
 
         return query;
     }
@@ -70,7 +70,7 @@ public class ChannelRepository : RepositoryBase
                 );
 
             if (!showInvisible)
-                query = query.Where(o => (o.Flags & (long)Enums.ChannelFlag.StatsHidden) == 0);
+                query = query.Where(o => (o.Flags & (long)ChannelFlag.StatsHidden) == 0);
 
             return await query.ToListAsync();
         }
@@ -89,7 +89,7 @@ public class ChannelRepository : RepositoryBase
         }
     }
 
-    public async Task<List<GuildChannel>> GetAllChannelsAsync(List<string> guildIds, bool ignoreThreads, bool disableTracking = false, Enums.ChannelFlag filterFlag = Enums.ChannelFlag.None)
+    public async Task<List<GuildChannel>> GetAllChannelsAsync(List<string> guildIds, bool ignoreThreads, bool disableTracking = false, ChannelFlag filterFlag = ChannelFlag.None)
     {
         using (CreateCounter())
         {
@@ -98,7 +98,7 @@ public class ChannelRepository : RepositoryBase
 
             if (ignoreThreads)
                 query = query.Where(o => !new[] { ChannelType.NewsThread, ChannelType.PrivateThread, ChannelType.PublicThread }.Contains(o.ChannelType));
-            if (filterFlag > Enums.ChannelFlag.None)
+            if (filterFlag > ChannelFlag.None)
                 query = query.Where(o => (o.Flags & (long)filterFlag) != 0);
 
             return await query.ToListAsync();
@@ -131,7 +131,7 @@ public class ChannelRepository : RepositoryBase
                     o.Count > 0 &&
                     o.GuildId == user.GuildId.ToString() &&
                     o.UserId == user.Id.ToString() &&
-                    (o.Channel.Flags & (long)Enums.ChannelFlag.Deleted) == 0 &&
+                    (o.Channel.Flags & (long)ChannelFlag.Deleted) == 0 &&
                     o.Channel.ChannelType != ChannelType.Category
                 );
 
@@ -146,10 +146,10 @@ public class ChannelRepository : RepositoryBase
             var baseQuery = Context.UserChannels.AsNoTracking()
                 .Where(o =>
                     o.GuildId == user.GuildId.ToString() &&
-                    (o.Channel.Flags & (long)Enums.ChannelFlag.StatsHidden) == 0 &&
+                    (o.Channel.Flags & (long)ChannelFlag.StatsHidden) == 0 &&
                     o.Channel.ChannelType == ChannelType.Text &&
                     o.Count > 0 &&
-                    (o.Channel.Flags & (long)Enums.ChannelFlag.Deleted) == 0 &&
+                    (o.Channel.Flags & (long)ChannelFlag.Deleted) == 0 &&
                     o.UserId == user.Id.ToString()
                 );
 
@@ -227,7 +227,7 @@ public class ChannelRepository : RepositoryBase
                 .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString() && availableChannelIds.Contains(o.ChannelId));
 
             if (!showInvisible)
-                query = query.Where(o => (o.Channel.Flags & (long)Enums.ChannelFlag.StatsHidden) == 0);
+                query = query.Where(o => (o.Channel.Flags & (long)ChannelFlag.StatsHidden) == 0);
 
             var groupQuery = query.GroupBy(o => o.ChannelId)
                 .Select(o => new
@@ -247,8 +247,8 @@ public class ChannelRepository : RepositoryBase
         using (CreateCounter())
         {
             return await Context.Channels.AsNoTracking()
-                .Where(o => (o.Flags & (long)Enums.ChannelFlag.Deleted) == 0)
-                .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.ChannelId == channel.Id.ToString() && (o.Flags & (long)Enums.ChannelFlag.EphemeralCommands) != 0);
+                .Where(o => (o.Flags & (long)ChannelFlag.Deleted) == 0)
+                .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.ChannelId == channel.Id.ToString() && (o.Flags & (long)ChannelFlag.EphemeralCommands) != 0);
         }
     }
 
@@ -279,6 +279,25 @@ public class ChannelRepository : RepositoryBase
 
             await Context.AddAsync(userChannel);
             return userChannel;
+        }
+    }
+
+    public async Task<List<GuildUserChannel>> GetUserStatisticsAsync(IGuildChannel channel, bool excludeThreads)
+    {
+        using (CreateCounter())
+        {
+            var query = Context.UserChannels.AsNoTracking()
+                .Include(o => o.Channel.ParentChannel)
+                .Where(o =>
+                    o.GuildId == channel.GuildId.ToString() &&
+                    o.Count > 0 &&
+                    (o.Channel.Flags & (long)ChannelFlag.Deleted) == 0
+                );
+
+            query = excludeThreads
+                ? query.Where(o => o.ChannelId == channel.Id.ToString())
+                : query.Where(o => o.ChannelId == channel.Id.ToString() || o.Channel.ParentChannelId == channel.Id.ToString());
+            return await query.ToListAsync();
         }
     }
 }

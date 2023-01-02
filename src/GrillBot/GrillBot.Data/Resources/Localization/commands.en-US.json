@@ -94,6 +94,16 @@
       "description": "Channel information",
       "channel": {
         "name": "channel"
+      },
+      "excludeThreads": {
+        "name": "exclude-threads",
+        "description": "Exclude threads from statistics?",
+        "Hide threads": {
+          "name": "Exclude threads"
+        },
+        "Show threads": {
+          "name": "Include threads"
+        }
       }
     },
     "board": {

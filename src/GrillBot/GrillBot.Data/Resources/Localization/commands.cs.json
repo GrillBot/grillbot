@@ -94,6 +94,16 @@
       "description": "Informace o kanálu",
       "channel": {
         "name": "kanal"
+      },
+      "excludeThreads": {
+        "name": "vynechat-vlakna",
+        "description": "Vynechat vlákna ze statistik?",
+        "Hide threads": {
+          "name": "Vynechat vlákna"
+        },
+        "Show threads": {
+          "name": "Zobrazit výláka"
+        }
       }
     },
     "board": {

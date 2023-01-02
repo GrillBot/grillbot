@@ -87,7 +87,9 @@
       "Flags": {
         "CommandsDisabled": "All commands disabled",
         "AutoReplyDeactivated": "Automatic replies disabled",
-        "StatsHidden": "Hidden statistics"
+        "StatsHidden": "Hidden statistics",
+        "EphemeralCommands": "Ephemeral commands",
+        "PointsDeactivated": "Points deactivated"
       },
       "Configuration": "Configuration",
       "TopTen": "TOP 10 users"

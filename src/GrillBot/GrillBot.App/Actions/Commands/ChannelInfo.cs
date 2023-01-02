@@ -3,7 +3,6 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Enums.Internal;
 
 namespace GrillBot.App.Actions.Commands;
 
@@ -23,12 +22,12 @@ public class ChannelInfo : CommandAction
         Texts = texts;
     }
 
-    public async Task<Embed> ProcessAsync(IGuildChannel channel)
+    public async Task<Embed> ProcessAsync(IGuildChannel channel, bool excludeThreads)
     {
         await CheckAccessAsync(channel);
         if (!IsOk) return null;
 
-        var channelType = GetChannelType(channel);
+        var channelType = channel.GetChannelType()!.Value;
         var isThread = channelType is ChannelType.NewsThread or ChannelType.PrivateThread or ChannelType.PublicThread;
         var builder = Init(channel, isThread);
         SetTitle(builder, channelType);
@@ -45,7 +44,7 @@ public class ChannelInfo : CommandAction
         }
 
         if (channelType == ChannelType.Forum) await SetForumInfoAsync(builder, channel);
-        await SetStatisticsAndConfigurationAsync(builder, channel);
+        await SetStatisticsAndConfigurationAsync(builder, channel, excludeThreads);
 
         return builder.Build();
     }
@@ -55,9 +54,6 @@ public class ChannelInfo : CommandAction
         if (await channel.HaveAccessAsync((IGuildUser)Context.User)) return;
         ErrorMessage = Texts["ChannelModule/ChannelInfo/NoAccess", Locale];
     }
-
-    private static ChannelType GetChannelType(IChannel channel)
-        => channel is IForumChannel ? ChannelType.Forum : channel.GetChannelType()!.Value;
 
     private EmbedBuilder Init(IChannel channel, bool isThread)
     {
@@ -118,9 +114,6 @@ public class ChannelInfo : CommandAction
         if (!string.IsNullOrEmpty(forum.Topic))
             builder.WithDescription(forum.Topic.Cut(EmbedBuilder.MaxDescriptionLength));
 
-        var tagsCount = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/TagsCountValue", Locale, forum.Tags.Count);
-        builder.AddField(Texts["ChannelModule/ChannelInfo/TagsCount", Locale], tagsCount, true);
-
         var activeThreads = (await forum.GetActiveThreadsAsync()).Where(o => o.CategoryId == forum.Id).ToList();
         var privateThreadsCount = activeThreads.Count(o => o.Type == ThreadType.PrivateThread);
         var publicThreadsCount = activeThreads.Count(o => o.Type == ThreadType.PublicThread);
@@ -131,31 +124,44 @@ public class ChannelInfo : CommandAction
             threadsFormatBuilder.AppendLine(FormatHelper.FormatNumber("ChannelModule/ChannelInfo/PrivateThreadCountValue", Locale, publicThreadsCount));
         if (threadsFormatBuilder.Length > 0)
             builder.AddField(Texts["ChannelModule/ChannelInfo/ThreadCount", Locale], threadsFormatBuilder.ToString());
+
+        var tagsCount = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/TagsCountValue", Locale, forum.Tags.Count);
+        builder.AddField(Texts["ChannelModule/ChannelInfo/TagsCount", Locale], tagsCount, true);
     }
 
-    private async Task SetStatisticsAndConfigurationAsync(EmbedBuilder builder, IGuildChannel channel)
+    private async Task SetStatisticsAndConfigurationAsync(EmbedBuilder builder, IGuildChannel channel, bool excludeThreads)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.GuildId, true, ChannelsIncludeUsersMode.IncludeExceptInactive);
-        if (data == null) return;
 
-        var messagesCount = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/MessageCountValue", Locale, data.Users.Sum(o => o.Count));
+        var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.GuildId, true, includeParent: true);
+        if (channelData == null) return;
+
+        // Do not show statistics if channel or parent channel have hidden stats.
+        var hiddenStats = channelData.HasFlag(ChannelFlag.StatsHidden) || channelData.ParentChannel?.HasFlag(ChannelFlag.StatsHidden) == true;
+        var canShowStats = !hiddenStats || channel.Id == Context.Channel.Id;
+        if (!canShowStats) return;
+
+        var statistics = await repository.Channel.GetUserStatisticsAsync(channel, excludeThreads);
+        var visibleStatistics = statistics.FindAll(o => !o.Channel.HasFlag(ChannelFlag.StatsHidden));
+        var messagesCount = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/MessageCountValue", Locale, visibleStatistics.Sum(o => o.Count));
         builder.AddField(Texts["ChannelModule/ChannelInfo/MessageCount", Locale], messagesCount, true);
 
-        var firstMessage = data.Users.Count == 0 ? DateTime.MinValue : data.Users.Min(o => o.FirstMessageAt);
-        var lastMessage = data.Users.Count == 0 ? DateTime.MinValue : data.Users.Max(o => o.LastMessageAt);
+        var firstMessage = visibleStatistics.Count == 0 ? DateTime.MinValue : visibleStatistics.Min(o => o.FirstMessageAt);
+        var lastMessage = visibleStatistics.Count == 0 ? DateTime.MinValue : visibleStatistics.Max(o => o.LastMessageAt);
         if (firstMessage != DateTime.MinValue)
             builder.AddField(Texts["ChannelModule/ChannelInfo/FirstMessage", Locale], firstMessage.ToCzechFormat(), true);
         if (lastMessage != DateTime.MinValue)
             builder.AddField(Texts["ChannelModule/ChannelInfo/LastMessage", Locale], lastMessage.ToCzechFormat(), true);
 
         var flagsData = Enum.GetValues<ChannelFlag>()
-            .Where(o => data.HasFlag(o))
+            .Where(o => channelData.HasFlag(o))
             .Select(o => o switch
             {
                 ChannelFlag.CommandsDisabled => Texts["ChannelModule/ChannelInfo/Flags/CommandsDisabled", Locale],
                 ChannelFlag.AutoReplyDeactivated => Texts["ChannelModule/ChannelInfo/Flags/AutoReplyDeactivated", Locale],
                 ChannelFlag.StatsHidden => Texts["ChannelModule/ChannelInfo/Flags/StatsHidden", Locale],
+                ChannelFlag.EphemeralCommands => Texts["ChannelModule/ChannelInfo/Flags/EphemeralCommands", Locale],
+                ChannelFlag.PointsDeactivated => Texts["ChannelModule/ChannelInfo/Flags/PointsDeactivated", Locale],
                 _ => null
             })
             .Where(o => !string.IsNullOrEmpty(o))
@@ -164,14 +170,25 @@ public class ChannelInfo : CommandAction
             builder.AddField(Texts["ChannelModule/ChannelInfo/Configuration", Locale], string.Join("\n", flagsData));
 
         // Show statistics only if channel not have hidden stats or command was executed in the channel with hidden stats.
-        if ((!data.HasFlag(ChannelFlag.StatsHidden) || channel.Id == Context.Channel.Id) && data.Users.Count > 0)
+        if (visibleStatistics.Count > 0)
         {
-            var topTenQuery = data.Users.OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt).Take(10);
-            var topTenData = topTenQuery.Select((o, i) =>
+            var groupedStatistics = visibleStatistics
+                .GroupBy(o => o.UserId)
+                .OrderByDescending(o => o.Sum(x => x.Count))
+                .ThenByDescending(o => o.Max(x => x.LastMessageAt))
+                .Take(10);
+
+            var topTenData = new List<string>();
+            var position = 0;
+            foreach (var stats in groupedStatistics)
             {
-                var messageCount = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/MessageCountValue", Locale, o.Count);
-                return $"**{i + 1,2}.** {o.User!.FullName(true)} ({messageCount})";
-            });
+                var messageCount = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/MessageCountValue", Locale, stats.Sum(x => x.Count));
+                var userId = stats.First().UserId.ToUlong();
+                var guildUser = await channel.Guild.GetUserAsync(userId);
+
+                topTenData.Add($"**{position + 1,2}.** {guildUser.GetFullName()} ({messageCount})");
+                position++;
+            }
 
             builder.AddField(Texts["ChannelModule/ChannelInfo/TopTen", Locale], string.Join("\n", topTenData));
         }

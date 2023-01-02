@@ -87,7 +87,9 @@
       "Flags": {
         "CommandsDisabled": "Deaktivovány všechny příkazy",
         "AutoReplyDeactivated": "Deaktivovány automatické odpovědi",
-        "StatsHidden": "Skryté statistiky"
+        "StatsHidden": "Skryté statistiky",
+        "EphemeralCommands": "Skryté příkazy",
+        "PointsDeactivated": "Body deaktivovány"
       },
       "Configuration": "Konfigurace",
       "TopTen": "TOP 10 uživatelů"

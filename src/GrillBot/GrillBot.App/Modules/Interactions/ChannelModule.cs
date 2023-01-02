@@ -17,10 +17,14 @@ public class ChannelModule : InteractionsModuleBase
     }
 
     [SlashCommand("info", "Channel information")]
-    public async Task GetChannelInfoAsync(SocketGuildChannel channel)
+    public async Task GetChannelInfoAsync(
+        SocketGuildChannel channel,
+        [Choice("Hide threads", "true")] [Choice("Show threads", "false")]
+        bool excludeThreads = false
+    )
     {
         using var command = GetCommand<Actions.Commands.ChannelInfo>();
-        var embed = await command.Command.ProcessAsync(channel);
+        var embed = await command.Command.ProcessAsync(channel, excludeThreads);
 
         if (command.Command.IsOk)
             await SetResponseAsync(embed: embed);

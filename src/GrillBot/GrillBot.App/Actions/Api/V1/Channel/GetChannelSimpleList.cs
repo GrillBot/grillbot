@@ -84,6 +84,6 @@ public class GetChannelSimpleList : ApiAction
     {
         return channels.DistinctBy(o => o.Id)
             .OrderBy(o => o.Name)
-            .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type is ChannelType.PublicThread or ChannelType.PrivateThread or ChannelType.NewsThread ? " (Thread)" : "")}".Trim());
+            .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type is ChannelType.PublicThread or ChannelType.PrivateThread or ChannelType.NewsThread ? "(Thread)" : "")}".Trim());
     }
 }

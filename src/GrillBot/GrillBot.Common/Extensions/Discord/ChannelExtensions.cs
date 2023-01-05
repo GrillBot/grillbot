@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 
 namespace GrillBot.Common.Extensions.Discord;
@@ -99,10 +100,12 @@ public static class ChannelExtensions
     {
         return channel switch
         {
-            SocketCategoryChannel categoryChannel => categoryChannel,
-            SocketThreadChannel thread => thread.ParentChannel,
-            SocketVoiceChannel voiceChannel => voiceChannel.Category,
-            SocketTextChannel textChannel => textChannel.Category,
+            SocketCategoryChannel socketCategoryChannel => socketCategoryChannel,
+            RestCategoryChannel restCategoryChannel => restCategoryChannel,
+            SocketThreadChannel socketThreadChannel => socketThreadChannel.ParentChannel,
+            SocketVoiceChannel socketVoiceChannel => socketVoiceChannel.Category,
+            SocketTextChannel socketTextChannel => socketTextChannel.Category,
+            SocketForumChannel socketForumChannel => socketForumChannel.Category,
             _ => null
         };
     }

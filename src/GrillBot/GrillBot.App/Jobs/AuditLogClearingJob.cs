@@ -47,7 +47,7 @@ public class AuditLogClearingJob : Job
                 new XAttribute("Id", item.Id),
                 new XAttribute("Type", item.Type.ToString()),
                 new XAttribute("CreatedAt", item.CreatedAt.ToString("o")),
-                new XAttribute("Data", string.IsNullOrEmpty(item.Data) ? "-" : item.Data)
+                new XElement("Data", string.IsNullOrEmpty(item.Data) ? "-" : item.Data)
             );
 
             if (item.Guild != null)
@@ -62,24 +62,17 @@ public class AuditLogClearingJob : Job
             if (item.GuildChannel != null)
                 element.Add(new XAttribute("ChannelId", item.ChannelId!));
 
-            if (item.Files.Count > 0)
+            foreach (var fileEntity in item.Files)
             {
-                var files = new XElement("Files", new XAttribute("Count", item.Files.Count));
+                var file = new XElement("File");
 
-                foreach (var fileEntity in item.Files)
-                {
-                    var file = new XElement("File");
+                file.Add(
+                    new XAttribute("Id", fileEntity.Id),
+                    new XAttribute("Filename", fileEntity.Filename),
+                    new XAttribute("Size", fileEntity.Size)
+                );
 
-                    file.Add(
-                        new XAttribute("Id", fileEntity.Id),
-                        new XAttribute("Filename", fileEntity.Filename),
-                        new XAttribute("Size", fileEntity.Size)
-                    );
-
-                    files.Add(file);
-                }
-
-                element.Add(files);
+                element.Add(file);
             }
 
             logRoot.Add(element);
@@ -93,7 +86,9 @@ public class AuditLogClearingJob : Job
 
     private static IEnumerable<XElement> TransformGuilds(IEnumerable<Database.Entity.Guild> guilds)
     {
-        return guilds.DistinctBy(o => o.Id)
+        return guilds
+            .Where(o => o != null)
+            .DistinctBy(o => o.Id)
             .Select(o => new XElement("Guild", new XAttribute("Id", o.Id), new XAttribute("Name", o.Name)));
     }
 
@@ -149,12 +144,15 @@ public class AuditLogClearingJob : Job
                 new XAttribute("Id", ch.ChannelId),
                 new XAttribute("Name", ch.Name),
                 new XAttribute("Type", ch.ChannelType.ToString()),
-                new XAttribute("GuildId", ch.GuildId),
-                new XAttribute("UserPermissionsCount", ch.UserPermissionsCount),
-                new XAttribute("RolePermissionsCount", ch.RolePermissionsCount),
-                new XAttribute("Flags", ch.Flags)
+                new XAttribute("GuildId", ch.GuildId)
             );
 
+            if (ch.UserPermissionsCount > 0)
+                channel.Add(new XAttribute("UserPermissionsCount", ch.UserPermissionsCount));
+            if (ch.RolePermissionsCount > 0)
+                channel.Add(new XAttribute("RolePermissionsCount", ch.RolePermissionsCount));
+            if (ch.Flags > 0)
+                channel.Add(new XAttribute("Flags", ch.Flags));
             if (!string.IsNullOrEmpty(ch.ParentChannelId))
                 channel.Add(new XAttribute("ParentChannelId", ch.ParentChannelId));
 

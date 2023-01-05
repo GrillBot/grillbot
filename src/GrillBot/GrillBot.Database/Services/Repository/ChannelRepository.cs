@@ -147,7 +147,6 @@ public class ChannelRepository : RepositoryBase
                 .Where(o =>
                     o.GuildId == user.GuildId.ToString() &&
                     (o.Channel.Flags & (long)ChannelFlag.StatsHidden) == 0 &&
-                    o.Channel.ChannelType == ChannelType.Text &&
                     o.Count > 0 &&
                     (o.Channel.Flags & (long)ChannelFlag.Deleted) == 0 &&
                     o.UserId == user.Id.ToString()

@@ -38,7 +38,7 @@ public class UserInfo : CommandAction
         SetGuildInfo(builder, user);
         await SetDatabaseInfoAsync(builder, user, entity, repository);
 
-        if (!OverLimit || !ExecutorEntity.HaveFlags(UserFlags.WebAdmin))
+        if (!OverLimit || !ExecutorEntity!.HaveFlags(UserFlags.WebAdmin))
             return builder.Build();
 
         builder.Fields.RemoveAt(EmbedBuilder.MaxFieldCount - 1); // Remove last item to add info about over limit fields.

@@ -25,13 +25,6 @@ public class ForumBuilder : BuilderBase<IForumChannel>
         return this;
     }
 
-    public ForumBuilder SetGuild(IGuild guild)
-    {
-        Mock.Setup(o => o.Guild).Returns(guild);
-        Mock.Setup(o => o.GuildId).Returns(guild.Id);
-        return this;
-    }
-
     public ForumBuilder SetPermissions(IEnumerable<Overwrite> overwrites)
     {
         var overwritesData = overwrites.ToList().AsReadOnly();

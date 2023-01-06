@@ -3,7 +3,6 @@ using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Emotes;
 using GrillBot.App.Services.Emotes;
-using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -42,7 +41,7 @@ public class EmoteModule : InteractionsModuleBase
     public async Task GetEmoteStatsListAsync(
         [Summary("order", "Sort by")] [Choice("Number of uses", "UseCount")] [Choice("Date and time of last use", "LastOccurence")]
         string orderBy,
-        [Summary("direction", "Ascending/Descending")] [Choice("Ascending", "true")] [Choice("Descending", "false")]
+        [Summary("direction", "Ascending/Descending")] [Choice("Ascending", "false")] [Choice("Descending", "true")]
         bool descending,
         [Summary("user", "Show statistics of only one user")]
         IUser ofUser = null,
@@ -50,18 +49,17 @@ public class EmoteModule : InteractionsModuleBase
         bool filterAnimated = false
     )
     {
-        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(Context, ofUser, orderBy, descending, filterAnimated);
-        var pagesCount = (int)Math.Ceiling(result.Item2 / ((double)EmbedBuilder.MaxFieldCount - 1));
+        using var command = GetCommand<Actions.Commands.Emotes.GetEmotesList>();
+        var (embed, paginationComponent) = await command.Command.ProcessAsync(0, orderBy, descending, ofUser, filterAnimated);
 
-        var components = ComponentsHelper.CreatePaginationComponents(1, pagesCount, "emote");
-        await SetResponseAsync(embed: result.Item1, components: components);
+        await SetResponseAsync(embed: embed, components: paginationComponent);
     }
 
     [RequireSameUserAsAuthor]
     [ComponentInteraction("emote:*", ignoreGroupNames: true)]
     public async Task HandleEmoteListPaginationAsync(int page)
     {
-        var handler = new EmotesListPaginationHandler(EmotesCommandService, Context.Client, page);
+        var handler = new EmotesListPaginationHandler(ServiceProvider, page);
         await handler.ProcessAsync(Context);
     }
 }

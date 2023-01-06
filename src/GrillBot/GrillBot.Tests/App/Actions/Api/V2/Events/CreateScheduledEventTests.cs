@@ -50,16 +50,12 @@ public class CreateScheduledEventTests : ApiActionTest<CreateScheduledEvent>
             {
                 await ProcessAsync(null, Consts.GuildId, @case);
             }
-            catch (Exception ex)
+            catch (ValidationException ex)
             {
-                var vex = ex as ValidationException;
-                if (vex == null)
-                    Assert.Fail("Exception type is not ValidationException");
-
-                Assert.IsNotNull(vex.ValidationResult);
-                Assert.IsTrue(vex.Value == null || (vex.Value is DateTime dt && dt == DateTime.MinValue));
-                Assert.IsFalse(string.IsNullOrEmpty(vex.ValidationResult.ErrorMessage));
-                Assert.IsTrue(vex.ValidationResult.MemberNames.Any());
+                Assert.IsNotNull(ex.ValidationResult);
+                Assert.IsTrue(ex.Value == null || (ex.Value is DateTime dt && dt == DateTime.MinValue));
+                Assert.IsFalse(string.IsNullOrEmpty(ex.ValidationResult.ErrorMessage));
+                Assert.IsTrue(ex.ValidationResult.MemberNames.Any());
             }
         }
     }

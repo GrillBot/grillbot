@@ -561,5 +561,13 @@
   },
   "Invite": {
     "NotFound": "Unable to find invite with code {0}."
+  },
+  "Emote": {
+    "List": {
+      "Title": "Usage statistics of emotes",
+      "NoStatsOfUser": "No emote usage has been recorded for user `{0}` yet.",
+      "NoStats": "No emote usage has been recorded.",
+      "FieldData": "Count of usage: **{0}**\nCount of users: **{1}**\nFirst use: **{2}**\nLast use: **{3}**"
+    }
   }
 }

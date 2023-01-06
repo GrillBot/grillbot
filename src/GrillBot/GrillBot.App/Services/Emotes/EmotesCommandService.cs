@@ -1,71 +1,18 @@
-﻿using GrillBot.App.Modules.Implementations.Emotes;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
-using GrillBot.Data.Models.API.Emotes;
-using GrillBot.Database.Models;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services.Emotes;
 
 public class EmotesCommandService
 {
-    private IServiceProvider ServiceProvider { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
 
-    public EmotesCommandService(IServiceProvider serviceProvider, GrillBotDatabaseBuilder databaseBuilder,
-        IDiscordClient discordClient)
+    public EmotesCommandService(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
     {
-        ServiceProvider = serviceProvider;
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
-    }
-
-    public async Task<Tuple<Embed, long>> GetEmoteStatListEmbedAsync(IInteractionContext context, IUser ofUser, string orderBy, bool descending,
-        bool filterAnimated, int page = 1)
-    {
-        var @params = new EmotesListParams
-        {
-            GuildId = context.Guild.Id.ToString(),
-            UserId = ofUser?.Id.ToString(),
-            FilterAnimated = filterAnimated,
-            Sort = new SortParams
-            {
-                Descending = descending,
-                OrderBy = orderBy
-            },
-            Pagination = new PaginatedParams
-            {
-                Page = page,
-                PageSize = EmbedBuilder.MaxFieldCount - 1
-            }
-        };
-
-        using var scope = ServiceProvider.CreateScope();
-        var apiService = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetStatsOfEmotes>();
-        var list = await apiService.ProcessAsync(@params, false);
-
-        return Tuple.Create(
-            new EmbedBuilder().WithEmoteList(list.Data, context.User, ofUser, context.Guild, orderBy, descending, page).Build(),
-            list.TotalItemsCount
-        );
-    }
-
-    public async Task<long> GetEmoteStatsCountAsync(IInteractionContext context, IUser ofUser, bool filterAnimated)
-    {
-        var @params = new EmotesListParams
-        {
-            GuildId = context.Guild.Id.ToString(),
-            UserId = ofUser?.Id.ToString(),
-            FilterAnimated = filterAnimated
-        };
-
-        using var scope = ServiceProvider.CreateScope();
-        var apiService = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetStatsOfEmotes>();
-        var list = await apiService.ProcessAsync(@params, false);
-
-        return list.TotalItemsCount;
     }
 
     public async Task<Embed> GetInfoAsync(IEmote emoteItem, IUser caller)

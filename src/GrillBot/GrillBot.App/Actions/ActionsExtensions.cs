@@ -159,6 +159,10 @@ public static class ActionsExtensions
             .AddScoped<Commands.Birthday.AddBirthday>()
             .AddScoped<Commands.Birthday.HaveBirthday>()
             .AddScoped<Commands.Birthday.RemoveBirthday>();
+        
+        // Emotes
+        services
+            .AddScoped<Commands.Emotes.GetEmotesList>();
 
         // Points
         services

@@ -20,7 +20,7 @@ public class EmotesCommandServiceTests : ServiceTest<EmotesCommandService>
             .SetGetGuildsAction(new[] { Guild })
             .Build();
 
-        return new EmotesCommandService(TestServices.EmptyProvider.Value, DatabaseBuilder, dcClient);
+        return new EmotesCommandService(DatabaseBuilder, dcClient);
     }
 
     [TestMethod]

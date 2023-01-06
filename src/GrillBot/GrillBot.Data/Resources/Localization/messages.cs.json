@@ -561,5 +561,13 @@
   },
   "Invite": {
     "NotFound": "Nepodařilo se najít pozvánku s kódem {0}"
+  },
+  "Emote": {
+    "List": {
+      "Title": "Statistika používání emotů",
+      "NoStatsOfUser": "Pro uživatele `{0}` ještě nebyla zaznamenáno žádné použití emotu.",
+      "NoStats": "Ještě nebylo zaznamenáno žádné použití emotu.",
+      "FieldData": "Počet použití: **{0}**\nPoužilo uživatelů: **{1}**\nPrvní použití: **{2}**\nPoslední použití: **{3}**"
+    }
   }
 }

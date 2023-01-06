@@ -212,6 +212,9 @@ public static class TextsBuildHelper
             .AddText("ChannelModule/ChannelInfo/PublicThreadCountValue/One", "en-US", "One")
             .AddText("ChannelModule/ChannelInfo/PrivateThreadCountValue/One", "en-US", "One")
             .AddText("ChannelModule/ChannelInfo/ThreadCount", "en-US", "ThreadCount")
+            .AddText("Emote/List/NoStatsOfUser", "en-US", "{0}")
+            .AddText("Emote/List/NoStats", "en-US", "NoStats")
+            .AddText("Emote/List/FieldData", "en-US", "{0}{1}{2}{3}")
             .Build();
     }
 }

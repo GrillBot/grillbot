@@ -1,4 +1,6 @@
-﻿namespace GrillBot.Tests.Infrastructure;
+﻿using Discord;
+
+namespace GrillBot.Tests.Infrastructure;
 
 public static class Consts
 {
@@ -27,4 +29,6 @@ public static class Consts
     public const ulong ForumId = 1006473144682418257;
     public const string ForumName = "GrillBot-Forum-Name";
     public const ulong AuditLogEntryId = 1051929488801419304;
+
+    public static readonly Emote OnlineEmote = Emote.Parse(OnlineEmoteId);
 }

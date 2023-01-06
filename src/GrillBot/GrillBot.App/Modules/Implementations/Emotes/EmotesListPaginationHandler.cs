@@ -1,21 +1,18 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.Emotes;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Emotes;
 
 public class EmotesListPaginationHandler : ComponentInteractionHandler
 {
     private int Page { get; }
-    private EmotesCommandService EmotesCommandService { get; }
-    private IDiscordClient DiscordClient { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public EmotesListPaginationHandler(EmotesCommandService emotesCommandService, IDiscordClient discordClient, int page)
+    public EmotesListPaginationHandler(IServiceProvider serviceProvider, int page)
     {
-        EmotesCommandService = emotesCommandService;
-        DiscordClient = discordClient;
         Page = page;
+        ServiceProvider = serviceProvider;
     }
 
     public override async Task ProcessAsync(IInteractionContext context)
@@ -26,31 +23,25 @@ public class EmotesListPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var guild = await DiscordClient.GetGuildAsync(metadata.GuildId);
-        if (guild == null)
-        {
-            await context.Interaction.DeferAsync();
-            return;
-        }
+        var ofUser = metadata.OfUserId == null ? null : await context.Client.FindUserAsync(metadata.OfUserId.Value);
 
-        var ofUser = metadata.OfUserId == null ? null : await DiscordClient.FindUserAsync(metadata.OfUserId.Value);
+        using var scope = ServiceProvider.CreateScope();
+        var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.Emotes.GetEmotesList>();
+        action.Init(context);
 
-        var count = await EmotesCommandService.GetEmoteStatsCountAsync(context, ofUser, metadata.FilterAnimated);
-        var pagesCount = (int)Math.Ceiling(count / ((double)EmbedBuilder.MaxFieldCount - 1));
+        var pagesCount = await action.ComputePagesCountAsync(metadata.OrderBy, metadata.Descending, ofUser, metadata.FilterAnimated);
         var newPage = CheckNewPageNumber(Page, pagesCount);
-        if (newPage + 1 == metadata.Page)
+        if (newPage == metadata.Page)
         {
             await context.Interaction.DeferAsync();
             return;
         }
 
-        var result = await EmotesCommandService.GetEmoteStatListEmbedAsync(context, ofUser, metadata.OrderBy, metadata.Descending,
-            metadata.FilterAnimated, newPage + 1);
-
+        var (embed, paginationComponent) = await action.ProcessAsync(newPage, metadata.OrderBy, metadata.Descending, ofUser, metadata.FilterAnimated);
         await component.UpdateAsync(msg =>
         {
-            msg.Components = ComponentsHelper.CreatePaginationComponents(newPage, pagesCount, "emote");
-            msg.Embed = result.Item1;
+            msg.Components = paginationComponent;
+            msg.Embed = embed;
         });
     }
 }

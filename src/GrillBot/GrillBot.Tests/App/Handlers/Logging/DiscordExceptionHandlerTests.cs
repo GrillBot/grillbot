@@ -45,9 +45,6 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
     public override void Cleanup()
     {
-        if (File.Exists("LastErrorDateTest.txt"))
-            File.Delete("LastErrorDateTest.txt");
-
         TemporaryFile.Dispose();
     }
 

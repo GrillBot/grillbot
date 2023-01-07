@@ -36,6 +36,6 @@ jobs:
         with:
           python-version: 3.8
       - name: Crosscheck JSON content
-        run: python3 src/CI/check-texts.py
+        run: python3 CI/check-texts.py
 
 

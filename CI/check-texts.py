@@ -2,7 +2,7 @@ import os
 import pathlib
 import json
 
-data_dir = "src/GrillBot/GrillBot.Data/Resources"
+data_dir = "src/GrillBot.Data/Resources"
 
 
 def get_json_files() -> list:

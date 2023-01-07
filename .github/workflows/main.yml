@@ -20,7 +20,7 @@ jobs:
 
       - name: Run build of testing image
         shell: bash
-        working-directory: src/GrillBot
+        working-directory: src
         run: |
           sudo docker build -t grillbot-test-image -f ./Dockerfile.Test .
           sudo docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}" | grep 'grillbot-test-image')

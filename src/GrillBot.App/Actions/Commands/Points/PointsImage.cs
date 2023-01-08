@@ -52,8 +52,8 @@ public sealed class PointsImage : CommandAction, IDisposable
         using var image = new MagickImage(dominantColor, width, height);
 
         var drawable = new Drawables()
-            .StrokeAntialias(true)
-            .TextAntialias(true)
+            .EnableStrokeAntialias()
+            .EnableTextAntialias()
             .FillColor(textBackground)
             .RoundRectangle(border, border, width - border, height - border, 20, 20)
             .TextAlignment(TextAlignment.Left)

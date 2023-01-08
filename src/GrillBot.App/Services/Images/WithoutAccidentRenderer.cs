@@ -58,8 +58,8 @@ public sealed class WithoutAccidentRenderer : RendererBase, IDisposable
     private static void DrawNumber(Drawables drawables, int daysCount)
     {
         drawables
-            .StrokeAntialias(true)
-            .TextAntialias(true)
+            .EnableStrokeAntialias()
+            .EnableTextAntialias()
             .FillColor(MagickColors.Black)
             .TextAlignment(TextAlignment.Center)
             .Font("Open Sans")

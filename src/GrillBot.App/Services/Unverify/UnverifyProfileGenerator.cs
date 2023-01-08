@@ -116,7 +116,7 @@ public class UnverifyProfileGenerator
     {
         var channels = (await guild.GetChannelsAsync()).ToList();
         channels = channels
-            .FindAll(o => o is (IVoiceChannel or ITextChannel) and not IThreadChannel); // Select channels but ignore channels
+            .FindAll(o => o is (IVoiceChannel or ITextChannel or IForumChannel) and not IThreadChannel); // Select channels but ignore channels
 
         var channelsToRemove = channels
             .Select(o => new ChannelOverride(o, o.GetPermissionOverwrite(user) ?? OverwritePermissions.InheritAll))

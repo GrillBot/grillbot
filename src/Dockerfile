@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS Build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS Build
 
 EXPOSE 5000
 ENV TZ=Europe/Prague
@@ -39,7 +39,7 @@ COPY "GrillBot.App/" /src/GrillBot.App
 RUN mkdir -p /publish
 RUN dotnet publish /src/GrillBot.App -c Release -o /publish --no-restore -r linux-x64 --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 as FinalImage
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 as FinalImage
 LABEL org.opencontainers.image.source https://github.com/grillbot/grillbot
 
 # Dependencies

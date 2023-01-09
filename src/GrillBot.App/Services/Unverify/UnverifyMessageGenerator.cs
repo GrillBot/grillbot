@@ -33,7 +33,7 @@ public class UnverifyMessageGenerator
             : Texts["Unverify/Message/PrivateUnverifyWithReason", locale].FormatWith(guild.Name, endDateTime, profile.Reason);
     }
 
-    public string CreateUpdatePmMessage(IGuild guild, DateTime endDateTime, string reason, string locale)
+    public string CreateUpdatePmMessage(IGuild guild, DateTime endDateTime, string? reason, string locale)
     {
         var formatedEnd = endDateTime.ToCzechFormat();
 
@@ -41,7 +41,7 @@ public class UnverifyMessageGenerator
         return Texts[$"Unverify/Message/{textId}", locale].FormatWith(guild.Name, formatedEnd, reason);
     }
 
-    public string CreateUpdateChannelMessage(IGuildUser user, DateTime endDateTime, string reason, string locale)
+    public string CreateUpdateChannelMessage(IGuildUser user, DateTime endDateTime, string? reason, string locale)
     {
         var username = user.GetDisplayName();
         var formatedEnd = endDateTime.ToCzechFormat();

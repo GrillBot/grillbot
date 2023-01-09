@@ -37,7 +37,7 @@ public class PurgePinsTests : CommandActionTest<PurgePins>
         var result = await Action.ProcessAsync(Messages.Length, null);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual(Messages.Length.ToString(), result);
+        Assert.IsTrue(result.Contains(Messages.Length.ToString()));
     }
 
     [TestMethod]
@@ -46,6 +46,6 @@ public class PurgePinsTests : CommandActionTest<PurgePins>
         var result = await Action.ProcessAsync(100, (ITextChannel)Channel);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual(Messages.Length.ToString(), result);
+        Assert.IsTrue(result.Contains(Messages.Length.ToString()));
     }
 }

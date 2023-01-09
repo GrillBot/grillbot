@@ -81,6 +81,7 @@ public class PermissionsReaderTests : CommandActionTest<PermissionsReader>
         var item = new UselessPermission(TextChannel, User, UselessPermissionType.Administrator);
         var summary = Action.CreateSummary(new List<UselessPermission> { item });
 
-        Assert.AreEqual("1-1-1", summary);
+        Assert.IsFalse(string.IsNullOrEmpty(summary));
+        Assert.AreEqual(3, summary.Count(o => o == '1'));
     }
 }

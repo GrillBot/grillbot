@@ -16,8 +16,8 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 [TestClass]
 public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
 {
-    private IGuild Guild { get; set; }
-    private IGuildUser[] Users { get; set; }
+    private IGuild Guild { get; set; } = null!;
+    private IGuildUser[] Users { get; set; } = null!;
 
     protected override UpdateUnverify CreateAction()
     {
@@ -86,13 +86,13 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_GuildNotFound() =>
-        await Action.ProcessAsync(Consts.GuildId + 1, Consts.UserId, null);
+        await Action.ProcessAsync(Consts.GuildId + 1, Consts.UserId, new UpdateUnverifyParams());
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_DestUserNotFound()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 2, null);
+        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 2, new UpdateUnverifyParams());
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
@@ -118,9 +118,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
         await InitDataAsync(true, DateTime.Now.AddDays(1));
 
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue });
-
-        Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("GrillBot-User-Username#1234,31. 12. 9999 23:59:59", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "31. 12. 9999 23:59:59");
     }
 
     [TestMethod]
@@ -129,9 +127,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
         await InitDataAsync(true, DateTime.Now.AddDays(1));
 
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
-
-        Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("GrillBot-User-Username#1234,31. 12. 9999 23:59:59,Reason", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "31. 12. 9999 23:59:59", "Reason");
     }
 
     [TestMethod]
@@ -140,8 +136,6 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
         await InitDataAsync(true, DateTime.Now.AddDays(1));
 
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 1, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
-
-        Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("GrillBot-User-Username#1234,31. 12. 9999 23:59:59,Reason", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "31. 12. 9999 23:59:59", "Reason");
     }
 }

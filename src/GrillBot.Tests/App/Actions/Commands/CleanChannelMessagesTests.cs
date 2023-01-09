@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Linq;
+using Discord;
 using GrillBot.App.Actions.Commands;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -32,11 +33,12 @@ public class CleanChannelMessagesTests : CommandActionTest<CleanChannelMessages>
     [TestMethod]
     public async Task ProcessAsync_WithChannel() => await ProcessTestAsync((ITextChannel)Channel);
 
-    private async Task ProcessTestAsync(ITextChannel channel)
+    private async Task ProcessTestAsync(ITextChannel? channel)
     {
         var result = await Action.ProcessAsync(int.MaxValue, channel);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.IsTrue(result.Contains("3-1"));
+        Assert.AreEqual(1, result.Count(o => o == '3'));
+        Assert.AreEqual(1, result.Count(o => o == '1'));
     }
 }

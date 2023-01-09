@@ -58,7 +58,6 @@ public class GetChannelboardTests : CommandActionTest<GetChannelboard>
 
         Assert.IsNotNull(embed);
         Assert.IsNull(pagination);
-        Assert.AreEqual("Row", embed.Description);
     }
 
     [TestMethod]

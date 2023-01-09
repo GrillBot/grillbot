@@ -19,7 +19,7 @@ public class PurgePins : CommandAction
         Texts = texts;
     }
 
-    public async Task<string> ProcessAsync(int count, ITextChannel channel)
+    public async Task<string> ProcessAsync(int count, ITextChannel? channel)
     {
         channel ??= (ITextChannel)Context.Channel;
 

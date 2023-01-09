@@ -31,5 +31,5 @@ public static class TestServices
     public static readonly Lazy<ILoggerFactory> LoggerFactory = new(LoggingHelper.CreateLoggerFactory, LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<RandomizationManager> Random = new(() => new RandomizationManager(), LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<IWebHostEnvironment> TestingEnvironment = new(() => new EnvironmentBuilder().AsTest().Build(), LazyThreadSafetyMode.ExecutionAndPublication);
-    public static readonly Lazy<ITextsManager> Texts = new(TextsBuildHelper.CreateTexts, LazyThreadSafetyMode.ExecutionAndPublication);
+    public static readonly Lazy<ITextsManager> Texts = new(() => new TextsManager("./Resources", "messages"), LazyThreadSafetyMode.ExecutionAndPublication);
 }

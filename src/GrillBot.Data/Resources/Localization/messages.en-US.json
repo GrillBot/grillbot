@@ -201,7 +201,8 @@
       "AdminChannelNotFound": "Failed to locate admin channel.",
       "MuteRoleNotFound": "Failed to find the role that represents silencing the user on unverify.",
       "EmoteSuggestionChannelNotFound": "Failed to find channel for emote suggestions.",
-      "VoteChannelNotFound": "Could not find public polling channel."
+      "VoteChannelNotFound": "Could not find public polling channel.",
+      "BotRoomChannelNotFound": "Could not find channel for bots."
     }
   },
   "MathModule": {
@@ -461,7 +462,8 @@
         "DestUserNotFound": "Unable to transfer points because the user to receive the points was not found.",
         "SameAccounts": "Points cannot be transferred between the same accounts.",
         "UserIsBot": "Unable to transfer points because user {0} is a bot.",
-        "InsufficientAmount": "Unable to transfer points from user {0} because he does not have enough points."
+        "InsufficientAmount": "Unable to transfer points from user {0} because he does not have enough points.",
+        "GuildNotFound": "Requested guild wasn't found."
       }
     },
     "Board": {
@@ -568,6 +570,31 @@
       "NoStatsOfUser": "No emote usage has been recorded for user `{0}` yet.",
       "NoStats": "No emote usage has been recorded.",
       "FieldData": "Count of usage: **{0}**\nCount of users: **{1}**\nFirst use: **{2}**\nLast use: **{3}**"
+    },
+    "Info": {
+      "NotSupported": "Unicode emojis not supported in this command.",
+      "NoActivity": "Wasn't detected some activity of this emote yet.",
+      "Row": "**{0}.** {1} ({2})",
+      "UnknownUser": "Unknown user",
+      "Embed": {
+        "Title": "Emote information",
+        "Fields": {
+          "Name": "Name",
+          "Animated": "Animated",
+          "FirstOccurence": "First occurence",
+          "LastOccurence": "Last occurence",
+          "FromLastUse": "Duration from last use",
+          "UseCount": "Usage count",
+          "UsedUsers": "Users count",
+          "Guild": "Server",
+          "TopTen": "TOP 10",
+          "Link": "Link"
+        },
+        "Boolean": {
+          "True": "Yes",
+          "False": "No"
+        }
+      }
     }
   }
 }

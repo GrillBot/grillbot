@@ -137,9 +137,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         await InitDataAsync(false, true, true);
 
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
-
-        Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("GrillBot-User-Username#1234", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
 
     [TestMethod]
@@ -149,9 +147,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         await InitDataAsync(true, false, true);
 
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
-
-        Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("GrillBot-User-Username#1234(Missing log data for unverify reconstruction.)", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "(Missing log data for unverify reconstruction.)");
     }
 
     [TestMethod]
@@ -178,8 +174,6 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     {
         await InitDataAsync(true, false, false);
         var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, force);
-
-        Assert.IsFalse(string.IsNullOrEmpty(result));
-        Assert.AreEqual("GrillBot-User-Username#1234", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
 }

@@ -15,9 +15,6 @@ public static class Extensions
             .AddSingleton<DirectApi.IDirectApiService, DirectApi.DirectApiService>();
 
         services
-            .AddSingleton<Emotes.EmotesCommandService>();
-
-        services
             .AddSingleton<FileStorageFactory>();
 
         services

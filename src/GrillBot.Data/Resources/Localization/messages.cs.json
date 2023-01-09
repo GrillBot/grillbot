@@ -138,11 +138,6 @@
       "Note": "Poznámka"
     }
   },
-  "EmoteModule": {
-    "GetEmoteInfo": {
-      "NoActivity": "U tohoto emote ještě nebyla zaznamenána žádná aktivita."
-    }
-  },
   "GuildModule": {
     "GetInfo": {
       "CategoryCount": "Počet kategorií",
@@ -201,7 +196,8 @@
       "AdminChannelNotFound": "Nepodařilo se dohledat administrátorský kanál",
       "MuteRoleNotFound": "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.",
       "EmoteSuggestionChannelNotFound": "Nepodařilo se dohledat kanál pro návrhy emotů.",
-      "VoteChannelNotFound": "Nepodařilo se dohledat kanál pro veřejná hlasování."
+      "VoteChannelNotFound": "Nepodařilo se dohledat kanál pro veřejná hlasování.",
+      "BotRoomChannelNotFound": "Nepodařilo se dohledat kanál pro boty."
     }
   },
   "MathModule": {
@@ -461,7 +457,8 @@
         "DestUserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
         "SameAccounts": "Nelze převést body mezi stejnými účty.",
         "UserIsBot": "Nelze převést body, protože uživatel {0} není běžný uživatel.",
-        "InsufficientAmount": "Nelze převést body od uživatele {0}, protože jich nemá dostatek."
+        "InsufficientAmount": "Nelze převést body od uživatele {0}, protože jich nemá dostatek.",
+        "GuildNotFound": "Požadovaný server nebyl nalezen."
       }
     },
     "Board": {
@@ -568,6 +565,31 @@
       "NoStatsOfUser": "Pro uživatele `{0}` ještě nebyla zaznamenáno žádné použití emotu.",
       "NoStats": "Ještě nebylo zaznamenáno žádné použití emotu.",
       "FieldData": "Počet použití: **{0}**\nPoužilo uživatelů: **{1}**\nPrvní použití: **{2}**\nPoslední použití: **{3}**"
+    },
+    "Info": {
+      "NotSupported": "Unicode emoji nejsou v tomto příkazu podporovány.",
+      "NoActivity": "U tohoto emote ještě nebyla zaznamenána žádná aktivita.",
+      "Row": "**{0}.** {1} ({2})",
+      "UnknownUser": "Neznámý uživatel",
+      "Embed": {
+        "Title": "Informace o emote",
+        "Fields": {
+          "Name": "Název",
+          "Animated": "Animován",
+          "FirstOccurence": "První výskyt",
+          "LastOccurence": "Poslední výskyt",
+          "FromLastUse": "Od posledního použití",
+          "UseCount": "Počet použití",
+          "UsedUsers": "Počet uživatelů",
+          "Guild": "Server",
+          "TopTen": "TOP 10",
+          "Link": "Odkaz"
+        },
+        "Boolean": {
+          "True": "Ano",
+          "False": "Ne"
+        }
+      }
     }
   }
 }

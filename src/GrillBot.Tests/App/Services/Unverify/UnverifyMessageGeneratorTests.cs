@@ -22,7 +22,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true, "cs");
         var result = Service.CreateUnverifyMessageToChannel(profile, "cs");
 
-        Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "04. 02. 2022 00:00:00");
     }
 
     [TestMethod]
@@ -35,7 +35,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false, "cs") { Reason = "Duvod" };
         var result = Service.CreateUnverifyMessageToChannel(profile, "cs");
 
-        Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00,Duvod", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "04. 02. 2022 00:00:00", "Duvod");
     }
 
     [TestMethod]
@@ -48,7 +48,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true, "cs");
         var result = Service.CreateUnverifyPmMessage(profile, guild, "cs");
 
-        Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00", result);
+        StringHelper.CheckTextParts(result, "GrillBot-Guild-Name", "04. 02. 2022 00:00:00");
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false, "cs") { Reason = "Duvod" };
         var result = Service.CreateUnverifyPmMessage(profile, guild, "cs");
 
-        Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00,Duvod", result);
+        StringHelper.CheckTextParts(result, "GrillBot-Guild-Name", "04. 02. 2022 00:00:00", "Duvod");
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var end = new DateTime(2022, 02, 04);
         var result = Service.CreateUpdatePmMessage(guild, end, null, "cs");
 
-        Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00", result);
+        StringHelper.CheckTextParts(result, "GrillBot-Guild-Name", "04. 02. 2022 00:00:00");
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var end = new DateTime(2022, 02, 04);
         var result = Service.CreateUpdatePmMessage(guild, end, "Reason", "cs");
 
-        Assert.AreEqual("GrillBot-Guild-Name,04. 02. 2022 00:00:00,Reason", result);
+        StringHelper.CheckTextParts(result, "GrillBot-Guild-Name", "04. 02. 2022 00:00:00", "Reason");
     }
 
     [TestMethod]
@@ -91,9 +91,9 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var end = new DateTime(2022, 02, 04);
         var result = Service.CreateUpdateChannelMessage(guildUser, end, null, "cs");
 
-        Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "04. 02. 2022 00:00:00");
     }
-    
+
     [TestMethod]
     public void CreateUpdateChannelMessageWithReason()
     {
@@ -102,7 +102,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var end = new DateTime(2022, 02, 04);
         var result = Service.CreateUpdateChannelMessage(guildUser, end, "Reason", "cs");
 
-        Assert.AreEqual("GrillBot-User-Username#1234,04. 02. 2022 00:00:00,Reason", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "04. 02. 2022 00:00:00", "Reason");
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var result = Service.CreateRemoveAccessManuallyPmMessage(guild, "cs");
 
-        Assert.AreEqual("GrillBot-Guild-Name", result);
+        StringHelper.CheckTextParts(result, "GrillBot-Guild-Name");
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var result = Service.CreateRemoveAccessManuallyToChannel(guildUser, "cs");
 
-        Assert.AreEqual("GrillBot-User-Username#1234", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var exception = new Exception("Test");
         var result = Service.CreateRemoveAccessManuallyFailed(guildUser, exception, "cs");
 
-        Assert.AreEqual("GrillBot-User-Username#1234(Test)", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "(Test)");
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var result = Service.CreateRemoveAccessUnverifyNotFound(guildUser, "cs");
 
-        Assert.AreEqual("GrillBot-User-Username#1234", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
 
     [TestMethod]
@@ -152,6 +152,6 @@ public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerato
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var result = Service.CreateUnverifyFailedToChannel(guildUser, "cs");
 
-        Assert.AreEqual("GrillBot-User-Username#1234", result);
+        StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
 }

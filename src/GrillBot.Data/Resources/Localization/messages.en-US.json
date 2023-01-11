@@ -482,6 +482,11 @@
           "Messages": "Points of guild from messages for the last year.",
           "Reactions": "Points of guild from reactions for the last year.",
           "Summary": "Total points of guild for the last year."
+        },
+        "User": {
+          "Messages": "Points of users from messages for the last year.",
+          "Reactions": "Points of users from reactions for the last year.",
+          "Summary": "Total points of users for the last year."
         }
       }
     }

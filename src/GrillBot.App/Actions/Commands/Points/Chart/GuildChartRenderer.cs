@@ -27,18 +27,6 @@ public class GuildChartRenderer
         return new MagickImage(graphData);
     }
 
-    private static IEnumerable<(DateTime day, int points)> FilterData(IEnumerable<(DateTime day, int messagePoints, int reactionPoints)> data, ChartsFilter filter)
-    {
-        var query = filter switch
-        {
-            ChartsFilter.Messages => data.Select(o => (o.day, o.messagePoints)),
-            ChartsFilter.Reactions => data.Select(o => (o.day, o.reactionPoints)),
-            _ => data.Select(o => (o.day, o.messagePoints + o.reactionPoints))
-        };
-
-        return query.Where(o => o.Item2 > 0);
-    }
-
     private ChartRequestData CreateRequest(ChartsFilter filter, IEnumerable<(DateTime day, int messagePoints, int reactionPoints)> data, IGuild guild)
     {
         var request = ChartRequestBuilder.CreateCommonRequest();
@@ -50,16 +38,20 @@ public class GuildChartRenderer
             _ => Texts["Points/Chart/Title/Guild/Summary", Locale]
         };
 
-        var filteredData = FilterData(data, filter).ToList();
+        var filteredData = ChartRequestBuilder.FilterData(data, filter).ToList();
+
         request.Data.Datasets.Add(new Dataset
         {
-            Data = filteredData.ConvertAll(o => o.points),
+            Data = filteredData.ConvertAll(o => new DataPoint
+            {
+                Label = o.day.ToCzechFormat(true),
+                Value = filteredData.Where(x => x.day <= o.day).Sum(x => x.points)
+            }),
             Color = "black",
             Label = guild.Name,
             Width = 1
         });
 
-        request.Data.Labels.AddRange(filteredData.ConvertAll(o => o.day.ToCzechFormat(true)));
         return request;
     }
 }

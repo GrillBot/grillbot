@@ -477,6 +477,11 @@
           "Messages": "Body celého serveru ze zpráv za poslední rok",
           "Reactions": "Body celého serveru z reakcí za poslední rok",
           "Summary": "Celkové body serveru za poslední rok"
+        },
+        "User": {
+          "Messages": "Body uživatelů ze zpráv za poslední rok",
+          "Reactions": "Body uživatelů z reakcí za poslední rok",
+          "Summary": "Celkové body uživatelů za poslední rok"
         }
       }
     }

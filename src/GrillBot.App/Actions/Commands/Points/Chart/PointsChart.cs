@@ -1,31 +1,25 @@
 ﻿using GrillBot.App.Infrastructure.IO;
-using GrillBot.App.Services.Graphics;
-using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Database.Models;
 using GrillBot.Database.Services.Repository;
 using ImageMagick;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
 
 public class PointsChart : CommandAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private ITextsManager Texts { get; }
-    private IGraphicsClient GraphicsClient { get; }
-    private RandomizationManager RandomizationManager { get; }
+    private IServiceProvider ServiceProvider { get; }
 
     // Dictionary<UserId, List<(Day, MessagePoints, ReactionPoints)>
     private Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>>? UsersData { get; set; }
     private List<(DateTime day, int messagePoints, int reactionPoints)>? GuildData { get; set; }
 
-    public PointsChart(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IGraphicsClient graphicsClient, RandomizationManager randomizationManager)
+    public PointsChart(GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider)
     {
         DatabaseBuilder = databaseBuilder;
-        Texts = texts;
-        GraphicsClient = graphicsClient;
-        RandomizationManager = randomizationManager;
+        ServiceProvider = serviceProvider;
     }
 
     public async Task<TemporaryFile> ProcessAsync(ChartType type, IEnumerable<IUser>? users, ChartsFilter filter)
@@ -105,25 +99,25 @@ public class PointsChart : CommandAction
     {
         if (type == ChartType.GuildChart)
         {
-            var renderer = new GuildChartRenderer(Texts, GraphicsClient, Locale);
+            var renderer = ServiceProvider.GetRequiredService<GuildChartRenderer>();
 
             if ((filter & ChartsFilter.Messages) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Messages));
+                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Messages, Locale));
             if ((filter & ChartsFilter.Reactions) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Reactions));
+                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Reactions, Locale));
             if ((filter & ChartsFilter.Summary) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Summary));
+                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Summary, Locale));
         }
         else if (type == ChartType.UserChart)
         {
-            var renderer = new UsersChartRenderer(Texts, GraphicsClient, RandomizationManager, Locale);
+            var renderer = ServiceProvider.GetRequiredService<UsersChartRenderer>();
 
             if ((filter & ChartsFilter.Messages) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Messages));
+                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Messages, Locale));
             if ((filter & ChartsFilter.Reactions) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Reactions));
+                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Reactions, Locale));
             if ((filter & ChartsFilter.Summary) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Summary));
+                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Summary, Locale));
         }
     }
 

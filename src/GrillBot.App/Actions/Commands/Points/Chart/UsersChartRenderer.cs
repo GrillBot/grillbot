@@ -13,33 +13,31 @@ public class UsersChartRenderer
     private ITextsManager Texts { get; }
     private IGraphicsClient GraphicsClient { get; }
     private RandomizationManager RandomizationManager { get; }
-    private string Locale { get; }
 
-    public UsersChartRenderer(ITextsManager texts, IGraphicsClient graphicsClient, RandomizationManager randomizationManager, string locale)
+    public UsersChartRenderer(ITextsManager texts, IGraphicsClient graphicsClient, RandomizationManager randomizationManager)
     {
         Texts = texts;
         GraphicsClient = graphicsClient;
-        Locale = locale;
         RandomizationManager = randomizationManager;
     }
 
-    public async Task<MagickImage> RenderAsync(IGuild guild, Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>> data, ChartsFilter filter)
+    public async Task<MagickImage> RenderAsync(IGuild guild, Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>> data, ChartsFilter filter, string locale)
     {
-        var request = await CreateRequestAsync(guild, data, filter);
+        var request = await CreateRequestAsync(guild, data, filter, locale);
         var chartData = await GraphicsClient.CreateChartAsync(request);
 
         return new MagickImage(chartData);
     }
 
-    private async Task<ChartRequestData> CreateRequestAsync(IGuild guild, Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>> data, ChartsFilter filter)
+    private async Task<ChartRequestData> CreateRequestAsync(IGuild guild, Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>> data, ChartsFilter filter, string locale)
     {
         var request = ChartRequestBuilder.CreateCommonRequest();
 
         request.Data.TopLabel!.Text = filter switch
         {
-            ChartsFilter.Messages => Texts["Points/Chart/Title/User/Messages", Locale],
-            ChartsFilter.Reactions => Texts["Points/Chart/Title/User/Reactions", Locale],
-            _ => Texts["Points/Chart/Title/User/Summary", Locale]
+            ChartsFilter.Messages => Texts["Points/Chart/Title/User/Messages", locale],
+            ChartsFilter.Reactions => Texts["Points/Chart/Title/User/Reactions", locale],
+            _ => Texts["Points/Chart/Title/User/Summary", locale]
         };
 
         var dates = ChartRequestBuilder.FilterData(

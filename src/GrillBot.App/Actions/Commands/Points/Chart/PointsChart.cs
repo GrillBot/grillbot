@@ -123,8 +123,8 @@ public class PointsChart : CommandAction
 
     private static async Task MergeAndSaveCharts(TemporaryFile resultFile, IReadOnlyList<MagickImage> charts)
     {
-        var finalWidth = charts.Count * ChartRequestBuilder.Height;
-        using var image = new MagickImage(new MagickColor(ChartRequestBuilder.Background), ChartRequestBuilder.Width, finalWidth);
+        var finalHeight = charts.Count * ChartRequestBuilder.Height;
+        using var image = new MagickImage(new MagickColor(ChartRequestBuilder.Background), ChartRequestBuilder.Width, finalHeight);
 
         IDrawables<byte> drawables = new Drawables();
         for (var i = 0; i < charts.Count; i++)

@@ -32,23 +32,6 @@ public class PointsRepository : RepositoryBase
         }
     }
 
-    public async Task<List<PointsTransaction>> GetAllTransactionsAsync(bool full, IGuildUser? guildUser)
-    {
-        using (CreateCounter())
-        {
-            var query = Context.PointsTransactions.AsNoTracking()
-                .Where(o => o.MergedItemsCount == 0);
-
-            var dateLimit = full ? DateTime.Now.AddYears(-1).AddMonths(-1) : DateTime.Now.AddDays(-2);
-            query = query.Where(o => o.AssingnedAt >= dateLimit);
-
-            if (guildUser != null)
-                query = query.Where(o => o.UserId == guildUser.Id.ToString() && o.GuildId == guildUser.GuildId.ToString());
-
-            return await query.ToListAsync();
-        }
-    }
-
     public async Task<PointsTransaction?> FindTransactionAsync(IGuild? guild, ulong messageId, string? reactionId, IUser? user)
     {
         using (CreateCounter())

@@ -15,6 +15,9 @@ public static class Extensions
             .AddSingleton<DirectApi.IDirectApiService, DirectApi.DirectApiService>();
 
         services
+            .AddScoped<Graphics.IGraphicsClient, Graphics.GraphicsClient>();
+
+        services
             .AddSingleton<FileStorageFactory>();
 
         services
@@ -34,7 +37,7 @@ public static class Extensions
 
         services
             .AddSingleton<User.Points.PointsService>();
-        
+
         services
             .AddSingleton<User.UserService>();
 

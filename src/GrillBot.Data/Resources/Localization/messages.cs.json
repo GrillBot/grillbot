@@ -470,6 +470,15 @@
         "TwoToFour": "{0:N0} body",
         "FiveAndMore": "{0:N0} bodů"
       }
+    },
+    "Chart": {
+      "Title": {
+        "Guild": {
+          "Messages": "Body celého serveru ze zpráv za poslední rok",
+          "Reactions": "Body celého serveru z reakcí za poslední rok",
+          "Summary": "Celkové body serveru za poslední rok"
+        }
+      }
     }
   },
   "Pins": {

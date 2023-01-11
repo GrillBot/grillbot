@@ -28,8 +28,8 @@ public static class ServiceCollectionExtensions
     {
         return services.AddHttpClient(serviceId, client =>
         {
-            client.BaseAddress = new Uri(configuration[$"Services:{serviceConfigName}:Api"]);
-            client.Timeout = TimeSpan.FromMilliseconds(configuration[$"Services:{serviceConfigName}:Timeout"].ToInt());
+            client.BaseAddress = new Uri(configuration[$"Services:{serviceConfigName}:Api"]!);
+            client.Timeout = TimeSpan.FromMilliseconds(configuration[$"Services:{serviceConfigName}:Timeout"]!.ToInt());
         });
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Actions.Commands.Points;
+using GrillBot.App.Actions.Commands.Points.Chart;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Points;
@@ -55,5 +56,14 @@ public class PointsModule : InteractionsModuleBase
     {
         var handler = new PointsBoardPaginationHandler(page, ServiceProvider);
         await handler.ProcessAsync(Context);
+    }
+
+    [SlashCommand("chart", "Get charts of points")]
+    public async Task GetChartAsync(ChartType type, ChartsFilter filter, IEnumerable<IUser>? users = null)
+    {
+        using var command = GetCommand<PointsChart>();
+
+        using var img = await command.Command.ProcessAsync(type, users, filter);
+        await FollowupWithFileAsync(img.Path);
     }
 }

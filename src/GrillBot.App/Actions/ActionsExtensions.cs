@@ -167,6 +167,7 @@ public static class ActionsExtensions
 
         // Points
         services
+            .AddScoped<Commands.Points.Chart.PointsChart>()
             .AddScoped<Commands.Points.PointsLeaderboard>()
             .AddScoped<Commands.Points.PointsImage>();
 

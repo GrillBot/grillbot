@@ -475,6 +475,15 @@
         "TwoToFour": "{0:N0} points",
         "FiveAndMore": "{0:N0} points"
       }
+    },
+    "Chart": {
+      "Title": {
+        "Guild": {
+          "Messages": "Points of guild from messages for the last year.",
+          "Reactions": "Points of guild from reactions for the last year.",
+          "Summary": "Total points of guild for the last year."
+        }
+      }
     }
   },
   "Pins": {

@@ -115,6 +115,7 @@ public class Startup
 
         services.AddHttpClient(Configuration, "MathJS", "Math");
         services.AddHttpClient(Configuration, "KachnaOnline", "KachnaOnline");
+        services.AddHttpClient(Configuration, "Graphics", "Graphics");
         services.AddHostedService<DiscordService>();
 
         services.AddOpenApiDoc("v1", "WebAdmin API", "API for web administrations", doc =>

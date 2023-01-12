@@ -18,7 +18,7 @@ public class PointsModule : InteractionsModuleBase
 
     [UserCommand("Body uživatele")]
     [SlashCommand("where", "Get the current status of user points.")]
-    public async Task GetUserPointsAsync(IUser user = null)
+    public async Task GetUserPointsAsync(IUser? user = null)
     {
         using var command = GetCommand<PointsImage>();
 

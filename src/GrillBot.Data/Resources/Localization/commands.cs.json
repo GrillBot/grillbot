@@ -408,6 +408,40 @@
         "name": "uzivatel",
         "description": "Uživatel, pro kterého si přejete zjistit stav bodů. Pokud ho nezadáte, zobrazí se vaše.."
       }
+    },
+    "chart": {
+      "name": "chart",
+      "description": "Graf historie bodů.",
+      "type": {
+        "name": "typ",
+        "description": "Typ grafu",
+        "UserChart": {
+          "name": "Graf historie bodů jednotlivých uživatelů."
+        },
+        "GuildChart": {
+          "name": "Graf historie bodů za celý server."
+        }
+      },
+      "filter": {
+        "name": "filter",
+        "description": "Zobrazované grafy",
+        "Messages": {
+          "name": "Zobrazit pouze graf za zprávy."
+        },
+        "Reactions": {
+          "name": "Zobrazit pouze graf za reakce."
+        },
+        "Summary": {
+          "name": "Zobrazit kombinovaný graf."
+        },
+        "All": {
+          "name": "Zobrazit všechny grafy."
+        }
+      },
+      "users": {
+        "name": "users",
+        "description": "Vybraní uživatele. Používá se pouze v kombinaci grafu za jednotlivé uživatele."
+      }
     }
   },
   "message": {

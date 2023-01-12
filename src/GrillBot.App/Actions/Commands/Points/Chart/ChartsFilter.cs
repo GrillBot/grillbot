@@ -1,8 +1,11 @@
-﻿namespace GrillBot.App.Actions.Commands.Points.Chart;
+﻿using Discord.Interactions;
+
+namespace GrillBot.App.Actions.Commands.Points.Chart;
 
 [Flags]
 public enum ChartsFilter
 {
+    [Hide]
     None = 0,
 
     /// <summary>

@@ -408,6 +408,40 @@
         "name": "user",
         "description": "The user for whom you wish to show the points status. If you don't enter, yours will be displayed."
       }
+    },
+    "chart": {
+      "name": "chart",
+      "description": "Create chart of points history.",
+      "type": {
+        "name": "type",
+        "description": "Type of chart",
+        "UserChart": {
+          "name": "Chart of user points"
+        },
+        "GuildChart": {
+          "name": "Chart of current guild points"
+        }
+      },
+      "filter": {
+        "name": "filter",
+        "description": "Shown charts",
+        "Messages": {
+          "name": "Show points chart only from messages."
+        },
+        "Reactions": {
+          "name": "Show points chart only from reactions."
+        },
+        "Summary": {
+          "name": "Show points chart of combined points."
+        },
+        "All": {
+          "name": "Show all charts"
+        }
+      },
+      "users": {
+        "name": "users",
+        "description": "Mentions of users. Can be used only with combination with UserChart."
+      }
     }
   },
   "message": {

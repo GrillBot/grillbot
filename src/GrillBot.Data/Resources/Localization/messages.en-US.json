@@ -138,11 +138,6 @@
       "Note": "Note"
     }
   },
-  "EmoteModule": {
-    "GetEmoteInfo": {
-      "NoActivity": "No activity has been recorded for this emote yet."
-    }
-  },
   "GuildModule": {
     "GetInfo": {
       "CategoryCount": "Count of categories",

@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
 using GrillBot.App.Actions.Commands.Points;
 using GrillBot.App.Actions.Commands.Points.Chart;
 using GrillBot.App.Infrastructure.Commands;
@@ -10,6 +11,7 @@ namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("points", "Points")]
+[ExcludeFromCodeCoverage]
 public class PointsModule : InteractionsModuleBase
 {
     public PointsModule(IServiceProvider serviceProvider) : base(serviceProvider)

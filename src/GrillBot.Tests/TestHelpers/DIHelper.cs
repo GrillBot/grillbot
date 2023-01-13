@@ -1,12 +1,10 @@
 ﻿using GrillBot.App;
 using GrillBot.Data.Models.AuditLog;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using GrillBot.Cache.Services;
 using GrillBot.Database.Services;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace GrillBot.Tests.TestHelpers;
 
@@ -29,15 +27,17 @@ public static class DiHelper
             .AddSingleton(TestServices.TestingEnvironment.Value);
 
         startup.ConfigureServices(services);
-        
-        var dbBuilder = services.FirstOrDefault(o => o.ServiceType == typeof(GrillBotDatabaseBuilder));
-        services.Remove(dbBuilder);
-        services.AddSingleton<GrillBotDatabaseBuilder>(TestServices.DatabaseBuilder.Value);
 
-        var cacheBuilder = services.FirstOrDefault(o => o.ServiceType == typeof(GrillBotCacheBuilder));
-        services.Remove(cacheBuilder);
-        services.AddSingleton<GrillBotCacheBuilder>(TestServices.CacheBuilder.Value);
-        
+        ReplaceService<GrillBotDatabaseBuilder>(services, TestServices.DatabaseBuilder.Value);
+        ReplaceService<GrillBotCacheBuilder>(services, TestServices.CacheBuilder.Value);
+        ReplaceService(services, new GraphicsClientBuilder().SetAll().Build());
         return services.BuildServiceProvider();
+    }
+
+    private static void ReplaceService<TType>(IServiceCollection services, TType replacement)
+    {
+        var service = services.First(o => o.ServiceType == typeof(TType));
+        services.Remove(service);
+        services.Add(new ServiceDescriptor(typeof(TType), replacement!));
     }
 }

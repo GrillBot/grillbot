@@ -39,11 +39,11 @@ public class InteractionHandler
         await InteractionService.ExecuteCommandAsync(context, Provider);
     }
 
-    private static async Task OnCommandExecutedAsync(ICommandInfo command, IInteractionContext context, IResult result)
+    private static async Task OnCommandExecutedAsync(ICommandInfo command, IInteractionContext context, IResult? result)
     {
         result ??= ExecuteResult.FromSuccess();
 
-        if (!result.IsSuccess && result.Error.HasValue)
+        if (result is { IsSuccess: false, Error: { } })
         {
             var reply = "";
 

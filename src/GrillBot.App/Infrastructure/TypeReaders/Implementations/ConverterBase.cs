@@ -8,7 +8,7 @@ public abstract class ConverterBase
 {
     protected IServiceProvider ServiceProvider { get; }
     protected IDiscordClient Client { get; }
-    protected IGuild Guild { get; }
+    protected IGuild? Guild { get; }
     protected IMessageChannel Channel { get; }
     protected IUser User { get; }
     private IUserMessage UserMessage { get; }

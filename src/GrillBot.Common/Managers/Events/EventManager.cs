@@ -79,7 +79,6 @@ public class EventManager
         if (!InitManager.Get() && eventType != typeof(IReadyEvent))
             return;
 
-        if (storeToLogAction != null) await storeToLogAction;
         using (CounterManager.Create($"Events.{eventName}"))
         {
             using var scope = ServiceProvider.CreateScope();
@@ -90,6 +89,7 @@ public class EventManager
             await Task.WhenAll(actions);
         }
 
+        if (storeToLogAction != null) await storeToLogAction;
         if (eventType == typeof(IReadyEvent))
             InitManager.Set(true);
     }

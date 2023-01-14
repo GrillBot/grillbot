@@ -4,7 +4,7 @@ using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
-public class UserConverter : ConverterBase<IUser>
+public partial class UserConverter : ConverterBase<IUser?>
 {
     public UserConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
     {
@@ -14,17 +14,17 @@ public class UserConverter : ConverterBase<IUser>
     {
     }
 
-    public override async Task<IUser> ConvertAsync(string value)
+    public override async Task<IUser?> ConvertAsync(string value)
     {
         // Match on caller
         value = value.Trim();
-        if (Regex.IsMatch(value, "^(me|j[a|á])$", RegexOptions.IgnoreCase)) return User;
+        if (IsMeRegex().IsMatch(value)) return User;
 
         if (Guild == null)
         {
             var discriminatorIndex = value.LastIndexOf("#", StringComparison.Ordinal);
 
-            IUser user;
+            IUser? user;
             if (discriminatorIndex >= 0)
             {
                 var username = value[..discriminatorIndex];
@@ -44,7 +44,7 @@ public class UserConverter : ConverterBase<IUser>
         }
         else
         {
-            var match = Regex.Match(value, @"<@(\d+)>");
+            var match = UserIdRegex().Match(value);
             if (match.Success) // Mentions
             {
                 var user = await Guild.GetUserAsync(Convert.ToUInt64(match.Groups[1].Value));
@@ -53,11 +53,12 @@ public class UserConverter : ConverterBase<IUser>
 
             var users = await Guild.GetUsersAsync();
             var matches = users
-                .Where(o => (!string.IsNullOrEmpty(o.Nickname) && o.Nickname.Contains(value, StringComparison.CurrentCultureIgnoreCase)) ||
+                .Where(o => !string.IsNullOrEmpty(o.Nickname) && o.Nickname.Contains(value, StringComparison.CurrentCultureIgnoreCase) ||
                             o.Username.Contains(value, StringComparison.CurrentCultureIgnoreCase))
                 .ToList();
 
             if (matches.Count == 1) return matches[0];
+            if (value.Length > 100) return null;
 
             // Finds user directly from discord and get guild user from memory.
             matches = (await Guild.SearchUsersAsync(value)).Where(o => o != null).ToList();
@@ -67,4 +68,10 @@ public class UserConverter : ConverterBase<IUser>
 
         return null;
     }
+
+    [GeneratedRegex("^(me|j[a|á])$", RegexOptions.IgnoreCase, "cs-CZ")]
+    private static partial Regex IsMeRegex();
+
+    [GeneratedRegex("<@(\\d+)>")]
+    private static partial Regex UserIdRegex();
 }

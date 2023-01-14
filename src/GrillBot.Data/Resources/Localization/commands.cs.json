@@ -440,7 +440,7 @@
       },
       "users": {
         "name": "users",
-        "description": "Vybraní uživatele. Používá se pouze v kombinaci grafu za jednotlivé uživatele."
+        "description": "Vybraní uživatelé. Používá se pouze v kombinaci grafů za jednotlivé uživatele."
       }
     }
   },

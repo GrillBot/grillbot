@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Services.Images;
 using GrillBot.Common.FileStorage;
+using GrillBot.Common.Services.Graphics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services;
@@ -15,7 +16,7 @@ public static class Extensions
             .AddSingleton<DirectApi.IDirectApiService, DirectApi.DirectApiService>();
 
         services
-            .AddScoped<Graphics.IGraphicsClient, Graphics.GraphicsClient>();
+            .AddScoped<IGraphicsClient, GraphicsClient>();
 
         services
             .AddSingleton<FileStorageFactory>();

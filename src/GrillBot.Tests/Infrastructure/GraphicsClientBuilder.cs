@@ -1,6 +1,5 @@
-﻿using System.IO;
-using GrillBot.App.Services.Graphics;
-using GrillBot.App.Services.Graphics.Models.Chart;
+﻿using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.Graphics.Models.Chart;
 using ImageMagick;
 using Moq;
 

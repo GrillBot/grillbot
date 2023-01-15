@@ -105,6 +105,10 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Searching.GetSearchingList>()
             .AddScoped<Api.V1.Searching.RemoveSearches>();
+        
+        // Services
+        services
+            .AddScoped<Api.V1.Services.GetGraphicsServiceInfo>();
 
         // Statistics
         services

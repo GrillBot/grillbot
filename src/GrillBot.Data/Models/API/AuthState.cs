@@ -10,7 +10,7 @@ public class AuthState
     public bool IsPublic { get; set; }
 
     [JsonProperty("r")]
-    public string ReturnUrl { get; set; }
+    public string? ReturnUrl { get; set; }
 
     public string Encode()
     {

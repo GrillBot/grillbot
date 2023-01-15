@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.Graphics.Models.Chart;
+﻿using GrillBot.Common.Services.Graphics.Models.Chart;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
 

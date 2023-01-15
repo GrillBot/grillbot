@@ -1,4 +1,4 @@
-﻿namespace GrillBot.App.Services.Graphics.Models.Chart;
+﻿namespace GrillBot.Common.Services.Graphics.Models.Chart;
 
 public class ChartRequestData
 {

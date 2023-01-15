@@ -5,6 +5,7 @@ using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.Graphics;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
@@ -25,11 +26,12 @@ public class GetDashboard : ApiAction
     private CounterManager CounterManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager Logging { get; }
+    private IGraphicsClient GraphicsClient { get; }
 
     private List<Exception> Errors { get; } = new();
 
     public GetDashboard(ApiRequestContext apiContext, IWebHostEnvironment webHost, IDiscordClient discordClient, InitManager initManager, CounterManager counterManager,
-        GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging) : base(apiContext)
+        GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging, IGraphicsClient graphicsClient) : base(apiContext)
     {
         WebHost = webHost;
         DiscordClient = discordClient;
@@ -37,6 +39,7 @@ public class GetDashboard : ApiAction
         CounterManager = counterManager;
         DatabaseBuilder = databaseBuilder;
         Logging = logging;
+        GraphicsClient = graphicsClient;
     }
 
     public async Task<Dashboard> ProcessAsync()
@@ -63,6 +66,7 @@ public class GetDashboard : ApiAction
         await ComputeApiLogAsync(repository, dashboard);
         await ComputeJobsLogAsync(repository, dashboard);
         await ComputeCommandsLogAsync(repository, dashboard);
+        await GetServicesStatusAsync(dashboard);
 
         if (Errors.Count == 0) return dashboard;
 
@@ -155,7 +159,7 @@ public class GetDashboard : ApiAction
 
                 var request = JsonConvert.DeserializeObject<ApiRequest>(logItem.Data)!;
                 if (request.IsCorrupted()) continue;
-                if (request.ControllerName == nameof(SystemController) && request.ActionName == nameof(SystemController.GetDashboardAsync)) continue;
+                if (request is { ControllerName: nameof(SystemController), ActionName: nameof(SystemController.GetDashboardAsync) }) continue;
 
                 var row = new DashboardApiCall
                 {
@@ -236,6 +240,22 @@ public class GetDashboard : ApiAction
         {
             Errors.Add(ex);
             dashboard.Commands = null;
+        }
+    }
+
+    private async Task GetServicesStatusAsync(Dashboard dashboard)
+    {
+        try
+        {
+            dashboard.Services = new DashboardServices
+            {
+                GraphicsAvailable = await GraphicsClient.IsAvailableAsync()
+            };
+        }
+        catch (Exception ex)
+        {
+            Errors.Add(ex);
+            dashboard.Services = null;
         }
     }
 }

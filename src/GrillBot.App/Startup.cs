@@ -7,7 +7,6 @@ using GrillBot.App.Services;
 using GrillBot.App.Services.Discord;
 using GrillBot.App.Services.Reminder;
 using GrillBot.App.Services.Unverify;
-using GrillBot.App.Services.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,6 +25,7 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Common;
+using GrillBot.Common.Services;
 
 namespace GrillBot.App;
 
@@ -115,8 +115,8 @@ public class Startup
 
         services.AddHttpClient(Configuration, "MathJS", "Math");
         services.AddHttpClient(Configuration, "KachnaOnline", "KachnaOnline");
-        services.AddHttpClient(Configuration, "Graphics", "Graphics");
         services.AddHostedService<DiscordService>();
+        services.AddThirdPartyServices(Configuration);
 
         services.AddOpenApiDoc("v1", "WebAdmin API", "API for web administrations", doc =>
         {

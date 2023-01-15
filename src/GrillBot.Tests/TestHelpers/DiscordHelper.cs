@@ -28,7 +28,7 @@ public static class DiscordHelper
         return service;
     }
 
-    public static InteractionService CreateInteractionService(DiscordSocketClient discordClient, IServiceProvider provider = null)
+    public static InteractionService CreateInteractionService(DiscordSocketClient discordClient, IServiceProvider? provider = null)
     {
         var service = new InteractionService(discordClient);
 

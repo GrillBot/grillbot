@@ -30,7 +30,7 @@ public static class DiHelper
 
         ReplaceService<GrillBotDatabaseBuilder>(services, TestServices.DatabaseBuilder.Value);
         ReplaceService<GrillBotCacheBuilder>(services, TestServices.CacheBuilder.Value);
-        ReplaceService(services, new GraphicsClientBuilder().SetAll().Build());
+        ReplaceService(services, TestServices.Graphics.Value);
         return services.BuildServiceProvider();
     }
 

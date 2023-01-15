@@ -14,6 +14,7 @@ using AutoMapper;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Services.Graphics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -32,4 +33,5 @@ public static class TestServices
     public static readonly Lazy<RandomizationManager> Random = new(() => new RandomizationManager(), LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<IWebHostEnvironment> TestingEnvironment = new(() => new EnvironmentBuilder().AsTest().Build(), LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<ITextsManager> Texts = new(() => new TextsManager("./Resources", "messages"), LazyThreadSafetyMode.ExecutionAndPublication);
+    public static readonly Lazy<IGraphicsClient> Graphics = new(() => new GraphicsClientBuilder().SetAll().Build(), LazyThreadSafetyMode.ExecutionAndPublication);
 }

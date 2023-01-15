@@ -22,7 +22,7 @@ public class CancelScheduledEventTests : ApiActionTest<CancelScheduledEvent>
         };
 
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetEventsAction(events).Build();
-        var discordClient = new ClientBuilder().SetGetGuildAction(guild).SetSelfUser(new SelfUserBuilder(ApiRequestContext.LoggedUser).Build()).Build();
+        var discordClient = new ClientBuilder().SetGetGuildsAction(new[] { guild }).SetSelfUser(new SelfUserBuilder(ApiRequestContext.LoggedUser).Build()).Build();
 
         return new CancelScheduledEvent(ApiRequestContext, discordClient, TestServices.Texts.Value);
     }

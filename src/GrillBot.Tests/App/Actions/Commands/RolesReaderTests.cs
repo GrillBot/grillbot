@@ -20,8 +20,8 @@ public class RolesReaderTests : CommandActionTest<RolesReader>
 
     private static readonly IGuildUser[] GuildUsers =
     {
-        new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).AsBot().SetGuild(EmptyGuild).SetRoles(new[] { Roles[0] }).Build(),
-        new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).AsBot().SetGuild(EmptyGuild).SetRoles(new[] { Roles[1] }).Build()
+        new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).AsBot().SetGuild(EmptyGuild).SetRoles(new[] { Roles[0].Id }).Build(),
+        new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).AsBot().SetGuild(EmptyGuild).SetRoles(new[] { Roles[1].Id }).Build()
     };
 
     protected override IGuild Guild => new GuildBuilder(EmptyGuild.Id, EmptyGuild.Name).SetRoles(Roles).SetGetUsersAction(GuildUsers).Build();

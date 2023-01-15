@@ -9,8 +9,7 @@ public class CommonLoggingHandlerTests : ServiceTest<CommonLoggerHandler>
 {
     protected override CommonLoggerHandler CreateService()
     {
-        var factory = LoggingHelper.CreateLoggerFactory();
-        return new CommonLoggerHandler(factory);
+        return new CommonLoggerHandler(TestServices.LoggerFactory.Value);
     }
 
     [TestMethod]

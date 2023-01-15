@@ -48,9 +48,6 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
         return this;
     }
 
-    public GuildUserBuilder SetRoles(IEnumerable<IRole> roles)
-        => SetRoles(roles.Select(o => o.Id));
-
     public GuildUserBuilder SetId(ulong id)
     {
         Mock.Setup(o => o.Id).Returns(id);

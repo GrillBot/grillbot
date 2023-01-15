@@ -15,7 +15,7 @@ public class PointsImageTests : CommandActionTest<PointsImage>
 {
     private static readonly IUser MockUser = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetAvatar(Consts.AvatarId).Build();
     private static readonly IGuildUser GuildUser = new GuildUserBuilder(MockUser).SetAvatar(Consts.AvatarId).Build();
-    private static readonly IGuild GuildData = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUserAction(GuildUser).Build();
+    private static readonly IGuild GuildData = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { GuildUser }).Build();
 
     protected override IGuild Guild => GuildData;
 

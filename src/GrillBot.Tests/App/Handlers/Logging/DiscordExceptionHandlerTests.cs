@@ -27,13 +27,13 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
         Channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
 
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName)
-            .SetGetTextChannelAction(Channel)
+            .SetGetTextChannelsAction(new[] { Channel })
             .Build();
 
         User = new SelfUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var client = new ClientBuilder()
-            .SetGetGuildAction(guild)
+            .SetGetGuildsAction(new[] { guild })
             .SetSelfUser((ISelfUser)User)
             .Build();
 

@@ -25,9 +25,9 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
     {
         var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetRoles(new[] { role });
-        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { role }).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { role.Id }).Build();
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
-        Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetGetChannelsAction(new[] { TextChannel }).Build();
+        Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetGetTextChannelsAction(new[] { TextChannel }).Build();
 
         var client = new ClientBuilder()
             .SetGetUserAction(User)

@@ -16,7 +16,7 @@ public class CreateScheduledEventTests : ApiActionTest<CreateScheduledEvent>
     {
         var guildEvent = new GuildScheduledEventBuilder(Consts.GuildEventId).Build();
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetCreateEventAction(guildEvent).Build();
-        var discordClient = new ClientBuilder().SetGetGuildAction(guild).Build();
+        var discordClient = new ClientBuilder().SetGetGuildsAction(new[] { guild }).Build();
 
         return new CreateScheduledEvent(ApiRequestContext, discordClient, TestServices.Texts.Value);
     }

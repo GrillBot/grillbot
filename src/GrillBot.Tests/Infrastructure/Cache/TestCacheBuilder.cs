@@ -9,8 +9,6 @@ namespace GrillBot.Tests.Infrastructure.Cache;
 [ExcludeFromCodeCoverage]
 public class TestCacheBuilder : GrillBotCacheBuilder
 {
-    private GrillBotCacheContext Context { get; set; }
-
     public TestCacheBuilder() : base(null!)
     {
     }
@@ -29,8 +27,8 @@ public class TestCacheBuilder : GrillBotCacheBuilder
 
     public override GrillBotCacheRepository CreateRepository()
     {
-        Context = CreateContext();
-        return new GrillBotCacheRepository(Context, TestServices.CounterManager.Value);
+        var context = CreateContext();
+        return new GrillBotCacheRepository(context, TestServices.CounterManager.Value);
     }
 
     public static void ClearDatabase()

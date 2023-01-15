@@ -16,9 +16,9 @@ public class ServerBoosterHandlerTests : HandlerTest<ServerBoosterHandler>
     {
         Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var adminChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
-        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelAction(adminChannel).SetRoles(new[] { Role }).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelsAction(new[] { adminChannel }).SetRoles(new[] { Role }).Build();
         Before = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(new List<ulong>()).SetGuild(guild).Build();
-        After = new GuildUserBuilder(Before).SetRoles(new[] { Role }).SetGuild(guild).Build();
+        After = new GuildUserBuilder(Before).SetRoles(new[] { Role.Id }).SetGuild(guild).Build();
 
         return new ServerBoosterHandler(DatabaseBuilder, TestServices.Configuration.Value);
     }
@@ -64,8 +64,8 @@ public class ServerBoosterHandlerTests : HandlerTest<ServerBoosterHandler>
     {
         await InitDataAsync(Consts.RoleId, Consts.ChannelId);
 
-        var before = new GuildUserBuilder(Before).SetRoles(new[] { new RoleBuilder(Consts.RoleId + 1, Consts.RoleName).Build() }).SetGuild(After.Guild).Build();
-        var after = new GuildUserBuilder(Before).SetRoles(new[] { new RoleBuilder(Consts.RoleId + 2, Consts.RoleName).Build() }).SetGuild(After.Guild).Build();
+        var before = new GuildUserBuilder(Before).SetRoles(new[] { Consts.RoleId + 1 }).SetGuild(After.Guild).Build();
+        var after = new GuildUserBuilder(Before).SetRoles(new[] { Consts.RoleId + 2 }).SetGuild(After.Guild).Build();
         await Handler.ProcessAsync(before, after);
     }
 

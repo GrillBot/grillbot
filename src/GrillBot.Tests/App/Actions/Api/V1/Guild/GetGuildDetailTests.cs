@@ -22,7 +22,7 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetStatus(UserStatus.Online).Build();
         Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
-        Guild = guildBuilder.SetGetChannelsAction(new[] { TextChannel }).SetGetUsersAction(new[] { User }).SetRoles(new[] { Role }).Build();
+        Guild = guildBuilder.SetGetTextChannelsAction(new[] { TextChannel }).SetGetUsersAction(new[] { User }).SetRoles(new[] { Role }).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })

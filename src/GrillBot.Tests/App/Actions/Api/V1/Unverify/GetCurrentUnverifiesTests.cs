@@ -27,7 +27,7 @@ public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
             .SetGetUserAction(User)
             .Build();
 
-        var discordClient = DiscordHelper.CreateClient();
+        var discordClient = TestServices.DiscordSocketClient.Value;
         var texts = TestServices.Texts.Value;
         var unverifyChecker = new UnverifyChecker(DatabaseBuilder, TestServices.Configuration.Value, TestServices.TestingEnvironment.Value, texts);
         var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder, texts);

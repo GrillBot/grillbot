@@ -21,11 +21,11 @@ public class UpdateChannelTests : ApiActionTest<UpdateChannel>
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
-        Guild = guildBuilder.SetGetTextChannelAction(TextChannel).Build();
+        Guild = guildBuilder.SetGetTextChannelsAction(new[] { TextChannel }).Build();
 
         var manager = new AutoReplyManager(DatabaseBuilder);
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
-        var client = new ClientBuilder().SetGetGuildAction(Guild).Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
         var channelHelper = new ChannelHelper(DatabaseBuilder, client);
 
         return new UpdateChannel(ApiRequestContext, DatabaseBuilder, auditLogWriter, TestServices.Texts.Value, manager, channelHelper);

@@ -27,7 +27,7 @@ public class PermissionsCleanerTests : CommandActionTest<PermissionsCleaner>
     protected override IMessageChannel Channel => TextChannel;
 
     protected override IGuild Guild { get; } =
-        new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Users).SetGetChannelsAction(new[] { TextChannel }).Build();
+        new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Users).SetGetTextChannelsAction(new[] { TextChannel }).Build();
 
     protected override PermissionsCleaner CreateAction()
     {

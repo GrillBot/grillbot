@@ -10,12 +10,7 @@ namespace GrillBot.Tests.TestHelpers;
 [ExcludeFromCodeCoverage]
 public static class DiscordHelper
 {
-    public static DiscordSocketClient CreateClient()
-    {
-        return new DiscordSocketClient();
-    }
-
-    public static CommandService CreateCommandsService(IServiceProvider provider = null)
+    public static CommandService CreateCommandsService(IServiceProvider? provider = null)
     {
         var service = new CommandService();
 

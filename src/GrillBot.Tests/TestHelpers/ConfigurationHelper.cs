@@ -1,17 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Tests.TestHelpers;
 
 [ExcludeFromCodeCoverage]
 public static class ConfigurationHelper
 {
-    public const string Prefix = "$";
-
-    public static IConfiguration CreateConfiguration(Dictionary<string, string> externalConfiguration = null)
+    public static IConfiguration CreateConfiguration(Dictionary<string, string>? externalConfiguration = null)
     {
         var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string>()
+            .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 { "Discord:Logging:GuildId", Consts.GuildId.ToString() },
                 { "Discord:Logging:ChannelId", Consts.ChannelId.ToString() },
@@ -20,11 +17,7 @@ public static class ConfigurationHelper
                 { "Auth:OAuth2:AdminRedirectUrl", "https://admin" },
                 { "Auth:OAuth2:ClientId", "856879314997346344" },
                 { "Auth:OAuth2:ClientSecret", "856879314997346344856879314997346344" },
-                { "Auth:ApiKeys:963258741:AuthorizedMethods:0", "AuthController.GetRedirectLink" },
-                { "Auth:ApiKeys:963258743:AuthorizedMethods:0", "AuthController.Test" },
-                { "Auth:ApiKeys:963258742:AuthorizedMethods:0", "*" },
-                { "Auth:ApiKeys:963258740", "" },
-                { "Discord:Commands:Prefix", Prefix },
+                { "Discord:Commands:Prefix", "$" },
                 { "Discord:Emotes:Sadge", ":sadge:" },
                 { "Discord:Emotes:Hypers", ":hypers:" },
                 { "Discord:Emotes:Mocking", "<a:mocking:853755944429289482>" },
@@ -47,7 +40,7 @@ public static class ConfigurationHelper
             });
 
         if (externalConfiguration != null)
-            configuration.AddInMemoryCollection(externalConfiguration);
+            configuration.AddInMemoryCollection(externalConfiguration!);
 
         return configuration.Build();
     }

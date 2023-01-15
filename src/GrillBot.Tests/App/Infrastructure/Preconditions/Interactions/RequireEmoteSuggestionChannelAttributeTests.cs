@@ -72,7 +72,7 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
     public async Task CheckRequirementsAsync_Success()
     {
         var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
-        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelAction(channel).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelsAction(new[] { channel }).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
         var provider = CreateProvider();
 
@@ -81,7 +81,7 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
         await Repository.AddAsync(guildData);
         await Repository.CommitAsync();
 
-        var result = await Service.CheckRequirementsAsync(context, null, provider);
+        var result = await Service.CheckRequirementsAsync(context, null!, provider);
         Assert.IsTrue(result.IsSuccess);
     }
 }

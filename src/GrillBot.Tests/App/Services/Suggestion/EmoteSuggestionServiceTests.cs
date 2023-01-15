@@ -40,9 +40,8 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
 
         var discordClient = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).SetGetUserAction(User).Build();
         var sesionService = new SuggestionSessionService();
-        var discordSocketClient = DiscordHelper.CreateClient();
-        var initManager = new InitManager(LoggingHelper.CreateLoggerFactory());
-        var messageCache = new MessageCacheManager(discordSocketClient, initManager, CacheBuilder, TestServices.CounterManager.Value);
+        var initManager = new InitManager(TestServices.LoggerFactory.Value);
+        var messageCache = new MessageCacheManager(TestServices.DiscordSocketClient.Value, initManager, CacheBuilder, TestServices.CounterManager.Value);
 
         return new EmoteSuggestionService(sesionService, DatabaseBuilder, discordClient, messageCache);
     }
@@ -89,7 +88,7 @@ public class EmoteSuggestionServiceTests : ServiceTest<EmoteSuggestionService>
 
         var message = new UserMessageBuilder(Consts.MessageId).SetContent("Content").Build();
         var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetSendFileAction(filename, message).Build();
-        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelAction(channel).Build();
+        var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelsAction(new[] { channel }).Build();
 
         var guildEntity = Database.Entity.Guild.FromDiscord(guild);
         guildEntity.EmoteSuggestionChannelId = Consts.ChannelId.ToString();

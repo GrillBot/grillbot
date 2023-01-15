@@ -14,7 +14,7 @@ public class GetGuildListTests : ApiActionTest<GetGuildList>
     protected override GetGuildList CreateAction()
     {
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Array.Empty<IGuildUser>()).Build();
-        var client = new ClientBuilder().SetGetGuildAction(Guild).Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
 
         return new GetGuildList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, client);
     }

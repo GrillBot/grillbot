@@ -16,7 +16,7 @@ public class ExceptionFilterTests : ServiceTest<ExceptionFilter>
 {
     protected override ExceptionFilter CreateService()
     {
-        var discordClient = DiscordHelper.CreateClient();
+        var discordClient = TestServices.DiscordSocketClient.Value;
         var commandService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
         var apiRequest = new ApiRequest();

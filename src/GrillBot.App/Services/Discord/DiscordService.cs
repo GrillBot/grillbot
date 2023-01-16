@@ -66,7 +66,7 @@ public class DiscordService : IHostedService
         var currentAssembly = Assembly.GetExecutingAssembly();
         var initializable = currentAssembly
             .GetTypes()
-            .Where(o => o.Assembly == currentAssembly && o.IsClass && !o.IsAbstract && o.GetCustomAttribute<InitializableAttribute>() != null)
+            .Where(o => o.Assembly == currentAssembly && o is { IsClass: true, IsAbstract: false } && o.GetCustomAttribute<InitializableAttribute>() != null)
             .OrderBy(o => o.Name)
             .ToList();
 
@@ -81,7 +81,7 @@ public class DiscordService : IHostedService
                 foreach (var @interface in interfaces)
                 {
                     dependency = Provider.GetService(@interface);
-                    if (dependency != null) continue;
+                    if (dependency != null) break;
                 }
             }
 

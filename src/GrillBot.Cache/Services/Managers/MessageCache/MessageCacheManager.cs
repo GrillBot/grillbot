@@ -103,7 +103,12 @@ public class MessageCacheManager : IMessageCacheManager
             await using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id);
-            messages.ForEach(o => DeletedMessages.Add(o.MessageId.ToUlong()));
+            foreach (var messageId in messages.Select(o => o.MessageId.ToUlong()))
+            {
+                DeletedMessages.Add(messageId);
+                if (MessagesForUpdate.Contains(messageId))
+                    MessagesForUpdate.Remove(messageId);
+            }
         }
         finally
         {
@@ -123,7 +128,12 @@ public class MessageCacheManager : IMessageCacheManager
             await using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: thread.Value.Id, guildId: thread.Value.Guild.Id);
-            messages.ForEach(o => DeletedMessages.Add(o.MessageId.ToUlong()));
+            foreach (var messageId in messages.Select(o => o.MessageId.ToUlong()))
+            {
+                DeletedMessages.Add(messageId);
+                if (MessagesForUpdate.Contains(messageId))
+                    MessagesForUpdate.Remove(messageId);
+            }
         }
         finally
         {
@@ -221,7 +231,7 @@ public class MessageCacheManager : IMessageCacheManager
             MessageId = o.Id.ToString(),
             AuthorId = o.Author.Id.ToString(),
             ChannelId = o.Channel.Id.ToString(),
-            GuildId = o.Channel is IGuildChannel guildChanel ? guildChanel.GuildId.ToString() : "0"
+            GuildId = ((IGuildChannel)o.Channel).GuildId.ToString()
         });
 
         await using var cache = CacheBuilder.CreateRepository();
@@ -256,8 +266,8 @@ public class MessageCacheManager : IMessageCacheManager
         {
             if (!includeRemoved && DeletedMessages.Contains(messageId))
                 return null;
-            if (Messages.ContainsKey(messageId) && !forceReload)
-                return Messages[messageId];
+            if (Messages.TryGetValue(messageId, out var value) && !forceReload)
+                return value;
         }
         finally
         {

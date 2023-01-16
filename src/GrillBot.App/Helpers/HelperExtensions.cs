@@ -1,8 +1,6 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace GrillBot.App;
+namespace GrillBot.App.Helpers;
 
 public static class ServiceExtensions
 {

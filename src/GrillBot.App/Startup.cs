@@ -78,10 +78,9 @@ public class Startup
 
         var discordClient = new DiscordSocketClient(discordConfig);
 
-        services
+        services.AddHelpers()
             .AddCommonManagers()
             .AddLocalization(localizationPath, "messages")
-            .AddHelpers()
             .Configure<ApiBehaviorOptions>(opt => opt.SuppressModelStateInvalidFilter = true)
             .AddSingleton(discordClient)
             .AddSingleton<IDiscordClient>(discordClient)

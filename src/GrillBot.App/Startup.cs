@@ -87,7 +87,7 @@ public class Startup
             .AddSingleton(new CommandService(commandsConfig))
             .AddSingleton(container => new InteractionService(container.GetRequiredService<DiscordSocketClient>(), interactionsConfig))
             .AddCaching(Configuration)
-            .AddDatabase(connectionString)
+            .AddDatabase(connectionString!)
             .AddMemoryCache()
             .AddScoped<ApiRequest>()
             .AddActions()
@@ -110,7 +110,7 @@ public class Startup
             .AddHandlers()
             .AddServices()
             .AddManagers();
-        ManagersExtensions.AddHelpers(services);
+        Helpers.ServiceExtensions.AddHelpers(services);
 
         services.AddHttpClient(Configuration, "MathJS", "Math");
         services.AddHttpClient(Configuration, "KachnaOnline", "KachnaOnline");

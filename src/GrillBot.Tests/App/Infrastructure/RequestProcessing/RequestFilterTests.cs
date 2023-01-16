@@ -27,7 +27,7 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
 
         ApiRequest = new ApiRequest();
         ApiRequestContext = new ApiRequestContext();
-        var hearthbeatManager = new HearthbeatManager(DatabaseBuilder);
+        var hearthbeatManager = new UserManager(DatabaseBuilder);
 
         return new RequestFilter(ApiRequest, ApiRequestContext, discordClient, hearthbeatManager);
     }

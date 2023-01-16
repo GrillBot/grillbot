@@ -14,14 +14,14 @@ public class RequestFilter : IAsyncActionFilter
     private ApiRequest ApiRequest { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private IDiscordClient DiscordClient { get; }
-    private HearthbeatManager HearthbeatManager { get; }
+    private UserManager UserManager { get; }
 
-    public RequestFilter(ApiRequest apiRequest, ApiRequestContext apiRequestContext, IDiscordClient discordClient, HearthbeatManager hearthbeatManager)
+    public RequestFilter(ApiRequest apiRequest, ApiRequestContext apiRequestContext, IDiscordClient discordClient, UserManager userManager)
     {
         ApiRequest = apiRequest;
         ApiRequestContext = apiRequestContext;
         DiscordClient = discordClient;
-        HearthbeatManager = hearthbeatManager;
+        UserManager = userManager;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -30,7 +30,7 @@ public class RequestFilter : IAsyncActionFilter
         await SetApiRequestContext(context);
 
         if (ApiRequestContext.LoggedUser != null)
-            await HearthbeatManager.SetAsync(true, ApiRequestContext);
+            await UserManager.SetHearthbeatAsync(true, ApiRequestContext);
 
         if (!context.ModelState.IsValid)
         {

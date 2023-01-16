@@ -40,9 +40,6 @@ public static class Extensions
             .AddSingleton<User.Points.PointsService>();
 
         services
-            .AddSingleton<User.UserService>();
-
-        services
             .AddSingleton<SearchingService>();
 
         return services;

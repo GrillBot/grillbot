@@ -11,7 +11,7 @@ public static class ManagerExtensions
             .AddSingleton<EmoteChainManager>()
             .AddSingleton<AuditLogManager>()
             .AddSingleton<AuditLogWriteManager>() // TODO Review and change to scoped.
-            .AddScoped<HearthbeatManager>();
+            .AddScoped<UserManager>();
         return services;
     }
 }

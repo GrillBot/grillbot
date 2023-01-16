@@ -3,20 +3,21 @@ using System.Security.Claims;
 using Discord;
 using GrillBot.App.Managers;
 using GrillBot.Data.Exceptions;
+using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Managers;
 
 [TestClass]
-public class HearthbeatManagerTests : ServiceTest<HearthbeatManager>
+public class UserManagerTests : ServiceTest<UserManager>
 {
-    private IUser User { get; set; }
+    private IUser User { get; set; } = null!;
 
-    protected override HearthbeatManager CreateService()
+    protected override UserManager CreateService()
     {
         User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        return new HearthbeatManager(DatabaseBuilder);
+        return new UserManager(DatabaseBuilder);
     }
 
     private async Task InitDataAsync()
@@ -41,29 +42,45 @@ public class HearthbeatManagerTests : ServiceTest<HearthbeatManager>
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task SetAsync_UserNotFound()
+    public async Task SetHearthbeatAsync_UserNotFound()
     {
         var context = CreateContext(false);
-        await Service.SetAsync(true, context);
+        await Service.SetHearthbeatAsync(true, context);
     }
 
     [TestMethod]
-    public async Task SetAsync_Active_PublicAdmin() => await ProcessTestAsync(true, true);
+    public async Task SetHearthbeatAsync_Active_PublicAdmin() => await ProcessTestAsync(true, true);
 
     [TestMethod]
-    public async Task SetAsync_Active_PrivateAdmin() => await ProcessTestAsync(false, true);
+    public async Task SetHearthbeatAsync_Active_PrivateAdmin() => await ProcessTestAsync(false, true);
 
     [TestMethod]
-    public async Task SetAsync_Inactive_PublicAdmin() => await ProcessTestAsync(true, false);
+    public async Task SetHearthbeatAsync_Inactive_PublicAdmin() => await ProcessTestAsync(true, false);
 
     [TestMethod]
-    public async Task SetAsync_Inactive_PrivateAdmin() => await ProcessTestAsync(false, false);
+    public async Task SetHearthbeatAsync_Inactive_PrivateAdmin() => await ProcessTestAsync(false, false);
 
     private async Task ProcessTestAsync(bool isPublic, bool isActive)
     {
         await InitDataAsync();
 
         var context = CreateContext(isPublic);
-        await Service.SetAsync(isActive, context);
+        await Service.SetHearthbeatAsync(isActive, context);
+    }
+
+    [TestMethod]
+    public async Task CheckFlagsAsync_NotFound()
+    {
+        var result = await Service.CheckFlagsAsync(User, UserFlags.BotAdmin);
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task CheckFlags_Ok()
+    {
+        await InitDataAsync();
+
+        var result = await Service.CheckFlagsAsync(User, UserFlags.BotAdmin);
+        Assert.IsFalse(result);
     }
 }

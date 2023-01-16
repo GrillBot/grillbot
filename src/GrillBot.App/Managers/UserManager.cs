@@ -4,16 +4,16 @@ using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Managers;
 
-public class HearthbeatManager
+public class UserManager
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public HearthbeatManager(GrillBotDatabaseBuilder databaseBuilder)
+    public UserManager(GrillBotDatabaseBuilder databaseBuilder)
     {
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task SetAsync(bool isActive, ApiRequestContext context)
+    public async Task SetHearthbeatAsync(bool isActive, ApiRequestContext context)
     {
         var isPublic = context.IsPublic();
 
@@ -28,5 +28,13 @@ public class HearthbeatManager
             user.Flags &= ~(int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);
 
         await repository.CommitAsync();
+    }
+
+    public async Task<bool> CheckFlagsAsync(IUser user, UserFlags flags)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var entity = await repository.User.FindUserAsync(user, true);
+        return entity?.HaveFlags(flags) == true;
     }
 }

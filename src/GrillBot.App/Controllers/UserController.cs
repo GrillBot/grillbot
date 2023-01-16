@@ -133,10 +133,10 @@ public class UsersController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatOffAsync()
     {
-        var service = ServiceProvider.GetRequiredService<HearthbeatManager>();
+        var service = ServiceProvider.GetRequiredService<UserManager>();
         var apiContext = ServiceProvider.GetRequiredService<ApiRequestContext>();
 
-        await service.SetAsync(false, apiContext);
+        await service.SetHearthbeatAsync(false, apiContext);
         return Ok();
     }
 

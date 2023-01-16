@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.App.Services.User;
+using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Entity;
@@ -11,13 +11,13 @@ namespace GrillBot.App.Services;
 [Initializable]
 public class SearchingService
 {
-    private UserService UserService { get; }
+    private UserManager UserManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public SearchingService(GrillBotDatabaseBuilder databaseBuilder, UserService userService, IServiceProvider serviceProvider)
+    public SearchingService(GrillBotDatabaseBuilder databaseBuilder, UserManager userManager, IServiceProvider serviceProvider)
     {
-        UserService = userService;
+        UserManager = userManager;
         DatabaseBuilder = databaseBuilder;
         ServiceProvider = serviceProvider;
     }
@@ -61,7 +61,7 @@ public class SearchingService
 
     public async Task RemoveSearchAsync(long id, IGuildUser executor)
     {
-        var isAdmin = await UserService.CheckUserFlagsAsync(executor, UserFlags.BotAdmin) || executor.GuildPermissions.Administrator || executor.GuildPermissions.ManageMessages;
+        var isAdmin = await UserManager.CheckFlagsAsync(executor, UserFlags.BotAdmin) || executor.GuildPermissions.Administrator || executor.GuildPermissions.ManageMessages;
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -77,7 +77,7 @@ public class SearchingService
 
     public async Task<Dictionary<long, string>> GenerateSuggestionsAsync(IGuildUser user, IGuild guild, IChannel channel, string locale)
     {
-        var isBotAdmin = await UserService.CheckUserFlagsAsync(user, UserFlags.BotAdmin);
+        var isBotAdmin = await UserManager.CheckFlagsAsync(user, UserFlags.BotAdmin);
         var isAdmin = isBotAdmin || user.GuildPermissions.Administrator || user.GuildPermissions.ManageMessages;
 
         var parameters = new GetSearchingListParams

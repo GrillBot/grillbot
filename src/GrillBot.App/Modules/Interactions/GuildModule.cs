@@ -1,7 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.App.Services.User;
+using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
@@ -14,13 +14,13 @@ namespace GrillBot.App.Modules.Interactions;
 [RequireBotPermission(GuildPermission.Administrator)]
 public class GuildModule : InteractionsModuleBase
 {
-    private UserService UserService { get; }
+    private UserManager UserManager { get; }
     private GuildHelper GuildHelper { get; }
 
-    public GuildModule(UserService userService, GuildHelper guildHelper, IServiceProvider serviceProvider) : base(serviceProvider)
+    public GuildModule(GuildHelper guildHelper, IServiceProvider serviceProvider, UserManager userManager) : base(serviceProvider)
     {
-        UserService = userService;
         GuildHelper = guildHelper;
+        UserManager = userManager;
     }
 
     [SlashCommand("info", "Guild information")]
@@ -48,7 +48,7 @@ public class GuildModule : InteractionsModuleBase
             embed.WithImageUrl(guild.BannerUrl);
 
         var textChannelsCount = guild.TextChannels.Count(o => o is not IThreadChannel);
-        var threadChannelsCount = guild.TextChannels.Count(o => o is IThreadChannel); 
+        var threadChannelsCount = guild.TextChannels.Count(o => o is IThreadChannel);
 
         embed.AddField(GetText(nameof(GetInfoAsync), "CategoryCount"), guild.CategoryChannels?.Count ?? 0, true)
             .AddField(GetText(nameof(GetInfoAsync), "TextChannelCount"), textChannelsCount, true)
@@ -69,7 +69,7 @@ public class GuildModule : InteractionsModuleBase
             embed.AddField(GetText(nameof(GetInfoAsync), "Improvements"), string.Join("\n", features));
         }
 
-        if (await UserService.CheckUserFlagsAsync(Context.User, UserFlags.WebAdmin))
+        if (await UserManager.CheckFlagsAsync(Context.User, UserFlags.WebAdmin))
             embed.AddField(GetText(nameof(GetInfoAsync), "DetailsTitle"), GetText(nameof(GetInfoAsync), "DetailsText"));
 
         await SetResponseAsync(embed: embed.Build());

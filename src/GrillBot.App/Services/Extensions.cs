@@ -37,9 +37,6 @@ public static class Extensions
             .AddScoped<Unverify.UnverifyHelper>();
 
         services
-            .AddSingleton<User.Points.PointsService>();
-
-        services
             .AddSingleton<SearchingService>();
 
         return services;

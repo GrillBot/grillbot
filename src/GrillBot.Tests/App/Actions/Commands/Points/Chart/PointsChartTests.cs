@@ -15,14 +15,14 @@ public class PointsChartTests : CommandActionTest<PointsChart>
     private static readonly GuildBuilder GuildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetRoleAction(Role);
 
     private static readonly GuildUserBuilder UserBuilder = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(GuildBuilder.Build())
-        .SetRoles(new[] { Role });
+        .SetRoles(new[] { Role.Id });
 
     private static readonly IGuildUser GuildUser = UserBuilder.Build();
 
     private static readonly IGuildUser[] AnotherUsers =
     {
         new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(GuildBuilder.Build()).SetRoles(Enumerable.Empty<ulong>()).Build(),
-        new GuildUserBuilder(Consts.UserId + 2, Consts.Username, Consts.Discriminator).SetGuild(GuildBuilder.Build()).SetRoles(new[] { Role }).Build(),
+        new GuildUserBuilder(Consts.UserId + 2, Consts.Username, Consts.Discriminator).SetGuild(GuildBuilder.Build()).SetRoles(new[] { Role.Id }).Build(),
     };
 
     private static readonly IGuild GuildData = GuildBuilder.SetGetUsersAction(new[] { GuildUser, AnotherUsers[0] }).Build();

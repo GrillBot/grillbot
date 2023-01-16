@@ -18,7 +18,7 @@ public class GetChannelboardTests : ApiActionTest<GetChannelboard>
 
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
-        Guild = guildBuilder.SetGetTextChannelsAction(new[] { TextChannel }).SetGetUserAction(User).Build();
+        Guild = guildBuilder.SetGetTextChannelsAction(new[] { TextChannel }).SetGetUsersAction(new[] { User }).Build();
 
         var discordClient = new ClientBuilder().SetGetUserAction(User).SetGetGuildsAction(new List<IGuild> { Guild }).Build();
         return new GetChannelboard(ApiRequestContext, discordClient, DatabaseBuilder, TestServices.AutoMapper.Value);

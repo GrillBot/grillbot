@@ -12,7 +12,7 @@ public class GuildBuilder : BuilderBase<IGuild>
 
     public GuildBuilder(ulong id, string name)
     {
-        EveryoneRole = new RoleBuilder(Consts.GuildId, "@everyone").Build();
+        EveryoneRole = new RoleBuilder(id, "@everyone").Build();
 
         SetId(id);
         SetName(name);
@@ -66,13 +66,6 @@ public class GuildBuilder : BuilderBase<IGuild>
         return this;
     }
 
-    public GuildBuilder SetGetTextChannelAction(ITextChannel channel)
-    {
-        Mock.Setup(o => o.GetTextChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channel);
-        Mock.Setup(o => o.GetChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channel);
-        return this;
-    }
-
     public GuildBuilder SetGetTextChannelsAction(IEnumerable<ITextChannel> channels)
     {
         var channelsData = channels.ToList().AsReadOnly();
@@ -80,16 +73,11 @@ public class GuildBuilder : BuilderBase<IGuild>
         Mock.Setup(o => o.GetTextChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channelsData);
         Mock.Setup(o => o.GetChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channelsData);
         foreach (var channel in channelsData)
-            SetGetTextChannelAction(channel);
-        return this;
-    }
+        {
+            Mock.Setup(o => o.GetTextChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channel);
+            Mock.Setup(o => o.GetChannelAsync(It.Is<ulong>(x => x == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channel);
+        }
 
-    public GuildBuilder SetGetChannelsAction(IEnumerable<ITextChannel> channels)
-    {
-        var channelsData = channels.ToList().AsReadOnly();
-
-        Mock.Setup(o => o.GetChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult((IReadOnlyCollection<IGuildChannel>)channelsData));
-        SetGetTextChannelsAction(channelsData);
         return this;
     }
 
@@ -99,14 +87,8 @@ public class GuildBuilder : BuilderBase<IGuild>
 
         Mock.Setup(o => o.GetUsersAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(usersData);
         foreach (var user in usersData)
-            SetGetUserAction(user);
+            Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(id => id == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
 
-        return this;
-    }
-
-    public GuildBuilder SetGetUserAction(IGuildUser user)
-    {
-        Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(id => id == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
         return this;
     }
 
@@ -150,13 +132,7 @@ public class GuildBuilder : BuilderBase<IGuild>
         Mock.Setup(o => o.GetEventsAsync(It.IsAny<RequestOptions>())).ReturnsAsync(eventsData);
 
         foreach (var @event in eventsData)
-            SetGetEventAction(@event);
-        return this;
-    }
-
-    public GuildBuilder SetGetEventAction(IGuildScheduledEvent @event)
-    {
-        Mock.Setup(o => o.GetEventAsync(It.Is<ulong>(x => x == @event.Id), It.IsAny<RequestOptions>())).ReturnsAsync(@event);
+            Mock.Setup(o => o.GetEventAsync(It.Is<ulong>(x => x == @event.Id), It.IsAny<RequestOptions>())).ReturnsAsync(@event);
         return this;
     }
 
@@ -169,7 +145,7 @@ public class GuildBuilder : BuilderBase<IGuild>
     public GuildBuilder SetFeatures(GuildFeature value)
     {
         var guildFeatures = ReflectionHelper.CreateWithInternalConstructor<GuildFeatures>(value, Array.Empty<string>());
-        
+
         Mock.Setup(o => o.Features).Returns(guildFeatures);
         return this;
     }

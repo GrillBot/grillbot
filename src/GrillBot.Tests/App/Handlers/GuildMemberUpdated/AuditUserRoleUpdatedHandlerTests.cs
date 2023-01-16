@@ -54,9 +54,8 @@ public class AuditUserRoleUpdatedHandlerTests : HandlerTest<AuditUserRoleUpdated
     [TestMethod]
     public async Task ProcessAsync_WithoutAuditLog()
     {
-        var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(new List<IAuditLogEntry>()).Build();
-        var anotherUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(new[] { role }).SetGuild(guild).Build();
+        var anotherUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(new[] { Consts.RoleId }).SetGuild(guild).Build();
 
         await Handler.ProcessAsync(User, anotherUser);
     }
@@ -70,7 +69,7 @@ public class AuditUserRoleUpdatedHandlerTests : HandlerTest<AuditUserRoleUpdated
         var logEntry = new AuditLogEntryBuilder(Consts.AuditLogEntryId).SetData(data).SetUser(User).SetActionType(ActionType.MemberRoleUpdated).Build();
         var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetRoles(new[] { role }).SetGetAuditLogsAction(new List<IAuditLogEntry> { logEntry }).Build();
-        var userAfter = new GuildUserBuilder(User).SetRoles(new[] { role }).SetGuild(guild).Build();
+        var userAfter = new GuildUserBuilder(User).SetRoles(new[] { role.Id }).SetGuild(guild).Build();
 
         await Handler.ProcessAsync(User, userAfter);
     }

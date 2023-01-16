@@ -21,7 +21,7 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var textChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
-        Guild = guildBuilder.SetGetChannelsAction(new[] { textChannel }).SetRoles(new[] { role }).SetGetUsersAction(Enumerable.Empty<IGuildUser>()).Build();
+        Guild = guildBuilder.SetGetTextChannelsAction(new[] { textChannel }).SetRoles(new[] { role }).SetGetUsersAction(Enumerable.Empty<IGuildUser>()).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })

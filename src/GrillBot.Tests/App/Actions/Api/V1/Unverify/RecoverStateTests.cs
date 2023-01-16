@@ -27,7 +27,7 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
         Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var anotherRole = new RoleBuilder(Consts.RoleId + 1, Consts.RoleName).Build();
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
-        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { anotherRole }).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { anotherRole.Id }).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetRoles(new[] { Role }).Build();
         AnotherUser = new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
@@ -36,7 +36,7 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
             .SetGetUserAction(User)
             .Build();
 
-        var discordClient = DiscordHelper.CreateClient();
+        var discordClient = TestServices.DiscordSocketClient.Value;
         var texts = TestServices.Texts.Value;
         var unverifyChecker = new UnverifyChecker(DatabaseBuilder, TestServices.Configuration.Value, TestServices.TestingEnvironment.Value, texts);
         var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder, texts);

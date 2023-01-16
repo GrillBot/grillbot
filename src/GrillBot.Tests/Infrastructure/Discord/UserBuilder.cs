@@ -36,16 +36,6 @@ public class UserBuilder : BuilderBase<IUser>
         return this;
     }
 
-    public UserBuilder AsBot(bool isBot = true)
-    {
-        Mock.Setup(o => o.IsBot).Returns(isBot);
-
-        if (isBot)
-            Mock.Setup(o => o.IsWebhook).Returns(false);
-
-        return this;
-    }
-
     public UserBuilder SetUsername(string username)
     {
         Mock.Setup(o => o.Username).Returns(username);

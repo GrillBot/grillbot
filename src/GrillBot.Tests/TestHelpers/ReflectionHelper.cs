@@ -30,7 +30,7 @@ public static class AutoPropertyExtensions
 [ExcludeFromCodeCoverage]
 public class ReflectionHelper
 {
-    public static void SetPrivateReadonlyPropertyValue(object instance, string propertyName, object value)
+    public static void SetPrivateReadonlyPropertyValue(object instance, string propertyName, object? value)
     {
         var type = instance.GetType();
         var property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);

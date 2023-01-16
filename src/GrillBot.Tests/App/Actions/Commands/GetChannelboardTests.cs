@@ -19,7 +19,7 @@ public class GetChannelboardTests : CommandActionTest<GetChannelboard>
         .SetPermissions(Enumerable.Empty<Overwrite>()).Build();
 
     protected override IGuild Guild { get; }
-        = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetChannelsAction(new[] { TextChannel }).Build();
+        = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelsAction(new[] { TextChannel }).Build();
 
     protected override IMessageChannel Channel => TextChannel;
     protected override IGuildUser User => GuildUser;

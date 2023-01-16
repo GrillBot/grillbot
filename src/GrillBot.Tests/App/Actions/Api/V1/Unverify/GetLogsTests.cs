@@ -24,7 +24,7 @@ public class GetLogsTests : ApiActionTest<GetLogs>
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
-        Guild = guildBuilder.SetGetUserAction(User).Build();
+        Guild = guildBuilder.SetGetUsersAction(new[] { User }).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { Guild })

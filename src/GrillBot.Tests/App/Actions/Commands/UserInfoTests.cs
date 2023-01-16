@@ -17,7 +17,7 @@ public class UserInfoTests : CommandActionTest<UserInfo>
     private static readonly IGuild EmptyGuild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetRoleAction(RoleWithColor).Build();
 
     private static readonly IGuildUser GuildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(EmptyGuild)
-        .SetRoles(Enumerable.Repeat(RoleWithColor, 50)).SetActiveDevices(new[] { ClientType.Desktop }).SetPremiumSinceDate(DateTimeOffset.Now).Build();
+        .SetRoles(Enumerable.Repeat(RoleWithColor.Id, 50)).SetActiveDevices(new[] { ClientType.Desktop }).SetPremiumSinceDate(DateTimeOffset.Now).Build();
 
     protected override IGuild Guild { get; }
         = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { GuildUser }).Build();

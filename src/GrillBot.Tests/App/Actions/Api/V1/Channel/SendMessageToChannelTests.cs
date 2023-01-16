@@ -17,14 +17,10 @@ public class SendMessageToChannelTests : ApiActionTest<SendMessageToChannel>
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
         var textChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetSendFilesAction(message).SetSendMessageAction(message).Build();
-        guildBuilder.SetGetTextChannelAction(textChannel);
+        guildBuilder.SetGetTextChannelsAction(new[] { textChannel });
 
-        var client = new ClientBuilder()
-            .SetGetGuildAction(guildBuilder.Build())
-            .Build();
-        var messageCache = new MessageCacheBuilder()
-            .SetGetAction(Consts.MessageId, message)
-            .Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { guildBuilder.Build() }).Build();
+        var messageCache = new MessageCacheBuilder().SetGetAction(Consts.MessageId, message).Build();
 
         return new SendMessageToChannel(ApiRequestContext, TestServices.Texts.Value, client, messageCache);
     }

@@ -30,7 +30,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetSendMessageAction(message).Build();
         Guilds = new[]
         {
-            guildBuilder.SetGetUsersAction(new[] { User }).SetGetChannelsAction(Enumerable.Empty<ITextChannel>()).Build(),
+            guildBuilder.SetGetUsersAction(new[] { User }).SetGetTextChannelsAction(Enumerable.Empty<ITextChannel>()).Build(),
             new GuildBuilder(Consts.GuildId + 1, Consts.GuildName).Build()
         };
 
@@ -40,7 +40,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
             .Build();
 
         var texts = TestServices.Texts.Value;
-        var discordClient = DiscordHelper.CreateClient();
+        var discordClient = TestServices.DiscordSocketClient.Value;
         var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
         var commandService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);

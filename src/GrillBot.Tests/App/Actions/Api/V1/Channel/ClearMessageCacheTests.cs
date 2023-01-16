@@ -12,9 +12,9 @@ public class ClearMessageCacheTests : ApiActionTest<ClearMessageCache>
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
-        var guild = guildBuilder.SetGetTextChannelAction(channel).Build();
+        var guild = guildBuilder.SetGetTextChannelsAction(new[] { channel }).Build();
 
-        var client = new ClientBuilder().SetGetGuildAction(guild).Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { guild }).Build();
         var messageCache = new MessageCacheBuilder().SetClearAllMessagesFromChannel(0).Build();
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
 

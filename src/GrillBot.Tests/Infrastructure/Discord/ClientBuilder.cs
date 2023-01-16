@@ -14,20 +14,14 @@ public class ClientBuilder : BuilderBase<IDiscordClient>
         return this;
     }
 
-    public ClientBuilder SetGetGuildAction(IGuild guild)
-    {
-        Mock.Setup(o => o.GetGuildAsync(It.Is<ulong>(x => x == guild.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(guild));
-        return this;
-    }
-
     public ClientBuilder SetGetGuildsAction(IEnumerable<IGuild> guilds)
     {
         var guildList = guilds.ToList().AsReadOnly();
-        
+
         Mock.Setup(o => o.GetGuildsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult((IReadOnlyCollection<IGuild>)guildList));
         foreach (var guild in guildList)
-            SetGetGuildAction(guild);
-            
+            Mock.Setup(o => o.GetGuildAsync(It.Is<ulong>(x => x == guild.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(guild));
+
         return this;
     }
 
@@ -41,12 +35,6 @@ public class ClientBuilder : BuilderBase<IDiscordClient>
     {
         foreach (var user in users)
             SetGetUserAction(user);
-        return this;
-    }
-
-    public ClientBuilder SetConnectionState(ConnectionState state)
-    {
-        Mock.Setup(o => o.ConnectionState).Returns(state);
         return this;
     }
 }

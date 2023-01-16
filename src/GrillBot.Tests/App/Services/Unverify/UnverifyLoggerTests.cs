@@ -12,8 +12,7 @@ public class UnverifyLoggerTests : ServiceTest<UnverifyLogger>
 {
     protected override UnverifyLogger CreateService()
     {
-        var discordClient = DiscordHelper.CreateClient();
-        return new UnverifyLogger(discordClient, DatabaseBuilder);
+        return new UnverifyLogger(TestServices.DiscordSocketClient.Value, DatabaseBuilder);
     }
 
     [TestMethod]

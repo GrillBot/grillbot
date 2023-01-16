@@ -18,11 +18,10 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
         var serviceProvider = TestServices.InitializedProvider.Value;
         var initManager = serviceProvider.GetRequiredService<InitManager>();
     
-        var discordClient = DiscordHelper.CreateClient();
         var client = new ClientBuilder().SetGetGuildsAction(Enumerable.Empty<IGuild>()).Build();
         initManager.Set(true);
         var suggestionSessionService = new SuggestionSessionService();
-        var messageCacheManager = new MessageCacheManager(discordClient, initManager, CacheBuilder, TestServices.CounterManager.Value);
+        var messageCacheManager = new MessageCacheManager(TestServices.DiscordSocketClient.Value, initManager, CacheBuilder, TestServices.CounterManager.Value);
         EmoteSuggestionService = new EmoteSuggestionService(suggestionSessionService, DatabaseBuilder, client, messageCacheManager);
 
         return new SuggestionJob(EmoteSuggestionService, suggestionSessionService, serviceProvider);

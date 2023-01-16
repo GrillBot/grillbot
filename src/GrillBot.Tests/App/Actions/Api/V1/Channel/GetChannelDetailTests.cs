@@ -18,13 +18,10 @@ public class GetChannelDetailTests : ApiActionTest<GetChannelDetail>
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
-        Guild = guildBuilder.SetGetTextChannelAction(TextChannel).Build();
+        Guild = guildBuilder.SetGetTextChannelsAction(new[] { TextChannel }).Build();
 
-        var client = new ClientBuilder()
-            .SetGetGuildAction(Guild)
-            .Build();
-        var messageCache = new MessageCacheBuilder()
-            .Build();
+        var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
+        var messageCache = new MessageCacheBuilder().Build();
 
         return new GetChannelDetail(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value, TestServices.AutoMapper.Value, client, messageCache);
     }

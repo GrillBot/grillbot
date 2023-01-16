@@ -17,7 +17,7 @@ public class PointsServiceTests : ServiceTest<PointsService>
     {
         User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetAvatar(Consts.AvatarId).Build();
         var userBuilder = new GuildUserBuilder(User).SetAvatar(Consts.AvatarId);
-        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUserAction(userBuilder.Build()).Build();
+        Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { userBuilder.Build() }).Build();
         GuildUser = userBuilder.SetGuild(Guild).Build();
 
         return new PointsService(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Random.Value);

@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Actions.Api.V1.Command;
-using GrillBot.App.Services.CommandsHelp;
 using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Actions.Api.V1.Command;
@@ -14,10 +13,9 @@ public class GetExternalCommandsTests : ApiActionTest<GetExternalCommands>
     {
         var directApi = new DirectApiBuilder()
             .SetSendCommandAction("Rubbergod", $"Help|{Consts.UserId}", Json)
+            .SetSendCommandAction("Test", $"Help|{Consts.UserId}", null)
             .Build();
-        var service = new ExternalCommandsHelpService(directApi, TestServices.Configuration.Value, TestServices.EmptyProvider.Value);
-
-        return new GetExternalCommands(ApiRequestContext, service);
+        return new GetExternalCommands(ApiRequestContext, directApi);
     }
 
     [TestMethod]
@@ -27,5 +25,14 @@ public class GetExternalCommandsTests : ApiActionTest<GetExternalCommands>
 
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Count > 0);
+    }
+
+    [TestMethod]
+    public async Task ProcessAsync_NoData()
+    {
+        var result = await Action.ProcessAsync("Test");
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(0, result.Count);
     }
 }

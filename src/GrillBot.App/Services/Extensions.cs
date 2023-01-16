@@ -10,9 +10,6 @@ public static class Extensions
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services
-            .AddScoped<CommandsHelp.ExternalCommandsHelpService>();
-
-        services
             .AddSingleton<DirectApi.IDirectApiService, DirectApi.DirectApiService>();
 
         services

@@ -28,7 +28,7 @@ public class FormatHelper
         };
     }
 
-    public static string? FormatCommandDescription(string description, string prefix, bool toHtml = false)
+    public static string? FormatCommandDescription(string? description, string prefix, bool toHtml = false)
     {
         if (string.IsNullOrEmpty(description)) return null;
 

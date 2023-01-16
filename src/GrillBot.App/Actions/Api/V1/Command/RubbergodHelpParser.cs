@@ -1,11 +1,11 @@
 ﻿using GrillBot.Common.Helpers;
 using GrillBot.Data.Models.API.Help;
 
-namespace GrillBot.App.Services.CommandsHelp.Parsers;
+namespace GrillBot.App.Actions.Api.V1.Command;
 
-public class RubbergodHelpParser : IHelpParser
+public static class RubbergodHelpParser
 {
-    public List<CommandGroup> Parse(JArray json)
+    public static List<CommandGroup> Parse(JArray json)
     {
         return json
             .OfType<JObject>()
@@ -22,7 +22,7 @@ public class RubbergodHelpParser : IHelpParser
         };
 
         commandGroup.Commands.AddRange(
-            group.Value<JArray>("commands")!.Select(o => ProcessCommand(o as JObject))
+            group.Value<JArray>("commands")!.Select(o => ProcessCommand((JObject)o))
         );
 
         return commandGroup;

@@ -18,7 +18,7 @@ public class RequireUserPermsAttribute : PreconditionAttribute
 
         try
         {
-            CheckDms(context, texts);
+            CheckDms(context, texts, commandInfo);
 
             var user = (await repository.User.FindUserAsync(context.User, true))!;
             if (user.HaveFlags(UserFlags.BotAdmin)) return PreconditionResult.FromSuccess();
@@ -34,9 +34,9 @@ public class RequireUserPermsAttribute : PreconditionAttribute
         }
     }
 
-    private static void CheckDms(IInteractionContext context, ITextsManager texts)
+    private static void CheckDms(IInteractionContext context, ITextsManager texts, ICommandInfo commandInfo)
     {
-        if (context.Interaction.IsDMInteraction)
+        if (context.Interaction.IsDMInteraction && !commandInfo.Attributes.OfType<AllowDmsAttribute>().Any())
             throw new UnauthorizedAccessException(texts["Permissions/Preconditions/DmNotAllowed", context.Interaction.UserLocale]);
     }
 

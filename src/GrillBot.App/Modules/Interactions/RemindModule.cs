@@ -108,6 +108,7 @@ public class RemindModule : InteractionsModuleBase
     }
 
     [ComponentInteraction("remind_postpone:*", ignoreGroupNames: true)]
+    [AllowDms]
     public async Task HandleRemindPostponeAsync(int hours)
     {
         var handler = new RemindPostponeHandler(hours, ServiceProvider);

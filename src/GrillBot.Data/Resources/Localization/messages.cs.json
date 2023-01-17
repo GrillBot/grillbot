@@ -275,7 +275,8 @@
       "Success": "Hledání bylo úspěšně uloženo."
     },
     "RemoveSearch": {
-      "Success": "Hledání bylo úspěšně smazáno."
+      "Success": "Hledání bylo úspěšně smazáno.",
+      "InsufficientPermissions": "Hledání nebylo vámi založené a ani nemáte vyšší oprávnění k mazání hledání."
     },
     "List": {
       "Embed": {

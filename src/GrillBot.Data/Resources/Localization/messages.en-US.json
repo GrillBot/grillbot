@@ -275,7 +275,8 @@
       "Success": "The search was successfully saved."
     },
     "RemoveSearch": {
-      "Success": "The search was successfully deleted."
+      "Success": "The search was successfully deleted.",
+      "InsufficientPermissions": "You did not create this search and you also not have elevated permissions to delete a search."
     },
     "List": {
       "Embed": {

@@ -33,9 +33,6 @@ public static class Extensions
             .AddSingleton<Unverify.UnverifyService>()
             .AddScoped<Unverify.UnverifyHelper>();
 
-        services
-            .AddSingleton<SearchingService>();
-
         return services;
     }
 }

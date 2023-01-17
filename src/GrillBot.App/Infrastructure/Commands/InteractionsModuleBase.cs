@@ -9,9 +9,9 @@ namespace GrillBot.App.Infrastructure.Commands;
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands)]
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
-    protected ITextsManager Texts { get; }
-    protected IServiceProvider ServiceProvider { get; }
-    protected GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    protected ITextsManager? Texts { get; }
+    protected IServiceProvider? ServiceProvider { get; }
+    protected GrillBotDatabaseBuilder? DatabaseBuilder { get; }
 
     protected string Locale
     {
@@ -22,8 +22,8 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         }
     }
 
-    protected CultureInfo Culture
-        => string.IsNullOrEmpty(Locale) ? null : Texts.GetCulture(Locale);
+    protected CultureInfo? Culture
+        => string.IsNullOrEmpty(Locale) ? null : Texts?.GetCulture(Locale);
 
     private bool IsEphemeralChannel { get; set; }
 
@@ -59,7 +59,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         if (configuration.SuppressAuto) return (false, false);
         if (configuration.RequireEphemeral) return (true, true);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        await using var repository = DatabaseBuilder!.CreateRepository();
         IsEphemeralChannel = await repository.Channel.IsChannelEphemeralAsync(Context.Guild, Context.Channel);
         return (true, IsEphemeralChannel);
     }
@@ -79,8 +79,8 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             await response.DeleteAsync();
     }
 
-    protected async Task<IUserMessage> SetResponseAsync(string content = null, Embed embed = default, Embed[] embeds = default, MessageComponent components = default, MessageFlags? flags = default,
-        IEnumerable<FileAttachment> attachments = default, RequestOptions requestOptions = null, bool secret = false, bool suppressFollowUp = false)
+    protected async Task<IUserMessage> SetResponseAsync(string? content = null, Embed? embed = null, Embed[]? embeds = null, MessageComponent? components = null, MessageFlags? flags = null,
+        IEnumerable<FileAttachment>? attachments = null, RequestOptions? requestOptions = null, bool secret = false, bool suppressFollowUp = false)
     {
         var attachmentsList = (attachments ?? Enumerable.Empty<FileAttachment>()).ToList();
         secret = secret || !IsEphemeralChannel;
@@ -115,14 +115,14 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         }, requestOptions);
     }
 
-    protected string GetText(string method, string id)
+    protected string? GetText(string method, string id)
         => Texts?[GetTextId(method, id), Locale];
 
     protected string GetTextId(string method, string id) => $"{GetType().Name}/{method.Replace("Async", "")}/{id}";
 
     protected ScopedCommand<TCommand> GetCommand<TCommand>() where TCommand : CommandAction
     {
-        var command = new ScopedCommand<TCommand>(ServiceProvider.CreateScope());
+        var command = new ScopedCommand<TCommand>(ServiceProvider!.CreateScope());
         command.Command.Init(Context);
 
         return command;
@@ -130,7 +130,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 
     protected ScopedCommand<TAction> GetActionAsCommand<TAction>() where TAction : ApiAction
     {
-        var command = new ScopedCommand<TAction>(ServiceProvider.CreateScope());
+        var command = new ScopedCommand<TAction>(ServiceProvider!.CreateScope());
         command.Command.UpdateContext(Locale, Context.User);
 
         return command;

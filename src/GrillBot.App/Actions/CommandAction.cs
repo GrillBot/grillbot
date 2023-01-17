@@ -19,4 +19,7 @@ public abstract class CommandAction
     {
         Context = context;
     }
+
+    protected async Task<IGuildUser> GetExecutingUserAsync()
+        => Context.User as IGuildUser ?? await Context.Guild.GetUserAsync(Context.User.Id);
 }

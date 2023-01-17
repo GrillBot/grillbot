@@ -7,7 +7,7 @@ public class SearchingMetadata : PaginatedMetadataBase
     public override string EmbedKind => "Search";
 
     public ulong ChannelId { get; set; }
-    public string MessageQuery { get; set; }
+    public string? MessageQuery { get; set; }
 
     protected override void Save(IDictionary<string, string> destination)
     {

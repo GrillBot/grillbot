@@ -2,7 +2,7 @@
 using GrillBot.App.Infrastructure.Jobs;
 using Quartz;
 
-namespace GrillBot.App.Services.Reminder;
+namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 [DisallowUninitialized]

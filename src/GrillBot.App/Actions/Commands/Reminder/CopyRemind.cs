@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.Reminder;
+﻿using GrillBot.App.Helpers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;

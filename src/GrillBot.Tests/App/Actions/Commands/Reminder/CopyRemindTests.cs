@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Commands.Reminder;
-using GrillBot.App.Services.Reminder;
+using GrillBot.App.Helpers;
 using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Tests.Infrastructure.Common;

@@ -4,7 +4,7 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 
-namespace GrillBot.App.Services.Reminder;
+namespace GrillBot.App.Helpers;
 
 public class RemindHelper
 {

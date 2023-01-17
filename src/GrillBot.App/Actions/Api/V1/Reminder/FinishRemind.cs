@@ -1,5 +1,5 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.App.Services.Reminder;
+﻿using GrillBot.App.Helpers;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;

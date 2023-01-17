@@ -27,6 +27,8 @@ public sealed class PointsImage : CommandAction, IDisposable
     public async Task<TemporaryFile> ProcessAsync(IGuild guild, IUser user)
     {
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
+        if (guildUser == null)
+            throw new NotFoundException("Uživatel nebyl nalezen na serveru.");
 
         await using var repository = DatabaseBuilder.CreateRepository();
         if (!await repository.GuildUser.ExistsAsync(guildUser))

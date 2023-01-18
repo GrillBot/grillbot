@@ -2,6 +2,7 @@
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Services.Graphics.Models.Chart;
 using GrillBot.Common.Services.Graphics.Models.Diagnostics;
+using GrillBot.Common.Services.Graphics.Models.Images;
 using Newtonsoft.Json.Linq;
 
 namespace GrillBot.Common.Services.Graphics;
@@ -84,6 +85,17 @@ public class GraphicsClient : IGraphicsClient
                 throw await HandleInvalidRequestAsync(response);
 
             return (await response.Content.ReadFromJsonAsync<Stats>())!;
+        }
+    }
+
+    public async Task<byte[]> CreateWithoutAccidentImage(WithoutAccidentRequestData request)
+    {
+        using (CounterManager.Create("Service.Graphics"))
+        {
+            using var response = await HttpClient.PostAsJsonAsync("image/without-accident", request);
+            if (!response.IsSuccessStatusCode)
+                throw await HandleInvalidRequestAsync(response);
+            return await response.Content.ReadAsByteArrayAsync();
         }
     }
 

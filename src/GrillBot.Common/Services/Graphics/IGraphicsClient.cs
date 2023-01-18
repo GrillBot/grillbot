@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Services.Graphics.Models.Chart;
 using GrillBot.Common.Services.Graphics.Models.Diagnostics;
+using GrillBot.Common.Services.Graphics.Models.Images;
 
 namespace GrillBot.Common.Services.Graphics;
 
@@ -13,4 +14,5 @@ public interface IGraphicsClient
     Task<Metrics> GetMetricsAsync();
     Task<string> GetVersionAsync();
     Task<Stats> GetStatisticsAsync();
+    Task<byte[]> CreateWithoutAccidentImage(WithoutAccidentRequestData request);
 }

@@ -72,6 +72,12 @@ public class InteractionHandler
                     await context.Interaction.RespondAsync(reply, ephemeral: true);
                     return;
                 }
+                
+                if (context.Interaction.HasResponded || (new DateTimeOffset(DateTime.UtcNow) - context.Interaction.CreatedAt).TotalSeconds > 3.0)
+                {
+                    await context.Interaction.FollowupAsync(reply, ephemeral: true);
+                    return;
+                }
 
                 try
                 {

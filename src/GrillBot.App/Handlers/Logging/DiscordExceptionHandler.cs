@@ -16,8 +16,9 @@ public class DiscordExceptionHandler : ILoggingHandler
 {
     private IDiscordClient DiscordClient { get; }
     private IConfiguration Configuration { get; }
-    private ITextChannel LogChannel { get; set; }
     private IServiceProvider ServiceProvider { get; }
+
+    private ITextChannel? LogChannel { get; set; }
 
     public DiscordExceptionHandler(IDiscordClient discordClient, IConfiguration configuration, IServiceProvider serviceProvider)
     {
@@ -26,7 +27,7 @@ public class DiscordExceptionHandler : ILoggingHandler
         ServiceProvider = serviceProvider;
     }
 
-    public async Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception exception = null)
+    public async Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception? exception = null)
     {
         if (exception == null || !Configuration.GetValue<bool>("Enabled")) return false;
         if (severity != LogSeverity.Critical && severity != LogSeverity.Error && severity != LogSeverity.Warning) return false;
@@ -67,7 +68,7 @@ public class DiscordExceptionHandler : ILoggingHandler
 
     public Task InfoAsync(string source, string message) => Task.CompletedTask;
 
-    public Task WarningAsync(string source, string message, Exception exception = null)
+    public Task WarningAsync(string source, string message, Exception? exception = null)
         => ErrorAsync(source, message, exception!);
 
     public async Task ErrorAsync(string source, string message, Exception exception)

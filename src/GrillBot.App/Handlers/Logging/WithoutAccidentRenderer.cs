@@ -1,79 +1,52 @@
 ﻿using GrillBot.App.Infrastructure.IO;
+using GrillBot.Cache.Entity;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
-using GrillBot.Data.Resources.Misc;
+using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.Graphics.Models.Images;
 using ImageMagick;
 
 namespace GrillBot.App.Handlers.Logging;
 
-public sealed class WithoutAccidentRenderer : IDisposable
+public class WithoutAccidentRenderer
 {
-    private MagickImage Background { get; }
-    private MagickImage Head { get; }
-    private MagickImage Pliers { get; }
-
     private DataCacheManager DataCacheManager { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
+    private IGraphicsClient GraphicsClient { get; }
 
-    public WithoutAccidentRenderer(ProfilePictureManager profilePictureManager, DataCacheManager dataCacheManager)
+    public WithoutAccidentRenderer(ProfilePictureManager profilePictureManager, DataCacheManager dataCacheManager, IGraphicsClient graphicsClient)
     {
         DataCacheManager = dataCacheManager;
         ProfilePictureManager = profilePictureManager;
-
-        Background = new MagickImage(MiscResources.xDaysBackground);
-        Head = new MagickImage(MiscResources.xDaysHead);
-        Pliers = new MagickImage(MiscResources.xDaysPliers);
+        GraphicsClient = graphicsClient;
     }
 
     public async Task<TemporaryFile> RenderAsync(IUser user)
     {
-        var daysCount = await GetLastErrorDays();
-
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, size: 512);
-        using var avatar = new MagickImageCollection(profilePicture.Data);
+        var request = new WithoutAccidentRequestData
+        {
+            Days = await GetLastErrorDays(),
+            ProfilePicture = ReadAvatarToBase64(profilePicture)
+        };
 
-        using var image = RenderImage(avatar[0], daysCount);
-
+        var image = await GraphicsClient.CreateWithoutAccidentImage(request);
         var tmpFile = new TemporaryFile("png");
-        await image.WriteAsync(tmpFile.Path, MagickFormat.Png);
+        await File.WriteAllBytesAsync(tmpFile.Path, image);
 
         return tmpFile;
     }
 
-    private IMagickImage<byte> RenderImage(IMagickImage<byte> avatar, int daysCount)
+    private static string ReadAvatarToBase64(ProfilePicture profilePicture)
     {
-        var drawables = new Drawables();
+        using var avatarCollection = new MagickImageCollection(profilePicture.Data);
 
-        DrawNumber(drawables, daysCount);
-        DrawAvatar(drawables, avatar);
-
-        drawables
-            .Composite(0, 0, CompositeOperator.Over, Head)
-            .Composite(0, 0, CompositeOperator.Over, Pliers);
-
-        var template = Background.Clone();
-        drawables.Draw(template);
-        return template;
-    }
-
-    private static void DrawNumber(Drawables drawables, int daysCount)
-    {
-        drawables
-            .EnableStrokeAntialias()
-            .EnableTextAntialias()
-            .FillColor(MagickColors.Black)
-            .TextAlignment(TextAlignment.Center)
-            .Font("Open Sans")
-            .FontPointSize(100)
-            .Text(1090, 280, daysCount.ToString());
-    }
-
-    private static void DrawAvatar(Drawables drawables, IMagickImage<byte> avatar)
-    {
+        var avatar = avatarCollection[0];
         avatar.Resize(230, 230);
         avatar.RoundImage();
         avatar.Crop(230, 200);
-        drawables.Composite(560, 270, CompositeOperator.Over, avatar);
+
+        return avatar.ToBase64();
     }
 
     private async Task<int> GetLastErrorDays()
@@ -84,12 +57,5 @@ public sealed class WithoutAccidentRenderer : IDisposable
         var lastError = DateTime.Parse(lastErorDate);
         var totalDays = (DateTime.Now - lastError).TotalDays;
         return Convert.ToInt32(Math.Round(totalDays));
-    }
-
-    public void Dispose()
-    {
-        Background.Dispose();
-        Head.Dispose();
-        Pliers.Dispose();
     }
 }

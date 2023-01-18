@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
+﻿using GrillBot.App.Handlers.Logging;
+using GrillBot.Common.Managers.Events.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers;
@@ -43,7 +44,8 @@ public static class HandlerExtensions
             .AddScoped<IInviteCreatedEvent, InviteCreated.InviteToCacheHandler>();
 
         services
-            .AddScoped<IJoinedGuildEvent, JoinedGuild.SyncJoinedGuildHandler>();
+            .AddScoped<IJoinedGuildEvent, JoinedGuild.SyncJoinedGuildHandler>()
+            .AddScoped<WithoutAccidentRenderer>();
 
         services
             .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()

@@ -4,27 +4,28 @@ using GrillBot.Common.Extensions;
 using GrillBot.Data.Resources.Misc;
 using ImageMagick;
 
-namespace GrillBot.App.Services.Images;
+namespace GrillBot.App.Handlers.Logging;
 
-public sealed class WithoutAccidentRenderer : RendererBase, IDisposable
+public sealed class WithoutAccidentRenderer : IDisposable
 {
     private MagickImage Background { get; }
     private MagickImage Head { get; }
     private MagickImage Pliers { get; }
 
     private DataCacheManager DataCacheManager { get; }
+    private ProfilePictureManager ProfilePictureManager { get; }
 
     public WithoutAccidentRenderer(ProfilePictureManager profilePictureManager, DataCacheManager dataCacheManager)
-        : base(null, profilePictureManager)
     {
         DataCacheManager = dataCacheManager;
+        ProfilePictureManager = profilePictureManager;
 
         Background = new MagickImage(MiscResources.xDaysBackground);
         Head = new MagickImage(MiscResources.xDaysHead);
         Pliers = new MagickImage(MiscResources.xDaysPliers);
     }
 
-    public override async Task<TemporaryFile> RenderAsync(IUser user, IGuild guild, IChannel channel, IMessage message, IDiscordInteraction interaction)
+    public async Task<TemporaryFile> RenderAsync(IUser user)
     {
         var daysCount = await GetLastErrorDays();
 

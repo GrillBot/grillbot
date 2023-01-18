@@ -2,19 +2,27 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.FileStorage;
+using GrillBot.Common.Helpers;
 using GrillBot.Data.Resources.Peepolove;
 using ImageMagick;
 
-namespace GrillBot.App.Services.Images;
+namespace GrillBot.App.Actions.Commands.Images;
 
-public sealed class PeepoloveRenderer : RendererBase, IDisposable
+public sealed class PeepoloveRenderer : IDisposable
 {
+    private ProfilePictureManager ProfilePictureManager { get; }
+    private FileStorageFactory FileStorageFactory { get; }
+
     private MagickImage Body { get; }
     private MagickImage Hands { get; }
 
+    private IFileStorage Cache => FileStorageFactory.Create("Cache");
+
     public PeepoloveRenderer(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
-        : base(fileStorageFactory, profilePictureManager)
     {
+        FileStorageFactory = fileStorageFactory;
+        ProfilePictureManager = profilePictureManager;
+
         Body = new MagickImage(PeepoloveResources.Body);
         Hands = new MagickImage(PeepoloveResources.Hands);
     }
@@ -28,7 +36,7 @@ public sealed class PeepoloveRenderer : RendererBase, IDisposable
             return file.FullName;
 
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
-        if (profilePicture.IsAnimated && !CanProcessGif(profilePicture, guild))
+        if (profilePicture.IsAnimated && !MessageHelper.CanSendAttachment(profilePicture.Data.Length, guild))
         {
             filename = Path.ChangeExtension(filename, ".png");
             file = await Cache.GetFileInfoAsync("Peepolove", filename);
@@ -85,7 +93,7 @@ public sealed class PeepoloveRenderer : RendererBase, IDisposable
 
     public void Dispose()
     {
-        Body?.Dispose();
-        Hands?.Dispose();
+        Body.Dispose();
+        Hands.Dispose();
     }
 }

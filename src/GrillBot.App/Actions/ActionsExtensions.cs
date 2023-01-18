@@ -168,6 +168,10 @@ public static class ActionsExtensions
         services
             .AddScoped<Commands.Emotes.EmoteInfo>()
             .AddScoped<Commands.Emotes.GetEmotesList>();
+        
+        // Images
+        services
+            .AddScoped<Commands.Images.ImageCreator>();
 
         // Points
         services
@@ -197,7 +201,6 @@ public static class ActionsExtensions
 
         services
             .AddScoped<Commands.ChannelInfo>()
-            .AddScoped<Commands.ImageCreator>()
             .AddScoped<Commands.Mock>()
             .AddScoped<Commands.Emojization>()
             .AddScoped<Commands.CleanChannelMessages>()

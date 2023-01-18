@@ -2,18 +2,27 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.FileStorage;
+using GrillBot.Common.Helpers;
 using GrillBot.Data.Resources.Peepoangry;
 using ImageMagick;
 
-namespace GrillBot.App.Services.Images;
+namespace GrillBot.App.Actions.Commands.Images;
 
-public sealed class PeepoangryRenderer : RendererBase, IDisposable
+public sealed class PeepoangryRenderer : IDisposable
 {
+    private ProfilePictureManager ProfilePictureManager { get; }
+    private FileStorageFactory FileStorageFactory { get; }
+
     private MagickImage AngryPeepo { get; }
 
+    private IFileStorage Cache
+        => FileStorageFactory.Create("Cache");
+
     public PeepoangryRenderer(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
-        : base(fileStorageFactory, profilePictureManager)
     {
+        FileStorageFactory = fileStorageFactory;
+        ProfilePictureManager = profilePictureManager;
+
         AngryPeepo = new MagickImage(PeepoangryResources.peepoangry);
     }
 
@@ -26,7 +35,7 @@ public sealed class PeepoangryRenderer : RendererBase, IDisposable
             return file.FullName;
 
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 64);
-        if (profilePicture.IsAnimated && !CanProcessGif(profilePicture, guild))
+        if (profilePicture.IsAnimated && !MessageHelper.CanSendAttachment(profilePicture.Data.Length, guild))
         {
             filename = Path.ChangeExtension(filename, ".png");
             file = await Cache.GetFileInfoAsync("Peepoangry", filename);
@@ -79,6 +88,6 @@ public sealed class PeepoangryRenderer : RendererBase, IDisposable
 
     public void Dispose()
     {
-        AngryPeepo?.Dispose();
+        AngryPeepo.Dispose();
     }
 }

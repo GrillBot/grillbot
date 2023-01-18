@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Discord.Interactions;
+using GrillBot.App.Actions.Commands.Images;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
@@ -47,7 +48,7 @@ public class MemeModule : InteractionsModuleBase
     [UserCommand("Peepolove")]
     public async Task PeepoloveAsync(IUser user = null)
     {
-        using var command = GetCommand<Actions.Commands.ImageCreator>();
+        using var command = GetCommand<ImageCreator>();
         var result = await command.Command.PeepoloveAsync(user);
 
         await FollowupWithFileAsync(result);
@@ -57,7 +58,7 @@ public class MemeModule : InteractionsModuleBase
     [UserCommand("Peepoangry")]
     public async Task PeepoangryAsync(IUser user = null)
     {
-        using var command = GetCommand<Actions.Commands.ImageCreator>();
+        using var command = GetCommand<ImageCreator>();
         var result = await command.Command.PeepoangryAsync(user);
 
         await FollowupWithFileAsync(result);

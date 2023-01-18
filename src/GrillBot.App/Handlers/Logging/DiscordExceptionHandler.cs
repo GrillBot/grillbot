@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using Discord.Net;
 using GrillBot.App.Infrastructure.IO;
-using GrillBot.App.Services.Images;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Extensions;
@@ -134,14 +133,14 @@ public class DiscordExceptionHandler : ILoggingHandler
         using var scope = ServiceProvider.CreateScope();
         var renderer = scope.ServiceProvider.GetRequiredService<WithoutAccidentRenderer>();
 
-        return await renderer!.RenderAsync(user, null, null, null, null);
+        return await renderer.RenderAsync(user);
     }
 
     private async Task StoreLastErrorDateAsync()
     {
         using var scope = ServiceProvider.CreateScope();
         var dataCacheManager = scope.ServiceProvider.GetRequiredService<DataCacheManager>();
-        
+
         await dataCacheManager.SetValueAsync("LastErrorDate", DateTime.Now.ToString("o"), DateTime.MaxValue);
     }
 }

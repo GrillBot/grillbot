@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using Discord;
-using GrillBot.App.Actions.Commands;
+using GrillBot.App.Actions.Commands.Images;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
@@ -46,13 +46,13 @@ public class ImageCreatorTests : CommandActionTest<ImageCreator>
     [TestMethod]
     public async Task PeepoangryAsync_UserFromContext() => await ProcessPeepoangryTestAsync(null);
 
-    private async Task ProcessPeepoloveTestAsync(IUser user)
+    private async Task ProcessPeepoloveTestAsync(IUser? user)
     {
         var result = await Action.PeepoloveAsync(user);
         Assert.AreEqual(GetFilenames()[0], Path.GetFileName(result));
     }
 
-    private async Task ProcessPeepoangryTestAsync(IUser user)
+    private async Task ProcessPeepoangryTestAsync(IUser? user)
     {
         var result = await Action.PeepoangryAsync(user);
         Assert.AreEqual(GetFilenames()[1], Path.GetFileName(result));

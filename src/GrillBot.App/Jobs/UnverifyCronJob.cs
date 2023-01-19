@@ -1,10 +1,9 @@
 ﻿using GrillBot.App.Actions.Api.V1.Unverify;
 using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Common.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 [DisallowUninitialized]
@@ -13,10 +12,10 @@ public class UnverifyCronJob : Job
     private RemoveUnverify RemoveUnverify { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public UnverifyCronJob(IServiceProvider serviceProvider) : base(serviceProvider)
+    public UnverifyCronJob(IServiceProvider serviceProvider, RemoveUnverify removeUnverify, GrillBotDatabaseBuilder databaseBuilder) : base(serviceProvider)
     {
-        RemoveUnverify = serviceProvider.GetRequiredService<RemoveUnverify>();
-        DatabaseBuilder = serviceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
+        RemoveUnverify = removeUnverify;
+        DatabaseBuilder = databaseBuilder;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)

@@ -1,13 +1,9 @@
 using Discord.Net;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
-using GrillBot.Data.Exceptions;
-using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Services.Unverify;
 
@@ -18,20 +14,18 @@ public class UnverifyService
     private UnverifyLogger Logger { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager LoggingManager { get; }
-    private ITextsManager Texts { get; }
     private UnverifyMessageGenerator MessageGenerator { get; }
     private IDiscordClient DiscordClient { get; }
     private UnverifyHelper UnverifyHelper { get; }
 
-    public UnverifyService(UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder,
-        LoggingManager loggingManager, ITextsManager texts, UnverifyMessageGenerator messageGenerator, IDiscordClient discordClient)
+    public UnverifyService(UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder, LoggingManager loggingManager,
+        UnverifyMessageGenerator messageGenerator, IDiscordClient discordClient)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
         Logger = logger;
         DatabaseBuilder = databaseBuilder;
         LoggingManager = loggingManager;
-        Texts = texts;
         MessageGenerator = messageGenerator;
         DiscordClient = discordClient;
         UnverifyHelper = new UnverifyHelper(databaseBuilder);
@@ -147,56 +141,5 @@ public class UnverifyService
         }
 
         return profiles;
-    }
-
-    public async Task RecoverUnverifyState(long id, ulong fromUserId, string locale)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var logItem = await repository.Unverify.FindUnverifyLogByIdAsync(id);
-
-        if (logItem == null || (logItem.Operation != UnverifyOperation.Selfunverify && logItem.Operation != UnverifyOperation.Unverify))
-            throw new NotFoundException(Texts["Unverify/Recover/LogItemNotFound", locale]);
-
-        if (logItem.ToUser!.Unverify != null)
-            throw new ValidationException(Texts["Unverify/Recover/ValidUnverify", locale]).ToBadRequestValidation(id, nameof(logItem.ToUser.Unverify));
-
-        var guild = await DiscordClient.GetGuildAsync(logItem.GuildId.ToUlong());
-        if (guild == null)
-            throw new NotFoundException(Texts["Unverify/Recover/GuildNotFound", locale]);
-
-        var user = await guild.GetUserAsync(logItem.ToUserId.ToUlong());
-        if (user == null)
-            throw new NotFoundException(Texts["Unverify/Recover/MemberNotFound", locale].FormatWith(guild.Name));
-
-        var mutedRole = !string.IsNullOrEmpty(logItem.Guild!.MuteRoleId) ? guild.GetRole(logItem.Guild.MuteRoleId.ToUlong()) : null;
-        var data = JsonConvert.DeserializeObject<UnverifyLogSet>(logItem.Data)!;
-
-        var rolesToReturn = data.RolesToRemove
-            .Where(o => user.RoleIds.All(x => x != o))
-            .Select(o => guild.GetRole(o))
-            .Where(role => role != null)
-            .ToList();
-
-        var channelsToReturn = new List<(IGuildChannel channel, OverwritePermissions permissions, ChannelOverride @override)>();
-        foreach (var item in data.ChannelsToRemove)
-        {
-            var channel = await guild.GetChannelAsync(item.ChannelId);
-            var perms = channel?.GetPermissionOverwrite(user);
-            if (perms == null || (perms.Value.AllowValue == item.Permissions.AllowValue && perms.Value.DenyValue == item.Permissions.DenyValue)) continue;
-
-            channelsToReturn.Add((channel, item.Permissions, item));
-        }
-
-        var fromUser = await guild.GetUserAsync(fromUserId);
-        await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.@override), guild, fromUser, user);
-
-        if (rolesToReturn.Count > 0)
-            await user.AddRolesAsync(rolesToReturn);
-
-        foreach (var channel in channelsToReturn)
-            await channel.channel.AddPermissionOverwriteAsync(user, channel.permissions);
-
-        if (mutedRole != null)
-            await user.RemoveRoleAsync(mutedRole);
     }
 }

@@ -1,17 +1,75 @@
 ﻿using GrillBot.App.Services.Unverify;
+using GrillBot.Common.Extensions;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Data.Exceptions;
+using GrillBot.Data.Models;
+using GrillBot.Data.Models.Unverify;
+using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 
 public class RecoverState : ApiAction
 {
-    private UnverifyService UnverifyService { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private ITextsManager Texts { get; }
+    private IDiscordClient DiscordClient { get; }
+    private UnverifyLogger Logger { get; }
 
-    public RecoverState(ApiRequestContext apiContext, UnverifyService unverifyService) : base(apiContext)
+    public RecoverState(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IDiscordClient discordClient, UnverifyLogger logger) : base(apiContext)
     {
-        UnverifyService = unverifyService;
+        DatabaseBuilder = databaseBuilder;
+        Texts = texts;
+        DiscordClient = discordClient;
+        Logger = logger;
     }
 
     public async Task ProcessAsync(long logId)
-        => await UnverifyService.RecoverUnverifyState(logId, ApiContext.GetUserId(), ApiContext.Language);
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var logItem = await repository.Unverify.FindUnverifyLogByIdAsync(logId);
+
+        if (logItem == null || (logItem.Operation != UnverifyOperation.Selfunverify && logItem.Operation != UnverifyOperation.Unverify))
+            throw new NotFoundException(Texts["Unverify/Recover/LogItemNotFound", ApiContext.Language]);
+
+        if (logItem.ToUser!.Unverify != null)
+            throw new ValidationException(Texts["Unverify/Recover/ValidUnverify", ApiContext.Language]).ToBadRequestValidation(logId, nameof(logItem.ToUser.Unverify));
+
+        var guild = await DiscordClient.GetGuildAsync(logItem.GuildId.ToUlong());
+        if (guild == null) throw new NotFoundException(Texts["Unverify/Recover/GuildNotFound", ApiContext.Language]);
+
+        var user = await guild.GetUserAsync(logItem.ToUserId.ToUlong());
+        if (user == null) throw new NotFoundException(Texts["Unverify/Recover/MemberNotFound", ApiContext.Language].FormatWith(guild.Name));
+
+        var mutedRole = !string.IsNullOrEmpty(logItem.Guild!.MuteRoleId) ? guild.GetRole(logItem.Guild.MuteRoleId.ToUlong()) : null;
+        var data = JsonConvert.DeserializeObject<UnverifyLogSet>(logItem.Data)!;
+
+        var rolesToReturn = data.RolesToRemove
+            .Where(o => user.RoleIds.All(x => x != o))
+            .Select(o => guild.GetRole(o))
+            .Where(role => role != null)
+            .ToList();
+
+        var channelsToReturn = new List<(IGuildChannel channel, OverwritePermissions permissions, ChannelOverride @override)>();
+        foreach (var item in data.ChannelsToRemove)
+        {
+            var channel = await guild.GetChannelAsync(item.ChannelId);
+            var perms = channel?.GetPermissionOverwrite(user);
+            if (perms == null || (perms.Value.AllowValue == item.Permissions.AllowValue && perms.Value.DenyValue == item.Permissions.DenyValue)) continue;
+
+            channelsToReturn.Add((channel!, item.Permissions, item));
+        }
+
+        var fromUser = await guild.GetUserAsync(ApiContext.GetUserId());
+        await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.@override), guild, fromUser, user);
+
+        if (rolesToReturn.Count > 0)
+            await user.AddRolesAsync(rolesToReturn);
+
+        foreach (var channel in channelsToReturn)
+            await channel.channel.AddPermissionOverwriteAsync(user, channel.permissions);
+
+        if (mutedRole != null && !data.KeepMutedRole)
+            await user.RemoveRoleAsync(mutedRole);
+    }
 }

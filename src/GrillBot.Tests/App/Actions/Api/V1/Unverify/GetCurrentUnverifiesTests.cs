@@ -36,7 +36,7 @@ public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
         var loggingManager = new LoggingManager(discordClient, commandService, interactions, ServiceProvider);
         var messageGenerator = new UnverifyMessageGenerator(texts);
-        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, unverifyLogger, DatabaseBuilder, loggingManager, texts, messageGenerator, client);
+        var unverifyService = new UnverifyService(unverifyChecker, unverifyProfileGenerator, unverifyLogger, DatabaseBuilder, loggingManager, texts, messageGenerator, client);
 
         return new GetCurrentUnverifies(ApiRequestContext, unverifyService, TestServices.AutoMapper.Value);
     }

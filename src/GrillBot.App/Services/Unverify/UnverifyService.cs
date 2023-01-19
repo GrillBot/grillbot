@@ -16,7 +16,6 @@ public class UnverifyService
     private UnverifyChecker Checker { get; }
     private UnverifyProfileGenerator ProfileGenerator { get; }
     private UnverifyLogger Logger { get; }
-    private DiscordSocketClient DiscordSocketClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager LoggingManager { get; }
     private ITextsManager Texts { get; }
@@ -24,21 +23,18 @@ public class UnverifyService
     private IDiscordClient DiscordClient { get; }
     private UnverifyHelper UnverifyHelper { get; }
 
-    public UnverifyService(DiscordSocketClient discordSocketClient, UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder,
+    public UnverifyService(UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder,
         LoggingManager loggingManager, ITextsManager texts, UnverifyMessageGenerator messageGenerator, IDiscordClient discordClient)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
         Logger = logger;
         DatabaseBuilder = databaseBuilder;
-        DiscordSocketClient = discordSocketClient;
         LoggingManager = loggingManager;
         Texts = texts;
         MessageGenerator = messageGenerator;
         DiscordClient = discordClient;
         UnverifyHelper = new UnverifyHelper(databaseBuilder);
-
-        DiscordSocketClient.UserLeft += OnUserLeftAsync;
     }
 
     public async Task<List<string>> SetUnverifyAsync(List<IGuildUser> users, DateTime end, string data, IGuild guild, IUser from, bool dry, string locale)
@@ -131,21 +127,6 @@ public class UnverifyService
     private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, IGuild guild, IGuildUser from, bool selfunverify)
     {
         return selfunverify ? Logger.LogSelfunverifyAsync(profile, guild) : Logger.LogUnverifyAsync(profile, guild, from);
-    }
-
-    private async Task OnUserLeftAsync(IGuild guild, IUser user)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
-        if (guildUser == null) return;
-
-        var dbUser = await repository.GuildUser.FindGuildUserAsync(guildUser, includeAll: true);
-        if (dbUser?.Unverify != null)
-        {
-            dbUser.Unverify = null;
-            await repository.CommitAsync();
-        }
     }
 
     public async Task<List<(UnverifyUserProfile profile, IGuild guild)>> GetAllUnverifiesAsync(ulong? userId = null)

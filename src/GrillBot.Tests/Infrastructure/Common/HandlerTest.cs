@@ -6,10 +6,10 @@ namespace GrillBot.Tests.Infrastructure.Common;
 [ExcludeFromCodeCoverage]
 public abstract class HandlerTest<THandler>
 {
-    protected THandler Handler { get; private set; }
-    
-    protected TestDatabaseBuilder DatabaseBuilder { get; private set; }
-    protected GrillBotRepository Repository { get; private set; }
+    protected THandler Handler { get; private set; } = default!;
+
+    protected TestDatabaseBuilder DatabaseBuilder { get; private set; } = null!;
+    protected GrillBotRepository Repository { get; private set; } = null!;
 
     protected abstract THandler CreateHandler();
 

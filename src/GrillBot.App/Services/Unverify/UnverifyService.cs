@@ -15,11 +15,10 @@ public class UnverifyService
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager LoggingManager { get; }
     private UnverifyMessageGenerator MessageGenerator { get; }
-    private IDiscordClient DiscordClient { get; }
     private UnverifyHelper UnverifyHelper { get; }
 
     public UnverifyService(UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder, LoggingManager loggingManager,
-        UnverifyMessageGenerator messageGenerator, IDiscordClient discordClient)
+        UnverifyMessageGenerator messageGenerator)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
@@ -27,7 +26,6 @@ public class UnverifyService
         DatabaseBuilder = databaseBuilder;
         LoggingManager = loggingManager;
         MessageGenerator = messageGenerator;
-        DiscordClient = discordClient;
         UnverifyHelper = new UnverifyHelper(databaseBuilder);
     }
 
@@ -121,25 +119,5 @@ public class UnverifyService
     private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, IGuild guild, IGuildUser from, bool selfunverify)
     {
         return selfunverify ? Logger.LogSelfunverifyAsync(profile, guild) : Logger.LogUnverifyAsync(profile, guild, from);
-    }
-
-    public async Task<List<(UnverifyUserProfile profile, IGuild guild)>> GetAllUnverifiesAsync(ulong? userId = null)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var unverifies = await repository.Unverify.GetUnverifiesAsync(userId);
-
-        var profiles = new List<(UnverifyUserProfile profile, IGuild guild)>();
-        foreach (var unverify in unverifies)
-        {
-            var guild = await DiscordClient.GetGuildAsync(unverify.GuildId.ToUlong());
-            if (guild is null) continue;
-
-            var user = await guild.GetUserAsync(unverify.UserId.ToUlong());
-            var profile = UnverifyProfileGenerator.Reconstruct(unverify, user, guild);
-
-            profiles.Add((profile, guild));
-        }
-
-        return profiles;
     }
 }

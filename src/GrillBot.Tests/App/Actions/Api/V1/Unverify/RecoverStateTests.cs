@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
-using GrillBot.App.Services.Unverify;
+using GrillBot.App.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
@@ -38,7 +38,7 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
             .Build();
 
         var texts = TestServices.Texts.Value;
-        var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
+        var unverifyLogger = new UnverifyLogManager(client, DatabaseBuilder);
 
         return new RecoverState(ApiRequestContext, DatabaseBuilder, texts, client, unverifyLogger);
     }

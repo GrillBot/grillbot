@@ -11,7 +11,9 @@ public static class ManagerExtensions
             .AddSingleton<EmoteChainManager>()
             .AddSingleton<AuditLogManager>()
             .AddSingleton<AuditLogWriteManager>() // TODO Review and change to scoped.
-            .AddSingleton<UserManager>(); // TODO Review and change to scoped
+            .AddSingleton<UserManager>() // TODO Review and change to scoped
+            .AddSingleton<UnverifyLogManager>(); // TODO review and change to scoped. 
+        
         return services;
     }
 }

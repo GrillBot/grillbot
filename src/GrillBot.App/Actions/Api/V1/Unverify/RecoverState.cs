@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Services.Unverify;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -14,14 +14,14 @@ public class RecoverState : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
     private IDiscordClient DiscordClient { get; }
-    private UnverifyLogger Logger { get; }
+    private UnverifyLogManager LogManager { get; }
 
-    public RecoverState(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IDiscordClient discordClient, UnverifyLogger logger) : base(apiContext)
+    public RecoverState(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IDiscordClient discordClient, UnverifyLogManager logManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
         DiscordClient = discordClient;
-        Logger = logger;
+        LogManager = logManager;
     }
 
     public async Task ProcessAsync(long logId)
@@ -61,7 +61,7 @@ public class RecoverState : ApiAction
         }
 
         var fromUser = await guild.GetUserAsync(ApiContext.GetUserId());
-        await Logger.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.@override), guild, fromUser, user);
+        await LogManager.LogRecoverAsync(rolesToReturn, channelsToReturn.ConvertAll(o => o.@override), guild, fromUser, user);
 
         if (rolesToReturn.Count > 0)
             await user.AddRolesAsync(rolesToReturn);

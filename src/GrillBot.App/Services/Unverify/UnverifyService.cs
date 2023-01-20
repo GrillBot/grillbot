@@ -1,4 +1,5 @@
 using Discord.Net;
+using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Logging;
@@ -11,18 +12,18 @@ public class UnverifyService
 {
     private UnverifyChecker Checker { get; }
     private UnverifyProfileGenerator ProfileGenerator { get; }
-    private UnverifyLogger Logger { get; }
+    private UnverifyLogManager LogManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager LoggingManager { get; }
     private UnverifyMessageGenerator MessageGenerator { get; }
     private UnverifyHelper UnverifyHelper { get; }
 
-    public UnverifyService(UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogger logger, GrillBotDatabaseBuilder databaseBuilder, LoggingManager loggingManager,
+    public UnverifyService(UnverifyChecker checker, UnverifyProfileGenerator profileGenerator, UnverifyLogManager logManager, GrillBotDatabaseBuilder databaseBuilder, LoggingManager loggingManager,
         UnverifyMessageGenerator messageGenerator)
     {
         Checker = checker;
         ProfileGenerator = profileGenerator;
-        Logger = logger;
+        LogManager = logManager;
         DatabaseBuilder = databaseBuilder;
         LoggingManager = loggingManager;
         MessageGenerator = messageGenerator;
@@ -118,6 +119,6 @@ public class UnverifyService
 
     private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, IGuild guild, IGuildUser from, bool selfunverify)
     {
-        return selfunverify ? Logger.LogSelfunverifyAsync(profile, guild) : Logger.LogUnverifyAsync(profile, guild, from);
+        return selfunverify ? LogManager.LogSelfunverifyAsync(profile, guild) : LogManager.LogUnverifyAsync(profile, guild, from);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Discord.Net;
+using GrillBot.App.Managers;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
@@ -13,16 +14,16 @@ public class UpdateUnverify : ApiAction
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private UnverifyLogger UnverifyLogger { get; }
+    private UnverifyLogManager UnverifyLogManager { get; }
     private UnverifyMessageGenerator MessageGenerator { get; }
 
-    public UpdateUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyLogger unverifyLogger,
+    public UpdateUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyLogManager unverifyLogManager,
         UnverifyMessageGenerator messageGenerator) : base(apiContext)
     {
         DiscordClient = discordClient;
         Texts = texts;
         DatabaseBuilder = databaseBuilder;
-        UnverifyLogger = unverifyLogger;
+        UnverifyLogManager = unverifyLogManager;
         MessageGenerator = messageGenerator;
     }
 
@@ -34,7 +35,7 @@ public class UpdateUnverify : ApiAction
 
         var user = await repository.GuildUser.FindGuildUserAsync(toUser, includeAll: true);
         EnsureValidUser(user, parameters.EndAt);
-        await UnverifyLogger.LogUpdateAsync(DateTime.Now, parameters.EndAt, guild, fromUser, toUser, parameters.Reason);
+        await UnverifyLogManager.LogUpdateAsync(DateTime.Now, parameters.EndAt, guild, fromUser, toUser, parameters.Reason);
 
         user!.Unverify!.EndAt = parameters.EndAt;
         user.Unverify.StartAt = DateTime.Now;

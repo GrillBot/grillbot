@@ -1,4 +1,5 @@
 ﻿using Discord.Net;
+using GrillBot.App.Managers;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
@@ -14,7 +15,7 @@ public class RemoveUnverify : ApiAction
     private ITextsManager Texts { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private UnverifyMessageGenerator MessageGenerator { get; }
-    private UnverifyLogger UnverifyLogger { get; }
+    private UnverifyLogManager UnverifyLogManager { get; }
     private LoggingManager LoggingManager { get; }
     private UnverifyHelper UnverifyHelper { get; }
 
@@ -22,13 +23,13 @@ public class RemoveUnverify : ApiAction
     private bool IsForceRemove { get; set; }
 
     public RemoveUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyMessageGenerator messageGenerator,
-        UnverifyLogger unverifyLogger, LoggingManager loggingManager, UnverifyHelper unverifyHelper) : base(apiContext)
+        UnverifyLogManager unverifyLogManager, LoggingManager loggingManager, UnverifyHelper unverifyHelper) : base(apiContext)
     {
         DiscordClient = discordClient;
         Texts = texts;
         DatabaseBuilder = databaseBuilder;
         MessageGenerator = messageGenerator;
-        UnverifyLogger = unverifyLogger;
+        UnverifyLogManager = unverifyLogManager;
         LoggingManager = loggingManager;
         UnverifyHelper = unverifyHelper;
     }
@@ -138,14 +139,14 @@ public class RemoveUnverify : ApiAction
     {
         if (IsAutoRemove)
         {
-            await UnverifyLogger.LogAutoremoveAsync(roles, channels, toUser, guild, userLanguage);
+            await UnverifyLogManager.LogAutoremoveAsync(roles, channels, toUser, guild, userLanguage);
         }
         else
         {
             if (IsForceRemove)
-                await UnverifyLogger.LogRemoveAsync(new List<IRole>(), new List<ChannelOverride>(), guild, fromUser, toUser, IsApiRequest, true, userLanguage);
+                await UnverifyLogManager.LogRemoveAsync(new List<IRole>(), new List<ChannelOverride>(), guild, fromUser, toUser, IsApiRequest, true, userLanguage);
             else
-                await UnverifyLogger.LogRemoveAsync(roles, channels, guild, fromUser, toUser, IsApiRequest, IsForceRemove, userLanguage);
+                await UnverifyLogManager.LogRemoveAsync(roles, channels, guild, fromUser, toUser, IsApiRequest, IsForceRemove, userLanguage);
         }
     }
 }

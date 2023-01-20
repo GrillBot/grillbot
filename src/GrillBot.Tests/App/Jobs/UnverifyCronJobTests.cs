@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Actions.Api.V1.Unverify;
 using GrillBot.App.Jobs;
+using GrillBot.App.Managers;
 using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Logging;
@@ -16,7 +17,7 @@ public class UnverifyCronJobTests : JobTest<UnverifyCronJob>
         var client = new ClientBuilder().Build();
         var texts = TestServices.Texts.Value;
         var messageGenerator = new UnverifyMessageGenerator(texts);
-        var logger = new UnverifyLogger(client, DatabaseBuilder);
+        var logger = new UnverifyLogManager(client, DatabaseBuilder);
         var commandService = DiscordHelper.CreateCommandsService();
         var discordClient = TestServices.DiscordSocketClient.Value;
         var interaction = DiscordHelper.CreateInteractionService(discordClient);

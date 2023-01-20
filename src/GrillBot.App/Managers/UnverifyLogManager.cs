@@ -3,14 +3,14 @@ using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Managers;
 
-public class UnverifyLogger
+public class UnverifyLogManager
 {
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public UnverifyLogger(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder)
+    public UnverifyLogManager(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder)
     {
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;

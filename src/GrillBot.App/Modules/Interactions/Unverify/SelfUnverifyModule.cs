@@ -1,19 +1,14 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.App.Services.Unverify;
-using GrillBot.Common;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;
 
 [RequireUserPerms]
 public class SelfUnverifyModule : InteractionsModuleBase
 {
-    private UnverifyService UnverifyService { get; }
-
-    public SelfUnverifyModule(UnverifyService unverifyService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public SelfUnverifyModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        UnverifyService = unverifyService;
     }
 
     [SlashCommand("selfunverify", "Temporarily remove access to yourself on the server.")]
@@ -22,30 +17,25 @@ public class SelfUnverifyModule : InteractionsModuleBase
         [Summary("end", "End date and time, or duration of access removal.")]
         DateTime end,
         [Summary("keepables", "A list of allowable accesses. Separate with a comma, space, or semicolon.")]
-        string keepables = null
+        string? keepables = null
     )
     {
         keepables ??= "";
+
+        using var command = GetCommand<Actions.Commands.Unverify.SetUnverify>();
 
         try
         {
             end = end.AddMinutes(1); // Strinct checks are only in unverify.
             var toKeep = keepables.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(o => o.ToUpper()).ToList();
-            var guildUser = Context.User as SocketGuildUser ?? Context.Guild.GetUser(Context.User.Id);
-            var result = await UnverifyService.SetUnverifyAsync(guildUser, end, null, Context.Guild, guildUser, true, toKeep, null, false, Locale);
+            var guildUser = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
+
+            var result = await command.Command.ProcessAsync(guildUser, end, null, true, toKeep, false);
             await SetResponseAsync(result);
         }
-        catch (Exception ex)
+        catch (ValidationException ex)
         {
-            if (ex is ValidationException)
-            {
-                await SetResponseAsync(ex.Message);
-            }
-            else
-            {
-                await SetResponseAsync(Texts["Unverify/SelfUnverify/GenericError", Locale]);
-                throw;
-            }
+            await SetResponseAsync(ex.Message);
         }
     }
 }

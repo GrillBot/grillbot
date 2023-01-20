@@ -16,6 +16,9 @@ public sealed class ScopedCommand<TCommand> : IDisposable where TCommand : notnu
         Command = scope.ServiceProvider.GetRequiredService<TCommand>();
     }
 
+    public TService Resolve<TService>() where TService : notnull
+        => Scope.ServiceProvider.GetRequiredService<TService>();
+
     public void Dispose()
     {
         Scope.Dispose();

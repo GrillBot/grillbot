@@ -16,12 +16,12 @@ public class UnverifyProfileManager
         Texts = texts;
     }
 
-    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole,
+    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string? reason, bool selfunverify, List<string> keep, IRole? mutedRole,
         string userLocale, string locale)
     {
         var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify, userLocale)
         {
-            Reason = !selfunverify ? ParseReason(data, locale) : null
+            Reason = !selfunverify ? ParseReason(reason, locale) : null
         };
 
         var keepables = await GetKeepablesAsync();

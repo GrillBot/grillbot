@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Actions.Api.V1.Unverify;
+using GrillBot.App.Helpers;
 using GrillBot.App.Jobs;
 using GrillBot.App.Managers;
-using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Tests.Infrastructure.Discord;

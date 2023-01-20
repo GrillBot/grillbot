@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
 using GrillBot.App.Managers;
-using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;

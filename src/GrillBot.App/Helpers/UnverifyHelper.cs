@@ -5,7 +5,7 @@ using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Helpers;
 
 public class UnverifyHelper
 {

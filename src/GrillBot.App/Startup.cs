@@ -5,7 +5,6 @@ using GrillBot.App.Actions;
 using GrillBot.App.Handlers;
 using GrillBot.App.Services;
 using GrillBot.App.Services.Discord;
-using GrillBot.App.Services.Unverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

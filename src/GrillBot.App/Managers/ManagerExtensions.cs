@@ -12,10 +12,10 @@ public static class ManagerExtensions
             .AddSingleton<AuditLogManager>()
             .AddSingleton<AuditLogWriteManager>() // TODO Review and change to scoped.
             .AddSingleton<UserManager>() // TODO Review and change to scoped
-            .AddSingleton<UnverifyLogManager>() // TODO review and change to scoped.
-            .AddSingleton<UnverifyProfileManager>() // TODO Review and change to scoped.
-            .AddSingleton<UnverifyMessageManager>() // TODO Review and change to scoped.
-            .AddSingleton<UnverifyCheckManager>(); // TODO Review and change to scoped.
+            .AddScoped<UnverifyLogManager>()
+            .AddScoped<UnverifyProfileManager>()
+            .AddScoped<UnverifyMessageManager>()
+            .AddScoped<UnverifyCheckManager>();
 
         return services;
     }

@@ -17,9 +17,6 @@ public static class Extensions
             .AddSingleton<Suggestion.SuggestionSessionService>()
             .AddSingleton<Suggestion.EmoteSuggestionService>();
 
-        services
-            .AddSingleton<Unverify.UnverifyService>();
-
         return services;
     }
 }

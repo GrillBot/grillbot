@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Services.Unverify;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Helpers;
 

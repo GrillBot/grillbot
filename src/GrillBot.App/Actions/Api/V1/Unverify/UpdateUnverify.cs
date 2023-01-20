@@ -1,6 +1,5 @@
 ﻿using Discord.Net;
 using GrillBot.App.Managers;
-using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;

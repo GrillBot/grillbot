@@ -18,7 +18,6 @@ public static class Extensions
             .AddSingleton<Suggestion.EmoteSuggestionService>();
 
         services
-            .AddSingleton<Unverify.UnverifyChecker>()
             .AddSingleton<Unverify.UnverifyService>();
 
         return services;

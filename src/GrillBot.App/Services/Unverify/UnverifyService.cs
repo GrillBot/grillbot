@@ -10,7 +10,7 @@ namespace GrillBot.App.Services.Unverify;
 
 public class UnverifyService
 {
-    private UnverifyChecker Checker { get; }
+    private UnverifyCheckManager CheckManager { get; }
     private UnverifyProfileManager ProfileManager { get; }
     private UnverifyLogManager LogManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
@@ -18,10 +18,10 @@ public class UnverifyService
     private UnverifyMessageManager MessageManager { get; }
     private UnverifyHelper UnverifyHelper { get; }
 
-    public UnverifyService(UnverifyChecker checker, UnverifyProfileManager profileManager, UnverifyLogManager logManager, GrillBotDatabaseBuilder databaseBuilder, LoggingManager loggingManager,
+    public UnverifyService(UnverifyCheckManager checkManager, UnverifyProfileManager profileManager, UnverifyLogManager logManager, GrillBotDatabaseBuilder databaseBuilder, LoggingManager loggingManager,
         UnverifyMessageManager messageManager)
     {
-        Checker = checker;
+        CheckManager = checkManager;
         ProfileManager = profileManager;
         LogManager = logManager;
         DatabaseBuilder = databaseBuilder;
@@ -51,7 +51,7 @@ public class UnverifyService
         if (selfunverify && muteRole == null) muteRole = await GetMutedRoleAsync(guild);
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
 
-        await Checker.ValidateUnverifyAsync(guildUser, guild, selfunverify, end, keep?.Count ?? 0, locale);
+        await CheckManager.ValidateUnverifyAsync(guildUser, guild, selfunverify, end, keep?.Count ?? 0, locale);
 
         var userLanguage = await UnverifyHelper.GetUserLanguageAsync(guildUser, locale, selfunverify);
         var profile = await ProfileManager.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole, userLanguage, locale);

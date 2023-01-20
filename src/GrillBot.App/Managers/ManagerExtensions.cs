@@ -14,8 +14,9 @@ public static class ManagerExtensions
             .AddSingleton<UserManager>() // TODO Review and change to scoped
             .AddSingleton<UnverifyLogManager>() // TODO review and change to scoped.
             .AddSingleton<UnverifyProfileManager>() // TODO Review and change to scoped.
-            .AddSingleton<UnverifyMessageManager>(); // TODO Review and change to scoped.
-        
+            .AddSingleton<UnverifyMessageManager>() // TODO Review and change to scoped.
+            .AddSingleton<UnverifyCheckManager>(); // TODO Review and change to scoped.
+
         return services;
     }
 }

@@ -5,9 +5,9 @@ using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Managers;
 
-public class UnverifyChecker
+public class UnverifyCheckManager
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
@@ -17,7 +17,7 @@ public class UnverifyChecker
     private IWebHostEnvironment Environment { get; }
     private ITextsManager Texts { get; }
 
-    public UnverifyChecker(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, IWebHostEnvironment environment,
+    public UnverifyCheckManager(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, IWebHostEnvironment environment,
         ITextsManager texts)
     {
         DatabaseBuilder = databaseBuilder;

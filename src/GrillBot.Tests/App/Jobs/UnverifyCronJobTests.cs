@@ -16,7 +16,7 @@ public class UnverifyCronJobTests : JobTest<UnverifyCronJob>
     {
         var client = new ClientBuilder().Build();
         var texts = TestServices.Texts.Value;
-        var messageGenerator = new UnverifyMessageGenerator(texts);
+        var messageGenerator = new UnverifyMessageManager(texts);
         var logger = new UnverifyLogManager(client, DatabaseBuilder);
         var commandService = DiscordHelper.CreateCommandsService();
         var discordClient = TestServices.DiscordSocketClient.Value;

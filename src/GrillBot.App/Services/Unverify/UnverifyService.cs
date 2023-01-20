@@ -15,18 +15,18 @@ public class UnverifyService
     private UnverifyLogManager LogManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager LoggingManager { get; }
-    private UnverifyMessageGenerator MessageGenerator { get; }
+    private UnverifyMessageManager MessageManager { get; }
     private UnverifyHelper UnverifyHelper { get; }
 
     public UnverifyService(UnverifyChecker checker, UnverifyProfileManager profileManager, UnverifyLogManager logManager, GrillBotDatabaseBuilder databaseBuilder, LoggingManager loggingManager,
-        UnverifyMessageGenerator messageGenerator)
+        UnverifyMessageManager messageManager)
     {
         Checker = checker;
         ProfileManager = profileManager;
         LogManager = logManager;
         DatabaseBuilder = databaseBuilder;
         LoggingManager = loggingManager;
-        MessageGenerator = messageGenerator;
+        MessageManager = messageManager;
         UnverifyHelper = new UnverifyHelper(databaseBuilder);
     }
 
@@ -57,7 +57,7 @@ public class UnverifyService
         var profile = await ProfileManager.CreateAsync(guildUser, guild, end, data, selfunverify, keep, muteRole, userLanguage, locale);
 
         if (dry)
-            return MessageGenerator.CreateUnverifyMessageToChannel(profile, locale);
+            return MessageManager.CreateUnverifyMessageToChannel(profile, locale);
 
         var unverifyLog = await LogUnverifyAsync(profile, guild, from, selfunverify);
         try
@@ -89,7 +89,7 @@ public class UnverifyService
 
             try
             {
-                var dmMessage = MessageGenerator.CreateUnverifyPmMessage(profile, guild, userLanguage);
+                var dmMessage = MessageManager.CreateUnverifyPmMessage(profile, guild, userLanguage);
                 await profile.Destination.SendMessageAsync(dmMessage);
             }
             catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
@@ -97,7 +97,7 @@ public class UnverifyService
                 // User have disabled DMs.
             }
 
-            return MessageGenerator.CreateUnverifyMessageToChannel(profile, locale);
+            return MessageManager.CreateUnverifyMessageToChannel(profile, locale);
         }
         catch (Exception ex)
         {
@@ -105,7 +105,7 @@ public class UnverifyService
             await profile.ReturnRolesAsync();
             await profile.ReturnChannelsAsync(guild);
             await LoggingManager.ErrorAsync("Unverify", $"An error occured when unverify removing access to {user.GetFullName()}", ex);
-            return MessageGenerator.CreateUnverifyFailedToChannel(profile.Destination, locale);
+            return MessageManager.CreateUnverifyFailedToChannel(profile.Destination, locale);
         }
     }
 

@@ -37,7 +37,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
 
         var texts = TestServices.Texts.Value;
         var unverifyLogger = new UnverifyLogManager(client, DatabaseBuilder);
-        var messageGenerator = new UnverifyMessageGenerator(texts);
+        var messageGenerator = new UnverifyMessageManager(texts);
 
         return new UpdateUnverify(ApiRequestContext, client, texts, DatabaseBuilder, unverifyLogger, messageGenerator);
     }

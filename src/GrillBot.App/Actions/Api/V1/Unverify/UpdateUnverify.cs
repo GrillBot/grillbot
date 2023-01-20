@@ -15,16 +15,16 @@ public class UpdateUnverify : ApiAction
     private ITextsManager Texts { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private UnverifyLogManager UnverifyLogManager { get; }
-    private UnverifyMessageGenerator MessageGenerator { get; }
+    private UnverifyMessageManager MessageManager { get; }
 
     public UpdateUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyLogManager unverifyLogManager,
-        UnverifyMessageGenerator messageGenerator) : base(apiContext)
+        UnverifyMessageManager messageManager) : base(apiContext)
     {
         DiscordClient = discordClient;
         Texts = texts;
         DatabaseBuilder = databaseBuilder;
         UnverifyLogManager = unverifyLogManager;
-        MessageGenerator = messageGenerator;
+        MessageManager = messageManager;
     }
 
     public async Task<string> ProcessAsync(ulong guildId, ulong userId, UpdateUnverifyParams parameters)
@@ -42,7 +42,7 @@ public class UpdateUnverify : ApiAction
         await repository.CommitAsync();
 
         await SendNotificationAsync(toUser, parameters.EndAt, parameters.Reason, user);
-        return MessageGenerator.CreateUpdateChannelMessage(toUser, parameters.EndAt, parameters.Reason, ApiContext.Language);
+        return MessageManager.CreateUpdateChannelMessage(toUser, parameters.EndAt, parameters.Reason, ApiContext.Language);
     }
 
     private async Task<(IGuild guild, IGuildUser fromUser, IGuildUser toUser)> InitAsync(ulong guildId, ulong userId)
@@ -78,7 +78,7 @@ public class UpdateUnverify : ApiAction
             var locale = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(userEntity.Unverify!.UnverifyLog!.Data)!.Language
                          ?? ApiContext.Language;
 
-            var dmMessage = MessageGenerator.CreateUpdatePmMessage(toUser.Guild, newEnd, reason, locale);
+            var dmMessage = MessageManager.CreateUpdatePmMessage(toUser.Guild, newEnd, reason, locale);
             await toUser.SendMessageAsync(dmMessage);
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)

@@ -14,7 +14,7 @@ public class RemoveUnverify : ApiAction
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private UnverifyMessageGenerator MessageGenerator { get; }
+    private UnverifyMessageManager MessageManager { get; }
     private UnverifyLogManager UnverifyLogManager { get; }
     private LoggingManager LoggingManager { get; }
     private UnverifyHelper UnverifyHelper { get; }
@@ -22,13 +22,13 @@ public class RemoveUnverify : ApiAction
     private bool IsAutoRemove { get; set; }
     private bool IsForceRemove { get; set; }
 
-    public RemoveUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyMessageGenerator messageGenerator,
+    public RemoveUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyMessageManager messageManager,
         UnverifyLogManager unverifyLogManager, LoggingManager loggingManager, UnverifyHelper unverifyHelper) : base(apiContext)
     {
         DiscordClient = discordClient;
         Texts = texts;
         DatabaseBuilder = databaseBuilder;
-        MessageGenerator = messageGenerator;
+        MessageManager = messageManager;
         UnverifyLogManager = unverifyLogManager;
         LoggingManager = loggingManager;
         UnverifyHelper = unverifyHelper;
@@ -61,7 +61,7 @@ public class RemoveUnverify : ApiAction
         catch (Exception ex) when (!IsAutoRemove)
         {
             await LoggingManager.ErrorAsync(nameof(RemoveUnverify), "An error occured when unverify returning access.", ex);
-            return MessageGenerator.CreateRemoveAccessManuallyFailed(toUser, ex, "cs");
+            return MessageManager.CreateRemoveAccessManuallyFailed(toUser, ex, "cs");
         }
     }
 
@@ -101,7 +101,7 @@ public class RemoveUnverify : ApiAction
 
         var unverify = await repository.Unverify.FindUnverifyAsync(guild.Id, toUser.Id, includeLogs: true);
         if (unverify == null)
-            return MessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser, ApiContext.Language);
+            return MessageManager.CreateRemoveAccessUnverifyNotFound(toUser, ApiContext.Language);
 
         var profile = UnverifyProfileManager.Reconstruct(unverify, toUser, guild);
         await WriteToLogAsync(profile.RolesToRemove, profile.ChannelsToRemove, fromUser, toUser, guild, profile.Language);
@@ -120,11 +120,11 @@ public class RemoveUnverify : ApiAction
         await repository.CommitAsync();
 
         if (IsAutoRemove)
-            return MessageGenerator.CreateRemoveAccessManuallyToChannel(toUser, ApiContext.Language);
+            return MessageManager.CreateRemoveAccessManuallyToChannel(toUser, ApiContext.Language);
 
         try
         {
-            var dmMessage = MessageGenerator.CreateRemoveAccessManuallyPmMessage(guild, profile.Language);
+            var dmMessage = MessageManager.CreateRemoveAccessManuallyPmMessage(guild, profile.Language);
             await toUser.SendMessageAsync(dmMessage);
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
@@ -132,7 +132,7 @@ public class RemoveUnverify : ApiAction
             // User have disabled DMs.
         }
 
-        return MessageGenerator.CreateRemoveAccessManuallyToChannel(toUser, ApiContext.Language);
+        return MessageManager.CreateRemoveAccessManuallyToChannel(toUser, ApiContext.Language);
     }
 
     private async Task WriteToLogAsync(List<IRole> roles, List<ChannelOverride> channels, IGuildUser fromUser, IGuildUser toUser, IGuild guild, string userLanguage)

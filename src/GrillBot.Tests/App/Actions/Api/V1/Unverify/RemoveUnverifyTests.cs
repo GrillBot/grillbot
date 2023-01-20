@@ -46,7 +46,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         var commandService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
         var loggingManager = new LoggingManager(discordClient, commandService, interactions, ServiceProvider);
-        var messageGenerator = new UnverifyMessageGenerator(texts);
+        var messageGenerator = new UnverifyMessageManager(texts);
         var unverifyHelper = new UnverifyHelper(DatabaseBuilder);
 
         return new RemoveUnverify(ApiRequestContext, client, texts, DatabaseBuilder, messageGenerator, unverifyLogger, loggingManager, unverifyHelper);

@@ -2,13 +2,13 @@
 using GrillBot.App.Managers;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
-using GrillBot.Tests.Infrastructure.Discord;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Discord;
 
-namespace GrillBot.Tests.App.Services.Unverify;
+namespace GrillBot.Tests.App.Managers;
 
 [TestClass]
-public class UnverifyLoggerTests : ServiceTest<UnverifyLogManager>
+public class UnverifyLogManagerTests : ServiceTest<UnverifyLogManager>
 {
     protected override UnverifyLogManager CreateService()
     {

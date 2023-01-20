@@ -3,14 +3,14 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Managers;
 
-public class UnverifyProfileGenerator
+public class UnverifyProfileManager
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
 
-    public UnverifyProfileGenerator(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts)
+    public UnverifyProfileManager(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
@@ -49,7 +49,7 @@ public class UnverifyProfileGenerator
         };
     }
 
-    private string ParseReason(string data, string locale)
+    private string ParseReason(string? data, string locale)
     {
         data = (data ?? "").Trim();
 
@@ -58,7 +58,7 @@ public class UnverifyProfileGenerator
         return data;
     }
 
-    private async Task ProcessRolesAsync(UnverifyUserProfile profile, IGuildUser user, IGuild guild, bool selfunverify, List<string> keep, IRole mutedRole,
+    private async Task ProcessRolesAsync(UnverifyUserProfile profile, IGuildUser user, IGuild guild, bool selfunverify, List<string> keep, IRole? mutedRole,
         Dictionary<string, List<string>> keepables, string locale)
     {
         var rolesToRemove = user.GetRoles();
@@ -100,7 +100,7 @@ public class UnverifyProfileGenerator
                 continue;
             }
 
-            foreach (var groupKey in keepables.Where(o => o.Value?.Contains(toKeep) == true).Select(o => o.Key))
+            foreach (var groupKey in keepables.Where(o => o.Value.Contains(toKeep)).Select(o => o.Key))
             {
                 role = profile.RolesToRemove.Find(o => string.Equals(o.Name, groupKey == "_" ? toKeep : groupKey, StringComparison.InvariantCultureIgnoreCase));
                 if (role == null)
@@ -140,9 +140,7 @@ public class UnverifyProfileGenerator
     }
 
     private static bool ExistsInKeepDefinition(Dictionary<string, List<string>> definitions, string item)
-    {
-        return definitions.ContainsKey(item) || definitions.Values.Any(o => o?.Contains(item) == true);
-    }
+        => definitions.ContainsKey(item) || definitions.Values.Any(o => o.Contains(item));
 
     private void CheckDefinition(Dictionary<string, List<string>> definitions, string item, string locale)
     {

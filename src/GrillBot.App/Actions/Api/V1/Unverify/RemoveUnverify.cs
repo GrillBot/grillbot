@@ -103,7 +103,7 @@ public class RemoveUnverify : ApiAction
         if (unverify == null)
             return MessageGenerator.CreateRemoveAccessUnverifyNotFound(toUser, ApiContext.Language);
 
-        var profile = UnverifyProfileGenerator.Reconstruct(unverify, toUser, guild);
+        var profile = UnverifyProfileManager.Reconstruct(unverify, toUser, guild);
         await WriteToLogAsync(profile.RolesToRemove, profile.ChannelsToRemove, fromUser, toUser, guild, profile.Language);
 
         if (!IsForceRemove)

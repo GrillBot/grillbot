@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using GrillBot.App.Services.Unverify;
+using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Unverify;
@@ -49,7 +49,7 @@ public class GetCurrentUnverifies : ApiAction
             if (guild is null) continue;
 
             var user = await guild.GetUserAsync(unverify.UserId.ToUlong());
-            var profile = UnverifyProfileGenerator.Reconstruct(unverify, user, guild);
+            var profile = UnverifyProfileManager.Reconstruct(unverify, user, guild);
 
             profiles.Add((profile, guild));
         }

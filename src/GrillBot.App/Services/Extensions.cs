@@ -20,7 +20,6 @@ public static class Extensions
         services
             .AddSingleton<Unverify.UnverifyChecker>()
             .AddSingleton<Unverify.UnverifyMessageGenerator>()
-            .AddSingleton<Unverify.UnverifyProfileGenerator>()
             .AddSingleton<Unverify.UnverifyService>();
 
         return services;

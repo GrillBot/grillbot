@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
+using GrillBot.App.Managers;
 using GrillBot.App.Modules.Implementations.Unverify;
-using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
@@ -34,7 +34,7 @@ public class UnverifyList : CommandAction
             throw new NotFoundException(Texts["Unverify/ListEmbed/NoUnverify", Locale]);
 
         var user = await Context.Guild.GetUserAsync(unverify.UserId.ToUlong());
-        var profile = UnverifyProfileGenerator.Reconstruct(unverify, user, Context.Guild);
+        var profile = UnverifyProfileManager.Reconstruct(unverify, user, Context.Guild);
         var hiddenChannels = await repository.Channel.GetAllChannelsAsync(new List<string> { Context.Guild.Id.ToString() }, true, true, ChannelFlag.StatsHidden);
         var hiddenChannelIds = hiddenChannels.Select(o => o.ChannelId.ToUlong()).ToHashSet();
 

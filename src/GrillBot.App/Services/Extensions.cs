@@ -21,8 +21,7 @@ public static class Extensions
             .AddSingleton<Unverify.UnverifyChecker>()
             .AddSingleton<Unverify.UnverifyMessageGenerator>()
             .AddSingleton<Unverify.UnverifyProfileGenerator>()
-            .AddSingleton<Unverify.UnverifyService>()
-            .AddScoped<Unverify.UnverifyHelper>();
+            .AddSingleton<Unverify.UnverifyService>();
 
         return services;
     }

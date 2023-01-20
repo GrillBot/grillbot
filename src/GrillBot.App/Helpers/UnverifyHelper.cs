@@ -16,7 +16,7 @@ public class UnverifyHelper
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<IRole> GetMuteRoleAsync(IGuild guild)
+    public async Task<IRole?> GetMuteRoleAsync(IGuild guild)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 

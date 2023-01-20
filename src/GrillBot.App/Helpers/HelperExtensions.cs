@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using GrillBot.App.Services.Unverify;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Helpers;
 
@@ -10,7 +11,8 @@ public static class ServiceExtensions
             .AddScoped<PointsHelper>()
             .AddScoped<EmoteHelper>()
             .AddScoped<DownloadHelper>()
-            .AddScoped<ChannelHelper>();
+            .AddScoped<ChannelHelper>()
+            .AddScoped<UnverifyHelper>();
 
         return services;
     }

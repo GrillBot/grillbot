@@ -197,6 +197,7 @@ public static class ActionsExtensions
 
         // Unverify
         services
+            .AddScoped<Commands.Unverify.SetUnverify>()
             .AddScoped<Commands.Unverify.UnverifyList>();
 
         services

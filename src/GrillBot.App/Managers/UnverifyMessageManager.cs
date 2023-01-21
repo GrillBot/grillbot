@@ -3,13 +3,13 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models.Unverify;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Managers;
 
-public class UnverifyMessageGenerator
+public class UnverifyMessageManager
 {
     private ITextsManager Texts { get; }
 
-    public UnverifyMessageGenerator(ITextsManager texts)
+    public UnverifyMessageManager(ITextsManager texts)
     {
         Texts = texts;
     }

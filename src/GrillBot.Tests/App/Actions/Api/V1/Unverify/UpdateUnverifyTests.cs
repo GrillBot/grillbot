@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
-using GrillBot.App.Services.Unverify;
+using GrillBot.App.Managers;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;
@@ -35,8 +35,8 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
             .Build();
 
         var texts = TestServices.Texts.Value;
-        var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
-        var messageGenerator = new UnverifyMessageGenerator(texts);
+        var unverifyLogger = new UnverifyLogManager(client, DatabaseBuilder);
+        var messageGenerator = new UnverifyMessageManager(texts);
 
         return new UpdateUnverify(ApiRequestContext, client, texts, DatabaseBuilder, unverifyLogger, messageGenerator);
     }

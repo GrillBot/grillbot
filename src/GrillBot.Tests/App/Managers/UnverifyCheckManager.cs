@@ -1,11 +1,10 @@
-﻿using GrillBot.App.Services.Unverify;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace GrillBot.Tests.App.Services.Unverify;
+namespace GrillBot.Tests.App.Managers;
 
 [TestClass]
-public class UnverifyCheckerTests
+public class UnverifyCheckManager
 {
     [TestMethod]
     [ExcludeFromCodeCoverage]
@@ -13,7 +12,7 @@ public class UnverifyCheckerTests
     public void ValidateUnverifyDate_Ends()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var service = new UnverifyChecker(null, configuration, null, TestServices.Texts.Value);
+        var service = new GrillBot.App.Managers.UnverifyCheckManager(null, configuration, null, TestServices.Texts.Value);
 
         service.ValidateUnverifyDate(DateTime.MinValue, null, false, "cs");
     }
@@ -28,7 +27,7 @@ public class UnverifyCheckerTests
             { "Unverify:MinimalTimes:Selfunverify", (12 * 60).ToString() }
         });
 
-        var service = new UnverifyChecker(null, configuration, null, TestServices.Texts.Value);
+        var service = new GrillBot.App.Managers.UnverifyCheckManager(null, configuration, null, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, null, true, "cs");
     }
@@ -43,7 +42,7 @@ public class UnverifyCheckerTests
             { "Unverify:MinimalTimes:Unverify", (12 * 60).ToString() }
         });
 
-        var service = new UnverifyChecker(null, configuration, null, TestServices.Texts.Value);
+        var service = new GrillBot.App.Managers.UnverifyCheckManager(null, configuration, null, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, null, false, "cs");
     }
@@ -58,7 +57,7 @@ public class UnverifyCheckerTests
             { "Unverify:MinimalTimes:Selfunverify", (12 * 60).ToString() }
         });
 
-        var service = new UnverifyChecker(null, configuration, null, TestServices.Texts.Value);
+        var service = new GrillBot.App.Managers.UnverifyCheckManager(null, configuration, null, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, TimeSpan.FromDays(2), true, "cs");
     }

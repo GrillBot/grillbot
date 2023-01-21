@@ -3,25 +3,25 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Managers;
 
-public class UnverifyProfileGenerator
+public class UnverifyProfileManager
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
 
-    public UnverifyProfileGenerator(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts)
+    public UnverifyProfileManager(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
     }
 
-    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string data, bool selfunverify, List<string> keep, IRole mutedRole,
+    public async Task<UnverifyUserProfile> CreateAsync(IGuildUser user, IGuild guild, DateTime end, string? reason, bool selfunverify, List<string> keep, IRole? mutedRole,
         string userLocale, string locale)
     {
         var profile = new UnverifyUserProfile(user, DateTime.Now, end, selfunverify, userLocale)
         {
-            Reason = !selfunverify ? ParseReason(data, locale) : null
+            Reason = !selfunverify ? ParseReason(reason, locale) : null
         };
 
         var keepables = await GetKeepablesAsync();
@@ -49,7 +49,7 @@ public class UnverifyProfileGenerator
         };
     }
 
-    private string ParseReason(string data, string locale)
+    private string ParseReason(string? data, string locale)
     {
         data = (data ?? "").Trim();
 
@@ -58,7 +58,7 @@ public class UnverifyProfileGenerator
         return data;
     }
 
-    private async Task ProcessRolesAsync(UnverifyUserProfile profile, IGuildUser user, IGuild guild, bool selfunverify, List<string> keep, IRole mutedRole,
+    private async Task ProcessRolesAsync(UnverifyUserProfile profile, IGuildUser user, IGuild guild, bool selfunverify, List<string> keep, IRole? mutedRole,
         Dictionary<string, List<string>> keepables, string locale)
     {
         var rolesToRemove = user.GetRoles();
@@ -100,7 +100,7 @@ public class UnverifyProfileGenerator
                 continue;
             }
 
-            foreach (var groupKey in keepables.Where(o => o.Value?.Contains(toKeep) == true).Select(o => o.Key))
+            foreach (var groupKey in keepables.Where(o => o.Value.Contains(toKeep)).Select(o => o.Key))
             {
                 role = profile.RolesToRemove.Find(o => string.Equals(o.Name, groupKey == "_" ? toKeep : groupKey, StringComparison.InvariantCultureIgnoreCase));
                 if (role == null)
@@ -140,9 +140,7 @@ public class UnverifyProfileGenerator
     }
 
     private static bool ExistsInKeepDefinition(Dictionary<string, List<string>> definitions, string item)
-    {
-        return definitions.ContainsKey(item) || definitions.Values.Any(o => o?.Contains(item) == true);
-    }
+        => definitions.ContainsKey(item) || definitions.Values.Any(o => o.Contains(item));
 
     private void CheckDefinition(Dictionary<string, List<string>> definitions, string item, string locale)
     {

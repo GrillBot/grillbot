@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using GrillBot.Database.Entity;
 
 namespace GrillBot.Data.Models.Unverify;
 
@@ -59,5 +60,25 @@ public class UnverifyUserProfile
 
             await channel.RemovePermissionOverwriteAsync(Destination, options);
         }
+    }
+
+    public Database.Entity.Unverify CreateRecord(IGuild guild, long logId)
+    {
+        return new Database.Entity.Unverify
+        {
+            Reason = Reason,
+            Channels = ChannelsToRemove.ConvertAll(o => new GuildChannelOverride
+            {
+                ChannelId = o.ChannelId,
+                AllowValue = o.AllowValue,
+                DenyValue = o.DenyValue
+            }),
+            Roles = RolesToRemove.ConvertAll(o => o.Id.ToString()),
+            EndAt = End,
+            GuildId = guild.Id.ToString(),
+            StartAt = Start,
+            UserId = Destination.Id.ToString(),
+            SetOperationId = logId
+        };
     }
 }

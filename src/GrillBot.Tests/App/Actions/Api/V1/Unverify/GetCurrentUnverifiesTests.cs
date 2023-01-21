@@ -1,7 +1,5 @@
 ﻿using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
-using GrillBot.App.Services.Unverify;
-using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Tests.Infrastructure.Common;
@@ -14,8 +12,8 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 [TestClass]
 public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
 {
-    private IGuild Guild { get; set; }
-    private IGuildUser User { get; set; }
+    private IGuild Guild { get; set; } = null!;
+    private IGuildUser User { get; set; } = null!;
 
     protected override GetCurrentUnverifies CreateAction()
     {
@@ -27,18 +25,7 @@ public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
             .SetGetUserAction(User)
             .Build();
 
-        var discordClient = TestServices.DiscordSocketClient.Value;
-        var texts = TestServices.Texts.Value;
-        var unverifyChecker = new UnverifyChecker(DatabaseBuilder, TestServices.Configuration.Value, TestServices.TestingEnvironment.Value, texts);
-        var unverifyProfileGenerator = new UnverifyProfileGenerator(DatabaseBuilder, texts);
-        var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
-        var commandService = DiscordHelper.CreateCommandsService();
-        var interactions = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingManager = new LoggingManager(discordClient, commandService, interactions, ServiceProvider);
-        var messageGenerator = new UnverifyMessageGenerator(texts);
-        var unverifyService = new UnverifyService(discordClient, unverifyChecker, unverifyProfileGenerator, unverifyLogger, DatabaseBuilder, loggingManager, texts, messageGenerator, client);
-
-        return new GetCurrentUnverifies(ApiRequestContext, unverifyService, TestServices.AutoMapper.Value);
+        return new GetCurrentUnverifies(ApiRequestContext, TestServices.AutoMapper.Value, client, DatabaseBuilder);
     }
 
     private async Task InitDataAsync()

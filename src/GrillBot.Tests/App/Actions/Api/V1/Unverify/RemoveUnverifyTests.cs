@@ -2,7 +2,8 @@
 using System.Linq;
 using Discord;
 using GrillBot.App.Actions.Api.V1.Unverify;
-using GrillBot.App.Services.Unverify;
+using GrillBot.App.Helpers;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models;
@@ -41,11 +42,11 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
 
         var texts = TestServices.Texts.Value;
         var discordClient = TestServices.DiscordSocketClient.Value;
-        var unverifyLogger = new UnverifyLogger(client, DatabaseBuilder);
+        var unverifyLogger = new UnverifyLogManager(client, DatabaseBuilder);
         var commandService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
         var loggingManager = new LoggingManager(discordClient, commandService, interactions, ServiceProvider);
-        var messageGenerator = new UnverifyMessageGenerator(texts);
+        var messageGenerator = new UnverifyMessageManager(texts);
         var unverifyHelper = new UnverifyHelper(DatabaseBuilder);
 
         return new RemoveUnverify(ApiRequestContext, client, texts, DatabaseBuilder, messageGenerator, unverifyLogger, loggingManager, unverifyHelper);

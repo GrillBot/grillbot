@@ -17,14 +17,6 @@ public static class Extensions
             .AddSingleton<Suggestion.SuggestionSessionService>()
             .AddSingleton<Suggestion.EmoteSuggestionService>();
 
-        services
-            .AddSingleton<Unverify.UnverifyChecker>()
-            .AddSingleton<Unverify.UnverifyLogger>()
-            .AddSingleton<Unverify.UnverifyMessageGenerator>()
-            .AddSingleton<Unverify.UnverifyProfileGenerator>()
-            .AddSingleton<Unverify.UnverifyService>()
-            .AddScoped<Unverify.UnverifyHelper>();
-
         return services;
     }
 }

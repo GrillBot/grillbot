@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.App.Managers;
-using GrillBot.App.Services.Unverify;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
@@ -99,7 +98,7 @@ public class GetUserDetail : ApiAction
     {
         if (unverify == null) return;
 
-        var profile = UnverifyProfileGenerator.Reconstruct(unverify, user, guild);
+        var profile = UnverifyProfileManager.Reconstruct(unverify, user, guild);
         detail.Unverify = Mapper.Map<UnverifyInfo>(profile);
     }
 

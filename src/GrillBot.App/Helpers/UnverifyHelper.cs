@@ -5,7 +5,7 @@ using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
-namespace GrillBot.App.Services.Unverify;
+namespace GrillBot.App.Helpers;
 
 public class UnverifyHelper
 {
@@ -16,7 +16,7 @@ public class UnverifyHelper
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<IRole> GetMuteRoleAsync(IGuild guild)
+    public async Task<IRole?> GetMuteRoleAsync(IGuild guild)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 

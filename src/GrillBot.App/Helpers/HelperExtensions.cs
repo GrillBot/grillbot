@@ -10,7 +10,8 @@ public static class ServiceExtensions
             .AddScoped<PointsHelper>()
             .AddScoped<EmoteHelper>()
             .AddScoped<DownloadHelper>()
-            .AddScoped<ChannelHelper>();
+            .AddScoped<ChannelHelper>()
+            .AddScoped<UnverifyHelper>();
 
         return services;
     }

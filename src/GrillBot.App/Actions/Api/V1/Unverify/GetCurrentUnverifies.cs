@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using GrillBot.App.Services.Unverify;
+using GrillBot.App.Managers;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Data.Models.API.Unverify;
 
@@ -7,18 +8,20 @@ namespace GrillBot.App.Actions.Api.V1.Unverify;
 
 public class GetCurrentUnverifies : ApiAction
 {
-    private UnverifyService UnverifyService { get; }
     private IMapper Mapper { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IDiscordClient DiscordClient { get; }
 
-    public GetCurrentUnverifies(ApiRequestContext apiContext, UnverifyService unverifyService, IMapper mapper) : base(apiContext)
+    public GetCurrentUnverifies(ApiRequestContext apiContext, IMapper mapper, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
     {
-        UnverifyService = unverifyService;
         Mapper = mapper;
+        DatabaseBuilder = databaseBuilder;
+        DiscordClient = discordClient;
     }
 
     public async Task<List<UnverifyUserProfile>> ProcessAsync()
     {
-        var data = await UnverifyService.GetAllUnverifiesAsync(
+        var data = await GetAllUnverifiesAsync(
             ApiContext.IsPublic() ? ApiContext.GetUserId() : null
         );
 
@@ -32,5 +35,25 @@ public class GetCurrentUnverifies : ApiAction
         }
 
         return result;
+    }
+
+    private async Task<List<(Data.Models.Unverify.UnverifyUserProfile profile, IGuild guild)>> GetAllUnverifiesAsync(ulong? userId = null)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var unverifies = await repository.Unverify.GetUnverifiesAsync(userId);
+
+        var profiles = new List<(Data.Models.Unverify.UnverifyUserProfile profile, IGuild guild)>();
+        foreach (var unverify in unverifies)
+        {
+            var guild = await DiscordClient.GetGuildAsync(unverify.GuildId.ToUlong());
+            if (guild is null) continue;
+
+            var user = await guild.GetUserAsync(unverify.UserId.ToUlong());
+            var profile = UnverifyProfileManager.Reconstruct(unverify, user, guild);
+
+            profiles.Add((profile, guild));
+        }
+
+        return profiles;
     }
 }

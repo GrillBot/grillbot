@@ -1,16 +1,16 @@
-﻿using GrillBot.App.Services.Unverify;
+﻿using GrillBot.App.Managers;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
-namespace GrillBot.Tests.App.Services.Unverify;
+namespace GrillBot.Tests.App.Managers;
 
 [TestClass]
-public class UnverifyMessageGeneratorTests : ServiceTest<UnverifyMessageGenerator>
+public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
 {
-    protected override UnverifyMessageGenerator CreateService()
+    protected override UnverifyMessageManager CreateService()
     {
-        return new UnverifyMessageGenerator(TestServices.Texts.Value);
+        return new UnverifyMessageManager(TestServices.Texts.Value);
     }
 
     [TestMethod]

@@ -3,10 +3,8 @@ using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Unverify;
-using GrillBot.App.Services.Unverify;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API.Unverify;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;
 
@@ -40,12 +38,12 @@ public class UnverifyModule : InteractionsModuleBase
     [ComponentInteraction("unverify:*", ignoreGroupNames: true)]
     public async Task HandleUnverifyListPaginationAsync(int page)
     {
-        var handler = new UnverifyListPaginationHandler(page, ServiceProvider);
+        var handler = new UnverifyListPaginationHandler(page, ServiceProvider!);
         await handler.ProcessAsync(Context);
     }
 
     [SlashCommand("update", "Updates time of an existing unverify")]
-    public async Task UpdateUnverifyAsync(IGuildUser user, DateTime newEnd, [Discord.Interactions.MaxLength(500)] string reason = null)
+    public async Task UpdateUnverifyAsync(IGuildUser user, DateTime newEnd, [Discord.Interactions.MaxLength(500)] string? reason = null)
     {
         using var action = GetActionAsCommand<Actions.Api.V1.Unverify.UpdateUnverify>();
 
@@ -83,13 +81,12 @@ public class UnverifyModule : InteractionsModuleBase
     [RequireBotPermission(GuildPermission.ManageRoles)]
     public async Task SetUnverifyAsync(DateTime end, string reason, IEnumerable<IUser> users)
     {
-        using var scope = ServiceProvider.CreateScope();
-        var service = scope.ServiceProvider.GetRequiredService<UnverifyService>();
+        using var command = GetCommand<Actions.Commands.Unverify.SetUnverify>();
 
         try
         {
             var guildUsers = users.Select(o => o as IGuildUser ?? Context.Guild.GetUser(o.Id)).Where(o => o != null).ToList();
-            var result = await service.SetUnverifyAsync(guildUsers, end, reason, Context.Guild, Context.User, false, Locale);
+            var result = await command.Command.ProcessAsync(guildUsers, end, reason, false);
 
             await SetResponseAsync(result[0]);
             foreach (var msg in result.Skip(1)) await ReplyAsync(msg);
@@ -103,14 +100,13 @@ public class UnverifyModule : InteractionsModuleBase
     [SlashCommand("fun", "Set funverify to user.")]
     public async Task SetFunverifyAsync(DateTime end, string reason, IEnumerable<IUser> users)
     {
-        using var scope = ServiceProvider.CreateScope();
-        var service = scope.ServiceProvider.GetRequiredService<UnverifyService>();
-        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        var command = GetCommand<Actions.Commands.Unverify.SetUnverify>();
+        var configuration = command.Resolve<IConfiguration>();
 
         try
         {
             var guildUsers = users.Select(o => o as IGuildUser ?? Context.Guild.GetUser(o.Id)).Where(o => o != null).ToList();
-            var result = await service.SetUnverifyAsync(guildUsers, end, reason, Context.Guild, Context.User, true, Locale);
+            var result = await command.Command.ProcessAsync(guildUsers, end, reason, true);
 
             await SetResponseAsync(result[0]);
             foreach (var msg in result.Skip(1)) await ReplyAsync(msg);

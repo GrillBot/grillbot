@@ -96,6 +96,7 @@ public static class HandlerExtensions
             .AddScoped<IUserJoinedEvent, UserJoined.AuditUserJoinedHandler>();
 
         services
+            .AddScoped<IUserLeftEvent, UserLeft.UnverifyUserLeftHandler>()
             .AddScoped<IUserLeftEvent, UserLeft.AuditUserLeftHandler>();
 
         services

@@ -1,8 +1,8 @@
 ﻿using GrillBot.Common.Extensions;
 
-namespace GrillBot.App.Services.Suggestion;
+namespace GrillBot.App.Managers.EmoteSuggestion;
 
-public partial class EmoteSuggestionService
+public partial class EmoteSuggestionManager
 {
     private static MessageComponent BuildApprovalButtons()
     {

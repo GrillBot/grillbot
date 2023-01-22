@@ -3,6 +3,7 @@ using Discord.Net;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
+using GrillBot.App.Managers.EmoteSuggestion;
 using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Exceptions;
@@ -13,11 +14,11 @@ namespace GrillBot.App.Modules.Interactions;
 [Group("suggestion", "Submission of proposal")]
 public class SuggestionModule : InteractionsModuleBase
 {
-    private EmoteSuggestionService EmoteSuggestions { get; }
+    private EmoteSuggestionManager EmoteSuggestions { get; }
 
-    public SuggestionModule(EmoteSuggestionService emoteSuggestionService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public SuggestionModule(EmoteSuggestionManager emoteSuggestionManager, IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        EmoteSuggestions = emoteSuggestionService;
+        EmoteSuggestions = emoteSuggestionManager;
     }
 
     [SlashCommand("emote", "Submitting a proposal to add a new emote.")]

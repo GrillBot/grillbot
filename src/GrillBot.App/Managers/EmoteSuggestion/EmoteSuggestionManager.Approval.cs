@@ -1,9 +1,10 @@
-﻿using GrillBot.Common.Extensions;
+﻿using GrillBot.App.Services.Suggestion;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 
-namespace GrillBot.App.Services.Suggestion;
+namespace GrillBot.App.Managers.EmoteSuggestion;
 
-public partial class EmoteSuggestionService
+public partial class EmoteSuggestionManager
 {
     public async Task SetApprovalStateAsync(IComponentInteraction interaction, bool approved, IMessageChannel channel)
     {

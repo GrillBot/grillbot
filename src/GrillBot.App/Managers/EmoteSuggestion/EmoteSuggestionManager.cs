@@ -1,35 +1,32 @@
 ﻿using GrillBot.App.Modules.Implementations.Suggestion;
+using GrillBot.App.Services.Suggestion;
+using GrillBot.Cache.Services.Managers.MessageCache;
+using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
-using GrillBot.Cache.Services.Managers;
-using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace GrillBot.App.Services.Suggestion;
+namespace GrillBot.App.Managers.EmoteSuggestion;
 
-public partial class EmoteSuggestionService
+public partial class EmoteSuggestionManager
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
     private IMessageCacheManager MessageCacheManager { get; }
-    private IServiceProvider ServiceProvider { get; }
+    private Cache.Services.Managers.EmoteSuggestionManager CacheManager { get; }
 
-    public EmoteSuggestionService(GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider, IDiscordClient discordClient, IMessageCacheManager messageCacheManager)
+    public EmoteSuggestionManager(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient, IMessageCacheManager messageCacheManager,
+        Cache.Services.Managers.EmoteSuggestionManager cacheManager)
     {
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
         MessageCacheManager = messageCacheManager;
-        ServiceProvider = serviceProvider;
+        CacheManager = cacheManager;
     }
 
     public async Task ProcessSessionAsync(string suggestionId, IGuild guild, IGuildUser user, EmoteSuggestionModal modalData)
     {
-        using var scope = ServiceProvider.CreateScope();
-        var cacheManager = scope.ServiceProvider.GetRequiredService<EmoteSuggestionManager>();
-
-        var metadata = await cacheManager.PopAsync(suggestionId);
+        var metadata = await CacheManager.PopAsync(suggestionId);
         if (metadata == null)
             throw new NotFoundException("Nepodařilo se dohledat všechna data k tomuto návrhu. Podej prosím návrh znovu.");
 

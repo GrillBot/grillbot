@@ -300,6 +300,18 @@
     },
     "ProcessEmoteSuggestions": {
       "Success": "Voting for approved emotes has started."
+    },
+    "ApprovalButtons": {
+      "Approve": "Approve",
+      "Decline": "Decline"
+    },
+    "EmoteSuggestionChannelNotSet": {
+      "IsFinish": "Channel for suggestions ({0}) is not set.",
+      "NotFinish": "Your proposal cannot be processed at this time because the proposal channel is not set up."
+    },
+    "EmoteSuggestionChannelNotFound": {
+      "IsFinish": "Channel for suggestions ({0}) is not set.",
+      "NotFinish": "Your proposal cannot be processed at this time due to technical reasons."
     }
   },
   "Unverify": {

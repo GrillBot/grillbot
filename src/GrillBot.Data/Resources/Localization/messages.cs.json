@@ -300,6 +300,18 @@
     },
     "ProcessEmoteSuggestions": {
       "Success": "Hlasování pro schválené emoty bylo spuštěno"
+    },
+    "ApprovalButtons": {
+      "Approve": "Schválit",
+      "Decline": "Zamítnout"
+    },
+    "EmoteSuggestionChannelNotSet": {
+      "IsFinish": "Není nastaven kanál pro návrhy ({0}).",
+      "NotFinish": "Tvůj návrh nelze nyní zpracovat, protože není určen kanál pro návrhy."
+    },
+    "EmoteSuggestionChannelNotFound": {
+      "IsFinish": "Nepodařilo se najít kanál pro návrhy ({0}).",
+      "NotFinish": "Tvůj návrh emote nelze nyní kvůli technickým důvodům zpracovat."
     }
   },
   "Unverify": {

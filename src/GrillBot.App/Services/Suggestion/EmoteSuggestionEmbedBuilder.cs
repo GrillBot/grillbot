@@ -10,10 +10,10 @@ public class EmoteSuggestionEmbedBuilder
     private EmoteSuggestion Entity { get; }
     private IUser Author { get; }
 
-    public EmoteSuggestionEmbedBuilder(EmoteSuggestion entity, IUser author)
+    public EmoteSuggestionEmbedBuilder(EmoteSuggestion? entity, IUser? author)
     {
         Entity = entity ?? throw new ArgumentNullException(nameof(entity));
-        Author = author;
+        Author = author ?? throw new ArgumentNullException(nameof(author));
     }
 
     public Embed Build()

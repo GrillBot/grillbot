@@ -11,7 +11,8 @@ public static class ServiceExtensions
             .AddScoped<EmoteHelper>()
             .AddScoped<DownloadHelper>()
             .AddScoped<ChannelHelper>()
-            .AddScoped<UnverifyHelper>();
+            .AddScoped<UnverifyHelper>()
+            .AddScoped<EmoteSuggestionHelper>();
 
         return services;
     }

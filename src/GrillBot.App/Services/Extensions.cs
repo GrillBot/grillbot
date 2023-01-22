@@ -14,7 +14,6 @@ public static class Extensions
             .AddSingleton<FileStorageFactory>();
 
         services
-            .AddSingleton<Suggestion.SuggestionSessionService>()
             .AddSingleton<Suggestion.EmoteSuggestionService>();
 
         return services;

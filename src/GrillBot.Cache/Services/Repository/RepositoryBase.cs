@@ -7,6 +7,9 @@ public abstract class RepositoryBase
     protected GrillBotCacheContext Context { get; }
     protected CounterManager Counter { get; }
 
+    protected bool IsInMemory
+        => Context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory";
+
     protected RepositoryBase(GrillBotCacheContext context, CounterManager counter)
     {
         Context = context;

@@ -14,7 +14,7 @@ public class DownloadHelper
         HttpClientFactory = httpClientFactory;
     }
 
-    public async Task<byte[]> DownloadAsync(IAttachment attachment)
+    public async Task<byte[]?> DownloadAsync(IAttachment attachment)
     {
         var httpClient = HttpClientFactory.CreateClient();
 
@@ -34,6 +34,23 @@ public class DownloadHelper
                 {
                     return null;
                 }
+            }
+        }
+    }
+
+    public async Task<byte[]?> DownloadFileAsync(string url)
+    {
+        var httpClient = HttpClientFactory.CreateClient();
+
+        using (CounterManager.Create("FileDownload"))
+        {
+            try
+            {
+                return await httpClient.GetByteArrayAsync(url);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
             }
         }
     }

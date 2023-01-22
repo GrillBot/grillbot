@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.Cache.Services.Managers;
 using Quartz;
 
 namespace GrillBot.App.Services.Suggestion;
@@ -8,17 +9,18 @@ namespace GrillBot.App.Services.Suggestion;
 public class SuggestionJob : Job
 {
     private EmoteSuggestionService EmoteSuggestions { get; }
-    private SuggestionSessionService SessionService { get; }
+    private EmoteSuggestionManager CacheManager { get; }
 
-    public SuggestionJob(EmoteSuggestionService emoteSuggestionService, SuggestionSessionService sessionService, IServiceProvider serviceProvider) : base(serviceProvider)
+    public SuggestionJob(EmoteSuggestionService emoteSuggestionService, IServiceProvider serviceProvider, EmoteSuggestionManager cacheManager) : base(serviceProvider)
     {
         EmoteSuggestions = emoteSuggestionService;
-        SessionService = sessionService;
+        CacheManager = cacheManager;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        SessionService.PurgeExpired();
+        await CacheManager.PurgeExpiredAsync();
+
         context.Result = await EmoteSuggestions.ProcessJobAsync();
     }
 }

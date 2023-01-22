@@ -2,37 +2,34 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Models.Suggestion;
-using GrillBot.Database.Enums;
-using System.Net.Http;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services.Suggestion;
 
 public partial class EmoteSuggestionService
 {
-    private SuggestionSessionService SessionService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
     private IMessageCacheManager MessageCacheManager { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public EmoteSuggestionService(SuggestionSessionService sessionService, GrillBotDatabaseBuilder databaseBuilder,
-        IDiscordClient discordClient, IMessageCacheManager messageCacheManager)
+    public EmoteSuggestionService(GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider, IDiscordClient discordClient, IMessageCacheManager messageCacheManager)
     {
-        SessionService = sessionService;
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
         MessageCacheManager = messageCacheManager;
+        ServiceProvider = serviceProvider;
     }
-
-    public void InitSession(string suggestionId, object data)
-        => SessionService.InitSuggestion(suggestionId, SuggestionType.VotableEmote, data);
 
     public async Task ProcessSessionAsync(string suggestionId, IGuild guild, IGuildUser user, EmoteSuggestionModal modalData)
     {
-        var metadata = SessionService.PopMetadata(SuggestionType.VotableEmote, suggestionId);
+        using var scope = ServiceProvider.CreateScope();
+        var cacheManager = scope.ServiceProvider.GetRequiredService<EmoteSuggestionManager>();
+
+        var metadata = await cacheManager.PopAsync(suggestionId);
         if (metadata == null)
             throw new NotFoundException("Nepodařilo se dohledat všechna data k tomuto návrhu. Podej prosím návrh znovu.");
 
@@ -42,38 +39,12 @@ public partial class EmoteSuggestionService
             EmoteName = modalData.EmoteName,
             FromUserId = user.Id.ToString(),
             GuildId = guild.Id.ToString(),
-            Description = modalData.EmoteDescription
+            Description = modalData.EmoteDescription,
+            Filename = metadata.Value.filename,
+            ImageData = metadata.Value.dataContent
         };
 
-        await SetEmoteDataAsync(metadata, entity);
         await TrySendSuggestionAsync(guild, entity, user);
-    }
-
-    private static async Task SetEmoteDataAsync(SuggestionMetadata metadata, Database.Entity.EmoteSuggestion entity)
-    {
-        if (metadata.Data == null)
-            throw new GrillBotException("Nebyly poskytnuty data pro návrh emotu.");
-        
-        switch (metadata.Data)
-        {
-            case Emote emote:
-            {
-                using var httpClient = new HttpClient();
-
-                entity.Filename = emote.Name + Path.GetExtension(Path.GetFileName(emote.Url));
-                entity.ImageData = await httpClient.GetByteArrayAsync(emote.Url);
-                break;
-            }
-            case IAttachment attachment:
-                entity.Filename = attachment.Filename;
-
-                var imageData = await attachment.DownloadAsync();
-                if (imageData == null)
-                    throw new GrillBotException("Nepodařilo se stáhnout potřebná data pro emote.");
-
-                entity.ImageData = imageData;
-                break;
-        }
     }
 
     private async Task TrySendSuggestionAsync(IGuild guild, Database.Entity.EmoteSuggestion entity, IGuildUser author)

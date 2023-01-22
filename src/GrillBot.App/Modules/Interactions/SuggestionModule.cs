@@ -25,33 +25,22 @@ public class SuggestionModule : InteractionsModuleBase
     [DeferConfiguration(SuppressAuto = true)]
     public async Task SuggestEmoteAsync(
         [Summary("emote", "Option to design an emote based on an existing emote (from another server).")]
-        IEmote emote = null,
+        IEmote? emote = null,
         [Summary("attachment", "Ability to design an emote based on an image.")]
-        IAttachment attachment = null
+        IAttachment? attachment = null
     )
     {
-        switch (emote)
+        using var command = GetCommand<Actions.Commands.EmoteSuggestion.InitSuggestion>();
+
+        try
         {
-            case null when attachment == null:
-                await SetResponseAsync(GetText(nameof(SuggestEmoteAsync), "NoEmoteAndAttachment"));
-                return;
-            case Emote emoteData when Context.Guild.Emotes.Any(o => o.Id == emoteData.Id):
-                await SetResponseAsync(GetText(nameof(SuggestEmoteAsync), "EmoteExistsInGuild"));
-                return;
+            var modal = await command.Command.ProcessAsync(emote, attachment);
+            await RespondWithModalAsync(modal);
         }
-
-        var sessionId = Guid.NewGuid().ToString();
-        var modal = new ModalBuilder(GetText(nameof(SuggestEmoteAsync), "ModalTitle"), $"suggestions_emote:{sessionId}")
-            .AddTextInput(GetText(nameof(SuggestEmoteAsync), "ModalEmoteName"), "suggestions_emote_name", minLength: 2, maxLength: 50, required: true,
-                value: emote?.Name ?? Path.GetFileNameWithoutExtension(attachment!.Filename))
-            .AddTextInput(GetText(nameof(SuggestEmoteAsync), "ModalEmoteDescription"), "suggestions_emote_description", TextInputStyle.Paragraph,
-                GetText(nameof(SuggestEmoteAsync), "ModalEmoteDescriptionPlaceholder"), maxLength: EmbedFieldBuilder.MaxFieldValueLength, required: false)
-            .Build();
-
-        var suggestionData = emote as object ?? attachment;
-        EmoteSuggestions.InitSession(sessionId, suggestionData);
-
-        await RespondWithModalAsync(modal);
+        catch (ValidationException ex)
+        {
+            await SetResponseAsync(ex.Message);
+        }
     }
 
     [ModalInteraction("suggestions_emote:*", ignoreGroupNames: true)]

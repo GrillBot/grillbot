@@ -173,7 +173,8 @@ public static class ActionsExtensions
         services
             .AddScoped<Commands.EmoteSuggestion.FormSubmitted>()
             .AddScoped<Commands.EmoteSuggestion.InitSuggestion>()
-            .AddScoped<Commands.EmoteSuggestion.ProcessToVote>();
+            .AddScoped<Commands.EmoteSuggestion.ProcessToVote>()
+            .AddScoped<Commands.EmoteSuggestion.SetApprove>();
         
         // Images
         services

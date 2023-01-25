@@ -5,6 +5,7 @@ using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Database.Services.Repository;
 using Quartz;
 using EmoteSuggestionManager = GrillBot.Cache.Services.Managers.EmoteSuggestionManager;
@@ -20,15 +21,17 @@ public class SuggestionJob : Job
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMessageCacheManager MessageCacheManager { get; }
     private new IDiscordClient DiscordClient { get; }
+    private ITextsManager Texts { get; }
 
     public SuggestionJob(IServiceProvider serviceProvider, EmoteSuggestionManager cacheManager, EmoteSuggestionHelper helper, GrillBotDatabaseBuilder databaseBuilder,
-        IMessageCacheManager messageCacheManager, IDiscordClient discordClient) : base(serviceProvider)
+        IMessageCacheManager messageCacheManager, IDiscordClient discordClient, ITextsManager texts) : base(serviceProvider)
     {
         CacheManager = cacheManager;
         Helper = helper;
         MessageCacheManager = messageCacheManager;
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
+        Texts = texts;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
@@ -85,7 +88,8 @@ public class SuggestionJob : Job
             suggestion.VoteFinished = true;
 
             var fromUser = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());
-            await EmoteSuggestionHelper.SendSuggestionWithEmbedAsync(suggestion, suggestionsChannel, embed: new EmoteSuggestionEmbedBuilder(suggestion, fromUser).Build());
+            await EmoteSuggestionHelper.SendSuggestionWithEmbedAsync(suggestion, suggestionsChannel,
+                embed: new EmoteSuggestionEmbedBuilder(Texts).Build(suggestion, fromUser!, "cs"));
             await message.DeleteAsync();
             return CreateJobReport(suggestion, $"Úspěšně dokončen. ({suggestion.UpVotes}/{suggestion.DownVotes})");
         }

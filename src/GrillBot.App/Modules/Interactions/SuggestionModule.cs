@@ -3,7 +3,6 @@ using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.App.Managers.EmoteSuggestion;
 using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.Data.Exceptions;
 
@@ -14,11 +13,8 @@ namespace GrillBot.App.Modules.Interactions;
 [ExcludeFromCodeCoverage]
 public class SuggestionModule : InteractionsModuleBase
 {
-    private EmoteSuggestionManager EmoteSuggestions { get; }
-
-    public SuggestionModule(EmoteSuggestionManager emoteSuggestionManager, IServiceProvider serviceProvider) : base(serviceProvider)
+    public SuggestionModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        EmoteSuggestions = emoteSuggestionManager;
     }
 
     [SlashCommand("emote", "Submitting a proposal to add a new emote.")]
@@ -61,7 +57,8 @@ public class SuggestionModule : InteractionsModuleBase
     [ComponentInteraction("emote_suggestion_approve:*", ignoreGroupNames: true)]
     public async Task EmoteSuggestionApproved(bool approved)
     {
-        await EmoteSuggestions.SetApprovalStateAsync((IComponentInteraction)Context.Interaction, approved, Context.Channel);
+        using var command = GetCommand<Actions.Commands.EmoteSuggestion.SetApprove>();
+        await command.Command.ProcessAsync(approved);
     }
 
     [SlashCommand("process_emote_suggestions", "Processing approved emote suggestions.", true)]

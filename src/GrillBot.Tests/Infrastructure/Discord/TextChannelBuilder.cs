@@ -52,12 +52,6 @@ public class TextChannelBuilder : BuilderBase<ITextChannel>
         return this;
     }
 
-    public TextChannelBuilder SetGetMessageAsync(IMessage message)
-    {
-        Mock.Setup(o => o.GetMessageAsync(It.Is<ulong>(x => x == message.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).Returns(Task.FromResult(message));
-        return this;
-    }
-
     public TextChannelBuilder SetGetMessagesAsync(IEnumerable<IMessage> message)
     {
         var messages = message.ToList().AsReadOnly();

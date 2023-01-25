@@ -34,7 +34,7 @@ public class RemindPostponeHandlerTests : ServiceTest<RemindPostponeHandler>
     {
         var handler = new RemindPostponeHandler(1, TestServices.InitializedProvider.Value);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
-        var interaction = new ComponentInteractionBuilder().AsDmInteraction().SetMessage(message).Build();
+        var interaction = new ComponentInteractionBuilder(Consts.InteractionId).AsDmInteraction().SetMessage(message).Build();
         var context = new InteractionContextBuilder().SetInteraction(interaction).Build();
 
         await handler.ProcessAsync(context);
@@ -45,7 +45,7 @@ public class RemindPostponeHandlerTests : ServiceTest<RemindPostponeHandler>
     {
         var handler = new RemindPostponeHandler(1, TestServices.InitializedProvider.Value);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
-        var interaction = new ComponentInteractionBuilder().AsDmInteraction().SetMessage(message).Build();
+        var interaction = new ComponentInteractionBuilder(Consts.InteractionId).AsDmInteraction().SetMessage(message).Build();
         var context = new InteractionContextBuilder().SetInteraction(interaction).Build();
 
         await Repository.AddAsync(new Database.Entity.RemindMessage

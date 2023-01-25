@@ -327,7 +327,7 @@
     },
     "EmoteSuggestionChannelNotSet": {
       "IsFinish": "Není nastaven kanál pro návrhy ({0}).",
-      "NotFinish": "Tvůj návrh nelze nyní zpracovat, protože není určen kanál pro návrhy."
+      "IsNotFinish": "Tvůj návrh nelze nyní zpracovat, protože není určen kanál pro návrhy."
     },
     "EmoteSuggestionChannelNotFound": {
       "IsFinish": "Nepodařilo se najít kanál pro návrhy ({0}).",

@@ -1,17 +1,24 @@
-﻿using System;
-using Discord;
+﻿using Discord;
 using Moq;
 
 namespace GrillBot.Tests.Infrastructure.Discord;
 
 public class ComponentInteractionBuilder : BuilderBase<IComponentInteraction>
 {
-    public ComponentInteractionBuilder()
+    public ComponentInteractionBuilder(ulong id)
     {
         Mock.Setup(o => o.DeferAsync(It.IsAny<bool>(), It.IsAny<RequestOptions>())).Returns(Task.CompletedTask);
         Mock.Setup(o => o.UpdateAsync(It.IsAny<Action<MessageProperties>>(), It.IsAny<RequestOptions>()))
             .Callback<Action<MessageProperties>, RequestOptions>((func, _) => func(new MessageProperties()))
             .Returns(Task.CompletedTask);
+
+        SetId(id);
+    }
+
+    public ComponentInteractionBuilder SetId(ulong id)
+    {
+        Mock.Setup(o => o.Id).Returns(id);
+        return this;
     }
 
     public ComponentInteractionBuilder SetGuild(IGuild guild)

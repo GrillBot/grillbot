@@ -327,7 +327,7 @@
     },
     "EmoteSuggestionChannelNotSet": {
       "IsFinish": "Channel for suggestions ({0}) is not set.",
-      "NotFinish": "Your proposal cannot be processed at this time because the proposal channel is not set up."
+      "IsNotFinish": "Your proposal cannot be processed at this time because the proposal channel is not set up."
     },
     "EmoteSuggestionChannelNotFound": {
       "IsFinish": "Channel for suggestions ({0}) is not set.",

@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Localization;
 using Humanizer;
 using Markdig;
@@ -15,7 +14,6 @@ public class FormatHelper
         Texts = texts;
     }
 
-    public static string FormatBooleanToCzech(bool val) => val ? "Ano" : "Ne";
     public static string FormatPointsToCzech(long count) => Format(count, "bod", "body", "bodů");
 
     public static string Format(long count, string oneSuffix, string twoToFour, string fiveAndMore)

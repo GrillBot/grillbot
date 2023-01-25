@@ -13,8 +13,8 @@ public class DataCacheRepository : RepositoryBase
 
     public async Task DeleteExpiredAsync()
     {
-        if (Context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory") return;
-    
+        if (IsInMemory) return;
+
         using (CreateCounter())
         {
             await Context.Database.ExecuteSqlRawAsync("DELETE FROM public.\"DataCache\" WHERE \"ValidTo\" < @now", new NpgsqlParameter("@now", DateTime.Now));

@@ -1,13 +1,46 @@
-﻿using GrillBot.Common;
+﻿using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.App.Managers.EmoteSuggestion;
+using GrillBot.Cache.Services.Managers.MessageCache;
+using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Database.Services.Repository;
+using Quartz;
+using EmoteSuggestionManager = GrillBot.Cache.Services.Managers.EmoteSuggestionManager;
 
-namespace GrillBot.App.Services.Suggestion;
+namespace GrillBot.App.Jobs;
 
-public partial class EmoteSuggestionService
+[DisallowConcurrentExecution]
+[DisallowUninitialized]
+public class SuggestionJob : Job
 {
-    public async Task<string> ProcessJobAsync()
+    private EmoteSuggestionManager CacheManager { get; }
+    private EmoteSuggestionHelper Helper { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IMessageCacheManager MessageCacheManager { get; }
+    private new IDiscordClient DiscordClient { get; }
+    private ITextsManager Texts { get; }
+
+    public SuggestionJob(IServiceProvider serviceProvider, EmoteSuggestionManager cacheManager, EmoteSuggestionHelper helper, GrillBotDatabaseBuilder databaseBuilder,
+        IMessageCacheManager messageCacheManager, IDiscordClient discordClient, ITextsManager texts) : base(serviceProvider)
+    {
+        CacheManager = cacheManager;
+        Helper = helper;
+        MessageCacheManager = messageCacheManager;
+        DatabaseBuilder = databaseBuilder;
+        DiscordClient = discordClient;
+        Texts = texts;
+    }
+
+    protected override async Task RunAsync(IJobExecutionContext context)
+    {
+        await CacheManager.PurgeExpiredAsync();
+        context.Result = await ProcessJobAsync();
+    }
+
+    private async Task<string> ProcessJobAsync()
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -35,16 +68,16 @@ public partial class EmoteSuggestionService
         try
         {
             var guildData = await repository.Guild.FindGuildAsync(guild);
-            var suggestionsChannel = await FindEmoteSuggestionsChannelAsync(guild, guildData, true);
+            var suggestionsChannel = await Helper.FindEmoteSuggestionsChannelAsync(guild, guildData!, true, "cs");
 
             if (string.IsNullOrEmpty(guildData!.VoteChannelId))
-                throw new ValidationException($"Není nastaven kanál pro hlasování ({guildData.VoteChannelId})");
+                throw new ValidationException($"Channel for suggestions ({guildData.VoteChannelId}) is not set.");
             var voteChannel = await guild.GetTextChannelAsync(guildData.VoteChannelId.ToUlong());
             if (voteChannel == null)
-                throw new ValidationException($"Nepodařilo se najít kanál pro hlasování ({guildData.VoteChannelId})");
+                throw new ValidationException($"Channel for suggestion wasn't found. ({guildData.VoteChannelId})");
 
             if (await MessageCacheManager.GetAsync(suggestion.VoteMessageId!.ToUlong(), voteChannel, forceReload: true) is not IUserMessage message)
-                return CreateJobReport(suggestion, "Nepodařilo se najít hlasovací zprávu.");
+                return CreateJobReport(suggestion, "Vote message wasn't found.");
 
             var thumbsUpReactions = await message.GetReactionUsersAsync(Emojis.ThumbsUp, int.MaxValue).FlattenAsync();
             var thumbsDownReactions = await message.GetReactionUsersAsync(Emojis.ThumbsDown, int.MaxValue).FlattenAsync();
@@ -55,7 +88,8 @@ public partial class EmoteSuggestionService
             suggestion.VoteFinished = true;
 
             var fromUser = await DiscordClient.FindUserAsync(suggestion.FromUserId.ToUlong());
-            await SendSuggestionWithEmbedAsync(suggestion, suggestionsChannel, embed: new EmoteSuggestionEmbedBuilder(suggestion, fromUser).Build());
+            await EmoteSuggestionHelper.SendSuggestionWithEmbedAsync(suggestion, suggestionsChannel,
+                embed: new EmoteSuggestionEmbedBuilder(Texts).Build(suggestion, fromUser!, "cs"));
             await message.DeleteAsync();
             return CreateJobReport(suggestion, $"Úspěšně dokončen. ({suggestion.UpVotes}/{suggestion.DownVotes})");
         }
@@ -66,5 +100,5 @@ public partial class EmoteSuggestionService
     }
 
     private static string CreateJobReport(Database.Entity.EmoteSuggestion suggestion, string result)
-        => $"Id:{suggestion.Id}, Guild:{suggestion.Guild!.Name}, FromUser:{suggestion.FromUser!.User!.Username}, EmoteName:{suggestion.EmoteName}, Result:{result}";
+        => $"Id:{suggestion.Id}, Guild:{suggestion.Guild.Name}, FromUser:{suggestion.FromUser.User!.Username}, EmoteName:{suggestion.EmoteName}, Result:{result}";
 }

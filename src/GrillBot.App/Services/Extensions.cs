@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.FileStorage;
+﻿using GrillBot.App.Managers.EmoteSuggestion;
+using GrillBot.Common.FileStorage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services;
@@ -12,10 +13,6 @@ public static class Extensions
 
         services
             .AddSingleton<FileStorageFactory>();
-
-        services
-            .AddSingleton<Suggestion.SuggestionSessionService>()
-            .AddSingleton<Suggestion.EmoteSuggestionService>();
 
         return services;
     }

@@ -169,6 +169,13 @@ public static class ActionsExtensions
             .AddScoped<Commands.Emotes.EmoteInfo>()
             .AddScoped<Commands.Emotes.GetEmotesList>();
         
+        // EmoteSuggestion
+        services
+            .AddScoped<Commands.EmoteSuggestion.FormSubmitted>()
+            .AddScoped<Commands.EmoteSuggestion.InitSuggestion>()
+            .AddScoped<Commands.EmoteSuggestion.ProcessToVote>()
+            .AddScoped<Commands.EmoteSuggestion.SetApprove>();
+        
         // Images
         services
             .AddScoped<Commands.Images.ImageCreator>();

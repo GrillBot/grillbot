@@ -289,6 +289,10 @@
   "SuggestionModule": {
     "SessionExpired": "Platnost formuláře vypršela. Podej prosím návrh znovu.",
     "PrivateMessageSuggestionComplete": "Tvůj návrh na přidání emote byl úspěšně zpracován.",
+    "VoteChannelNotDefined": "Nelze spustit hlasování o nových emotech, protože není definován kanál pro hlasování.",
+    "VoteChannelNotFound": "Nelze spustit hlasování o nových emotech, protože nebyl nalezen kanál pro hlasování.",
+    "NoForVote": "Neexistuje žádný schválený/zamítnutý návrh ke zpracování.",
+    "NoApprovedForVote": "Není žádný schválený návrh ke zpracování.",
     "SuggestEmote": {
       "NoEmoteAndAttachment": "Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.",
       "EmoteExistsInGuild": "Nelze podat návrh na emote, který je již na tomto serveru.",

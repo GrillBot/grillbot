@@ -70,10 +70,10 @@ public class SuggestionModule : InteractionsModuleBase
     {
         try
         {
-            await EmoteSuggestions.ProcessSuggestionsToVoteAsync(Context.Guild);
-            await SetResponseAsync(GetText(nameof(ProcessEmoteSuggestionsAsync), "Success"));
+            using var command = GetCommand<Actions.Commands.EmoteSuggestion.ProcessToVote>();
+            await command.Command.ProcessAsync();
         }
-        catch (GrillBotException ex)
+        catch (Exception ex) when (ex is GrillBotException or NotFoundException or ValidationException)
         {
             await SetResponseAsync(ex.Message);
         }

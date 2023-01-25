@@ -289,6 +289,10 @@
   "SuggestionModule": {
     "SessionExpired": "Form expired. Please create your proposal again.",
     "PrivateMessageSuggestionComplete": "Your suggestion to add an emote has been successfully processed.",
+    "VoteChannelNotDefined": "Voting about new emotes cannot be started. Channel for voting is not defined.",
+    "VoteChannelNotFound": "Voting about new emotes cannot be started. Channel for voting wasn't found.",
+    "NoForVote": "Not exists any approved/declined proposal for processing.",
+    "NoApprovedForVote": "Not exists any approved proposal for processing.",
     "SuggestEmote": {
       "NoEmoteAndAttachment": "Can't suggest a new emote when no emote is delivered. The emote can be delivered in the form of another emote or image.",
       "EmoteExistsInGuild": "Cannot submit an emote that is already on this server.",

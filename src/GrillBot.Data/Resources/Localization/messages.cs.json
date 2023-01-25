@@ -287,6 +287,8 @@
     }
   },
   "SuggestionModule": {
+    "SessionExpired": "Platnost formuláře vypršela. Podej prosím návrh znovu.",
+    "PrivateMessageSuggestionComplete": "Tvůj návrh na přidání emote byl úspěšně zpracován.",
     "SuggestEmote": {
       "NoEmoteAndAttachment": "Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.",
       "EmoteExistsInGuild": "Nelze podat návrh na emote, který je již na tomto serveru.",
@@ -295,8 +297,22 @@
       "ModalEmoteDescription": "Popis emote",
       "ModalEmoteDescriptionPlaceholder": "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?"
     },
-    "EmoteSuggestionFormSubmited": {
-      "Success": "Tvůj návrh na přidání emote byl úspěšně zpracován."
+    "SuggestionEmbed": {
+      "Title": "Nový návrh na emote.",
+      "EmoteNameTitle": "Název",
+      "EmoteDescriptionTitle": "Popis",
+      "VoteFinished": "Hlasování skončilo {0}",
+      "VoteRunning": "Hlasování běží, skončí {0}",
+      "VoteFinishedTitle": "Dokončeno hlasování o novém emote",
+      "CommunityApproved": "Komunitou schválen",
+      "Boolean": {
+        "True": "Ano",
+        "False": "Ne"
+      },
+      "ApproveForVote": {
+        "True": "Schválen k hlasování",
+        "False": "Zamítnut k hlasování"
+      }
     },
     "ProcessEmoteSuggestions": {
       "Success": "Hlasování pro schválené emoty bylo spuštěno"

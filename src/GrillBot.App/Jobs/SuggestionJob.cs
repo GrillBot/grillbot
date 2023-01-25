@@ -1,13 +1,13 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.App.Services.Suggestion;
-using GrillBot.Cache.Services.Managers;
+using GrillBot.App.Managers.EmoteSuggestion;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Services.Repository;
 using Quartz;
+using EmoteSuggestionManager = GrillBot.Cache.Services.Managers.EmoteSuggestionManager;
 
 namespace GrillBot.App.Jobs;
 

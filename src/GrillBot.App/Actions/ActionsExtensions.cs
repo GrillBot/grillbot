@@ -171,6 +171,7 @@ public static class ActionsExtensions
         
         // EmoteSuggestion
         services
+            .AddScoped<Commands.EmoteSuggestion.FormSubmitted>()
             .AddScoped<Commands.EmoteSuggestion.InitSuggestion>();
         
         // Images

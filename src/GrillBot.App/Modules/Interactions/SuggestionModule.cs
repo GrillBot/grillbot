@@ -1,17 +1,17 @@
-﻿using Discord.Interactions;
-using Discord.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Managers.EmoteSuggestion;
 using GrillBot.App.Modules.Implementations.Suggestion;
-using GrillBot.App.Services.Suggestion;
 using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("suggestion", "Submission of proposal")]
+[ExcludeFromCodeCoverage]
 public class SuggestionModule : InteractionsModuleBase
 {
     private EmoteSuggestionManager EmoteSuggestions { get; }
@@ -49,33 +49,8 @@ public class SuggestionModule : InteractionsModuleBase
     {
         try
         {
-            var user = Context.User as IGuildUser ?? Context.Guild.GetUser(Context.User.Id);
-            await EmoteSuggestions.ProcessSessionAsync(sessionId, Context.Guild, user, modal);
-            await Context.User.SendMessageAsync(GetText(nameof(EmoteSuggestionFormSubmitedAsync), "Success"));
-        }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-        {
-            // User have blocked DMs from bots. User problem, not ours.
-        }
-        catch (Exception ex)
-        {
-            switch (ex)
-            {
-                case HttpException { DiscordCode: DiscordErrorCode.CannotSendMessageToUser }:
-                    return;
-                case ValidationException:
-                case NotFoundException:
-                    try
-                    {
-                        await Context.User.SendMessageAsync(ex.Message);
-                    }
-                    catch (HttpException ex1) when (ex1.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-                    {
-                        // User have blocked DMs from bots. User problem, not ours.
-                    }
-
-                    break;
-            }
+            using var command = GetCommand<Actions.Commands.EmoteSuggestion.FormSubmitted>();
+            await command.Command.ProcessAsync(sessionId, modal);
         }
         finally
         {

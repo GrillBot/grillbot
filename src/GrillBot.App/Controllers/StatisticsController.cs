@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Actions.Api.V1.Statistics;
 using GrillBot.Data.Models.API.Statistics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -13,67 +13,45 @@ namespace GrillBot.App.Controllers;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
 [ExcludeFromCodeCoverage]
-public class StatisticsController : Controller
+public class StatisticsController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public StatisticsController(IServiceProvider serviceProvider)
+    public StatisticsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
     /// Get statistics about database tables.
     /// </summary>
-    /// <response code="200">Returns dictionary of database tables and records count. (TableName, Count)</response>
+    /// <response code="200">Returns statistics about database and cache.</response>
     [HttpGet("db")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<DatabaseStatistics>> GetDbStatusAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetDatabaseStatus>();
-        var result = await action.ProcessAsync();
-
+        var result = await ProcessActionAsync<GetDatabaseStatus, DatabaseStatistics>(action => action.ProcessAsync());
         return Ok(result);
     }
 
     /// <summary>
-    /// Get statistics about audit logs by type.
+    /// Get statistics about audit logs.
     /// </summary>
-    /// <response code="200">Returns dictionary of audit logs statistics per type. (Type, Count)</response>
-    [HttpGet("audit-log/type")]
+    /// <response code="200">Returns statistics about audit log (by type, by date, files by count, files by size)</response>
+    [HttpGet("audit-log")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsByTypeAsync()
+    public async Task<ActionResult<AuditLogStatistics>> GetAuditLogStatisticsAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetAuditLogStatistics>();
-        var result = await action.ProcessByTypeAsync();
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Get statistics about audit logs by date and year.
-    /// </summary>
-    /// <response code="200">Returns dictionary of audit logs statistics per date (Year-Month, Count)</response>
-    [HttpGet("audit-log/date")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetAuditLogsStatisticsByDateAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetAuditLogStatistics>();
-        var result = await action.ProcessByDateAsync();
-
+        var result = await ProcessActionAsync<GetAuditLogStatistics, AuditLogStatistics>(action => action.ProcessAsync());
         return Ok(result);
     }
 
     /// <summary>
     /// Gets statistics about interactions.
     /// </summary>
+    /// <response code="200">Returns statistics about interaction commannds</response>
     [HttpGet("interactions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<StatisticItem>>> GetInteractionsStatusAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetCommandStatistics>();
-        var result = await action.ProcessInteractionsAsync();
-
+        var result = await ProcessActionAsync<GetCommandStatistics, List<StatisticItem>>(action => action.ProcessInteractionsAsync());
         return Ok(result);
     }
 
@@ -85,9 +63,7 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByOperationAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetUnverifyStatistics>();
-        var result = await action.ProcessByOperationAsync();
-
+        var result = await ProcessActionAsync<GetUnverifyStatistics, Dictionary<string, int>>(action => action.ProcessByOperationAsync());
         return Ok(result);
     }
 
@@ -99,9 +75,7 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByDateAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetUnverifyStatistics>();
-        var result = await action.ProcessByDateAsync();
-
+        var result = await ProcessActionAsync<GetUnverifyStatistics, Dictionary<string, int>>(action => action.ProcessByDateAsync());
         return Ok(result);
     }
 
@@ -113,9 +87,7 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByDateAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetApiStatistics>();
-        var result = await action.ProcessByDateAsync();
-
+        var result = await ProcessActionAsync<GetApiStatistics, Dictionary<string, int>>(action => action.ProcessByDateAsync());
         return Ok(result);
     }
 
@@ -127,9 +99,7 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<StatisticItem>>> GetApiRequestsByEndpointAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetApiStatistics>();
-        var result = await action.ProcessByEndpointAsync();
-
+        var result = await ProcessActionAsync<GetApiStatistics, List<StatisticItem>>(action => action.ProcessByEndpointAsync());
         return Ok(result);
     }
 
@@ -141,9 +111,7 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByStatusCodeAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetApiStatistics>();
-        var result = await action.ProcessByStatusCodeAsync();
-
+        var result = await ProcessActionAsync<GetApiStatistics, Dictionary<string, int>>(action => action.ProcessByStatusCodeAsync());
         return Ok(result);
     }
 
@@ -155,9 +123,7 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<Dictionary<string, ulong>> GetEventLogStatistics()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetEventStatistics>();
-        var result = action.Process();
-
+        var result = ProcessAction<GetEventStatistics, Dictionary<string, ulong>>(action => action.Process());
         return Ok(result);
     }
 
@@ -168,9 +134,7 @@ public class StatisticsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<AvgExecutionTimes>> GetAvgTimesAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Statistics.GetAvgTimes>();
-        var result = await action.ProcessAsync();
-
+        var result = await ProcessActionAsync<GetAvgTimes, AvgExecutionTimes>(action => action.ProcessAsync());
         return Ok(result);
     }
 }

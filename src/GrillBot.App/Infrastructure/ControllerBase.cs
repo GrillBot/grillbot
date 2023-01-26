@@ -17,4 +17,10 @@ public abstract class ControllerBase : Controller
         var action = ServiceProvider.GetRequiredService<TAction>();
         return await asyncExecution(action);
     }
+
+    protected TData ProcessAction<TAction, TData>(Func<TAction, TData> syncExecution) where TAction : notnull
+    {
+        var action = ServiceProvider.GetRequiredService<TAction>();
+        return syncExecution(action);
+    }
 }

@@ -1,5 +1,7 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Data.Models.API.Statistics;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Api.V1.Statistics;
 
@@ -12,9 +14,22 @@ public class GetAuditLogStatistics : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<Dictionary<string, int>> ProcessByTypeAsync()
+    public async Task<AuditLogStatistics> ProcessAsync()
     {
         await using var repository = DatabaseBuilder.CreateRepository();
+
+        var statistics = new AuditLogStatistics
+        {
+            ByType = await ProcessByTypeAsync(repository),
+            ByDate = await repository.AuditLog.GetStatisticsByDateAsync(),
+        };
+
+        await ProcessFileStatisticsAsync(statistics, repository);
+        return statistics;
+    }
+
+    private static async Task<Dictionary<string, int>> ProcessByTypeAsync(GrillBotRepository repository)
+    {
         var data = await repository.AuditLog.GetStatisticsByTypeAsync();
 
         return Enum.GetValues<AuditLogItemType>()
@@ -24,9 +39,14 @@ public class GetAuditLogStatistics : ApiAction
             .ToDictionary(o => o.Key, o => o.Value);
     }
 
-    public async Task<Dictionary<string, int>> ProcessByDateAsync()
+    private static async Task ProcessFileStatisticsAsync(AuditLogStatistics statistics, GrillBotRepository repository)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.AuditLog.GetStatisticsByDateAsync();
+        var files = await repository.AuditLog.GetAllFilesAsync();
+        var group = files.GroupBy(o => o.Extension[1..])
+            .Select(o => new { o.Key, Count = o.Count(), Size = o.Sum(x => x.Size) })
+            .ToList();
+
+        statistics.FileCounts = group.ToDictionary(o => o.Key, o => o.Count);
+        statistics.FileSizes = group.ToDictionary(o => o.Key, o => o.Size);
     }
 }

@@ -154,4 +154,14 @@ public class AuditLogRepository : RepositoryBase
                 .ToDictionaryAsync(o => o.Date, o => o.Count);
         }
     }
+
+    public async Task<List<AuditLogFileMeta>> GetAllFilesAsync()
+    {
+        using (CreateCounter())
+        {
+            return await Context.AuditLogFiles.AsNoTracking()
+                .OrderBy(o => o.Id)
+                .ToListAsync();
+        }
+    }
 }

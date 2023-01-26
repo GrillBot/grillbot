@@ -42,7 +42,7 @@ public class GetAuditLogStatistics : ApiAction
     private static async Task ProcessFileStatisticsAsync(AuditLogStatistics statistics, GrillBotRepository repository)
     {
         var files = await repository.AuditLog.GetAllFilesAsync();
-        var group = files.GroupBy(o => o.Extension[1..])
+        var group = files.GroupBy(o => o.Extension)
             .Select(o => new { o.Key, Count = o.Count(), Size = o.Sum(x => x.Size) })
             .ToList();
 

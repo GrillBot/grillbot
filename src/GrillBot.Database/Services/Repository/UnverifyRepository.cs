@@ -150,7 +150,7 @@ public class UnverifyRepository : RepositoryBase
         {
             return await Context.UnverifyLogs.AsNoTracking()
                 .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
-                .OrderByDescending(o => o.Key.Year).ThenByDescending(o => o.Key.Month)
+                .OrderBy(o => o.Key.Year).ThenBy(o => o.Key.Month)
                 .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })
                 .ToDictionaryAsync(o => o.Date, o => o.Count);
         }

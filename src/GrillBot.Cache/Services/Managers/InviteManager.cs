@@ -91,13 +91,12 @@ public class InviteManager
         }
     }
 
-    public static InviteMetadata? ConvertMetadata(IInviteMetadata invite)
+    public static InviteMetadata? ConvertMetadata(IInviteMetadata? invite)
     {
-        if (invite.GuildId == null)
+        if (invite?.GuildId == null)
             return null;
 
         var createdAt = invite.CreatedAt?.LocalDateTime;
-
         return new InviteMetadata
         {
             Code = invite.Code,

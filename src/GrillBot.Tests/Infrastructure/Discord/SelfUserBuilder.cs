@@ -11,6 +11,8 @@ public class SelfUserBuilder : BuilderBase<ISelfUser>
         SetId(id);
         SetUsername(username);
         SetDiscriminator(discriminator);
+
+        Mock.Setup(o => o.IsBot).Returns(true);
     }
 
     public SelfUserBuilder(IUser user) : this(user.Id, user.Username, user.Discriminator)

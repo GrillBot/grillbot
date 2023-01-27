@@ -32,28 +32,23 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
         await SetInviteToUserAsync(user, user.Guild, usedInvite, latestInvites);
     }
 
-    private async Task<Cache.Entity.InviteMetadata> FindUsedInviteAsync(IGuild guild, List<IInviteMetadata> latestData)
+    private async Task<Cache.Entity.InviteMetadata?> FindUsedInviteAsync(IGuild guild, List<IInviteMetadata> latestData)
     {
         var cachedInvites = await InviteManager.GetInvitesAsync(guild);
 
-        var missingInvite = cachedInvites.FirstOrDefault(o => latestData.All(x => x.Code != o.Code));
-        if (missingInvite != null) return missingInvite; // User joined via invite with max use limit.
+        // Try find invite with limited count of usage. If invite was used as last, discord will automatically remove this invite.
+        var missingInvite = cachedInvites.FirstOrDefault(o => !latestData.Select(x => x.Code).Contains(o.Code));
+        if (missingInvite != null) return missingInvite;
 
-        // Find used invite which have incremented use value against the cache.
-        var result = cachedInvites.FirstOrDefault(o =>
-        {
-            var fromLatest = latestData.Find(x => x.Code == o.Code);
-            return fromLatest != null && fromLatest.Uses > o.Uses;
-        });
+        // Find invite which have incremented use count against the cache.
+        var result = cachedInvites
+            .Select(o => new { Cached = o, Current = latestData.Find(x => x.Code == o.Code) })
+            .FirstOrDefault(o => o.Current != null && o.Current.Uses > o.Cached.Uses);
 
-        if (result != null)
-            return result;
-
-        var lastChance = latestData.Find(o => cachedInvites.All(x => x.Code != o.Code));
-        return lastChance == null ? null : InviteManager.ConvertMetadata(lastChance);
+        return InviteManager.ConvertMetadata(result?.Current);
     }
 
-    private async Task SetInviteToUserAsync(IGuildUser user, IGuild guild, Cache.Entity.InviteMetadata usedInvite, IEnumerable<IInviteMetadata> latestInvites)
+    private async Task SetInviteToUserAsync(IGuildUser user, IGuild guild, Cache.Entity.InviteMetadata? usedInvite, IEnumerable<IInviteMetadata> latestInvites)
     {
         if (usedInvite == null)
         {
@@ -70,7 +65,7 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
         if (usedInvite.CreatorId != null)
         {
             var creatorUser = await guild.GetUserAsync(usedInvite.CreatorId.ToUlong());
-            if (creatorUser != null)
+            if (creatorUser != null && creatorUser.Id != user.Id)
             {
                 await repository.User.GetOrCreateUserAsync(creatorUser);
                 await repository.GuildUser.GetOrCreateGuildUserAsync(creatorUser);

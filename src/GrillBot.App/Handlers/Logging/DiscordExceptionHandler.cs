@@ -1,12 +1,9 @@
-﻿using System.Net.Http;
-using System.Net.Sockets;
-using System.Net.WebSockets;
-using Discord.Net;
-using GrillBot.App.Infrastructure.IO;
+﻿using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -32,8 +29,8 @@ public class DiscordExceptionHandler : ILoggingHandler
         if (exception == null || !Configuration.GetValue<bool>("Enabled")) return false;
         if (severity != LogSeverity.Critical && severity != LogSeverity.Error && severity != LogSeverity.Warning) return false;
 
-        var isIgnoredException = IsIgnoredException(exception);
-        if (LogChannel != null) return !isIgnoredException;
+        var isWarning = LoggingHelper.IsWarning(exception);
+        if (LogChannel != null) return !isWarning;
 
         var guild = await DiscordClient.GetGuildAsync(Configuration.GetValue<ulong>("GuildId"));
         if (guild == null) return false;
@@ -42,28 +39,7 @@ public class DiscordExceptionHandler : ILoggingHandler
         if (channel == null) return false;
         LogChannel = channel;
 
-        return !isIgnoredException;
-    }
-
-    private static bool IsIgnoredException(Exception exception)
-    {
-        var cases = new[]
-        {
-            () => exception is GatewayReconnectException || exception.InnerException is GatewayReconnectException,
-            () => exception.InnerException == null && exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase),
-            () =>
-            {
-                return exception is TaskCanceledException or HttpRequestException &&
-                       exception.InnerException is IOException { InnerException: SocketException se } &&
-                       new[] { SocketError.TimedOut, SocketError.ConnectionAborted }.Contains(se.SocketErrorCode);
-            },
-            // 11 is magic constant represents error "Resource temporarily unavailable".
-            () => exception is HttpRequestException && exception.InnerException is SocketException { ErrorCode: 11 },
-            () => exception.InnerException is WebSocketException or WebSocketClosedException,
-            () => exception is TaskCanceledException && exception.InnerException is null
-        };
-
-        return cases.Any(@case => @case());
+        return !isWarning;
     }
 
     public Task InfoAsync(string source, string message) => Task.CompletedTask;

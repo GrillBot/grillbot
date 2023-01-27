@@ -1,7 +1,7 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using GrillBot.App.Handlers.Logging;
 using GrillBot.App.Managers;
+using GrillBot.Common.Exceptions;
 using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Handlers.Logging;
@@ -49,20 +49,6 @@ public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>
     }
 
     [TestMethod]
-    public async Task CanHandleAsync_GatewayReconnectException()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Critical, "", new GatewayReconnectException(""));
-        Assert.IsFalse(result);
-    }
-
-    [TestMethod]
-    public async Task CanHandleAsync_GatewayReconnectInnerException()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Critical, "", new Exception("", new GatewayReconnectException("")));
-        Assert.IsFalse(result);
-    }
-
-    [TestMethod]
     public async Task InfoAsync()
     {
         await Service.InfoAsync("Test", "Test");
@@ -78,5 +64,11 @@ public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>
     public async Task ErrorAsync()
     {
         await Service.ErrorAsync("Test", "Test", new ArgumentException());
+    }
+
+    [TestMethod]
+    public async Task ErrorAsync_ApiException()
+    {
+        await Service.ErrorAsync("API", "API", new ApiException("", new ArgumentException(), null, "", ""));
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -18,9 +19,9 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 {
     private static IConfiguration Configuration => TestServices.Configuration.Value;
 
-    private ITextChannel Channel { get; set; }
-    private IUser User { get; set; }
-    private TemporaryFile TemporaryFile { get; set; }
+    private ITextChannel Channel { get; set; } = null!;
+    private IUser User { get; set; } = null!;
+    private TemporaryFile TemporaryFile { get; set; } = null!;
 
     protected override DiscordExceptionHandler CreateService()
     {
@@ -94,7 +95,9 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
             new HttpRequestException("", resourceUnavailable),
             new("", new WebSocketException()),
             new("", new WebSocketClosedException(0)),
-            new TaskCanceledException()
+            new TaskCanceledException(),
+            new HttpException(HttpStatusCode.ServiceUnavailable, null),
+            new TimeoutException("Cannot defer an interaction")
         };
 
         foreach (var @case in cases)

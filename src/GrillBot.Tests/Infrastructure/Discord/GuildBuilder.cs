@@ -92,6 +92,13 @@ public class GuildBuilder : BuilderBase<IGuild>
         return this;
     }
 
+    public GuildBuilder SetGetCurrentUserAction(IGuildUser user)
+    {
+        Mock.Setup(o => o.GetCurrentUserAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
+        Mock.Setup(o => o.GetUserAsync(It.Is<ulong>(x => x == user.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
+        return this;
+    }
+
     public GuildBuilder SetGetInvitesAction(IEnumerable<IInviteMetadata> invites)
     {
         var invitesData = invites.ToList();

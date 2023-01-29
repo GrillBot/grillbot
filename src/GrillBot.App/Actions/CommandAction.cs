@@ -4,6 +4,9 @@ namespace GrillBot.App.Actions;
 
 public abstract class CommandAction
 {
+    private IGuildUser? _currentUser;
+    private IGuildUser? _executingUser;
+
     protected IInteractionContext Context { get; private set; } = null!;
 
     protected string Locale
@@ -21,5 +24,14 @@ public abstract class CommandAction
     }
 
     protected async Task<IGuildUser> GetExecutingUserAsync()
-        => Context.User as IGuildUser ?? await Context.Guild.GetUserAsync(Context.User.Id);
+    {
+        _executingUser ??= Context.User as IGuildUser ?? await Context.Guild.GetUserAsync(Context.User.Id);
+        return _executingUser;
+    }
+
+    protected async Task<IGuildUser> GetCurrentUserAsync()
+    {
+        _currentUser ??= await Context.Guild.GetCurrentUserAsync();
+        return _currentUser;
+    }
 }

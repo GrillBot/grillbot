@@ -208,6 +208,7 @@ public static class ActionsExtensions
             .AddScoped<Commands.Unverify.UnverifyList>();
 
         services
+            .AddScoped<Commands.BotInfo>()
             .AddScoped<Commands.ChannelInfo>()
             .AddScoped<Commands.Mock>()
             .AddScoped<Commands.Emojization>()

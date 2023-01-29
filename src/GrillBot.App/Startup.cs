@@ -2,7 +2,6 @@ using System.Reflection;
 using Discord.Interactions;
 using GrillBot.App.Actions;
 using GrillBot.App.Handlers;
-using GrillBot.App.Services;
 using GrillBot.App.Services.Discord;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -21,6 +20,7 @@ using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Common;
+using GrillBot.Common.FileStorage;
 using GrillBot.Common.Services;
 
 namespace GrillBot.App;
@@ -79,6 +79,8 @@ public class Startup
             .AddMemoryCache()
             .AddScoped<ApiRequest>()
             .AddActions()
+            .AddScoped<Services.DirectApi.IDirectApiService, Services.DirectApi.DirectApiService>()
+            .AddSingleton<FileStorageFactory>()
             .AddControllers(c =>
             {
                 c.Filters.Add<ExceptionFilter>();
@@ -96,7 +98,6 @@ public class Startup
 
         services
             .AddHandlers()
-            .AddServices()
             .AddManagers();
         Helpers.ServiceExtensions.AddHelpers(services);
 

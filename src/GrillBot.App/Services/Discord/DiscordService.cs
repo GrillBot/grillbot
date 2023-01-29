@@ -1,5 +1,4 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
@@ -7,10 +6,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using System.Reflection;
+using GrillBot.App.Handlers;
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Managers.Logging;
-using GrillBot.Data.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Services.Discord;
@@ -55,32 +54,7 @@ public class DiscordService : IHostedService
         Provider.GetRequiredService<LoggingManager>();
         Provider.GetRequiredService<EventLogManager>();
         Provider.GetRequiredService<EventManager>();
-
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var initializable = currentAssembly
-            .GetTypes()
-            .Where(o => o.Assembly == currentAssembly && o is { IsClass: true, IsAbstract: false } && o.GetCustomAttribute<InitializableAttribute>() != null)
-            .OrderBy(o => o.Name)
-            .ToList();
-
-        foreach (var service in initializable)
-        {
-            var dependency = Provider.GetService(service);
-            if (dependency != null) continue;
-
-            var interfaces = service.GetInterfaces();
-            if (interfaces.Length > 0)
-            {
-                foreach (var @interface in interfaces)
-                {
-                    dependency = Provider.GetService(@interface);
-                    if (dependency != null) break;
-                }
-            }
-
-            if (dependency == null)
-                throw new GrillBotException($"Failed initialization of service {service.FullName}");
-        }
+        Provider.GetRequiredService<InteractionHandler>();
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

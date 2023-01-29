@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Helpers;
-using GrillBot.App.Infrastructure;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
@@ -7,7 +6,6 @@ using GrillBot.Data.Models.DirectApi;
 
 namespace GrillBot.App.Services.DirectApi;
 
-[Initializable]
 public class DirectApiService : IDirectApiService
 {
     private IConfiguration Configuration { get; }

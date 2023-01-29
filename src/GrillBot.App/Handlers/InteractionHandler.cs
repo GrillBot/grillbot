@@ -1,12 +1,10 @@
 ﻿using Discord.Interactions;
 using Discord.Net;
-using GrillBot.App.Infrastructure;
 using GrillBot.App.Services.Discord;
 using GrillBot.Common.Managers;
 
 namespace GrillBot.App.Handlers;
 
-[Initializable]
 public class InteractionHandler
 {
     private InteractionService InteractionService { get; }

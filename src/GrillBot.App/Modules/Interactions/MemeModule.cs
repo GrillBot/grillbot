@@ -46,7 +46,7 @@ public class MemeModule : InteractionsModuleBase
 
     [SlashCommand("peepolove", "Peepolove")]
     [UserCommand("Peepolove")]
-    public async Task PeepoloveAsync(IUser user = null)
+    public async Task PeepoloveAsync(IUser? user = null)
     {
         using var command = GetCommand<ImageCreator>();
         var result = await command.Command.PeepoloveAsync(user);
@@ -56,7 +56,7 @@ public class MemeModule : InteractionsModuleBase
 
     [SlashCommand("peepoangry", "Angry peepo")]
     [UserCommand("Peepoangry")]
-    public async Task PeepoangryAsync(IUser user = null)
+    public async Task PeepoangryAsync(IUser? user = null)
     {
         using var command = GetCommand<ImageCreator>();
         var result = await command.Command.PeepoangryAsync(user);

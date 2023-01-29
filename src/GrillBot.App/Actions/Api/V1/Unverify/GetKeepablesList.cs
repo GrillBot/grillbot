@@ -11,7 +11,7 @@ public class GetKeepablesList : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<Dictionary<string, List<string>>> ProcessAsync(string group)
+    public async Task<Dictionary<string, List<string>>> ProcessAsync(string? group)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 

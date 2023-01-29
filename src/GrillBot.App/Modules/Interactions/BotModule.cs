@@ -1,13 +1,14 @@
-﻿using Discord.Interactions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.Common.Extensions.Discord;
 using GrillBot.App.Infrastructure.Commands;
-using Microsoft.Extensions.DependencyInjection;
+using GrillBot.Data.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("bot", "Bot information and configuration commands.")]
+[ExcludeFromCodeCoverage]
 public class BotModule : InteractionsModuleBase
 {
     public BotModule(IServiceProvider serviceProvider) : base(serviceProvider)
@@ -31,54 +32,19 @@ public class BotModule : InteractionsModuleBase
         }
 
         [SlashCommand("list-keepables", "List of allowable accesses when selfunverify")]
-        public async Task ListAsync(string group = null)
+        public async Task ListAsync(string? group = null)
         {
-            using var scope = ServiceProvider.CreateScope();
-            var action = scope.ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.GetKeepablesList>();
-            action.UpdateContext(Locale, Context.User);
-            var data = await action.ProcessAsync(group);
+            using var command = GetCommand<Actions.Commands.Unverify.SelfUnverifyKeepables>();
 
-            if (data.Count == 0)
+            try
             {
-                await SetResponseAsync(Texts["Unverify/SelfUnverify/Keepables/List/NoKeepables", Locale]);
-                return;
+                var embed = await command.Command.ListAsync(group);
+                await SetResponseAsync(embed: embed);
             }
-
-            var embed = new EmbedBuilder()
-                .WithColor(Color.Blue)
-                .WithCurrentTimestamp()
-                .WithFooter(Context.User)
-                .WithTitle(Texts["Unverify/SelfUnverify/Keepables/List/Title", Locale]);
-
-            foreach (var grp in data.GroupBy(o => string.Join("|", o.Value)))
+            catch (NotFoundException ex)
             {
-                string fieldGroupResult;
-                var keys = string.Join(", ", grp.Select(o => o.Key == "_" ? Texts["Unverify/SelfUnverify/Keepables/List/Other", Locale] : o.Key));
-
-                var fieldGroupBuilder = new StringBuilder();
-                foreach (var item in grp.First().Value)
-                {
-                    if (fieldGroupBuilder.Length + item.Length >= EmbedFieldBuilder.MaxFieldValueLength)
-                    {
-                        fieldGroupResult = fieldGroupBuilder.ToString().Trim();
-                        embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[..^1] : fieldGroupResult);
-                        fieldGroupBuilder.Clear();
-                    }
-                    else
-                    {
-                        fieldGroupBuilder.Append(item).Append(", ");
-                    }
-                }
-
-                if (fieldGroupBuilder.Length <= 0)
-                    continue;
-
-                fieldGroupResult = fieldGroupBuilder.ToString().Trim();
-                embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[..^1] : fieldGroupResult);
-                fieldGroupBuilder.Clear();
+                await SetResponseAsync(ex.Message);
             }
-
-            await SetResponseAsync(embed: embed.Build());
         }
     }
 }

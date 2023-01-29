@@ -34,6 +34,7 @@ public static class ChannelExtensions
         var userRoles = user.RoleIds
             .Where(o => o != user.Guild.EveryoneRole.Id)
             .Select(o => user.Guild.GetRole(o))
+            .Where(o => o != null)
             .OrderByDescending(o => o.Position);
 
         foreach (var role in userRoles)

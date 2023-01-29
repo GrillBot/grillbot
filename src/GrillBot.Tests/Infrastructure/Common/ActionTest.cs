@@ -13,9 +13,6 @@ public abstract class ActionTest<TAction> : TestBase
     protected TestCacheBuilder CacheBuilder { get; private set; }
     protected GrillBotRepository Repository { get; private set; }
     protected GrillBotCacheRepository CacheRepository { get; private set; }
-    protected IServiceProvider ServiceProvider { get; private set; }
-
-    protected abstract bool CanInitProvider { get; }
 
     protected abstract TAction CreateAction();
 
@@ -26,9 +23,6 @@ public abstract class ActionTest<TAction> : TestBase
         CacheBuilder = TestServices.CacheBuilder.Value;
         Repository = DatabaseBuilder.CreateRepository();
         CacheRepository = CacheBuilder.CreateRepository();
-
-        if (CanInitProvider)
-            ServiceProvider = TestServices.InitializedProvider.Value;
 
         Init();
         Action = CreateAction();

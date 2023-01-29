@@ -28,7 +28,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
             .SetGetGuildsAction(new[] { Guild }).SetGetUserAction(new[] { User })
             .Build();
 
-        var provider = TestServices.InitializedProvider.Value;
+        var provider = TestServices.Provider.Value;
         provider.GetRequiredService<InitManager>().Set(true);
 
         return new SuggestionJob(provider, cacheManager, helper, DatabaseBuilder, messageCache, client, texts);

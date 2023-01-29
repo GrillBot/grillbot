@@ -1,5 +1,4 @@
 ﻿using GrillBot.App;
-using GrillBot.Data.Models.AuditLog;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,14 +10,7 @@ namespace GrillBot.Tests.TestHelpers;
 [ExcludeFromCodeCoverage]
 public static class DiHelper
 {
-    public static IServiceProvider CreateEmptyProvider()
-    {
-        return new ServiceCollection()
-            .AddScoped<ApiRequest>()
-            .BuildServiceProvider();
-    }
-
-    public static IServiceProvider CreateInitializedProvider()
+    public static IServiceProvider CreateProvider()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
         var startup = new Startup(configuration);

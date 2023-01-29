@@ -1,5 +1,4 @@
 using System.Reflection;
-using Discord.Commands;
 using Discord.Interactions;
 using GrillBot.App.Actions;
 using GrillBot.App.Handlers;
@@ -52,20 +51,13 @@ public class Startup
             LogGatewayIntentWarnings = false
         };
 
-        var commandsConfig = new CommandServiceConfig
-        {
-            CaseSensitiveCommands = true,
-            DefaultRunMode = Discord.Commands.RunMode.Async,
-            LogLevel = LogSeverity.Verbose
-        };
-
         var currentAssembly = Assembly.GetExecutingAssembly();
         var basePath = Path.GetDirectoryName(currentAssembly.Location)!;
         var localizationPath = Path.Combine(basePath, "Resources", "Localization");
 
         var interactionsConfig = new InteractionServiceConfig
         {
-            DefaultRunMode = Discord.Interactions.RunMode.Async,
+            DefaultRunMode = RunMode.Async,
             EnableAutocompleteHandlers = true,
             LogLevel = LogSeverity.Verbose,
             UseCompiledLambda = true,
@@ -81,7 +73,6 @@ public class Startup
             .Configure<ApiBehaviorOptions>(opt => opt.SuppressModelStateInvalidFilter = true)
             .AddSingleton(discordClient)
             .AddSingleton<IDiscordClient>(discordClient)
-            .AddSingleton(new CommandService(commandsConfig))
             .AddSingleton(container => new InteractionService(container.GetRequiredService<DiscordSocketClient>(), interactionsConfig))
             .AddCaching(Configuration)
             .AddDatabase(connectionString!)
@@ -178,7 +169,7 @@ public class Startup
 
         services.AddHealthChecks()
             .AddCheck<DiscordHealthCheck>(nameof(DiscordHealthCheck))
-            .AddNpgSql(connectionString);
+            .AddNpgSql(connectionString!);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -191,7 +182,7 @@ public class Startup
 
         var corsOrigins = Configuration.GetSection("CORS:Origins").AsEnumerable()
             .Select(o => o.Value).Where(o => !string.IsNullOrEmpty(o)).ToArray();
-        app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().WithOrigins(corsOrigins));
+        app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().WithOrigins(corsOrigins!));
 
         app.UseResponseCaching();
         app.UseRouting();

@@ -32,7 +32,7 @@ public class PointsChartTests : CommandActionTest<PointsChart>
 
     protected override PointsChart CreateAction()
     {
-        return InitAction(new PointsChart(DatabaseBuilder, TestServices.InitializedProvider.Value));
+        return InitAction(new PointsChart(DatabaseBuilder, TestServices.Provider.Value));
     }
 
     private async Task InitDataAsync()

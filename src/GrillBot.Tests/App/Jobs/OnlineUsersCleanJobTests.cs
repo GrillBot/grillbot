@@ -9,7 +9,7 @@ public class OnlineUsersCleanJobTests : JobTest<OnlineUsersCleanJob>
 {
     protected override OnlineUsersCleanJob CreateJob()
     {
-        return new OnlineUsersCleanJob(DatabaseBuilder, TestServices.InitializedProvider.Value);
+        return new OnlineUsersCleanJob(DatabaseBuilder, TestServices.Provider.Value);
     }
 
     private async Task InitDataAsync()

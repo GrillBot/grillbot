@@ -29,8 +29,7 @@ public static class TestServices
     public static readonly Lazy<IConfiguration> Configuration = new(() => ConfigurationHelper.CreateConfiguration());
     public static readonly Lazy<IMapper> AutoMapper = new(AutoMapperHelper.CreateMapper);
     public static readonly Lazy<CounterManager> CounterManager = new();
-    public static readonly Lazy<IServiceProvider> EmptyProvider = new(DiHelper.CreateEmptyProvider, LazyThreadSafetyMode.ExecutionAndPublication);
-    public static readonly Lazy<IServiceProvider> InitializedProvider = new(DiHelper.CreateInitializedProvider, LazyThreadSafetyMode.ExecutionAndPublication);
+    public static readonly Lazy<IServiceProvider> Provider = new(DiHelper.CreateProvider, LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<ILoggerFactory> LoggerFactory = new(() => NullLoggerFactory.Instance, LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<RandomizationManager> Random = new(() => new RandomizationManager(), LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<IWebHostEnvironment> TestingEnvironment = new(() => new EnvironmentBuilder().AsTest().Build(), LazyThreadSafetyMode.ExecutionAndPublication);

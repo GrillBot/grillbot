@@ -11,9 +11,8 @@ public class GetGraphicsServiceInfoTests : ApiActionTest<GetGraphicsServiceInfo>
     protected override GetGraphicsServiceInfo CreateAction()
     {
         var client = new DiscordSocketClient();
-        var commandService = DiscordHelper.CreateCommandsService();
         var interactionService = DiscordHelper.CreateInteractionService(client);
-        var logging = new LoggingManager(client, commandService, interactionService, TestServices.EmptyProvider.Value);
+        var logging = new LoggingManager(client, interactionService, TestServices.Provider.Value);
         return new GetGraphicsServiceInfo(ApiRequestContext, TestServices.Graphics.Value, logging);
     }
 

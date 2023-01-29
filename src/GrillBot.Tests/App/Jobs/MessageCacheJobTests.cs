@@ -9,7 +9,7 @@ public class MessageCacheJobTests : JobTest<MessageCacheJob>
 {
     protected override MessageCacheJob CreateJob()
     {
-        var provider = TestServices.InitializedProvider.Value;
+        var provider = TestServices.Provider.Value;
         provider.GetRequiredService<InitManager>().Set(true);
 
         var messageCache = new MessageCacheBuilder().SetProcessScheduledTaskAction("Test").Build();

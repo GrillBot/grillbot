@@ -17,21 +17,17 @@ namespace GrillBot.Tests.Infrastructure.Common;
 [ExcludeFromCodeCoverage]
 public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFilter : class
 {
-    protected IServiceProvider Provider { get; private set; }
     protected Controller Controller { get; private set; }
     protected TFilter Filter => Service;
 
     protected override TFilter CreateService()
     {
-        Provider = CanInitProvider() ? TestServices.InitializedProvider.Value : TestServices.EmptyProvider.Value;
-
-        Controller = CreateController(Provider);
+        Controller = CreateController();
         return CreateFilter();
     }
 
-    protected abstract bool CanInitProvider();
     protected abstract TFilter CreateFilter();
-    protected abstract Controller CreateController(IServiceProvider provider);
+    protected abstract Controller CreateController();
 
     private static HttpRequest CreateHttpRequest(IHeaderDictionary headers = null)
     {
@@ -58,7 +54,7 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
     {
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(o => o.Request).Returns(CreateHttpRequest(headers));
-        httpContext.Setup(o => o.RequestServices).Returns(Provider);
+        httpContext.Setup(o => o.RequestServices).Returns(TestServices.Provider.Value);
         httpContext.Setup(o => o.User).Returns(new ClaimsPrincipal());
         httpContext.Setup(o => o.Response).Returns(CreateHttpResponse(statusCode));
 

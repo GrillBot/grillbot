@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Discord;
 using GrillBot.Common.Exceptions;
-using Commands = Discord.Commands;
 
 namespace GrillBot.Common.Extensions;
 

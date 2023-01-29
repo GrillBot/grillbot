@@ -24,7 +24,7 @@ public class BirthdayCronJobTests : JobTest<BirthdayCronJob>
         var context = new ApiRequestContext();
         var configuration = TestServices.Configuration.Value;
         var action = new GetTodayBirthdayInfo(context, DatabaseBuilder, client, configuration, TestServices.Texts.Value);
-        var provider = TestServices.InitializedProvider.Value;
+        var provider = TestServices.Provider.Value;
         provider.GetRequiredService<InitManager>().Set(true);
 
         return new BirthdayCronJob(configuration, client, action, DatabaseBuilder, provider);

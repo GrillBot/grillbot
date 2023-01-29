@@ -13,7 +13,6 @@ public abstract class ApiActionTest<TAction> : ActionTest<TAction> where TAction
     private ApiConfigurationAttribute ApiConfiguration
         => GetMethod().GetCustomAttribute<ApiConfigurationAttribute>();
 
-    protected override bool CanInitProvider => ApiConfiguration?.CanInitProvider ?? false;
     protected bool IsPublic => ApiConfiguration?.IsPublic ?? false;
 
     private static readonly Lazy<ApiRequestContext> UserApiRequestContext

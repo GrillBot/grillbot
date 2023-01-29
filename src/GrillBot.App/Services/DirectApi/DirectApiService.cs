@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Helpers;
+using GrillBot.App.Infrastructure;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Data.Exceptions;
@@ -10,23 +11,25 @@ namespace GrillBot.App.Services.DirectApi;
 public class DirectApiService : IDirectApiService
 {
     private IConfiguration Configuration { get; }
-    private DiscordSocketClient DiscordClient { get; }
+    private IDiscordClient DiscordClient { get; }
+    private DownloadHelper DownloadHelper { get; }
 
     private List<ulong> AuthorizedServices { get; }
 
-    public DirectApiService(DiscordSocketClient client, IConfiguration configuration)
+    public DirectApiService(IDiscordClient client, IConfiguration configuration, DownloadHelper downloadHelper)
     {
         Configuration = configuration.GetRequiredSection("Services");
         DiscordClient = client;
+        DownloadHelper = downloadHelper;
 
         AuthorizedServices = Configuration.AsEnumerable()
             .Where(o => o.Key.EndsWith(":Id"))
-            .Select(o => o.Value.ToUlong())
+            .Select(o => o.Value?.ToUlong() ?? 0)
             .Distinct()
             .ToList();
     }
 
-    public async Task<string> SendCommandAsync(string service, DirectMessageCommand command)
+    public async Task<string?> SendCommandAsync(string service, DirectMessageCommand command)
     {
         var configuration = Configuration.GetRequiredSection(service);
 
@@ -45,13 +48,13 @@ public class DirectApiService : IDirectApiService
         return await apiChannel.SendMessageAsync($"```json\n{json}\n```");
     }
 
-    private async Task<string> GetResponseAsync(IConfiguration configuration, IUserMessage request)
+    private async Task<string?> GetResponseAsync(IConfiguration configuration, IUserMessage request)
     {
         var timeout = configuration.GetValue<int>("Timeout");
         var checks = configuration.GetValue<int>("Checks");
         var delay = Convert.ToInt32(timeout / checks);
 
-        IMessage message = null;
+        IMessage? message = null;
         for (var i = 0; i < checks; i++)
         {
             await Task.Delay(delay);
@@ -65,11 +68,11 @@ public class DirectApiService : IDirectApiService
         }
 
         if (message == null) return null;
-        var attachment = await message.Attachments.First().DownloadAsync();
+        var attachment = await DownloadHelper.DownloadAsync(message.Attachments.First());
         return attachment == null ? null : Encoding.UTF8.GetString(attachment);
     }
 
-    private bool IsValidResponse(IMessage response, IUserMessage request)
+    private bool IsValidResponse(IMessage? response, IUserMessage request)
     {
         return response != null && !response.Author.IsUser() && AuthorizedServices.Contains(response.Author.Id) && response.Reference is { MessageId.IsSpecified: true } &&
                response.Attachments.Count == 1 && response.Reference.MessageId.Value == request.Id;

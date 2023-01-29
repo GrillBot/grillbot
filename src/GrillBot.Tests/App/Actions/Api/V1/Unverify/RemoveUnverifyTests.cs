@@ -43,9 +43,8 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
         var texts = TestServices.Texts.Value;
         var discordClient = TestServices.DiscordSocketClient.Value;
         var unverifyLogger = new UnverifyLogManager(client, DatabaseBuilder);
-        var commandService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
-        var loggingManager = new LoggingManager(discordClient, commandService, interactions, ServiceProvider);
+        var loggingManager = new LoggingManager(discordClient, interactions, TestServices.Provider.Value);
         var messageGenerator = new UnverifyMessageManager(texts);
         var unverifyHelper = new UnverifyHelper(DatabaseBuilder);
 
@@ -142,7 +141,6 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     }
 
     [TestMethod]
-    [ApiConfiguration(canInitProvider: true)]
     public async Task ProcessAsync_FailedReconstruction()
     {
         await InitDataAsync(true, false, true);

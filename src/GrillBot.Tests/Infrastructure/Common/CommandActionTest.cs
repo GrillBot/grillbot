@@ -15,8 +15,6 @@ public abstract class CommandActionTest<TAction> : ActionTest<TAction> where TAc
     protected virtual IDiscordClient Client { get; }
     protected IInteractionContext Context { get; private set; }
 
-    protected override bool CanInitProvider => false;
-
     protected override void Init()
     {
         Context = new InteractionContextBuilder().SetGuild(Guild).SetUser(User).SetInteraction(Interaction).SetChannel(Channel).SetClient(Client).Build();

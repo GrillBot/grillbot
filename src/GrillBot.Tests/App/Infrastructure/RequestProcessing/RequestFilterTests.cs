@@ -16,10 +16,8 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
     private ApiRequest ApiRequest { get; set; }
     private ApiRequestContext ApiRequestContext { get; set; }
 
-    protected override bool CanInitProvider() => false;
-
-    protected override Controller CreateController(IServiceProvider provider)
-        => new AuthController(null);
+    protected override Controller CreateController()
+        => new AuthController(null!);
 
     protected override RequestFilter CreateFilter()
     {

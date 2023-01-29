@@ -1,5 +1,4 @@
-﻿using Discord.Commands;
-using GrillBot.Cache.Services.Managers.MessageCache;
+﻿using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Helpers;
 using GrillBot.Data.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,15 +7,11 @@ namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
 public class MessageConverter : ConverterBase<IMessage>
 {
-    public MessageConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
-    {
-    }
-
     public MessageConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
     {
     }
 
-    public override async Task<IMessage> ConvertAsync(string value)
+    public override async Task<IMessage?> ConvertAsync(string value)
     {
         var messageCache = ServiceProvider.GetRequiredService<IMessageCacheManager>();
         if (ulong.TryParse(value, out var messageId))

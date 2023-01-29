@@ -11,7 +11,7 @@ public class UsersConverter : ConverterBase<IEnumerable<IUser>>
         UserConverter = new UserConverter(provider, context);
     }
 
-    public override async Task<IEnumerable<IUser>> ConvertAsync(string value)
+    public override async Task<IEnumerable<IUser>?> ConvertAsync(string value)
     {
         var result = new List<IUser>();
 

@@ -18,12 +18,11 @@ public class UnverifyCronJobTests : JobTest<UnverifyCronJob>
         var texts = TestServices.Texts.Value;
         var messageGenerator = new UnverifyMessageManager(texts);
         var logger = new UnverifyLogManager(client, DatabaseBuilder);
-        var commandService = DiscordHelper.CreateCommandsService();
         var discordClient = TestServices.DiscordSocketClient.Value;
         var interaction = DiscordHelper.CreateInteractionService(discordClient);
-        var provider = TestServices.InitializedProvider.Value;
+        var provider = TestServices.Provider.Value;
         provider.GetRequiredService<InitManager>().Set(true);
-        var logging = new LoggingManager(discordClient, commandService, interaction, provider);
+        var logging = new LoggingManager(discordClient, interaction, provider);
         var unverifyHelper = new UnverifyHelper(DatabaseBuilder);
         var removeUnverify = new RemoveUnverify(new ApiRequestContext(), client, texts, DatabaseBuilder, messageGenerator, logger, logging, unverifyHelper);
         return new UnverifyCronJob(provider, removeUnverify, DatabaseBuilder);

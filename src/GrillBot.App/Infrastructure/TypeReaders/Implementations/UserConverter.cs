@@ -1,15 +1,10 @@
-﻿using Discord.Commands;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
 public partial class UserConverter : ConverterBase<IUser?>
 {
-    public UserConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
-    {
-    }
-
     public UserConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
     {
     }

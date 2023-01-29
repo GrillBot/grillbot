@@ -219,8 +219,7 @@ public static class ActionsExtensions
             .AddScoped<Commands.RolesReader>()
             .AddScoped<Commands.UserInfo>()
             .AddScoped<Commands.UserAccessList>()
-            .AddScoped<Commands.GetChannelboard>()
-            .AddScoped<Commands.UnsuccessCommandAttempt>();
+            .AddScoped<Commands.GetChannelboard>();
 
         return services;
     }

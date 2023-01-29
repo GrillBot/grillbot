@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,20 +8,17 @@ namespace GrillBot.Common.Managers.Logging;
 public class LoggingManager
 {
     private DiscordSocketClient DiscordClient { get; }
-    private CommandService CommandService { get; }
     private InteractionService InteractionService { get; }
     private IServiceProvider ServiceProvider { get; }
 
-    public LoggingManager(DiscordSocketClient discordClient, CommandService commandService, InteractionService interactionService, IServiceProvider serviceProvider)
+    public LoggingManager(DiscordSocketClient discordClient, InteractionService interactionService, IServiceProvider serviceProvider)
     {
         DiscordClient = discordClient;
         ServiceProvider = serviceProvider;
-        CommandService = commandService;
         InteractionService = interactionService;
 
         DiscordClient.Log += OnLogAsync;
         InteractionService.Log += OnLogAsync;
-        CommandService.Log += OnLogAsync;
     }
 
     private async Task OnLogAsync(LogMessage message)

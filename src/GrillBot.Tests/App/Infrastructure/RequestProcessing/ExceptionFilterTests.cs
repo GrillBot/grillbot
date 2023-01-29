@@ -17,11 +17,10 @@ public class ExceptionFilterTests : ServiceTest<ExceptionFilter>
     protected override ExceptionFilter CreateService()
     {
         var discordClient = TestServices.DiscordSocketClient.Value;
-        var commandService = DiscordHelper.CreateCommandsService();
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
         var apiRequest = new ApiRequest();
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
-        var loggingManager = new LoggingManager(discordClient, commandService, interactions, TestServices.EmptyProvider.Value);
+        var loggingManager = new LoggingManager(discordClient, interactions, TestServices.Provider.Value);
 
         return new ExceptionFilter(apiRequest, auditLogWriter, new ApiRequestContext(), loggingManager);
     }

@@ -1,19 +1,14 @@
-﻿using Discord.Commands;
-using Discord.Net;
+﻿using Discord.Net;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 
 public class EmotesConverter : ConverterBase<IEmote>
 {
-    public EmotesConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
-    {
-    }
-
     public EmotesConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
     {
     }
 
-    public override async Task<IEmote> ConvertAsync(string value)
+    public override async Task<IEmote?> ConvertAsync(string value)
     {
         if (NeoSmart.Unicode.Emoji.IsEmoji(value)) return new Emoji(value);
         if (Emote.TryParse(value, out var emote)) return emote;

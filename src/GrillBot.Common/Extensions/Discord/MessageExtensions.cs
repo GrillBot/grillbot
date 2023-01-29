@@ -5,22 +5,24 @@ namespace GrillBot.Common.Extensions.Discord;
 
 public static class MessageExtensions
 {
+    private const string MessagePrefix = "$";
+    
     public static bool IsInteractionCommand(this IMessage message)
         => message.Type is MessageType.ApplicationCommand or MessageType.ContextMenuCommand;
 
-    public static bool IsCommand(this IMessage message, IUser user, string prefix)
+    public static bool IsCommand(this IMessage message, IUser user)
     {
         var argPos = 0;
-        return IsCommand(message, ref argPos, user, prefix);
+        return IsCommand(message, ref argPos, user);
     }
 
-    public static bool IsCommand(this IMessage message, ref int argumentPosition, IUser user, string prefix)
+    public static bool IsCommand(this IMessage message, ref int argumentPosition, IUser user)
     {
         var isInteractionCommand = message.IsInteractionCommand();
         if (isInteractionCommand) return true;
 
-        if (message is not IUserMessage msg || message.Content.Length < prefix.Length) return false;
-        return msg.HasMentionPrefix(user, ref argumentPosition) || msg.HasStringPrefix(prefix, ref argumentPosition);
+        if (message is not IUserMessage msg || message.Content.Length < MessagePrefix.Length) return false;
+        return msg.HasMentionPrefix(user, ref argumentPosition) || msg.HasStringPrefix(MessagePrefix, ref argumentPosition);
     }
 
     public static bool TryLoadMessage(this IMessage message, out IUserMessage? userMessage)
@@ -46,26 +48,5 @@ public static class MessageExtensions
             query = query.Where(e => supportedEmotes.Any(x => x.IsEqual(e))); // Only supported emotes.
 
         return query;
-    }
-
-    public static async Task<byte[]?> DownloadAsync(this IAttachment attachment)
-    {
-        using var httpClient = new HttpClient();
-
-        try
-        {
-            return await httpClient.GetByteArrayAsync(attachment.Url);
-        }
-        catch (HttpRequestException)
-        {
-            try
-            {
-                return await httpClient.GetByteArrayAsync(attachment.ProxyUrl);
-            }
-            catch (HttpRequestException)
-            {
-                return null;
-            }
-        }
     }
 }

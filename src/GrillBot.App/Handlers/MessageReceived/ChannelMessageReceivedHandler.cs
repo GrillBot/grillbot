@@ -6,40 +6,40 @@ namespace GrillBot.App.Handlers.MessageReceived;
 public class ChannelMessageReceivedHandler : IMessageReceivedEvent
 {
     private IDiscordClient DiscordClient { get; }
-    private IConfiguration Configuration { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public ChannelMessageReceivedHandler(IDiscordClient discordClient, IConfiguration configuration, GrillBotDatabaseBuilder databaseBuilder)
+    private ITextChannel? Channel { get; set; }
+    private IGuildUser? Author { get; set; }
+
+    public ChannelMessageReceivedHandler(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder)
     {
         DiscordClient = discordClient;
-        Configuration = configuration;
         DatabaseBuilder = databaseBuilder;
     }
 
     public async Task ProcessAsync(IMessage message)
     {
-        if (!Init(message, out var textChannel, out var author)) return;
+        if (!Init(message)) return;
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await repository.Guild.GetOrCreateGuildAsync(textChannel.Guild);
-        await repository.User.GetOrCreateUserAsync(author);
-        await repository.GuildUser.GetOrCreateGuildUserAsync(author);
-        await repository.Channel.GetOrCreateChannelAsync(textChannel);
+        await repository.Guild.GetOrCreateGuildAsync(Channel!.Guild);
+        await repository.User.GetOrCreateUserAsync(Author!);
+        await repository.GuildUser.GetOrCreateGuildUserAsync(Author!);
+        await repository.Channel.GetOrCreateChannelAsync(Channel);
 
-        var userChannel = await repository.Channel.GetOrCreateUserChannelAsync(textChannel, author);
+        var userChannel = await repository.Channel.GetOrCreateUserChannelAsync(Channel, Author!);
 
         userChannel.Count++;
         userChannel.LastMessageAt = DateTime.Now;
         await repository.CommitAsync();
     }
 
-    private bool Init(IMessage message, out ITextChannel textChannel, out IGuildUser author)
+    private bool Init(IMessage message)
     {
-        textChannel = message.Channel as ITextChannel;
-        author = message.Author as IGuildUser;
+        Channel = message.Channel as ITextChannel;
+        Author = message.Author as IGuildUser;
 
-        var commandPrefix = Configuration.GetValue<string>("Discord:Commands:Prefix");
-        return !message.IsCommand(DiscordClient.CurrentUser, commandPrefix) && textChannel != null && author != null;
+        return !message.IsCommand(DiscordClient.CurrentUser) && Channel != null && Author != null;
     }
 }

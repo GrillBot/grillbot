@@ -41,7 +41,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
         TemporaryFile = new TemporaryFile("png");
         File.WriteAllBytes(TemporaryFile.Path, new byte[] { 1, 2, 3 });
 
-        return new DiscordExceptionHandler(client, Configuration, TestServices.InitializedProvider.Value);
+        return new DiscordExceptionHandler(client, Configuration, TestServices.Provider.Value);
     }
 
     public override void Cleanup()

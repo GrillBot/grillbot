@@ -19,7 +19,7 @@ public class PointsJobTests : JobTest<PointsJob>
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { userBuilder.Build() }).Build();
         GuildUser = userBuilder.SetGuild(Guild).Build();
 
-        return new PointsJob(DatabaseBuilder, TestServices.InitializedProvider.Value);
+        return new PointsJob(DatabaseBuilder, TestServices.Provider.Value);
     }
 
     private async Task InitTransactionsAsync()

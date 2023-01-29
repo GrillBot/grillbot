@@ -1,10 +1,10 @@
 ﻿namespace GrillBot.Tests.Infrastructure.Common.Attributes;
 
-public class ApiConfigurationAttribute : TestConfigurationAttribute
+public class ApiConfigurationAttribute : Attribute
 {
     public bool IsPublic { get; }
 
-    public ApiConfigurationAttribute(bool isPublic = false, bool canInitProvider = false) : base(canInitProvider)
+    public ApiConfigurationAttribute(bool isPublic = false)
     {
         IsPublic = isPublic;
     }

@@ -1,5 +1,4 @@
-﻿using Discord.Commands;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using GrillBot.Common.Extensions;
 using RE = System.Text.RegularExpressions;
 
@@ -8,10 +7,6 @@ namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 public class DateTimeConverter : ConverterBase<DateTime>
 {
     private const RegexOptions RegexOptions = RE.RegexOptions.IgnoreCase | RE.RegexOptions.Multiline | RE.RegexOptions.CultureInvariant | RE.RegexOptions.IgnorePatternWhitespace;
-
-    public DateTimeConverter(IServiceProvider provider, ICommandContext context) : base(provider, context)
-    {
-    }
 
     public DateTimeConverter(IServiceProvider provider, IInteractionContext context) : base(provider, context)
     {

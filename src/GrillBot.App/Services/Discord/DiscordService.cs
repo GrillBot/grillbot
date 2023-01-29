@@ -1,5 +1,4 @@
-﻿using Discord.Commands;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.TypeReaders;
 using GrillBot.Data.Models.AuditLog;
@@ -21,24 +20,21 @@ public class DiscordService : IHostedService
     private DiscordSocketClient DiscordSocketClient { get; }
     private IConfiguration Configuration { get; }
     private IServiceProvider Provider { get; }
-    private CommandService CommandService { get; }
     private IWebHostEnvironment Environment { get; }
     private InteractionService InteractionService { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, CommandService commandService,
-        IWebHostEnvironment webHostEnvironment, InteractionService interactionService, AuditLogWriteManager auditLogWriteManager)
+    public DiscordService(DiscordSocketClient client, IConfiguration configuration, IServiceProvider provider, IWebHostEnvironment webHostEnvironment, InteractionService interactionService,
+        AuditLogWriteManager auditLogWriteManager)
     {
         DiscordSocketClient = client;
         Configuration = configuration;
         Provider = provider;
-        CommandService = commandService;
         Environment = webHostEnvironment;
         InteractionService = interactionService;
         AuditLogWriteManager = auditLogWriteManager;
 
         DiscordSocketClient.Log += OnLogAsync;
-        CommandService.Log += OnLogAsync;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -46,13 +42,10 @@ public class DiscordService : IHostedService
         InitServices();
 
         var token = Configuration.GetValue<string>("Discord:Token");
-        CommandService.RegisterTypeReaders();
         InteractionService.RegisterTypeConverters();
 
         var assembly = Assembly.GetEntryAssembly();
-        await CommandService.AddModulesAsync(assembly, Provider);
         await InteractionService.AddModulesAsync(assembly, Provider);
-
         await DiscordSocketClient.LoginAsync(TokenType.Bot, token);
         await DiscordSocketClient.StartAsync();
     }

@@ -23,9 +23,8 @@ public class GetDashboardTests : ApiActionTest<GetDashboard>
         var initManager = new InitManager(TestServices.LoggerFactory.Value);
         initManager.Set(true);
         var discordClient = new DiscordSocketClient();
-        var commandService = DiscordHelper.CreateCommandsService();
         var interactionService = DiscordHelper.CreateInteractionService(discordClient);
-        var logging = new LoggingManager(discordClient, commandService, interactionService, TestServices.EmptyProvider.Value);
+        var logging = new LoggingManager(discordClient, interactionService, TestServices.Provider.Value);
 
         return new GetDashboard(ApiRequestContext, TestServices.TestingEnvironment.Value, client, initManager, TestServices.CounterManager.Value,
             DatabaseBuilder, logging, TestServices.Graphics.Value);

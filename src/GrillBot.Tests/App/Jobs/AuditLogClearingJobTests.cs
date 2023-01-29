@@ -12,7 +12,7 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         var configuration = TestServices.Configuration.Value;
         var fileStorage = new FileStorageMock(configuration);
 
-        return new AuditLogClearingJob(DatabaseBuilder, TestServices.InitializedProvider.Value, fileStorage);
+        return new AuditLogClearingJob(DatabaseBuilder, TestServices.Provider.Value, fileStorage);
     }
 
     [TestMethod]

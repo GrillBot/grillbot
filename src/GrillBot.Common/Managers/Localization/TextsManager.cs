@@ -91,8 +91,11 @@ public class TextsManager : ITextsManager
     public static bool IsSupportedLocale(string locale)
         => SupportedLocales.Contains(FixLocale(locale));
 
-    public static string FixLocale(string locale)
+    public static string FixLocale(string? locale)
     {
+        if (string.IsNullOrEmpty(locale))
+            locale = DefaultLocale;
+
         return locale switch
         {
             "cs-CZ" => "cs",

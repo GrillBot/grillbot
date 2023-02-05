@@ -40,6 +40,9 @@ public class User
     public UserStatus Status { get; set; }
 
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
+    
+    [StringLength(50)]
+    public string? Language { get; set; }
 
     public ISet<GuildUser> Guilds { get; set; }
     public ISet<RemindMessage> IncomingReminders { get; set; }

@@ -1,9 +1,5 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Data.Models.API.AuditLog.Filters;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Helpers;
 
@@ -28,17 +24,8 @@ public class UnverifyHelper
     {
         if (selfunverify) return commandLanguage;
 
-        var parameters = new AuditLogListParams
-        {
-            Sort = { Descending = true, OrderBy = "CreatedBy" },
-            Types = new List<AuditLogItemType> { AuditLogItemType.InteractionCommand },
-            GuildId = user.GuildId.ToString(),
-            ProcessedUserIds = new List<string> { user.Id.ToString() }
-        };
-
         await using var repository = DatabaseBuilder.CreateRepository();
-
-        var logs = await repository.AuditLog.GetSimpleDataAsync(parameters, 1);
-        return logs.Count == 0 ? TextsManager.DefaultLocale : JsonConvert.DeserializeObject<InteractionCommandExecuted>(logs[0].Data, AuditLogWriteManager.SerializerSettings)!.Locale;
+        var userEntity = await repository.User.FindUserAsync(user, true);
+        return userEntity?.Language ?? TextsManager.DefaultLocale;
     }
 }

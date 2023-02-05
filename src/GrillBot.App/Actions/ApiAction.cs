@@ -30,7 +30,7 @@ public abstract class ApiAction
     /// </summary>
     public void UpdateContext(string language, IUser loggedUser)
     {
-        ApiContext.Language = TextsManager.FixLocale(language ?? "");
+        ApiContext.Language = TextsManager.FixLocale(language);
         ApiContext.LoggedUser = loggedUser;
         IsApiRequest = false;
     }

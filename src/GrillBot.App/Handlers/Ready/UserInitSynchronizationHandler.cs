@@ -1,6 +1,8 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Handlers.Ready;
 
@@ -31,6 +33,7 @@ public class UserInitSynchronizationHandler : IReadyEvent
         foreach (var guild in guilds)
         {
             var members = (await guild.GetUsersAsync()).ToDictionary(o => o.Id, o => o);
+            var locales = await FindUserLocalesAsync(repository, guild);
 
             foreach (var user in users.Where(o => o.GuildId == guild.Id.ToString()))
             {
@@ -39,10 +42,31 @@ public class UserInitSynchronizationHandler : IReadyEvent
                     continue;
 
                 user.Update(guildUser);
+                if (string.IsNullOrEmpty(user.User.Language))
+                    user.User.Language = locales.TryGetValue(user.UserId, out var locale) ? locale : null;
             }
         }
 
         await repository.CommitAsync();
+    }
+
+    private static async Task<Dictionary<string, string>> FindUserLocalesAsync(GrillBotRepository repository, IGuild guild)
+    {
+        var parameters = new AuditLogListParams
+        {
+            Sort = { Descending = true, OrderBy = "CreatedAt" },
+            Types = new List<AuditLogItemType> { AuditLogItemType.InteractionCommand },
+            GuildId = guild.Id.ToString(),
+            Pagination = { Page = 0, PageSize = int.MaxValue }
+        };
+
+        var auditLogs = await repository.AuditLog.GetLogListAsync(parameters, parameters.Pagination, null);
+        return auditLogs.Data
+            .Where(o => !string.IsNullOrEmpty(o.ProcessedUserId))
+            .GroupBy(o => o.ProcessedUserId!)
+            .Select(o => new { o.Key, Data = JsonConvert.DeserializeObject<Data.Models.AuditLog.InteractionCommandExecuted>(o.First().Data)! })
+            .Where(o => !string.IsNullOrEmpty(o.Data.Locale))
+            .ToDictionary(o => o.Key, o => o.Data.Locale);
     }
 
     private async Task ProcessBotAdminAsync()

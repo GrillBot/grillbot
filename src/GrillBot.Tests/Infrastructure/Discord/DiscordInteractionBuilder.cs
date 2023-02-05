@@ -21,4 +21,11 @@ public class DiscordInteractionBuilder : BuilderBase<IDiscordInteraction>
         Mock.Setup(o => o.IsDMInteraction).Returns(isDmInteraction);
         return this;
     }
+
+    public DiscordInteractionBuilder SetUserLocale(string locale)
+    {
+        Mock.Setup(o => o.UserLocale).Returns(locale);
+        Mock.Setup(o => o.GuildLocale).Returns(locale);
+        return this;
+    }
 }

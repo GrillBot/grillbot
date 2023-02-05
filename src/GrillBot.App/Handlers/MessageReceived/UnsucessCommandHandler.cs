@@ -1,13 +1,10 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Managers;
 using GrillBot.App.Services.DirectApi;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.Rubbergod;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Handlers.MessageReceived;
 
@@ -108,18 +105,8 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
 
     private async Task<string> GetLastUserLocaleAsync(IUser user)
     {
-        var filter = new AuditLogListParams
-        {
-            Sort = { Descending = true, OrderBy = "CreatedAt" },
-            Types = new List<AuditLogItemType> { AuditLogItemType.InteractionCommand },
-            ProcessedUserIds = new List<string> { user.Id.ToString() }
-        };
-
         await using var repository = DatabaseBuilder.CreateRepository();
-        var data = await repository.AuditLog.GetSimpleDataAsync(filter, 1);
-        if (data.Count == 0) return "cs";
-
-        var logItem = JsonConvert.DeserializeObject<Data.Models.AuditLog.InteractionCommandExecuted>(data[0].Data, AuditLogWriteManager.SerializerSettings)!;
-        return TextsManager.FixLocale(logItem.Locale);
+        var userEntity = await repository.User.FindUserAsync(user, true);
+        return userEntity?.Language ?? TextsManager.DefaultLocale;
     }
 }

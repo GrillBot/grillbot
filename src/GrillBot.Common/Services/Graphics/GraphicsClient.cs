@@ -45,7 +45,7 @@ public class GraphicsClient : RestServiceBase, IGraphicsClient
                 var json = JObject.Parse(await response.Content.ReadAsStringAsync());
                 return new Metrics
                 {
-                    Uptime = (long)Math.Ceiling(json["uptime"]!.Value<double>() * 1000),
+                    Uptime = (long)System.Math.Ceiling(json["uptime"]!.Value<double>() * 1000),
                     UsedMemory = json["mem"]!["rss"]!.Value<long>()
                 };
             }

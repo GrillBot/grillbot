@@ -34,6 +34,6 @@ public abstract class RestServiceBase
 
         var content = await response.Content.ReadAsStringAsync();
         var errorMessage = $"API returned status code {response.StatusCode}\n{content}";
-        throw new HttpRequestException(errorMessage, null, response.StatusCode);
+        throw new HttpRequestException(errorMessage, null, response.StatusCode) { Data = { { "ResponseContent", content } } };
     }
 }

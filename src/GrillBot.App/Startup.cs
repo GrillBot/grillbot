@@ -101,7 +101,6 @@ public class Startup
             .AddManagers();
         Helpers.ServiceExtensions.AddHelpers(services);
 
-        services.AddHttpClient(Configuration, "MathJS", "Math");
         services.AddHostedService<DiscordService>();
         services.AddThirdPartyServices(Configuration);
 

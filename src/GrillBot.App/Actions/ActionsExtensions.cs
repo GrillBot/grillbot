@@ -221,6 +221,7 @@ public static class ActionsExtensions
             .AddScoped<Commands.Emojization>()
             .AddScoped<Commands.PurgePins>()
             .AddScoped<Commands.SendMessageToChannel>()
+            .AddScoped<Commands.SolveExpression>()
             .AddScoped<Commands.PermissionsCleaner>()
             .AddScoped<Commands.PermissionsReader>()
             .AddScoped<Commands.RolesReader>()

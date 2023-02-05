@@ -81,6 +81,16 @@ public class GuildBuilder : BuilderBase<IGuild>
         return this;
     }
 
+    public GuildBuilder SetGetCategoriesAction(IEnumerable<ICategoryChannel> categories)
+    {
+        var categoryData = categories.ToList().AsReadOnly();
+
+        Mock.Setup(o => o.GetCategoriesAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(categoryData);
+        foreach (var category in categoryData)
+            Mock.Setup(o => o.GetChannelAsync(It.Is<ulong>(id => id == category.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(category);
+        return this;
+    }
+
     public GuildBuilder SetGetUsersAction(IEnumerable<IGuildUser> users)
     {
         var usersData = users.ToList().AsReadOnly();
@@ -154,6 +164,52 @@ public class GuildBuilder : BuilderBase<IGuild>
         var guildFeatures = ReflectionHelper.CreateWithInternalConstructor<GuildFeatures>(value, Array.Empty<string>());
 
         Mock.Setup(o => o.Features).Returns(guildFeatures);
+        return this;
+    }
+
+    public GuildBuilder SetGetBansAction(IReadOnlyCollection<IBan> bans)
+    {
+        var banList = new List<IReadOnlyCollection<IBan>> { bans }.ToAsyncEnumerable();
+        Mock.Setup(o => o.GetBansAsync(It.IsAny<int>(), It.IsAny<RequestOptions>())).Returns(banList);
+        foreach (var ban in bans)
+        {
+            Mock.Setup(o => o.GetBanAsync(It.Is<IUser>(b => b.Id == ban.User.Id), It.IsAny<RequestOptions>())).ReturnsAsync(ban);
+            Mock.Setup(o => o.GetBanAsync(It.Is<ulong>(id => id == ban.User.Id), It.IsAny<RequestOptions>())).ReturnsAsync(ban);
+        }
+
+        return this;
+    }
+
+    public GuildBuilder SetGetVoiceChannelsAction(IEnumerable<IVoiceChannel> channels)
+    {
+        var channelData = channels.ToList().AsReadOnly();
+        Mock.Setup(o => o.GetVoiceChannelsAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channelData);
+        foreach (var channel in channelData)
+        {
+            Mock.Setup(o => o.GetChannelAsync(It.Is<ulong>(id => id == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channel);
+            Mock.Setup(o => o.GetVoiceChannelAsync(It.Is<ulong>(id => id == channel.Id), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(channel);
+        }
+
+        return this;
+    }
+
+    public GuildBuilder SetOwner(IGuildUser user)
+    {
+        Mock.Setup(o => o.OwnerId).Returns(user.Id);
+        Mock.Setup(o => o.GetOwnerAsync(It.IsAny<CacheMode>(), It.IsAny<RequestOptions>())).ReturnsAsync(user);
+        return this;
+    }
+
+    public GuildBuilder SetDescription(string description)
+    {
+        Mock.Setup(o => o.Description).Returns(description);
+        return this;
+    }
+
+    public GuildBuilder SetBanner(string bannerId, string bannerUrl)
+    {
+        Mock.Setup(o => o.BannerId).Returns(bannerId);
+        Mock.Setup(o => o.BannerUrl).Returns(bannerUrl);
         return this;
     }
 }

@@ -29,6 +29,9 @@ public static class Consts
     public const ulong ForumId = 1006473144682418257;
     public const string ForumName = "GrillBot-Forum-Name";
     public const ulong AuditLogEntryId = 1051929488801419304;
+    public const string GuildDescription = "GuildDescription";
+    public const string BannerId = "ABCD";
+    public const string BannerUrl = "https://banner.discord.com";
 
     public static readonly Emote OnlineEmote = Emote.Parse(OnlineEmoteId);
 }

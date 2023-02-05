@@ -169,6 +169,10 @@ public static class ActionsExtensions
             .AddScoped<Commands.Emotes.EmoteInfo>()
             .AddScoped<Commands.Emotes.GetEmotesList>();
         
+        // Guild
+        services
+            .AddScoped<Commands.Guild.GuildInfo>();
+        
         // EmoteSuggestion
         services
             .AddScoped<Commands.EmoteSuggestion.FormSubmitted>()

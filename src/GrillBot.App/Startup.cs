@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -22,6 +21,7 @@ using Microsoft.AspNetCore.Mvc;
 using GrillBot.Common;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace GrillBot.App;
 
@@ -169,6 +169,8 @@ public class Startup
         services.AddHealthChecks()
             .AddCheck<DiscordHealthCheck>(nameof(DiscordHealthCheck))
             .AddNpgSql(connectionString!);
+
+        services.Configure<ForwardedHeadersOptions>(opt => opt.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -176,9 +178,7 @@ public class Startup
         app.InitDatabase();
         app.InitCache();
 
-        if (env.IsDevelopment())
-            app.UseDeveloperExceptionPage();
-
+        app.UseForwardedHeaders();
         var corsOrigins = Configuration.GetSection("CORS:Origins").AsEnumerable()
             .Select(o => o.Value).Where(o => !string.IsNullOrEmpty(o)).ToArray();
         app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().WithOrigins(corsOrigins!));

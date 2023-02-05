@@ -1,4 +1,5 @@
-﻿using GrillBot.Database.Entity;
+﻿using GrillBot.Data.Models.AuditLog;
+using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -34,6 +35,7 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
         }
 
         await IncrementStatsAsync(apiClient, repository);
+        SetIdentification(context, apiClient);
         await next();
     }
 
@@ -42,7 +44,7 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
         context.Result = new UnauthorizedResult();
     }
 
-    private static string GetApiKey(ActionExecutingContext context)
+    private static string? GetApiKey(ActionExecutingContext context)
     {
         var header = context.HttpContext.Request.Headers.Authorization.FirstOrDefault();
 
@@ -70,5 +72,11 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
         apiClient.UseCount++;
         apiClient.LastUse = DateTime.Now;
         await repository.CommitAsync();
+    }
+
+    private static void SetIdentification(ActionContext context, ApiClient client)
+    {
+        var apiRequest = context.HttpContext.RequestServices.GetRequiredService<ApiRequest>();
+        apiRequest.UserIdentification = $"PublicApiV2({client.Name})";
     }
 }

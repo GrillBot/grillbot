@@ -67,6 +67,7 @@ public class RequestFilter : IAsyncActionFilter
 
         var loggedUserId = ApiRequestContext.GetUserId();
         ApiRequestContext.LoggedUser = await DiscordClient.FindUserAsync(loggedUserId);
+        ApiRequest.UserIdentification = $"ApiV1({(ApiRequestContext.IsPublic() ? "Public" : "Private")}/{ApiRequestContext.LoggedUser!.GetFullName()})";
     }
 
     private void SetApiRequest(ActionContext context)
@@ -79,8 +80,16 @@ public class RequestFilter : IAsyncActionFilter
         ApiRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
         ApiRequest.Method = context.HttpContext.Request.Method;
         ApiRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
+        ApiRequest.IpAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString();
 
         foreach (var item in context.HttpContext.Request.Query)
             ApiRequest.AddParameter(item.Key, item.Value.ToString());
+        foreach (var (name, values) in context.HttpContext.Request.Headers)
+        {
+            if (name is "Authorization" or "ApiKey")
+                ApiRequest.AddHeader(name, $"<{name} header removed>");
+            else
+                ApiRequest.AddHeader(name, values);
+        }
     }
 }

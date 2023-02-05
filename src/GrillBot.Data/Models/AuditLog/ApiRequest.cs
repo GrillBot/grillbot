@@ -4,10 +4,11 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using GrillBot.Common.Infrastructure;
+using Microsoft.Extensions.Primitives;
 
 namespace GrillBot.Data.Models.AuditLog;
 
-public class ApiRequest
+public partial class ApiRequest
 {
     public string ControllerName { get; set; }
     public string ActionName { get; set; }
@@ -21,11 +22,15 @@ public class ApiRequest
     public Dictionary<string, string> Parameters { get; set; } = new();
     public string Language { get; set; }
     public string ApiGroupName { get; set; }
+    public Dictionary<string, string> Headers { get; set; } = new();
+    public string UserIdentification { get; set; }
+    public string IpAddress { get; set; }
 
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)
     {
         if (Parameters?.Count == 0) Parameters = null;
+        if (Headers?.Count == 0) Headers = null;
     }
 
     public void AddParameters(IApiObject apiObject, int index = -1)
@@ -49,12 +54,20 @@ public class ApiRequest
         Parameters[id] = value;
     }
 
+    public void AddHeader(string id, StringValues values)
+    {
+        if (string.IsNullOrEmpty(id)) return;
+
+        foreach (var value in values.ToArray())
+            Headers[id] = value;
+    }
+
     public string GetStatusCode()
     {
         if (string.IsNullOrEmpty(StatusCode)) return null;
 
         // Valid format of status code.
-        if (Regex.IsMatch(StatusCode, @"\d+\s+\([^\)]+\)"))
+        if (StatusCodeRegex().IsMatch(StatusCode))
             return StatusCode;
 
         // Reformat status code to valid format.
@@ -66,4 +79,7 @@ public class ApiRequest
     {
         return string.IsNullOrEmpty(StatusCode) || StartAt == DateTime.MinValue || string.IsNullOrEmpty(Method) || string.IsNullOrEmpty(TemplatePath);
     }
+
+    [GeneratedRegex("\\d+\\s+\\([^\\)]+\\)")]
+    private static partial Regex StatusCodeRegex();
 }

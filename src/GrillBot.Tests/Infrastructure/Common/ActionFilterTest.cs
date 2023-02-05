@@ -29,10 +29,10 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
     protected abstract TFilter CreateFilter();
     protected abstract Controller CreateController();
 
-    private static HttpRequest CreateHttpRequest(IHeaderDictionary headers = null)
+    private static HttpRequest CreateHttpRequest(IHeaderDictionary? headers = null)
     {
         var request = new Mock<HttpRequest>();
-        request.Setup(o => o.Headers).Returns(headers);
+        request.Setup(o => o.Headers).Returns(headers ?? new HeaderDictionary());
         request.Setup(o => o.Path).Returns("/api");
         request.Setup(o => o.Method).Returns("GET");
         request.Setup(o => o.Query).Returns(new QueryCollection(new Dictionary<string, StringValues> { { "X", "Y" } }));
@@ -50,13 +50,14 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
         return response.Object;
     }
 
-    private HttpContext CreateHttpContext(IHeaderDictionary headers = null, int statusCode = 0)
+    private static HttpContext CreateHttpContext(IHeaderDictionary? headers = null, int statusCode = 0)
     {
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(o => o.Request).Returns(CreateHttpRequest(headers));
         httpContext.Setup(o => o.RequestServices).Returns(TestServices.Provider.Value);
         httpContext.Setup(o => o.User).Returns(new ClaimsPrincipal());
         httpContext.Setup(o => o.Response).Returns(CreateHttpResponse(statusCode));
+        httpContext.Setup(o => o.Connection).Returns(new Mock<ConnectionInfo>().Object);
 
         return httpContext.Object;
     }
@@ -64,7 +65,7 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
     private ActionContext CreateActionContext(IHeaderDictionary headers = null, int statusCode = 0, ModelStateDictionary modelState = null)
     {
         modelState = modelState == null ? new ModelStateDictionary() : new ModelStateDictionary(modelState);
-        return new ActionContext(CreateHttpContext(headers, statusCode), new RouteData(), new ActionDescriptor(), modelState);
+        return new ActionContext(ActionFilterTest<TFilter>.CreateHttpContext(headers, statusCode), new RouteData(), new ActionDescriptor(), modelState);
     }
 
     protected ActionExecutingContext CreateContext(string methodName, IHeaderDictionary headers = null, bool noControllerDescriptor = false, ModelStateDictionary modelState = null)

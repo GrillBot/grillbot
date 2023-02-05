@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
@@ -11,6 +12,7 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("remind", "A reminder for a specific date")]
 [RequireUserPerms]
+[ExcludeFromCodeCoverage]
 public class RemindModule : InteractionsModuleBase
 {
     public RemindModule(IServiceProvider serviceProvider) : base(serviceProvider)

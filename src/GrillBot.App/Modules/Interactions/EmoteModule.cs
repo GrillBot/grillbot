@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Emotes;
@@ -7,6 +8,7 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("emote", "Managing emotes")]
 [RequireUserPerms]
+[ExcludeFromCodeCoverage]
 public class EmoteModule : InteractionsModuleBase
 {
     public EmoteModule(IServiceProvider serviceProvider) : base(serviceProvider)

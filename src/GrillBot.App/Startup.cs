@@ -102,7 +102,6 @@ public class Startup
         Helpers.ServiceExtensions.AddHelpers(services);
 
         services.AddHttpClient(Configuration, "MathJS", "Math");
-        services.AddHttpClient(Configuration, "KachnaOnline", "KachnaOnline");
         services.AddHostedService<DiscordService>();
         services.AddThirdPartyServices(Configuration);
 

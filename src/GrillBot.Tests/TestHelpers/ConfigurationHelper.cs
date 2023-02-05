@@ -37,6 +37,7 @@ public static class ConfigurationHelper
                 { "Unverify:CheckPeriodTime", "00:00:00" },
                 { "OnlineUsersCheckPeriodTime", "00:00:00" },
                 { "SuggestionsCleaningInterval", "00:00:00" },
+                { "Services:KachnaOnline:InfoChannel", "InfoChannel" }
             });
 
         if (externalConfiguration != null)

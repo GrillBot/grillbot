@@ -211,9 +211,10 @@ public static class ActionsExtensions
         services
             .AddScoped<Commands.BotInfo>()
             .AddScoped<Commands.ChannelInfo>()
+            .AddScoped<Commands.CleanChannelMessages>()
+            .AddScoped<Commands.DuckInfo>()
             .AddScoped<Commands.Mock>()
             .AddScoped<Commands.Emojization>()
-            .AddScoped<Commands.CleanChannelMessages>()
             .AddScoped<Commands.PurgePins>()
             .AddScoped<Commands.SendMessageToChannel>()
             .AddScoped<Commands.PermissionsCleaner>()

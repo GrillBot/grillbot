@@ -7,18 +7,12 @@ using Newtonsoft.Json.Linq;
 
 namespace GrillBot.Common.Services.Graphics;
 
-public class GraphicsClient : IGraphicsClient
+public class GraphicsClient : RestServiceBase, IGraphicsClient
 {
-    public string Url => HttpClient.BaseAddress!.ToString();
-    public int Timeout => Convert.ToInt32(HttpClient.Timeout.TotalMilliseconds);
+    protected override string ServiceName => "Graphics";
 
-    private HttpClient HttpClient { get; }
-    private CounterManager CounterManager { get; }
-
-    public GraphicsClient(IHttpClientFactory httpClientFactory, CounterManager counterManager)
+    public GraphicsClient(IHttpClientFactory httpClientFactory, CounterManager counterManager) : base(counterManager, () => httpClientFactory.CreateClient("Graphics"))
     {
-        HttpClient = httpClientFactory.CreateClient("Graphics");
-        CounterManager = counterManager;
     }
 
     public async Task<bool> IsAvailableAsync()
@@ -36,74 +30,49 @@ public class GraphicsClient : IGraphicsClient
 
     public async Task<byte[]> CreateChartAsync(ChartRequestData request)
     {
-        using (CounterManager.Create("Service.Graphics"))
-        {
-            using var response = await HttpClient.PostAsJsonAsync("chart", request);
-            if (response.IsSuccessStatusCode)
-                return await response.Content.ReadAsByteArrayAsync();
-            throw await HandleInvalidRequestAsync(response);
-        }
+        return await ProcessRequestAsync(
+            () => HttpClient.PostAsJsonAsync("chart", request),
+            response => response.Content.ReadAsByteArrayAsync()
+        );
     }
 
     public async Task<Metrics> GetMetricsAsync()
     {
-        using (CounterManager.Create("Service.Graphics"))
-        {
-            using var response = await HttpClient.GetAsync("metrics");
-            if (!response.IsSuccessStatusCode)
-                throw await HandleInvalidRequestAsync(response);
-
-            var data = await response.Content.ReadAsStringAsync();
-            var jsonData = JObject.Parse(data);
-            return new Metrics
+        return await ProcessRequestAsync(
+            () => HttpClient.GetAsync("metrics"),
+            async response =>
             {
-                Uptime = (long)Math.Ceiling(jsonData["uptime"]!.Value<double>() * 1000),
-                UsedMemory = jsonData["mem"]!["rss"]!.Value<long>()
-            };
-        }
+                var json = JObject.Parse(await response.Content.ReadAsStringAsync());
+                return new Metrics
+                {
+                    Uptime = (long)Math.Ceiling(json["uptime"]!.Value<double>() * 1000),
+                    UsedMemory = json["mem"]!["rss"]!.Value<long>()
+                };
+            }
+        );
     }
 
     public async Task<string> GetVersionAsync()
     {
-        using (CounterManager.Create("Service.Graphics"))
-        {
-            using var response = await HttpClient.GetAsync("info");
-            if (!response.IsSuccessStatusCode)
-                throw await HandleInvalidRequestAsync(response);
-
-            var data = await response.Content.ReadAsStringAsync();
-            return JObject.Parse(data)["build"]!["version"]!.Value<string>()!;
-        }
+        return await ProcessRequestAsync(
+            () => HttpClient.GetAsync("info"),
+            async response => JObject.Parse(await response.Content.ReadAsStringAsync())["build"]!["version"]!.Value<string>()!
+        );
     }
 
     public async Task<Stats> GetStatisticsAsync()
     {
-        using (CounterManager.Create("Service.Graphics"))
-        {
-            using var response = await HttpClient.GetAsync("stats");
-            if (!response.IsSuccessStatusCode)
-                throw await HandleInvalidRequestAsync(response);
-
-            return (await response.Content.ReadFromJsonAsync<Stats>())!;
-        }
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync("stats"),
+            response => response.Content.ReadFromJsonAsync<Stats>()
+        ))!;
     }
 
     public async Task<byte[]> CreateWithoutAccidentImage(WithoutAccidentRequestData request)
     {
-        using (CounterManager.Create("Service.Graphics"))
-        {
-            using var response = await HttpClient.PostAsJsonAsync("image/without-accident", request);
-            if (!response.IsSuccessStatusCode)
-                throw await HandleInvalidRequestAsync(response);
-            return await response.Content.ReadAsByteArrayAsync();
-        }
-    }
-
-    private static async Task<Exception> HandleInvalidRequestAsync(HttpResponseMessage response)
-    {
-        var content = await response.Content.ReadAsStringAsync();
-        var errorMessage = $"API returned status code {response.StatusCode}\n{content}";
-
-        return new HttpRequestException(errorMessage, null, response.StatusCode);
+        return await ProcessRequestAsync(
+            () => HttpClient.PostAsJsonAsync("image/without-accident", request),
+            response => response.Content.ReadAsByteArrayAsync()
+        );
     }
 }

@@ -128,8 +128,6 @@
       "Closed": "Kachna is closed.",
       "NextOpenNotPlanned": "The next opener is not scheduled.",
       "NextOpenAt": "Opening hours start at {0}.",
-      "WhatsNext": "And what else?",
-      "WhatsNextUnknown": "The next opener is not scheduled, but this status is set to end {0}. What will happen then, no one knows.",
       "Opened": "Kachna is open!",
       "Open": "OPEN",
       "TimeToClose": " {0} left to go.",

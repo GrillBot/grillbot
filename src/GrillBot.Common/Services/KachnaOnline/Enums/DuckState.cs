@@ -1,4 +1,4 @@
-﻿namespace GrillBot.Data.Enums;
+﻿namespace GrillBot.Common.Services.KachnaOnline.Enums;
 
 public enum DuckState
 {

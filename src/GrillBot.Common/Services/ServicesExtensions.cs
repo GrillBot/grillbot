@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.KachnaOnline;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,10 @@ public static class ServicesExtensions
         services
             .AddScoped<IGraphicsClient, GraphicsClient>()
             .AddHttpClient(configuration, "Graphics", "Graphics");
+
+        services
+            .AddScoped<IKachnaOnlineClient, KachnaOnlineClient>()
+            .AddHttpClient(configuration, "KachnaOnline", "KachnaOnline");
 
         return services;
     }

@@ -2,8 +2,7 @@
 
 public class Stats
 {
-    public int TotalRequestCount { get; set; }
-    public DailyStats TodayRequests { get; set; } = null!;
-    public int ChartRequestsCount { get; set; }
+    public int RequestsCount { get; set; }
     public DateTime MeasuredFrom { get; set; }
+    public List<RequestStatistics> Endpoints { get; set; } = new();
 }

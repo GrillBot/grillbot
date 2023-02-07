@@ -20,6 +20,7 @@ public class UserDetail
     public string AvatarUrl { get; set; }
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
     public DateTime? RegisteredAt { get; set; }
+    public string? Language { get; set; }
 
     public void RemoveSecretData()
     {

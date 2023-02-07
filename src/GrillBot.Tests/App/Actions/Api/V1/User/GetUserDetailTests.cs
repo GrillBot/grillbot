@@ -17,15 +17,16 @@ namespace GrillBot.Tests.App.Actions.Api.V1.User;
 [TestClass]
 public class GetUserDetailTests : ApiActionTest<GetUserDetail>
 {
-    private IGuildUser User { get; set; }
-    private IGuild Guild { get; set; }
-    private ITextChannel TextChannel { get; set; }
+    private IGuildUser User { get; set; } = null!;
+    private IGuild Guild { get; set; } = null!;
+    private ITextChannel TextChannel { get; set; } = null!;
 
     protected override GetUserDetail CreateAction()
     {
         var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetRoles(new[] { role });
-        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { role.Id }).Build();
+        User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetRoles(new[] { role.Id }).SetActiveDevices(new[] { ClientType.Desktop })
+            .Build();
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
         Guild = guildBuilder.SetGetUsersAction(new[] { User }).SetGetTextChannelsAction(new[] { TextChannel }).Build();
 

@@ -49,9 +49,21 @@ public class GetUserDetail : ApiAction
         if (entity == null)
             throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
 
-        var result = Mapper.Map<UserDetail>(entity);
-
-        result = await UpdateFromDiscordAsync(result, id);
+        var result = new UserDetail
+        {
+            Language = entity.Language,
+            Id = entity.Id,
+            Discriminator = entity.Discriminator,
+            Flags = entity.Flags,
+            Note = entity.Note,
+            HaveBirthday = entity.Birthday != null,
+            Status = entity.Status,
+            Username = entity.Username,
+            SelfUnverifyMinimalTime = entity.SelfUnverifyMinimalTime,
+            RegisteredAt = SnowflakeUtils.FromSnowflake(entity.Id.ToUlong()).LocalDateTime
+        };
+        
+        await AddDiscordDataAsync(result);
         foreach (var guild in entity.Guilds)
             result.Guilds.Add(await CreateGuildDetailAsync(guild, repository));
 
@@ -59,10 +71,14 @@ public class GetUserDetail : ApiAction
         return result;
     }
 
-    private async Task<UserDetail> UpdateFromDiscordAsync(UserDetail detail, ulong id)
+    private async Task AddDiscordDataAsync(UserDetail result)
     {
-        var discordUser = await DiscordClient.FindUserAsync(id);
-        return discordUser == null ? detail : Mapper.Map(discordUser, detail);
+        var user = await DiscordClient.FindUserAsync(result.Id.ToUlong());
+        if (user == null) return;
+
+        result.ActiveClients = user.ActiveClients.Select(o => o.ToString()).ToList();
+        result.AvatarUrl = user.GetUserAvatarUrl();
+        result.IsKnown = true;
     }
 
     private async Task<GuildUserDetail> CreateGuildDetailAsync(Database.Entity.GuildUser guildUserEntity, GrillBotRepository repository)

@@ -2,26 +2,24 @@
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Helpers;
+using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.Graphics.Models.Images;
 using GrillBot.Data.Exceptions;
-using GrillBot.Data.Resources.Misc;
 using ImageMagick;
 
 namespace GrillBot.App.Actions.Commands.Points;
 
-public sealed class PointsImage : CommandAction, IDisposable
+public sealed class PointsImage : CommandAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
-    
-    private MagickImage TrophyImage { get; }
+    private IGraphicsClient GraphicsClient { get; }
 
-    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager)
+    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager, IGraphicsClient graphicsClient)
     {
         ProfilePictureManager = profilePictureManager;
         DatabaseBuilder = databaseBuilder;
-        
-        TrophyImage = new MagickImage(MiscResources.trophy, MagickFormat.Png);
+        GraphicsClient = graphicsClient;
     }
 
     public async Task<TemporaryFile> ProcessAsync(IGuild guild, IUser user)
@@ -34,58 +32,30 @@ public sealed class PointsImage : CommandAction, IDisposable
         if (!await repository.GuildUser.ExistsAsync(guildUser))
             throw new NotFoundException($"{user.GetDisplayName()} ještě neprojevil na serveru žádnou aktivitu.");
 
-        const int height = 340;
-        const int width = 1000;
-        const int border = 25;
-        const double nicknameFontSize = 80;
-        const int profilePictureSize = 250;
-        const string fontName = "Open Sans";
-
         var userPoints = await repository.Points.ComputePointsOfUserAsync(guildUser.GuildId, guildUser.Id);
         var position = await repository.Points.CalculatePointsPositionAsync(guildUser, userPoints);
-        var nickname = user.GetDisplayName(false);
 
         using var profilePicture = await GetProfilePictureAsync(user);
-        var cuttedNickname = nickname.CutToImageWidth(width - border * 4 - profilePictureSize, fontName, nicknameFontSize);
-
         var dominantColor = profilePicture.GetDominantColor();
         var textBackground = dominantColor.CreateDarkerBackgroundColor();
 
-        using var image = new MagickImage(dominantColor, width, height);
-
-        var drawable = new Drawables()
-            .EnableStrokeAntialias()
-            .EnableTextAntialias()
-            .FillColor(textBackground)
-            .RoundRectangle(border, border, width - border, height - border, 20, 20)
-            .TextAlignment(TextAlignment.Left)
-            .Font(fontName)
-            .FontPointSize(nicknameFontSize)
-            .FillColor(MagickColors.White)
-            .Text(320, 130, cuttedNickname);
-
-        // Profile picture operations
-        profilePicture.Resize(profilePictureSize, profilePictureSize);
+        profilePicture.Resize(250, 250);
         profilePicture.RoundImage();
-        drawable.Composite(border * 2, border * 2, CompositeOperator.Over, profilePicture);
 
-        double pointsInfoX = 320;
-        if (position == 1)
+        var request = new PointsImageRequest
         {
-            drawable.Composite(pointsInfoX, 170, CompositeOperator.Over, TrophyImage);
-            pointsInfoX += TrophyImage.Width + 10;
-        }
+            Points = userPoints,
+            Position = position,
+            Nickname = user.GetDisplayName(false),
+            BackgroundColor = dominantColor.ToHexString(),
+            TextBackground = textBackground.ToHexString(),
+            ProfilePicture = profilePicture.ToBase64()
+        };
 
-        var pointsInfo = $"{position}. místo\n{FormatHelper.FormatPointsToCzech(userPoints)}";
-        drawable
-            .Font("Arial")
-            .FontPointSize(60)
-            .Text(pointsInfoX, 210, pointsInfo);
-
-        drawable.Draw(image);
+        var image = await GraphicsClient.CreatePointsImageAsync(request);
 
         var tmpFile = new TemporaryFile("png");
-        await image.WriteAsync(tmpFile.Path, MagickFormat.Png);
+        await File.WriteAllBytesAsync(tmpFile.Path, image);
         return tmpFile;
     }
 
@@ -93,10 +63,5 @@ public sealed class PointsImage : CommandAction, IDisposable
     {
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
         return new MagickImage(profilePicture.Data);
-    }
-
-    public void Dispose()
-    {
-        TrophyImage.Dispose();
     }
 }

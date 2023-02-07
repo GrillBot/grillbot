@@ -25,7 +25,7 @@ public class PointsImageTests : CommandActionTest<PointsImage>
     protected override PointsImage CreateAction()
     {
         var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
-        return InitAction(new PointsImage(DatabaseBuilder, profilePictureManager));
+        return InitAction(new PointsImage(DatabaseBuilder, profilePictureManager, TestServices.Graphics.Value));
     }
 
     private async Task InitDataAsync()

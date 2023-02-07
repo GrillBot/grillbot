@@ -75,4 +75,12 @@ public class GraphicsClient : RestServiceBase, IGraphicsClient
             response => response.Content.ReadAsByteArrayAsync()
         );
     }
+
+    public async Task<byte[]> CreatePointsImageAsync(PointsImageRequest request)
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.PostAsJsonAsync("image/points", request),
+            response => response.Content.ReadAsByteArrayAsync()
+        );
+    }
 }

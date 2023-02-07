@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.Graphics.Models.Chart;
 using GrillBot.Common.Services.Graphics.Models.Diagnostics;
+using GrillBot.Common.Services.Graphics.Models.Images;
 using ImageMagick;
 using Moq;
 
@@ -9,8 +10,8 @@ namespace GrillBot.Tests.Infrastructure;
 public class GraphicsClientBuilder : BuilderBase<IGraphicsClient>
 {
     public GraphicsClientBuilder SetAll()
-        => SetCreateChartAction().SetVersionAction().SetGetMetricsAction().SetGetStatisticsAction();
-    
+        => SetCreateChartAction().SetVersionAction().SetGetMetricsAction().SetGetStatisticsAction().SetCreatePointsImageAction();
+
     public GraphicsClientBuilder SetCreateChartAction()
     {
         using var image = new MagickImage(MagickColors.White, 100, 100);
@@ -36,6 +37,16 @@ public class GraphicsClientBuilder : BuilderBase<IGraphicsClient>
     public GraphicsClientBuilder SetGetStatisticsAction()
     {
         Mock.Setup(o => o.GetStatisticsAsync()).ReturnsAsync(new Stats());
+        return this;
+    }
+
+    public GraphicsClientBuilder SetCreatePointsImageAction()
+    {
+        using var image = new MagickImage(MagickColors.White, 100, 100);
+        new Drawables().Line(0, 50, 50, 0).Draw(image);
+        var bytes = image.ToByteArray(MagickFormat.Png);
+
+        Mock.Setup(o => o.CreatePointsImageAsync(It.IsAny<PointsImageRequest>())).ReturnsAsync(bytes);
         return this;
     }
 }

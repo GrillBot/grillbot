@@ -15,4 +15,5 @@ public interface IGraphicsClient
     Task<string> GetVersionAsync();
     Task<Stats> GetStatisticsAsync();
     Task<byte[]> CreateWithoutAccidentImage(WithoutAccidentRequestData request);
+    Task<byte[]> CreatePointsImageAsync(PointsImageRequest imageRequest);
 }

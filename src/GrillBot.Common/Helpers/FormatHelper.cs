@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Managers.Localization;
 using Humanizer;
 using Markdig;
 
@@ -12,18 +11,6 @@ public class FormatHelper
     public FormatHelper(ITextsManager texts)
     {
         Texts = texts;
-    }
-
-    public static string FormatPointsToCzech(long count) => Format(count, "bod", "body", "bodů");
-
-    public static string Format(long count, string oneSuffix, string twoToFour, string fiveAndMore)
-    {
-        return count switch
-        {
-            1 => $"1 {oneSuffix}",
-            > 1 and < 5 => $"{count} {twoToFour}",
-            _ => $"{"{0:N0}".FormatWith(new CultureInfo("cs-CZ"), count)} {fiveAndMore}"
-        };
     }
 
     public static string? FormatCommandDescription(string? description, string prefix, bool toHtml = false)

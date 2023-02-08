@@ -29,14 +29,6 @@ public class InviteMetadataRepository : RepositoryBase
         }
     }
 
-    public List<InviteMetadata> GetAllInvites()
-    {
-        using (CreateCounter())
-        {
-            return Context.InviteMetadata.ToList();
-        }
-    }
-
     public async Task<bool> InviteExistsAsync(IGuild guild, IInviteMetadata metadata)
     {
         using (CreateCounter())

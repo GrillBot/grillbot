@@ -22,9 +22,6 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         }
     }
 
-    protected CultureInfo? Culture
-        => string.IsNullOrEmpty(Locale) ? null : Texts?.GetCulture(Locale);
-
     private bool IsEphemeralChannel { get; set; }
 
     protected InteractionsModuleBase(IServiceProvider serviceProvider)

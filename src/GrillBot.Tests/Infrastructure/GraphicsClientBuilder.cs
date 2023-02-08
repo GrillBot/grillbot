@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Services.Graphics;
+﻿using System.Linq.Expressions;
+using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.Graphics.Models.Chart;
 using GrillBot.Common.Services.Graphics.Models.Diagnostics;
 using GrillBot.Common.Services.Graphics.Models.Images;
@@ -10,17 +11,7 @@ namespace GrillBot.Tests.Infrastructure;
 public class GraphicsClientBuilder : BuilderBase<IGraphicsClient>
 {
     public GraphicsClientBuilder SetAll()
-        => SetCreateChartAction().SetVersionAction().SetGetMetricsAction().SetGetStatisticsAction().SetCreatePointsImageAction();
-
-    public GraphicsClientBuilder SetCreateChartAction()
-    {
-        using var image = new MagickImage(MagickColors.White, 100, 100);
-        new Drawables().Line(0, 50, 50, 0).Draw(image);
-        var bytes = image.ToByteArray(MagickFormat.Png);
-
-        Mock.Setup(o => o.CreateChartAsync(It.IsAny<ChartRequestData>())).ReturnsAsync(bytes);
-        return this;
-    }
+        => SetVersionAction().SetGetMetricsAction().SetGetStatisticsAction().SetCreationMethods();
 
     public GraphicsClientBuilder SetVersionAction()
     {
@@ -40,13 +31,29 @@ public class GraphicsClientBuilder : BuilderBase<IGraphicsClient>
         return this;
     }
 
-    public GraphicsClientBuilder SetCreatePointsImageAction()
+    public GraphicsClientBuilder SetCreationMethods()
     {
         using var image = new MagickImage(MagickColors.White, 100, 100);
         new Drawables().Line(0, 50, 50, 0).Draw(image);
         var bytes = image.ToByteArray(MagickFormat.Png);
 
-        Mock.Setup(o => o.CreatePointsImageAsync(It.IsAny<PointsImageRequest>())).ReturnsAsync(bytes);
+        var singleFrameMethods = new Expression<Func<IGraphicsClient, Task<byte[]>>>[]
+        {
+            o => o.CreateChartAsync(It.IsAny<ChartRequestData>()),
+            o => o.CreatePointsImageAsync(It.IsAny<PointsImageRequest>()),
+            o => o.CreateWithoutAccidentImage(It.IsAny<WithoutAccidentRequestData>()),
+        };
+
+        var multipleFrameMethods = new Expression<Func<IGraphicsClient, Task<List<byte[]>>>>[]
+        {
+            o => o.CreatePeepoAngryAsync(It.IsAny<List<byte[]>>()),
+            o => o.CreatePeepoLoveAsync(It.IsAny<List<byte[]>>())
+        };
+
+        foreach (var singleFrameMethod in singleFrameMethods)
+            Mock.Setup(singleFrameMethod).ReturnsAsync(bytes);
+        foreach (var multipleFrameMethod in multipleFrameMethods)
+            Mock.Setup(multipleFrameMethod).ReturnsAsync(new List<byte[]> { bytes });
         return this;
     }
 }

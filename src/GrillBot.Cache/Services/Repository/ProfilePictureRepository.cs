@@ -10,8 +10,6 @@ public class ProfilePictureRepository : RepositoryBase
     {
     }
 
-    public IEnumerable<ProfilePicture> GetAll() => Context.ProfilePictures.ToList();
-
     public async Task<List<ProfilePicture>> GetProfilePicturesAsync(ulong userId, string? avatarId = null)
     {
         using (CreateCounter())

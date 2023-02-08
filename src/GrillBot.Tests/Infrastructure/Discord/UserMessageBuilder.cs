@@ -26,21 +26,9 @@ public class UserMessageBuilder : BuilderBase<IUserMessage>
         return this;
     }
 
-    public UserMessageBuilder SetContent(string content)
-    {
-        Mock.Setup(o => o.Content).Returns(content);
-        return this;
-    }
-
     public UserMessageBuilder SetAuthor(IUser author)
     {
         Mock.Setup(o => o.Author).Returns(author);
-        return this;
-    }
-
-    public UserMessageBuilder SetChannel(IMessageChannel channel)
-    {
-        Mock.Setup(o => o.Channel).Returns(channel);
         return this;
     }
 

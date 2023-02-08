@@ -27,15 +27,4 @@ public static class CollectionExtensions
                 yield return child;
         }
     }
-
-    public static IEnumerable<List<T>> Split<T>(this IEnumerable<T> collection, int size)
-    {
-        var data = collection.ToList();
-        
-        var chunkCount = data.Count / size;
-        if (data.Count % size > 0) chunkCount++;
-
-        for (var i = 0; i < chunkCount; i++)
-            yield return data.Skip(i * size).Take(size).ToList();
-    }
 }

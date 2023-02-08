@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using Discord;
+﻿using Discord;
 using GrillBot.App.Actions.Commands.Images;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Tests.Infrastructure.Common;
@@ -16,22 +14,12 @@ public class ImageCreatorTests : CommandActionTest<ImageCreator>
 
     protected override ImageCreator CreateAction()
     {
-        var fileStorageFactory = new FileStorageMock(TestServices.Configuration.Value);
         var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
 
-        var creator = new ImageCreator(fileStorageFactory, profilePictureManager);
+        var creator = new ImageCreator(profilePictureManager, TestServices.Graphics.Value);
         creator.Init(Context);
 
         return creator;
-    }
-
-    private string[] GetFilenames()
-        => new[] { $"{User.Id}_{User.Discriminator}_256.png", $"{User.Id}_{User.Discriminator}_64.png" };
-
-    protected override void Cleanup()
-    {
-        foreach (var file in GetFilenames().Where(File.Exists))
-            File.Delete(file);
     }
 
     [TestMethod]
@@ -48,13 +36,13 @@ public class ImageCreatorTests : CommandActionTest<ImageCreator>
 
     private async Task ProcessPeepoloveTestAsync(IUser? user)
     {
-        var result = await Action.PeepoloveAsync(user);
-        Assert.AreEqual(GetFilenames()[0], Path.GetFileName(result));
+        using var result = await Action.PeepoloveAsync(user);
+        Assert.IsNotNull(result);
     }
 
     private async Task ProcessPeepoangryTestAsync(IUser? user)
     {
-        var result = await Action.PeepoangryAsync(user);
-        Assert.AreEqual(GetFilenames()[1], Path.GetFileName(result));
+        using var result = await Action.PeepoangryAsync(user);
+        Assert.IsNotNull(result);
     }
 }

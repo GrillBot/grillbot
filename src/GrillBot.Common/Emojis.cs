@@ -58,8 +58,6 @@ public static class Emojis
     public static Emoji ThumbsUp => new("👍");
     public static Emoji ThumbsDown => new("👎");
 
-    public static IEnumerable<IEmote> PaginationEmojis => new[] { MoveToFirst, MoveToPrev, MoveToNext, MoveToLast };
-
     public static Dictionary<int, Emoji> NumberToEmojiMap => new()
     {
         { 0, Zero },

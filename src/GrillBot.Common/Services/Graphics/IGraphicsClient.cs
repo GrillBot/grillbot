@@ -16,4 +16,6 @@ public interface IGraphicsClient
     Task<Stats> GetStatisticsAsync();
     Task<byte[]> CreateWithoutAccidentImage(WithoutAccidentRequestData request);
     Task<byte[]> CreatePointsImageAsync(PointsImageRequest imageRequest);
+    Task<List<byte[]>> CreatePeepoAngryAsync(List<byte[]> avatarFrames);
+    Task<List<byte[]>> CreatePeepoLoveAsync(List<byte[]> avatarFrames);
 }

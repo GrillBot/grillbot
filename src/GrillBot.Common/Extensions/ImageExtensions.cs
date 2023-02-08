@@ -1,5 +1,4 @@
-﻿using System.Text;
-using ImageMagick;
+﻿using ImageMagick;
 
 namespace GrillBot.Common.Extensions;
 
@@ -38,24 +37,5 @@ public static class ImageExtensions
             System.Drawing.Color.FromArgb(100, System.Drawing.Color.Black);
 
         return MagickColor.FromRgba(tmpColor.R, tmpColor.G, tmpColor.B, tmpColor.A);
-    }
-
-    public static string CutToImageWidth(this string str, int width, string font, double fontSize)
-    {
-        var drawables = new Drawables()
-            .Font(font)
-            .FontPointSize(fontSize);
-
-        var builder = new StringBuilder();
-        foreach (var character in str)
-        {
-            var metrics = drawables.FontTypeMetrics(builder.ToString() + character);
-            if (metrics == null) continue;
-            
-            if (metrics.TextWidth >= width) break;
-            builder.Append(character);
-        }
-
-        return builder.ToString();
     }
 }

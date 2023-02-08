@@ -1,93 +1,66 @@
-﻿using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.App.Infrastructure.IO;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.FileStorage;
 using GrillBot.Common.Helpers;
-using GrillBot.Data.Resources.Peepoangry;
+using GrillBot.Common.Services.Graphics;
 using ImageMagick;
 
 namespace GrillBot.App.Actions.Commands.Images;
 
-public sealed class PeepoangryRenderer : IDisposable
+public sealed class PeepoangryRenderer
 {
     private ProfilePictureManager ProfilePictureManager { get; }
-    private FileStorageFactory FileStorageFactory { get; }
+    private IGraphicsClient GraphicsClient { get; }
 
-    private MagickImage AngryPeepo { get; }
-
-    private IFileStorage Cache
-        => FileStorageFactory.Create("Cache");
-
-    public PeepoangryRenderer(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
+    public PeepoangryRenderer(ProfilePictureManager profilePictureManager, IGraphicsClient graphicsClient)
     {
-        FileStorageFactory = fileStorageFactory;
         ProfilePictureManager = profilePictureManager;
-
-        AngryPeepo = new MagickImage(PeepoangryResources.peepoangry);
+        GraphicsClient = graphicsClient;
     }
 
-    public async Task<string> RenderAsync(IUser user, IGuild guild)
+    public async Task<TemporaryFile> RenderAsync(IUser user, IGuild guild)
     {
-        var filename = user.CreateProfilePicFilename(64);
-        var file = await Cache.GetFileInfoAsync("Peepoangry", filename);
-
-        if (file.Exists)
-            return file.FullName;
-
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 64);
+        var profilePictureFrames = new List<byte[]>();
+        var result = new TemporaryFile(user.HaveAnimatedAvatar() ? ".gif" : ".png");
+
         if (profilePicture.IsAnimated && !MessageHelper.CanSendAttachment(profilePicture.Data.Length, guild))
-        {
-            filename = Path.ChangeExtension(filename, ".png");
-            file = await Cache.GetFileInfoAsync("Peepoangry", filename);
-            if (file.Exists)
-                return file.FullName;
-        }
+            result.ChangeExtension(".png");
 
         using var originalImage = new MagickImageCollection(profilePicture.Data);
 
-        if (file.Extension == ".gif")
+        if (Path.GetExtension(result.Path) == ".gif")
         {
-            using var collection = new MagickImageCollection();
-
-            foreach (var userFrame in originalImage)
-            {
-                userFrame.RoundImage();
-                var frame = RenderFrame(userFrame);
-
-                frame.AnimationDelay = userFrame.AnimationDelay;
-                frame.GifDisposeMethod = GifDisposeMethod.Background;
-                collection.Add(frame);
-            }
-
-            collection.Coalesce();
-            await collection.WriteAsync(file.FullName, MagickFormat.Gif);
+            originalImage.Coalesce();
+            profilePictureFrames.AddRange(originalImage.Select(userFrame => userFrame.ToByteArray()));
         }
         else
         {
-            var avatarFrame = originalImage[0];
-            avatarFrame.RoundImage();
-
-            using var frame = RenderFrame(avatarFrame);
-            await frame.WriteAsync(file.FullName, MagickFormat.Png);
+            profilePictureFrames.Add(originalImage[0].ToByteArray());
         }
 
-        return file.FullName;
-    }
+        var createdFrames = await GraphicsClient.CreatePeepoAngryAsync(profilePictureFrames);
+        if (createdFrames.Count == 1)
+        {
+            // User not have profile picture.
+            using var img = new MagickImage(createdFrames[0]);
+            await img.WriteAsync(result.Path, MagickFormat.Png);
+        }
+        else
+        {
+            // User have gif
+            var framesQuery = createdFrames.Select(o =>
+            {
+                var frame = new MagickImage(o, MagickFormat.Png);
+                frame.GifDisposeMethod = GifDisposeMethod.None;
 
-    private IMagickImage<byte> RenderFrame(IMagickImage<byte> avatarFrame)
-    {
-        var image = new MagickImage(MagickColors.Transparent, 250, 105);
+                return frame;
+            });
 
-        new Drawables()
-            .Composite(20, 10, CompositeOperator.Over, avatarFrame)
-            .Composite(115, -5, CompositeOperator.Over, AngryPeepo)
-            .Draw(image);
+            using var collection = new MagickImageCollection(framesQuery);
+            await collection.WriteAsync(result.Path, MagickFormat.Gif);
+        }
 
-        return image;
-    }
-
-    public void Dispose()
-    {
-        AngryPeepo.Dispose();
+        return result;
     }
 }

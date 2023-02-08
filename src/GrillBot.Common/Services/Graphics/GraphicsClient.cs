@@ -83,4 +83,24 @@ public class GraphicsClient : RestServiceBase, IGraphicsClient
             response => response.Content.ReadAsByteArrayAsync()
         );
     }
+
+    public async Task<List<byte[]>> CreatePeepoAngryAsync(List<byte[]> avatarFrames)
+    {
+        var result = await ProcessRequestAsync(
+            () => HttpClient.PostAsJsonAsync("image/peepo/angry", avatarFrames),
+            response => response.Content.ReadFromJsonAsync<List<byte[]>>()
+        );
+
+        return result!;
+    }
+
+    public async Task<List<byte[]>> CreatePeepoLoveAsync(List<byte[]> avatarFrames)
+    {
+        var result = await ProcessRequestAsync(
+            () => HttpClient.PostAsJsonAsync("image/peepo/love", avatarFrames),
+            response => response.Content.ReadFromJsonAsync<List<byte[]>>()
+        );
+
+        return result!;
+    }
 }

@@ -75,9 +75,6 @@ public class GuildChannel
     public bool IsVoice()
         => ChannelType == ChannelType.Voice;
 
-    public bool IsStage()
-        => ChannelType == ChannelType.Stage;
-
     public bool IsCategory()
         => ChannelType == ChannelType.Category;
 

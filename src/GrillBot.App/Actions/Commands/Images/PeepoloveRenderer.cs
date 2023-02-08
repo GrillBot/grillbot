@@ -1,99 +1,66 @@
-﻿using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.App.Infrastructure.IO;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.FileStorage;
 using GrillBot.Common.Helpers;
-using GrillBot.Data.Resources.Peepolove;
+using GrillBot.Common.Services.Graphics;
 using ImageMagick;
 
 namespace GrillBot.App.Actions.Commands.Images;
 
-public sealed class PeepoloveRenderer : IDisposable
+public sealed class PeepoloveRenderer
 {
     private ProfilePictureManager ProfilePictureManager { get; }
-    private FileStorageFactory FileStorageFactory { get; }
+    private IGraphicsClient GraphicsClient { get; }
 
-    private MagickImage Body { get; }
-    private MagickImage Hands { get; }
-
-    private IFileStorage Cache => FileStorageFactory.Create("Cache");
-
-    public PeepoloveRenderer(FileStorageFactory fileStorageFactory, ProfilePictureManager profilePictureManager)
+    public PeepoloveRenderer(ProfilePictureManager profilePictureManager, IGraphicsClient graphicsClient)
     {
-        FileStorageFactory = fileStorageFactory;
         ProfilePictureManager = profilePictureManager;
-
-        Body = new MagickImage(PeepoloveResources.Body);
-        Hands = new MagickImage(PeepoloveResources.Hands);
+        GraphicsClient = graphicsClient;
     }
 
-    public async Task<string> RenderAsync(IUser user, IGuild guild)
+    public async Task<TemporaryFile> RenderAsync(IUser user, IGuild guild)
     {
-        var filename = user.CreateProfilePicFilename(256);
-        var file = await Cache.GetFileInfoAsync("Peepolove", filename);
-
-        if (file.Exists)
-            return file.FullName;
-
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
+        var profilePictureFrames = new List<byte[]>();
+        var result = new TemporaryFile(user.HaveAnimatedAvatar() ? ".gif" : ".png");
+
         if (profilePicture.IsAnimated && !MessageHelper.CanSendAttachment(profilePicture.Data.Length, guild))
-        {
-            filename = Path.ChangeExtension(filename, ".png");
-            file = await Cache.GetFileInfoAsync("Peepolove", filename);
-            if (file.Exists)
-                return file.FullName;
-        }
+            result.ChangeExtension(".png");
 
         using var originalImage = new MagickImageCollection(profilePicture.Data);
 
-        if (file.Extension == ".gif")
+        if (Path.GetExtension(result.Path) == ".gif")
         {
-            using var collection = new MagickImageCollection();
-
-            foreach (var userFrame in originalImage)
-            {
-                userFrame.Resize(180, 180);
-                userFrame.RoundImage();
-
-                var frame = RenderFrame(userFrame);
-
-                frame.AnimationDelay = userFrame.AnimationDelay;
-                frame.GifDisposeMethod = GifDisposeMethod.Background;
-                collection.Add(frame);
-            }
-
-            collection.Coalesce();
-            await collection.WriteAsync(file.FullName, MagickFormat.Gif);
+            originalImage.Coalesce();
+            profilePictureFrames.AddRange(originalImage.Select(userFrame => userFrame.ToByteArray()));
         }
         else
         {
-            var avatarFrame = originalImage[0];
-            avatarFrame.Resize(180, 180);
-            avatarFrame.RoundImage();
-
-            using var frame = RenderFrame(avatarFrame);
-            await frame.WriteAsync(file.FullName, MagickFormat.Png);
+            profilePictureFrames.Add(originalImage[0].ToByteArray());
         }
 
-        return file.FullName;
-    }
+        var createdFrames = await GraphicsClient.CreatePeepoLoveAsync(profilePictureFrames);
+        if (createdFrames.Count == 1)
+        {
+            // User not have profile picture.
+            using var img = new MagickImage(createdFrames[0]);
+            await img.WriteAsync(result.Path, MagickFormat.Png);
+        }
+        else
+        {
+            // User have gif
+            var framesQuery = createdFrames.Select(o =>
+            {
+                var frame = new MagickImage(o, MagickFormat.Png);
+                frame.GifDisposeMethod = GifDisposeMethod.Background;
 
-    private IMagickImage<byte> RenderFrame(IMagickImage<byte> avatarFrame)
-    {
-        var body = Body.Clone();
+                return frame;
+            });
 
-        new Drawables()
-            .Composite(5, 312, CompositeOperator.Over, avatarFrame)
-            .Composite(0, 0, CompositeOperator.Over, Hands)
-            .Draw(body);
+            using var collection = new MagickImageCollection(framesQuery);
+            await collection.WriteAsync(result.Path, MagickFormat.Gif);
+        }
 
-        body.Crop(new MagickGeometry(0, 115, 512, 397));
-        return body;
-    }
-
-    public void Dispose()
-    {
-        Body.Dispose();
-        Hands.Dispose();
+        return result;
     }
 }

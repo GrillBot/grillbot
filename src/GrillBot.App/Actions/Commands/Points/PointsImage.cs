@@ -39,9 +39,6 @@ public sealed class PointsImage : CommandAction
         var dominantColor = profilePicture.GetDominantColor();
         var textBackground = dominantColor.CreateDarkerBackgroundColor();
 
-        profilePicture.Resize(250, 250);
-        profilePicture.RoundImage();
-
         var request = new PointsImageRequest
         {
             Points = userPoints,

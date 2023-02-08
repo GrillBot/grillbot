@@ -4,22 +4,6 @@ namespace GrillBot.Common.Extensions;
 
 public static class ImageExtensions
 {
-    public static void RoundImage(this IMagickImage<byte> image)
-    {
-        image.Format = MagickFormat.Png;
-        image.Alpha(AlphaOption.On);
-
-        using var copy = image.Clone();
-
-        copy.Distort(DistortMethod.DePolar, 0);
-        copy.VirtualPixelMethod = VirtualPixelMethod.HorizontalTile;
-        copy.BackgroundColor = MagickColors.None;
-        copy.Distort(DistortMethod.Polar, 0);
-
-        image.Compose = CompositeOperator.DstIn;
-        image.Composite(copy, CompositeOperator.CopyAlpha);
-    }
-
     public static MagickColor GetDominantColor(this MagickImage image)
     {
         using var clone = image.Clone();

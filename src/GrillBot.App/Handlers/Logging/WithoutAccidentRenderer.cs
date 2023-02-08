@@ -40,13 +40,7 @@ public class WithoutAccidentRenderer
     private static string ReadAvatarToBase64(ProfilePicture profilePicture)
     {
         using var avatarCollection = new MagickImageCollection(profilePicture.Data);
-
-        var avatar = avatarCollection[0];
-        avatar.Resize(230, 230);
-        avatar.RoundImage();
-        avatar.Crop(230, 200);
-
-        return avatar.ToBase64();
+        return avatarCollection[0].ToBase64();
     }
 
     private async Task<int> GetLastErrorDays()

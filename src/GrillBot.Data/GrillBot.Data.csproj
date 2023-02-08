@@ -17,36 +17,11 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="NSwag.Annotations" Version="13.18.2" />
-    <PackageReference Include="System.Resources.ResourceManager" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GrillBot.Common\GrillBot.Common.csproj" />
     <ProjectReference Include="..\GrillBot.Database\GrillBot.Database.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Resources\Peepoangry\PeepoangryResources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PeepoangryResources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Resources\Peepolove\PeepoloveResources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>PeepoloveResources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\Peepoangry\PeepoangryResources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>PeepoangryResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Resources\Peepolove\PeepoloveResources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>PeepoloveResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

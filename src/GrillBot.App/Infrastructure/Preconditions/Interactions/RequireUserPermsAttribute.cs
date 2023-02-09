@@ -24,7 +24,8 @@ public class RequireUserPermsAttribute : PreconditionAttribute
             if (user.HaveFlags(UserFlags.BotAdmin)) return PreconditionResult.FromSuccess();
 
             CheckUserDisabled(user, texts, locale);
-            await CheckChannelAsync(repository, (IGuildChannel)context.Channel, texts, locale);
+            if (context.Channel is IGuildChannel guildChannel)
+                await CheckChannelAsync(repository, guildChannel, texts, locale);
 
             return PreconditionResult.FromSuccess();
         }

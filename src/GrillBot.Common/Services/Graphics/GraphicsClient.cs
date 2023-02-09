@@ -19,7 +19,11 @@ public class GraphicsClient : RestServiceBase, IGraphicsClient
     {
         try
         {
-            await GetVersionAsync();
+            await ProcessRequestAsync(
+                () => HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "health")),
+                _ => Task.FromResult((object?)null)
+            );
+
             return true;
         }
         catch (Exception)

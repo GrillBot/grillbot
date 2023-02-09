@@ -9,7 +9,7 @@ public abstract class RestServiceBase
     protected abstract string ServiceName { get; }
 
     public string Url => HttpClient.BaseAddress!.ToString();
-    public int Timeout => Convert.ToInt32(HttpClient.Timeout.Milliseconds);
+    public int Timeout => Convert.ToInt32(HttpClient.Timeout.TotalMilliseconds);
 
     protected RestServiceBase(CounterManager counterManager, Func<HttpClient> clientFactory)
     {

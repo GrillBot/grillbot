@@ -15,7 +15,7 @@ public class UsersConverter : ConverterBase<IEnumerable<IUser>>
     {
         var result = new List<IUser>();
 
-        foreach (var userIdent in value.Split(' '))
+        foreach (var userIdent in value.Split(' ').Where(o => !string.IsNullOrEmpty(o)))
         {
             var user = await UserConverter.ConvertAsync(userIdent);
             if (user == null)

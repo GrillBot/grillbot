@@ -305,8 +305,8 @@
         "description": "Designation of the user who wishes to receive notifications"
       },
       "when": {
-        "name": "kdy",
-        "description": "Reminder date and time. It must be in the future."
+        "name": "when",
+        "description": "Reminder date and time. It must be in the future. (1h/1d/1w/... or 2023-02-16T00:00:00)"
       },
       "message": {
         "name": "message",
@@ -515,7 +515,7 @@
         "description": "A link to the message to which this message should refer."
       },
       "attachment": {
-        "name": "priloha",
+        "name": "attachment",
         "description": "Attachment"
       }
     }
@@ -556,7 +556,7 @@
       "description": "Process temporary access removal.",
       "end": {
         "name": "end",
-        "description": "Date and time when access will be restored."
+        "description": "Date and time when access will be restored. (1h/1d/1w/... or 2023-02-16T00:00:00)"
       },
       "reason": {
         "name": "reason",
@@ -572,7 +572,7 @@
       "description": "Process fake temporary access removal.",
       "end": {
         "name": "end",
-        "description": "Date and time when access will be restored."
+        "description": "Date and time when access will be restored. (1h/1d/1w/... or 2023-02-16T00:00:00)"
       },
       "reason": {
         "name": "reason",

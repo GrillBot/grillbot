@@ -306,7 +306,7 @@
       },
       "when": {
         "name": "kdy",
-        "description": "Datum a čas události. Musí být v budoucnosti."
+        "description": "Datum a čas události. Musí být v budoucnosti. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
       },
       "message": {
         "name": "zprava",
@@ -536,7 +536,7 @@
       },
       "new-end": {
         "name": "novy-konec",
-        "description": "Datum a čas nového konce."
+        "description": "Datum a čas nového konce. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
       },
       "reason": {
         "name": "duvod",
@@ -556,7 +556,7 @@
       "description": "Odebrání přístupu uživateli.",
       "end": {
         "name": "konec",
-        "description": "Datum a čas konce odebrání přístupu."
+        "description": "Datum a čas konce odebrání přístupu. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
       },
       "reason": {
         "name": "duvod",
@@ -572,7 +572,7 @@
       "description": "Falešné odebrání přístupu uživateli.",
       "end": {
         "name": "konec",
-        "description": "Datum a čas konce odebrání přístupu."
+        "description": "Datum a čas konce odebrání přístupu. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
       },
       "reason": {
         "name": "duvod",

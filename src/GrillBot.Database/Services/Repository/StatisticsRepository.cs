@@ -34,7 +34,8 @@ public class StatisticsRepository : RepositoryBase
                 { nameof(Context.AutoReplies), await Context.AutoReplies.CountAsync() },
                 { nameof(Context.EmoteSuggestions), await Context.EmoteSuggestions.CountAsync() },
                 { nameof(Context.PointsTransactions), await Context.PointsTransactions.CountAsync() },
-                { nameof(Context.ApiClients), await Context.ApiClients.CountAsync() }
+                { nameof(Context.ApiClients), await Context.ApiClients.CountAsync() },
+                { nameof(Context.Nicknames), await Context.Nicknames.CountAsync() }
             };
         }
     }

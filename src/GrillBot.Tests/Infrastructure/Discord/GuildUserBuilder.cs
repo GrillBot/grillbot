@@ -117,9 +117,9 @@ public class GuildUserBuilder : BuilderBase<IGuildUser>
         return this;
     }
 
-    public GuildUserBuilder SetNickname(string nickname)
+    public GuildUserBuilder SetNickname(string? nickname)
     {
-        Mock.Setup(o => o.Nickname).Returns(nickname);
+        Mock.Setup(o => o.Nickname).Returns(nickname!);
         return this;
     }
 }

@@ -30,7 +30,8 @@ public static class HandlerExtensions
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.UserUpdatedSyncHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.ServerBoosterHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserUpdatedHandler>()
-            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserRoleUpdatedHandler>();
+            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserRoleUpdatedHandler>()
+            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.UserNicknameUpdatedHandler>();
 
         services
             .AddScoped<IGuildUpdatedEvent, GuildUpdated.SyncGuildUpdatedHandler>()

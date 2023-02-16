@@ -21,9 +21,11 @@ public class GetDatabaseStatus : ApiAction
 
         await using var database = DatabaseBuilder.CreateRepository();
         result.Database = await database.Statistics.GetTablesStatusAsync();
+        result.Database = result.Database.OrderBy(o => o.Value).ToDictionary(o => o.Key, o => o.Value);
 
         await using var cache = CacheBuilder.CreateRepository();
         result.Cache = await cache.StatisticsRepository.GetTableStatisticsAsync();
+        result.Cache = result.Cache.OrderBy(o => o.Value).ToDictionary(o => o.Key, o => o.Value);
 
         return result;
     }

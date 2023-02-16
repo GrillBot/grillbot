@@ -53,12 +53,14 @@ public class GuildUser
 
     public ISet<GuildUserChannel> Channels { get; set; }
     public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
+    public ISet<Nickname> Nicknames { get; set; }
 
     public GuildUser()
     {
         CreatedInvites = new HashSet<Invite>();
         Channels = new HashSet<GuildUserChannel>();
         EmoteStatistics = new HashSet<EmoteStatisticItem>();
+        Nicknames = new HashSet<Nickname>();
     }
 
     public static GuildUser FromDiscord(IGuild guild, IGuildUser user)

@@ -6,13 +6,9 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Data.Exceptions;
 using GrillBot.Data.Models.API;
-using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 using GrillBot.Database.Enums.Internal;
-using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -65,7 +61,7 @@ public class GetUserDetail : ApiAction
         
         await AddDiscordDataAsync(result);
         foreach (var guild in entity.Guilds)
-            result.Guilds.Add(await CreateGuildDetailAsync(guild, repository));
+            result.Guilds.Add(await CreateGuildDetailAsync(guild));
 
         result.Guilds = result.Guilds.OrderByDescending(o => o.IsUserInGuild).ThenBy(o => o.Guild.Name).ToList();
         return result;
@@ -81,7 +77,7 @@ public class GetUserDetail : ApiAction
         result.IsKnown = true;
     }
 
-    private async Task<GuildUserDetail> CreateGuildDetailAsync(Database.Entity.GuildUser guildUserEntity, GrillBotRepository repository)
+    private async Task<GuildUserDetail> CreateGuildDetailAsync(Database.Entity.GuildUser guildUserEntity)
     {
         var result = Mapper.Map<GuildUserDetail>(guildUserEntity);
 
@@ -89,11 +85,11 @@ public class GetUserDetail : ApiAction
         result.Channels = result.Channels.OrderByDescending(o => o.Count).ThenBy(o => o.Channel.Name).ToList();
         result.Emotes = result.Emotes.OrderByDescending(o => o.UseCount).ThenByDescending(o => o.LastOccurence).ThenBy(o => o.Emote.Name).ToList();
 
-        await UpdateGuildDetailAsync(result, guildUserEntity, repository);
+        await UpdateGuildDetailAsync(result, guildUserEntity);
         return result;
     }
 
-    private async Task UpdateGuildDetailAsync(GuildUserDetail detail, Database.Entity.GuildUser entity, GrillBotRepository repository)
+    private async Task UpdateGuildDetailAsync(GuildUserDetail detail, Database.Entity.GuildUser entity)
     {
         var guild = await DiscordClient.GetGuildAsync(detail.Guild.Id.ToUlong());
         if (guild == null) return;
@@ -105,37 +101,16 @@ public class GetUserDetail : ApiAction
 
         detail.IsUserInGuild = true;
         SetUnverify(detail, entity.Unverify, guildUser, guild);
-        await SetNicknameHistoryAsync(detail, guildUser, repository);
         await SetVisibleChannelsAsync(detail, guildUser, guild);
         detail.Roles = Mapper.Map<List<Role>>(guildUser.GetRoles().OrderByDescending(o => o.Position).ToList());
     }
 
-    private void SetUnverify(GuildUserDetail detail, Database.Entity.Unverify unverify, IGuildUser user, IGuild guild)
+    private void SetUnverify(GuildUserDetail detail, Database.Entity.Unverify? unverify, IGuildUser user, IGuild guild)
     {
         if (unverify == null) return;
 
         var profile = UnverifyProfileManager.Reconstruct(unverify, user, guild);
         detail.Unverify = Mapper.Map<UnverifyInfo>(profile);
-    }
-
-    private static async Task SetNicknameHistoryAsync(GuildUserDetail detail, IGuildUser user, GrillBotRepository repository)
-    {
-        var auditLogParams = new AuditLogListParams
-        {
-            GuildId = user.GuildId.ToString(),
-            Sort = null,
-            Types = new List<AuditLogItemType> { AuditLogItemType.MemberUpdated },
-            IgnoreBots = true
-        };
-
-        var auditLogs = await repository.AuditLog.GetSimpleDataAsync(auditLogParams);
-        detail.NicknameHistory = auditLogs
-            .Select(o => JsonConvert.DeserializeObject<MemberUpdatedData>(o.Data, AuditLogWriteManager.SerializerSettings))
-            .Where(o => o?.Nickname != null && (!string.IsNullOrEmpty(o.Target.UserId) ? o.Target.UserId : o.Target.Id.ToString()) == user.Id.ToString())
-            .SelectMany(o => new[] { o.Nickname.Before, o.Nickname.After })
-            .Where(o => !string.IsNullOrEmpty(o) && (string.IsNullOrEmpty(user.Nickname) || user.Nickname != o))
-            .Distinct()
-            .ToList();
     }
 
     private async Task SetVisibleChannelsAsync(GuildUserDetail detail, IGuildUser user, IGuild guild)

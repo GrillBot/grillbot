@@ -111,6 +111,12 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.GuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.UserId });
         });
 
+        modelBuilder.Entity<Nickname>(builder =>
+        {
+            builder.HasKey(o => new { o.GuildId, o.UserId, o.Id });
+            builder.HasOne(o => o.User).WithMany(o => o.Nicknames).HasForeignKey(o => new { o.GuildId, o.UserId });
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -132,4 +138,5 @@ public class GrillBotContext : DbContext
     public DbSet<EmoteSuggestion> EmoteSuggestions => Set<EmoteSuggestion>();
     public DbSet<PointsTransaction> PointsTransactions => Set<PointsTransaction>();
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();
+    public DbSet<Nickname> Nicknames => Set<Nickname>();
 }

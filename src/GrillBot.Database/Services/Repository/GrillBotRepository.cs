@@ -35,6 +35,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public EmoteSuggestionRepository EmoteSuggestion => GetOrCreateRepository<EmoteSuggestionRepository>();
     public PointsRepository Points => GetOrCreateRepository<PointsRepository>();
     public ApiClientRepository ApiClientRepository => GetOrCreateRepository<ApiClientRepository>();
+    public NicknameRepository Nickname => GetOrCreateRepository<NicknameRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
     {

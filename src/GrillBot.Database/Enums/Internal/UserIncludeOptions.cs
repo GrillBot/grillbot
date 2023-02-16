@@ -12,6 +12,7 @@ public enum UserIncludeOptions
     Channels = 8,
     EmoteStatistics = 16,
     Unverify = 32,
+    Nicknames = 64,
     
-    All = Guilds | UsedInvite | CreatedInvites | Channels | EmoteStatistics | Unverify
+    All = Guilds | UsedInvite | CreatedInvites | Channels | EmoteStatistics | Unverify | Nicknames
 }

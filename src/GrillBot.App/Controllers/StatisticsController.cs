@@ -137,4 +137,15 @@ public class StatisticsController : Infrastructure.ControllerBase
         var result = await ProcessActionAsync<GetAvgTimes, AvgExecutionTimes>(action => action.ProcessAsync());
         return Ok(result);
     }
+
+    /// <summary>
+    /// Get full statistics of operations.
+    /// </summary>
+    [HttpGet("operations")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<OperationStats> GetOperationStatistics()
+    {
+        var result = ProcessAction<GetOperationStats, OperationStats>(action => action.Process());
+        return Ok(result);
+    }
 }

@@ -42,13 +42,11 @@ public class CounterManager
         }
     }
 
-    public List<CounterStats> GetStatistics()
+    public IEnumerable<CounterStats> GetStatistics()
     {
         lock (_lock)
         {
-            return Stats.Values
-                .OrderBy(o => o.Section)
-                .ToList();
+            return Stats.Values.ToList();
         }
     }
 }

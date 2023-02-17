@@ -118,7 +118,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Statistics.GetCommandStatistics>()
             .AddScoped<Api.V1.Statistics.GetDatabaseStatus>()
             .AddScoped<Api.V1.Statistics.GetEventStatistics>()
-            .AddScoped<Api.V1.Statistics.GetUnverifyStatistics>();
+            .AddScoped<Api.V1.Statistics.GetUnverifyStatistics>()
+            .AddScoped<Api.V1.Statistics.GetOperationStats>();
 
         // System
         services

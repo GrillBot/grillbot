@@ -215,4 +215,13 @@ public class PointsRepository : RepositoryBase
                 .AnyAsync(o => o.GuildId == transaction.GuildId && o.UserId == transaction.UserId && o.MessageId == transaction.MessageId && o.ReactionId == transaction.ReactionId);
         }
     }
+
+    public async Task<bool> ExistsAnyTransactionAsync(IGuildUser user)
+    {
+        using (CreateCounter())
+        {
+            return await Context.PointsTransactions.AsNoTracking()
+                .AnyAsync(o => o.GuildId == user.GuildId.ToString() && o.UserId == user.Id.ToString());
+        }
+    }
 }

@@ -21,4 +21,5 @@ public class GuildUserDetail
     public List<string> NicknameHistory { get; set; }
     public List<Channel> VisibleChannels { get; set; }
     public List<Role> Roles { get; set; }
+    public bool HavePointsTransaction { get; set; }
 }

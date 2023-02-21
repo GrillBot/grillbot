@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V1.Emote;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Models;
 using GrillBot.Tests.Infrastructure.Common;

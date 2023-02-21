@@ -3,12 +3,11 @@ using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Database;
 using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using NSwag.Annotations;
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Infrastructure;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Searching;

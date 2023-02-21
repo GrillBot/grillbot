@@ -21,7 +21,7 @@ public abstract class ApiAction
         Init(controller, new[] { apiObject });
     }
 
-    public static void Init(Controller controller, IApiObject[] apiObjects)
+    public static void Init(Controller controller, IEnumerable<IApiObject> apiObjects)
         => controller.StoreParameters(apiObjects);
 
     /// <summary>

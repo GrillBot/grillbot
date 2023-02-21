@@ -44,4 +44,16 @@ public class UserMessageBuilder : BuilderBase<IUserMessage>
         Mock.Setup(o => o.IsPinned).Returns(pinned);
         return this;
     }
+
+    public UserMessageBuilder SetChannel(IMessageChannel channel)
+    {
+        Mock.Setup(o => o.Channel).Returns(channel);
+        return this;
+    }
+
+    public UserMessageBuilder SetContent(string content)
+    {
+        Mock.Setup(o => o.Content).Returns(content);
+        return this;
+    }
 }

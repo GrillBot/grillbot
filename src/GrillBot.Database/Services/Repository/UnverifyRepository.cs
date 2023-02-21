@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Discord;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Counters;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;

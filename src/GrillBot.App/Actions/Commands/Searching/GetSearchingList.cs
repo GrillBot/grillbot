@@ -3,8 +3,8 @@ using GrillBot.App.Modules.Implementations.Searching;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Searching;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Actions.Commands.Searching;
 

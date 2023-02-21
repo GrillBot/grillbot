@@ -1,6 +1,6 @@
 ﻿using Discord;
 using GrillBot.App.Actions.Api.V1.Channel;
-using GrillBot.Database.Models;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 

@@ -41,10 +41,11 @@ public partial class ApiRequest
             AddParameter((index == -1 ? "" : index + ".") + item.Key, item.Value);
     }
 
-    public void AddParameters(IApiObject[] apiObjects)
+    public void AddParameters(IEnumerable<IApiObject> apiObjects)
     {
-        for (var i = 0; i < apiObjects.Length; i++)
-            AddParameters(apiObjects[i], i);
+        var objects = apiObjects.ToArray();
+        for (var i = 0; i < objects.Length; i++)
+            AddParameters(objects[i], i);
     }
 
     public void AddParameter(string id, string value)

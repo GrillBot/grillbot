@@ -79,7 +79,6 @@ public class Startup
             .AddMemoryCache()
             .AddScoped<ApiRequest>()
             .AddActions()
-            .AddScoped<Services.DirectApi.IDirectApiService, Services.DirectApi.DirectApiService>()
             .AddSingleton<FileStorageFactory>()
             .AddControllers(c =>
             {

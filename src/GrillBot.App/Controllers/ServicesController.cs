@@ -29,4 +29,15 @@ public class ServicesController : Infrastructure.ControllerBase
         var result = await ProcessActionAsync<GetGraphicsServiceInfo, GraphicsServiceInfo>(action => action.ProcessAsync());
         return Ok(result);
     }
+
+    /// <summary>
+    /// Get diagnostics information about rubbergod microservice.
+    /// </summary>
+    [HttpGet("rubbergod")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<RubbergodServiceInfo>> GetRubbergodServiceInfoAsync()
+    {
+        var result = await ProcessActionAsync<GetRubbergodServiceInfo, RubbergodServiceInfo>(action => action.ProcessAsync());
+        return Ok(result);
+    }
 }

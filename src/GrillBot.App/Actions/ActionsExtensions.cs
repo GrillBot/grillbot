@@ -108,7 +108,8 @@ public static class ActionsExtensions
         
         // Services
         services
-            .AddScoped<Api.V1.Services.GetGraphicsServiceInfo>();
+            .AddScoped<Api.V1.Services.GetGraphicsServiceInfo>()
+            .AddScoped<Api.V1.Services.GetRubbergodServiceInfo>();
 
         // Statistics
         services
@@ -152,7 +153,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.GetRubbergodUserKarma>()
             .AddScoped<Api.V2.Events.CreateScheduledEvent>()
             .AddScoped<Api.V2.Events.UpdateScheduledEvent>()
-            .AddScoped<Api.V2.Events.CancelScheduledEvent>();
+            .AddScoped<Api.V2.Events.CancelScheduledEvent>()
+            .AddScoped<Api.V2.StoreKarma>();
 
         return services;
     }

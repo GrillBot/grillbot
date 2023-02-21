@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using GrillBot.Common.Managers.Counters;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;

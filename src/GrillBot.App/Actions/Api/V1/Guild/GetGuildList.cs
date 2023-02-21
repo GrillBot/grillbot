@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Guilds;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Actions.Api.V1.Guild;
 

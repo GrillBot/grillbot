@@ -1,24 +1,27 @@
-﻿using GrillBot.App.Services.DirectApi;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
+using GrillBot.Common.Services.RubbergodService;
+using GrillBot.Common.Services.RubbergodService.Models.DirectApi;
 using GrillBot.Data.Models.API.Help;
 
 namespace GrillBot.App.Actions.Api.V1.Command;
 
 public class GetExternalCommands : ApiAction
 {
-    private IDirectApiService DirectApi { get; }
+    private IRubbergodServiceClient RubbergodServiceClient { get; }
 
-    public GetExternalCommands(ApiRequestContext apiContext, IDirectApiService directApi) : base(apiContext)
+    public GetExternalCommands(ApiRequestContext apiContext, IRubbergodServiceClient rubbergodServiceClient) : base(apiContext)
     {
-        DirectApi = directApi;
+        RubbergodServiceClient = rubbergodServiceClient;
     }
 
     public async Task<List<CommandGroup>> ProcessAsync(string serviceName)
     {
-        var command = CommandBuilder.CreateHelpCommand(ApiContext.GetUserId());
+        var command = new DirectApiCommand("Help")
+            .WithParameter("user_id", ApiContext.GetUserId());
+
         var service = char.ToUpper(serviceName[0]) + serviceName[1..].ToLower();
-        var jsonData = await DirectApi.SendCommandAsync(service, command);
-        var data = JArray.Parse(jsonData ?? "[]");
+        var jsonData = await RubbergodServiceClient.SendDirectApiCommand(service, command);
+        var data = JArray.Parse(jsonData);
 
         return service switch
         {

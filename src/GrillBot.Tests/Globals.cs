@@ -16,6 +16,8 @@ using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.RubbergodService;
+using GrillBot.Tests.Infrastructure.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -36,4 +38,7 @@ public static class TestServices
     public static readonly Lazy<ITextsManager> Texts = new(() => new TextsManager("./Resources", "messages"), LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<IGraphicsClient> Graphics = new(() => new GraphicsClientBuilder().SetAll().Build(), LazyThreadSafetyMode.ExecutionAndPublication);
     public static readonly Lazy<DiscordSocketClient> DiscordSocketClient = new(() => new DiscordSocketClient(), LazyThreadSafetyMode.ExecutionAndPublication);
+
+    public static readonly Lazy<IRubbergodServiceClient> RubbergodServiceClient =
+        new(() => new RubbergodServiceClientBuilder().SetAll().Build(), LazyThreadSafetyMode.ExecutionAndPublication);
 }

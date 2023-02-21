@@ -3,6 +3,7 @@ using GrillBot.App.Actions.Commands;
 using GrillBot.Common.Services.Math.Models;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
+using GrillBot.Tests.Infrastructure.Services;
 
 namespace GrillBot.Tests.App.Actions.Commands;
 

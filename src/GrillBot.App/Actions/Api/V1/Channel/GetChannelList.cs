@@ -2,8 +2,8 @@
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 

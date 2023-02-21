@@ -3,7 +3,7 @@ using GrillBot.Database;
 using System.Linq;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Infrastructure;
-using GrillBot.Database.Models;
+using GrillBot.Common.Models.Pagination;
 
 namespace GrillBot.Data.Models.API.Guilds;
 

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Infrastructure;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;

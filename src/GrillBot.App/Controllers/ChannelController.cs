@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using GrillBot.Database.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;

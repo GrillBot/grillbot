@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Data.Models.API.Emotes;
-using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

@@ -4,6 +4,7 @@ using GrillBot.App.Actions.Commands;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Services.KachnaOnline.Models;
 using GrillBot.Tests.Infrastructure.Common;
+using GrillBot.Tests.Infrastructure.Services;
 
 namespace GrillBot.Tests.App.Actions.Commands.DuckInfoTests;
 

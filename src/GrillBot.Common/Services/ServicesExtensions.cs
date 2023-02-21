@@ -2,6 +2,7 @@
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.KachnaOnline;
 using GrillBot.Common.Services.Math;
+using GrillBot.Common.Services.RubbergodService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +10,7 @@ namespace GrillBot.Common.Services;
 
 public static class ServicesExtensions
 {
-    public static IHttpClientBuilder AddHttpClient(this IServiceCollection services, IConfiguration configuration, string serviceId, string serviceConfigName)
+    private static IHttpClientBuilder AddHttpClient(this IServiceCollection services, IConfiguration configuration, string serviceId, string serviceConfigName)
     {
         return services.AddHttpClient(serviceId, client =>
         {
@@ -31,6 +32,10 @@ public static class ServicesExtensions
         services
             .AddScoped<IMathClient, MathClient>()
             .AddHttpClient(configuration, "Math", "Math");
+
+        services
+            .AddScoped<IRubbergodServiceClient, RubbergodServiceClient>()
+            .AddHttpClient(configuration, "RubbergodService", "RubbergodService");
 
         return services;
     }

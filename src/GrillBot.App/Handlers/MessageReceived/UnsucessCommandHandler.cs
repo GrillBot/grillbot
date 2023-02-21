@@ -1,9 +1,10 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Services.DirectApi;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Services.RubbergodService;
+using GrillBot.Common.Services.RubbergodService.Models.DirectApi;
 using GrillBot.Data.Models.Rubbergod;
 
 namespace GrillBot.App.Handlers.MessageReceived;
@@ -12,20 +13,20 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
 {
     private ITextsManager Texts { get; }
     private InteractionService InteractionService { get; }
-    private IDirectApiService DirectApi { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private DataCacheManager DataCacheManager { get; }
     private Helpers.ChannelHelper ChannelHelper { get; }
+    private IRubbergodServiceClient RubbergodServiceClient { get; }
 
-    public UnsucessCommandHandler(ITextsManager texts, InteractionService interactionService, IDirectApiService directApi, GrillBotDatabaseBuilder databaseBuilder,
-        DataCacheManager dataCacheManager, Helpers.ChannelHelper channelHelper)
+    public UnsucessCommandHandler(ITextsManager texts, InteractionService interactionService, GrillBotDatabaseBuilder databaseBuilder, DataCacheManager dataCacheManager,
+        Helpers.ChannelHelper channelHelper, IRubbergodServiceClient rubbergodServiceClient)
     {
         Texts = texts;
         InteractionService = interactionService;
-        DirectApi = directApi;
         DatabaseBuilder = databaseBuilder;
         DataCacheManager = dataCacheManager;
         ChannelHelper = channelHelper;
+        RubbergodServiceClient = rubbergodServiceClient;
     }
 
     public async Task ProcessAsync(IMessage message)
@@ -57,14 +58,12 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
 
     private async Task<string?> FindRubbergodCommandAsync(IReadOnlyCollection<string> parts)
     {
-        const string emptyData = "{}";
-
         var commands = await DataCacheManager.GetValueAsync("RubbergodCommands");
-        if (string.IsNullOrEmpty(commands) || commands == emptyData)
+        if (string.IsNullOrEmpty(commands) || commands == "{}")
         {
-            commands = await DirectApi.SendCommandAsync("Rubbergod", CommandBuilder.CreateSlashCommandListCommand());
-            commands ??= emptyData;
-
+            var command = new DirectApiCommand("Help")
+                .WithParameter("command", "slash_commands");
+            commands = await RubbergodServiceClient.SendDirectApiCommand("Rubbergod", command);
             await DataCacheManager.SetValueAsync("RubbergodCommands", commands, DateTime.Now.AddDays(7));
         }
 

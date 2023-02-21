@@ -27,7 +27,7 @@ public class GetDashboardTests : ApiActionTest<GetDashboard>
         var logging = new LoggingManager(discordClient, interactionService, TestServices.Provider.Value);
 
         return new GetDashboard(ApiRequestContext, TestServices.TestingEnvironment.Value, client, initManager, TestServices.CounterManager.Value,
-            DatabaseBuilder, logging, TestServices.Graphics.Value);
+            DatabaseBuilder, logging, TestServices.Graphics.Value, TestServices.RubbergodServiceClient.Value);
     }
 
     private async Task InitDataAsync()

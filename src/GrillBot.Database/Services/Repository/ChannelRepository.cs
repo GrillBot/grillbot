@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Database.Enums.Internal;
-using GrillBot.Database.Models;
 
 namespace GrillBot.Database.Services.Repository;
 

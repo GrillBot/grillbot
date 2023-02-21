@@ -105,6 +105,7 @@ public static class HandlerExtensions
             .AddScoped<IUserUnbannedEvent, UserUnbanned.AuditUserUnbannedHandler>();
 
         services
+            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncUserInServicesHandler>()
             .AddScoped<IUserUpdatedEvent, UserUpdated.SyncUserUpdatedHandler>();
 
         return services;

@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Http;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.App.Managers;
 using GrillBot.Common.Models;
-using GrillBot.Database.Models;
+using GrillBot.Common.Models.Pagination;
+using GrillBot.Common.Services.RubbergodService.Models.Karma;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
@@ -20,13 +21,10 @@ namespace GrillBot.App.Controllers;
 [Route("api/user")]
 [ApiExplorerSettings(GroupName = "v1")]
 [ExcludeFromCodeCoverage]
-public class UsersController : Controller
+public class UsersController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public UsersController(IServiceProvider serviceProvider)
+    public UsersController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -43,9 +41,7 @@ public class UsersController : Controller
         ApiAction.Init(this, parameters);
         parameters.FixStatus();
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetUserList>();
-        var result = await action.ProcessAsync(parameters);
-
+        var result = await ProcessActionAsync<Actions.Api.V1.User.GetUserList, PaginatedResponse<UserListItem>>(action => action.ProcessAsync(parameters));
         return Ok(result);
     }
 
@@ -60,9 +56,7 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetUserDetail>();
-        var result = await action.ProcessAsync(id);
-
+        var result = await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessAsync(id));
         return Ok(result);
     }
 
@@ -78,9 +72,7 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetUserDetail>();
-        var result = await action.ProcessSelfAsync();
-
+        var result = await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessSelfAsync());
         return Ok(result);
     }
 
@@ -95,9 +87,7 @@ public class UsersController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Command.GetExternalCommands>();
-        var result = await action.ProcessAsync(service);
-
+        var result = await ProcessActionAsync<Actions.Api.V1.Command.GetExternalCommands, List<CommandGroup>>(action => action.ProcessAsync(service));
         return Ok(result);
     }
 
@@ -116,9 +106,7 @@ public class UsersController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.UpdateUser>();
-        await action.ProcessAsync(id, parameters);
-
+        await ProcessActionAsync<Actions.Api.V1.User.UpdateUser>(action => action.ProcessAsync(id, parameters));
         return Ok();
     }
 
@@ -133,10 +121,8 @@ public class UsersController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> HearthbeatOffAsync()
     {
-        var service = ServiceProvider.GetRequiredService<UserManager>();
         var apiContext = ServiceProvider.GetRequiredService<ApiRequestContext>();
-
-        await service.SetHearthbeatAsync(false, apiContext);
+        await ProcessActionAsync<UserManager>(manager => manager.SetHearthbeatAsync(false, apiContext));
         return Ok();
     }
 
@@ -154,10 +140,29 @@ public class UsersController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<GetRubbergodUserKarma>();
-        var result = await action.ProcessAsync(parameters);
-
+        var result = await ProcessActionAsync<GetRubbergodUserKarma, PaginatedResponse<UserKarma>>(action => action.ProcessAsync(parameters));
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Store rubbergod karma info.
+    /// </summary>
+    /// <param name="items">List of users with current information about karma.</param>
+    /// <response code="200">Operation is success.</response>
+    /// <response code="400">Validation failed.</response>
+    /// <response code="500">Something went wrong.</response>
+    [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
+    [HttpPost("karma/store")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> StoreKarmaAsync([FromBody] List<KarmaItem> items)
+    {
+        ApiAction.Init(this, items.ToArray());
+
+        await ProcessActionAsync<StoreKarma>(action => action.ProcessAsync(items));
+        return Ok();
     }
 
     /// <summary>
@@ -170,9 +175,7 @@ public class UsersController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<MessageResponse>> GetTodayBirthdayInfoAsync()
     {
-        var action = ServiceProvider.GetRequiredService<GetTodayBirthdayInfo>();
-        var result = await action.ProcessAsync();
-
+        var result = await ProcessActionAsync<GetTodayBirthdayInfo, string>(action => action.ProcessAsync());
         return Ok(new MessageResponse(result));
     }
 }

@@ -3,4 +3,5 @@
 public class DashboardServices
 {
     public bool GraphicsAvailable { get; set; }
+    public bool RubbergodServiceAvailable { get; set; }
 }

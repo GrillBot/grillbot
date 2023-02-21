@@ -5,7 +5,7 @@ namespace GrillBot.App.Infrastructure;
 
 public abstract class ControllerBase : Controller
 {
-    private IServiceProvider ServiceProvider { get; }
+    protected IServiceProvider ServiceProvider { get; }
 
     protected ControllerBase(IServiceProvider serviceProvider)
     {
@@ -17,6 +17,9 @@ public abstract class ControllerBase : Controller
         var action = ServiceProvider.GetRequiredService<TAction>();
         return await asyncExecution(action);
     }
+
+    protected async Task ProcessActionAsync<TAction>(Func<TAction, Task> asyncExecution) where TAction : notnull
+        => await asyncExecution(ServiceProvider.GetRequiredService<TAction>());
 
     protected TData ProcessAction<TAction, TData>(Func<TAction, TData> syncExecution) where TAction : notnull
     {

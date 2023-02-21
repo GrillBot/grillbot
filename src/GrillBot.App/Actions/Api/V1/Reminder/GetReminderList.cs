@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Reminder;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Actions.Api.V1.Reminder;
 

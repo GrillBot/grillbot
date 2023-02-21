@@ -2,11 +2,11 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 

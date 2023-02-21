@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
-using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

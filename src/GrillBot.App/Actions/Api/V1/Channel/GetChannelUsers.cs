@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Models;
 

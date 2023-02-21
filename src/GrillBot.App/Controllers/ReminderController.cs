@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Reminder;
 using GrillBot.Database.Models;

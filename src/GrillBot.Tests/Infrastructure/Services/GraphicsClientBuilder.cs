@@ -6,7 +6,7 @@ using GrillBot.Common.Services.Graphics.Models.Images;
 using ImageMagick;
 using Moq;
 
-namespace GrillBot.Tests.Infrastructure;
+namespace GrillBot.Tests.Infrastructure.Services;
 
 public class GraphicsClientBuilder : BuilderBase<IGraphicsClient>
 {

@@ -11,6 +11,8 @@ public abstract class RestServiceBase
     public string Url => HttpClient.BaseAddress!.ToString();
     public int Timeout => Convert.ToInt32(HttpClient.Timeout.TotalMilliseconds);
 
+    protected static readonly Task<object?> EmptyResult = Task.FromResult((object?)null);
+
     protected RestServiceBase(CounterManager counterManager, Func<HttpClient> clientFactory)
     {
         CounterManager = counterManager;

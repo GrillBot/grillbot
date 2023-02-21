@@ -3,6 +3,7 @@ using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -10,7 +11,6 @@ using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 

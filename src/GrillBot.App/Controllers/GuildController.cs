@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Actions;
 using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Data.Models.API.Guilds.GuildEvents;
-using GrillBot.Database.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

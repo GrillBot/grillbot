@@ -54,4 +54,10 @@ public class UserBuilder : BuilderBase<IUser>
         Mock.Setup(o => o.CreateDMChannelAsync(It.IsAny<RequestOptions>())).ReturnsAsync(dmChannel);
         return this;
     }
+
+    public UserBuilder AsBot(bool isBot = true)
+    {
+        Mock.Setup(o => o.IsBot).Returns(isBot);
+        return this;
+    }
 }

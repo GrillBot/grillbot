@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using GrillBot.Common.Infrastructure;
 using Newtonsoft.Json;
 using NSwag.Annotations;
 
-namespace GrillBot.Database.Models;
+namespace GrillBot.Common.Models.Pagination;
 
 /// <summary>
 /// Parameters for pagination.

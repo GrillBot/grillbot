@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace GrillBot.Database.Models;
+namespace GrillBot.Common.Models.Pagination;
 
 /// <summary>
 /// Paginated result

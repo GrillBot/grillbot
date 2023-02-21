@@ -6,6 +6,7 @@ using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.RubbergodService;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
@@ -27,11 +28,12 @@ public class GetDashboard : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager Logging { get; }
     private IGraphicsClient GraphicsClient { get; }
+    private IRubbergodServiceClient RubbergodServiceClient { get; }
 
     private List<Exception> Errors { get; } = new();
 
     public GetDashboard(ApiRequestContext apiContext, IWebHostEnvironment webHost, IDiscordClient discordClient, InitManager initManager, CounterManager counterManager,
-        GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging, IGraphicsClient graphicsClient) : base(apiContext)
+        GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient) : base(apiContext)
     {
         WebHost = webHost;
         DiscordClient = discordClient;
@@ -40,6 +42,7 @@ public class GetDashboard : ApiAction
         DatabaseBuilder = databaseBuilder;
         Logging = logging;
         GraphicsClient = graphicsClient;
+        RubbergodServiceClient = rubbergodServiceClient;
     }
 
     public async Task<Dashboard> ProcessAsync()
@@ -249,7 +252,8 @@ public class GetDashboard : ApiAction
         {
             dashboard.Services = new DashboardServices
             {
-                GraphicsAvailable = await GraphicsClient.IsAvailableAsync()
+                GraphicsAvailable = await GraphicsClient.IsAvailableAsync(),
+                RubbergodServiceAvailable = await RubbergodServiceClient.IsAvailableAsync()
             };
         }
         catch (Exception ex)

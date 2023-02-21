@@ -2,7 +2,7 @@
 using GrillBot.Common.Services.Math.Models;
 using Moq;
 
-namespace GrillBot.Tests.Infrastructure;
+namespace GrillBot.Tests.Infrastructure.Services;
 
 public class MathClientBuilder : BuilderBase<IMathClient>
 {

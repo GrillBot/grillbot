@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Discord;
 using GrillBot.Common.Managers.Counters;
+using GrillBot.Common.Models.Pagination;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Models;
 using GrillBot.Database.Models.Guilds;
 using Microsoft.EntityFrameworkCore;
 

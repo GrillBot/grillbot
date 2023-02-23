@@ -33,4 +33,13 @@ public class NicknameRepository : RepositoryBase
                 .AnyAsync(o => o.GuildId == user.GuildId.ToString() && o.UserId == user.Id.ToString() && o.NicknameValue == user.Nickname);
         }
     }
+
+    public async Task<bool> ExistsAnyNickname(IGuildUser user)
+    {
+        using (CreateCounter())
+        {
+            return await Context.Nicknames.AsNoTracking()
+                .AnyAsync(o => o.GuildId == user.GuildId.ToString() && o.UserId == user.Id.ToString());
+        }
+    }
 }

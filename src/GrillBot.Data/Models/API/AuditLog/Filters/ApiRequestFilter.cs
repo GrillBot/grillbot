@@ -17,41 +17,38 @@ public class ApiRequestFilter : IExtendedFilter, IApiObject
     public RangeParams<int> Duration { get; set; }
     public string Method { get; set; }
     public string LoggedUserRole { get; set; }
+    public string? ApiGroupName { get; set; }
 
     public bool IsSet()
     {
-        return !string.IsNullOrEmpty(ControllerName) || !string.IsNullOrEmpty(ActionName)
-                                                     || !string.IsNullOrEmpty(PathTemplate) || Duration != null || !string.IsNullOrEmpty(Method)
-                                                     || !string.IsNullOrEmpty(LoggedUserRole);
+        if (!string.IsNullOrEmpty(ControllerName)) return true;
+        if (!string.IsNullOrEmpty(ActionName)) return true;
+        if (!string.IsNullOrEmpty(PathTemplate)) return true;
+        if (Duration != null && (Duration.From >= 0 || Duration.To >= 0)) return true;
+        if (!string.IsNullOrEmpty(Method)) return true;
+        if (!string.IsNullOrEmpty(LoggedUserRole)) return true;
+        if (!string.IsNullOrEmpty(ApiGroupName)) return true;
+
+        return false;
     }
 
     public bool IsValid(AuditLogItem item, JsonSerializerSettings settings)
     {
         var request = JsonConvert.DeserializeObject<ApiRequest>(item.Data, settings)!;
 
-        if (!string.IsNullOrEmpty(ControllerName) && !request.ControllerName.Contains(ControllerName))
-            return false;
-
-        if (!string.IsNullOrEmpty(ActionName) && !request.ActionName.Contains(ActionName))
-            return false;
-
-        if (!IsDurationValid(Convert.ToInt32((request.EndAt - request.StartAt).TotalMilliseconds)))
-            return false;
-
-        if (!string.IsNullOrEmpty(PathTemplate) && !request.TemplatePath.StartsWith(PathTemplate))
-            return false;
-
-        if (!string.IsNullOrEmpty(Method) && Method != request.Method)
-            return false;
-
-        if (!string.IsNullOrEmpty(LoggedUserRole) && LoggedUserRole != request.LoggedUserRole)
-            return false;
+        if (!string.IsNullOrEmpty(ControllerName) && !request.ControllerName.Contains(ControllerName, StringComparison.InvariantCultureIgnoreCase)) return false;
+        if (!string.IsNullOrEmpty(ActionName) && !request.ActionName.Contains(ActionName, StringComparison.InvariantCultureIgnoreCase)) return false;
+        if (!IsDurationValid(request.EndAt - request.StartAt)) return false;
+        if (!string.IsNullOrEmpty(PathTemplate) && !request.TemplatePath.StartsWith(PathTemplate, StringComparison.InvariantCultureIgnoreCase)) return false;
+        if (!string.IsNullOrEmpty(Method) && Method != request.Method) return false;
+        if (!string.IsNullOrEmpty(LoggedUserRole) && LoggedUserRole != request.LoggedUserRole) return false;
+        if (!string.IsNullOrEmpty(ApiGroupName) && ApiGroupName != request.ApiGroupName) return false;
 
         return true;
     }
 
-    private bool IsDurationValid(int duration)
-        => Duration == null || (duration >= Duration.From && duration <= Duration.To);
+    private bool IsDurationValid(TimeSpan duration)
+        => Duration == null || (duration.TotalMilliseconds >= Duration.From && duration.TotalMilliseconds <= Duration.To);
 
     public Dictionary<string, string> SerializeForLog()
     {
@@ -61,7 +58,8 @@ public class ApiRequestFilter : IExtendedFilter, IApiObject
             { nameof(ActionName), ActionName },
             { nameof(PathTemplate), PathTemplate },
             { nameof(Method), Method },
-            { nameof(LoggedUserRole), LoggedUserRole }
+            { nameof(LoggedUserRole), LoggedUserRole },
+            { nameof(ApiGroupName), ApiGroupName }
         };
 
         result.AddApiObject(Duration, nameof(Duration));

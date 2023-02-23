@@ -116,7 +116,8 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
                 ActionName = "Action",
                 ControllerName = "Controller",
                 PathTemplate = "PathTemplate",
-                LoggedUserRole = "User"
+                LoggedUserRole = "User",
+                ApiGroupName = "V1"
             },
             MemberUpdatedFilter = new TargetIdFilter { TargetId = Consts.UserId.ToString() },
             OverwriteCreatedFilter = new TargetIdFilter { TargetId = Consts.UserId.ToString() },

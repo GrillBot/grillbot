@@ -72,7 +72,6 @@ public class GuildUserRepository : RepositoryBase
         {
             return await Context.GuildUsers
                 .Include(o => o.User)
-                .Include(o => o.Nicknames)
                 .ToListAsync();
         }
     }

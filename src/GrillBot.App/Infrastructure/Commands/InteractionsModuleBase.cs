@@ -1,5 +1,6 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Actions;
+using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,9 +10,10 @@ namespace GrillBot.App.Infrastructure.Commands;
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands)]
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
-    protected ITextsManager? Texts { get; }
-    protected IServiceProvider? ServiceProvider { get; }
-    protected GrillBotDatabaseBuilder? DatabaseBuilder { get; }
+    protected ITextsManager Texts { get; }
+    protected IServiceProvider ServiceProvider { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private CounterManager CounterManager { get; }
 
     protected string Locale
     {
@@ -27,10 +29,9 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected InteractionsModuleBase(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
-
-        if (ServiceProvider == null) return;
         Texts = ServiceProvider.GetRequiredService<ITextsManager>();
         DatabaseBuilder = ServiceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
+        CounterManager = ServiceProvider.GetRequiredService<CounterManager>();
     }
 
     /// <summary>
@@ -56,7 +57,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         if (configuration.SuppressAuto) return (false, false);
         if (configuration.RequireEphemeral) return (true, true);
 
-        await using var repository = DatabaseBuilder!.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
         IsEphemeralChannel = await repository.Channel.IsChannelEphemeralAsync(Context.Guild, Context.Channel);
         return (true, IsEphemeralChannel);
     }
@@ -71,55 +72,62 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 
     protected override async Task DeleteOriginalResponseAsync()
     {
-        var response = await GetOriginalResponseAsync();
-        if (response != null)
-            await response.DeleteAsync();
+        IUserMessage? userMessage;
+        using (CounterManager.Create("Discord.API.Interactions"))
+            userMessage = await GetOriginalResponseAsync();
+
+        if (userMessage != null)
+        {
+            using (CounterManager.Create("Discord.API.Messages"))
+                await userMessage.DeleteAsync();
+        }
     }
 
     protected async Task<IUserMessage> SetResponseAsync(string? content = null, Embed? embed = null, Embed[]? embeds = null, MessageComponent? components = null, MessageFlags? flags = null,
         IEnumerable<FileAttachment>? attachments = null, RequestOptions? requestOptions = null, bool secret = false, bool suppressFollowUp = false)
     {
-        var attachmentsList = (attachments ?? Enumerable.Empty<FileAttachment>()).ToList();
-        secret = secret || !IsEphemeralChannel;
-
-        if (!Context.Interaction.HasResponded)
+        using (CounterManager.Create("Discord.API.Interactions"))
         {
-            if (attachmentsList.Count > 0)
-                await RespondWithFilesAsync(attachments, content, embeds, false, secret, null, components, embed, requestOptions);
-            else
-                await RespondAsync(content, embeds, false, secret, null, requestOptions, components, embed);
-            return await Context.Interaction.GetOriginalResponseAsync();
+            var attachmentsList = (attachments ?? Enumerable.Empty<FileAttachment>()).ToList();
+            secret = secret || !IsEphemeralChannel;
+
+            if (!Context.Interaction.HasResponded)
+            {
+                if (attachmentsList.Count > 0)
+                    await RespondWithFilesAsync(attachments, content, embeds, false, secret, null, components, embed, requestOptions);
+                else
+                    await RespondAsync(content, embeds, false, secret, null, requestOptions, components, embed);
+                return await Context.Interaction.GetOriginalResponseAsync();
+            }
+
+            if (Context.Interaction.IsValidToken && !suppressFollowUp)
+            {
+                if (attachmentsList.Count > 0)
+                    return await FollowupWithFilesAsync(attachmentsList, content, embeds, false, secret, null, components, embed, requestOptions);
+                return await FollowupAsync(content, embeds, false, secret, null, requestOptions, components, embed);
+            }
+
+            if (secret)
+                flags |= MessageFlags.Ephemeral;
+
+            return await Context.Interaction.ModifyOriginalResponseAsync(msg =>
+            {
+                msg.Components = components;
+                msg.Flags = flags;
+                msg.Attachments = attachments == default ? default : new Optional<IEnumerable<FileAttachment>>(attachments);
+                msg.Content = content;
+                msg.Embeds = embeds;
+                msg.Embed = embed;
+            }, requestOptions);
         }
-
-        if (Context.Interaction.IsValidToken && !suppressFollowUp)
-        {
-            if (attachmentsList.Count > 0)
-                return await FollowupWithFilesAsync(attachmentsList, content, embeds, false, secret, null, components, embed, requestOptions);
-            return await FollowupAsync(content, embeds, false, secret, null, requestOptions, components, embed);
-        }
-
-        if (secret)
-            flags |= MessageFlags.Ephemeral;
-
-        return await Context.Interaction.ModifyOriginalResponseAsync(msg =>
-        {
-            msg.Components = components;
-            msg.Flags = flags;
-            msg.Attachments = attachments == default ? default : new Optional<IEnumerable<FileAttachment>>(attachments);
-            msg.Content = content;
-            msg.Embeds = embeds;
-            msg.Embed = embed;
-        }, requestOptions);
     }
 
-    protected string? GetText(string method, string id)
-        => Texts?[GetTextId(method, id), Locale];
-
-    protected string GetTextId(string method, string id) => $"{GetType().Name}/{method.Replace("Async", "")}/{id}";
+    protected string GetText(string method, string id)
+        => Texts[$"{GetType().Name}/{method.Replace("Async", "")}/{id}", Locale];
 
     protected ScopedCommand<TCommand> GetCommand<TCommand>() where TCommand : CommandAction
     {
-        var command = new ScopedCommand<TCommand>(ServiceProvider!.CreateScope());
+        var command = new ScopedCommand<TCommand>(ServiceProvider.CreateScope());
         command.Command.Init(Context);
 
         return command;
@@ -127,7 +135,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 
     protected ScopedCommand<TAction> GetActionAsCommand<TAction>() where TAction : ApiAction
     {
-        var command = new ScopedCommand<TAction>(ServiceProvider!.CreateScope());
+        var command = new ScopedCommand<TAction>(ServiceProvider.CreateScope());
         command.Command.UpdateContext(Locale, Context.User);
 
         return command;

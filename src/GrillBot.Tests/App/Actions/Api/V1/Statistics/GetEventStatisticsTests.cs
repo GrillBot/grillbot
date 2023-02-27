@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
 [TestClass]
 public class GetEventStatisticsTests : ApiActionTest<GetEventStatistics>
 {
-    protected override GetEventStatistics CreateAction()
+    protected override GetEventStatistics CreateInstance()
     {
         var eventManager = new EventLogManager();
         return new GetEventStatistics(ApiRequestContext, eventManager);
@@ -16,7 +16,7 @@ public class GetEventStatisticsTests : ApiActionTest<GetEventStatistics>
     [TestMethod]
     public void Process()
     {
-        var result = Action.Process();
+        var result = Instance.Process();
         Assert.AreEqual(0, result.Count);
     }
 }

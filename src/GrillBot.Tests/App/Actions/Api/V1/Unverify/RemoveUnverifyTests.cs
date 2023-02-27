@@ -23,7 +23,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     private IGuildUser User { get; set; }
     private IRole Role { get; set; }
 
-    protected override RemoveUnverify CreateAction()
+    protected override RemoveUnverify CreateInstance()
     {
         Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
@@ -123,20 +123,20 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_GuildNotFound() =>
-        await Action.ProcessAsync(Consts.GuildId + 1, Consts.UserId);
+        await Instance.ProcessAsync(Consts.GuildId + 1, Consts.UserId);
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_DestUserNotFound()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 1);
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.UserId + 1);
 
     [TestMethod]
     public async Task ProcessAsync_WithoutUnverify()
     {
         await InitDataAsync(false, true, true);
 
-        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
+        var result = await Instance.ProcessAsync(Consts.GuildId, Consts.UserId);
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
 
@@ -145,7 +145,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     {
         await InitDataAsync(true, false, true);
 
-        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId);
+        var result = await Instance.ProcessAsync(Consts.GuildId, Consts.UserId);
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "(Missing log data for unverify reconstruction.)");
     }
 
@@ -156,14 +156,14 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     public async Task ProcessAsync_Autoremove()
     {
         await InitDataAsync(true, false, false);
-        await Action.ProcessAutoRemoveAsync(Consts.GuildId, Consts.UserId);
+        await Instance.ProcessAutoRemoveAsync(Consts.GuildId, Consts.UserId);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Autoremove_AfterFail()
     {
         await InitDataAsync(true, false, false);
-        await Action.ProcessAutoRemoveAsync(Consts.GuildId + 1, Consts.UserId);
+        await Instance.ProcessAutoRemoveAsync(Consts.GuildId + 1, Consts.UserId);
     }
 
     [TestMethod]
@@ -172,7 +172,7 @@ public class RemoveUnverifyTests : ApiActionTest<RemoveUnverify>
     private async Task ProcessSuccessAsync(bool force)
     {
         await InitDataAsync(true, false, false);
-        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, force);
+        var result = await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, force);
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
 }

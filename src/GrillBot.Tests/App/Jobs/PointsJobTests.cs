@@ -1,6 +1,7 @@
 ﻿using Discord;
 using GrillBot.App.Jobs;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.App.Jobs;
@@ -12,7 +13,7 @@ public class PointsJobTests : JobTest<PointsJob>
     private IGuildUser GuildUser { get; set; } = null!;
     private IUser User { get; set; } = null!;
 
-    protected override PointsJob CreateJob()
+    protected override PointsJob CreateInstance()
     {
         User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetAvatar(Consts.AvatarId).Build();
         var userBuilder = new GuildUserBuilder(User).SetAvatar(Consts.AvatarId);
@@ -63,19 +64,14 @@ public class PointsJobTests : JobTest<PointsJob>
     {
         await InitTransactionsAsync();
 
-        var context = CreateContext();
-        await Job.Execute(context);
-
-        Assert.IsFalse(string.IsNullOrEmpty(context.Result as string));
-        Assert.IsTrue(context.Result.ToString()!.StartsWith("MergeTransactions"));
+        await Execute(context =>
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(context.Result as string));
+            Assert.IsTrue(context.Result.ToString()!.StartsWith("MergeTransactions"));
+        });
     }
 
     [TestMethod]
     public async Task Execute_NoTransactions()
-    {
-        var context = CreateContext();
-        await Job.Execute(context);
-
-        Assert.IsTrue(string.IsNullOrEmpty(context.Result as string));
-    }
+        => await Execute(context => Assert.IsTrue(string.IsNullOrEmpty(context.Result as string)));
 }

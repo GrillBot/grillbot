@@ -5,45 +5,44 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Modules.Implementations.Reminder;
 
 [TestClass]
-public class RemindPostponeHandlerTests : ServiceTest<RemindPostponeHandler>
+public class RemindPostponeHandlerTests : TestBase<RemindPostponeHandler>
 {
-    protected override RemindPostponeHandler CreateService() => null;
+    protected override RemindPostponeHandler CreateInstance()
+    {
+        return new RemindPostponeHandler(1, TestServices.Provider.Value);
+    }
 
     [TestMethod]
     public async Task ProcessAsync_NotDms()
     {
-        var handler = new RemindPostponeHandler(1, TestServices.Provider.Value);
         var interaction = new DiscordInteractionBuilder(Consts.InteractionId).AsDmInteraction(false).Build();
         var context = new InteractionContextBuilder().SetInteraction(interaction).Build();
 
-        await handler.ProcessAsync(context);
+        await Instance.ProcessAsync(context);
     }
 
     [TestMethod]
     public async Task ProcessAsync_NoComponentInteraction()
     {
-        var handler = new RemindPostponeHandler(1, TestServices.Provider.Value);
         var interaction = new DiscordInteractionBuilder(Consts.InteractionId).AsDmInteraction().Build();
         var context = new InteractionContextBuilder().SetInteraction(interaction).Build();
 
-        await handler.ProcessAsync(context);
+        await Instance.ProcessAsync(context);
     }
 
     [TestMethod]
     public async Task ProcessAsync_UnknownRemind()
     {
-        var handler = new RemindPostponeHandler(1, TestServices.Provider.Value);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
         var interaction = new ComponentInteractionBuilder(Consts.InteractionId).AsDmInteraction().SetMessage(message).Build();
         var context = new InteractionContextBuilder().SetInteraction(interaction).Build();
 
-        await handler.ProcessAsync(context);
+        await Instance.ProcessAsync(context);
     }
 
     [TestMethod]
     public async Task ProcessAsync()
     {
-        var handler = new RemindPostponeHandler(1, TestServices.Provider.Value);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
         var interaction = new ComponentInteractionBuilder(Consts.InteractionId).AsDmInteraction().SetMessage(message).Build();
         var context = new InteractionContextBuilder().SetInteraction(interaction).Build();
@@ -62,6 +61,6 @@ public class RemindPostponeHandlerTests : ServiceTest<RemindPostponeHandler>
         });
         await Repository.CommitAsync();
 
-        await handler.ProcessAsync(context);
+        await Instance.ProcessAsync(context);
     }
 }

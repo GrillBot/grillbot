@@ -8,7 +8,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Services;
 [TestClass]
 public class GetGraphicsServiceInfoTests : ApiActionTest<GetGraphicsServiceInfo>
 {
-    protected override GetGraphicsServiceInfo CreateAction()
+    protected override GetGraphicsServiceInfo CreateInstance()
     {
         var client = new DiscordSocketClient();
         var interactionService = DiscordHelper.CreateInteractionService(client);
@@ -19,7 +19,7 @@ public class GetGraphicsServiceInfoTests : ApiActionTest<GetGraphicsServiceInfo>
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.Metrics);

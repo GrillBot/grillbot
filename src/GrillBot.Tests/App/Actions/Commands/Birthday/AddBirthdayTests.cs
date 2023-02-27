@@ -11,7 +11,7 @@ public class AddBirthdayTests : CommandActionTest<AddBirthday>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override AddBirthday CreateAction()
+    protected override AddBirthday CreateInstance()
     {
         return InitAction(new AddBirthday(DatabaseBuilder));
     }
@@ -30,6 +30,6 @@ public class AddBirthdayTests : CommandActionTest<AddBirthday>
             await Repository.CommitAsync();
         }
 
-        await Action.ProcessAsync(new DateTime(2022, 02, 04));
+        await Instance.ProcessAsync(new DateTime(2022, 02, 04));
     }
 }

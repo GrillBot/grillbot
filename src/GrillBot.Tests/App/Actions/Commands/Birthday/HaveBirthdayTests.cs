@@ -11,7 +11,7 @@ public class HaveBirthdayTests : CommandActionTest<HaveBirthday>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override HaveBirthday CreateAction()
+    protected override HaveBirthday CreateInstance()
     {
         return InitAction(new HaveBirthday(DatabaseBuilder));
     }
@@ -28,7 +28,7 @@ public class HaveBirthdayTests : CommandActionTest<HaveBirthday>
     [TestMethod]
     public async Task ProcessAsync_NoUser()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.IsFalse(result);
     }
 
@@ -36,7 +36,7 @@ public class HaveBirthdayTests : CommandActionTest<HaveBirthday>
     public async Task ProcessAsync_NoBirthday()
     {
         await InitDataAsync(false);
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.IsFalse(result);
     }
 
@@ -44,7 +44,7 @@ public class HaveBirthdayTests : CommandActionTest<HaveBirthday>
     public async Task ProcessAsync_HaveBirthday()
     {
         await InitDataAsync(true);
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsTrue(result);
     }

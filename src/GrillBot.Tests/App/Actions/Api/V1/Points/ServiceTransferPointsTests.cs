@@ -16,7 +16,7 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
     private IGuild Guild { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override ServiceTransferPoints CreateAction()
+    protected override ServiceTransferPoints CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
@@ -53,44 +53,44 @@ public class ServiceTransferPointsTests : ApiActionTest<ServiceTransferPoints>
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_SameUsers()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId, 1);
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId, 1);
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_UserNotFound()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId + 3, 1);
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId + 3, 1);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_SourceUserIsBot()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 2, Consts.UserId, 1);
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.UserId + 2, Consts.UserId, 1);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_DestUserIsBot()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId + 2, 1);
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId + 2, 1);
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_GuildNotFound()
-        => await Action.ProcessAsync(Consts.GuildId + 1, Consts.UserId, Consts.UserId + 1, 1);
+        => await Instance.ProcessAsync(Consts.GuildId + 1, Consts.UserId, Consts.UserId + 1, 1);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_InsufficientAmount()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId + 1, 1);
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId + 1, 1);
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         const int amount = 5;
         await InitSummariesAsync();
-        await Action.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId + 1, amount);
+        await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, Consts.UserId + 1, amount);
         Repository.ClearChangeTracker();
 
         var toUserPoints = await Repository.Points.ComputePointsOfUserAsync(Consts.GuildId, Consts.UserId + 1);

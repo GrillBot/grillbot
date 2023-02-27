@@ -19,7 +19,7 @@ public class InitSuggestionTests : CommandActionTest<InitSuggestion>
     protected override IGuild Guild
         => new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { GuildEmote }).Build();
 
-    protected override InitSuggestion CreateAction()
+    protected override InitSuggestion CreateInstance()
     {
         var message = new HttpResponseMessage();
         var httpClientFactory = HttpClientHelper.CreateFactory(message);
@@ -33,22 +33,22 @@ public class InitSuggestionTests : CommandActionTest<InitSuggestion>
     [ExcludeFromCodeCoverage]
     [ExpectedException(typeof(ValidationException))]
     public async Task ProcessAsync_ValidationFailed_NoData()
-        => await Action.ProcessAsync(null, null);
+        => await Instance.ProcessAsync(null, null);
 
     [TestMethod]
     [ExcludeFromCodeCoverage]
     [ExpectedException(typeof(ValidationException))]
     public async Task ProcessAsync_ValidationFailed_EmoteExists()
-        => await Action.ProcessAsync(Consts.OnlineEmote, null);
+        => await Instance.ProcessAsync(Consts.OnlineEmote, null);
 
     [TestMethod]
     public async Task ProcessAsync_Emote_Success()
-        => await Action.ProcessAsync(Emote.Parse(Consts.PepeJamEmote), null);
+        => await Instance.ProcessAsync(Emote.Parse(Consts.PepeJamEmote), null);
 
     [TestMethod]
     public async Task ProcessAsync_Attachment_Success()
     {
         var attachment = new AttachmentBuilder().SetFilename("Filename.png").SetUrl("http://localhost").Build();
-        await Action.ProcessAsync(null, attachment);
+        await Instance.ProcessAsync(null, attachment);
     }
 }

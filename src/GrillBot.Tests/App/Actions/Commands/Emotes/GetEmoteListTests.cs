@@ -18,7 +18,7 @@ public class GetEmoteListTests : CommandActionTest<GetEmotesList>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(GuildData).Build();
 
-    protected override GetEmotesList CreateAction()
+    protected override GetEmotesList CreateInstance()
     {
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
         var emoteHelper = new GrillBot.App.Helpers.EmoteHelper(client);
@@ -48,7 +48,7 @@ public class GetEmoteListTests : CommandActionTest<GetEmotesList>
     [TestMethod]
     public async Task ProcessAsync_NoEmotes()
     {
-        var (embed, paginationComponent) = await Action.ProcessAsync(0, "UseCount", true, null, false);
+        var (embed, paginationComponent) = await Instance.ProcessAsync(0, "UseCount", true, null, false);
 
         Assert.IsNotNull(embed);
         Assert.IsNull(paginationComponent);
@@ -57,7 +57,7 @@ public class GetEmoteListTests : CommandActionTest<GetEmotesList>
     [TestMethod]
     public async Task ProcessAsync_NoEmotes_OfUser()
     {
-        var (embed, paginationComponent) = await Action.ProcessAsync(0, "UseCount", false, User, false);
+        var (embed, paginationComponent) = await Instance.ProcessAsync(0, "UseCount", false, User, false);
 
         Assert.IsNotNull(embed);
         Assert.IsNull(paginationComponent);
@@ -68,7 +68,7 @@ public class GetEmoteListTests : CommandActionTest<GetEmotesList>
     {
         await InitDataAsync();
 
-        var (embed, paginationComponent) = await Action.ProcessAsync(0, "UseCount", false, User, false);
+        var (embed, paginationComponent) = await Instance.ProcessAsync(0, "UseCount", false, User, false);
         Assert.IsNotNull(embed);
         Assert.IsNull(paginationComponent);
     }
@@ -78,7 +78,7 @@ public class GetEmoteListTests : CommandActionTest<GetEmotesList>
     {
         await InitDataAsync();
 
-        var result = await Action.ComputePagesCountAsync("UseCount", false, null, false);
+        var result = await Instance.ComputePagesCountAsync("UseCount", false, null, false);
         Assert.AreEqual(1, result);
     }
 }

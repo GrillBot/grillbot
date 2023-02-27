@@ -12,7 +12,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Channel;
 [TestClass]
 public class SendMessageToChannelTests : ApiActionTest<SendMessageToChannel>
 {
-    protected override SendMessageToChannel CreateAction()
+    protected override SendMessageToChannel CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
@@ -35,34 +35,34 @@ public class SendMessageToChannelTests : ApiActionTest<SendMessageToChannel>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_GuildNotFound()
-        => await Action.ProcessAsync(Consts.GuildId + 1, Consts.ChannelId, new SendMessageToChannelParams());
+        => await Instance.ProcessAsync(Consts.GuildId + 1, Consts.ChannelId, new SendMessageToChannelParams());
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_ChannelNotFound()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId + 1, new SendMessageToChannelParams());
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId + 1, new SendMessageToChannelParams());
 
     [TestMethod]
     public async Task ProcessAsync_Success_WithoutReference()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams { Content = "Zprava" });
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams { Content = "Zprava" });
 
     [TestMethod]
     public async Task ProcessAsync_Success_WithIdReference()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams { Content = "Zprava", Reference = (Consts.MessageId + 1).ToString() });
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams { Content = "Zprava", Reference = (Consts.MessageId + 1).ToString() });
 
     [TestMethod]
     public async Task ProcessAsync_Success_NotUri()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams { Content = "Zprava", Reference = "ReferenceLink" });
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams { Content = "Zprava", Reference = "ReferenceLink" });
 
     [TestMethod]
     public async Task ProcessAsync_Success_InvalidUri()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams { Content = "Zprava", Reference = "https://grillbot.cloud" });
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId, new SendMessageToChannelParams { Content = "Zprava", Reference = "https://grillbot.cloud" });
 
     [TestMethod]
     public async Task ProcessAsync_Success_ValidUri()
     {
-        await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId,
+        await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId,
             new SendMessageToChannelParams { Content = "Zprava", Reference = $"https://discord.com/channels/{Consts.GuildId}/{Consts.ChannelId}/{Consts.MessageId}" });
     }
 
@@ -75,6 +75,6 @@ public class SendMessageToChannelTests : ApiActionTest<SendMessageToChannel>
         var parameters = new SendMessageToChannelParams { Content = "Zprava" };
         parameters.Attachments.Add(attachment);
 
-        await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId, parameters);
+        await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId, parameters);
     }
 }

@@ -8,7 +8,7 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Actions.Commands;
 
 [TestClass]
-public class PermissionsCleanerTests : CommandActionTest<PermissionsCleaner>
+public partial class PermissionsCleanerTests : CommandActionTest<PermissionsCleaner>
 {
     private static readonly Overwrite[] Overwrites =
         Enumerable.Range(0, 50).Select(o => new Overwrite(Consts.RoleId + (ulong)o, PermissionTarget.Role, new OverwritePermissions(ulong.MaxValue, 0)))
@@ -29,7 +29,7 @@ public class PermissionsCleanerTests : CommandActionTest<PermissionsCleaner>
     protected override IGuild Guild { get; } =
         new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Users).SetGetTextChannelsAction(new[] { TextChannel }).Build();
 
-    protected override PermissionsCleaner CreateAction()
+    protected override PermissionsCleaner CreateInstance()
     {
         var permissionsReader = new PermissionsReader(DatabaseBuilder, TestServices.Texts.Value);
         permissionsReader.Init(Context);
@@ -40,27 +40,30 @@ public class PermissionsCleanerTests : CommandActionTest<PermissionsCleaner>
     [TestMethod]
     public async Task ClearAllPermissionsAsync()
     {
-        Action.OnProgress = progressBar =>
+        Instance.OnProgress = progressBar =>
         {
             Assert.IsFalse(string.IsNullOrEmpty(progressBar));
-            Assert.IsTrue(Regex.IsMatch(progressBar, @"[▓|░]+ \(\d+ %\) \*\*\d+\*\* \/ \*\*\d+\*\*"));
+            Assert.IsTrue(ProgressBarRegex().IsMatch(progressBar));
             return Task.CompletedTask;
         };
 
         var excludedUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        await Action.ClearAllPermissionsAsync(TextChannel, new[] { excludedUser });
+        await Instance.ClearAllPermissionsAsync(TextChannel, new[] { excludedUser });
     }
 
     [TestMethod]
     public async Task RemoveUselessPermissionsAsync()
     {
-        Action.OnProgress = progressBar =>
+        Instance.OnProgress = progressBar =>
         {
             Assert.IsFalse(string.IsNullOrEmpty(progressBar));
-            Assert.IsTrue(Regex.IsMatch(progressBar, @"[▓|░]+ \(\d+ %\) \*\*\d+\*\* \/ \*\*\d+\*\*"));
+            Assert.IsTrue(ProgressBarRegex().IsMatch(progressBar));
             return Task.CompletedTask;
         };
 
-        await Action.RemoveUselessPermissionsAsync();
+        await Instance.RemoveUselessPermissionsAsync();
     }
+
+    [GeneratedRegex("[▓|░]+ \\(\\d+ %\\) \\*\\*\\d+\\*\\* \\/ \\*\\*\\d+\\*\\*")]
+    private static partial Regex ProgressBarRegex();
 }

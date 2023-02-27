@@ -8,7 +8,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Invite;
 [TestClass]
 public class GetInviteListTests : ApiActionTest<GetInviteList>
 {
-    protected override GetInviteList CreateAction()
+    protected override GetInviteList CreateInstance()
     {
         return new GetInviteList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value);
     }
@@ -32,7 +32,7 @@ public class GetInviteListTests : ApiActionTest<GetInviteList>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(new GetInviteListParams());
+        var result = await Instance.ProcessAsync(new GetInviteListParams());
         Assert.AreEqual(1, result.TotalItemsCount);
     }
 
@@ -49,7 +49,7 @@ public class GetInviteListTests : ApiActionTest<GetInviteList>
             Sort = { Descending = true }
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(0, result.TotalItemsCount);
     }
 
@@ -59,11 +59,11 @@ public class GetInviteListTests : ApiActionTest<GetInviteList>
         await InitDataAsync();
 
         var filter = new GetInviteListParams { Sort = { OrderBy = "UseCount" } };
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(1, result.TotalItemsCount);
 
         filter.Sort.Descending = true;
-        result = await Action.ProcessAsync(filter);
+        result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(1, result.TotalItemsCount);
     }
 }

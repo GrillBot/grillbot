@@ -7,12 +7,12 @@ namespace GrillBot.Tests.App.Actions.Api.V2;
 [TestClass]
 public class StoreKarmaTests : ApiActionTest<StoreKarma>
 {
-    protected override StoreKarma CreateAction()
+    protected override StoreKarma CreateInstance()
     {
         return new StoreKarma(ApiRequestContext, TestServices.RubbergodServiceClient.Value);
     }
 
     [TestMethod]
     public async Task ProcessAsync()
-        => await Action.ProcessAsync(new List<KarmaItem>());
+        => await Instance.ProcessAsync(new List<KarmaItem>());
 }

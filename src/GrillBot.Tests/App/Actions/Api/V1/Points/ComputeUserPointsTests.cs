@@ -13,7 +13,7 @@ public class ComputeUserPointsTests : ApiActionTest<ComputeUserPoints>
     private IGuild Guild { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override ComputeUserPoints CreateAction()
+    protected override ComputeUserPoints CreateInstance()
     {
         var userBuilder = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator);
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { userBuilder.Build() }).Build();
@@ -40,7 +40,7 @@ public class ComputeUserPointsTests : ApiActionTest<ComputeUserPoints>
         });
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync(Consts.UserId);
+        var result = await Instance.ProcessAsync(Consts.UserId);
         Assert.AreEqual(1, result.Count);
         Assert.AreEqual(1, result.Sum(o => o.TotalPoints));
     }
@@ -49,7 +49,7 @@ public class ComputeUserPointsTests : ApiActionTest<ComputeUserPoints>
     [ApiConfiguration(true)]
     public async Task ProcessAsync_Public()
     {
-        var result = await Action.ProcessAsync(null);
+        var result = await Instance.ProcessAsync(null);
         Assert.AreEqual(0, result.Count);
     }
 }

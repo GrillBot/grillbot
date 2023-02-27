@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Reminder;
 [TestClass]
 public class GetReminderListTests : ApiActionTest<GetReminderList>
 {
-    protected override GetReminderList CreateAction()
+    protected override GetReminderList CreateInstance()
     {
         return new GetReminderList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value);
     }
@@ -19,7 +19,7 @@ public class GetReminderListTests : ApiActionTest<GetReminderList>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(new GetReminderListParams());
+        var result = await Instance.ProcessAsync(new GetReminderListParams());
         Assert.AreEqual(1, result.TotalItemsCount);
     }
 
@@ -30,7 +30,7 @@ public class GetReminderListTests : ApiActionTest<GetReminderList>
         await InitDataAsync();
 
         var filter = new GetReminderListParams { Sort = { Descending = true, OrderBy = "ToUser" } };
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(1, result.TotalItemsCount);
     }
 
@@ -49,7 +49,7 @@ public class GetReminderListTests : ApiActionTest<GetReminderList>
             ToUserId = Consts.UserId.ToString()
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(0, result.TotalItemsCount);
     }
 

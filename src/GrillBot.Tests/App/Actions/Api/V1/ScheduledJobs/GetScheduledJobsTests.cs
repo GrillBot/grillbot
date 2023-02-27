@@ -14,7 +14,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.ScheduledJobs;
 [TestClass]
 public class GetScheduledJobsTests : ApiActionTest<GetScheduledJobs>
 {
-    protected override GetScheduledJobs CreateAction()
+    protected override GetScheduledJobs CreateInstance()
     {
         var jobExecution = new JobExecutionContextBuilder().SetJobDetail(new JobDetailImpl("Job2", typeof(MessageCacheJob))).Build();
         var scheduler = new SchedulerBuilder()
@@ -69,7 +69,7 @@ public class GetScheduledJobsTests : ApiActionTest<GetScheduledJobs>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(2, result.Count);
     }
 }

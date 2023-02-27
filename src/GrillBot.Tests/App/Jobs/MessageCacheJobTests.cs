@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Jobs;
 using GrillBot.Common.Managers;
+using GrillBot.Tests.Infrastructure.Common;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.Tests.App.Jobs;
@@ -7,7 +8,7 @@ namespace GrillBot.Tests.App.Jobs;
 [TestClass]
 public class MessageCacheJobTests : JobTest<MessageCacheJob>
 {
-    protected override MessageCacheJob CreateJob()
+    protected override MessageCacheJob CreateInstance()
     {
         var provider = TestServices.Provider.Value;
         provider.GetRequiredService<InitManager>().Set(true);
@@ -19,10 +20,10 @@ public class MessageCacheJobTests : JobTest<MessageCacheJob>
     [TestMethod]
     public async Task Execute()
     {
-        var context = CreateContext();
-        await Job.Execute(context);
-
-        Assert.IsNotNull(context.Result);
-        Assert.AreEqual("Test", context.Result);
+        await Execute(context =>
+        {
+            Assert.IsNotNull(context.Result);
+            Assert.AreEqual("Test", context.Result);
+        });
     }
 }

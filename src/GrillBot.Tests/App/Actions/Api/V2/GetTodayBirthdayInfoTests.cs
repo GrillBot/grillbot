@@ -12,7 +12,7 @@ public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
     private static IConfiguration Configuration => TestServices.Configuration.Value;
     private IUser[] Users { get; set; }
 
-    protected override GetTodayBirthdayInfo CreateAction()
+    protected override GetTodayBirthdayInfo CreateInstance()
     {
         Users = new[]
         {
@@ -31,7 +31,7 @@ public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
     [TestMethod]
     public async Task ProcessAsync_NoOneHaveBirthday()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         var sadge = Configuration["Discord:Emotes:Sadge"];
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
@@ -55,7 +55,7 @@ public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
         await Repository.AddCollectionAsync(new[] { withoutYear, withYear, unknownUser });
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         var hypers = Configuration["Discord:Emotes:Hypers"];
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
@@ -73,7 +73,7 @@ public class GetTodayBirthdayInfoTests : ApiActionTest<GetTodayBirthdayInfo>
         await Repository.AddCollectionAsync(new[] { withYear });
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         var hypers = Configuration["Discord:Emotes:Hypers"];
 
         Assert.IsFalse(string.IsNullOrEmpty(result));

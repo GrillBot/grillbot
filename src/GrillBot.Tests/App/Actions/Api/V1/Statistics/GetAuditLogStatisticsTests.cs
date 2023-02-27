@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
 [TestClass]
 public class GetAuditLogStatisticsTests : ApiActionTest<GetAuditLogStatistics>
 {
-    protected override GetAuditLogStatistics CreateAction()
+    protected override GetAuditLogStatistics CreateInstance()
     {
         return new GetAuditLogStatistics(ApiRequestContext, DatabaseBuilder);
     }
@@ -47,7 +47,7 @@ public class GetAuditLogStatisticsTests : ApiActionTest<GetAuditLogStatistics>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.ByType);

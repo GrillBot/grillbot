@@ -10,7 +10,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.AuditLog;
 [TestClass]
 public class CreateLogItemTests : ApiActionTest<CreateLogItem>
 {
-    protected override CreateLogItem CreateAction()
+    protected override CreateLogItem CreateInstance()
     {
         var writer = new AuditLogWriteManager(DatabaseBuilder);
         return new CreateLogItem(ApiRequestContext, writer, TestServices.Texts.Value);
@@ -38,6 +38,6 @@ public class CreateLogItemTests : ApiActionTest<CreateLogItem>
     private async Task ProcessTestAsync(bool info, bool warning, bool error, string content)
     {
         var request = new ClientLogItemRequest { Content = content, IsError = error, IsInfo = info, IsWarning = warning };
-        await Action.ProcessAsync(request);
+        await Instance.ProcessAsync(request);
     }
 }

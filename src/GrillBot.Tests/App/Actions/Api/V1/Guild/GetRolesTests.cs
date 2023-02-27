@@ -8,7 +8,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Guild;
 [TestClass]
 public class GetRolesTests : ApiActionTest<GetRoles>
 {
-    protected override GetRoles CreateAction()
+    protected override GetRoles CreateInstance()
     {
         var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
@@ -23,14 +23,14 @@ public class GetRolesTests : ApiActionTest<GetRoles>
     [ApiConfiguration(true)]
     public async Task ProcessAsync_Public()
     {
-        var result = await Action.ProcessAsync(Consts.GuildId);
+        var result = await Instance.ProcessAsync(Consts.GuildId);
         Assert.AreEqual(1, result.Count);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Private()
     {
-        var result = await Action.ProcessAsync(null);
+        var result = await Instance.ProcessAsync(null);
         Assert.AreEqual(1, result.Count);
     }
 }

@@ -9,9 +9,9 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.ChannelCreated;
 
 [TestClass]
-public class AuditChannelCreatedHandlerTests : HandlerTest<AuditChannelCreatedHandler>
+public class AuditChannelCreatedHandlerTests : TestBase<AuditChannelCreatedHandler>
 {
-    protected override AuditChannelCreatedHandler CreateHandler()
+    protected override AuditChannelCreatedHandler CreateInstance()
     {
         var writer = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditChannelCreatedHandler(TestServices.CounterManager.Value, writer);
@@ -21,7 +21,7 @@ public class AuditChannelCreatedHandlerTests : HandlerTest<AuditChannelCreatedHa
     public async Task ProcessAsync_Dms()
     {
         var channel = new DmChannelBuilder().Build();
-        await Handler.ProcessAsync(channel);
+        await Instance.ProcessAsync(channel);
     }
 
     [TestMethod]
@@ -30,7 +30,7 @@ public class AuditChannelCreatedHandlerTests : HandlerTest<AuditChannelCreatedHa
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(Enumerable.Empty<IAuditLogEntry>().ToList()).Build();
         var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(channel);
+        await Instance.ProcessAsync(channel);
     }
 
     [TestMethod]
@@ -42,6 +42,6 @@ public class AuditChannelCreatedHandlerTests : HandlerTest<AuditChannelCreatedHa
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(new List<IAuditLogEntry> { auditLogEntry }).Build();
         var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(channel);
+        await Instance.ProcessAsync(channel);
     }
 }

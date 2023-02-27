@@ -8,11 +8,11 @@ using Moq;
 namespace GrillBot.Tests.App.Handlers.InteractionCommandExecuted;
 
 [TestClass]
-public class UpdateUserLanguageHandlerTests : HandlerTest<UpdateUserLanguageHandler>
+public class UpdateUserLanguageHandlerTests : TestBase<UpdateUserLanguageHandler>
 {
     private static readonly IGuildUser User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override UpdateUserLanguageHandler CreateHandler()
+    protected override UpdateUserLanguageHandler CreateInstance()
     {
         return new UpdateUserLanguageHandler(DatabaseBuilder);
     }
@@ -32,7 +32,7 @@ public class UpdateUserLanguageHandlerTests : HandlerTest<UpdateUserLanguageHand
             .SetInteraction(new DiscordInteractionBuilder(Consts.InteractionId).SetUserLocale("cs").Build())
             .Build();
 
-        await Handler.ProcessAsync(command, interactionContext, new ExecuteResult());
+        await Instance.ProcessAsync(command, interactionContext, new ExecuteResult());
     }
 
     [TestMethod]
@@ -46,6 +46,6 @@ public class UpdateUserLanguageHandlerTests : HandlerTest<UpdateUserLanguageHand
             .SetInteraction(new DiscordInteractionBuilder(Consts.InteractionId).SetUserLocale("cs").Build())
             .Build();
 
-        await Handler.ProcessAsync(command, interactionContext, new ExecuteResult());
+        await Instance.ProcessAsync(command, interactionContext, new ExecuteResult());
     }
 }

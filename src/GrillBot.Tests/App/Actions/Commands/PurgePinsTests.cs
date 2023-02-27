@@ -26,7 +26,7 @@ public class PurgePinsTests : CommandActionTest<PurgePins>
 
     protected override IGuildUser User => Author;
 
-    protected override PurgePins CreateAction()
+    protected override PurgePins CreateInstance()
     {
         return InitAction(new PurgePins(TestServices.Texts.Value));
     }
@@ -34,7 +34,7 @@ public class PurgePinsTests : CommandActionTest<PurgePins>
     [TestMethod]
     public async Task ProcessAsync_ChannelFromContext()
     {
-        var result = await Action.ProcessAsync(Messages.Length, null);
+        var result = await Instance.ProcessAsync(Messages.Length, null);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.IsTrue(result.Contains(Messages.Length.ToString()));
@@ -43,7 +43,7 @@ public class PurgePinsTests : CommandActionTest<PurgePins>
     [TestMethod]
     public async Task ProcessAsync_WithChannel()
     {
-        var result = await Action.ProcessAsync(100, (ITextChannel)Channel);
+        var result = await Instance.ProcessAsync(100, (ITextChannel)Channel);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.IsTrue(result.Contains(Messages.Length.ToString()));

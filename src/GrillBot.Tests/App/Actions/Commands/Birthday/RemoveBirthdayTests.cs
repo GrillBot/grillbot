@@ -11,7 +11,7 @@ public class RemoveBirthdayTests : CommandActionTest<RemoveBirthday>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override RemoveBirthday CreateAction()
+    protected override RemoveBirthday CreateInstance()
     {
         return InitAction(new RemoveBirthday(DatabaseBuilder));
     }
@@ -25,13 +25,13 @@ public class RemoveBirthdayTests : CommandActionTest<RemoveBirthday>
     [TestMethod]
     public async Task ProcessAsync_UserNotFound()
     {
-        await Action.ProcessAsync();
+        await Instance.ProcessAsync();
     }
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync();
-        await Action.ProcessAsync();
+        await Instance.ProcessAsync();
     }
 }

@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 [TestClass]
 public class AddKeepablesTests : ApiActionTest<AddKeepables>
 {
-    protected override AddKeepables CreateAction()
+    protected override AddKeepables CreateInstance()
     {
         return new AddKeepables(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value);
     }
@@ -23,7 +23,7 @@ public class AddKeepablesTests : ApiActionTest<AddKeepables>
             new() { Group = "2BIT", Name = "IAL" }
         };
 
-        await Action.ProcessAsync(parameters);
+        await Instance.ProcessAsync(parameters);
     }
 
     [TestMethod]

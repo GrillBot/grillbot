@@ -10,7 +10,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.ScheduledJobs;
 [TestClass]
 public class UpdateJobTests : ApiActionTest<UpdateJob>
 {
-    protected override UpdateJob CreateAction()
+    protected override UpdateJob CreateInstance()
     {
         var dataCacheManager = new DataCacheManager(CacheBuilder);
         var scheduler = new SchedulerBuilder()
@@ -23,12 +23,12 @@ public class UpdateJobTests : ApiActionTest<UpdateJob>
     [TestMethod]
     [ExcludeFromCodeCoverage]
     [ExpectedException(typeof(NotFoundException))]
-    public async Task ProcessAsync_JobNotFound() => await Action.ProcessAsync("Job2", true);
+    public async Task ProcessAsync_JobNotFound() => await Instance.ProcessAsync("Job2", true);
 
     [TestMethod]
     public async Task ProcessAsync()
     {
-        await Action.ProcessAsync("Job", true);
-        await Action.ProcessAsync("Job", false);
+        await Instance.ProcessAsync("Job", true);
+        await Instance.ProcessAsync("Job", false);
     }
 }

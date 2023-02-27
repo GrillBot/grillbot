@@ -12,7 +12,7 @@ public class UnverifyCheckManager
     public void ValidateUnverifyDate_Ends()
     {
         var configuration = ConfigurationHelper.CreateConfiguration();
-        var service = new GrillBot.App.Managers.UnverifyCheckManager(null, configuration, null, TestServices.Texts.Value);
+        var service = new GrillBot.App.Managers.UnverifyCheckManager(null!, configuration, null!, TestServices.Texts.Value);
 
         service.ValidateUnverifyDate(DateTime.MinValue, null, false, "cs");
     }
@@ -27,7 +27,7 @@ public class UnverifyCheckManager
             { "Unverify:MinimalTimes:Selfunverify", (12 * 60).ToString() }
         });
 
-        var service = new GrillBot.App.Managers.UnverifyCheckManager(null, configuration, null, TestServices.Texts.Value);
+        var service = new GrillBot.App.Managers.UnverifyCheckManager(null!, configuration, null!, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, null, true, "cs");
     }
@@ -42,7 +42,7 @@ public class UnverifyCheckManager
             { "Unverify:MinimalTimes:Unverify", (12 * 60).ToString() }
         });
 
-        var service = new GrillBot.App.Managers.UnverifyCheckManager(null, configuration, null, TestServices.Texts.Value);
+        var service = new GrillBot.App.Managers.UnverifyCheckManager(null!, configuration, null!, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, null, false, "cs");
     }
@@ -57,7 +57,7 @@ public class UnverifyCheckManager
             { "Unverify:MinimalTimes:Selfunverify", (12 * 60).ToString() }
         });
 
-        var service = new GrillBot.App.Managers.UnverifyCheckManager(null, configuration, null, TestServices.Texts.Value);
+        var service = new GrillBot.App.Managers.UnverifyCheckManager(null!, configuration, null!, TestServices.Texts.Value);
         var end = DateTime.Now.AddHours(2);
         service.ValidateUnverifyDate(end, TimeSpan.FromDays(2), true, "cs");
     }

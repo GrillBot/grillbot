@@ -8,9 +8,9 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.GuildUpdated;
 
 [TestClass]
-public class AuditEmotesGuildUpdatedHandlerTests : HandlerTest<AuditEmotesGuildUpdatedHandler>
+public class AuditEmotesGuildUpdatedHandlerTests : TestBase<AuditEmotesGuildUpdatedHandler>
 {
-    protected override AuditEmotesGuildUpdatedHandler CreateHandler()
+    protected override AuditEmotesGuildUpdatedHandler CreateInstance()
     {
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditEmotesGuildUpdatedHandler(TestServices.CounterManager.Value, auditLogWriter);
@@ -22,7 +22,7 @@ public class AuditEmotesGuildUpdatedHandlerTests : HandlerTest<AuditEmotesGuildU
         var emote = Emote.Parse(Consts.PepeJamEmote);
         var guildEmote = EmoteHelper.CreateGuildEmote(emote);
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new List<GuildEmote> { guildEmote }).Build();
-        await Handler.ProcessAsync(guild, guild);
+        await Instance.ProcessAsync(guild, guild);
     }
 
     [TestMethod]
@@ -36,6 +36,6 @@ public class AuditEmotesGuildUpdatedHandlerTests : HandlerTest<AuditEmotesGuildU
         var before = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { guildEmote }).Build();
         var after = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new List<GuildEmote>()).SetGetAuditLogsAction(new[] { entry }).Build();
 
-        await Handler.ProcessAsync(before, after);
+        await Instance.ProcessAsync(before, after);
     }
 }

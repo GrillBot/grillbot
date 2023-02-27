@@ -6,20 +6,23 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.GuildMemberUpdated;
 
 [TestClass]
-public class ServerBoosterHandlerTests : HandlerTest<ServerBoosterHandler>
+public class ServerBoosterHandlerTests : TestBase<ServerBoosterHandler>
 {
-    private IGuildUser Before { get; set; }
-    private IGuildUser After { get; set; }
-    private IRole Role { get; set; }
+    private IGuildUser Before { get; set; } = null!;
+    private IGuildUser After { get; set; } = null!;
+    private IRole Role { get; set; } = null!;
 
-    protected override ServerBoosterHandler CreateHandler()
+    protected override void PreInit()
     {
         Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var adminChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelsAction(new[] { adminChannel }).SetRoles(new[] { Role }).Build();
         Before = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(new List<ulong>()).SetGuild(guild).Build();
         After = new GuildUserBuilder(Before).SetRoles(new[] { Role.Id }).SetGuild(guild).Build();
+    }
 
+    protected override ServerBoosterHandler CreateInstance()
+    {
         return new ServerBoosterHandler(DatabaseBuilder, TestServices.Configuration.Value);
     }
 
@@ -36,27 +39,25 @@ public class ServerBoosterHandlerTests : HandlerTest<ServerBoosterHandler>
     public async Task ProcessAsync_CannotProcess()
     {
         var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(new List<ulong>()).Build();
-        await Handler.ProcessAsync(user, user);
+        await Instance.ProcessAsync(user, user);
     }
 
     [TestMethod]
     public async Task ProcessAsync_GuildNotFound()
-    {
-        await Handler.ProcessAsync(Before, After);
-    }
+        => await Instance.ProcessAsync(Before, After);
 
     [TestMethod]
     public async Task ProcessAsync_NoBoosterRoleId()
     {
         await InitDataAsync(null, null);
-        await Handler.ProcessAsync(Before, After);
+        await Instance.ProcessAsync(Before, After);
     }
 
     [TestMethod]
     public async Task ProcessAsync_NoAdminChannel()
     {
         await InitDataAsync(Consts.RoleId + 1, null);
-        await Handler.ProcessAsync(Before, After);
+        await Instance.ProcessAsync(Before, After);
     }
 
     [TestMethod]
@@ -66,34 +67,34 @@ public class ServerBoosterHandlerTests : HandlerTest<ServerBoosterHandler>
 
         var before = new GuildUserBuilder(Before).SetRoles(new[] { Consts.RoleId + 1 }).SetGuild(After.Guild).Build();
         var after = new GuildUserBuilder(Before).SetRoles(new[] { Consts.RoleId + 2 }).SetGuild(After.Guild).Build();
-        await Handler.ProcessAsync(before, after);
+        await Instance.ProcessAsync(before, after);
     }
 
     [TestMethod]
     public async Task ProcessAsync_BoostRoleNotFound()
     {
         await InitDataAsync(Consts.RoleId + 1, Consts.ChannelId);
-        await Handler.ProcessAsync(Before, After);
+        await Instance.ProcessAsync(Before, After);
     }
 
     [TestMethod]
     public async Task ProcessAsync_ChannelNotFound()
     {
         await InitDataAsync(Consts.RoleId, Consts.ChannelId + 1);
-        await Handler.ProcessAsync(Before, After);
+        await Instance.ProcessAsync(Before, After);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Ok_Added()
     {
         await InitDataAsync(Consts.RoleId, Consts.ChannelId);
-        await Handler.ProcessAsync(Before, After);
+        await Instance.ProcessAsync(Before, After);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Ok_Removed()
     {
         await InitDataAsync(Consts.RoleId, Consts.ChannelId);
-        await Handler.ProcessAsync(After, Before);
+        await Instance.ProcessAsync(After, Before);
     }
 }

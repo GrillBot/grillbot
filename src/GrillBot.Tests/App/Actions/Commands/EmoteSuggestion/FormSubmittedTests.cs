@@ -24,7 +24,7 @@ public class FormSubmittedTests : CommandActionTest<FormSubmitted>
     protected override IGuildUser User => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetSendMessageAction(null, true).SetGuild(GuildData).Build();
     protected override IGuild Guild => GuildData;
 
-    protected override FormSubmitted CreateAction()
+    protected override FormSubmitted CreateInstance()
     {
         SessionId = Guid.NewGuid().ToString();
 
@@ -55,7 +55,7 @@ public class FormSubmittedTests : CommandActionTest<FormSubmitted>
 
     [TestMethod]
     public async Task ProcessAsync_SessionNotFound()
-        => await Action.ProcessAsync(SessionId, new EmoteSuggestionModal());
+        => await Instance.ProcessAsync(SessionId, new EmoteSuggestionModal());
 
     [TestMethod]
     public async Task ProcessAsync_Success()
@@ -67,6 +67,6 @@ public class FormSubmittedTests : CommandActionTest<FormSubmitted>
         };
 
         await InitDataAsync();
-        await Action.ProcessAsync(SessionId, modal);
+        await Instance.ProcessAsync(SessionId, modal);
     }
 }

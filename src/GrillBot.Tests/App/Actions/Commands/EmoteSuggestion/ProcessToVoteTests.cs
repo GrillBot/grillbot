@@ -23,7 +23,7 @@ public class ProcessToVoteTests : CommandActionTest<ProcessToVote>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override ProcessToVote CreateAction()
+    protected override ProcessToVote CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var helper = new EmoteSuggestionHelper(texts);
@@ -72,7 +72,7 @@ public class ProcessToVoteTests : CommandActionTest<ProcessToVote>
     public async Task ProcessAsync_VoteChannelNotDefined()
     {
         await InitDataAsync(null, null, null);
-        await Action.ProcessAsync();
+        await Instance.ProcessAsync();
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class ProcessToVoteTests : CommandActionTest<ProcessToVote>
     public async Task ProcessAsync_VoteChannelNotFound()
     {
         await InitDataAsync(Consts.ChannelId + 50, null, null);
-        await Action.ProcessAsync();
+        await Instance.ProcessAsync();
     }
 
     [TestMethod]
@@ -90,7 +90,7 @@ public class ProcessToVoteTests : CommandActionTest<ProcessToVote>
     public async Task ProcessAsync_NoForVote()
     {
         await InitDataAsync(Consts.ChannelId, Consts.ChannelId + 1, null);
-        await Action.ProcessAsync();
+        await Instance.ProcessAsync();
     }
 
     [TestMethod]
@@ -99,13 +99,13 @@ public class ProcessToVoteTests : CommandActionTest<ProcessToVote>
     public async Task ProcessAsync_NoApproved()
     {
         await InitDataAsync(Consts.ChannelId, Consts.ChannelId + 1, false);
-        await Action.ProcessAsync();
+        await Instance.ProcessAsync();
     }
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync(Consts.ChannelId, Consts.ChannelId + 1, true);
-        await Action.ProcessAsync();
+        await Instance.ProcessAsync();
     }
 }

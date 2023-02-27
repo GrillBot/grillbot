@@ -19,7 +19,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     private IGuild Guild { get; set; } = null!;
     private IGuildUser[] Users { get; set; } = null!;
 
-    protected override UpdateUnverify CreateAction()
+    protected override UpdateUnverify CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var message = new UserMessageBuilder(Consts.MessageId).Build();
@@ -86,13 +86,13 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_GuildNotFound() =>
-        await Action.ProcessAsync(Consts.GuildId + 1, Consts.UserId, new UpdateUnverifyParams());
+        await Instance.ProcessAsync(Consts.GuildId + 1, Consts.UserId, new UpdateUnverifyParams());
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_DestUserNotFound()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 2, new UpdateUnverifyParams());
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.UserId + 2, new UpdateUnverifyParams());
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
@@ -100,7 +100,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     public async Task ProcessAsync_UnverifyNotFound()
     {
         await InitDataAsync(false, DateTime.Now);
-        await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue });
+        await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue });
     }
 
     [TestMethod]
@@ -109,7 +109,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     public async Task ProcessAsync_InvalidTime()
     {
         await InitDataAsync(true, DateTime.Now);
-        await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue });
+        await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue });
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     {
         await InitDataAsync(true, DateTime.Now.AddDays(1));
 
-        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue });
+        var result = await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue });
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "31. 12. 9999 23:59:59");
     }
 
@@ -126,7 +126,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     {
         await InitDataAsync(true, DateTime.Now.AddDays(1));
 
-        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
+        var result = await Instance.ProcessAsync(Consts.GuildId, Consts.UserId, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "31. 12. 9999 23:59:59", "Reason");
     }
 
@@ -135,7 +135,7 @@ public class UpdateUnverifyTests : ApiActionTest<UpdateUnverify>
     {
         await InitDataAsync(true, DateTime.Now.AddDays(1));
 
-        var result = await Action.ProcessAsync(Consts.GuildId, Consts.UserId + 1, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
+        var result = await Instance.ProcessAsync(Consts.GuildId, Consts.UserId + 1, new UpdateUnverifyParams { EndAt = DateTime.MaxValue, Reason = "Reason" });
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "31. 12. 9999 23:59:59", "Reason");
     }
 }

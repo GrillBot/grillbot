@@ -16,7 +16,7 @@ public class GetChannelSimpleListTests : ApiActionTest<GetChannelSimpleList>
     private ITextChannel TextChannel { get; set; }
     private ITextChannel AnotherChannel { get; set; }
 
-    protected override GetChannelSimpleList CreateAction()
+    protected override GetChannelSimpleList CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.Username);
 
@@ -37,14 +37,14 @@ public class GetChannelSimpleListTests : ApiActionTest<GetChannelSimpleList>
     [ApiConfiguration(true)]
     public async Task ProcessAsync_NoMutualGuild()
     {
-        await Action.ProcessAsync(Consts.GuildId + 1, false);
+        await Instance.ProcessAsync(Consts.GuildId + 1, false);
     }
 
     [TestMethod]
     [ApiConfiguration(true)]
     public async Task ProcessAsync_Success_Public()
     {
-        var result = await Action.ProcessAsync(null, false);
+        var result = await Instance.ProcessAsync(null, false);
         Assert.AreEqual(1, result.Count);
     }
 
@@ -58,7 +58,7 @@ public class GetChannelSimpleListTests : ApiActionTest<GetChannelSimpleList>
         await Repository.AddAsync(Database.Entity.GuildChannel.FromDiscord(AnotherChannel, ChannelType.Text));
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync(null, false);
+        var result = await Instance.ProcessAsync(null, false);
         Assert.AreEqual(2, result.Count);
     }
 
@@ -71,7 +71,7 @@ public class GetChannelSimpleListTests : ApiActionTest<GetChannelSimpleList>
         await Repository.AddAsync(Database.Entity.GuildChannel.FromDiscord(TextChannel, ChannelType.Text));
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync(null, true);
+        var result = await Instance.ProcessAsync(null, true);
         Assert.AreEqual(1, result.Count);
     }
 }

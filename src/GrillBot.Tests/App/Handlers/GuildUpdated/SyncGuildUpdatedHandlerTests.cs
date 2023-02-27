@@ -6,14 +6,17 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.GuildUpdated;
 
 [TestClass]
-public class SyncGuildUpdatedHandlerTests : HandlerTest<SyncGuildUpdatedHandler>
+public class SyncGuildUpdatedHandlerTests : TestBase<SyncGuildUpdatedHandler>
 {
-    private IGuild Before { get; set; }
+    private IGuild Before { get; set; } = null!;
 
-    protected override SyncGuildUpdatedHandler CreateHandler()
+    protected override void PreInit()
     {
         Before = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+    }
 
+    protected override SyncGuildUpdatedHandler CreateInstance()
+    {
         return new SyncGuildUpdatedHandler(DatabaseBuilder);
     }
 
@@ -25,15 +28,13 @@ public class SyncGuildUpdatedHandlerTests : HandlerTest<SyncGuildUpdatedHandler>
 
     [TestMethod]
     public async Task ProcessAsync_CannotProcess()
-    {
-        await Handler.ProcessAsync(Before, Before);
-    }
+        => await Instance.ProcessAsync(Before, Before);
 
     [TestMethod]
     public async Task ProcessAsync_NotFound()
     {
         var after = new GuildBuilder(Before).SetName(Consts.GuildName + "New").Build();
-        await Handler.ProcessAsync(Before, after);
+        await Instance.ProcessAsync(Before, after);
     }
 
     [TestMethod]
@@ -42,6 +43,6 @@ public class SyncGuildUpdatedHandlerTests : HandlerTest<SyncGuildUpdatedHandler>
         await InitDataAsync();
 
         var after = new GuildBuilder(Before).SetName(Consts.GuildName + "New").Build();
-        await Handler.ProcessAsync(Before, after);
+        await Instance.ProcessAsync(Before, after);
     }
 }

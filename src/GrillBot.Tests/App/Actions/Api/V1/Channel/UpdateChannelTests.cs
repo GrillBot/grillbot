@@ -17,7 +17,7 @@ public class UpdateChannelTests : ApiActionTest<UpdateChannel>
     private IGuild Guild { get; set; }
     private ITextChannel TextChannel { get; set; }
 
-    protected override UpdateChannel CreateAction()
+    protected override UpdateChannel CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
@@ -35,20 +35,20 @@ public class UpdateChannelTests : ApiActionTest<UpdateChannel>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_ChannelNotFound()
-        => await Action.ProcessAsync(Consts.ChannelId, new UpdateChannelParams());
+        => await Instance.ProcessAsync(Consts.ChannelId, new UpdateChannelParams());
 
     [TestMethod]
     public async Task ProcessAsync_NoChanged()
     {
         await InitChannelAsync();
-        await Action.ProcessAsync(Consts.ChannelId, new UpdateChannelParams());
+        await Instance.ProcessAsync(Consts.ChannelId, new UpdateChannelParams());
     }
 
     [TestMethod]
     public async Task ProcessAsync_ReloadAutoReply()
     {
         await InitChannelAsync();
-        await Action.ProcessAsync(Consts.ChannelId, new UpdateChannelParams { Flags = (long)ChannelFlag.AutoReplyDeactivated });
+        await Instance.ProcessAsync(Consts.ChannelId, new UpdateChannelParams { Flags = (long)ChannelFlag.AutoReplyDeactivated });
     }
 
     private async Task InitChannelAsync()

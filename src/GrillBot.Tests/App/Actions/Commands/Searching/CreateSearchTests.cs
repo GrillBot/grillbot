@@ -14,7 +14,7 @@ public class CreateSearchTests : CommandActionTest<CreateSearch>
     protected override IMessageChannel Channel => new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(GuildData).Build();
     protected override IGuildUser User => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(GuildData).Build();
 
-    protected override CreateSearch CreateAction()
+    protected override CreateSearch CreateInstance()
     {
         return InitAction(new CreateSearch(DatabaseBuilder));
     }
@@ -22,6 +22,6 @@ public class CreateSearchTests : CommandActionTest<CreateSearch>
     [TestMethod]
     public async Task ProcessAsync()
     {
-        await Action.ProcessAsync("Test");
+        await Instance.ProcessAsync("Test");
     }
 }

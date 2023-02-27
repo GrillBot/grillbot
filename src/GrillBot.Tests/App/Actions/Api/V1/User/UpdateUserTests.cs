@@ -11,7 +11,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.User;
 [TestClass]
 public class UpdateUserTests : ApiActionTest<UpdateUser>
 {
-    protected override UpdateUser CreateAction()
+    protected override UpdateUser CreateInstance()
     {
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new UpdateUser(ApiRequestContext, DatabaseBuilder, auditLogWriter, TestServices.Texts.Value);
@@ -29,7 +29,7 @@ public class UpdateUserTests : ApiActionTest<UpdateUser>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
-        => await Action.ProcessAsync(Consts.UserId, new UpdateUserParams());
+        => await Instance.ProcessAsync(Consts.UserId, new UpdateUserParams());
 
     [TestMethod]
     public async Task ProcessAsync_Success()
@@ -47,6 +47,6 @@ public class UpdateUserTests : ApiActionTest<UpdateUser>
             SelfUnverifyMinimalTime = TimeSpan.MaxValue
         };
 
-        await Action.ProcessAsync(Consts.UserId, parameters);
+        await Instance.ProcessAsync(Consts.UserId, parameters);
     }
 }

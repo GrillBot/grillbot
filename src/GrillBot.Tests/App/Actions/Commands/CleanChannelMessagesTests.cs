@@ -22,7 +22,7 @@ public class CleanChannelMessagesTests : CommandActionTest<CleanChannelMessages>
     protected override IDiscordInteraction Interaction { get; } = new DiscordInteractionBuilder(Consts.InteractionId).Build();
     protected override IGuildUser User => Author;
 
-    protected override CleanChannelMessages CreateAction()
+    protected override CleanChannelMessages CreateInstance()
     {
         return InitAction(new CleanChannelMessages(TestServices.Texts.Value));
     }
@@ -35,7 +35,7 @@ public class CleanChannelMessagesTests : CommandActionTest<CleanChannelMessages>
 
     private async Task ProcessTestAsync(ITextChannel? channel)
     {
-        var result = await Action.ProcessAsync(int.MaxValue, channel);
+        var result = await Instance.ProcessAsync(int.MaxValue, channel);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.AreEqual(1, result.Count(o => o == '3'));

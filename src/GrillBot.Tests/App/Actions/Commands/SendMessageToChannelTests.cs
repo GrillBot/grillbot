@@ -19,7 +19,7 @@ public class SendMessageToChannelTests : CommandActionTest<SendMessageToChannel>
     protected override IMessageChannel Channel => TextChannel;
     protected override IGuild Guild => GuildData;
 
-    protected override SendMessageToChannel CreateAction()
+    protected override SendMessageToChannel CreateInstance()
     {
         var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 1, 2, 3, 4, 5 }) });
         var apiContext = new ApiRequestContext { Language = "en-US", LoggedUser = User };
@@ -32,18 +32,18 @@ public class SendMessageToChannelTests : CommandActionTest<SendMessageToChannel>
 
     [TestMethod]
     public async Task ProcessAsync_OnlyText()
-        => await Action.ProcessAsync((ITextChannel)Channel, null, "Content", new IAttachment[] { null });
+        => await Instance.ProcessAsync((ITextChannel)Channel, null, "Content", new IAttachment[] { null });
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_ValidationFailed()
-        => await Action.ProcessAsync((ITextChannel)Channel, null, null, new IAttachment[] { null });
+        => await Instance.ProcessAsync((ITextChannel)Channel, null, null, new IAttachment[] { null });
 
     [TestMethod]
     public async Task ProcessAsync_WithAttachments()
     {
         var attachment = new AttachmentBuilder().SetFilename("File.png").SetUrl("https://grillbot.tests/File.png").Build();
-        await Action.ProcessAsync((ITextChannel)Channel, null, null, new[] { attachment });
+        await Instance.ProcessAsync((ITextChannel)Channel, null, null, new[] { attachment });
     }
 }

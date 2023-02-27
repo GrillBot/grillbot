@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 [TestClass]
 public class GetKeepableListTests : ApiActionTest<GetKeepablesList>
 {
-    protected override GetKeepablesList CreateAction()
+    protected override GetKeepablesList CreateInstance()
     {
         return new GetKeepablesList(ApiRequestContext, DatabaseBuilder);
     }
@@ -23,7 +23,7 @@ public class GetKeepableListTests : ApiActionTest<GetKeepablesList>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(null);
+        var result = await Instance.ProcessAsync(null);
         Assert.AreEqual(1, result.Count);
         Assert.AreEqual("1BIT", result.Keys.First());
     }
@@ -33,7 +33,7 @@ public class GetKeepableListTests : ApiActionTest<GetKeepablesList>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync("2BIT");
+        var result = await Instance.ProcessAsync("2BIT");
         Assert.AreEqual(0, result.Count);
     }
 }

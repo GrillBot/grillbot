@@ -19,7 +19,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.AuditLog;
 [TestClass]
 public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
 {
-    protected override GetAuditLogList CreateAction()
+    protected override GetAuditLogList CreateInstance()
     {
         return new GetAuditLogList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, TestServices.Texts.Value);
     }
@@ -28,7 +28,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
     public async Task ProcessAsync_EmptyFilter()
     {
         var filter = new AuditLogListParams();
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(0, result.TotalItemsCount);
@@ -50,7 +50,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
             ProcessedUserIds = new List<string> { Consts.UserId.ToString() }
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.IsNotNull(result);
         Assert.AreNotEqual(0, result.TotalItemsCount);
@@ -73,7 +73,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
             ExcludedTypes = new List<AuditLogItemType> { AuditLogItemType.MemberRoleUpdated }
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.IsNotNull(result);
         Assert.IsTrue(result.TotalItemsCount > 0);
@@ -131,7 +131,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
             }
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.IsNotNull(result);
     }
 
@@ -141,7 +141,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
     public async Task ProcessAsync_Validation_Ids()
     {
         var filter = new AuditLogListParams { Ids = "abcd" };
-        await Action.ProcessAsync(filter);
+        await Instance.ProcessAsync(filter);
     }
 
     [TestMethod]
@@ -155,7 +155,7 @@ public class GetAuditLogListTests : ApiActionTest<GetAuditLogList>
             ExcludedTypes = new List<AuditLogItemType> { AuditLogItemType.Api }
         };
 
-        await Action.ProcessAsync(filter);
+        await Instance.ProcessAsync(filter);
     }
 
     private async Task InitAllTypesAsync()

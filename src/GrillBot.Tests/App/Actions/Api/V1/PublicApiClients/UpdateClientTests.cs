@@ -10,7 +10,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.PublicApiClients;
 [TestClass]
 public class UpdateClientTests : ApiActionTest<UpdateClient>
 {
-    protected override UpdateClient CreateAction()
+    protected override UpdateClient CreateInstance()
     {
         return new UpdateClient(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value);
     }
@@ -32,7 +32,7 @@ public class UpdateClientTests : ApiActionTest<UpdateClient>
             Name = "ApiAction",
             AllowedMethods = new List<string> { "*" }
         };
-        await Action.ProcessAsync(id, parameters);
+        await Instance.ProcessAsync(id, parameters);
     }
 
     [TestMethod]
@@ -40,6 +40,6 @@ public class UpdateClientTests : ApiActionTest<UpdateClient>
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
     {
-        await Action.ProcessAsync(Guid.NewGuid().ToString(), new ApiClientParams());
+        await Instance.ProcessAsync(Guid.NewGuid().ToString(), new ApiClientParams());
     }
 }

@@ -13,7 +13,7 @@ public class GetChannelListTests : ApiActionTest<GetChannelList>
     private ITextChannel TextChannel { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override GetChannelList CreateAction()
+    protected override GetChannelList CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
 
@@ -37,7 +37,7 @@ public class GetChannelListTests : ApiActionTest<GetChannelList>
             NameContains = Consts.ChannelName[..5],
             HideDeleted = true
         };
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.IsNotNull(result?.Data);
         Assert.AreEqual(0, result.TotalItemsCount);
@@ -58,7 +58,7 @@ public class GetChannelListTests : ApiActionTest<GetChannelList>
         await Repository.CommitAsync();
 
         var filter = new GetChannelListParams();
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.IsNotNull(result?.Data);
         Assert.AreEqual(1, result.TotalItemsCount);

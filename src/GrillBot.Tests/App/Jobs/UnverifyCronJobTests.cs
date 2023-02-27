@@ -4,6 +4,7 @@ using GrillBot.App.Jobs;
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Logging;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +13,7 @@ namespace GrillBot.Tests.App.Jobs;
 [TestClass]
 public class UnverifyCronJobTests : JobTest<UnverifyCronJob>
 {
-    protected override UnverifyCronJob CreateJob()
+    protected override UnverifyCronJob CreateInstance()
     {
         var client = new ClientBuilder().Build();
         var texts = TestServices.Texts.Value;
@@ -25,13 +26,10 @@ public class UnverifyCronJobTests : JobTest<UnverifyCronJob>
         var logging = new LoggingManager(discordClient, interaction, provider);
         var unverifyHelper = new UnverifyHelper(DatabaseBuilder);
         var removeUnverify = new RemoveUnverify(new ApiRequestContext(), client, texts, DatabaseBuilder, messageGenerator, logger, logging, unverifyHelper);
+
         return new UnverifyCronJob(provider, removeUnverify, DatabaseBuilder);
     }
 
     [TestMethod]
-    public async Task ProcessAsync_NoUnverify()
-    {
-        var context = CreateContext();
-        await Job.Execute(context);
-    }
+    public async Task ProcessAsync_NoUnverify() => await Execute();
 }

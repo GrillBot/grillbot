@@ -14,7 +14,7 @@ public class GetReminderListTests : CommandActionTest<GetReminderList>
     protected override IGuildUser User => UserData;
     protected override IDiscordClient Client => ClientData;
 
-    protected override GetReminderList CreateAction()
+    protected override GetReminderList CreateInstance()
     {
         var apiContext = new ApiRequestContext();
         var apiAction = new GrillBot.App.Actions.Api.V1.Reminder.GetReminderList(apiContext, DatabaseBuilder, TestServices.AutoMapper.Value);
@@ -41,14 +41,14 @@ public class GetReminderListTests : CommandActionTest<GetReminderList>
     [TestMethod]
     public async Task ComputePagesCountAsync()
     {
-        var result = await Action.ComputePagesCountAsync();
+        var result = await Instance.ComputePagesCountAsync();
         Assert.AreEqual(0, result);
     }
 
     [TestMethod]
     public async Task ProcessAsync_WithoutData()
     {
-        var (embed, paginationComponents) = await Action.ProcessAsync(0);
+        var (embed, paginationComponents) = await Instance.ProcessAsync(0);
 
         Assert.IsNotNull(embed);
         Assert.IsNotNull(embed.Footer);
@@ -62,7 +62,7 @@ public class GetReminderListTests : CommandActionTest<GetReminderList>
     {
         await InitDataAsync();
 
-        var (embed, paginationComponents) = await Action.ProcessAsync(0);
+        var (embed, paginationComponents) = await Instance.ProcessAsync(0);
 
         Assert.IsNotNull(embed);
         Assert.IsNotNull(embed.Footer);

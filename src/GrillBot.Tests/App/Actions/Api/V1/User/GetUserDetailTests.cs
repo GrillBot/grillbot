@@ -21,7 +21,7 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
     private IGuild Guild { get; set; } = null!;
     private ITextChannel TextChannel { get; set; } = null!;
 
-    protected override GetUserDetail CreateAction()
+    protected override GetUserDetail CreateInstance()
     {
         var role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetRoles(new[] { role });
@@ -128,14 +128,14 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
-        => await Action.ProcessAsync(Consts.UserId);
+        => await Instance.ProcessAsync(Consts.UserId);
 
     [TestMethod]
     public async Task ProcessAsync_Success_NotFoundOnDiscord()
     {
         await InitDataAsync(Consts.UserId + 1);
 
-        var result = await Action.ProcessAsync(Consts.UserId + 1);
+        var result = await Instance.ProcessAsync(Consts.UserId + 1);
         Assert.IsNotNull(result);
     }
 
@@ -144,7 +144,7 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
     {
         await InitDataAsync(Consts.UserId);
 
-        var result = await Action.ProcessAsync(Consts.UserId);
+        var result = await Instance.ProcessAsync(Consts.UserId);
 
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Guilds.Count > 0);
@@ -156,7 +156,7 @@ public class GetUserDetailTests : ApiActionTest<GetUserDetail>
     {
         await InitDataAsync(Consts.UserId, false);
 
-        var result = await Action.ProcessSelfAsync();
+        var result = await Instance.ProcessSelfAsync();
 
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Guilds.Count > 0);

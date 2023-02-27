@@ -11,7 +11,7 @@ namespace GrillBot.Tests.App.Actions.Api.V2.Events;
 [TestClass]
 public class CancelScheduledEventTests : ApiActionTest<CancelScheduledEvent>
 {
-    protected override CancelScheduledEvent CreateAction()
+    protected override CancelScheduledEvent CreateInstance()
     {
         var events = new[]
         {
@@ -30,23 +30,23 @@ public class CancelScheduledEventTests : ApiActionTest<CancelScheduledEvent>
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_GuildNotFound() => await Action.ProcessAsync(Consts.GuildId + 1, 0);
+    public async Task ProcessAsync_GuildNotFound() => await Instance.ProcessAsync(Consts.GuildId + 1, 0);
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_EventNotFound() => await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 5);
+    public async Task ProcessAsync_EventNotFound() => await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 5);
 
     [TestMethod]
     [ExpectedException(typeof(ForbiddenAccessException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_Forbidden() => await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 1);
+    public async Task ProcessAsync_Forbidden() => await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 1);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_CannotCancel() => await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 2);
+    public async Task ProcessAsync_CannotCancel() => await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 2);
 
     [TestMethod]
-    public async Task ProcessAsync_Success() => await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId);
+    public async Task ProcessAsync_Success() => await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId);
 }

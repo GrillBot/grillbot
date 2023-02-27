@@ -19,7 +19,7 @@ public class CreateRemindTests : CommandActionTest<CreateRemind>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
 
-    protected override CreateRemind CreateAction()
+    protected override CreateRemind CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
@@ -31,7 +31,7 @@ public class CreateRemindTests : CommandActionTest<CreateRemind>
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotInFuture()
-        => await Action.ProcessAsync(null, null, DateTime.MinValue, null, 0);
+        => await Instance.ProcessAsync(null, null, DateTime.MinValue, null, 0);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
@@ -39,25 +39,25 @@ public class CreateRemindTests : CommandActionTest<CreateRemind>
     public async Task ProcessAsync_MinimalTime()
     {
         var at = DateTime.Now.AddSeconds(10);
-        await Action.ProcessAsync(null, null, at, null, 0);
+        await Instance.ProcessAsync(null, null, at, null, 0);
     }
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_EmptyMessage()
-        => await Action.ProcessAsync(null, null, At, null, 0);
+        => await Instance.ProcessAsync(null, null, At, null, 0);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_LongMessage()
-        => await Action.ProcessAsync(null, null, At, new string('-', 2048), 0);
+        => await Instance.ProcessAsync(null, null, At, new string('-', 2048), 0);
 
     [TestMethod]
     public async Task ProcessAsync_SenderIsReceiver()
     {
-        var result = await Action.ProcessAsync(User, User, At, Consts.MessageContent, Consts.MessageId);
+        var result = await Instance.ProcessAsync(User, User, At, Consts.MessageContent, Consts.MessageId);
         Assert.AreNotEqual(0, result);
     }
 
@@ -65,7 +65,7 @@ public class CreateRemindTests : CommandActionTest<CreateRemind>
     public async Task ProcessAsync_ReceiverIsAnotherUser()
     {
         var user = new UserBuilder(User).SetId(User.Id + 1).Build();
-        var result = await Action.ProcessAsync(User, user, At, Consts.MessageContent, Consts.MessageId);
+        var result = await Instance.ProcessAsync(User, user, At, Consts.MessageContent, Consts.MessageId);
         Assert.AreNotEqual(0, result);
     }
 }

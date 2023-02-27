@@ -11,7 +11,7 @@ public class GetGuildListTests : ApiActionTest<GetGuildList>
 {
     private IGuild Guild { get; set; }
 
-    protected override GetGuildList CreateAction()
+    protected override GetGuildList CreateInstance()
     {
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(Array.Empty<IGuildUser>()).Build();
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
@@ -23,7 +23,7 @@ public class GetGuildListTests : ApiActionTest<GetGuildList>
     public async Task ProcessAsync_WithFilter()
     {
         var filter = new GetGuildListParams { NameQuery = "Guild" };
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.AreEqual(0, result.TotalItemsCount);
     }
@@ -36,7 +36,7 @@ public class GetGuildListTests : ApiActionTest<GetGuildList>
         await Repository.CommitAsync();
 
         var filter = new GetGuildListParams();
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.AreEqual(2, result.TotalItemsCount);
     }

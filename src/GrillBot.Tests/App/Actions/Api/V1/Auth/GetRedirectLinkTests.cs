@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Auth;
 [TestClass]
 public class GetRedirectLinkTests : ApiActionTest<GetRedirectLink>
 {
-    protected override GetRedirectLink CreateAction()
+    protected override GetRedirectLink CreateInstance()
     {
         return new GetRedirectLink(ApiRequestContext, TestServices.Configuration.Value);
     }
@@ -16,7 +16,7 @@ public class GetRedirectLinkTests : ApiActionTest<GetRedirectLink>
     public void Process()
     {
         var state = new AuthState { IsPublic = false, ReturnUrl = "http://localhost" };
-        var link = Action.Process(state);
+        var link = Instance.Process(state);
 
         Assert.IsNotNull(link);
         Assert.IsFalse(string.IsNullOrEmpty(link.Url));

@@ -14,7 +14,7 @@ public class GetSearchingListTests : ApiActionTest<GetSearchingList>
     private IGuildUser User { get; set; }
     private ITextChannel TextChannel { get; set; }
 
-    protected override GetSearchingList CreateAction()
+    protected override GetSearchingList CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
@@ -47,7 +47,7 @@ public class GetSearchingListTests : ApiActionTest<GetSearchingList>
         await InitDataAsync();
 
         var filter = new GetSearchingListParams();
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.AreEqual(1, result.TotalItemsCount);
     }
@@ -63,7 +63,7 @@ public class GetSearchingListTests : ApiActionTest<GetSearchingList>
             UserId = Consts.UserId.ToString()
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(0, result.TotalItemsCount);
     }
 
@@ -74,7 +74,7 @@ public class GetSearchingListTests : ApiActionTest<GetSearchingList>
         await InitDataAsync();
 
         var filter = new GetSearchingListParams();
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(1, result.TotalItemsCount);
     }
 
@@ -85,7 +85,7 @@ public class GetSearchingListTests : ApiActionTest<GetSearchingList>
         await InitDataAsync();
 
         var filter = new GetSearchingListParams { GuildId = (Consts.GuildId + 1).ToString() };
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(1, result.TotalItemsCount);
     }
 }

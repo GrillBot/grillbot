@@ -11,7 +11,7 @@ public class GetSuggestionsTests : CommandActionTest<GetSuggestions>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override GetSuggestions CreateAction()
+    protected override GetSuggestions CreateInstance()
     {
         return InitAction(new GetSuggestions(DatabaseBuilder, TestServices.Texts.Value));
     }
@@ -38,7 +38,7 @@ public class GetSuggestionsTests : CommandActionTest<GetSuggestions>
     {
         await InitDataAsync();
 
-        var suggestions = await Action.ProcessAsync();
+        var suggestions = await Instance.ProcessAsync();
         Assert.AreEqual(1, suggestions.Count);
         Assert.AreEqual(1L, suggestions[0].Value);
     }

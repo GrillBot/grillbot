@@ -11,7 +11,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
 [TestClass]
 public class GetApiStatisticsTests : ApiActionTest<GetApiStatistics>
 {
-    protected override GetApiStatistics CreateAction()
+    protected override GetApiStatistics CreateInstance()
     {
         return new GetApiStatistics(ApiRequestContext, DatabaseBuilder);
     }
@@ -56,7 +56,7 @@ public class GetApiStatisticsTests : ApiActionTest<GetApiStatistics>
     public async Task ProcessByDateAsync()
     {
         await InitDataAsync();
-        var result = await Action.ProcessByDateAsync();
+        var result = await Instance.ProcessByDateAsync();
         Assert.AreEqual(1, result.Count);
     }
 
@@ -65,7 +65,7 @@ public class GetApiStatisticsTests : ApiActionTest<GetApiStatistics>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessByEndpointAsync();
+        var result = await Instance.ProcessByEndpointAsync();
         Assert.AreEqual(1, result.Count);
     }
 
@@ -74,7 +74,7 @@ public class GetApiStatisticsTests : ApiActionTest<GetApiStatistics>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessByStatusCodeAsync();
+        var result = await Instance.ProcessByStatusCodeAsync();
         Assert.AreEqual(1, result.Count);
     }
 }

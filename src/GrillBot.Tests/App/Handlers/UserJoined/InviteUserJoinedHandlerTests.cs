@@ -9,13 +9,13 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.UserJoined;
 
 [TestClass]
-public class InviteUserJoinedHandlerTests : HandlerTest<InviteUserJoinedHandler>
+public class InviteUserJoinedHandlerTests : TestBase<InviteUserJoinedHandler>
 {
     private IDiscordClient DiscordClient { get; set; } = null!;
     private GuildUserBuilder AdminBuilder { get; set; } = null!;
     private GuildBuilder GuildBuilder { get; set; } = null!;
 
-    protected override InviteUserJoinedHandler CreateHandler()
+    protected override void PreInit()
     {
         AdminBuilder = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuildPermissions(GuildPermissions.All);
         GuildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
@@ -23,6 +23,10 @@ public class InviteUserJoinedHandlerTests : HandlerTest<InviteUserJoinedHandler>
         DiscordClient = new ClientBuilder()
             .SetSelfUser(new SelfUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build())
             .Build();
+    }
+
+    protected override InviteUserJoinedHandler CreateInstance()
+    {
         var inviteManager = new InviteManager(CacheBuilder, TestServices.CounterManager.Value);
         var auditLogWriteManager = new AuditLogWriteManager(DatabaseBuilder);
 
@@ -49,7 +53,7 @@ public class InviteUserJoinedHandlerTests : HandlerTest<InviteUserJoinedHandler>
         var guild = GuildBuilder.SetGetUsersAction(new[] { AdminBuilder.Build() }).Build();
         var user = AdminBuilder.AsBot().SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(user);
+        await Instance.ProcessAsync(user);
     }
 
     [TestMethod]
@@ -60,7 +64,7 @@ public class InviteUserJoinedHandlerTests : HandlerTest<InviteUserJoinedHandler>
             .SetGetInvitesAction(Array.Empty<IInviteMetadata>()).Build();
         var user = userBuilder.AsBot(false).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(user);
+        await Instance.ProcessAsync(user);
     }
 
     [TestMethod]
@@ -73,7 +77,7 @@ public class InviteUserJoinedHandlerTests : HandlerTest<InviteUserJoinedHandler>
             .SetGetInvitesAction(Array.Empty<IInviteMetadata>()).Build();
         var user = userBuilder.AsBot(false).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(user);
+        await Instance.ProcessAsync(user);
     }
 
     [TestMethod]
@@ -87,6 +91,6 @@ public class InviteUserJoinedHandlerTests : HandlerTest<InviteUserJoinedHandler>
             .SetGetInvitesAction(new[] { invite }).Build();
         var user = userBuilder.AsBot(false).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(user);
+        await Instance.ProcessAsync(user);
     }
 }

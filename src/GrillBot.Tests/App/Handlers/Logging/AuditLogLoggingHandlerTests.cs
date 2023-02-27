@@ -7,11 +7,11 @@ using GrillBot.Tests.Infrastructure.Common;
 namespace GrillBot.Tests.App.Handlers.Logging;
 
 [TestClass]
-public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>
+public class AuditLogLoggingHandlerTests : TestBase<AuditLogLoggingHandler>
 {
     private static IConfiguration Configuration => TestServices.Configuration.Value;
 
-    protected override AuditLogLoggingHandler CreateService()
+    protected override AuditLogLoggingHandler CreateInstance()
     {
         var writer = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditLogLoggingHandler(writer, Configuration);
@@ -19,10 +19,7 @@ public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>
 
     [TestMethod]
     public async Task CanHandleAsync_NullException()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Critical, "");
-        Assert.IsFalse(result);
-    }
+        => Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Critical, ""));
 
     [TestMethod]
     public async Task CanHandleAsync_Disabled()
@@ -32,8 +29,7 @@ public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>
 
         try
         {
-            var result = await Service.CanHandleAsync(LogSeverity.Debug, "", new Exception());
-            Assert.IsFalse(result);
+            Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Debug, "", new Exception()));
         }
         finally
         {
@@ -43,32 +39,21 @@ public class AuditLogLoggingHandlerTests : ServiceTest<AuditLogLoggingHandler>
 
     [TestMethod]
     public async Task CanHandleAsync_InvalidSeverity()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Debug, "", new Exception());
-        Assert.IsFalse(result);
-    }
+        => Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Debug, "", new Exception()));
 
     [TestMethod]
     public async Task InfoAsync()
-    {
-        await Service.InfoAsync("Test", "Test");
-    }
+        => await Instance.InfoAsync("Test", "Test");
 
     [TestMethod]
     public async Task WarningAsync()
-    {
-        await Service.WarningAsync("Test", "Test", new ArgumentException());
-    }
+        => await Instance.WarningAsync("Test", "Test", new ArgumentException());
 
     [TestMethod]
     public async Task ErrorAsync()
-    {
-        await Service.ErrorAsync("Test", "Test", new ArgumentException());
-    }
+        => await Instance.ErrorAsync("Test", "Test", new ArgumentException());
 
     [TestMethod]
     public async Task ErrorAsync_ApiException()
-    {
-        await Service.ErrorAsync("API", "API", new ApiException("", new ArgumentException(), null, "", ""));
-    }
+        => await Instance.ErrorAsync("API", "API", new ApiException("", new ArgumentException(), null, "", ""));
 }

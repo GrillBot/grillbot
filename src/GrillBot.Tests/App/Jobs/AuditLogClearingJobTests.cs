@@ -1,27 +1,27 @@
 ﻿using System.IO;
 using GrillBot.App.Jobs;
 using GrillBot.Database.Entity;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Jobs;
 
 [TestClass]
 public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
 {
-    protected override AuditLogClearingJob CreateJob()
+    protected override AuditLogClearingJob CreateInstance()
     {
-        var configuration = TestServices.Configuration.Value;
-        var fileStorage = new FileStorageMock(configuration);
-
+        var fileStorage = new FileStorageMock(TestServices.Configuration.Value);
         return new AuditLogClearingJob(DatabaseBuilder, TestServices.Provider.Value, fileStorage);
+    }
+
+    protected override void Cleanup()
+    {
+        if (File.Exists("File.zip")) File.Delete("File.zip");
     }
 
     [TestMethod]
     public async Task Execute_NoData()
-    {
-        var context = CreateContext();
-        await Job.Execute(context);
-        Assert.IsTrue(true);
-    }
+        => await Execute();
 
     [TestMethod]
     public async Task Execute_WithData_NoFiles()
@@ -35,20 +35,16 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
             ProcessedUserId = "12345",
             Type = Database.Enums.AuditLogItemType.Command,
             Id = 12345,
-            DiscordAuditLogItemId = "12345"
+            DiscordAuditLogItemId = "12345",
+            Guild = new Guild { Id = "12345", Name = "Guild" }
         });
 
-        await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
         await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
-        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234", Flags = int.MaxValue});
+        await Repository.AddAsync(new User { Id = "12345", Username = "Username", Discriminator = "1234", Flags = int.MaxValue });
         await Repository.AddAsync(new Invite { Code = "ABCD", GuildId = "12345" });
         await Repository.CommitAsync();
-
-        var context = CreateContext();
-        await Job.Execute(context);
-        Assert.IsTrue(true);
-        if (File.Exists("File.zip")) File.Delete("File.zip");
+        await Execute();
     }
 
     [TestMethod]
@@ -78,14 +74,10 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
         await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test", UsedInviteCode = "ABCD" });
-        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await Repository.AddAsync(new User { Id = "12345", Username = "Username", Discriminator = "1234" });
         await Repository.AddAsync(new Invite { Code = "ABCD", GuildId = "12345" });
         await Repository.CommitAsync();
-
-        var context = CreateContext();
-        await Job.Execute(context);
-        Assert.IsTrue(true);
-        if (File.Exists("File.zip")) File.Delete("File.zip");
+        await Execute();
     }
 
     [TestMethod]
@@ -109,12 +101,8 @@ public class AuditLogClearingJobTests : JobTest<AuditLogClearingJob>
         await Repository.AddAsync(new Guild { Id = "12345", Name = "Guild" });
         await Repository.AddAsync(new GuildChannel { Name = "Channel", GuildId = "12345", ChannelId = "12345" });
         await Repository.AddAsync(new GuildUser { GuildId = "12345", UserId = "12345", Nickname = "Test" });
-        await Repository.AddAsync(new Database.Entity.User { Id = "12345", Username = "Username", Discriminator = "1234" });
+        await Repository.AddAsync(new User { Id = "12345", Username = "Username", Discriminator = "1234" });
         await Repository.CommitAsync();
-
-        var context = CreateContext();
-        await Job.Execute(context);
-        Assert.IsTrue(true);
-        if (File.Exists("File.zip")) File.Delete("File.zip");
+        await Execute();
     }
 }

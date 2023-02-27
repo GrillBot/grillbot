@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 [TestClass]
 public class KeepableExistsTests : ApiActionTest<KeepableExists>
 {
-    protected override KeepableExists CreateAction()
+    protected override KeepableExists CreateInstance()
     {
         return new KeepableExists(ApiRequestContext, DatabaseBuilder);
     }
@@ -16,7 +16,7 @@ public class KeepableExistsTests : ApiActionTest<KeepableExists>
     public async Task ProcessAsync()
     {
         var parameters = new KeepableParams { Group = "1BIT", Name = "IZP" };
-        var result = await Action.ProcessAsync(parameters);
+        var result = await Instance.ProcessAsync(parameters);
 
         Assert.IsFalse(result);
     }

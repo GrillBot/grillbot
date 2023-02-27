@@ -6,7 +6,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Command;
 [TestClass]
 public class GetExternalCommandsTests : ApiActionTest<GetExternalCommands>
 {
-    protected override GetExternalCommands CreateAction()
+    protected override GetExternalCommands CreateInstance()
     {
         return new GetExternalCommands(ApiRequestContext, TestServices.RubbergodServiceClient.Value);
     }
@@ -14,7 +14,7 @@ public class GetExternalCommandsTests : ApiActionTest<GetExternalCommands>
     [TestMethod]
     public async Task ProcessAsync()
     {
-        var result = await Action.ProcessAsync("Rubbergod");
+        var result = await Instance.ProcessAsync("Rubbergod");
 
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Count > 0);
@@ -23,7 +23,7 @@ public class GetExternalCommandsTests : ApiActionTest<GetExternalCommands>
     [TestMethod]
     public async Task ProcessAsync_NoData()
     {
-        var result = await Action.ProcessAsync("Rubbergod-Help-Test");
+        var result = await Instance.ProcessAsync("Rubbergod-Help-Test");
 
         Assert.IsNotNull(result);
         Assert.AreEqual(0, result.Count);

@@ -1,11 +1,15 @@
 ﻿using GrillBot.Data.Infrastructure.Validation;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.Data.Infrastructure.Validation;
 
 [TestClass]
 public class DiscordIdAttributeTests : ValidationAttributeTest<DiscordIdAttribute>
 {
-    protected override DiscordIdAttribute CreateAttribute() => new();
+    protected override DiscordIdAttribute CreateInstance()
+    {
+        return new DiscordIdAttribute();
+    }
 
     [TestMethod]
     public void IsValid_UnsupportedType()

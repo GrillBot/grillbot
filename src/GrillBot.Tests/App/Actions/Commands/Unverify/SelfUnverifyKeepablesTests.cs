@@ -16,7 +16,7 @@ public class SelfUnverifyKeepablesTests : CommandActionTest<SelfUnverifyKeepable
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override SelfUnverifyKeepables CreateAction()
+    protected override SelfUnverifyKeepables CreateInstance()
     {
         var apiAction = new GetKeepablesList(new ApiRequestContext(), DatabaseBuilder);
         return InitAction(new SelfUnverifyKeepables(apiAction, TestServices.Texts.Value));
@@ -52,7 +52,7 @@ public class SelfUnverifyKeepablesTests : CommandActionTest<SelfUnverifyKeepable
     {
         await InitDataAsync();
 
-        var result = await Action.ListAsync();
+        var result = await Instance.ListAsync();
 
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Fields.Length > 0);
@@ -63,6 +63,6 @@ public class SelfUnverifyKeepablesTests : CommandActionTest<SelfUnverifyKeepable
     [ExcludeFromCodeCoverage]
     public async Task ListAsync_WithoutData()
     {
-        await Action.ListAsync();
+        await Instance.ListAsync();
     }
 }

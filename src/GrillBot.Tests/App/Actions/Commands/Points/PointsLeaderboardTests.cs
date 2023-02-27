@@ -18,15 +18,12 @@ public class PointsLeaderboardTests : CommandActionTest<PointsLeaderboard>
     protected override IGuildUser User { get; }
         = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(new GuildBuilder(Consts.GuildId, Consts.GuildName).Build()).Build();
 
-    protected override PointsLeaderboard CreateAction()
+    protected override PointsLeaderboard CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
 
-        var action = new PointsLeaderboard(DatabaseBuilder, texts, formatHelper);
-        action.Init(Context);
-
-        return action;
+        return InitAction(new PointsLeaderboard(DatabaseBuilder, texts, formatHelper));
     }
 
     private async Task InitDataAsync()
@@ -51,13 +48,13 @@ public class PointsLeaderboardTests : CommandActionTest<PointsLeaderboard>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NoActivity()
-        => await Action.ProcessAsync(0);
+        => await Instance.ProcessAsync(0);
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync(0);
+        var result = await Instance.ProcessAsync(0);
 
         Assert.IsNotNull(result.embed);
         Assert.IsNull(result.paginationComponent);

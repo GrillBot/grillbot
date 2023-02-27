@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.Routing;
 namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
 
 [TestClass]
-public class ExceptionFilterTests : ServiceTest<ExceptionFilter>
+public class ExceptionFilterTests : TestBase<ExceptionFilter>
 {
-    protected override ExceptionFilter CreateService()
+    protected override ExceptionFilter CreateInstance()
     {
         var discordClient = TestServices.DiscordSocketClient.Value;
         var interactions = DiscordHelper.CreateInteractionService(discordClient);
@@ -38,7 +38,7 @@ public class ExceptionFilterTests : ServiceTest<ExceptionFilter>
     {
         var context = CreateContext(new OperationCanceledException());
 
-        await Service.OnExceptionAsync(context);
+        await Instance.OnExceptionAsync(context);
         Assert.IsTrue(context.ExceptionHandled);
     }
 
@@ -47,7 +47,7 @@ public class ExceptionFilterTests : ServiceTest<ExceptionFilter>
     {
         var context = CreateContext(new ArgumentException("Test"));
 
-        await Service.OnExceptionAsync(context);
+        await Instance.OnExceptionAsync(context);
         Assert.IsFalse(context.ExceptionHandled);
     }
 }

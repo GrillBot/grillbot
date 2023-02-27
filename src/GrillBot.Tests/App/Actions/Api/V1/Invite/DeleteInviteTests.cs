@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Invite;
 [TestClass]
 public class DeleteInviteTests : ApiActionTest<DeleteInvite>
 {
-    protected override DeleteInvite CreateAction()
+    protected override DeleteInvite CreateInstance()
     {
         return new DeleteInvite(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value);
     }
@@ -39,13 +39,13 @@ public class DeleteInviteTests : ApiActionTest<DeleteInvite>
     [ExpectedException(typeof(NotFoundException))]
     public async Task ProcessAsync_InviteNotFound()
     {
-        await Action.ProcessAsync(Consts.GuildId, Consts.InviteCode);
+        await Instance.ProcessAsync(Consts.GuildId, Consts.InviteCode);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync();
-        await Action.ProcessAsync(Consts.GuildId, Consts.InviteCode);
+        await Instance.ProcessAsync(Consts.GuildId, Consts.InviteCode);
     }
 }

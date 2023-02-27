@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Points;
 [TestClass]
 public class GetPointsGraphDataTests : ApiActionTest<GetPointsGraphData>
 {
-    protected override GetPointsGraphData CreateAction()
+    protected override GetPointsGraphData CreateInstance()
     {
         return new GetPointsGraphData(ApiRequestContext, DatabaseBuilder);
     }
@@ -35,7 +35,7 @@ public class GetPointsGraphDataTests : ApiActionTest<GetPointsGraphData>
         await Repository.CommitAsync();
 
         var filter = new GetPointTransactionsParams();
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.AreEqual(1, result.Count);
     }

@@ -8,7 +8,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Channel;
 [TestClass]
 public class ClearMessageCacheTests : ApiActionTest<ClearMessageCache>
 {
-    protected override ClearMessageCache CreateAction()
+    protected override ClearMessageCache CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
@@ -23,13 +23,13 @@ public class ClearMessageCacheTests : ApiActionTest<ClearMessageCache>
 
     [TestMethod]
     public async Task ProcessAsync_GuildNotFound()
-        => await Action.ProcessAsync(Consts.GuildId + 1, Consts.ChannelId);
+        => await Instance.ProcessAsync(Consts.GuildId + 1, Consts.ChannelId);
 
     [TestMethod]
     public async Task ProcessAsync_ChannelNotFound()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId + 1);
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId + 1);
 
     [TestMethod]
     public async Task ProcessAsync_Success()
-        => await Action.ProcessAsync(Consts.GuildId, Consts.ChannelId);
+        => await Instance.ProcessAsync(Consts.GuildId, Consts.ChannelId);
 }

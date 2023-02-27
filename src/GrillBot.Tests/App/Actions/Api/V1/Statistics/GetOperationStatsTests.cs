@@ -6,7 +6,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
 [TestClass]
 public class GetOperationStatsTests : ApiActionTest<GetOperationStats>
 {
-    protected override GetOperationStats CreateAction()
+    protected override GetOperationStats CreateInstance()
     {
         return new GetOperationStats(ApiRequestContext, TestServices.CounterManager.Value);
     }
@@ -19,7 +19,7 @@ public class GetOperationStatsTests : ApiActionTest<GetOperationStats>
         await AddDelayAsync("Another.API.SubAPI");
         await AddDelayAsync("Another.API.Data");
 
-        var result = Action.Process();
+        var result = Instance.Process();
 
         Assert.IsNotNull(result);
         Assert.AreNotEqual(0, result.Statistics.Count);

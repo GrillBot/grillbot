@@ -8,15 +8,18 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.ChannelUpdated;
 
 [TestClass]
-public class AuditChannelUpdatedHandlerTests : HandlerTest<AuditChannelUpdatedHandler>
+public class AuditChannelUpdatedHandlerTests : TestBase<AuditChannelUpdatedHandler>
 {
-    private ITextChannel TextChannel { get; set; }
+    private ITextChannel TextChannel { get; set; } = null!;
 
-    protected override AuditChannelUpdatedHandler CreateHandler()
+    protected override void PreInit()
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
+    }
 
+    protected override AuditChannelUpdatedHandler CreateInstance()
+    {
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditChannelUpdatedHandler(TestServices.CounterManager.Value, auditLogWriter);
     }
@@ -25,13 +28,13 @@ public class AuditChannelUpdatedHandlerTests : HandlerTest<AuditChannelUpdatedHa
     public async Task ProcessAsync_Dms()
     {
         var dms = new DmChannelBuilder().Build();
-        await Handler.ProcessAsync(dms, dms);
+        await Instance.ProcessAsync(dms, dms);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Equals()
     {
-        await Handler.ProcessAsync(TextChannel, TextChannel);
+        await Instance.ProcessAsync(TextChannel, TextChannel);
     }
 
     [TestMethod]
@@ -40,7 +43,7 @@ public class AuditChannelUpdatedHandlerTests : HandlerTest<AuditChannelUpdatedHa
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(new List<IAuditLogEntry>()).Build();
         var channel = new TextChannelBuilder(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(TextChannel, channel);
+        await Instance.ProcessAsync(TextChannel, channel);
     }
 
     [TestMethod]
@@ -49,7 +52,7 @@ public class AuditChannelUpdatedHandlerTests : HandlerTest<AuditChannelUpdatedHa
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(new List<IAuditLogEntry>()).Build();
         var channel = new TextChannelBuilder(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(guild).SetPosition(50).Build();
 
-        await Handler.ProcessAsync(TextChannel, channel);
+        await Instance.ProcessAsync(TextChannel, channel);
     }
 
     [TestMethod]
@@ -62,6 +65,6 @@ public class AuditChannelUpdatedHandlerTests : HandlerTest<AuditChannelUpdatedHa
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(new List<IAuditLogEntry> { entry }).Build();
         var channel = new TextChannelBuilder(Consts.ChannelId + 1, Consts.ChannelName).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(TextChannel, channel);
+        await Instance.ProcessAsync(TextChannel, channel);
     }
 }

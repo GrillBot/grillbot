@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V2;
 [TestClass]
 public class GetRubbergodUserKarmaTests : ApiActionTest<GetRubbergodUserKarma>
 {
-    protected override GetRubbergodUserKarma CreateAction()
+    protected override GetRubbergodUserKarma CreateInstance()
     {
         return new GetRubbergodUserKarma(ApiRequestContext, TestServices.RubbergodServiceClient.Value);
     }
@@ -16,7 +16,7 @@ public class GetRubbergodUserKarmaTests : ApiActionTest<GetRubbergodUserKarma>
     public async Task ProcessAsync_Success()
     {
         var parameters = new KarmaListParams { Pagination = { Page = 2 } };
-        var result = await Action.ProcessAsync(parameters);
+        var result = await Instance.ProcessAsync(parameters);
 
         Assert.IsNotNull(result.Data);
         Assert.AreEqual(1, result.Data.Count);

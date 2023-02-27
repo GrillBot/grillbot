@@ -1,13 +1,14 @@
 ﻿using Discord;
 using GrillBot.App.Jobs;
 using GrillBot.Database.Enums;
+using GrillBot.Tests.Infrastructure.Common;
 
 namespace GrillBot.Tests.App.Jobs;
 
 [TestClass]
 public class OnlineUsersCleanJobTests : JobTest<OnlineUsersCleanJob>
 {
-    protected override OnlineUsersCleanJob CreateJob()
+    protected override OnlineUsersCleanJob CreateInstance()
     {
         return new OnlineUsersCleanJob(DatabaseBuilder, TestServices.Provider.Value);
     }
@@ -40,21 +41,18 @@ public class OnlineUsersCleanJobTests : JobTest<OnlineUsersCleanJob>
     [TestMethod]
     public async Task Execute_NoUsers()
     {
-        var context = CreateContext();
-        await Job.Execute(context);
-
-        Assert.IsNull(context.Result);
+        await Execute(context => Assert.IsNull(context.Result));
     }
 
     [TestMethod]
     public async Task Execute_Ok()
     {
         await InitDataAsync();
-        var context = CreateContext();
-        await Job.Execute(context);
-
-        Assert.IsNotNull(context.Result);
-        Assert.IsInstanceOfType(context.Result, typeof(string));
-        Assert.IsTrue(((string)context.Result).Contains("LoggedUsers"));
+        await Execute(context =>
+        {
+            Assert.IsNotNull(context.Result);
+            Assert.IsInstanceOfType(context.Result, typeof(string));
+            Assert.IsTrue(((string)context.Result).Contains("LoggedUsers"));
+        });
     }
 }

@@ -10,7 +10,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.AutoReply;
 [TestClass]
 public class UpdateAutoReplyItemTests : ApiActionTest<UpdateAutoReplyItem>
 {
-    protected override UpdateAutoReplyItem CreateAction()
+    protected override UpdateAutoReplyItem CreateInstance()
     {
         var manager = new AutoReplyManager(DatabaseBuilder);
         return new UpdateAutoReplyItem(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value, TestServices.Texts.Value, manager);
@@ -21,7 +21,7 @@ public class UpdateAutoReplyItemTests : ApiActionTest<UpdateAutoReplyItem>
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
     {
-        await Action.ProcessAsync(1, new AutoReplyItemParams());
+        await Instance.ProcessAsync(1, new AutoReplyItemParams());
     }
 
     [TestMethod]
@@ -30,7 +30,7 @@ public class UpdateAutoReplyItemTests : ApiActionTest<UpdateAutoReplyItem>
         await Repository.AddAsync(new Database.Entity.AutoReplyItem { Id = 1, Flags = 2, Reply = "Reply", Template = "Template" });
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync(1, new AutoReplyItemParams
+        var result = await Instance.ProcessAsync(1, new AutoReplyItemParams
         {
             Flags = 2,
             Reply = "Reply",

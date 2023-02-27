@@ -11,7 +11,7 @@ public class GetAvailableGuildsTests : ApiActionTest<GetAvailableGuilds>
 {
     private IGuild Guild { get; set; }
 
-    protected override GetAvailableGuilds CreateAction()
+    protected override GetAvailableGuilds CreateInstance()
     {
         var user = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetUsersAction(new[] { user }).Build();
@@ -27,7 +27,7 @@ public class GetAvailableGuildsTests : ApiActionTest<GetAvailableGuilds>
     [ApiConfiguration(true)]
     public async Task ProcessAsync_AsUser()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(1, result.Count);
     }
 
@@ -37,7 +37,7 @@ public class GetAvailableGuildsTests : ApiActionTest<GetAvailableGuilds>
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(Guild));
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(1, result.Count);
     }
 }

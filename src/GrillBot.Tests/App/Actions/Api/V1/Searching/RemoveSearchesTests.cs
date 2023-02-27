@@ -8,7 +8,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Searching;
 [TestClass]
 public class RemoveSearchesTests : ApiActionTest<RemoveSearches>
 {
-    protected override RemoveSearches CreateAction()
+    protected override RemoveSearches CreateInstance()
     {
         return new RemoveSearches(ApiRequestContext, DatabaseBuilder);
     }
@@ -37,12 +37,12 @@ public class RemoveSearchesTests : ApiActionTest<RemoveSearches>
 
     [TestMethod]
     public async Task ProcessAsync_NoItems()
-        => await Action.ProcessAsync(new[] { 1L });
+        => await Instance.ProcessAsync(new[] { 1L });
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync();
-        await Action.ProcessAsync(new[] { 1L });
+        await Instance.ProcessAsync(new[] { 1L });
     }
 }

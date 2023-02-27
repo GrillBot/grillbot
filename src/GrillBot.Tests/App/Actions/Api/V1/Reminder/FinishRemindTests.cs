@@ -13,7 +13,7 @@ public class FinishRemindTests : ApiActionTest<FinishRemind>
 {
     private IUser[] Users { get; set; }
 
-    protected override FinishRemind CreateAction()
+    protected override FinishRemind CreateInstance()
     {
         var message = new UserMessageBuilder(Consts.MessageId).Build();
         Users = new[]
@@ -52,16 +52,16 @@ public class FinishRemindTests : ApiActionTest<FinishRemind>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_RemindNotFound()
-        => await Action.ProcessAsync(1, false, false);
+        => await Instance.ProcessAsync(1, false, false);
 
     [TestMethod]
     public async Task ProcessAsync_IsGone_AlreadyCancelled()
     {
         await InitDataAsync(Consts.UserId, Consts.UserId, 0);
 
-        await Action.ProcessAsync(1, false, true);
-        Assert.IsTrue(Action.IsGone);
-        Assert.IsFalse(string.IsNullOrEmpty(Action.ErrorMessage));
+        await Instance.ProcessAsync(1, false, true);
+        Assert.IsTrue(Instance.IsGone);
+        Assert.IsFalse(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
@@ -69,50 +69,50 @@ public class FinishRemindTests : ApiActionTest<FinishRemind>
     {
         await InitDataAsync(Consts.UserId, Consts.UserId, Consts.MessageId);
 
-        await Action.ProcessAsync(1, false, true);
-        Assert.IsTrue(Action.IsGone);
-        Assert.IsFalse(string.IsNullOrEmpty(Action.ErrorMessage));
+        await Instance.ProcessAsync(1, false, true);
+        Assert.IsTrue(Instance.IsGone);
+        Assert.IsFalse(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public async Task ProcessAsync_Unauthorized_InvalidFrom()
     {
         await InitDataAsync(Consts.UserId + 1, Consts.UserId + 2, null);
-        await Action.ProcessAsync(1, false, false);
+        await Instance.ProcessAsync(1, false, false);
 
-        Assert.IsFalse(Action.IsAuthorized);
-        Assert.IsFalse(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsFalse(Instance.IsAuthorized);
+        Assert.IsFalse(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public async Task ProcessAsync_WithoutNotification()
     {
         await InitDataAsync(Consts.UserId, Consts.UserId, null);
-        await Action.ProcessAsync(1, false, false);
+        await Instance.ProcessAsync(1, false, false);
 
-        Assert.IsFalse(Action.IsGone);
-        Assert.IsTrue(Action.IsAuthorized);
-        Assert.IsTrue(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsFalse(Instance.IsGone);
+        Assert.IsTrue(Instance.IsAuthorized);
+        Assert.IsTrue(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public async Task ProcessAsync_WithNotification()
     {
         await InitDataAsync(Consts.UserId, Consts.UserId, null);
-        await Action.ProcessAsync(1, true, false);
+        await Instance.ProcessAsync(1, true, false);
 
-        Assert.IsFalse(Action.IsGone);
-        Assert.IsTrue(Action.IsAuthorized);
-        Assert.IsTrue(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsFalse(Instance.IsGone);
+        Assert.IsTrue(Instance.IsAuthorized);
+        Assert.IsTrue(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public void ResetState()
     {
-        Action.ResetState();
+        Instance.ResetState();
         
-        Assert.IsNull(Action.ErrorMessage);
-        Assert.IsFalse(Action.IsAuthorized);
-        Assert.IsFalse(Action.IsGone);
+        Assert.IsNull(Instance.ErrorMessage);
+        Assert.IsFalse(Instance.IsAuthorized);
+        Assert.IsFalse(Instance.IsGone);
     }
 }

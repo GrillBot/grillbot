@@ -30,7 +30,7 @@ public class PointsChartTests : CommandActionTest<PointsChart>
     protected override IGuild Guild => GuildData;
     protected override IGuildUser User => GuildUser;
 
-    protected override PointsChart CreateAction()
+    protected override PointsChart CreateInstance()
     {
         return InitAction(new PointsChart(DatabaseBuilder, TestServices.Provider.Value));
     }
@@ -77,7 +77,7 @@ public class PointsChartTests : CommandActionTest<PointsChart>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(ChartType.UserChart, AnotherUsers, ChartsFilter.All);
+        var result = await Instance.ProcessAsync(ChartType.UserChart, AnotherUsers, ChartsFilter.All);
         CheckResult(result);
     }
 
@@ -86,7 +86,7 @@ public class PointsChartTests : CommandActionTest<PointsChart>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(ChartType.UserChart, null, ChartsFilter.All);
+        var result = await Instance.ProcessAsync(ChartType.UserChart, null, ChartsFilter.All);
         CheckResult(result);
     }
 
@@ -95,7 +95,7 @@ public class PointsChartTests : CommandActionTest<PointsChart>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(ChartType.GuildChart, null, ChartsFilter.All);
+        var result = await Instance.ProcessAsync(ChartType.GuildChart, null, ChartsFilter.All);
         CheckResult(result);
     }
 

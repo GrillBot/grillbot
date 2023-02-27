@@ -10,21 +10,22 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.GuildMemberUpdated;
 
 [TestClass]
-public class AuditUserRoleUpdatedHandlerTests : HandlerTest<AuditUserRoleUpdatedHandler>
+public class AuditUserRoleUpdatedInstanceTests : TestBase<AuditUserRoleUpdatedHandler>
 {
-    private AuditLogManager AuditLogManager { get; set; }
+    private IGuildUser User { get; set; } = null!;
 
-    private IGuildUser User { get; set; }
-
-    protected override AuditUserRoleUpdatedHandler CreateHandler()
+    protected override void PreInit()
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(Enumerable.Empty<ulong>())
             .SetGuild(guild).Build();
+    }
 
-        AuditLogManager = new AuditLogManager();
+    protected override AuditUserRoleUpdatedHandler CreateInstance()
+    {
+        var auditLogManager = new AuditLogManager();
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
-        return new AuditUserRoleUpdatedHandler(AuditLogManager, TestServices.CounterManager.Value, DatabaseBuilder, auditLogWriter);
+        return new AuditUserRoleUpdatedHandler(auditLogManager, TestServices.CounterManager.Value, DatabaseBuilder, auditLogWriter);
     }
 
     private async Task InitDataAsync()
@@ -47,9 +48,7 @@ public class AuditUserRoleUpdatedHandlerTests : HandlerTest<AuditUserRoleUpdated
 
     [TestMethod]
     public async Task ProcessAsync_CannotProcess()
-    {
-        await Handler.ProcessAsync(User, User);
-    }
+        => await Instance.ProcessAsync(User, User);
 
     [TestMethod]
     public async Task ProcessAsync_WithoutAuditLog()
@@ -57,7 +56,7 @@ public class AuditUserRoleUpdatedHandlerTests : HandlerTest<AuditUserRoleUpdated
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(new List<IAuditLogEntry>()).Build();
         var anotherUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetRoles(new[] { Consts.RoleId }).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(User, anotherUser);
+        await Instance.ProcessAsync(User, anotherUser);
     }
 
     [TestMethod]
@@ -71,6 +70,6 @@ public class AuditUserRoleUpdatedHandlerTests : HandlerTest<AuditUserRoleUpdated
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetRoles(new[] { role }).SetGetAuditLogsAction(new List<IAuditLogEntry> { logEntry }).Build();
         var userAfter = new GuildUserBuilder(User).SetRoles(new[] { role.Id }).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(User, userAfter);
+        await Instance.ProcessAsync(User, userAfter);
     }
 }

@@ -12,7 +12,7 @@ namespace GrillBot.Tests.App.Actions.Api.V2.Events;
 [TestClass]
 public class CreateScheduledEventTests : ApiActionTest<CreateScheduledEvent>
 {
-    protected override CreateScheduledEvent CreateAction()
+    protected override CreateScheduledEvent CreateInstance()
     {
         var guildEvent = new GuildScheduledEventBuilder(Consts.GuildEventId).Build();
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetCreateEventAction(guildEvent).Build();
@@ -72,7 +72,7 @@ public class CreateScheduledEventTests : ApiActionTest<CreateScheduledEvent>
         };
         parameters.Image = image;
 
-        var result = await Action.ProcessAsync(guildId, parameters);
+        var result = await Instance.ProcessAsync(guildId, parameters);
         Assert.AreEqual(Consts.GuildEventId, result);
     }
 }

@@ -6,7 +6,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
 [TestClass]
 public class GetDatabaseStatusTests : ApiActionTest<GetDatabaseStatus>
 {
-    protected override GetDatabaseStatus CreateAction()
+    protected override GetDatabaseStatus CreateInstance()
     {
         return new GetDatabaseStatus(ApiRequestContext, DatabaseBuilder, CacheBuilder);
     }
@@ -14,7 +14,7 @@ public class GetDatabaseStatusTests : ApiActionTest<GetDatabaseStatus>
     [TestMethod]
     public async Task ProcessAsync()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.Cache);

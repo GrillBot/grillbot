@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.System;
 [TestClass]
 public class GetEventLogTests : ApiActionTest<GetEventLog>
 {
-    protected override GetEventLog CreateAction()
+    protected override GetEventLog CreateInstance()
     {
         var eventManager = new EventLogManager();
         return new GetEventLog(ApiRequestContext, eventManager);
@@ -16,7 +16,7 @@ public class GetEventLogTests : ApiActionTest<GetEventLog>
     [TestMethod]
     public void Process()
     {
-        var result = Action.Process();
+        var result = Instance.Process();
         Assert.IsNotNull(result);
     }
 }

@@ -6,14 +6,18 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.GuildMemberUpdated;
 
 [TestClass]
-public class UserUpdatedSyncHandlerTests : HandlerTest<UserUpdatedSyncHandler>
+public class UserUpdatedSyncHandlerTests : TestBase<UserUpdatedSyncHandler>
 {
-    private IGuildUser User { get; set; }
+    private IGuildUser User { get; set; } = null!;
 
-    protected override UserUpdatedSyncHandler CreateHandler()
+    protected override void PreInit()
     {
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator)
             .SetGuild(new GuildBuilder(Consts.GuildId, Consts.GuildName).Build()).Build();
+    }
+
+    protected override UserUpdatedSyncHandler CreateInstance()
+    {
         return new UserUpdatedSyncHandler(DatabaseBuilder);
     }
 
@@ -28,14 +32,14 @@ public class UserUpdatedSyncHandlerTests : HandlerTest<UserUpdatedSyncHandler>
     [TestMethod]
     public async Task ProcessAsync_CannotProcess()
     {
-        await Handler.ProcessAsync(User, User);
+        await Instance.ProcessAsync(User, User);
     }
 
     [TestMethod]
     public async Task ProcessAsync_UserNotFound()
     {
         var user = new GuildUserBuilder(Consts.UserId, Consts.Username + "2", Consts.Discriminator).Build();
-        await Handler.ProcessAsync(User, user);
+        await Instance.ProcessAsync(User, user);
     }
 
     [TestMethod]
@@ -44,6 +48,6 @@ public class UserUpdatedSyncHandlerTests : HandlerTest<UserUpdatedSyncHandler>
         var user = new GuildUserBuilder(Consts.UserId, Consts.Username + "2", Consts.Discriminator).SetGuild(User.Guild).Build();
 
         await InitDataAsync();
-        await Handler.ProcessAsync(User, user);
+        await Instance.ProcessAsync(User, user);
     }
 }

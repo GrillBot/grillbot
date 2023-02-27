@@ -12,7 +12,7 @@ public class ImageCreatorTests : CommandActionTest<ImageCreator>
     protected override IGuild Guild { get; } = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
     protected override IGuildUser User { get; } = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override ImageCreator CreateAction()
+    protected override ImageCreator CreateInstance()
     {
         var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
 
@@ -36,13 +36,13 @@ public class ImageCreatorTests : CommandActionTest<ImageCreator>
 
     private async Task ProcessPeepoloveTestAsync(IUser? user)
     {
-        using var result = await Action.PeepoloveAsync(user);
+        using var result = await Instance.PeepoloveAsync(user);
         Assert.IsNotNull(result);
     }
 
     private async Task ProcessPeepoangryTestAsync(IUser? user)
     {
-        using var result = await Action.PeepoangryAsync(user);
+        using var result = await Instance.PeepoangryAsync(user);
         Assert.IsNotNull(result);
     }
 }

@@ -11,7 +11,7 @@ public class GetPointsLeaderboardTests : ApiActionTest<GetPointsLeaderboard>
     private IGuild Guild { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override GetPointsLeaderboard CreateAction()
+    protected override GetPointsLeaderboard CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
@@ -26,7 +26,7 @@ public class GetPointsLeaderboardTests : ApiActionTest<GetPointsLeaderboard>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.AreEqual(1, result.Count);

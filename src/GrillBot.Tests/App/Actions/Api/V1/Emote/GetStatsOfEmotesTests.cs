@@ -10,7 +10,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 [TestClass]
 public class GetStatsOfEmotesTests : ApiActionTest<GetStatsOfEmotes>
 {
-    protected override GetStatsOfEmotes CreateAction()
+    protected override GetStatsOfEmotes CreateInstance()
     {
         var parsedEmote = Discord.Emote.Parse(Consts.OnlineEmoteId);
         var emote = EmoteHelper.CreateGuildEmote(parsedEmote);
@@ -25,7 +25,7 @@ public class GetStatsOfEmotesTests : ApiActionTest<GetStatsOfEmotes>
     public async Task ProcessAsync_Supported_WithoutFilter()
     {
         var filter = new EmotesListParams();
-        var result = await Action.ProcessAsync(filter, false);
+        var result = await Instance.ProcessAsync(filter, false);
 
         Assert.AreEqual(0, result.TotalItemsCount);
     }
@@ -52,7 +52,7 @@ public class GetStatsOfEmotesTests : ApiActionTest<GetStatsOfEmotes>
                     EmoteName = "Emote"
                 };
 
-                var result = await Action.ProcessAsync(filter, false);
+                var result = await Instance.ProcessAsync(filter, false);
                 Assert.AreEqual(0, result.TotalItemsCount);
             }
         }
@@ -62,7 +62,7 @@ public class GetStatsOfEmotesTests : ApiActionTest<GetStatsOfEmotes>
     public async Task ProcessAsync_Unsupported()
     {
         var filter = new EmotesListParams();
-        var result = await Action.ProcessAsync(filter, true);
+        var result = await Instance.ProcessAsync(filter, true);
 
         Assert.AreEqual(0, result.TotalItemsCount);
     }

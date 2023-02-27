@@ -16,7 +16,7 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
 {
     private IGuild Guild { get; set; }
 
-    protected override UpdateGuild CreateAction()
+    protected override UpdateGuild CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var textChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
@@ -37,7 +37,7 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
     public async Task ProcessAsync_GuildNotFound()
     {
         var parameters = new UpdateGuildParams();
-        await Action.ProcessAsync(Consts.GuildId + 1, parameters);
+        await Instance.ProcessAsync(Consts.GuildId + 1, parameters);
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
             BotRoomChannelId = Consts.ChannelId.ToString()
         };
 
-        var result = await Action.ProcessAsync(Consts.GuildId, parameters);
+        var result = await Instance.ProcessAsync(Consts.GuildId, parameters);
         GetGuildDetailTests.CheckSuccess(result, false);
     }
 
@@ -74,7 +74,7 @@ public class UpdateGuildTests : ApiActionTest<UpdateGuild>
         {
             try
             {
-                await Action.ProcessAsync(Consts.GuildId, @case);
+                await Instance.ProcessAsync(Consts.GuildId, @case);
                 Assert.Fail("ProcessAsync not thrown exception");
             }
             catch (Exception ex)

@@ -27,7 +27,7 @@ public class UserInfoTests : CommandActionTest<UserInfo>
 
     protected override IGuildUser User => GuildUser;
 
-    protected override UserInfo CreateAction()
+    protected override UserInfo CreateInstance()
     {
         return InitAction(new UserInfo(DatabaseBuilder, TestServices.Configuration.Value, TestServices.Texts.Value));
     }
@@ -109,7 +109,7 @@ public class UserInfoTests : CommandActionTest<UserInfo>
     public async Task ProcessAsync()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync(GuildUser);
+        var result = await Instance.ProcessAsync(GuildUser);
 
         Assert.IsNotNull(result?.Fields);
         Assert.IsTrue(result.Fields.Length > 0);

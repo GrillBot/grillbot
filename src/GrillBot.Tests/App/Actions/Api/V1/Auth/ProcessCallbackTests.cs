@@ -10,7 +10,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Auth;
 [TestClass]
 public class ProcessCallbackTests : ApiActionTest<ProcessCallback>
 {
-    protected override ProcessCallback CreateAction()
+    protected override ProcessCallback CreateInstance()
     {
         var httpClientFactory = HttpClientHelper.CreateFactory(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"access_token\": \"AccessToken\"}") });
         return new ProcessCallback(ApiRequestContext, TestServices.Configuration.Value, httpClientFactory);
@@ -25,7 +25,7 @@ public class ProcessCallbackTests : ApiActionTest<ProcessCallback>
             ReturnUrl = "http://localhost"
         };
 
-        var result = await Action.ProcessAsync("code", state.Encode());
+        var result = await Instance.ProcessAsync("code", state.Encode());
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.IsTrue(result.Contains("http://localhost"));
@@ -36,7 +36,7 @@ public class ProcessCallbackTests : ApiActionTest<ProcessCallback>
     {
         var state = new AuthState { IsPublic = false };
 
-        var result = await Action.ProcessAsync("code", state.Encode());
+        var result = await Instance.ProcessAsync("code", state.Encode());
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.IsTrue(result.Contains("https://admin"));
@@ -47,7 +47,7 @@ public class ProcessCallbackTests : ApiActionTest<ProcessCallback>
     {
         var state = new AuthState { IsPublic = true };
 
-        var result = await Action.ProcessAsync("code", state.Encode());
+        var result = await Instance.ProcessAsync("code", state.Encode());
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.IsTrue(result.Contains("https://client"));

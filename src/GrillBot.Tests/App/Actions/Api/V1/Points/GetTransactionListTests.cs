@@ -13,7 +13,7 @@ public class GetTransactionListTests : ApiActionTest<GetTransactionList>
     private IGuildUser User { get; set; }
     private IGuild Guild { get; set; }
 
-    protected override GetTransactionList CreateAction()
+    protected override GetTransactionList CreateInstance()
     {
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
@@ -30,7 +30,7 @@ public class GetTransactionListTests : ApiActionTest<GetTransactionList>
             Sort = { Descending = false }
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(1, result.TotalItemsCount);
     }
 
@@ -46,7 +46,7 @@ public class GetTransactionListTests : ApiActionTest<GetTransactionList>
             UserId = User.Id.ToString()
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(0, result.TotalItemsCount);
     }
 
@@ -56,7 +56,7 @@ public class GetTransactionListTests : ApiActionTest<GetTransactionList>
         await InitDataAsync(true);
 
         var filter = new GetPointTransactionsParams { Merged = true };
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.AreEqual(1, result.TotalItemsCount);
         Assert.IsNotNull(result.Data[0].MergeInfo);

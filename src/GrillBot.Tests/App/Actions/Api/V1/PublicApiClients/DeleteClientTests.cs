@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.PublicApiClients;
 [TestClass]
 public class DeleteClientTests : ApiActionTest<DeleteClient>
 {
-    protected override DeleteClient CreateAction()
+    protected override DeleteClient CreateInstance()
     {
         return new DeleteClient(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value);
     }
@@ -26,7 +26,7 @@ public class DeleteClientTests : ApiActionTest<DeleteClient>
         var id = Guid.NewGuid().ToString();
         await InitDataAsync(id);
 
-        await Action.ProcessAsync(id);
+        await Instance.ProcessAsync(id);
     }
 
     [TestMethod]
@@ -34,6 +34,6 @@ public class DeleteClientTests : ApiActionTest<DeleteClient>
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
     {
-        await Action.ProcessAsync(Guid.NewGuid().ToString());
+        await Instance.ProcessAsync(Guid.NewGuid().ToString());
     }
 }

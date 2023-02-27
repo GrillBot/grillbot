@@ -8,9 +8,9 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Managers;
 
 [TestClass]
-public class AuditLogWriterManagerTests : ServiceTest<AuditLogWriteManager>
+public class AuditLogWriterManagerTests : TestBase<AuditLogWriteManager>
 {
-    protected override AuditLogWriteManager CreateService()
+    protected override AuditLogWriteManager CreateInstance()
     {
         return new AuditLogWriteManager(DatabaseBuilder);
     }
@@ -32,7 +32,7 @@ public class AuditLogWriterManagerTests : ServiceTest<AuditLogWriteManager>
             new(AuditLogItemType.Warning, "{}", guild, processedUser: guildUser, discordAuditLogItemId: "12345")
         };
 
-        await Service.StoreAsync(items);
+        await Instance.StoreAsync(items);
         Assert.IsTrue(true);
     }
 
@@ -42,7 +42,7 @@ public class AuditLogWriterManagerTests : ServiceTest<AuditLogWriteManager>
         var user = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
-        await Service.StoreAsync(new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: user, discordAuditLogItemId: "12345"));
+        await Instance.StoreAsync(new AuditLogDataWrapper(AuditLogItemType.Warning, "{}", guild, processedUser: user, discordAuditLogItemId: "12345"));
         Assert.IsTrue(true);
     }
 }

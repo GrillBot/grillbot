@@ -15,7 +15,7 @@ public class RemoveSearchTests : CommandActionTest<RemoveSearch>
     protected override IGuild Guild => GuildData;
     protected override IMessageChannel Channel => new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(GuildData).Build();
 
-    protected override RemoveSearch CreateAction()
+    protected override RemoveSearch CreateInstance()
     {
         var userManager = new UserManager(DatabaseBuilder);
         return InitAction(new RemoveSearch(userManager, DatabaseBuilder, TestServices.Texts.Value));
@@ -42,16 +42,16 @@ public class RemoveSearchTests : CommandActionTest<RemoveSearch>
     [TestMethod]
     public async Task ProcessAsync_NotFound()
     {
-        await Action.ProcessAsync(1);
-        Assert.IsNull(Action.ErrorMessage);
+        await Instance.ProcessAsync(1);
+        Assert.IsNull(Instance.ErrorMessage);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Ok()
     {
         await InitDataAsync();
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
 
-        Assert.IsNull(Action.ErrorMessage);
+        Assert.IsNull(Instance.ErrorMessage);
     }
 }

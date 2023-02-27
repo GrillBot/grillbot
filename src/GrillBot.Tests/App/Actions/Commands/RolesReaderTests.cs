@@ -27,7 +27,7 @@ public class RolesReaderTests : CommandActionTest<RolesReader>
     protected override IGuild Guild => new GuildBuilder(EmptyGuild.Id, EmptyGuild.Name).SetRoles(Roles).SetGetUsersAction(GuildUsers).Build();
     protected override IGuildUser User => GuildUsers[1];
 
-    protected override RolesReader CreateAction()
+    protected override RolesReader CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
@@ -37,7 +37,7 @@ public class RolesReaderTests : CommandActionTest<RolesReader>
     [TestMethod]
     public async Task ProcessListAsync()
     {
-        var result = await Action.ProcessListAsync("position");
+        var result = await Instance.ProcessListAsync("position");
 
         Assert.IsNotNull(result);
         Assert.AreEqual(3, result.Fields.Length);
@@ -46,7 +46,7 @@ public class RolesReaderTests : CommandActionTest<RolesReader>
     [TestMethod]
     public async Task ProcessListAsync_SortByMembers()
     {
-        var result = await Action.ProcessListAsync("members");
+        var result = await Instance.ProcessListAsync("members");
 
         Assert.IsNotNull(result);
         Assert.AreEqual(3, result.Fields.Length);
@@ -57,7 +57,7 @@ public class RolesReaderTests : CommandActionTest<RolesReader>
     {
         foreach (var role in Roles)
         {
-            var result = await Action.ProcessDetailAsync(role);
+            var result = await Instance.ProcessDetailAsync(role);
 
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Fields.Length >= 5);

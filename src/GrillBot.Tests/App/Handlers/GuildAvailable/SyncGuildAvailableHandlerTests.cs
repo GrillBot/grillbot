@@ -6,14 +6,17 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.GuildAvailable;
 
 [TestClass]
-public class SyncGuildAvailableHandlerTests : HandlerTest<SyncGuildAvailableHandler>
+public class SyncGuildAvailableHandlerTests : TestBase<SyncGuildAvailableHandler>
 {
-    private IGuild Guild { get; set; }
+    private IGuild Guild { get; set; } = null!;
 
-    protected override SyncGuildAvailableHandler CreateHandler()
+    protected override void PreInit()
     {
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
+    }
 
+    protected override SyncGuildAvailableHandler CreateInstance()
+    {
         return new SyncGuildAvailableHandler(DatabaseBuilder);
     }
 
@@ -26,13 +29,13 @@ public class SyncGuildAvailableHandlerTests : HandlerTest<SyncGuildAvailableHand
     [TestMethod]
     public async Task ProcessAsync_NotFound()
     {
-        await Handler.ProcessAsync(Guild);
+        await Instance.ProcessAsync(Guild);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Ok()
     {
         await InitDataAsync();
-        await Handler.ProcessAsync(Guild);
+        await Instance.ProcessAsync(Guild);
     }
 }

@@ -15,7 +15,7 @@ public class GetSuggestionsTests : CommandActionTest<GetSuggestions>
     protected override IMessageChannel Channel => new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(GuildData).Build();
     protected override IGuild Guild => GuildData;
 
-    protected override GetSuggestions CreateAction()
+    protected override GetSuggestions CreateInstance()
     {
         var userManager = new UserManager(DatabaseBuilder);
         var apiContext = new ApiRequestContext();
@@ -46,7 +46,7 @@ public class GetSuggestionsTests : CommandActionTest<GetSuggestions>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.AreEqual(1, result.Count);

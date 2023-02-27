@@ -8,7 +8,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
 [TestClass]
 public class GetUnverifyStatisticsTests : ApiActionTest<GetUnverifyStatistics>
 {
-    protected override GetUnverifyStatistics CreateAction()
+    protected override GetUnverifyStatistics CreateInstance()
     {
         return new GetUnverifyStatistics(ApiRequestContext, DatabaseBuilder);
     }
@@ -37,7 +37,7 @@ public class GetUnverifyStatisticsTests : ApiActionTest<GetUnverifyStatistics>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessByOperationAsync();
+        var result = await Instance.ProcessByOperationAsync();
         Assert.AreEqual(Enum.GetValues<UnverifyOperation>().Length, result.Count);
     }
 
@@ -46,7 +46,7 @@ public class GetUnverifyStatisticsTests : ApiActionTest<GetUnverifyStatistics>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessByDateAsync();
+        var result = await Instance.ProcessByDateAsync();
         Assert.AreEqual(1, result.Count);
     }
 }

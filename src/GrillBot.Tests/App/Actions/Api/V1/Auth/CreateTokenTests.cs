@@ -17,7 +17,7 @@ public class CreateTokenTests : ApiActionTest<CreateToken>
     private ITextsManager Texts { get; set; }
     private IDiscordClient Client { get; set; }
 
-    protected override CreateToken CreateAction()
+    protected override CreateToken CreateInstance()
     {
         User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
@@ -34,7 +34,7 @@ public class CreateTokenTests : ApiActionTest<CreateToken>
     public async Task ProcessAsync_Success()
     {
         await InitDatabaseAsync((int)UserFlags.WebAdmin);
-        var result = await Action.ProcessAsync("SessionId", false);
+        var result = await Instance.ProcessAsync("SessionId", false);
 
         Assert.IsNotNull(result);
         Assert.IsFalse(string.IsNullOrEmpty(result.AccessToken));
@@ -48,7 +48,7 @@ public class CreateTokenTests : ApiActionTest<CreateToken>
         var action = new CreateToken(ApiRequestContext, httpClientFactory, Client, Texts, DatabaseBuilder, TestServices.Configuration.Value);
 
         await InitDatabaseAsync(0);
-        var result = await action.ProcessAsync("SessionId", false);
+        var result = await Instance.ProcessAsync("SessionId", false);
 
         Assert.IsNotNull(result);
         Assert.IsTrue(string.IsNullOrEmpty(result.AccessToken));
@@ -71,7 +71,7 @@ public class CreateTokenTests : ApiActionTest<CreateToken>
     public async Task ProcessAsync_PublicAdminBlocked()
     {
         await InitDatabaseAsync((int)UserFlags.PublicAdministrationBlocked);
-        var result = await Action.ProcessAsync("SessionId", true);
+        var result = await Instance.ProcessAsync("SessionId", true);
 
         Assert.IsNotNull(result);
         Assert.IsTrue(string.IsNullOrEmpty(result.AccessToken));
@@ -82,7 +82,7 @@ public class CreateTokenTests : ApiActionTest<CreateToken>
     public async Task ProcessAsync_PrivateAdminDisabled()
     {
         await InitDatabaseAsync(0);
-        var result = await Action.ProcessAsync("SessionId", false);
+        var result = await Instance.ProcessAsync("SessionId", false);
 
         Assert.IsNotNull(result);
         Assert.IsTrue(string.IsNullOrEmpty(result.AccessToken));

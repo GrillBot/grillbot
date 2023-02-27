@@ -24,7 +24,7 @@ public class GetChannelboardTests : CommandActionTest<GetChannelboard>
     protected override IMessageChannel Channel => TextChannel;
     protected override IGuildUser User => GuildUser;
 
-    protected override GetChannelboard CreateAction()
+    protected override GetChannelboard CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
@@ -54,7 +54,7 @@ public class GetChannelboardTests : CommandActionTest<GetChannelboard>
     public async Task ProcessAsync()
     {
         await InitDataAsync();
-        var (embed, pagination) = await Action.ProcessAsync(0);
+        var (embed, pagination) = await Instance.ProcessAsync(0);
 
         Assert.IsNotNull(embed);
         Assert.IsNull(pagination);
@@ -63,7 +63,7 @@ public class GetChannelboardTests : CommandActionTest<GetChannelboard>
     [TestMethod]
     public async Task ProcessAsync_NoActivity()
     {
-        var (embed, pagination) = await Action.ProcessAsync(0);
+        var (embed, pagination) = await Instance.ProcessAsync(0);
 
         Assert.IsNotNull(embed);
         Assert.IsNull(pagination);
@@ -74,7 +74,7 @@ public class GetChannelboardTests : CommandActionTest<GetChannelboard>
     public async Task ComputePagesCount()
     {
         await InitDataAsync();
-        var result = await Action.ComputePagesCountAsync();
+        var result = await Instance.ComputePagesCountAsync();
 
         Assert.AreEqual(1, result);
     }

@@ -36,7 +36,7 @@ public class GuildInfoTests : CommandActionTest<GuildInfo>
         .SetBanner(Consts.BannerId, Consts.BannerUrl)
         .Build();
 
-    protected override GuildInfo CreateAction()
+    protected override GuildInfo CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var guildHelper = new GuildHelper(texts);
@@ -58,7 +58,7 @@ public class GuildInfoTests : CommandActionTest<GuildInfo>
     public async Task ProcessAsync()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.Footer);

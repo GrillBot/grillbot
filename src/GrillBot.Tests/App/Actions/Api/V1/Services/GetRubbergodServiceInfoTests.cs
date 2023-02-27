@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Services;
 [TestClass]
 public class GetRubbergodServiceInfoTests : ApiActionTest<GetRubbergodServiceInfo>
 {
-    protected override GetRubbergodServiceInfo CreateAction()
+    protected override GetRubbergodServiceInfo CreateInstance()
     {
         var client = TestServices.DiscordSocketClient.Value;
         var interaction = DiscordHelper.CreateInteractionService(client);
@@ -18,7 +18,7 @@ public class GetRubbergodServiceInfoTests : ApiActionTest<GetRubbergodServiceInf
     [TestMethod]
     public async Task ProcessAsync()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.Info);

@@ -47,7 +47,7 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     protected override IMessageChannel Channel => TextChannelWithoutDb;
     protected override IGuild Guild => EmptyGuild;
 
-    protected override ChannelInfo CreateAction()
+    protected override ChannelInfo CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
@@ -84,63 +84,63 @@ public class ChannelInfoTests : CommandActionTest<ChannelInfo>
     [TestMethod]
     public async Task ProcessAsync_WithoutAccess()
     {
-        var result = await Action.ProcessAsync(SecretChannel, false);
+        var result = await Instance.ProcessAsync(SecretChannel, false);
 
         Assert.IsNull(result);
-        Assert.IsFalse(Action.IsOk);
-        Assert.IsFalse(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsFalse(Instance.IsOk);
+        Assert.IsFalse(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public async Task ProcessAsync_TextChannel_WithoutDb()
     {
-        var result = await Action.ProcessAsync(TextChannelWithoutDb, false);
+        var result = await Instance.ProcessAsync(TextChannelWithoutDb, false);
 
         CheckValidEmbed(result);
-        Assert.IsTrue(Action.IsOk);
-        Assert.IsTrue(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsTrue(Instance.IsOk);
+        Assert.IsTrue(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public async Task ProcessAsync_TextChannel_WithDb()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync(TextChannelWithDb, false);
+        var result = await Instance.ProcessAsync(TextChannelWithDb, false);
 
         CheckValidEmbed(result);
-        Assert.IsTrue(Action.IsOk);
-        Assert.IsTrue(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsTrue(Instance.IsOk);
+        Assert.IsTrue(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public async Task ProcessAsync_TextChannel_WithDbAndDisabledStats()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync(TextChannelWithDbAndDisabledStats, false);
+        var result = await Instance.ProcessAsync(TextChannelWithDbAndDisabledStats, false);
 
         CheckValidEmbed(result);
-        Assert.IsTrue(Action.IsOk);
-        Assert.IsTrue(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsTrue(Instance.IsOk);
+        Assert.IsTrue(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public async Task ProcessAsync_Thread()
     {
-        var result = await Action.ProcessAsync(Thread, false);
+        var result = await Instance.ProcessAsync(Thread, false);
 
         CheckValidEmbed(result);
-        Assert.IsTrue(Action.IsOk);
-        Assert.IsTrue(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsTrue(Instance.IsOk);
+        Assert.IsTrue(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     [TestMethod]
     public async Task ProcessAsync_Forum()
     {
-        var result = await Action.ProcessAsync(Forum, false);
+        var result = await Instance.ProcessAsync(Forum, false);
 
         CheckValidEmbed(result);
-        Assert.IsTrue(Action.IsOk);
-        Assert.IsTrue(string.IsNullOrEmpty(Action.ErrorMessage));
+        Assert.IsTrue(Instance.IsOk);
+        Assert.IsTrue(string.IsNullOrEmpty(Instance.ErrorMessage));
     }
 
     private static void CheckValidEmbed(IEmbed embed)

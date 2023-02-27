@@ -12,7 +12,7 @@ public class GetChannelboardTests : ApiActionTest<GetChannelboard>
     private ITextChannel TextChannel { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override GetChannelboard CreateAction()
+    protected override GetChannelboard CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
 
@@ -27,7 +27,7 @@ public class GetChannelboardTests : ApiActionTest<GetChannelboard>
     [TestMethod]
     public async Task ProcessAsync_WithoutStats()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(0, result.Count);
     }
 
@@ -44,7 +44,7 @@ public class GetChannelboardTests : ApiActionTest<GetChannelboard>
         });
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(1, result.Count);
     }
 }

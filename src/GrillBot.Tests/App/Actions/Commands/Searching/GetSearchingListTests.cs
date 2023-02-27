@@ -15,7 +15,7 @@ public class GetSearchingListTests : CommandActionTest<GetSearchingList>
     protected override IGuild Guild => GuildData;
     protected override IGuildUser User => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(GuildData).Build();
 
-    protected override GetSearchingList CreateAction()
+    protected override GetSearchingList CreateInstance()
     {
         var apiContext = new ApiRequestContext();
         var client = new ClientBuilder().Build();
@@ -56,7 +56,7 @@ public class GetSearchingListTests : CommandActionTest<GetSearchingList>
     [TestMethod]
     public async Task ProcessAsync_NoItems()
     {
-        var result = await Action.ProcessAsync(0, null, null);
+        var result = await Instance.ProcessAsync(0, null, null);
 
         Assert.IsNotNull(result.embed);
         Assert.IsNull(result.paginationComponent);
@@ -65,7 +65,7 @@ public class GetSearchingListTests : CommandActionTest<GetSearchingList>
     [TestMethod]
     public async Task ProcessAsync_NoItemsWithQuery()
     {
-        var result = await Action.ProcessAsync(0, "Search", null);
+        var result = await Instance.ProcessAsync(0, "Search", null);
 
         Assert.IsNotNull(result.embed);
         Assert.IsNull(result.paginationComponent);
@@ -76,7 +76,7 @@ public class GetSearchingListTests : CommandActionTest<GetSearchingList>
     public async Task ProcessAsync()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync(0, null, null);
+        var result = await Instance.ProcessAsync(0, null, null);
 
         Assert.IsNotNull(result.embed);
         Assert.IsNull(result.paginationComponent);
@@ -86,7 +86,7 @@ public class GetSearchingListTests : CommandActionTest<GetSearchingList>
     [TestMethod]
     public async Task ComputePagesCountAsync()
     {
-        var result = await Action.ComputePagesCountAsync(null, Channel);
+        var result = await Instance.ComputePagesCountAsync(null, Channel);
 
         Assert.AreEqual(0, result);
     }

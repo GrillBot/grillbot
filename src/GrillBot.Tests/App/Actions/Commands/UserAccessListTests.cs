@@ -29,7 +29,7 @@ public class UserAccessListTests : CommandActionTest<UserAccessList>
     protected override IGuild Guild => GuildData;
     protected override IGuildUser User => GuildUser;
 
-    protected override UserAccessList CreateAction()
+    protected override UserAccessList CreateInstance()
     {
         return InitAction(new UserAccessList(TestServices.Texts.Value));
     }
@@ -37,7 +37,7 @@ public class UserAccessListTests : CommandActionTest<UserAccessList>
     [TestMethod]
     public async Task ProcessAsync()
     {
-        var (embed, pagination) = await Action.ProcessAsync(GuildUser, 0);
+        var (embed, pagination) = await Instance.ProcessAsync(GuildUser, 0);
 
         Assert.IsNotNull(embed);
         Assert.IsNotNull(pagination);
@@ -46,7 +46,7 @@ public class UserAccessListTests : CommandActionTest<UserAccessList>
     [TestMethod]
     public async Task ProcessAsync_WithoutChannels()
     {
-        var (embed, pagination) = await Action.ProcessAsync(UserWithoutChannels, 0);
+        var (embed, pagination) = await Instance.ProcessAsync(UserWithoutChannels, 0);
 
         Assert.IsNotNull(embed);
         Assert.IsNull(pagination);
@@ -55,7 +55,7 @@ public class UserAccessListTests : CommandActionTest<UserAccessList>
     [TestMethod]
     public async Task ComputePagesCount()
     {
-        var result = await Action.ComputePagesCount(GuildUser);
+        var result = await Instance.ComputePagesCount(GuildUser);
         Assert.AreEqual(2, result);
     }
 }

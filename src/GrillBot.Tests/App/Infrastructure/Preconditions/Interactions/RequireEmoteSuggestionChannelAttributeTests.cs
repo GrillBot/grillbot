@@ -1,29 +1,23 @@
 ﻿using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.Database.Services;
 using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.Tests.App.Infrastructure.Preconditions.Interactions;
 
 [TestClass]
-public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEmoteSuggestionChannelAttribute>
+public class RequireEmoteSuggestionChannelAttributeTests : TestBase<RequireEmoteSuggestionChannelAttribute>
 {
-    protected override RequireEmoteSuggestionChannelAttribute CreateService() => new();
-
-    private IServiceProvider CreateProvider()
+    protected override RequireEmoteSuggestionChannelAttribute CreateInstance()
     {
-        return new ServiceCollection()
-            .AddSingleton<GrillBotDatabaseBuilder>(DatabaseBuilder)
-            .BuildServiceProvider();
+        return new RequireEmoteSuggestionChannelAttribute();
     }
 
     [TestMethod]
     public async Task CheckRequirementsAsync_NoGuild()
     {
-        var context = new InteractionContextBuilder().SetGuild(null).Build();
+        var context = new InteractionContextBuilder().Build();
 
-        var result = await Service.CheckRequirementsAsync(context, null, null);
+        var result = await Instance.CheckRequirementsAsync(context, null!, null!);
         Assert.IsTrue(result.IsSuccess);
     }
 
@@ -32,9 +26,8 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
-        var provider = CreateProvider();
 
-        var result = await Service.CheckRequirementsAsync(context, null, provider);
+        var result = await Instance.CheckRequirementsAsync(context, null!, TestServices.Provider.Value);
         Assert.IsTrue(result.IsSuccess);
     }
 
@@ -43,12 +36,11 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
-        var provider = CreateProvider();
 
         await Repository.AddAsync(Database.Entity.Guild.FromDiscord(guild));
         await Repository.CommitAsync();
 
-        var result = await Service.CheckRequirementsAsync(context, null, provider);
+        var result = await Instance.CheckRequirementsAsync(context, null!, TestServices.Provider.Value);
         Assert.IsFalse(result.IsSuccess);
     }
 
@@ -57,14 +49,13 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
-        var provider = CreateProvider();
 
         var guildData = Database.Entity.Guild.FromDiscord(guild);
         guildData.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
         await Repository.AddAsync(guildData);
         await Repository.CommitAsync();
 
-        var result = await Service.CheckRequirementsAsync(context, null, provider);
+        var result = await Instance.CheckRequirementsAsync(context, null!, TestServices.Provider.Value);
         Assert.IsFalse(result.IsSuccess);
     }
 
@@ -74,14 +65,13 @@ public class RequireEmoteSuggestionChannelAttributeTests : ServiceTest<RequireEm
         var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetTextChannelsAction(new[] { channel }).Build();
         var context = new InteractionContextBuilder().SetGuild(guild).Build();
-        var provider = CreateProvider();
 
         var guildData = Database.Entity.Guild.FromDiscord(guild);
         guildData.EmoteSuggestionChannelId = Consts.ChannelId.ToString();
         await Repository.AddAsync(guildData);
         await Repository.CommitAsync();
 
-        var result = await Service.CheckRequirementsAsync(context, null!, provider);
+        var result = await Instance.CheckRequirementsAsync(context, null!, TestServices.Provider.Value);
         Assert.IsTrue(result.IsSuccess);
     }
 }

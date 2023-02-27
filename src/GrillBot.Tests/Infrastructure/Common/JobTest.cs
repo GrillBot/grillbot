@@ -1,45 +1,16 @@
-﻿using GrillBot.Cache.Services.Repository;
-using Moq;
+﻿using Moq;
 using Quartz;
-using System.Diagnostics.CodeAnalysis;
-using GrillBot.Database.Services.Repository;
 
-namespace GrillBot.Tests.Common;
+namespace GrillBot.Tests.Infrastructure.Common;
 
-[ExcludeFromCodeCoverage]
-public abstract class JobTest<TJob> where TJob : IJob
+public abstract class JobTest<TJob> : TestBase<TJob> where TJob : class, IJob
 {
-    protected TJob Job { get; private set; }
-    protected TestDatabaseBuilder DatabaseBuilder { get; private set; }
-    protected TestCacheBuilder CacheBuilder { get; private set; }
-
-    protected GrillBotRepository Repository { get; private set; }
-    protected GrillBotCacheRepository CacheRepository { get; private set; }
-
-    protected abstract TJob CreateJob();
-
-    [TestInitialize]
-    public void Initialize()
+    protected async Task Execute(Action<IJobExecutionContext>? checks = null)
     {
-        DatabaseBuilder = TestServices.DatabaseBuilder.Value;
-        CacheBuilder = TestServices.CacheBuilder.Value;
-        Repository = DatabaseBuilder.CreateRepository();
-        CacheRepository = CacheBuilder.CreateRepository();
+        var context = CreateContext();
+        await Instance.Execute(context);
 
-        Job = CreateJob();
-    }
-
-    [TestCleanup]
-    public void TestClean()
-    {
-        TestDatabaseBuilder.ClearDatabase();
-        TestCacheBuilder.ClearDatabase();
-
-        Repository.Dispose();
-        CacheRepository.Dispose();
-
-        if (Job is IDisposable disposable)
-            disposable.Dispose();
+        checks?.Invoke(context);
     }
 
     protected IJobExecutionContext CreateContext()

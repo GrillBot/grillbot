@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Controllers;
-using GrillBot.App.Infrastructure.RequestProcessing;
+﻿using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.App.Managers;
 using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
@@ -13,18 +12,18 @@ namespace GrillBot.Tests.App.Infrastructure.RequestProcessing;
 [TestClass]
 public class RequestFilterTests : ActionFilterTest<RequestFilter>
 {
-    private ApiRequest ApiRequest { get; set; }
-    private ApiRequestContext ApiRequestContext { get; set; }
+    private ApiRequest ApiRequest { get; set; } = null!;
+    private ApiRequestContext ApiRequestContext { get; set; } = null!;
 
-    protected override Controller CreateController()
-        => new AuthController(null!);
-
-    protected override RequestFilter CreateFilter()
+    protected override void PreInit()
     {
-        var discordClient = new ClientBuilder().Build();
-
         ApiRequest = new ApiRequest();
         ApiRequestContext = new ApiRequestContext();
+    }
+
+    protected override RequestFilter CreateInstance()
+    {
+        var discordClient = new ClientBuilder().Build();
         var hearthbeatManager = new UserManager(DatabaseBuilder);
 
         return new RequestFilter(ApiRequest, ApiRequestContext, discordClient, hearthbeatManager);
@@ -33,10 +32,10 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
     [TestMethod]
     public async Task OnActionExecutionAsync()
     {
-        var context = CreateContext("GetRedirectLink", new HeaderDictionary());
+        var context = CreateContext(new HeaderDictionary());
         var @delegate = GetDelegate();
 
-        await Filter.OnActionExecutionAsync(context, @delegate);
+        await Instance.OnActionExecutionAsync(context, @delegate);
         Assert.AreNotEqual(DateTime.MinValue, ApiRequest.StartAt);
     }
 
@@ -46,10 +45,10 @@ public class RequestFilterTests : ActionFilterTest<RequestFilter>
         var modelState = new ModelStateDictionary();
         modelState.AddModelError("Error", "Error");
 
-        var context = CreateContext("GetRedirectLink", new HeaderDictionary(), modelState: modelState);
+        var context = CreateContext(new HeaderDictionary(), modelState: modelState);
         var @delegate = GetDelegate();
 
-        await Filter.OnActionExecutionAsync(context, @delegate);
+        await Instance.OnActionExecutionAsync(context, @delegate);
 
         Assert.AreNotEqual(DateTime.MinValue, ApiRequest.StartAt);
         Assert.IsInstanceOfType(context.Result, typeof(BadRequestObjectResult));

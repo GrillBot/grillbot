@@ -10,14 +10,18 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Managers;
 
 [TestClass]
-public class UserManagerTests : ServiceTest<UserManager>
+public class UserManagerTests : TestBase<UserManager>
 {
     private IUser User { get; set; } = null!;
 
-    protected override UserManager CreateService()
+    protected override UserManager CreateInstance()
+    {
+        return new UserManager(DatabaseBuilder);
+    }
+
+    protected override void PreInit()
     {
         User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
-        return new UserManager(DatabaseBuilder);
     }
 
     private async Task InitDataAsync()
@@ -45,7 +49,7 @@ public class UserManagerTests : ServiceTest<UserManager>
     public async Task SetHearthbeatAsync_UserNotFound()
     {
         var context = CreateContext(false);
-        await Service.SetHearthbeatAsync(true, context);
+        await Instance.SetHearthbeatAsync(true, context);
     }
 
     [TestMethod]
@@ -65,13 +69,13 @@ public class UserManagerTests : ServiceTest<UserManager>
         await InitDataAsync();
 
         var context = CreateContext(isPublic);
-        await Service.SetHearthbeatAsync(isActive, context);
+        await Instance.SetHearthbeatAsync(isActive, context);
     }
 
     [TestMethod]
     public async Task CheckFlagsAsync_NotFound()
     {
-        var result = await Service.CheckFlagsAsync(User, UserFlags.BotAdmin);
+        var result = await Instance.CheckFlagsAsync(User, UserFlags.BotAdmin);
         Assert.IsFalse(result);
     }
 
@@ -80,7 +84,7 @@ public class UserManagerTests : ServiceTest<UserManager>
     {
         await InitDataAsync();
 
-        var result = await Service.CheckFlagsAsync(User, UserFlags.BotAdmin);
+        var result = await Instance.CheckFlagsAsync(User, UserFlags.BotAdmin);
         Assert.IsFalse(result);
     }
 }

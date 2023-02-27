@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.PublicApiClients;
 [TestClass]
 public class CreateClientTests : ApiActionTest<CreateClient>
 {
-    protected override CreateClient CreateAction()
+    protected override CreateClient CreateInstance()
     {
         return new CreateClient(ApiRequestContext, DatabaseBuilder);
     }
@@ -20,7 +20,7 @@ public class CreateClientTests : ApiActionTest<CreateClient>
             Name = "ApiAction",
             AllowedMethods = new List<string> { "*" }
         };
-        await Action.ProcessAsync(parameters);
+        await Instance.ProcessAsync(parameters);
 
         var clients = await Repository.ApiClientRepository.GetClientsAsync();
         Assert.IsTrue(clients.Count > 0);

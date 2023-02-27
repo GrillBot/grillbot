@@ -17,7 +17,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.System;
 [TestClass]
 public class GetDashboardTests : ApiActionTest<GetDashboard>
 {
-    protected override GetDashboard CreateAction()
+    protected override GetDashboard CreateInstance()
     {
         var client = new ClientBuilder().Build();
         var initManager = new InitManager(TestServices.LoggerFactory.Value);
@@ -145,7 +145,7 @@ public class GetDashboardTests : ApiActionTest<GetDashboard>
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.IsFalse(result.IsDevelopment);

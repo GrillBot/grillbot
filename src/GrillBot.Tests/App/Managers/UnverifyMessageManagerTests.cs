@@ -6,9 +6,9 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Managers;
 
 [TestClass]
-public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
+public class UnverifyMessageManagerTests : TestBase<UnverifyMessageManager>
 {
-    protected override UnverifyMessageManager CreateService()
+    protected override UnverifyMessageManager CreateInstance()
     {
         return new UnverifyMessageManager(TestServices.Texts.Value);
     }
@@ -20,7 +20,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true, "cs");
-        var result = Service.CreateUnverifyMessageToChannel(profile, "cs");
+        var result = Instance.CreateUnverifyMessageToChannel(profile, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "04. 02. 2022 00:00:00");
     }
@@ -33,7 +33,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false, "cs") { Reason = "Duvod" };
-        var result = Service.CreateUnverifyMessageToChannel(profile, "cs");
+        var result = Instance.CreateUnverifyMessageToChannel(profile, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "04. 02. 2022 00:00:00", "Duvod");
     }
@@ -46,7 +46,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
             .SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, true, "cs");
-        var result = Service.CreateUnverifyPmMessage(profile, guild, "cs");
+        var result = Instance.CreateUnverifyPmMessage(profile, guild, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-Guild-Name", "04. 02. 2022 00:00:00");
     }
@@ -58,7 +58,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
         var toUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
         var profile = new UnverifyUserProfile(toUser, DateTime.MinValue, end, false, "cs") { Reason = "Duvod" };
-        var result = Service.CreateUnverifyPmMessage(profile, guild, "cs");
+        var result = Instance.CreateUnverifyPmMessage(profile, guild, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-Guild-Name", "04. 02. 2022 00:00:00", "Duvod");
     }
@@ -68,7 +68,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var end = new DateTime(2022, 02, 04);
-        var result = Service.CreateUpdatePmMessage(guild, end, null, "cs");
+        var result = Instance.CreateUpdatePmMessage(guild, end, null, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-Guild-Name", "04. 02. 2022 00:00:00");
     }
@@ -78,7 +78,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var end = new DateTime(2022, 02, 04);
-        var result = Service.CreateUpdatePmMessage(guild, end, "Reason", "cs");
+        var result = Instance.CreateUpdatePmMessage(guild, end, "Reason", "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-Guild-Name", "04. 02. 2022 00:00:00", "Reason");
     }
@@ -89,7 +89,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
-        var result = Service.CreateUpdateChannelMessage(guildUser, end, null, "cs");
+        var result = Instance.CreateUpdateChannelMessage(guildUser, end, null, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "04. 02. 2022 00:00:00");
     }
@@ -100,7 +100,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var end = new DateTime(2022, 02, 04);
-        var result = Service.CreateUpdateChannelMessage(guildUser, end, "Reason", "cs");
+        var result = Instance.CreateUpdateChannelMessage(guildUser, end, "Reason", "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "04. 02. 2022 00:00:00", "Reason");
     }
@@ -109,7 +109,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
     public void CreateRemoveAccessManuallyPmMessage()
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
-        var result = Service.CreateRemoveAccessManuallyPmMessage(guild, "cs");
+        var result = Instance.CreateRemoveAccessManuallyPmMessage(guild, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-Guild-Name");
     }
@@ -119,7 +119,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var result = Service.CreateRemoveAccessManuallyToChannel(guildUser, "cs");
+        var result = Instance.CreateRemoveAccessManuallyToChannel(guildUser, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
@@ -130,7 +130,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         var exception = new Exception("Test");
-        var result = Service.CreateRemoveAccessManuallyFailed(guildUser, exception, "cs");
+        var result = Instance.CreateRemoveAccessManuallyFailed(guildUser, exception, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234", "(Test)");
     }
@@ -140,7 +140,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var result = Service.CreateRemoveAccessUnverifyNotFound(guildUser, "cs");
+        var result = Instance.CreateRemoveAccessUnverifyNotFound(guildUser, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }
@@ -150,7 +150,7 @@ public class UnverifyMessageManagerTests : ServiceTest<UnverifyMessageManager>
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var guildUser = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
-        var result = Service.CreateUnverifyFailedToChannel(guildUser, "cs");
+        var result = Instance.CreateUnverifyFailedToChannel(guildUser, "cs");
 
         StringHelper.CheckTextParts(result, "GrillBot-User-Username#1234");
     }

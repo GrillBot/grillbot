@@ -13,9 +13,12 @@ using NSwag.Generation.AspNetCore;
 namespace GrillBot.Tests.App.Infrastructure.OpenApi;
 
 [TestClass]
-public class ApiKeyAuthProcessorTests : ServiceTest<ApiKeyAuthProcessor>
+public class ApiKeyAuthProcessorTests : TestBase<ApiKeyAuthProcessor>
 {
-    protected override ApiKeyAuthProcessor CreateService() => new();
+    protected override ApiKeyAuthProcessor CreateInstance()
+    {
+        return new ApiKeyAuthProcessor();
+    }
 
     [TestMethod]
     public void Process_MissingMetaData()
@@ -49,7 +52,7 @@ public class ApiKeyAuthProcessorTests : ServiceTest<ApiKeyAuthProcessor>
         ProcessTest<AuthController>(nameof(AuthController.GetRedirectLink), metadata, true);
     }
 
-    private void ProcessTest<TController>(string methodName, IList<object> endpointMetadata, bool checkApiKey) where TController : Controller
+    private void ProcessTest<TController>(string methodName, IList<object>? endpointMetadata, bool checkApiKey) where TController : Controller
     {
         var controllerType = typeof(TController);
         var operationDescription = new OpenApiOperationDescription { Operation = new OpenApiOperation() };
@@ -60,12 +63,12 @@ public class ApiKeyAuthProcessorTests : ServiceTest<ApiKeyAuthProcessor>
             {
                 ActionDescriptor = new ControllerActionDescriptor
                 {
-                    EndpointMetadata = endpointMetadata
+                    EndpointMetadata = endpointMetadata ?? new List<object>()
                 }
             }
         };
 
-        var result = Service.Process(context);
+        var result = Instance.Process(context);
 
         Assert.IsTrue(result);
         if (!checkApiKey)

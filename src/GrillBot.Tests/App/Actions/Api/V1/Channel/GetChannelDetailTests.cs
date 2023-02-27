@@ -14,7 +14,7 @@ public class GetChannelDetailTests : ApiActionTest<GetChannelDetail>
     private IGuild Guild { get; set; }
     private ITextChannel TextChannel { get; set; }
 
-    protected override GetChannelDetail CreateAction()
+    protected override GetChannelDetail CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
@@ -30,14 +30,14 @@ public class GetChannelDetailTests : ApiActionTest<GetChannelDetail>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_ChannelNotFound()
-        => await Action.ProcessAsync(Consts.ChannelId + 1);
+        => await Instance.ProcessAsync(Consts.ChannelId + 1);
 
     [TestMethod]
     public async Task ProcessAsync_DeletedChannel()
     {
         await InitChannelAsync((long)ChannelFlag.Deleted);
 
-        var result = await Action.ProcessAsync(Consts.ChannelId);
+        var result = await Instance.ProcessAsync(Consts.ChannelId);
         Assert.IsNotNull(result);
         Assert.AreEqual((long)ChannelFlag.Deleted, result.Flags);
     }
@@ -47,7 +47,7 @@ public class GetChannelDetailTests : ApiActionTest<GetChannelDetail>
     {
         await InitChannelAsync(0, Consts.ChannelId + 1);
 
-        var result = await Action.ProcessAsync(Consts.ChannelId + 1);
+        var result = await Instance.ProcessAsync(Consts.ChannelId + 1);
         Assert.IsNotNull(result);
     }
 
@@ -56,7 +56,7 @@ public class GetChannelDetailTests : ApiActionTest<GetChannelDetail>
     {
         await InitChannelAsync(0);
 
-        var result = await Action.ProcessAsync(Consts.ChannelId);
+        var result = await Instance.ProcessAsync(Consts.ChannelId);
         Assert.IsNotNull(result);
     }
 

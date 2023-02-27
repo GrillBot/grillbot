@@ -20,7 +20,7 @@ public class GetLogsTests : ApiActionTest<GetLogs>
     private IGuild Guild { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override GetLogs CreateAction()
+    protected override GetLogs CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
@@ -76,7 +76,7 @@ public class GetLogsTests : ApiActionTest<GetLogs>
         await InitDataAsync();
 
         var filter = new UnverifyLogParams();
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.AreEqual(Enum.GetValues<UnverifyOperation>().Length, result.TotalItemsCount);
     }
@@ -93,7 +93,7 @@ public class GetLogsTests : ApiActionTest<GetLogs>
             ToUserId = Consts.UserId.ToString()
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(0, result.TotalItemsCount);
     }
 
@@ -104,7 +104,7 @@ public class GetLogsTests : ApiActionTest<GetLogs>
         await InitDataAsync();
 
         var filter = new UnverifyLogParams { GuildId = (Consts.GuildId + 1).ToString() };
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(Enum.GetValues<UnverifyOperation>().Length, result.TotalItemsCount);
     }
 }

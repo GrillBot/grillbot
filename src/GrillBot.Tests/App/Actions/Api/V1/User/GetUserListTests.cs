@@ -13,7 +13,7 @@ public class GetUserListTests : ApiActionTest<GetUserList>
     private IGuild[] Guilds { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override GetUserList CreateAction()
+    protected override GetUserList CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
@@ -51,7 +51,7 @@ public class GetUserListTests : ApiActionTest<GetUserList>
         await InitDataAsync();
 
         var filter = new GetUserListParams { Sort = { Descending = true } };
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.AreEqual(1, result.TotalItemsCount);
         Assert.AreEqual(3, result.Data[0].Guilds.Count);
@@ -71,7 +71,7 @@ public class GetUserListTests : ApiActionTest<GetUserList>
             Sort = { Descending = false }
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(0, result.TotalItemsCount);
     }
 }

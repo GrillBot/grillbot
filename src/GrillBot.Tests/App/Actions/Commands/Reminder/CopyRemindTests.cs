@@ -22,7 +22,7 @@ public class CopyRemindTests : CommandActionTest<CopyRemind>
 
     private CreateRemind CreateRemind { get; set; }
 
-    protected override CopyRemind CreateAction()
+    protected override CopyRemind CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
@@ -54,7 +54,7 @@ public class CopyRemindTests : CommandActionTest<CopyRemind>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_NotFound()
-        => await Action.ProcessAsync(0);
+        => await Instance.ProcessAsync(0);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
@@ -63,7 +63,7 @@ public class CopyRemindTests : CommandActionTest<CopyRemind>
     {
         CreateRemind.Init(Context);
         var remindId = await CreateRemind.ProcessAsync(Context.User, Context.User, DateTime.Now.AddHours(12), "Message", Consts.MessageId);
-        await Action.ProcessAsync(remindId);
+        await Instance.ProcessAsync(remindId);
     }
 
     [TestMethod]
@@ -72,7 +72,7 @@ public class CopyRemindTests : CommandActionTest<CopyRemind>
     public async Task ProcessAsync_Cancelled()
     {
         await InitDataAsync(RemindHelper.NotSentRemind);
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 
     [TestMethod]
@@ -81,14 +81,14 @@ public class CopyRemindTests : CommandActionTest<CopyRemind>
     public async Task ProcessAsync_WasSent()
     {
         await InitDataAsync(Consts.MessageId.ToString());
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync(null);
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class CopyRemindTests : CommandActionTest<CopyRemind>
     public async Task ProcessAsync_CopyExists()
     {
         await InitDataAsync(null);
-        await Action.ProcessAsync(1);
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 }

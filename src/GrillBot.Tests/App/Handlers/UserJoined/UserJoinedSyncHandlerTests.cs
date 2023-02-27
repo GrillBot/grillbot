@@ -11,17 +11,20 @@ using Newtonsoft.Json;
 namespace GrillBot.Tests.App.Handlers.UserJoined;
 
 [TestClass]
-public class UserJoinedSyncHandlerTests : HandlerTest<UserJoinedSyncHandler>
+public class UserJoinedSyncHandlerTests : TestBase<UserJoinedSyncHandler>
 {
     private IGuildUser User { get; set; } = null!;
     private IGuildUser InitializedUser { get; set; } = null!;
 
-    protected override UserJoinedSyncHandler CreateHandler()
+    protected override void PreInit()
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
         InitializedUser = new GuildUserBuilder(Consts.UserId + 1, Consts.Username, Consts.Discriminator).SetGuild(guild).Build();
+    }
 
+    protected override UserJoinedSyncHandler CreateInstance()
+    {
         return new UserJoinedSyncHandler(DatabaseBuilder);
     }
 
@@ -73,22 +76,20 @@ public class UserJoinedSyncHandlerTests : HandlerTest<UserJoinedSyncHandler>
     }
 
     [TestMethod]
-    public async Task ProcessAsync_NoDb()
-    {
-        await Handler.ProcessAsync(User);
-    }
+    public async Task ProcessAsync_NoDb() 
+        => await Instance.ProcessAsync(User);
 
     [TestMethod]
     public async Task ProcessAsync_WithDb()
     {
         await InitDataAsync();
-        await Handler.ProcessAsync(User);
+        await Instance.ProcessAsync(User);
     }
 
     [TestMethod]
     public async Task ProcessAsync_FullyInitialized()
     {
         await InitDataAsync();
-        await Handler.ProcessAsync(InitializedUser);
+        await Instance.ProcessAsync(InitializedUser);
     }
 }

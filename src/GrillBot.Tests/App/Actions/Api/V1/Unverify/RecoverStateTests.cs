@@ -22,7 +22,7 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
     private IRole Role { get; set; } = null!;
     private IGuild AnotherGuild { get; set; } = null!;
 
-    protected override RecoverState CreateAction()
+    protected override RecoverState CreateInstance()
     {
         Role = new RoleBuilder(Consts.RoleId, Consts.RoleName).Build();
         var anotherRole = new RoleBuilder(Consts.RoleId + 1, Consts.RoleName).Build();
@@ -85,7 +85,7 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_LogItemNotFound()
-        => await Action.ProcessAsync(1);
+        => await Instance.ProcessAsync(1);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
@@ -93,7 +93,7 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
     public async Task ProcessAsync_ValidUnverify()
     {
         await InitDataAsync(true);
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 
     [TestMethod]
@@ -102,7 +102,7 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
     public async Task ProcessAsync_InvalidGuild()
     {
         await InitDataAsync(false, false, true);
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 
     [TestMethod]
@@ -111,13 +111,13 @@ public class RecoverStateTests : ApiActionTest<RecoverState>
     public async Task ProcessAsync_MemberNotFound()
     {
         await InitDataAsync(false, true);
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync();
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 }

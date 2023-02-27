@@ -6,9 +6,9 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.GuildUpdated;
 
 [TestClass]
-public class AuditGuildUpdatedHandlerTests : HandlerTest<AuditGuildUpdatedHandler>
+public class AuditGuildUpdatedHandlerTests : TestBase<AuditGuildUpdatedHandler>
 {
-    protected override AuditGuildUpdatedHandler CreateHandler()
+    protected override AuditGuildUpdatedHandler CreateInstance()
     {
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new AuditGuildUpdatedHandler(TestServices.CounterManager.Value, auditLogWriter);
@@ -18,7 +18,7 @@ public class AuditGuildUpdatedHandlerTests : HandlerTest<AuditGuildUpdatedHandle
     public async Task ProcessAsync_CannotProcess()
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
-        await Handler.ProcessAsync(guild, guild);
+        await Instance.ProcessAsync(guild, guild);
     }
 
     [TestMethod]
@@ -27,6 +27,6 @@ public class AuditGuildUpdatedHandlerTests : HandlerTest<AuditGuildUpdatedHandle
         var before = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         var after = new GuildBuilder(Consts.GuildId, Consts.GuildName + "New").Build();
 
-        await Handler.ProcessAsync(before, after);
+        await Instance.ProcessAsync(before, after);
     }
 }

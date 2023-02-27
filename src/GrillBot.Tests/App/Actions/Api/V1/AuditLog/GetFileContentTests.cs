@@ -13,7 +13,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.AuditLog;
 [TestClass]
 public class GetFileContentTests : ApiActionTest<GetFileContent>
 {
-    protected override GetFileContent CreateAction()
+    protected override GetFileContent CreateInstance()
     {
         var fileStorage = new FileStorageMock(TestServices.Configuration.Value);
         return new GetFileContent(ApiRequestContext, DatabaseBuilder, fileStorage, TestServices.Texts.Value);
@@ -28,7 +28,7 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_ItemNotFound() => await Action.ProcessAsync(1, 1);
+    public async Task ProcessAsync_ItemNotFound() => await Instance.ProcessAsync(1, 1);
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
@@ -36,7 +36,7 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
     public async Task ProcessAsync_MetadataNotFound()
     {
         await InitDataAsync(false, null);
-        await Action.ProcessAsync(1, 1);
+        await Instance.ProcessAsync(1, 1);
     }
 
     [TestMethod]
@@ -45,7 +45,7 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
     public async Task ProcessAsync_FileNotExists()
     {
         await InitDataAsync(true, "txt");
-        await Action.ProcessAsync(1, 1);
+        await Instance.ProcessAsync(1, 1);
     }
 
     [TestMethod]
@@ -54,7 +54,7 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
         await InitDataAsync(true, "unknown");
         await File.WriteAllBytesAsync("Temp.unknown", new byte[] { 1, 2, 3, 4, 5 });
 
-        var result = await Action.ProcessAsync(1, 1);
+        var result = await Instance.ProcessAsync(1, 1);
 
         Assert.IsNotNull(result.content);
         Assert.AreEqual(5, result.content.Length);
@@ -67,7 +67,7 @@ public class GetFileContentTests : ApiActionTest<GetFileContent>
         await InitDataAsync(true, "txt");
         await File.WriteAllBytesAsync("Temp.txt", new byte[] { 1, 2, 3, 4, 5 });
 
-        var result = await Action.ProcessAsync(1, 1);
+        var result = await Instance.ProcessAsync(1, 1);
 
         Assert.IsNotNull(result.content);
         Assert.AreEqual(5, result.content.Length);

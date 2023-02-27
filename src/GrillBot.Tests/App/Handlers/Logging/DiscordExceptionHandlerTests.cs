@@ -15,7 +15,7 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.Logging;
 
 [TestClass]
-public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
+public class DiscordExceptionHandlerTests : TestBase<DiscordExceptionHandler>
 {
     private static IConfiguration Configuration => TestServices.Configuration.Value;
 
@@ -23,38 +23,37 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
     private IUser User { get; set; } = null!;
     private TemporaryFile TemporaryFile { get; set; } = null!;
 
-    protected override DiscordExceptionHandler CreateService()
+    protected override void PreInit()
     {
         Channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).Build();
+        User = new SelfUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
+        TemporaryFile = new TemporaryFile("png");
+        File.WriteAllBytes(TemporaryFile.Path, new byte[] { 1, 2, 3 });
+    }
+
+    protected override DiscordExceptionHandler CreateInstance()
+    {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName)
             .SetGetTextChannelsAction(new[] { Channel })
             .Build();
-
-        User = new SelfUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
         var client = new ClientBuilder()
             .SetGetGuildsAction(new[] { guild })
             .SetSelfUser((ISelfUser)User)
             .Build();
 
-        TemporaryFile = new TemporaryFile("png");
-        File.WriteAllBytes(TemporaryFile.Path, new byte[] { 1, 2, 3 });
-
         return new DiscordExceptionHandler(client, Configuration, TestServices.Provider.Value);
     }
 
-    public override void Cleanup()
+    protected override void Cleanup()
     {
         TemporaryFile.Dispose();
     }
 
     [TestMethod]
     public async Task CanHandleAsync_NullException()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Critical, "");
-        Assert.IsFalse(result);
-    }
+        => Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Critical, ""));
 
     [TestMethod]
     public async Task CanHandleAsync_Disabled()
@@ -64,8 +63,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
         try
         {
-            var result = await Service.CanHandleAsync(LogSeverity.Debug, "", new Exception());
-            Assert.IsFalse(result);
+            Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Debug, "", new Exception()));
         }
         finally
         {
@@ -75,10 +73,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
     [TestMethod]
     public async Task CanHandleAsync_InvalidSeverity()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Debug, "", new Exception());
-        Assert.IsFalse(result);
-    }
+        => Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Debug, "", new Exception()));
 
     [TestMethod]
     public async Task CanHandleAsync_IgnoredExceptions()
@@ -101,10 +96,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
         };
 
         foreach (var @case in cases)
-        {
-            var result = await Service.CanHandleAsync(LogSeverity.Error, "Gateway", @case);
-            Assert.IsFalse(result);
-        }
+            Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Error, "Gateway", @case));
     }
 
     [TestMethod]
@@ -115,9 +107,8 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
         try
         {
-            ReflectionHelper.SetPrivateReadonlyPropertyValue(Service, "LogChannel", null);
-            var result = await Service.CanHandleAsync(LogSeverity.Critical, "", new Exception());
-            Assert.IsFalse(result);
+            ReflectionHelper.SetPrivateReadonlyPropertyValue(Instance, "LogChannel", null);
+            Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Critical, "", new Exception()));
         }
         finally
         {
@@ -133,9 +124,8 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
         try
         {
-            ReflectionHelper.SetPrivateReadonlyPropertyValue(Service, "LogChannel", null);
-            var result = await Service.CanHandleAsync(LogSeverity.Critical, "", new Exception());
-            Assert.IsFalse(result);
+            ReflectionHelper.SetPrivateReadonlyPropertyValue(Instance, "LogChannel", null);
+            Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Critical, "", new Exception()));
         }
         finally
         {
@@ -145,16 +135,11 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
 
     [TestMethod]
     public async Task CanHandleAsync()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Critical, "Test", new ArgumentException());
-        Assert.IsTrue(result);
-    }
+        => Assert.IsTrue(await Instance.CanHandleAsync(LogSeverity.Critical, "Test", new ArgumentException()));
 
     [TestMethod]
     public async Task InfoAsync()
-    {
-        await Service.InfoAsync("Test", "Test");
-    }
+        => await Instance.InfoAsync("Test", "Test");
 
     [TestMethod]
     public async Task WarningAsync()
@@ -163,8 +148,8 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
         const string message = "Test";
         var exception = new ArgumentException();
 
-        await Service.CanHandleAsync(LogSeverity.Critical, source, exception);
-        await Service.WarningAsync(source, message, exception);
+        await Instance.CanHandleAsync(LogSeverity.Critical, source, exception);
+        await Instance.WarningAsync(source, message, exception);
     }
 
     [TestMethod]
@@ -173,7 +158,7 @@ public class DiscordExceptionHandlerTests : ServiceTest<DiscordExceptionHandler>
         var innerException = new ArgumentException();
         var error = new ApiException("An error occured", innerException, User, "/api", "Test.Test");
 
-        await Service.CanHandleAsync(LogSeverity.Error, "API", error);
-        await Service.ErrorAsync("API", error.Message, error);
+        await Instance.CanHandleAsync(LogSeverity.Error, "API", error);
+        await Instance.ErrorAsync("API", error.Message, error);
     }
 }

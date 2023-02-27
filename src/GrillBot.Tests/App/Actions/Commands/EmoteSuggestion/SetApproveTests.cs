@@ -15,7 +15,7 @@ public class SetApproveTests : CommandActionTest<SetApprove>
     protected override IGuild Guild => new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
     protected override IGuildUser User => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override SetApprove CreateAction()
+    protected override SetApprove CreateInstance()
     {
         var messageCache = new MessageCacheBuilder().SetGetAction(Message.Id, Message).Build();
         var client = new ClientBuilder().SetGetUserAction(User).Build();
@@ -48,12 +48,12 @@ public class SetApproveTests : CommandActionTest<SetApprove>
 
     [TestMethod]
     public async Task ProcessAsync_NoSuggestion()
-        => await Action.ProcessAsync(false);
+        => await Instance.ProcessAsync(false);
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync();
-        await Action.ProcessAsync(true);
+        await Instance.ProcessAsync(true);
     }
 }

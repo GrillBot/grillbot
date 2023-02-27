@@ -15,7 +15,7 @@ public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
     private IGuild Guild { get; set; } = null!;
     private IGuildUser User { get; set; } = null!;
 
-    protected override GetCurrentUnverifies CreateAction()
+    protected override GetCurrentUnverifies CreateInstance()
     {
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(Guild).Build();
@@ -60,7 +60,7 @@ public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(1, result.Count);
     }
 
@@ -70,7 +70,7 @@ public class GetCurrentUnverifiesTests : ApiActionTest<GetCurrentUnverifies>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(1, result.Count);
     }
 }

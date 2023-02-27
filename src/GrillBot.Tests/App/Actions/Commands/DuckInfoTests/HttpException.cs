@@ -12,5 +12,5 @@ public class HttpException : DuckInfoTestsBase
     [TestMethod]
     [ExpectedException(typeof(GrillBotException))]
     [ExcludeFromCodeCoverage]
-    public override Task RunTestAsync() => Action.ProcessAsync();
+    public override Task RunTestAsync() => Instance.ProcessAsync();
 }

@@ -13,7 +13,7 @@ public class SolveExpressionTests : CommandActionTest<SolveExpression>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override SolveExpression CreateAction()
+    protected override SolveExpression CreateInstance()
     {
         var client = new MathClientBuilder()
             .SetSolveExpressionAction("a+a", new MathJsResult { Error = "Undefined variable: a" })
@@ -27,21 +27,21 @@ public class SolveExpressionTests : CommandActionTest<SolveExpression>
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
-        var result = await Action.ProcessAsync("1+1");
+        var result = await Instance.ProcessAsync("1+1");
         CheckEmbed(result, Color.Green);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Timeout()
     {
-        var result = await Action.ProcessAsync("11111 * 22222");
+        var result = await Instance.ProcessAsync("11111 * 22222");
         CheckEmbed(result, Color.Red);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Error()
     {
-        var result = await Action.ProcessAsync("a+a");
+        var result = await Instance.ProcessAsync("a+a");
         CheckEmbed(result, Color.Red);
     }
 

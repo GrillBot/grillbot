@@ -6,16 +6,19 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.UserUpdated;
 
 [TestClass]
-public class SyncUserUpdatedHandlerTests : HandlerTest<SyncUserUpdatedHandler>
+public class SyncUserUpdatedHandlerTests : TestBase<SyncUserUpdatedHandler>
 {
     private IUser Before { get; set; } = null!;
     private IUser After { get; set; } = null!;
 
-    protected override SyncUserUpdatedHandler CreateHandler()
+    protected override void PreInit()
     {
         Before = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
         After = new UserBuilder(Consts.UserId, Consts.Username + "Username", Consts.Discriminator).Build();
+    }
 
+    protected override SyncUserUpdatedHandler CreateInstance()
+    {
         return new SyncUserUpdatedHandler(DatabaseBuilder);
     }
 
@@ -27,20 +30,16 @@ public class SyncUserUpdatedHandlerTests : HandlerTest<SyncUserUpdatedHandler>
 
     [TestMethod]
     public async Task ProcessAsync_NoChange()
-    {
-        await Handler.ProcessAsync(Before, Before);
-    }
+        => await Instance.ProcessAsync(Before, Before);
 
     [TestMethod]
     public async Task ProcessAsync_NoUserInDb()
-    {
-        await Handler.ProcessAsync(Before, After);
-    }
+        => await Instance.ProcessAsync(Before, After);
 
     [TestMethod]
     public async Task ProcessAsync_UserIsInDb()
     {
         await InitDataAsync();
-        await Handler.ProcessAsync(Before, After);
+        await Instance.ProcessAsync(Before, After);
     }
 }

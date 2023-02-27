@@ -16,7 +16,7 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
     private IGuildUser User { get; set; }
     private IRole Role { get; set; }
 
-    protected override GetGuildDetail CreateAction()
+    protected override GetGuildDetail CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guildBuilder.Build()).Build();
@@ -35,7 +35,7 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_GuildNotFound()
     {
-        await Action.ProcessAsync(Consts.GuildId);
+        await Instance.ProcessAsync(Consts.GuildId);
     }
 
     [TestMethod]
@@ -44,7 +44,7 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
         var anotherGuild = new GuildBuilder(Consts.GuildId + 1, Consts.GuildName).Build();
         await InitGuildAsync(anotherGuild, false);
 
-        var result = await Action.ProcessAsync(anotherGuild.Id);
+        var result = await Instance.ProcessAsync(anotherGuild.Id);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(result.Name, anotherGuild.Name);
@@ -55,7 +55,7 @@ public class GetGuildDetailTests : ApiActionTest<GetGuildDetail>
     {
         await InitGuildAsync(Guild, true);
 
-        var result = await Action.ProcessAsync(Guild.Id);
+        var result = await Instance.ProcessAsync(Guild.Id);
 
         CheckSuccess(result, true);
         Assert.AreEqual(Guild.Name, result.Name);

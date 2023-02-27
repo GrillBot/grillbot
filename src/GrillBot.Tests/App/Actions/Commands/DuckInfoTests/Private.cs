@@ -15,6 +15,6 @@ public class Private : DuckInfoTestsBase
     [TestMethod]
     public override async Task RunTestAsync()
     {
-        CheckEmbed(await Action.ProcessAsync());
+        CheckEmbed(await Instance.ProcessAsync());
     }
 }

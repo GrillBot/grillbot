@@ -12,7 +12,7 @@ public class GetAvailableUsersTests : ApiActionTest<GetAvailableUsers>
     private IGuild Guild { get; set; }
     private IGuildUser User { get; set; }
 
-    protected override GetAvailableUsers CreateAction()
+    protected override GetAvailableUsers CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         User = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).Build();
@@ -35,14 +35,14 @@ public class GetAvailableUsersTests : ApiActionTest<GetAvailableUsers>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(null, null);
+        var result = await Instance.ProcessAsync(null, null);
         Assert.AreEqual(1, result.Count);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Bots()
     {
-        var result = await Action.ProcessAsync(true, null);
+        var result = await Instance.ProcessAsync(true, null);
         Assert.AreEqual(0, result.Count);
     }
 
@@ -51,7 +51,7 @@ public class GetAvailableUsersTests : ApiActionTest<GetAvailableUsers>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(false, null);
+        var result = await Instance.ProcessAsync(false, null);
         Assert.AreEqual(1, result.Count);
     }
 
@@ -59,7 +59,7 @@ public class GetAvailableUsersTests : ApiActionTest<GetAvailableUsers>
     [ApiConfiguration(true)]
     public async Task ProcessAsync_AsPublic()
     {
-        var result = await Action.ProcessAsync(null, null);
+        var result = await Instance.ProcessAsync(null, null);
         Assert.AreEqual(0, result.Count);
     }
 
@@ -68,7 +68,7 @@ public class GetAvailableUsersTests : ApiActionTest<GetAvailableUsers>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(null, Guild.Id);
+        var result = await Instance.ProcessAsync(null, Guild.Id);
         Assert.AreEqual(1, result.Count);
     }
 }

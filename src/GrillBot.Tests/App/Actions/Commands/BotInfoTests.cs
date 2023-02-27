@@ -24,7 +24,7 @@ public class BotInfoTests : CommandActionTest<BotInfo>
 
     protected override IGuildUser User => BotUser;
 
-    protected override BotInfo CreateAction()
+    protected override BotInfo CreateInstance()
     {
         return InitAction(new BotInfo(TestServices.Texts.Value));
     }
@@ -32,7 +32,7 @@ public class BotInfoTests : CommandActionTest<BotInfo>
     [TestMethod]
     public async Task ProcessAsync()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.IsNotNull(result.Color);

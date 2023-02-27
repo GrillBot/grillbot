@@ -7,37 +7,31 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Moq;
 using System.Reflection;
 using GrillBot.Database.Entity;
-using GrillBot.Database.Services;
+using GrillBot.Tests.Infrastructure.Common;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.Tests.App.Infrastructure.Auth;
 
 [TestClass]
-public class ApiKeyAuthAttributeTests
+public class ApiKeyAuthAttributeTests : TestBase<ApiKeyAuthAttribute>
 {
     private bool _wasCalled;
-    
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; set; }
 
-    private Task<ActionExecutedContext> Delegate()
+    protected override ApiKeyAuthAttribute CreateInstance()
     {
-        _wasCalled = true;
-        return Task.FromResult<ActionExecutedContext>(null);
+        return new ApiKeyAuthAttribute();
     }
 
-    [TestInitialize]
-    public void OnInitialize()
+    protected override void PreInit()
     {
         _wasCalled = false;
     }
 
-    [TestCleanup]
-    public void OnCleanup()
+    private Task<ActionExecutedContext> Delegate()
     {
-        TestDatabaseBuilder.ClearDatabase();
-        TestCacheBuilder.ClearDatabase();
+        _wasCalled = true;
+        return Task.FromResult<ActionExecutedContext>(null!);
     }
 
     private static ActionExecutingContext CreateContext(IHeaderDictionary headers)
@@ -45,15 +39,15 @@ public class ApiKeyAuthAttributeTests
         var request = new Mock<HttpRequest>();
         request.Setup(o => o.Headers).Returns(headers);
 
-        var serviceProvider = TestServices.Provider.Value;
+        var provider = TestServices.Provider.Value;
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(o => o.Request).Returns(request.Object);
-        httpContext.Setup(o => o.RequestServices).Returns(serviceProvider);
+        httpContext.Setup(o => o.RequestServices).Returns(provider);
 
         var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
-        var controller = new AuthController(null);
+        var controller = new AuthController(provider);
 
-        return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), controller)
+        return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>()!, controller)
         {
             ActionDescriptor = new ControllerActionDescriptor
             {
@@ -63,27 +57,23 @@ public class ApiKeyAuthAttributeTests
         };
     }
 
-    private async Task InitDataAsync(ActionContext context)
+    private async Task InitDataAsync()
     {
-        DatabaseBuilder = context.HttpContext.RequestServices.GetRequiredService<GrillBotDatabaseBuilder>();
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        await repository.AddCollectionAsync(new[]
+        await Repository.AddCollectionAsync(new[]
         {
             new ApiClient { Name = "Test", Id = "963258740" },
             new ApiClient { Name = "Test", Id = "963258741", AllowedMethods = new List<string> { "AuthController.GetRedirectLink" } },
             new ApiClient { Name = "Test", Id = "963258743", AllowedMethods = new List<string> { "GetLink" } },
         });
-        await repository.CommitAsync();
+        await Repository.CommitAsync();
     }
 
     [TestMethod]
     public async Task OnActionExecutionAsync_MissingHeader()
     {
-        var attribute = new ApiKeyAuthAttribute();
         var context = CreateContext(new HeaderDictionary());
 
-        await attribute.OnActionExecutionAsync(context, Delegate);
+        await Instance.OnActionExecutionAsync(context, Delegate);
         Assert.IsInstanceOfType(context.Result, typeof(UnauthorizedResult));
         Assert.IsFalse(_wasCalled);
     }
@@ -92,11 +82,9 @@ public class ApiKeyAuthAttributeTests
     public async Task OnActionExecutionAsync_InvalidAuthorizationHeader()
     {
         var headers = new HeaderDictionary { { "Authorization", "Test 123" } };
-
-        var attribute = new ApiKeyAuthAttribute();
         var context = CreateContext(headers);
 
-        await attribute.OnActionExecutionAsync(context, Delegate);
+        await Instance.OnActionExecutionAsync(context, Delegate);
         Assert.IsInstanceOfType(context.Result, typeof(UnauthorizedResult));
         Assert.IsFalse(_wasCalled);
     }
@@ -105,11 +93,9 @@ public class ApiKeyAuthAttributeTests
     public async Task OnActionExecutionAsync_MissingClient()
     {
         var headers = new HeaderDictionary { { "ApiKey", "12345" } };
-
-        var attribute = new ApiKeyAuthAttribute();
         var context = CreateContext(headers);
 
-        await attribute.OnActionExecutionAsync(context, Delegate);
+        await Instance.OnActionExecutionAsync(context, Delegate);
         Assert.IsInstanceOfType(context.Result, typeof(UnauthorizedResult));
         Assert.IsFalse(_wasCalled);
     }
@@ -119,10 +105,9 @@ public class ApiKeyAuthAttributeTests
     {
         var headers = new HeaderDictionary { { "Authorization", "ApiKey 963258740" } };
         var context = CreateContext(headers);
-        await InitDataAsync(context);
+        await InitDataAsync();
 
-        var attribute = new ApiKeyAuthAttribute();
-        await attribute.OnActionExecutionAsync(context, Delegate);
+        await Instance.OnActionExecutionAsync(context, Delegate);
         Assert.IsInstanceOfType(context.Result, typeof(UnauthorizedResult));
         Assert.IsFalse(_wasCalled);
     }
@@ -132,10 +117,9 @@ public class ApiKeyAuthAttributeTests
     {
         var headers = new HeaderDictionary { { "ApiKey", "963258743" } };
         var context = CreateContext(headers);
-        await InitDataAsync(context);
+        await InitDataAsync();
 
-        var attribute = new ApiKeyAuthAttribute();
-        await attribute.OnActionExecutionAsync(context, Delegate);
+        await Instance.OnActionExecutionAsync(context, Delegate);
         Assert.IsInstanceOfType(context.Result, typeof(UnauthorizedResult));
         Assert.IsFalse(_wasCalled);
     }
@@ -145,10 +129,9 @@ public class ApiKeyAuthAttributeTests
     {
         var headers = new HeaderDictionary { { "ApiKey", "963258741" } };
         var context = CreateContext(headers);
-        await InitDataAsync(context);
+        await InitDataAsync();
 
-        var attribute = new ApiKeyAuthAttribute();
-        await attribute.OnActionExecutionAsync(context, Delegate);
+        await Instance.OnActionExecutionAsync(context, Delegate);
         Assert.IsTrue(_wasCalled);
     }
 }

@@ -12,7 +12,7 @@ public abstract class DuckInfoTestsBase : CommandActionTest<DuckInfo>
 {
     protected abstract DuckState? State { get; }
 
-    protected override DuckInfo CreateAction()
+    protected override DuckInfo CreateInstance()
     {
         var kachnaOnline = new KachnaOnlineClientBuilder();
         kachnaOnline = State == null ? kachnaOnline.GetCurrentStateWithException() : kachnaOnline.GetCurrentStateWithoutException(State);

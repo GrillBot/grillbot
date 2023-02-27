@@ -7,7 +7,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 [TestClass]
 public class GetSupportedEmotesTests : ApiActionTest<GetSupportedEmotes>
 {
-    protected override GetSupportedEmotes CreateAction()
+    protected override GetSupportedEmotes CreateInstance()
     {
         var emote = EmoteHelper.CreateGuildEmote(Discord.Emote.Parse(Consts.PepeJamEmote));
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { emote }).Build();
@@ -20,7 +20,7 @@ public class GetSupportedEmotesTests : ApiActionTest<GetSupportedEmotes>
     [TestMethod]
     public async Task ProcessAsync()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(1, result.Count);
     }
 }

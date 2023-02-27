@@ -6,7 +6,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.PublicApiClients;
 [TestClass]
 public class GetClientsListTests : ApiActionTest<GetClientsList>
 {
-    protected override GetClientsList CreateAction()
+    protected override GetClientsList CreateInstance()
     {
         return new GetClientsList(ApiRequestContext, DatabaseBuilder);
     }
@@ -14,7 +14,7 @@ public class GetClientsListTests : ApiActionTest<GetClientsList>
     [TestMethod]
     public async Task ProcessAsync()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
         Assert.AreEqual(0, result.Count);
     }
 }

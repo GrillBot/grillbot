@@ -22,7 +22,7 @@ public class PointsImageTests : CommandActionTest<PointsImage>
     protected override IGuildUser User { get; }
         = new GuildUserBuilder(GuildUser).SetAvatar(Consts.AvatarId).SetGuild(GuildData).Build();
 
-    protected override PointsImage CreateAction()
+    protected override PointsImage CreateInstance()
     {
         var profilePictureManager = new ProfilePictureManager(CacheBuilder, TestServices.CounterManager.Value);
         return InitAction(new PointsImage(DatabaseBuilder, profilePictureManager, TestServices.Graphics.Value));
@@ -51,14 +51,14 @@ public class PointsImageTests : CommandActionTest<PointsImage>
     [ExcludeFromCodeCoverage]
     [ExpectedException(typeof(NotFoundException))]
     public async Task ProcessAsync_UserNotFound()
-        => await Action.ProcessAsync(Guild, User);
+        => await Instance.ProcessAsync(Guild, User);
 
     [TestMethod]
     public async Task ProcessAsync_Success()
     {
         await InitDataAsync();
 
-        using var result = await Action.ProcessAsync(Guild, User);
+        using var result = await Instance.ProcessAsync(Guild, User);
         Assert.IsTrue(File.Exists(result.Path));
     }
 }

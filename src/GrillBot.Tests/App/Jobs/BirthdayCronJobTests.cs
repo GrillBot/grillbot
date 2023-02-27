@@ -2,6 +2,7 @@
 using GrillBot.App.Actions.Api.V2;
 using GrillBot.App.Jobs;
 using GrillBot.Common.Managers;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +13,7 @@ public class BirthdayCronJobTests : JobTest<BirthdayCronJob>
 {
     private static readonly IUser User = new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override BirthdayCronJob CreateJob()
+    protected override BirthdayCronJob CreateInstance()
     {
         var channel = new TextChannelBuilder(Consts.ChannelId + 1, Consts.ChannelName).Build();
         var guild = new GuildBuilder(Consts.GuildId + 1, Consts.GuildName).SetGetTextChannelsAction(new[] { channel }).Build();
@@ -42,25 +43,21 @@ public class BirthdayCronJobTests : JobTest<BirthdayCronJob>
     [TestMethod]
     public async Task Execute_NoOneHave()
     {
-        var context = CreateContext();
-        await Job.Execute(context);
-
-        Assert.IsNull(context.Result);
+        await Execute(context => Assert.IsNull(context.Result));
     }
 
     [TestMethod]
     public async Task Execute_GuildNotFound()
     {
         await InitDataAsync();
+        await Execute(context =>
+        {
+            Assert.IsNotNull(context.Result);
+            Assert.IsInstanceOfType(context.Result, typeof(string));
 
-        var context = CreateContext();
-        await Job.Execute(context);
-
-        Assert.IsNotNull(context.Result);
-        Assert.IsInstanceOfType(context.Result, typeof(string));
-
-        var result = (string)context.Result;
-        Assert.IsTrue(result.Contains("Required guild", StringComparison.InvariantCultureIgnoreCase), result);
+            var result = (string)context.Result;
+            Assert.IsTrue(result.Contains("Required guild", StringComparison.InvariantCultureIgnoreCase), result);
+        });
     }
 
     [TestMethod]
@@ -69,18 +66,18 @@ public class BirthdayCronJobTests : JobTest<BirthdayCronJob>
         await InitDataAsync();
 
         var oldGuild = TestServices.Configuration.Value["Birthday:Notifications:GuildId"];
-        var context = CreateContext();
 
         try
         {
             TestServices.Configuration.Value["Birthday:Notifications:GuildId"] = (Consts.GuildId + 1).ToString();
-            await Job.Execute(context);
+            await Execute(context =>
+            {
+                Assert.IsNotNull(context.Result);
+                Assert.IsInstanceOfType(context.Result, typeof(string));
 
-            Assert.IsNotNull(context.Result);
-            Assert.IsInstanceOfType(context.Result, typeof(string));
-
-            var result = (string)context.Result;
-            Assert.IsTrue(result.Contains("Required channel", StringComparison.CurrentCultureIgnoreCase), result);
+                var result = (string)context.Result;
+                Assert.IsTrue(result.Contains("Required channel", StringComparison.CurrentCultureIgnoreCase), result);
+            });
         }
         finally
         {
@@ -95,20 +92,20 @@ public class BirthdayCronJobTests : JobTest<BirthdayCronJob>
 
         var oldGuild = TestServices.Configuration.Value["Birthday:Notifications:GuildId"];
         var oldChannel = TestServices.Configuration.Value["Birthday:Notifications:ChannelId"];
-        var context = CreateContext();
 
         try
         {
             TestServices.Configuration.Value["Birthday:Notifications:GuildId"] = (Consts.GuildId + 1).ToString();
             TestServices.Configuration.Value["Birthday:Notifications:ChannelId"] = (Consts.ChannelId + 1).ToString();
-            await Job.Execute(context);
+            await Execute(context =>
+            {
+                Assert.IsNotNull(context.Result);
+                Assert.IsInstanceOfType(context.Result, typeof(string));
 
-            Assert.IsNotNull(context.Result);
-            Assert.IsInstanceOfType(context.Result, typeof(string));
-
-            var result = (string)context.Result;
-            Assert.IsFalse(result.Contains("Required guild", StringComparison.CurrentCultureIgnoreCase), result);
-            Assert.IsFalse(result.Contains("Required channel", StringComparison.CurrentCultureIgnoreCase), result);
+                var result = (string)context.Result;
+                Assert.IsFalse(result.Contains("Required guild", StringComparison.CurrentCultureIgnoreCase), result);
+                Assert.IsFalse(result.Contains("Required channel", StringComparison.CurrentCultureIgnoreCase), result);
+            });
         }
         finally
         {

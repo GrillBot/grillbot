@@ -16,7 +16,7 @@ public class EmoteInfoTests : CommandActionTest<EmoteInfo>
     protected override IGuildUser User
         => new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).Build();
 
-    protected override EmoteInfo CreateAction()
+    protected override EmoteInfo CreateInstance()
     {
         var client = new ClientBuilder().SetGetGuildsAction(new[] { Guild }).Build();
         var formatHelper = new FormatHelper(TestServices.Texts.Value);
@@ -44,21 +44,21 @@ public class EmoteInfoTests : CommandActionTest<EmoteInfo>
     [TestMethod]
     public async Task ProcessAsync_UnicodeEmoji()
     {
-        var result = await Action.ProcessAsync(Emojis.Ok);
+        var result = await Instance.ProcessAsync(Emojis.Ok);
 
         Assert.IsNull(result);
-        Assert.IsFalse(Action.IsOk);
-        Assert.IsNotNull(Action.ErrorMessage);
+        Assert.IsFalse(Instance.IsOk);
+        Assert.IsNotNull(Instance.ErrorMessage);
     }
 
     [TestMethod]
     public async Task ProcessAsync_NoStatistics()
     {
-        var result = await Action.ProcessAsync(Consts.OnlineEmote);
+        var result = await Instance.ProcessAsync(Consts.OnlineEmote);
 
         Assert.IsNull(result);
-        Assert.IsFalse(Action.IsOk);
-        Assert.IsNotNull(Action.ErrorMessage);
+        Assert.IsFalse(Instance.IsOk);
+        Assert.IsNotNull(Instance.ErrorMessage);
     }
 
     [TestMethod]
@@ -66,10 +66,10 @@ public class EmoteInfoTests : CommandActionTest<EmoteInfo>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessAsync(Consts.OnlineEmote);
+        var result = await Instance.ProcessAsync(Consts.OnlineEmote);
 
         Assert.IsNotNull(result);
-        Assert.IsTrue(Action.IsOk);
-        Assert.IsNull(Action.ErrorMessage);
+        Assert.IsTrue(Instance.IsOk);
+        Assert.IsNull(Instance.ErrorMessage);
     }
 }

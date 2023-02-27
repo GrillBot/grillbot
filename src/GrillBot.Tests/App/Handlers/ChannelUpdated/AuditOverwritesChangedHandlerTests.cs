@@ -1,5 +1,4 @@
-﻿using System.Threading.Channels;
-using Discord;
+﻿using Discord;
 using Discord.Rest;
 using GrillBot.App.Handlers.ChannelUpdated;
 using GrillBot.App.Managers;
@@ -10,19 +9,21 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.ChannelUpdated;
 
 [TestClass]
-public class AuditOverwritesChangedHandlerTests : HandlerTest<AuditOverwritesChangedHandler>
+public class AuditOverwritesChangedHandlerTests : TestBase<AuditOverwritesChangedHandler>
 {
-    private ITextChannel TextChannel { get; set; }
-    private AuditLogManager AuditLogManager { get; set; }
+    private ITextChannel TextChannel { get; set; } = null!;
+    private AuditLogManager AuditLogManager { get; set; } = null!;
 
-    protected override AuditOverwritesChangedHandler CreateHandler()
+    protected override void PreInit()
     {
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
+    }
 
+    protected override AuditOverwritesChangedHandler CreateInstance()
+    {
         AuditLogManager = new AuditLogManager();
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
-
         return new AuditOverwritesChangedHandler(AuditLogManager, DatabaseBuilder, TestServices.CounterManager.Value, auditLogWriter);
     }
 
@@ -48,14 +49,14 @@ public class AuditOverwritesChangedHandlerTests : HandlerTest<AuditOverwritesCha
     public async Task ProcessAsync_Dms()
     {
         var channel = new DmChannelBuilder().Build();
-        await Handler.ProcessAsync(null, channel);
+        await Instance.ProcessAsync(null!, channel);
     }
 
     [TestMethod]
     public async Task ProcessAsync_TimeLimit()
     {
         AuditLogManager.OnOverwriteChangedEvent(TextChannel.Id, DateTime.Now.AddMonths(1));
-        await Handler.ProcessAsync(TextChannel, TextChannel);
+        await Instance.ProcessAsync(TextChannel, TextChannel);
     }
 
     [TestMethod]
@@ -64,7 +65,7 @@ public class AuditOverwritesChangedHandlerTests : HandlerTest<AuditOverwritesCha
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(new List<IAuditLogEntry>()).Build();
         var channel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(channel, channel);
+        await Instance.ProcessAsync(channel, channel);
     }
 
     [TestMethod]
@@ -81,12 +82,12 @@ public class AuditOverwritesChangedHandlerTests : HandlerTest<AuditOverwritesCha
             new AuditLogEntryBuilder(Consts.AuditLogEntryId).SetActionType(ActionType.OverwriteUpdated).SetUser(user)
                 .SetData(ReflectionHelper.CreateWithInternalConstructor<OverwriteUpdateAuditLogData>(Consts.ChannelId, new OverwritePermissions(),
                     new OverwritePermissions(), 0UL, PermissionTarget.Role)).Build(),
-            new AuditLogEntryBuilder(Consts.AuditLogEntryId).SetActionType(ActionType.Ban).SetUser(user).SetData(null).Build(),
-            new AuditLogEntryBuilder(Consts.AuditLogEntryId + 1).SetActionType(ActionType.Ban).SetUser(user).SetData(null).Build()
+            new AuditLogEntryBuilder(Consts.AuditLogEntryId).SetActionType(ActionType.Ban).SetUser(user).Build(),
+            new AuditLogEntryBuilder(Consts.AuditLogEntryId + 1).SetActionType(ActionType.Ban).SetUser(user).Build()
         };
         var guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetGetAuditLogsAction(entries).Build();
         var textChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(guild).Build();
 
-        await Handler.ProcessAsync(textChannel, textChannel);
+        await Instance.ProcessAsync(textChannel, textChannel);
     }
 }

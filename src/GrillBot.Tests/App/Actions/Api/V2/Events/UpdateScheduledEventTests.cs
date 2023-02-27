@@ -10,7 +10,7 @@ namespace GrillBot.Tests.App.Actions.Api.V2.Events;
 [TestClass]
 public class UpdateScheduledEventTests : ApiActionTest<UpdateScheduledEvent>
 {
-    protected override UpdateScheduledEvent CreateAction()
+    protected override UpdateScheduledEvent CreateInstance()
     {
         var events = new[]
         {
@@ -27,25 +27,25 @@ public class UpdateScheduledEventTests : ApiActionTest<UpdateScheduledEvent>
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_GuildNotFound() => await Action.ProcessAsync(Consts.GuildId + 1, 0, new ScheduledEventParams());
+    public async Task ProcessAsync_GuildNotFound() => await Instance.ProcessAsync(Consts.GuildId + 1, 0, new ScheduledEventParams());
 
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_EventNotFound() => await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 2, new ScheduledEventParams());
+    public async Task ProcessAsync_EventNotFound() => await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 2, new ScheduledEventParams());
 
     [TestMethod]
     [ExpectedException(typeof(ForbiddenAccessException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_Forbidden() => await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 1, new ScheduledEventParams());
+    public async Task ProcessAsync_Forbidden() => await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId + 1, new ScheduledEventParams());
 
     [TestMethod]
-    public async Task ProcessAsync_WithoutParameters() => await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId, new ScheduledEventParams());
+    public async Task ProcessAsync_WithoutParameters() => await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId, new ScheduledEventParams());
 
     [TestMethod]
     public async Task ProcessAsync_WithParameters()
     {
-        await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId, new ScheduledEventParams
+        await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId, new ScheduledEventParams
         {
             Description = "Description",
             Image = new byte[] { 1, 2, 3, 4, 5 },
@@ -59,7 +59,7 @@ public class UpdateScheduledEventTests : ApiActionTest<UpdateScheduledEvent>
     [TestMethod]
     public async Task ProcessAsync_SetEnded()
     {
-        await Action.ProcessAsync(Consts.GuildId, Consts.GuildEventId, new ScheduledEventParams
+        await Instance.ProcessAsync(Consts.GuildId, Consts.GuildEventId, new ScheduledEventParams
         {
             StartAt = DateTime.Now.AddMonths(-5),
             EndAt = DateTime.Now.AddMonths(-1),

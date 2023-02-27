@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 [TestClass]
 public class RemoveStatsTests : ApiActionTest<RemoveStats>
 {
-    protected override RemoveStats CreateAction()
+    protected override RemoveStats CreateInstance()
     {
         var auditLogWriter = new AuditLogWriteManager(DatabaseBuilder);
         return new RemoveStats(ApiRequestContext, DatabaseBuilder, auditLogWriter);
@@ -18,7 +18,7 @@ public class RemoveStatsTests : ApiActionTest<RemoveStats>
     [TestMethod]
     public async Task ProcessAsync_NoEmotes()
     {
-        var result = await Action.ProcessAsync(Consts.PepeJamEmote);
+        var result = await Instance.ProcessAsync(Consts.PepeJamEmote);
         Assert.AreEqual(0, result);
     }
 
@@ -41,7 +41,7 @@ public class RemoveStatsTests : ApiActionTest<RemoveStats>
         });
         await Repository.CommitAsync();
 
-        var result = await Action.ProcessAsync(Consts.PepeJamEmote);
+        var result = await Instance.ProcessAsync(Consts.PepeJamEmote);
         Assert.AreEqual(1, result);
     }
 }

@@ -12,7 +12,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.AuditLog;
 [TestClass]
 public class RemoveItemTests : ApiActionTest<RemoveItem>
 {
-    protected override RemoveItem CreateAction()
+    protected override RemoveItem CreateInstance()
     {
         var fileStorage = new FileStorageMock(TestServices.Configuration.Value);
         return new RemoveItem(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value, fileStorage);
@@ -59,7 +59,7 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_NotFound() => await Action.ProcessAsync(1);
+    public async Task ProcessAsync_NotFound() => await Instance.ProcessAsync(1);
 
     [TestMethod]
     public async Task ProcessAsync_WithoutFiles()
@@ -67,14 +67,14 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
         const int id = 1;
 
         await InitDataAsync(false);
-        await Action.ProcessAsync(id);
+        await Instance.ProcessAsync(id);
     }
 
     [TestMethod]
     public async Task ProcessAsync_WithFiles_FileNotOnDisk()
     {
         await InitDataAsync(true);
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
     }
 
     [TestMethod]
@@ -83,7 +83,7 @@ public class RemoveItemTests : ApiActionTest<RemoveItem>
         await InitDataAsync(true);
         await File.WriteAllBytesAsync("Temp.txt", new byte[] { 1, 2, 3, 4, 5 });
 
-        await Action.ProcessAsync(1);
+        await Instance.ProcessAsync(1);
         Assert.IsFalse(File.Exists("Temp.txt"));
     }
 }

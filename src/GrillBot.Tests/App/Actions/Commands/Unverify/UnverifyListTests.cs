@@ -33,7 +33,7 @@ public class UnverifyListTests : CommandActionTest<UnverifyList>
     protected override IGuild Guild => GuildData;
     protected override IGuildUser User => GuildUser;
 
-    protected override UnverifyList CreateAction()
+    protected override UnverifyList CreateInstance()
     {
         var texts = TestServices.Texts.Value;
         var formatHelper = new FormatHelper(texts);
@@ -96,13 +96,13 @@ public class UnverifyListTests : CommandActionTest<UnverifyList>
     [TestMethod]
     [ExpectedException(typeof(NotFoundException))]
     [ExcludeFromCodeCoverage]
-    public async Task ProcessAsync_NoUnverify() => await Action.ProcessAsync(0);
+    public async Task ProcessAsync_NoUnverify() => await Instance.ProcessAsync(0);
 
     [TestMethod]
     public async Task ProcessAsync_Unverify()
     {
         await InitDataAsync(false);
-        var result = await Action.ProcessAsync(0);
+        var result = await Instance.ProcessAsync(0);
 
         Assert.IsNotNull(result.embed);
         Assert.IsNull(result.paginationComponent);
@@ -115,7 +115,7 @@ public class UnverifyListTests : CommandActionTest<UnverifyList>
     public async Task ProcessAsync_Selfunverify()
     {
         await InitDataAsync(true);
-        var result = await Action.ProcessAsync(0);
+        var result = await Instance.ProcessAsync(0);
 
         Assert.IsNotNull(result.embed);
         Assert.IsNull(result.paginationComponent);

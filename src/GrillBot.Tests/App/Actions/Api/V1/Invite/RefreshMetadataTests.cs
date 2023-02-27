@@ -12,7 +12,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Invite;
 [TestClass]
 public class RefreshMetadataTests : ApiActionTest<RefreshMetadata>
 {
-    protected override RefreshMetadata CreateAction()
+    protected override RefreshMetadata CreateInstance()
     {
         var guildBuilder = new GuildBuilder(Consts.GuildId, Consts.GuildName);
         var admin = new GuildUserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).SetGuild(guildBuilder.Build()).SetGuildPermissions(GuildPermissions.All).Build();
@@ -44,7 +44,7 @@ public class RefreshMetadataTests : ApiActionTest<RefreshMetadata>
     [ApiConfiguration(true)]
     public async Task ProcessAsync_StandardUser()
     {
-        var result = await Action.ProcessAsync(true);
+        var result = await Instance.ProcessAsync(true);
 
         Assert.AreEqual(0, result.Sum(o => o.Value));
     }
@@ -52,7 +52,7 @@ public class RefreshMetadataTests : ApiActionTest<RefreshMetadata>
     [TestMethod]
     public async Task ProcessAsync_Admin()
     {
-        var result = await Action.ProcessAsync(false);
+        var result = await Instance.ProcessAsync(false);
         Assert.AreEqual(3, result.Sum(o => o.Value));
     }
 }

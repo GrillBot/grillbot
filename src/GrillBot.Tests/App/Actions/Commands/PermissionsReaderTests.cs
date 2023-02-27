@@ -44,7 +44,7 @@ public class PermissionsReaderTests : CommandActionTest<PermissionsReader>
     protected override IGuild Guild => MyGuild;
     protected override IGuildUser User => Users[0];
 
-    protected override PermissionsReader CreateAction()
+    protected override PermissionsReader CreateInstance()
     {
         return InitAction(new PermissionsReader(DatabaseBuilder, TestServices.Texts.Value));
     }
@@ -71,7 +71,7 @@ public class PermissionsReaderTests : CommandActionTest<PermissionsReader>
     {
         await InitDataAsync();
 
-        var result = await Action.ReadUselessPermissionsAsync();
+        var result = await Instance.ReadUselessPermissionsAsync();
         Assert.AreEqual(4, result.Count);
     }
 
@@ -79,7 +79,7 @@ public class PermissionsReaderTests : CommandActionTest<PermissionsReader>
     public void CreateSummary()
     {
         var item = new UselessPermission(TextChannel, User, UselessPermissionType.Administrator);
-        var summary = Action.CreateSummary(new List<UselessPermission> { item });
+        var summary = Instance.CreateSummary(new List<UselessPermission> { item });
 
         Assert.IsFalse(string.IsNullOrEmpty(summary));
         Assert.AreEqual(3, summary.Count(o => o == '1'));

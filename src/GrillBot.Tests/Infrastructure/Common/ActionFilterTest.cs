@@ -15,19 +15,18 @@ using Moq;
 namespace GrillBot.Tests.Infrastructure.Common;
 
 [ExcludeFromCodeCoverage]
-public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFilter : class
+public abstract class ActionFilterTest<TFilter> : TestBase<TFilter> where TFilter : class
 {
-    protected Controller Controller { get; private set; }
-    protected TFilter Filter => Service;
+    private Controller? _controller;
 
-    protected override TFilter CreateService()
+    protected Controller Controller
     {
-        Controller = CreateController();
-        return CreateFilter();
+        get
+        {
+            _controller ??= new TestingController();
+            return _controller;
+        }
     }
-
-    protected abstract TFilter CreateFilter();
-    protected abstract Controller CreateController();
 
     private static HttpRequest CreateHttpRequest(IHeaderDictionary? headers = null)
     {
@@ -62,23 +61,23 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
         return httpContext.Object;
     }
 
-    private ActionContext CreateActionContext(IHeaderDictionary headers = null, int statusCode = 0, ModelStateDictionary modelState = null)
+    private static ActionContext CreateActionContext(IHeaderDictionary? headers = null, int statusCode = 0, ModelStateDictionary? modelState = null)
     {
         modelState = modelState == null ? new ModelStateDictionary() : new ModelStateDictionary(modelState);
-        return new ActionContext(ActionFilterTest<TFilter>.CreateHttpContext(headers, statusCode), new RouteData(), new ActionDescriptor(), modelState);
+        return new ActionContext(CreateHttpContext(headers, statusCode), new RouteData(), new ActionDescriptor(), modelState);
     }
 
-    protected ActionExecutingContext CreateContext(string methodName, IHeaderDictionary headers = null, bool noControllerDescriptor = false, ModelStateDictionary modelState = null)
+    protected ActionExecutingContext CreateContext(IHeaderDictionary? headers = null, bool noControllerDescriptor = false, ModelStateDictionary? modelState = null)
     {
         var actionContext = CreateActionContext(headers, modelState: modelState);
 
-        return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), Controller)
+        return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>()!, Controller)
         {
             ActionDescriptor = !noControllerDescriptor
                 ? new ControllerActionDescriptor
                 {
                     ControllerTypeInfo = Controller.GetType().GetTypeInfo(),
-                    MethodInfo = Controller.GetType().GetMethod(methodName)!,
+                    MethodInfo = Controller.GetType().GetMethod("TestMethod")!,
                     AttributeRouteInfo = new AttributeRouteInfo { Template = "/api" }
                 }
                 : new ActionDescriptor()
@@ -91,6 +90,6 @@ public abstract class ActionFilterTest<TFilter> : ServiceTest<TFilter> where TFi
         return new ResultExecutingContext(actionContext, new List<IFilterMetadata>(), result, Controller);
     }
 
-    protected ActionExecutionDelegate GetDelegate() => () => Task.FromResult<ActionExecutedContext>(null);
-    protected ResultExecutionDelegate GetResultDelegate() => () => Task.FromResult<ResultExecutedContext>(null);
+    protected ActionExecutionDelegate GetDelegate() => () => Task.FromResult<ActionExecutedContext>(null!);
+    protected ResultExecutionDelegate GetResultDelegate() => () => Task.FromResult<ResultExecutedContext>(null!);
 }

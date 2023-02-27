@@ -9,7 +9,7 @@ public class ChangeBotStatusTests : ApiActionTest<ChangeBotStatus>
 {
     private InitManager InitManager { get; set; }
 
-    protected override ChangeBotStatus CreateAction()
+    protected override ChangeBotStatus CreateInstance()
     {
         InitManager = new InitManager(TestServices.LoggerFactory.Value);
 
@@ -19,7 +19,7 @@ public class ChangeBotStatusTests : ApiActionTest<ChangeBotStatus>
     [TestMethod]
     public void Process()
     {
-        Action.Process(true);
+        Instance.Process(true);
         Assert.IsTrue(InitManager.Get());
     }
 }

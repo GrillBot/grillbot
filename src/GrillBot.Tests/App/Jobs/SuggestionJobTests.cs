@@ -3,6 +3,7 @@ using GrillBot.App.Helpers;
 using GrillBot.App.Jobs;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers;
+using GrillBot.Tests.Infrastructure.Common;
 using GrillBot.Tests.Infrastructure.Discord;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,7 +15,7 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
     private IGuild Guild { get; set; } = null!;
     private IGuildUser User { get; set; } = null!;
 
-    protected override SuggestionJob CreateJob()
+    protected override SuggestionJob CreateInstance()
     {
         var cacheManager = new EmoteSuggestionManager(CacheBuilder);
         var texts = TestServices.Texts.Value;
@@ -63,41 +64,33 @@ public class SuggestionJobTests : JobTest<SuggestionJob>
     }
 
     [TestMethod]
-    public async Task Execute_NoSuggestions()
-    {
-        var context = CreateContext();
-        await Job.Execute(context);
-    }
+    public async Task Execute_NoSuggestions() => await Execute();
 
     [TestMethod]
     public async Task Execute_WithSuggestions()
     {
         await InitDataAsync(Consts.ChannelId, Consts.MessageId);
-        var context = CreateContext();
-        await Job.Execute(context);
+        await Execute();
     }
 
     [TestMethod]
     public async Task Execute_WithSuggestions_NoVoteChannel()
     {
         await InitDataAsync(null, Consts.MessageId);
-        var context = CreateContext();
-        await Job.Execute(context);
+        await Execute();
     }
 
     [TestMethod]
     public async Task Execute_WithSuggestions_VoteChannelNotFound()
     {
         await InitDataAsync(Consts.ChannelId + 1, Consts.MessageId);
-        var context = CreateContext();
-        await Job.Execute(context);
+        await Execute();
     }
 
     [TestMethod]
     public async Task Execute_WithSuggestions_MessageNotFound()
     {
         await InitDataAsync(Consts.ChannelId, Consts.MessageId + 50);
-        var context = CreateContext();
-        await Job.Execute(context);
+        await Execute();
     }
 }

@@ -1,17 +1,16 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace GrillBot.Tests.Common;
+namespace GrillBot.Tests.Infrastructure.Common;
 
-public abstract class ValidationAttributeTest<TAttribute> : AttributeTest<TAttribute> where TAttribute : ValidationAttribute
+public abstract class ValidationAttributeTest<TAttribute> : TestBase<TAttribute> where TAttribute : ValidationAttribute
 {
-    protected ValidationResult Execute(object value, Action<ValidationContext> contextConfiguration = null)
+    protected ValidationResult? Execute(object? value, Action<ValidationContext>? contextConfiguration = null)
     {
         var context = CreateContext(contextConfiguration);
-        return Attribute.GetValidationResult(value, context);
+        return Instance.GetValidationResult(value, context);
     }
 
-    private ValidationContext CreateContext(Action<ValidationContext> contextConfiguration)
+    private ValidationContext CreateContext(Action<ValidationContext>? contextConfiguration)
     {
         var context = CreateDefaultContext();
         contextConfiguration?.Invoke(context);
@@ -20,18 +19,16 @@ public abstract class ValidationAttributeTest<TAttribute> : AttributeTest<TAttri
     }
 
     private ValidationContext CreateDefaultContext()
+        => new(Instance) { MemberName = "Value" };
+
+    protected void CheckSuccess(ValidationResult? result)
     {
-        return new ValidationContext(Attribute)
-        {
-            MemberName = "Value"
-        };
+        Assert.AreEqual(ValidationResult.Success, result);
     }
 
-    protected void CheckSuccess(ValidationResult result)
-        => Assert.AreEqual(ValidationResult.Success, result);
-
-    protected void CheckFail(ValidationResult result, string expectedErrorMessage = null)
+    protected void CheckFail(ValidationResult? result, string? expectedErrorMessage = null)
     {
+        Assert.IsNotNull(result);
         Assert.AreNotEqual(ValidationResult.Success, result);
         Assert.IsFalse(string.IsNullOrEmpty(result.ErrorMessage));
 

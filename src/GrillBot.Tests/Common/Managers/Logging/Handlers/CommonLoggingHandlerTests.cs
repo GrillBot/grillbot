@@ -5,48 +5,34 @@ using GrillBot.Tests.Infrastructure.Common;
 namespace GrillBot.Tests.Common.Managers.Logging.Handlers;
 
 [TestClass]
-public class CommonLoggingHandlerTests : ServiceTest<CommonLoggerHandler>
+public class CommonLoggingHandlerTests : TestBase<CommonLoggerHandler>
 {
-    protected override CommonLoggerHandler CreateService()
+    protected override CommonLoggerHandler CreateInstance()
     {
         return new CommonLoggerHandler(TestServices.LoggerFactory.Value);
     }
 
     [TestMethod]
     public async Task CanHandleAsync_API()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Info, "API");
-        Assert.IsFalse(result);
-    }
+        => Assert.IsFalse(await Instance.CanHandleAsync(LogSeverity.Info, "API"));
 
     [TestMethod]
     public async Task CanHandleAsync_Success()
-    {
-        var result = await Service.CanHandleAsync(LogSeverity.Info, "Gateway");
-        Assert.IsTrue(result);
-    }
+        => Assert.IsTrue(await Instance.CanHandleAsync(LogSeverity.Info, "Gateway"));
 
     [TestMethod]
     public async Task InfoAsync()
-    {
-        await Service.InfoAsync("Test", "Test");
-    }
+        => await Instance.InfoAsync("Test", "Test");
 
     [TestMethod]
     public async Task WarningAsync_WithException()
-    {
-        await Service.WarningAsync("test", "test", new Exception());
-    }
+        => await Instance.WarningAsync("test", "test", new Exception());
 
     [TestMethod]
     public async Task WarningAsync_WithoutException()
-    {
-        await Service.WarningAsync("test", "test");
-    }
+        => await Instance.WarningAsync("test", "test");
 
     [TestMethod]
     public async Task ErrorAsync()
-    {
-        await Service.ErrorAsync("test", "test", new Exception());
-    }
+        => await Instance.ErrorAsync("test", "test", new Exception());
 }

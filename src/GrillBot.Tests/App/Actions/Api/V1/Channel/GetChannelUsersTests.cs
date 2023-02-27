@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Channel;
 [TestClass]
 public class GetChannelUsersTests : ApiActionTest<GetChannelUsers>
 {
-    protected override GetChannelUsers CreateAction()
+    protected override GetChannelUsers CreateInstance()
     {
         return new GetChannelUsers(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value);
     }
@@ -34,7 +34,7 @@ public class GetChannelUsersTests : ApiActionTest<GetChannelUsers>
         await Repository.CommitAsync();
 
         var pagination = new PaginatedParams();
-        var result = await Action.ProcessAsync(Consts.ChannelId, pagination);
+        var result = await Instance.ProcessAsync(Consts.ChannelId, pagination);
 
         Assert.AreEqual(1, result.Data.Count);
         Assert.AreEqual(1, result.TotalItemsCount);

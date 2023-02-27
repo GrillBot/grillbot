@@ -6,18 +6,21 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.ChannelDestroyed;
 
 [TestClass]
-public class SyncChannelDestroyedHandlerTests : HandlerTest<SyncChannelDestroyedHandler>
+public class SyncChannelDestroyedHandlerTests : TestBase<SyncChannelDestroyedHandler>
 {
-    private IGuild Guild { get; set; }
-    private ITextChannel TextChannel { get; set; }
-    private IThreadChannel Thread { get; set; }
+    private IGuild Guild { get; set; } = null!;
+    private ITextChannel TextChannel { get; set; } = null!;
+    private IThreadChannel Thread { get; set; } = null!;
 
-    protected override SyncChannelDestroyedHandler CreateHandler()
+    protected override void PreInit()
     {
         Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
         TextChannel = new TextChannelBuilder(Consts.ChannelId, Consts.ChannelName).SetGuild(Guild).Build();
         Thread = new ThreadBuilder(Consts.ThreadId, Consts.ThreadName).SetParentChannel(TextChannel).SetGuild(Guild).Build();
+    }
 
+    protected override SyncChannelDestroyedHandler CreateInstance()
+    {
         return new SyncChannelDestroyedHandler(DatabaseBuilder);
     }
 
@@ -32,26 +35,26 @@ public class SyncChannelDestroyedHandlerTests : HandlerTest<SyncChannelDestroyed
     [TestMethod]
     public async Task ProcessAsync_Thread()
     {
-        await Handler.ProcessAsync(Thread);
+        await Instance.ProcessAsync(Thread);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Dms()
     {
         var channel = new DmChannelBuilder().Build();
-        await Handler.ProcessAsync(channel);
+        await Instance.ProcessAsync(channel);
     }
 
     [TestMethod]
     public async Task ProcessAsync_ChannelNotFound()
     {
-        await Handler.ProcessAsync(TextChannel);
+        await Instance.ProcessAsync(TextChannel);
     }
 
     [TestMethod]
     public async Task ProcessAsync_Ok()
     {
         await InitDataAsync();
-        await Handler.ProcessAsync(TextChannel);
+        await Instance.ProcessAsync(TextChannel);
     }
 }

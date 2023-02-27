@@ -11,7 +11,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
 [TestClass]
 public class GetAvgTimesTests : ApiActionTest<GetAvgTimes>
 {
-    protected override GetAvgTimes CreateAction()
+    protected override GetAvgTimes CreateInstance()
     {
         return new GetAvgTimes(ApiRequestContext, DatabaseBuilder);
     }
@@ -48,7 +48,7 @@ public class GetAvgTimesTests : ApiActionTest<GetAvgTimes>
     [TestMethod]
     public async Task ProcessAsync_NoData()
     {
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.AreEqual(0, result.Interactions.Count);
@@ -61,7 +61,7 @@ public class GetAvgTimesTests : ApiActionTest<GetAvgTimes>
     public async Task ProcessAsync_WithData()
     {
         await InitDataAsync();
-        var result = await Action.ProcessAsync();
+        var result = await Instance.ProcessAsync();
 
         Assert.IsNotNull(result);
         Assert.AreEqual(1, result.Interactions.Count);

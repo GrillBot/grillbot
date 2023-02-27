@@ -6,7 +6,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.PublicApiClients;
 [TestClass]
 public class GetPublicApiMethodsTests : ApiActionTest<GetPublicApiMethods>
 {
-    protected override GetPublicApiMethods CreateAction()
+    protected override GetPublicApiMethods CreateInstance()
     {
         return new GetPublicApiMethods(ApiRequestContext);
     }
@@ -14,7 +14,7 @@ public class GetPublicApiMethodsTests : ApiActionTest<GetPublicApiMethods>
     [TestMethod]
     public void Process()
     {
-        var result = Action.Process();
+        var result = Instance.Process();
         Assert.IsTrue(result.Count > 0);
     }
 }

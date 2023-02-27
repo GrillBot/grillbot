@@ -7,9 +7,9 @@ using GrillBot.Tests.Infrastructure.Discord;
 namespace GrillBot.Tests.App.Handlers.MessageReceived;
 
 [TestClass]
-public class UnsucessCommandHandlerTests : HandlerTest<UnsucessCommandHandler>
+public class UnsucessCommandHandlerTests : TestBase<UnsucessCommandHandler>
 {
-    protected override UnsucessCommandHandler CreateHandler()
+    protected override UnsucessCommandHandler CreateInstance()
     {
         var interactionService = DiscordHelper.CreateInteractionService(TestServices.DiscordSocketClient.Value);
         var dataCacheManager = new DataCacheManager(CacheBuilder);
@@ -26,7 +26,7 @@ public class UnsucessCommandHandlerTests : HandlerTest<UnsucessCommandHandler>
             .SetAuthor(new UserBuilder(Consts.UserId, Consts.Username, Consts.Discriminator).AsBot().Build())
             .Build();
 
-        await Handler.ProcessAsync(message);
+        await Instance.ProcessAsync(message);
     }
 
     [TestMethod]
@@ -37,7 +37,7 @@ public class UnsucessCommandHandlerTests : HandlerTest<UnsucessCommandHandler>
             .SetChannel(new DmChannelBuilder().Build())
             .Build();
 
-        await Handler.ProcessAsync(message);
+        await Instance.ProcessAsync(message);
     }
 
     [TestMethod]
@@ -49,6 +49,6 @@ public class UnsucessCommandHandlerTests : HandlerTest<UnsucessCommandHandler>
             .SetContent("Test")
             .Build();
 
-        await Handler.ProcessAsync(message);
+        await Instance.ProcessAsync(message);
     }
 }

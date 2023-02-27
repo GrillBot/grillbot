@@ -8,7 +8,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Unverify;
 [TestClass]
 public class RemoveKeepablesTests : ApiActionTest<RemoveKeepables>
 {
-    protected override RemoveKeepables CreateAction()
+    protected override RemoveKeepables CreateInstance()
     {
         return new RemoveKeepables(ApiRequestContext, DatabaseBuilder, TestServices.Texts.Value);
     }
@@ -23,25 +23,25 @@ public class RemoveKeepablesTests : ApiActionTest<RemoveKeepables>
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_ItemNotFound()
-        => await Action.ProcessAsync("1bit", "izp");
+        => await Instance.ProcessAsync("1bit", "izp");
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
     public async Task ProcessAsync_GroupNotFound()
-        => await Action.ProcessAsync("1bit");
+        => await Instance.ProcessAsync("1bit");
 
     [TestMethod]
     public async Task ProcessAsync_Success_Group()
     {
         await InitDataAsync();
-        await Action.ProcessAsync("1bit");
+        await Instance.ProcessAsync("1bit");
     }
 
     [TestMethod]
     public async Task ProcessAsync_Success_Item()
     {
         await InitDataAsync();
-        await Action.ProcessAsync("1bit", "izp");
+        await Instance.ProcessAsync("1bit", "izp");
     }
 }

@@ -18,7 +18,7 @@ public class EmojizationTests : CommandActionTest<Emojization>
     protected override IGuild Guild { get; }
         = new GuildBuilder(Consts.GuildId, Consts.GuildName).SetEmotes(new[] { EmoteHelper.CreateGuildEmote(Emote.Parse(Consts.PepeJamEmote)) }).Build();
 
-    protected override Emojization CreateAction()
+    protected override Emojization CreateInstance()
     {
         return InitAction(new Emojization(TestServices.Texts.Value));
     }
@@ -26,23 +26,23 @@ public class EmojizationTests : CommandActionTest<Emojization>
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
-    public void Process_NoContent() => Action.Process(null);
+    public void Process_NoContent() => Instance.Process(null);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
-    public void ProcessForReacts_DuplicateCharacter() => Action.ProcessForReacts("TT", 5);
+    public void ProcessForReacts_DuplicateCharacter() => Instance.ProcessForReacts("TT", 5);
 
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
-    public void ProcessForReacts_DuplicateEmote() => Action.ProcessForReacts($"{Consts.PepeJamEmote} {Consts.PepeJamEmote}", 5);
+    public void ProcessForReacts_DuplicateEmote() => Instance.ProcessForReacts($"{Consts.PepeJamEmote} {Consts.PepeJamEmote}", 5);
 
     [TestMethod]
     public void Process_Success()
     {
         var msg = $"{Consts.PepeJamEmote}  PEPEJAM /()/ {Emojis.LetterA} <ABCD> {Consts.PepeJamEmote}";
-        var result = Action.Process(msg);
+        var result = Instance.Process(msg);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.IsTrue(result.Contains(Consts.PepeJamEmote));
@@ -52,7 +52,7 @@ public class EmojizationTests : CommandActionTest<Emojization>
     public void ProcessForReacts_Success()
     {
         const string msg = "AABBOOEEPPIIXX";
-        var result = Action.ProcessForReacts(msg, int.MaxValue).ToList();
+        var result = Instance.ProcessForReacts(msg, int.MaxValue).ToList();
 
         Assert.IsTrue(result.Count > 0);
     }
@@ -60,13 +60,13 @@ public class EmojizationTests : CommandActionTest<Emojization>
     [TestMethod]
     [ExpectedException(typeof(ValidationException))]
     [ExcludeFromCodeCoverage]
-    public void Process_OnlyInvalidCharacters() => Action.Process("@&");
+    public void Process_OnlyInvalidCharacters() => Instance.Process("@&");
 
     [TestMethod]
     public void Process_WithExternalEmote()
     {
         const string msg = $"{Consts.PepeJamEmote} {Consts.OnlineEmoteId} TEST";
-        var result = Action.Process(msg);
+        var result = Instance.Process(msg);
 
         Assert.IsFalse(string.IsNullOrEmpty(result));
         Assert.IsTrue(result.Contains(' '));

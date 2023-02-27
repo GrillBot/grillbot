@@ -1,23 +1,29 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord;
+﻿using Discord;
 using GrillBot.App.Actions;
 using GrillBot.Tests.Infrastructure.Discord;
 
 namespace GrillBot.Tests.Infrastructure.Common;
 
-[ExcludeFromCodeCoverage]
-public abstract class CommandActionTest<TAction> : ActionTest<TAction> where TAction : CommandAction
+public abstract class CommandActionTest<TAction> : TestBase<TAction> where TAction : CommandAction
 {
-    protected virtual IGuild Guild { get; }
-    protected virtual IGuildUser User { get; }
-    protected virtual IDiscordInteraction Interaction { get; }
-    protected virtual IMessageChannel Channel { get; }
-    protected virtual IDiscordClient Client { get; }
-    protected IInteractionContext Context { get; private set; }
+    protected virtual IGuild? Guild { get; } = null;
+    protected virtual IGuildUser? User { get; } = null;
+    protected virtual IDiscordInteraction? Interaction { get; } = null;
+    protected virtual IMessageChannel? Channel { get; } = null;
+    protected virtual IDiscordClient? Client { get; } = null;
+    protected IInteractionContext Context { get; private set; } = null!;
 
-    protected override void Init()
+    protected override void PreInit()
     {
-        Context = new InteractionContextBuilder().SetGuild(Guild).SetUser(User).SetInteraction(Interaction).SetChannel(Channel).SetClient(Client).Build();
+        var builder = new InteractionContextBuilder();
+
+        if (Guild != null) builder = builder.SetGuild(Guild);
+        if (User != null) builder = builder.SetUser(User);
+        if (Interaction != null) builder = builder.SetInteraction(Interaction);
+        if (Channel != null) builder = builder.SetChannel(Channel);
+        if (Client != null) builder = builder.SetClient(Client);
+
+        Context = builder.Build();
     }
 
     protected TAction InitAction(TAction action)

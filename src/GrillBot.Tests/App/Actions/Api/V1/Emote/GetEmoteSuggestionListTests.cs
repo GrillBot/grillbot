@@ -9,7 +9,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Emote;
 [TestClass]
 public class GetEmoteSuggestionListTests : ApiActionTest<GetEmoteSuggestionsList>
 {
-    protected override GetEmoteSuggestionsList CreateAction()
+    protected override GetEmoteSuggestionsList CreateInstance()
     {
         return new GetEmoteSuggestionsList(ApiRequestContext, DatabaseBuilder, TestServices.AutoMapper.Value);
     }
@@ -37,7 +37,7 @@ public class GetEmoteSuggestionListTests : ApiActionTest<GetEmoteSuggestionsList
         await Repository.CommitAsync();
 
         var filter = new GetSuggestionsListParams();
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
 
         Assert.AreEqual(1, result.TotalItemsCount);
     }
@@ -57,7 +57,7 @@ public class GetEmoteSuggestionListTests : ApiActionTest<GetEmoteSuggestionsList
             Sort = { Descending = true }
         };
 
-        var result = await Action.ProcessAsync(filter);
+        var result = await Instance.ProcessAsync(filter);
         Assert.AreEqual(0, result.TotalItemsCount);
     }
 }

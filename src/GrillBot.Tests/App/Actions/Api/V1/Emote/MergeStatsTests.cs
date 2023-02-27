@@ -14,7 +14,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
 {
     private static readonly IGuild Guild = new GuildBuilder(Consts.GuildId, Consts.GuildName).Build();
 
-    protected override MergeStats CreateAction()
+    protected override MergeStats CreateInstance()
     {
         var emotes = new[]
         {
@@ -40,7 +40,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
             SourceEmoteId = Consts.FeelsHighManEmote
         };
 
-        await Action.ProcessAsync(parameters);
+        await Instance.ProcessAsync(parameters);
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
             SourceEmoteId = Consts.PepeJamEmote
         };
 
-        var result = await Action.ProcessAsync(mergeParams);
+        var result = await Instance.ProcessAsync(mergeParams);
         Assert.AreEqual(2, result);
     }
 
@@ -93,7 +93,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
             SourceEmoteId = Consts.PepeJamEmote
         };
 
-        var result = await Action.ProcessAsync(mergeParams);
+        var result = await Instance.ProcessAsync(mergeParams);
         Assert.AreEqual(0, result);
     }
 
@@ -122,7 +122,7 @@ public class MergeStatsTests : ApiActionTest<MergeStats>
             SourceEmoteId = Consts.PepeJamEmote
         };
 
-        var result = await Action.ProcessAsync(mergeParams);
+        var result = await Instance.ProcessAsync(mergeParams);
         Assert.AreEqual(2, result);
     }
 }

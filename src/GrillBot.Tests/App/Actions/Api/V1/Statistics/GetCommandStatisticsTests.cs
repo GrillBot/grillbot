@@ -11,7 +11,7 @@ namespace GrillBot.Tests.App.Actions.Api.V1.Statistics;
 [TestClass]
 public class GetCommandStatisticsTests : ApiActionTest<GetCommandStatistics>
 {
-    protected override GetCommandStatistics CreateAction()
+    protected override GetCommandStatistics CreateInstance()
     {
         return new GetCommandStatistics(ApiRequestContext, DatabaseBuilder);
     }
@@ -44,7 +44,7 @@ public class GetCommandStatisticsTests : ApiActionTest<GetCommandStatistics>
     {
         await InitDataAsync();
 
-        var result = await Action.ProcessInteractionsAsync();
+        var result = await Instance.ProcessInteractionsAsync();
         Assert.AreEqual(1, result.Count);
     }
 }

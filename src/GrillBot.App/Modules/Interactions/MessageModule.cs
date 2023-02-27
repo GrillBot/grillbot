@@ -10,7 +10,7 @@ namespace GrillBot.App.Modules.Interactions;
 [ExcludeFromCodeCoverage]
 public class MessageModule : InteractionsModuleBase
 {
-    public MessageModule() : base(null)
+    public MessageModule(IServiceProvider provider) : base(provider)
     {
     }
 

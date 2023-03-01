@@ -8,7 +8,7 @@ namespace GrillBot.Common.Services.FileService;
 
 public class FileServiceClient : RestServiceBase, IFileServiceClient
 {
-    protected override string ServiceName => "FileService";
+    public override string ServiceName => "FileService";
 
     public FileServiceClient(CounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, () => clientFactory.CreateClient("FileService"))
     {

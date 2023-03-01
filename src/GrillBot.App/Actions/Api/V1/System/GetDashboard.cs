@@ -5,6 +5,8 @@ using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.Common;
+using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.RubbergodService;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -29,11 +31,13 @@ public class GetDashboard : ApiAction
     private LoggingManager Logging { get; }
     private IGraphicsClient GraphicsClient { get; }
     private IRubbergodServiceClient RubbergodServiceClient { get; }
+    private IFileServiceClient FileServiceClient { get; }
 
     private List<Exception> Errors { get; } = new();
 
     public GetDashboard(ApiRequestContext apiContext, IWebHostEnvironment webHost, IDiscordClient discordClient, InitManager initManager, CounterManager counterManager,
-        GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient) : base(apiContext)
+        GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient,
+        IFileServiceClient fileServiceClient) : base(apiContext)
     {
         WebHost = webHost;
         DiscordClient = discordClient;
@@ -43,6 +47,7 @@ public class GetDashboard : ApiAction
         Logging = logging;
         GraphicsClient = graphicsClient;
         RubbergodServiceClient = rubbergodServiceClient;
+        FileServiceClient = fileServiceClient;
     }
 
     public async Task<Dashboard> ProcessAsync()
@@ -248,18 +253,20 @@ public class GetDashboard : ApiAction
 
     private async Task GetServicesStatusAsync(Dashboard dashboard)
     {
+        await AddServiceStatusAsync(dashboard, "graphics", GraphicsClient);
+        await AddServiceStatusAsync(dashboard, "rubbergod", RubbergodServiceClient);
+        await AddServiceStatusAsync(dashboard, "file", FileServiceClient);
+    }
+
+    private async Task AddServiceStatusAsync(Dashboard dashboard, string id, IClient client)
+    {
         try
         {
-            dashboard.Services = new DashboardServices
-            {
-                GraphicsAvailable = await GraphicsClient.IsAvailableAsync(),
-                RubbergodServiceAvailable = await RubbergodServiceClient.IsAvailableAsync()
-            };
+            dashboard.Services.Add(new DashboardService(id, client.ServiceName, await client.IsAvailableAsync()));
         }
         catch (Exception ex)
         {
             Errors.Add(ex);
-            dashboard.Services = null;
         }
     }
 

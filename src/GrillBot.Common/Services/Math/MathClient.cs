@@ -8,7 +8,7 @@ namespace GrillBot.Common.Services.Math;
 
 public class MathClient : RestServiceBase, IMathClient
 {
-    protected override string ServiceName => "MathJS";
+    public override string ServiceName => "MathJS";
 
     public MathClient(CounterManager counterManager, IHttpClientFactory httpClientFactory) : base(counterManager, () => httpClientFactory.CreateClient("Math"))
     {

@@ -9,7 +9,7 @@ namespace GrillBot.Common.Services.Graphics;
 
 public class GraphicsClient : RestServiceBase, IGraphicsClient
 {
-    protected override string ServiceName => "Graphics";
+    public override string ServiceName => "Graphics";
 
     public GraphicsClient(IHttpClientFactory httpClientFactory, CounterManager counterManager) : base(counterManager, () => httpClientFactory.CreateClient("Graphics"))
     {

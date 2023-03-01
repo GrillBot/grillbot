@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Extensions;
+using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.KachnaOnline;
 using GrillBot.Common.Services.Math;
@@ -36,6 +37,10 @@ public static class ServicesExtensions
         services
             .AddScoped<IRubbergodServiceClient, RubbergodServiceClient>()
             .AddHttpClient(configuration, "RubbergodService", "RubbergodService");
+
+        services
+            .AddScoped<IFileServiceClient, FileServiceClient>()
+            .AddHttpClient(configuration, "FileService", "FileService");
 
         return services;
     }

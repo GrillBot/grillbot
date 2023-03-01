@@ -1,0 +1,9 @@
+﻿namespace GrillBot.Common.Services.Common;
+
+public interface IClient
+{
+    string Url { get; }
+    int Timeout { get; }
+
+    Task<bool> IsAvailableAsync();
+}

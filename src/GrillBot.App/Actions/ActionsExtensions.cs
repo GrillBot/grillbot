@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using GrillBot.App.Actions.Api.V1.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
 
@@ -108,8 +109,7 @@ public static class ActionsExtensions
         
         // Services
         services
-            .AddScoped<Api.V1.Services.GetGraphicsServiceInfo>()
-            .AddScoped<Api.V1.Services.GetRubbergodServiceInfo>();
+            .AddScoped<GetServiceInfo>();
 
         // Statistics
         services

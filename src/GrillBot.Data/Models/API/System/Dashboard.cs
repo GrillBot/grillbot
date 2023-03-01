@@ -23,5 +23,5 @@ public class Dashboard
     public List<DashboardApiCall> PublicApiRequests { get; set; }
     public List<DashboardJob> Jobs { get; set; }
     public List<DashboardCommand> Commands { get; set; }
-    public DashboardServices? Services { get; set; }
+    public List<DashboardService> Services { get; set; } = new();
 }

@@ -9,7 +9,7 @@ namespace GrillBot.Common.Services.RubbergodService;
 
 public class RubbergodServiceClient : RestServiceBase, IRubbergodServiceClient
 {
-    protected override string ServiceName => "RubbergodService";
+    public override string ServiceName => "RubbergodService";
 
     public RubbergodServiceClient(CounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, () => clientFactory.CreateClient("RubbergodService"))
     {

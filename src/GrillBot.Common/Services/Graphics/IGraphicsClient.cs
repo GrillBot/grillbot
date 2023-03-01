@@ -1,15 +1,12 @@
-﻿using GrillBot.Common.Services.Graphics.Models.Chart;
+﻿using GrillBot.Common.Services.Common;
+using GrillBot.Common.Services.Graphics.Models.Chart;
 using GrillBot.Common.Services.Graphics.Models.Diagnostics;
 using GrillBot.Common.Services.Graphics.Models.Images;
 
 namespace GrillBot.Common.Services.Graphics;
 
-public interface IGraphicsClient
+public interface IGraphicsClient : IClient
 {
-    string Url { get; }
-    int Timeout { get; }
-    
-    Task<bool> IsAvailableAsync();
     Task<byte[]> CreateChartAsync(ChartRequestData request);
     Task<Metrics> GetMetricsAsync();
     Task<string> GetVersionAsync();

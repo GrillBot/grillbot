@@ -1,4 +1,4 @@
-﻿namespace GrillBot.Common.Services.RubbergodService.Models.Diagnostics;
+﻿namespace GrillBot.Common.Services.Common.Models.Diagnostics;
 
 public class RequestStatistic
 {

@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Json;
 using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Models.Pagination;
-using GrillBot.Common.Services.RubbergodService.Models.Diagnostics;
+using GrillBot.Common.Services.Common.Models.Diagnostics;
 using GrillBot.Common.Services.RubbergodService.Models.DirectApi;
 using GrillBot.Common.Services.RubbergodService.Models.Karma;
 

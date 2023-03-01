@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Models.Pagination;
+using GrillBot.Common.Services.Common.Models.Diagnostics;
 using GrillBot.Common.Services.RubbergodService;
-using GrillBot.Common.Services.RubbergodService.Models.Diagnostics;
 using GrillBot.Common.Services.RubbergodService.Models.DirectApi;
 using GrillBot.Common.Services.RubbergodService.Models.Karma;
 using Moq;

@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Services.RubbergodService.Models.Diagnostics;
+﻿using GrillBot.Common.Services.Common.Models.Diagnostics;
 
 namespace GrillBot.Data.Models.API.Services;
 

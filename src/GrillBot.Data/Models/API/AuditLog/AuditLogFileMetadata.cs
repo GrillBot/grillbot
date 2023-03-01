@@ -19,6 +19,11 @@ public class AuditLogFileMetadata
     /// Size
     /// </summary>
     public long Size { get; set; }
+    
+    /// <summary>
+    /// Generated SAS LINK. Only for files stored in the AzureBlobStorage.
+    /// </summary>
+    public string? SasLink { get; set; }
 }
 
 public class AuditLogFileMetadataMappingProfile : AutoMapper.Profile

@@ -3,14 +3,8 @@ name: Project build and tests
 on:
   push:
     branches: [ master ]
-    paths-ignore:
-    - 'src/GrillBot.Data/Resources/Localization/*.json'
-    - '**.md'
   pull_request:
     types: [ opened, reopened, synchronize ]
-    paths-ignore:
-    - 'src/GrillBot.Data/Resources/Localization/*.json'
-    - '**.md'
 
 jobs:
   Build:
@@ -22,5 +16,5 @@ jobs:
         shell: bash
         working-directory: src
         run: |
-          sudo docker build -t grillbot-test-image -f ./Dockerfile.Test .
+          sudo docker build -t grillbot-test-image -f ./Dockerfile .
           sudo docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}" | grep 'grillbot-test-image')

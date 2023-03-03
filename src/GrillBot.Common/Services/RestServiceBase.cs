@@ -6,7 +6,7 @@ public abstract class RestServiceBase
 {
     protected HttpClient HttpClient { get; }
     private CounterManager CounterManager { get; }
-    protected abstract string ServiceName { get; }
+    public abstract string ServiceName { get; }
 
     public string Url => HttpClient.BaseAddress!.ToString();
     public int Timeout => Convert.ToInt32(HttpClient.Timeout.TotalMilliseconds);
@@ -30,7 +30,7 @@ public abstract class RestServiceBase
         }
     }
 
-    protected static async Task EnsureSuccessResponseAsync(HttpResponseMessage response)
+    private static async Task EnsureSuccessResponseAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode) return;
 

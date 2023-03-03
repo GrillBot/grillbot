@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
+using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Common.Models.Pagination;
+using GrillBot.Common.Services.FileService;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Filters;
@@ -19,12 +21,17 @@ public class GetAuditLogList : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
     private ITextsManager Texts { get; }
+    private FileStorageFactory FileStorageFactory { get; }
+    private IFileServiceClient FileServiceClient { get; }
 
-    public GetAuditLogList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, ITextsManager texts) : base(apiContext)
+    public GetAuditLogList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, ITextsManager texts, FileStorageFactory fileStorageFactory,
+        IFileServiceClient fileServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         Texts = texts;
+        FileStorageFactory = fileStorageFactory;
+        FileServiceClient = fileServiceClient;
     }
 
     public async Task<PaginatedResponse<AuditLogListItem>> ProcessAsync(AuditLogListParams parameters)
@@ -36,7 +43,7 @@ public class GetAuditLogList : ApiAction
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.AuditLog.GetLogListAsync(parameters, parameters.Pagination, logIds);
-        return await PaginatedResponse<AuditLogListItem>.CopyAndMapAsync(data, entity => Task.FromResult(Map(entity)));
+        return await PaginatedResponse<AuditLogListItem>.CopyAndMapAsync(data, MapAsync);
     }
 
     private void ValidateParameters(AuditLogListParams parameters)
@@ -62,7 +69,7 @@ public class GetAuditLogList : ApiAction
         throw new ValidationException(Texts["AuditLog/List/TypesCombination", ApiContext.Language]).ToBadRequestValidation(intersectTypes, nameof(parameters.ExcludedTypes), nameof(parameters.Types));
     }
 
-    private async Task<List<long>> GetLogIdsAsync(AuditLogListParams parameters)
+    private async Task<List<long>?> GetLogIdsAsync(AuditLogListParams parameters)
     {
         if (!parameters.AnyExtendedFilter())
             return null; // Log ids could get only if some extended filter was set.
@@ -98,14 +105,14 @@ public class GetAuditLogList : ApiAction
         return conditions.Any(o => o());
     }
 
-    private static bool IsValidFilter(AuditLogItem item, AuditLogItemType type, IExtendedFilter filter)
+    private static bool IsValidFilter(AuditLogItem item, AuditLogItemType type, IExtendedFilter? filter)
     {
         if (item.Type != type) return false; // Invalid type.
         if (filter == null || !filter.IsSet()) return true;
         return filter.IsValid(item, AuditLogWriteManager.SerializerSettings);
     }
 
-    private AuditLogListItem Map(AuditLogItem entity)
+    private async Task<AuditLogListItem> MapAsync(AuditLogItem entity)
     {
         var mapped = Mapper.Map<AuditLogListItem>(entity);
         if (string.IsNullOrEmpty(entity.Data))
@@ -134,6 +141,20 @@ public class GetAuditLogList : ApiAction
             _ => null
         };
 
+        await MapFilesAsync(mapped);
         return mapped;
+    }
+
+    private async Task MapFilesAsync(AuditLogListItem listItem)
+    {
+        if (listItem.Files.Count == 0) return;
+        var storage = FileStorageFactory.Create("Audit");
+
+        foreach (var file in listItem.Files)
+        {
+            var localInfo = await storage.GetFileInfoAsync("DeletedAttachments", file.Filename);
+            if (!localInfo.Exists)
+                file.SasLink = await FileServiceClient.GenerateLinkAsync(file.Filename);
+        }
     }
 }

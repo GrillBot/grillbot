@@ -11,7 +11,7 @@ namespace GrillBot.App.Modules.Interactions;
 [ExcludeFromCodeCoverage]
 public class PermissionsModule : InteractionsModuleBase
 {
-    public PermissionsModule() : base(null)
+    public PermissionsModule(IServiceProvider provider) : base(provider)
     {
     }
 

@@ -46,7 +46,7 @@ public class GetAuditLogStatistics : ApiAction
             .Select(o => new { o.Key, Count = o.Count(), Size = o.Sum(x => x.Size) })
             .ToList();
 
-        statistics.FileCounts = group.ToDictionary(o => o.Key, o => o.Count);
-        statistics.FileSizes = group.ToDictionary(o => o.Key, o => o.Size);
+        statistics.FileCounts = group.OrderByDescending(o => o.Count).ToDictionary(o => o.Key, o => o.Count);
+        statistics.FileSizes = group.OrderByDescending(o => o.Size).ToDictionary(o => o.Key, o => o.Size);
     }
 }

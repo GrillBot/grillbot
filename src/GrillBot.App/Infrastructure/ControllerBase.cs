@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure;
 
+[ExcludeFromCodeCoverage]
 public abstract class ControllerBase : Controller
 {
     protected IServiceProvider ServiceProvider { get; }
@@ -26,4 +28,7 @@ public abstract class ControllerBase : Controller
         var action = ServiceProvider.GetRequiredService<TAction>();
         return syncExecution(action);
     }
+
+    protected void ProcessAction<TAction>(Action<TAction> syncExecution) where TAction : notnull
+        => syncExecution(ServiceProvider.GetRequiredService<TAction>());
 }

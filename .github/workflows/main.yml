@@ -16,5 +16,5 @@ jobs:
         shell: bash
         working-directory: src
         run: |
-          sudo docker build -t grillbot-test-image -f ./Dockerfile
+          sudo docker build -t grillbot-test-image -f ./Dockerfile .
           sudo docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}" | grep 'grillbot-test-image')

@@ -16,7 +16,7 @@ namespace GrillBot.Data.Models.API.AuditLog.Filters;
 public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
 {
     [DiscordId]
-    public string GuildId { get; set; }
+    public string? GuildId { get; set; }
 
     [DiscordId]
     public List<string> ProcessedUserIds { get; set; } = new();
@@ -28,39 +28,44 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
     public bool IgnoreBots { get; set; }
 
     [DiscordId]
-    public string ChannelId { get; set; }
+    public string? ChannelId { get; set; }
 
-    public TextFilter InfoFilter { get; set; }
-    public TextFilter WarningFilter { get; set; }
-    public TextFilter ErrorFilter { get; set; }
-    public ExecutionFilter CommandFilter { get; set; }
-    public ExecutionFilter InteractionFilter { get; set; }
-    public ExecutionFilter JobFilter { get; set; }
-    public ApiRequestFilter ApiRequestFilter { get; set; }
-    public TargetIdFilter OverwriteCreatedFilter { get; set; }
-    public TargetIdFilter OverwriteDeletedFilter { get; set; }
-    public TargetIdFilter OverwriteUpdatedFilter { get; set; }
-    public TargetIdFilter MemberRolesUpdatedFilter { get; set; }
-    public TargetIdFilter MemberUpdatedFilter { get; set; }
-    public MessageDeletedFilter MessageDeletedFilter { get; set; }
+    public TextFilter? InfoFilter { get; set; }
+    public TextFilter? WarningFilter { get; set; }
+    public TextFilter? ErrorFilter { get; set; }
+    public ExecutionFilter? CommandFilter { get; set; }
+    public ExecutionFilter? InteractionFilter { get; set; }
+    public ExecutionFilter? JobFilter { get; set; }
+    public ApiRequestFilter? ApiRequestFilter { get; set; }
+    public TargetIdFilter? OverwriteCreatedFilter { get; set; }
+    public TargetIdFilter? OverwriteDeletedFilter { get; set; }
+    public TargetIdFilter? OverwriteUpdatedFilter { get; set; }
+    public TargetIdFilter? MemberRolesUpdatedFilter { get; set; }
+    public TargetIdFilter? MemberUpdatedFilter { get; set; }
+    public MessageDeletedFilter? MessageDeletedFilter { get; set; }
     public bool OnlyFromStart { get; set; }
 
     /// <summary>
     /// Ids of records. Only number values, separated by ";".
     /// </summary>
-    public string Ids { get; set; }
+    public string? Ids { get; set; }
+
+    /// <summary>
+    /// Show records that contains some file.
+    /// </summary>
+    public bool OnlyWithFiles { get; set; }
 
     /// <summary>
     /// Available: Guild, ProcessedUser, Type, Channel, CreatedAt.
     /// Default: CreatedAt.
     /// </summary>
-    public SortParams Sort { get; set; } = new() { OrderBy = "CreatedAt" };
+    public SortParams? Sort { get; set; } = new() { OrderBy = "CreatedAt" };
 
     public PaginatedParams Pagination { get; set; } = new();
 
     public bool AnyExtendedFilter()
     {
-        var conditions = new Func<bool>[]
+        var conditions = new[]
         {
             () => Types.Contains(AuditLogItemType.Info) && InfoFilter?.IsSet() == true,
             () => Types.Contains(AuditLogItemType.Warning) && WarningFilter?.IsSet() == true,
@@ -86,23 +91,33 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
             .Include(o => o.Files)
             .Include(o => o.Guild)
             .Include(o => o.GuildChannel)
-            .Include(o => o.ProcessedGuildUser.User)
+            .Include(o => o.ProcessedGuildUser!.User)
             .Include(o => o.ProcessedUser);
     }
 
     public IQueryable<AuditLogItem> SetQuery(IQueryable<AuditLogItem> query)
     {
+        if (!string.IsNullOrEmpty(Ids))
+        {
+            var ids = Ids
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(long.Parse)
+                .Where(o => o > 0)
+                .ToList();
+
+            return query.Where(o => ids.Contains(o.Id));
+        }
+
         if (Types.Count > 0)
             query = query.Where(o => Types.Contains(o.Type));
-
-        if (ExcludedTypes.Count > 0)
+        else if (ExcludedTypes.Count > 0)
             query = query.Where(o => !ExcludedTypes.Contains(o.Type));
 
         if (!string.IsNullOrEmpty(GuildId))
             query = query.Where(o => o.GuildId == GuildId);
 
         if (ProcessedUserIds.Count > 0)
-            query = query.Where(o => ProcessedUserIds.Contains(o.ProcessedUserId));
+            query = query.Where(o => o.ProcessedUserId != null && ProcessedUserIds.Contains(o.ProcessedUserId));
 
         if (CreatedFrom != null)
             query = query.Where(o => o.CreatedAt >= CreatedFrom);
@@ -111,21 +126,15 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
             query = query.Where(o => o.CreatedAt <= CreatedTo);
 
         if (IgnoreBots)
-            query = query.Where(o => o.ProcessedUserId == null || (o.ProcessedUser.Flags & (int)UserFlags.NotUser) == 0);
+            query = query.Where(o => o.ProcessedUserId == null || (o.ProcessedUser!.Flags & (int)UserFlags.NotUser) == 0);
 
         if (!string.IsNullOrEmpty(ChannelId))
             query = query.Where(o => o.ChannelId == ChannelId);
 
-        if (string.IsNullOrEmpty(Ids))
-            return query;
+        if (OnlyWithFiles)
+            query = query.Where(o => o.Files.Any());
 
-        var ids = Ids
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(long.Parse)
-            .Where(o => o > 0)
-            .ToList();
-
-        return query.Where(o => ids.Contains(o.Id));
+        return query;
     }
 
     public IQueryable<AuditLogItem> SetSort(IQueryable<AuditLogItem> query)
@@ -137,13 +146,13 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
         {
             "Guild" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.Guild.Name),
-                _ => query.OrderBy(o => o.Guild.Name)
+                true => query.OrderByDescending(o => o.Guild!.Name),
+                _ => query.OrderBy(o => o.Guild!.Name)
             },
             "ProcessedUser" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.ProcessedGuildUser.Nickname).ThenByDescending(o => o.ProcessedUser.Username).ThenByDescending(o => o.ProcessedUser.Discriminator),
-                _ => query.OrderBy(o => o.ProcessedGuildUser.Nickname).ThenBy(o => o.ProcessedUser.Username)
+                true => query.OrderByDescending(o => o.ProcessedGuildUser!.Nickname).ThenByDescending(o => o.ProcessedUser!.Username).ThenByDescending(o => o.ProcessedUser!.Discriminator),
+                _ => query.OrderBy(o => o.ProcessedGuildUser!.Nickname).ThenBy(o => o.ProcessedUser!.Username)
             },
             "Type" => Sort.Descending switch
             {
@@ -152,8 +161,8 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
             },
             "Channel" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.GuildChannel.Name),
-                _ => query.OrderBy(o => o.GuildChannel.Name)
+                true => query.OrderByDescending(o => o.GuildChannel!.Name),
+                _ => query.OrderBy(o => o.GuildChannel!.Name)
             },
             _ => Sort.Descending switch
             {
@@ -174,9 +183,9 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
             CreatedTo = null;
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> SerializeForLog()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(GuildId), GuildId },
             { nameof(CreatedFrom), CreatedFrom?.ToString("o") },
@@ -184,7 +193,8 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
             { nameof(IgnoreBots), IgnoreBots.ToString() },
             { nameof(ChannelId), ChannelId },
             { nameof(OnlyFromStart), OnlyFromStart.ToString() },
-            { nameof(Ids), Ids }
+            { nameof(Ids), Ids },
+            { nameof(OnlyWithFiles), OnlyWithFiles.ToString() }
         };
 
         for (var i = 0; i < ProcessedUserIds.Count; i++)

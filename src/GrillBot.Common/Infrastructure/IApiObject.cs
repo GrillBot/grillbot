@@ -2,5 +2,5 @@
 
 public interface IApiObject
 {
-    Dictionary<string, string> SerializeForLog();
+    Dictionary<string, string?> SerializeForLog();
 }

@@ -10,10 +10,10 @@ namespace GrillBot.Data.Models.API.AuditLog.Filters;
 public class MessageDeletedFilter : IExtendedFilter, IApiObject
 {
     public bool? ContainsEmbed { get; set; }
-    public string ContentContains { get; set; }
+    public string? ContentContains { get; set; }
 
     [DiscordId]
-    public string AuthorId { get; set; }
+    public string? AuthorId { get; set; }
 
     private bool IsAuthorIdSet => !string.IsNullOrEmpty(AuthorId) && ulong.TryParse(AuthorId, out var authorId) && authorId > 0;
 
@@ -41,9 +41,9 @@ public class MessageDeletedFilter : IExtendedFilter, IApiObject
         return !IsAuthorIdSet || data.Author.Id == ulong.Parse(AuthorId) || data.Author.UserId == AuthorId;
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> SerializeForLog()
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, string?>
         {
             { nameof(ContainsEmbed), ContainsEmbed?.ToString() },
             { nameof(ContentContains), ContentContains },

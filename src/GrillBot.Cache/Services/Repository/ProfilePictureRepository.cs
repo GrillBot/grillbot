@@ -33,4 +33,12 @@ public class ProfilePictureRepository : RepositoryBase
                 .ToListAsync();
         }
     }
+
+    public async Task<List<ProfilePicture>> GetAllProfilePicturesAsync()
+    {
+        using (CreateCounter())
+        {
+            return await Context.ProfilePictures.ToListAsync();
+        }
+    }
 }

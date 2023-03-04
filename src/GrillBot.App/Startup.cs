@@ -145,6 +145,7 @@ public class Startup
             q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
             q.AddTriggeredJob<SuggestionJob>(Configuration, "SuggestionsCleaningInterval");
             q.AddTriggeredJob<PointsJob>(Configuration, "Points:JobInterval");
+            q.AddTriggeredJob<CacheCleanerJob>(Configuration, "CacheCleanerInterval");
         });
 
         services.AddQuartzHostedService();

@@ -15,7 +15,7 @@ public abstract class Job : IJob
     private IServiceProvider ServiceProvider { get; }
 
     protected IDiscordClient DiscordClient { get; }
-    private InitManager InitManager { get; }
+    protected InitManager InitManager { get; }
     protected LoggingManager LoggingManager { get; }
 
     private string JobName => GetType().Name;

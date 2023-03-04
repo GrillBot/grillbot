@@ -24,9 +24,9 @@ public class ProfilePictureManager
         var profilePictures = await cache.ProfilePictureRepository.GetProfilePicturesAsync(user.Id, avatarId);
         var profilePicture = profilePictures.Find(o => o.Size == size);
 
-        if (profilePicture != null) 
+        if (profilePicture != null)
             return profilePicture;
-        
+
         await CleanCacheForUserAsync(user); // Remove all profile pictures if user changed picture.
         return await CreatePictureAsync(user, size);
     }
@@ -67,10 +67,9 @@ public class ProfilePictureManager
 
         var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId;
         var invalidProfilePictures = await cache.ProfilePictureRepository.GetProfilePicturesExceptOneAsync(user.Id, avatarId);
-        if (invalidProfilePictures.Count > 0)
-        {
-            cache.RemoveCollection(invalidProfilePictures);
-            await cache.CommitAsync();
-        }
+        if (invalidProfilePictures.Count == 0) return;
+
+        cache.RemoveCollection(invalidProfilePictures);
+        await cache.CommitAsync();
     }
 }

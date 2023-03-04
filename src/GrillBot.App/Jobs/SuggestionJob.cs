@@ -36,12 +36,6 @@ public class SuggestionJob : Job
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        await CacheManager.PurgeExpiredAsync();
-        context.Result = await ProcessJobAsync();
-    }
-
-    private async Task<string> ProcessJobAsync()
-    {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var report = new StringBuilder();
@@ -60,7 +54,7 @@ public class SuggestionJob : Job
             await repository.CommitAsync();
         }
 
-        return report.ToString();
+        context.Result = report.ToString();
     }
 
     private async Task<string> FinishVoteForSuggestionAsync(IGuild guild, GrillBotRepository repository, Database.Entity.EmoteSuggestion suggestion)

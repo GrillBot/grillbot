@@ -11,23 +11,22 @@ public class EmoteSuggestionRepository : RepositoryBase
     {
     }
 
-    public async Task PurgeExpiredAsync(int expirationHours)
+    public async Task<int> PurgeExpiredAsync(int expirationHours)
     {
-        if (IsInMemory) return;
-
         using (CreateCounter())
         {
             var validLimit = DateTime.Now.AddHours(-expirationHours);
-            await Context.Database.ExecuteSqlRawAsync("DELETE FROM public.\"EmoteSuggestions\" WHERE \"CreatedAt\" < @validLimit", new NpgsqlParameter("@validLimit", validLimit));
+            return await Context.Database.ExecuteSqlRawAsync("DELETE FROM public.\"EmoteSuggestions\" WHERE \"CreatedAt\" < @validLimit", new NpgsqlParameter("@validLimit", validLimit));
         }
     }
 
-    public async Task<EmoteSuggestionMetadata?> FindByIdAsync(string id)
+    public async Task<EmoteSuggestionMetadata?> FindByIdAsync(string id, int validHours)
     {
         using (CreateCounter())
         {
+            var validLimit = DateTime.Now.AddHours(-validHours);
             return await Context.EmoteSuggestions.AsNoTracking()
-                .FirstOrDefaultAsync(o => o.Id == id);
+                .FirstOrDefaultAsync(o => o.Id == id && o.CreatedAt > validLimit);
         }
     }
 }

@@ -4,7 +4,7 @@ namespace GrillBot.Cache.Services.Managers;
 
 public class EmoteSuggestionManager
 {
-    private const int ValidHours = 24;
+    public const int ValidHours = 24;
 
     private GrillBotCacheBuilder CacheBuilder { get; }
     private static SemaphoreSlim Semaphore { get; }
@@ -33,7 +33,6 @@ public class EmoteSuggestionManager
         try
         {
             await using var repository = CacheBuilder.CreateRepository();
-            await repository.EmoteSuggestion.PurgeExpiredAsync(ValidHours);
 
             await repository.AddAsync(entity);
             await repository.CommitAsync();
@@ -52,26 +51,11 @@ public class EmoteSuggestionManager
         try
         {
             await using var repository = CacheBuilder.CreateRepository();
-            await repository.EmoteSuggestion.PurgeExpiredAsync(ValidHours);
 
-            var item = await repository.EmoteSuggestion.FindByIdAsync(id);
+            var item = await repository.EmoteSuggestion.FindByIdAsync(id, ValidHours);
             if (item == null) return null;
 
             return (item.Filename, item.DataContent);
-        }
-        finally
-        {
-            Semaphore.Release();
-        }
-    }
-
-    public async Task PurgeExpiredAsync()
-    {
-        await Semaphore.WaitAsync();
-        try
-        {
-            await using var repository = CacheBuilder.CreateRepository();
-            await repository.EmoteSuggestion.PurgeExpiredAsync(ValidHours);
         }
         finally
         {

@@ -11,21 +11,21 @@ public class DataCacheRepository : RepositoryBase
     {
     }
 
-    public async Task DeleteExpiredAsync()
+    public async Task<int> DeleteExpiredAsync()
     {
-        if (IsInMemory) return;
-
         using (CreateCounter())
         {
-            await Context.Database.ExecuteSqlRawAsync("DELETE FROM public.\"DataCache\" WHERE \"ValidTo\" < @now", new NpgsqlParameter("@now", DateTime.Now));
+            return await Context.Database.ExecuteSqlRawAsync("DELETE FROM public.\"DataCache\" WHERE \"ValidTo\" < @now", new NpgsqlParameter("@now", DateTime.Now));
         }
     }
 
-    public async Task<DataCacheItem?> FindItemAsync(string key, bool disableTracking = false)
+    public async Task<DataCacheItem?> FindItemAsync(string key, bool disableTracking = false, bool onlyValid = true)
     {
         using (CreateCounter())
         {
             var query = Context.DataCache.Where(o => o.Key == key);
+            if (onlyValid)
+                query = query.Where(o => o.ValidTo <= DateTime.Now);
             if (disableTracking)
                 query = query.AsNoTracking();
 

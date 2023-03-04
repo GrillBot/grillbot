@@ -103,7 +103,7 @@ public class Startup
         services.AddHostedService<DiscordService>();
         services.AddThirdPartyServices(Configuration);
 
-        services.AddOpenApiDoc("v1", "WebAdmin API", "API for web administrations", doc =>
+        services.AddOpenApiDoc("v1", "WebAdmin API", "V1 API is only for web based administrations. If you're third party service, use API V2.", doc =>
         {
             doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
             {
@@ -116,18 +116,21 @@ public class Startup
             });
 
             doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
-        }).AddOpenApiDoc("v2", "Third-party API", "API for third party application with ApiKey authentication.", doc =>
-        {
-            doc.AddSecurity("ApiKey", new OpenApiSecurityScheme
+        }).AddOpenApiDoc("v2", "Third-party API",
+            "API for third party application with ApiKey authentication. Any implementation of new endpoints is based on requirements. New requirement or access request (to obtain API key) you " +
+            "can submit via issues on github or in #bot-development channel if you're in the VUT FIT discord guild.",
+            doc =>
             {
-                Name = "ApiKey",
-                Scheme = "ApiKey",
-                Type = OpenApiSecuritySchemeType.ApiKey,
-                In = OpenApiSecurityApiKeyLocation.Header
-            });
+                doc.AddSecurity("ApiKey", new OpenApiSecurityScheme
+                {
+                    Name = "ApiKey",
+                    Scheme = "ApiKey",
+                    Type = OpenApiSecuritySchemeType.ApiKey,
+                    In = OpenApiSecurityApiKeyLocation.Header
+                });
 
-            doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
-        });
+                doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
+            });
 
         services.AddQuartz(q =>
         {

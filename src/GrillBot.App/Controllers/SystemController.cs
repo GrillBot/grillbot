@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.Data.Models.API.Services;
+﻿using GrillBot.Data.Models.API.Services;
 using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +11,6 @@ namespace GrillBot.App.Controllers;
 [Route("api/system")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class SystemController : Infrastructure.ControllerBase
 {
     public SystemController(IServiceProvider serviceProvider) : base(serviceProvider)

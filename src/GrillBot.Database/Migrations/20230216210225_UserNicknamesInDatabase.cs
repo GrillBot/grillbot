@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GrillBot.Database.Migrations
 {
     /// <inheritdoc />
-    [ExcludeFromCodeCoverage]
     public partial class UserNicknamesInDatabase : Migration
     {
         /// <inheritdoc />

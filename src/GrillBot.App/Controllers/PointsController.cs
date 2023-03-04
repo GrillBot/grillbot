@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
@@ -14,7 +13,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/user/points")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class PointsController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

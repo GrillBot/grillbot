@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Actions.Commands.Images;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
@@ -12,7 +11,6 @@ using GrillBot.Data.Exceptions;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-[ExcludeFromCodeCoverage]
 public class MemeModule : InteractionsModuleBase
 {
     private RandomizationManager Random { get; }

@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Database.Migrations
 {
-    [ExcludeFromCodeCoverage]
     public partial class FixPrimaryKeyEmotes : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

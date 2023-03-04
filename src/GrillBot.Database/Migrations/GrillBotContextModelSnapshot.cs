@@ -14,7 +14,6 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GrillBot.Database.Migrations
 {
     [DbContext(typeof(GrillBotContext))]
-    [ExcludeFromCodeCoverage]
     partial class GrillBotContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

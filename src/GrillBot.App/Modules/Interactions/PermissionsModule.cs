@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Common.Extensions.Discord;
@@ -8,7 +7,6 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("permissions", "Manage channel permissions.")]
 [RequireUserPerms]
-[ExcludeFromCodeCoverage]
 public class PermissionsModule : InteractionsModuleBase
 {
     public PermissionsModule(IServiceProvider provider) : base(provider)

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions.Api.V1.ScheduledJobs;
+﻿using GrillBot.App.Actions.Api.V1.ScheduledJobs;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Jobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +12,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/jobs")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 public class ScheduledJobsController : Controller
 {

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions.Api.V1.Statistics;
+﻿using GrillBot.App.Actions.Api.V1.Statistics;
 using GrillBot.Data.Models.API.Statistics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +11,6 @@ namespace GrillBot.App.Controllers;
 [Route("api/stats")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class StatisticsController : Infrastructure.ControllerBase
 {
     public StatisticsController(IServiceProvider serviceProvider) : base(serviceProvider)

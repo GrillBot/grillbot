@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Actions.Api.V2;
 using GrillBot.App.Actions.Commands.Birthday;
 using GrillBot.App.Infrastructure.Commands;
@@ -9,7 +8,6 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("birthdays", "Birthdays")]
 [RequireUserPerms]
-[ExcludeFromCodeCoverage]
 public class BirthdayModule : InteractionsModuleBase
 {
     public BirthdayModule(IServiceProvider serviceProvider) : base(serviceProvider)

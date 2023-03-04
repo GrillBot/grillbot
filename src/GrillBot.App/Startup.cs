@@ -85,6 +85,7 @@ public class Startup
                 c.Filters.Add<ExceptionFilter>();
                 c.Filters.Add<RequestFilter>();
                 c.Filters.Add<ResultFilter>();
+                c.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
             })
             .AddNewtonsoftJson();
 

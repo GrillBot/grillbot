@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.Data.Models.API.Unverify;
+﻿using GrillBot.Data.Models.API.Unverify;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +12,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/unverify")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class UnverifyController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

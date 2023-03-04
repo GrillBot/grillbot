@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GrillBot.Database.Migrations
 {
-    [ExcludeFromCodeCoverage]
     public partial class EmoteSuggestionsTable_RemoveVoteCols : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

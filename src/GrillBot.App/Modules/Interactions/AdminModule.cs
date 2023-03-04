@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
@@ -9,7 +8,6 @@ namespace GrillBot.App.Modules.Interactions;
 [RequireUserPerms]
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands | GuildPermission.ViewAuditLog)]
 [Group("admin", "Administration commands")]
-[ExcludeFromCodeCoverage]
 public class AdminModule : InteractionsModuleBase
 {
     public AdminModule(IServiceProvider serviceProvider) : base(serviceProvider)

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Infrastructure.Validation;
 using GrillBot.Data.Models.API.Emotes;
@@ -15,7 +14,6 @@ namespace GrillBot.App.Controllers;
 [Route("api/emotes")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class EmotesController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

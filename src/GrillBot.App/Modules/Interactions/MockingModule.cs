@@ -1,12 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-[ExcludeFromCodeCoverage]
 public class MockingModule : InteractionsModuleBase
 {
     public MockingModule(IServiceProvider serviceProvider) : base(serviceProvider)

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
@@ -8,7 +7,6 @@ namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("search", "Searching")]
-[ExcludeFromCodeCoverage]
 public class SearchingModule : InteractionsModuleBase
 {
     public SearchingModule(IServiceProvider serviceProvider) : base(serviceProvider)

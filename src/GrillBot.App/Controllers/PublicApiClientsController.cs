@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api.V1.PublicApiClients;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.ApiClients;
@@ -16,7 +15,6 @@ namespace GrillBot.App.Controllers;
 [Route("api/publicApiClients")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class PublicApiClientsController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

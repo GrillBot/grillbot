@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API;
@@ -16,7 +15,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/guild")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class GuildController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

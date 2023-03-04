@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
@@ -10,7 +9,6 @@ namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("suggestion", "Submission of proposal")]
-[ExcludeFromCodeCoverage]
 public class SuggestionModule : InteractionsModuleBase
 {
     public SuggestionModule(IServiceProvider serviceProvider) : base(serviceProvider)

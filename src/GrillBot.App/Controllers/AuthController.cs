@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Infrastructure.OpenApi;
+﻿using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +11,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/auth")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class AuthController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

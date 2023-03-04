@@ -1,10 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;
 
-[ExcludeFromCodeCoverage]
 public class RemindPaginationHandler : ComponentInteractionHandler
 {
     private int Page { get; }

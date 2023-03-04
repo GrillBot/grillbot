@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GrillBot.Database.Migrations
 {
-    [ExcludeFromCodeCoverage]
     public partial class MergePoints : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

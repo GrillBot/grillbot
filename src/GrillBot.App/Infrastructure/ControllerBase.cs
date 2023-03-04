@@ -1,10 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure;
 
-[ExcludeFromCodeCoverage]
 public abstract class ControllerBase : Controller
 {
     protected IServiceProvider ServiceProvider { get; }

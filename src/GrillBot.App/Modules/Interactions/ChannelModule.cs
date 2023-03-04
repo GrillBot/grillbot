@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Channels;
@@ -9,7 +8,6 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("channel", "Channel information")]
 [RequireUserPerms]
-[ExcludeFromCodeCoverage]
 public class ChannelModule : InteractionsModuleBase
 {
     public ChannelModule(IServiceProvider serviceProvider) : base(serviceProvider)

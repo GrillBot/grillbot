@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.Common.Infrastructure;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,7 +13,6 @@ namespace GrillBot.App.Controllers;
 [Route("api/selfunverify/keep")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class SelfUnverifyController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

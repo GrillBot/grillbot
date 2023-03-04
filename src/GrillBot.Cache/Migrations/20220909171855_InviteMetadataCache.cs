@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GrillBot.Cache.Migrations
 {
-    [ExcludeFromCodeCoverage]
     public partial class InviteMetadataCache : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

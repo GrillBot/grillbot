@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api.V2;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Users;
@@ -20,7 +19,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/user")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class UsersController : Infrastructure.ControllerBase
 {
     public UsersController(IServiceProvider serviceProvider) : base(serviceProvider)

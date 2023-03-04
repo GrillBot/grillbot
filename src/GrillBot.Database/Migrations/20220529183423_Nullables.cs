@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GrillBot.Database.Migrations
 {
-    [ExcludeFromCodeCoverage]
     public partial class Nullables : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

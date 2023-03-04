@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Data.Models.API.Emotes;
@@ -11,7 +10,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/data")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class DataController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

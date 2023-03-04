@@ -1,12 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [Group("role", "Roles management")]
-[ExcludeFromCodeCoverage]
 [RequireBotPermission(GuildPermission.ManageRoles)]
 [RequireUserPerms]
 public class RoleModule : InteractionsModuleBase

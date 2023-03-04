@@ -1,10 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Infrastructure;
+﻿using GrillBot.App.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Searching;
 
-[ExcludeFromCodeCoverage]
 public class SearchingPaginationHandler : ComponentInteractionHandler
 {
     private int Page { get; }

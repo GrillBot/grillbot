@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Searching;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,7 +11,6 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/search")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class SearchingController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

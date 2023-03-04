@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AutoReply;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,7 +13,6 @@ namespace GrillBot.App.Controllers;
 [Route("api/autoreply")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class AutoReplyController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

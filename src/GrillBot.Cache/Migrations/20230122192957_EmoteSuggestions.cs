@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GrillBot.Cache.Migrations
 {
     /// <inheritdoc />
-    [ExcludeFromCodeCoverage]
     public partial class EmoteSuggestions : Migration
     {
         /// <inheritdoc />

@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Database.Migrations
 {
-    [ExcludeFromCodeCoverage]
     public partial class AutoReply : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

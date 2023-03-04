@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.Data.Exceptions;
@@ -8,7 +7,6 @@ namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("bot", "Bot information and configuration commands.")]
-[ExcludeFromCodeCoverage]
 public class BotModule : InteractionsModuleBase
 {
     public BotModule(IServiceProvider serviceProvider) : base(serviceProvider)

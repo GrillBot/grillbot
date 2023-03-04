@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Actions;
+﻿using GrillBot.App.Actions;
 using GrillBot.Common.Models.Pagination;
 using GrillBot.Data.Models.API.Suggestions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,7 +13,6 @@ namespace GrillBot.App.Controllers;
 [Route("api/emotes/suggestion")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-[ExcludeFromCodeCoverage]
 public class EmoteSuggestionController : Controller
 {
     private IServiceProvider ServiceProvider { get; }

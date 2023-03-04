@@ -55,7 +55,7 @@ public class AuditLogListItem
     /// <summary>
     /// Data
     /// </summary>
-    public object Data { get; set; }
+    public object? Data { get; set; }
 }
 
 public class AuditLogListItemMappingProfile : AutoMapper.Profile

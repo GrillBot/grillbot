@@ -90,7 +90,8 @@ public static class HandlerExtensions
             .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();
 
         services
-            .AddScoped<IThreadUpdatedEvent, ThreadUpdated.SyncThreadUpdatedHandler>();
+            .AddScoped<IThreadUpdatedEvent, ThreadUpdated.SyncThreadUpdatedHandler>()
+            .AddScoped<IThreadUpdatedEvent, ThreadUpdated.ForumThreadTagsUpdated>();
 
         services
             .AddScoped<IUserJoinedEvent, UserJoined.InviteUserJoinedHandler>()

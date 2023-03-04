@@ -11,16 +11,16 @@ namespace GrillBot.Data.Models.AuditLog;
 public class AuditLogDataWrapper
 {
     public AuditLogItemType Type { get; set; }
-    public IGuild Guild { get; set; }
-    public IChannel Channel { get; set; }
-    public IUser ProcessedUser { get; set; }
+    public IGuild? Guild { get; set; }
+    public IChannel? Channel { get; set; }
+    public IUser? ProcessedUser { get; set; }
     public object Data { get; set; }
-    public string DiscordAuditLogItemId { get; set; }
+    public string? DiscordAuditLogItemId { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<AuditLogFileMeta> Files { get; set; }
 
-    public AuditLogDataWrapper(AuditLogItemType type, object data, IGuild guild = null, IChannel channel = null, IUser processedUser = null,
-        string discordAuditLogItemId = null, DateTime? createdAt = null, IEnumerable<AuditLogFileMeta> files = null)
+    public AuditLogDataWrapper(AuditLogItemType type, object data, IGuild? guild = null, IChannel? channel = null, IUser? processedUser = null,
+        string? discordAuditLogItemId = null, DateTime? createdAt = null, IEnumerable<AuditLogFileMeta>? files = null)
     {
         Type = type;
         Guild = guild;
@@ -32,7 +32,7 @@ public class AuditLogDataWrapper
         Data = data;
     }
 
-    public AuditLogItem ToEntity(JsonSerializerSettings serializerSettings = null)
+    public AuditLogItem ToEntity(JsonSerializerSettings? serializerSettings = null)
     {
         var entity = new AuditLogItem
         {

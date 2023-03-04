@@ -138,6 +138,7 @@ public class GetAuditLogList : ApiAction
             AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, AuditLogWriteManager.SerializerSettings),
             AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, AuditLogWriteManager.SerializerSettings),
             AuditLogItemType.Api => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.ThreadUpdated =>JsonConvert.DeserializeObject<Diff<AuditThreadInfo>>(entity.Data, AuditLogWriteManager.SerializerSettings),
             _ => null
         };
 

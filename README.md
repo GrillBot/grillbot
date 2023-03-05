@@ -5,7 +5,7 @@ GrillBot is Discord bot for fun and management VUT FIT discord server.
 ## Requirements
 
 - [PostgreSQL](https://www.postgresql.org/) server (minimal recommended version is 13)
-- [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (with ASP.NET Core 6)
+- [.NET 7.0](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) (with ASP.NET Core 7)
 
 If you're running bot on Linux distributions, you have to install these packages: `tzdata`, `ttf-mscorefonts-installer`, `fontconfig`, `libc6-dev`, `libgdiplus` and `libx11-dev`.
 
@@ -25,6 +25,7 @@ If you starting bot in production environment (docker recommended), you have to 
 Required environment variables:
 
 - `ConnectionStrings:Default` - Connection string to database.
+- `ConnectionStrings:Cache` - Connection string to cache database.
 - `Discord:Token` - Discord authentication token.
 - `OAuth2:ClientId`, `OAuth2:ClientSecret` - Client ID and secret for login to administrations.
 
@@ -34,12 +35,15 @@ Recommended environment variables:
 
 - `Discord:Logging:GuildId`, `Discord:Logging:ChannelId` - Guild and channel specification for notifications on errors to channel.
 - `Birthday:Notifications:GuildId`, `Birthday:Notifications:ChannelId` - Guild and channel specification for notifications of birthdays.
+- `Services:Graphics:Api` - Base URL to the [graphics](https://github.com/GrillBot/grillbot-graphics) microservice.
+- `Services:RubbergodService:Api` - Base URL to the [rubbergod](https://github.com/GrillBot/rubbergodService) microservice.
+- `Services:FileService:Api` - Base URL to the [file](https://github.com/GrillBot/fileService) microservice.
 
 *If you're using Docker instance, bind `/GrillBotData` directory as volume.*
 
 ## Docker
 
-Latest docker image is published in [GitLab container registry](https://gitlab.com/grillbot/grillbot/container_registry).
+Latest docker image is published in [GitHub container registry](https://github.com/orgs/GrillBot/packages).
 
 ## Licence
 

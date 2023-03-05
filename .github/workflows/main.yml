@@ -8,6 +8,24 @@ on:
     branches: [ master ]
 
 jobs:
+  CheckStaticContent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Markdown lint
+        uses: nosborn/github-action-markdown-cli@v1.1.1
+        with:
+          files: .
+          args: "README.md CONTRIBUTING.md SECURITY.md"
+      - name: Check json content
+        run: bash <(curl -s https://raw.githubusercontent.com/CICDToolbox/json-lint/master/pipeline.sh)
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Crosscheck JSON content
+        run: python3 CI/check-texts.py
   Build:
     runs-on: ubuntu-latest
     steps:

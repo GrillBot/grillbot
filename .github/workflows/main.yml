@@ -41,4 +41,4 @@ jobs:
         with:
           context: src/
           push: true
-          tags: grillbot/grillbot:latest
+          tags: ghcr.io/grillbot/grillbot:latest

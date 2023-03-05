@@ -155,4 +155,29 @@ public class UnverifyRepository : RepositoryBase
                 .ToDictionaryAsync(o => o.Date, o => o.Count);
         }
     }
+
+    private IQueryable<UnverifyLog> GetLogsForArchivationQuery(DateTime expirationMilestone)
+    {
+        return Context.UnverifyLogs.AsQueryable()
+            .Include(o => o.Guild)
+            .Include(o => o.FromUser!.User)
+            .Include(o => o.ToUser!.User)
+            .Where(o => o.CreatedAt <= expirationMilestone);
+    }
+
+    public async Task<bool> ExistsItemsForArchivationAsync(DateTime expirationMilestone)
+    {
+        using (CreateCounter())
+        {
+            return await GetLogsForArchivationQuery(expirationMilestone).AnyAsync();
+        }
+    }
+
+    public async Task<List<UnverifyLog>> GetLogsForArchivationAsync(DateTime exiprationMilestone)
+    {
+        using (CreateCounter())
+        {
+            return await GetLogsForArchivationQuery(exiprationMilestone).ToListAsync();
+        }
+    }
 }

@@ -37,8 +37,4 @@
     <ProjectReference Include="..\GrillBot.Data\GrillBot.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="GrillBotData\Cache\Peepolove\" />
-  </ItemGroup>
-
 </Project>

@@ -1,6 +1,5 @@
 ﻿using System.IO.Compression;
 using System.Xml.Linq;
-using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Database.Entity;
@@ -9,7 +8,7 @@ using Quartz;
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
-public class AuditLogClearingJob : Job
+public class AuditLogClearingJob : ArchivationJobBase
 {
     private GrillBotDatabaseBuilder DbFactory { get; }
     private FileStorageFactory FileStorage { get; }
@@ -34,7 +33,7 @@ public class AuditLogClearingJob : Job
         var logRoot = new XElement("AuditLogBackup");
 
         logRoot.Add(CreateMetadata(data.Count));
-        logRoot.Add(TransformGuilds(data));
+        logRoot.Add(TransformGuilds(data.Select(o => o.Guild)));
 
         var guildUsers = data.Select(o => o.ProcessedGuildUser).Where(o => o != null).DistinctBy(o => $"{o!.UserId}/{o.GuildId}").ToList();
         var users = data.Select(o => o.ProcessedUser).Where(o => o != null && guildUsers.All(x => x!.UserId != o.Id)).DistinctBy(o => o!.Id).ToList();
@@ -83,64 +82,12 @@ public class AuditLogClearingJob : Job
             repository.Remove(item);
         }
 
+        await StoreDataAsync(logRoot, data);
+        await repository.CommitAsync();
+
         var totalFilesSize = data.SelectMany(o => o.Files).Sum(x => x.Size).Bytes().ToString();
         var xmlSize = Encoding.UTF8.GetBytes(logRoot.ToString()).Length.Bytes().ToString();
-
         context.Result = $"Items: {data.Count}, Files: {data.Sum(o => o.Files.Count)} ({totalFilesSize}), XmlSize: {xmlSize}";
-        await StoreDataAsync(logRoot, data, "AuditLog");
-        await repository.CommitAsync();
-    }
-
-    private static IEnumerable<XElement> TransformGuilds(IEnumerable<AuditLogItem> guilds)
-    {
-        return guilds
-            .Select(o => o.Guild)
-            .Where(o => o != null)
-            .DistinctBy(o => o!.Id)
-            .Select(o => new XElement("Guild", new XAttribute("Id", o!.Id), new XAttribute("Name", o.Name)));
-    }
-
-    private static IEnumerable<XAttribute> CreateMetadata(int count)
-    {
-        return new[]
-        {
-            new XAttribute("CreatedAt", DateTime.Now.ToString("o")),
-            new XAttribute("Count", count)
-        };
-    }
-
-    private static IEnumerable<XElement> TransformUsers(IEnumerable<User> users)
-        => users.DistinctBy(o => o.Id).Select(TransformUser);
-
-    private static IEnumerable<XElement> TransformGuildUsers(IEnumerable<GuildUser> guildUsers)
-    {
-        return guildUsers.DistinctBy(o => $"{o.UserId}/{o.GuildId}").Select(u =>
-        {
-            var user = TransformUser(u.User!);
-            user.Name = "GuildUser";
-
-            user.Add(new XAttribute("GuildId", u.GuildId));
-            user.Attribute("FullName")!.Value = u.FullName();
-
-            if (!string.IsNullOrEmpty(u.UsedInviteCode))
-                user.Add(new XAttribute("UsedInviteCode", u.UsedInviteCode));
-
-            return user;
-        });
-    }
-
-    private static XElement TransformUser(User user)
-    {
-        var element = new XElement(
-            "User",
-            new XAttribute("Id", user.Id),
-            new XAttribute("FullName", user.FullName())
-        );
-
-        if (user.Flags > 0)
-            element.Add(new XAttribute("Flags", user.Flags));
-
-        return element;
     }
 
     private static IEnumerable<XElement> TransformChannels(IEnumerable<AuditLogItem> channels)
@@ -171,10 +118,10 @@ public class AuditLogClearingJob : Job
             });
     }
 
-    private async Task StoreDataAsync(XElement xml, IEnumerable<AuditLogItem> logItems, string prefix)
+    private async Task StoreDataAsync(XElement xml, IEnumerable<AuditLogItem> logItems)
     {
         var storage = FileStorage.Create("Audit");
-        var backupFilename = $"{prefix}_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
+        var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
         var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
 
         await using (var stream = fileinfo.OpenWrite())

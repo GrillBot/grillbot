@@ -1,4 +1,4 @@
-name: Build and deploy to container registry
+name: CI/CD
 
 on:
   push:

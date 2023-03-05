@@ -38,7 +38,7 @@ jobs:
         run: |
           sudo docker build -t grillbot-test-image -f ./Dockerfile .
           sudo docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}" | grep 'grillbot-test-image')
-  Deployment:
+  BuildContainer:
     runs-on: ubuntu-latest
     needs: [CheckStaticContent, Build]
     if: github.ref == 'refs/heads/master'
@@ -60,3 +60,18 @@ jobs:
           context: src/
           push: true
           tags: ghcr.io/grillbot/grillbot:latest
+  DeployToProduction:
+    runs-on: ubuntu-latest
+    environment: 'Production'
+    needs: BuildContainer
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Execute deployment on SSH
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_Username }}
+          password: ${{ secrets.SSH_Password }}
+          port: 22
+          script:
+            echo '${{ secrets.SSH_Password }}' | sudo -S /scripts/podman-reload.py grillbot

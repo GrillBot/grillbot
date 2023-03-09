@@ -265,16 +265,30 @@
         }
       }
     },
-    "useless": {
-      "name": "useless",
-      "description": "Cleaning up unnecessary permissions.",
-      "check": {
-        "name": "check",
-        "description": "Checking the server for unnecessary permissions."
-      },
-      "clear": {
-        "name": "clear",
-        "description": "Perform deletion of unnecessary permissions."
+    "set": {
+      "name": "set",
+      "description": "Set permissions",
+      "category": {
+        "name": "category",
+        "description": "Set permissions with a role for all channels in a category.",
+        "category": {
+          "name": "category",
+          "description": "Category"
+        },
+        "role": {
+          "name": "role",
+          "description": "Role"
+        },
+        "view-channel": {
+          "name": "view",
+          "description": "ViewChannel permission",
+          "Allow": {
+            "name": "Allow"
+          },
+          "Deny": {
+            "name": "Deny"
+          }
+        }
       }
     }
   },

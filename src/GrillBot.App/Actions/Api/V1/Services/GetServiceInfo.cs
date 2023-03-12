@@ -82,7 +82,8 @@ public class GetServiceInfo : ApiAction
             Uptime = metrics.Uptime,
             MeasuredFrom = stats.MeasuredFrom,
             RequestsCount = stats.RequestsCount,
-            UsedMemory = metrics.UsedMemory
+            UsedMemory = metrics.UsedMemory,
+            CpuTime = stats.CpuTime
         };
     }
 }

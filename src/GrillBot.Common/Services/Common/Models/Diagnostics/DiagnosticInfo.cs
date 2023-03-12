@@ -8,4 +8,6 @@ public class DiagnosticInfo
     public long RequestsCount { get; set; }
     public DateTime MeasuredFrom { get; set; }
     public List<RequestStatistic> Endpoints { get; set; } = new();
+    public long CpuTime { get; set; }
+    public Dictionary<string, long>? Database { get; set; }
 }

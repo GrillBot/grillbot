@@ -7,4 +7,5 @@ public class Stats
     public int RequestsCount { get; set; }
     public DateTime MeasuredFrom { get; set; }
     public List<RequestStatistic> Endpoints { get; set; } = new();
+    public long CpuTime { get; set; }
 }

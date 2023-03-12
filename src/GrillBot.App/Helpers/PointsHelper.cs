@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -63,32 +64,15 @@ public class PointsHelper
         return transaction;
     }
 
-    public PointsTransaction? CreateMigratedTransaction(GuildUser guildUser, PointsTransaction? referenceTransaction)
-    {
-        if (referenceTransaction == null || guildUser.Points == 0) return null;
-
-        var transaction = CreateTransaction(guildUser, referenceTransaction.ReactionId, 0, true)!;
-        transaction.Points = referenceTransaction.Points * 100;
-
-        guildUser.Points -= transaction.Points;
-        if (guildUser.Points < 0) guildUser.Points = 0;
-
-        return transaction;
-    }
+    public static async Task<bool> CanStoreTransactionAsync(GrillBotRepository repository, PointsTransaction? transaction)
+        => transaction is { Points: > 0 } && !await repository.Points.ExistsTransactionAsync(transaction);
 
     public static async Task<List<PointsTransaction>> FilterTransactionsAsync(GrillBotRepository repository, params PointsTransaction?[] transactions)
     {
-        var result = new List<PointsTransaction>();
+        var result = await transactions
+            .FindAllAsync(async o => await CanStoreTransactionAsync(repository, o));
 
-        foreach (var transaction in transactions)
-        {
-            if (transaction == null || transaction.Points == 0) continue;
-            if (await repository.Points.ExistsTransactionAsync(transaction)) continue;
-
-            result.Add(transaction);
-        }
-
-        return result;
+        return result.ConvertAll(o => o!);
     }
 
     public static string CreateReactionId(SocketReaction reaction)

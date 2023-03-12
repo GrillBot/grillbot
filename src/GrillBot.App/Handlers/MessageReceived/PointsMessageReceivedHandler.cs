@@ -28,11 +28,9 @@ public class PointsMessageReceivedHandler : IMessageReceivedEvent
         if (!PointsHelper.CanIncrementPoints(userEntity, guildChannel)) return;
 
         var transaction = Helper.CreateTransaction(guildUserEntity, null, message.Id, false);
-        var migratedTransaction = Helper.CreateMigratedTransaction(guildUserEntity, transaction);
-        var transactions = await PointsHelper.FilterTransactionsAsync(repository, transaction, migratedTransaction);
-        if (transactions.Count == 0) return;
+        if (!await PointsHelper.CanStoreTransactionAsync(repository, transaction)) return;
 
-        await repository.AddCollectionAsync(transactions);
+        await repository.AddAsync(transaction!);
         await repository.CommitAsync();
     }
 }

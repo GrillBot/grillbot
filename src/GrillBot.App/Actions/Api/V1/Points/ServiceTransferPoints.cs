@@ -37,8 +37,8 @@ public class ServiceTransferPoints : ApiAction
         await repository.Guild.GetOrCreateGuildAsync(to.Guild);
         var toGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(to);
 
-        var fromUserTransaction = PointsHelper.CreateTransaction(fromGuildUser, null, 0, true);
-        var toUserTransaction = PointsHelper.CreateTransaction(toGuildUser, null, 0, true);
+        var fromUserTransaction = PointsHelper.CreateTransaction(fromGuildUser!, null, 0, true)!;
+        var toUserTransaction = PointsHelper.CreateTransaction(toGuildUser, null, 0, true)!;
 
         fromUserTransaction.Points = -amount;
         toUserTransaction.Points = amount;

@@ -86,6 +86,19 @@ public class AuditLogRepository : RepositoryBase
         }
     }
 
+    public async Task<List<string>> GetOnlyDataAsync(IQueryableModel<AuditLogItem> model, int? count = null)
+    {
+        using (CreateCounter())
+        {
+            var query = CreateQuery(model, true)
+                .Where(o => !string.IsNullOrEmpty(o.Data))
+                .Select(o => o.Data);
+            if (count != null)
+                query = query.Take(count.Value);
+            return await query.ToListAsync();
+        }
+    }
+
     public async Task<PaginatedResponse<AuditLogItem>> GetLogListAsync(IQueryableModel<AuditLogItem> model, PaginatedParams pagination, List<long>? logIds)
     {
         using (CreateCounter())
@@ -135,19 +148,6 @@ public class AuditLogRepository : RepositoryBase
         using (CreateCounter())
         {
             return await Context.AuditLogs.AsNoTracking()
-                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
-                .OrderBy(o => o.Key.Year).ThenBy(o => o.Key.Month)
-                .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })
-                .ToDictionaryAsync(o => o.Date, o => o.Count);
-        }
-    }
-
-    public async Task<Dictionary<string, int>> GetApiRequestsByDateAsync()
-    {
-        using (CreateCounter())
-        {
-            return await Context.AuditLogs.AsNoTracking()
-                .Where(o => o.Type == AuditLogItemType.Api)
                 .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
                 .OrderBy(o => o.Key.Year).ThenBy(o => o.Key.Month)
                 .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })

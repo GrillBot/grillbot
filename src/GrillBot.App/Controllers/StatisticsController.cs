@@ -78,40 +78,13 @@ public class StatisticsController : Infrastructure.ControllerBase
     }
 
     /// <summary>
-    /// Get statistics about API by date and year.
+    /// Get statistics about API.
     /// </summary>
-    /// <response code="200">Returns dictionary of api requests per date (Year-Month, Count).</response>
-    [HttpGet("api/date")]
+    /// <returns></returns>
+    [HttpGet("api")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByDateAsync()
-    {
-        var result = await ProcessActionAsync<GetApiStatistics, Dictionary<string, int>>(action => action.ProcessByDateAsync());
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Get statistics about API by endpoint.
-    /// </summary>
-    /// <response code="200">Returns statistics by endpoint.</response>
-    [HttpGet("api/endpoint")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<StatisticItem>>> GetApiRequestsByEndpointAsync()
-    {
-        var result = await ProcessActionAsync<GetApiStatistics, List<StatisticItem>>(action => action.ProcessByEndpointAsync());
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Get statistics about API by status code.
-    /// </summary>
-    /// <response code="200">Returns dictionary of api requests per status code (Status code, Count).</response>
-    [HttpGet("api/status")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetApiRequestsByStatusCodeAsync()
-    {
-        var result = await ProcessActionAsync<GetApiStatistics, Dictionary<string, int>>(action => action.ProcessByStatusCodeAsync());
-        return Ok(result);
-    }
+    public async Task<ActionResult<ApiStatistics>> GetApiStatisticsAsync()
+        => Ok(await ProcessActionAsync<GetApiStatistics, ApiStatistics>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Get Discord event statistics.

@@ -63,7 +63,7 @@ public partial class ApiRequest
             Headers[id] = value;
     }
 
-    public string GetStatusCode()
+    public string? GetStatusCode()
     {
         if (string.IsNullOrEmpty(StatusCode)) return null;
 
@@ -80,6 +80,9 @@ public partial class ApiRequest
     {
         return string.IsNullOrEmpty(StatusCode) || StartAt == DateTime.MinValue || string.IsNullOrEmpty(Method) || string.IsNullOrEmpty(TemplatePath);
     }
+
+    public int Duration()
+        => (int)Math.Round((EndAt - StartAt).TotalMilliseconds);
 
     [GeneratedRegex("\\d+\\s+\\([^\\)]+\\)")]
     private static partial Regex StatusCodeRegex();

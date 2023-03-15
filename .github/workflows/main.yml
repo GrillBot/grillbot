@@ -2,10 +2,10 @@ name: CI/CD
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    types: [ opened, reopened, synchronize ]
-    branches: [ master ]
+    types: [opened, reopened, synchronize]
+    branches: [master]
   workflow_dispatch:
 
 env:
@@ -41,6 +41,8 @@ jobs:
         with:
           dotnet-version: 7.0.x
           source-url: https://nuget.pkg.github.com/GrillBot/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Install dependencies
         run: |
           dotnet restore -r linux-x64 src/GrillBot.Common/
@@ -76,7 +78,7 @@ jobs:
           tags: ghcr.io/grillbot/grillbot:latest
   DeployToProduction:
     runs-on: ubuntu-latest
-    environment: 'Production'
+    environment: "Production"
     needs: BuildContainer
     if: github.ref == 'refs/heads/master'
     steps:
@@ -87,5 +89,4 @@ jobs:
           username: ${{ secrets.SSH_Username }}
           password: ${{ secrets.SSH_Password }}
           port: 22
-          script:
-            echo '${{ secrets.SSH_Password }}' | sudo -S /scripts/podman-reload.py grillbot
+          script: echo '${{ secrets.SSH_Password }}' | sudo -S /scripts/podman-reload.py grillbot

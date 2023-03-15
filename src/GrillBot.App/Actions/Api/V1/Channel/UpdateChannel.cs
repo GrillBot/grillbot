@@ -2,8 +2,8 @@
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Data.Exceptions;
-using GrillBot.Data.Models;
+using GrillBot.Core.Exceptions;
+using GrillBot.Core.Models;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;

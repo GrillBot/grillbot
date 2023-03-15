@@ -1,4 +1,4 @@
-﻿using GrillBot.Data.Exceptions;
+﻿using GrillBot.Core.Exceptions;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
 

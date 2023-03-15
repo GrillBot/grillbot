@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
-using GrillBot.Common.Infrastructure;
+using GrillBot.Core.Infrastructure;
 
 namespace GrillBot.Database.Models;
 
-public class SortParams : IApiObject
+public class SortParams : IDictionaryObject
 {
     public string? OrderBy { get; set; }
     public bool Descending { get; set; }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, string?>
         {
             { nameof(OrderBy), OrderBy ?? "" },
             { nameof(Descending), Descending.ToString() }

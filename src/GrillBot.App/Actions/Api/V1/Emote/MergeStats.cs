@@ -1,6 +1,6 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
+﻿using GrillBot.App.Managers;
 using GrillBot.Common.Models;
+using GrillBot.Core.Managers.Discord;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
@@ -9,15 +9,15 @@ namespace GrillBot.App.Actions.Api.V1.Emote;
 
 public class MergeStats : ApiAction
 {
-    private EmoteHelper EmoteHelper { get; }
+    private IEmoteManager EmoteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public MergeStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, EmoteHelper emoteHelper) : base(apiContext)
+    public MergeStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, IEmoteManager emoteManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         AuditLogWriteManager = auditLogWriteManager;
-        EmoteHelper = emoteHelper;
+        EmoteManager = emoteManager;
     }
 
     public async Task<int> ProcessAsync(MergeEmoteStatsParams parameters)
@@ -63,7 +63,7 @@ public class MergeStats : ApiAction
 
     private async Task ValidateMergeAsync(MergeEmoteStatsParams @params)
     {
-        var supportedEmotes = (await EmoteHelper.GetSupportedEmotesAsync()).ConvertAll(o => o.ToString());
+        var supportedEmotes = (await EmoteManager.GetSupportedEmotesAsync()).ConvertAll(o => o.ToString());
         if (!supportedEmotes.Contains(@params.DestinationEmoteId))
         {
             throw new ValidationException(

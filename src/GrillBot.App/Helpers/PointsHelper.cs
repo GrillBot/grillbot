@@ -1,6 +1,6 @@
-﻿using GrillBot.Common.Extensions;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Managers.Random;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
@@ -11,9 +11,9 @@ public class PointsHelper
 {
     private IConfiguration Configuration { get; }
     private IDiscordClient DiscordClient { get; }
-    private RandomizationManager Random { get; }
+    private IRandomManager Random { get; }
 
-    public PointsHelper(IConfiguration configuration, IDiscordClient discordClient, RandomizationManager random)
+    public PointsHelper(IConfiguration configuration, IDiscordClient discordClient, IRandomManager random)
     {
         Configuration = configuration;
         DiscordClient = discordClient;

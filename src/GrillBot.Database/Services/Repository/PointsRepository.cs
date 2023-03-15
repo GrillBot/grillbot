@@ -3,22 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models.Points;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class PointsRepository : RepositoryBase
+public class PointsRepository : RepositoryBase<GrillBotContext>
 {
-    public PointsRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public PointsRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
-
-    // Only for testing purposes.
-    public IEnumerable<PointsTransaction> GetAll() => Context.PointsTransactions.AsEnumerable();
 
     public async Task<long> ComputePointsOfUserAsync(ulong guildId, ulong userId)
     {

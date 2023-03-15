@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Models;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Managers;

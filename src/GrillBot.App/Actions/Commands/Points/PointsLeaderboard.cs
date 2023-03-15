@@ -3,7 +3,7 @@ using GrillBot.App.Modules.Implementations.Points;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using GrillBot.Database.Models.Points;
 
 namespace GrillBot.App.Actions.Commands.Points;

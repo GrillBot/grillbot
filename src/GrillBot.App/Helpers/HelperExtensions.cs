@@ -8,7 +8,6 @@ public static class ServiceExtensions
     {
         services
             .AddScoped<PointsHelper>()
-            .AddScoped<EmoteHelper>()
             .AddScoped<DownloadHelper>()
             .AddScoped<ChannelHelper>()
             .AddScoped<UnverifyHelper>()

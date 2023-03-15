@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 

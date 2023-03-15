@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Managers;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Searching;
 using GrillBot.Database.Enums;
 

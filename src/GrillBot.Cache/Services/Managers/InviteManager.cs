@@ -1,6 +1,6 @@
 ﻿using Discord;
 using GrillBot.Cache.Entity;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Cache.Services.Managers;
 
@@ -8,9 +8,9 @@ public class InviteManager
 {
     private SemaphoreSlim Semaphore { get; }
     private GrillBotCacheBuilder CacheBuilder { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
 
-    public InviteManager(GrillBotCacheBuilder cacheBuilder, CounterManager counterManager)
+    public InviteManager(GrillBotCacheBuilder cacheBuilder, ICounterManager counterManager)
     {
         CacheBuilder = cacheBuilder;
         Semaphore = new SemaphoreSlim(1);

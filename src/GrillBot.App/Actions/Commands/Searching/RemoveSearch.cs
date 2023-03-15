@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Managers;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 

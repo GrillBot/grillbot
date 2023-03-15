@@ -4,7 +4,7 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.Graphics.Models.Images;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using ImageMagick;
 
 namespace GrillBot.App.Actions.Commands.Points;

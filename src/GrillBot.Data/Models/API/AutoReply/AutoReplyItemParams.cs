@@ -1,27 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using GrillBot.Common.Infrastructure;
+using GrillBot.Core.Infrastructure;
 
-namespace GrillBot.Data.Models.API.AutoReply
+namespace GrillBot.Data.Models.API.AutoReply;
+
+public class AutoReplyItemParams : IDictionaryObject
 {
-    public class AutoReplyItemParams : IApiObject
+    [Required]
+    public string Template { get; set; } = null!;
+
+    [Required]
+    public string Reply { get; set; } = null!;
+
+    public long Flags { get; set; }
+
+    public Dictionary<string, string?> ToDictionary()
     {
-        [Required]
-        public string Template { get; set; }
-
-        [Required]
-        public string Reply { get; set; }
-
-        public long Flags { get; set; }
-
-        public Dictionary<string, string> SerializeForLog()
+        return new Dictionary<string, string?>
         {
-            return new Dictionary<string, string>
-            {
-                { nameof(Template), Template },
-                { nameof(Reply), Reply },
-                { nameof(Flags), Flags.ToString() }
-            };
-        }
+            { nameof(Template), Template },
+            { nameof(Reply), Reply },
+            { nameof(Flags), Flags.ToString() }
+        };
     }
 }

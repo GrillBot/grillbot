@@ -1,9 +1,9 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.Graphics.Models.Chart;
+using GrillBot.Core.Managers.Random;
 using ImageMagick;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
@@ -12,13 +12,13 @@ public class UsersChartRenderer
 {
     private ITextsManager Texts { get; }
     private IGraphicsClient GraphicsClient { get; }
-    private RandomizationManager RandomizationManager { get; }
+    private IRandomManager RandomManager { get; }
 
-    public UsersChartRenderer(ITextsManager texts, IGraphicsClient graphicsClient, RandomizationManager randomizationManager)
+    public UsersChartRenderer(ITextsManager texts, IGraphicsClient graphicsClient, IRandomManager randomManager)
     {
         Texts = texts;
         GraphicsClient = graphicsClient;
-        RandomizationManager = randomizationManager;
+        RandomManager = randomManager;
     }
 
     public async Task<MagickImage> RenderAsync(IGuild guild, Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>> data, ChartsFilter filter, string locale)
@@ -79,9 +79,9 @@ public class UsersChartRenderer
         {
             // User not usable role. Create random color.
             return new Color(
-                RandomizationManager.GetNext("PointsGraph", 255),
-                RandomizationManager.GetNext("PointsGraph", 255),
-                RandomizationManager.GetNext("PointsGraph", 255)
+                RandomManager.GetNext("PointsGraph", 255),
+                RandomManager.GetNext("PointsGraph", 255),
+                RandomManager.GetNext("PointsGraph", 255)
             );
         }
 

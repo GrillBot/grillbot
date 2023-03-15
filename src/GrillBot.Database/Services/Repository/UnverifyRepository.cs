@@ -3,18 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class UnverifyRepository : RepositoryBase
+public class UnverifyRepository : RepositoryBase<GrillBotContext>
 {
-    public UnverifyRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public UnverifyRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

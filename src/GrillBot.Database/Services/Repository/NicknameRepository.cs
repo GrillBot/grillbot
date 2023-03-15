@@ -1,14 +1,15 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class NicknameRepository : RepositoryBase
+public class NicknameRepository : RepositoryBase<GrillBotContext>
 {
-    public NicknameRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public NicknameRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

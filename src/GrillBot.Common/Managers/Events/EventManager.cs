@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Managers.Performance;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.Common.Managers.Events;
@@ -12,11 +12,11 @@ public class EventManager
     private DiscordSocketClient DiscordClient { get; }
     private IServiceProvider ServiceProvider { get; }
     private InitManager InitManager { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private InteractionService InteractionService { get; }
     private EventLogManager EventLogManager { get; }
 
-    public EventManager(IDiscordClient discordClient, IServiceProvider serviceProvider, InitManager initManager, CounterManager counterManager, InteractionService interactionService,
+    public EventManager(IDiscordClient discordClient, IServiceProvider serviceProvider, InitManager initManager, ICounterManager counterManager, InteractionService interactionService,
         EventLogManager eventLogManager)
     {
         DiscordClient = (DiscordSocketClient)discordClient;

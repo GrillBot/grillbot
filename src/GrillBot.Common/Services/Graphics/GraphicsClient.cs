@@ -1,8 +1,8 @@
 ﻿using System.Net.Http.Json;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Services.Graphics.Models.Chart;
 using GrillBot.Common.Services.Graphics.Models.Diagnostics;
 using GrillBot.Common.Services.Graphics.Models.Images;
+using GrillBot.Core.Managers.Performance;
 using Newtonsoft.Json.Linq;
 
 namespace GrillBot.Common.Services.Graphics;
@@ -11,7 +11,7 @@ public class GraphicsClient : RestServiceBase, IGraphicsClient
 {
     public override string ServiceName => "Graphics";
 
-    public GraphicsClient(IHttpClientFactory httpClientFactory, CounterManager counterManager) : base(counterManager, () => httpClientFactory.CreateClient("Graphics"))
+    public GraphicsClient(IHttpClientFactory httpClientFactory, ICounterManager counterManager) : base(counterManager, () => httpClientFactory.CreateClient("Graphics"))
     {
     }
 

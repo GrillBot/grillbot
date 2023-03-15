@@ -3,7 +3,7 @@ using GrillBot.App.Helpers;
 using GrillBot.App.Managers.EmoteSuggestion;
 using GrillBot.App.Modules.Implementations.Suggestion;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using GrillBot.Database.Services.Repository;
 using CacheManagers = GrillBot.Cache.Services.Managers;
 

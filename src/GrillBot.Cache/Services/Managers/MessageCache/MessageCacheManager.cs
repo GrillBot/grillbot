@@ -2,10 +2,10 @@
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Cache.Services.Managers.MessageCache;
 
@@ -22,9 +22,9 @@ public class MessageCacheManager : IMessageCacheManager
     private InitManager InitManager { get; }
     private DiscordSocketClient DiscordClient { get; }
     private GrillBotCacheBuilder CacheBuilder { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
 
-    public MessageCacheManager(DiscordSocketClient discordClient, InitManager initManager, GrillBotCacheBuilder cacheBuilder, CounterManager counterManager)
+    public MessageCacheManager(DiscordSocketClient discordClient, InitManager initManager, GrillBotCacheBuilder cacheBuilder, ICounterManager counterManager)
     {
         DiscordClient = discordClient;
         InitManager = initManager;

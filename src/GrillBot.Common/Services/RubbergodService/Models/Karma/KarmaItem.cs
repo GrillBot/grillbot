@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using GrillBot.Common.Infrastructure;
+using GrillBot.Core.Infrastructure;
 using Newtonsoft.Json;
 
 namespace GrillBot.Common.Services.RubbergodService.Models.Karma;
 
-public class KarmaItem : IApiObject
+public class KarmaItem : IDictionaryObject
 {
     [JsonPropertyName("member_ID")]
     [JsonProperty("member_ID")]
@@ -21,9 +21,9 @@ public class KarmaItem : IApiObject
     [JsonPropertyName("negative")]
     public int Negative { get; set; }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, string?>
         {
             { nameof(MemberId), MemberId },
             { nameof(KarmaValue), KarmaValue.ToString() },

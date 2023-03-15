@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Data.Models.API.Statistics;
 

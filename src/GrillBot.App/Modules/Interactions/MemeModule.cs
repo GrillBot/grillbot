@@ -4,19 +4,19 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Cooldown;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
+using GrillBot.Core.Managers.Random;
 
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 public class MemeModule : InteractionsModuleBase
 {
-    private RandomizationManager Random { get; }
+    private IRandomManager Random { get; }
     private IConfiguration Configuration { get; }
 
-    public MemeModule(RandomizationManager random, IConfiguration configuration, IServiceProvider serviceProvider) : base(serviceProvider)
+    public MemeModule(IRandomManager random, IConfiguration configuration, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         Random = random;
         Configuration = configuration;

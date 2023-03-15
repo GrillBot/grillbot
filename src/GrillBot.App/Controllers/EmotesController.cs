@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.Common.Models.Pagination;
-using GrillBot.Data.Infrastructure.Validation;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Data.Models.API.Emotes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

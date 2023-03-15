@@ -1,11 +1,10 @@
 ﻿using Discord;
-using GrillBot.Database.Enums;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.Database.Entity;
 

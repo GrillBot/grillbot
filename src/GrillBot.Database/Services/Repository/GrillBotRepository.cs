@@ -1,19 +1,19 @@
-﻿using GrillBot.Common.Managers.Counters;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Database.Services.Repository;
 
 public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
 {
     private GrillBotContext Context { get; set; }
-    private List<RepositoryBase> Repositories { get; set; } = new();
-    private CounterManager CounterManager { get; }
+    private List<RepositoryBase<GrillBotContext>> Repositories { get; set; } = new();
+    private ICounterManager CounterManager { get; }
 
-    public GrillBotRepository(GrillBotContext context, CounterManager counterManager)
+    public GrillBotRepository(GrillBotContext context, ICounterManager counterManager)
     {
         Context = context;
         CounterManager = counterManager;
@@ -37,7 +37,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public ApiClientRepository ApiClientRepository => GetOrCreateRepository<ApiClientRepository>();
     public NicknameRepository Nickname => GetOrCreateRepository<NicknameRepository>();
 
-    private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
+    private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase<GrillBotContext>
     {
         var repository = Repositories.OfType<TRepository>().FirstOrDefault();
         if (repository != null)
@@ -75,20 +75,6 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
         using (CounterManager.Create("Database.Commit"))
         {
             return await Context.SaveChangesAsync();
-        }
-    }
-
-    public void ClearChangeTracker()
-    {
-        Context.ChangeTracker.Clear();
-    }
-
-    public void ProcessMigrations()
-    {
-        using (CounterManager.Create("Database.Migrations"))
-        {
-            if (Context.Database.GetPendingMigrations().Any())
-                Context.Database.Migrate();
         }
     }
 

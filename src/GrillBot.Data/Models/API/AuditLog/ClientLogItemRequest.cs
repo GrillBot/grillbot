@@ -1,16 +1,18 @@
 ﻿using GrillBot.Database.Enums;
 using System.Collections.Generic;
-using GrillBot.Common.Infrastructure;
+using System.ComponentModel.DataAnnotations;
+using GrillBot.Core.Infrastructure;
 
 namespace GrillBot.Data.Models.API.AuditLog;
 
-public class ClientLogItemRequest : IApiObject
+public class ClientLogItemRequest : IDictionaryObject
 {
     public bool IsInfo { get; set; }
     public bool IsError { get; set; }
     public bool IsWarning { get; set; }
 
-    public string Content { get; set; }
+    [Required]
+    public string Content { get; set; } = null!;
 
     public AuditLogItemType GetAuditLogType()
     {
@@ -18,9 +20,9 @@ public class ClientLogItemRequest : IApiObject
         return IsWarning ? AuditLogItemType.Warning : AuditLogItemType.Info;
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, string?>
         {
             { nameof(IsInfo), IsInfo.ToString() },
             { nameof(IsError), IsError.ToString() },

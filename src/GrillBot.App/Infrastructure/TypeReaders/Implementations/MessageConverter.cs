@@ -1,6 +1,5 @@
 ﻿using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Helpers;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;
@@ -23,7 +22,7 @@ public class MessageConverter : ConverterBase<IMessage>
         if (!Uri.IsWellFormedUriString(value, UriKind.Absolute))
             throw new FormatException(GetLocalizedText("Message/InvalidUri"));
 
-        var uriMatch = MessageHelper.DiscordMessageUriRegex.Match(value);
+        var uriMatch = Core.Helpers.MessageHelper.DiscordMessageUriRegex().Match(value);
         if (!uriMatch.Success) throw new UriFormatException(GetLocalizedText("Message/InvalidDiscordUriFormat"));
         if (uriMatch.Groups[1].Value == "@me") throw new InvalidOperationException(GetLocalizedText("Message/DmUnsupported")); // Is DM
 

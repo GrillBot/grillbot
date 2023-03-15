@@ -3,18 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class AuditLogRepository : RepositoryBase
+public class AuditLogRepository : RepositoryBase<GrillBotContext>
 {
-    public AuditLogRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public AuditLogRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

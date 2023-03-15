@@ -2,13 +2,13 @@
 using GrillBot.App.Controllers;
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Common.Services.Common;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.RubbergodService;
+using GrillBot.Core.Managers.Performance;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
@@ -26,7 +26,7 @@ public class GetDashboard : ApiAction
     private IWebHostEnvironment WebHost { get; }
     private IDiscordClient DiscordClient { get; }
     private InitManager InitManager { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LoggingManager Logging { get; }
     private IGraphicsClient GraphicsClient { get; }
@@ -35,7 +35,7 @@ public class GetDashboard : ApiAction
 
     private List<Exception> Errors { get; } = new();
 
-    public GetDashboard(ApiRequestContext apiContext, IWebHostEnvironment webHost, IDiscordClient discordClient, InitManager initManager, CounterManager counterManager,
+    public GetDashboard(ApiRequestContext apiContext, IWebHostEnvironment webHost, IDiscordClient discordClient, InitManager initManager, ICounterManager counterManager,
         GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient,
         IFileServiceClient fileServiceClient) : base(apiContext)
     {

@@ -1,28 +1,28 @@
-﻿using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Database;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Reminder;
 
-public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessage>, IApiObject
+public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessage>, IDictionaryObject
 {
     [DiscordId]
-    public string FromUserId { get; set; }
+    public string? FromUserId { get; set; }
 
     [DiscordId]
-    public string ToUserId { get; set; }
+    public string? ToUserId { get; set; }
 
     [DiscordId]
-    public string OriginalMessageId { get; set; }
+    public string? OriginalMessageId { get; set; }
 
-    public string MessageContains { get; set; }
+    public string? MessageContains { get; set; }
 
     public DateTime? CreatedFrom { get; set; }
 
@@ -77,13 +77,13 @@ public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessa
         {
             "FromUser" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.FromUser.Username).ThenByDescending(o => o.FromUser.Discriminator).ThenByDescending(o => o.Id),
-                _ => query.OrderBy(o => o.FromUser.Username).ThenBy(o => o.FromUser.Discriminator).ThenBy(o => o.Id)
+                true => query.OrderByDescending(o => o.FromUser!.Username).ThenByDescending(o => o.FromUser!.Discriminator).ThenByDescending(o => o.Id),
+                _ => query.OrderBy(o => o.FromUser!.Username).ThenBy(o => o.FromUser!.Discriminator).ThenBy(o => o.Id)
             },
             "ToUser" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.ToUser.Username).ThenByDescending(o => o.Id),
-                _ => query.OrderBy(o => o.ToUser.Username).ThenBy(o => o.Id)
+                true => query.OrderByDescending(o => o.ToUser!.Username).ThenByDescending(o => o.Id),
+                _ => query.OrderBy(o => o.ToUser!.Username).ThenBy(o => o.Id)
             },
             "At" => Sort.Descending switch
             {
@@ -98,9 +98,9 @@ public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessa
         };
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(FromUserId), FromUserId },
             { nameof(ToUserId), ToUserId },
@@ -111,8 +111,8 @@ public class GetReminderListParams : IQueryableModel<Database.Entity.RemindMessa
             { nameof(OnlyWaiting), OnlyWaiting.ToString() }
         };
 
-        result.AddApiObject(Sort, nameof(Sort));
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

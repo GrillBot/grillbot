@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.Common.Infrastructure;
+using GrillBot.Core.Infrastructure;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -46,7 +46,7 @@ public class SelfUnverifyController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> AddKeepableAsync([FromBody] List<KeepableParams> parameters)
     {
-        ApiAction.Init(this, parameters.OfType<IApiObject>().ToArray());
+        ApiAction.Init(this, parameters.OfType<IDictionaryObject>().ToArray());
 
         var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.AddKeepables>();
         await action.ProcessAsync(parameters);

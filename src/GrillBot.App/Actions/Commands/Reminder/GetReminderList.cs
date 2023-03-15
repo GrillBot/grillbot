@@ -4,7 +4,8 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Reminder;
 
 namespace GrillBot.App.Actions.Commands.Reminder;

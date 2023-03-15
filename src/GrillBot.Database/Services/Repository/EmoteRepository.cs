@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Database;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models.Emotes;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class EmoteRepository : RepositoryBase
+public class EmoteRepository : RepositoryBase<GrillBotContext>
 {
-    public EmoteRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public EmoteRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

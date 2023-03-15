@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
+using GrillBot.Core.Infrastructure;
 
 namespace GrillBot.Database.Models;
 
-public class RangeParams<T> : IValidatableObject, IApiObject
+public class RangeParams<T> : IValidatableObject, IDictionaryObject
 {
     public T? From { get; set; }
     public T? To { get; set; }
@@ -21,9 +19,9 @@ public class RangeParams<T> : IValidatableObject, IApiObject
             yield return new ValidationResult("Neplatný interval rozsahu Od-Do");
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, string?>
         {
             { nameof(From), From?.ToString() ?? "" },
             { nameof(To), To?.ToString() ?? "" }

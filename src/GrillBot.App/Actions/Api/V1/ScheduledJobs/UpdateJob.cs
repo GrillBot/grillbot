@@ -1,7 +1,7 @@
 ﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using Quartz;
 using Quartz.Impl.Matchers;
 

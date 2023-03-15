@@ -1,7 +1,7 @@
-﻿using GrillBot.Common.Extensions;
-using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Actions.Api.V2;
 

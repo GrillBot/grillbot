@@ -1,8 +1,8 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Actions;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Managers.Performance;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.Commands;
@@ -13,7 +13,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected ITextsManager Texts { get; }
     protected IServiceProvider ServiceProvider { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
 
     protected string Locale
     {
@@ -31,7 +31,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         ServiceProvider = serviceProvider;
         Texts = ServiceProvider.GetRequiredService<ITextsManager>();
         DatabaseBuilder = ServiceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
-        CounterManager = ServiceProvider.GetRequiredService<CounterManager>();
+        CounterManager = ServiceProvider.GetRequiredService<ICounterManager>();
     }
 
     /// <summary>

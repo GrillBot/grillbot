@@ -1,12 +1,12 @@
-﻿using GrillBot.Common.Extensions;
-using GrillBot.Common.Managers;
+﻿using GrillBot.Core.Extensions;
+using GrillBot.Core.Managers.Random;
 
 namespace GrillBot.App.Actions.Commands;
 
 public class Mock : CommandAction
 {
     private Emote MockingEmote { get; }
-    private RandomizationManager Random { get; }
+    private IRandomManager Random { get; }
 
     // MaxMessageSize - 2xMocking emotes - Spaces
     private int MaxMessageLength => DiscordConfig.MaxMessageSize - 2 * MockingEmote.ToString().Length - 2;
@@ -20,7 +20,7 @@ public class Mock : CommandAction
     // even the second char is not uppercased, the next valid char has 100% chance.
     private readonly int[] _mockRandomCoefficient = { 1, 2, 5 };
 
-    public Mock(IConfiguration configuration, RandomizationManager random)
+    public Mock(IConfiguration configuration, IRandomManager random)
     {
         MockingEmote = Emote.Parse(configuration.GetValue<string>("Discord:Emotes:Mocking"));
         Random = random;

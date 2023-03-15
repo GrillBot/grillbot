@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Mvc;
 using GrillBot.Common;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Services;
+using GrillBot.Core;
 using Microsoft.AspNetCore.HttpOverrides;
 
 namespace GrillBot.App;
@@ -180,7 +181,7 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        app.InitDatabase();
+        app.InitDatabase<GrillBotContext>();
         app.InitCache();
 
         app.UseForwardedHeaders();

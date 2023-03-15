@@ -1,25 +1,25 @@
-﻿using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Database;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Invites;
 
-public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApiObject
+public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IDictionaryObject
 {
     [DiscordId]
-    public string GuildId { get; set; }
+    public string? GuildId { get; set; }
 
     [DiscordId]
-    public string CreatorId { get; set; }
+    public string? CreatorId { get; set; }
 
-    public string Code { get; set; }
+    public string? Code { get; set; }
     public DateTime? CreatedFrom { get; set; }
     public DateTime? CreatedTo { get; set; }
 
@@ -36,7 +36,7 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
     public IQueryable<Database.Entity.Invite> SetIncludes(IQueryable<Database.Entity.Invite> query)
     {
         return query
-            .Include(o => o.Creator.User)
+            .Include(o => o.Creator!.User)
             .Include(o => o.UsedUsers)
             .Include(o => o.Guild);
     }
@@ -75,8 +75,8 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
             },
             "Creator" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => !string.IsNullOrEmpty(o.Creator.Nickname) ? o.Creator.Nickname : o.Creator.User.Username),
-                _ => query.OrderBy(o => !string.IsNullOrEmpty(o.Creator.Nickname) ? o.Creator.Nickname : o.Creator.User.Username),
+                true => query.OrderByDescending(o => !string.IsNullOrEmpty(o.Creator!.Nickname) ? o.Creator.Nickname : o.Creator!.User!.Username),
+                _ => query.OrderBy(o => !string.IsNullOrEmpty(o.Creator!.Nickname) ? o.Creator.Nickname : o.Creator!.User!.Username),
             },
             "UseCount" => Sort.Descending switch
             {
@@ -91,9 +91,9 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
         };
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(GuildId), GuildId },
             { nameof(CreatorId), CreatorId },
@@ -103,8 +103,8 @@ public class GetInviteListParams : IQueryableModel<Database.Entity.Invite>, IApi
             { nameof(ShowUnused), ShowUnused.ToString() }
         };
 
-        result.AddApiObject(Sort, nameof(Sort));
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

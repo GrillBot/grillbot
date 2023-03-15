@@ -1,7 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure.TypeReaders.Implementations;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Interactions;
 

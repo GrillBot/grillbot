@@ -1,9 +1,8 @@
 ﻿using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
+using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Channels;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
@@ -46,7 +45,7 @@ public class SendMessageToChannel : ApiAction
         return channel;
     }
 
-    private static MessageReference CreateReference(string reference, ulong guildId, ulong channelId)
+    private static MessageReference? CreateReference(string? reference, ulong guildId, ulong channelId)
     {
         if (string.IsNullOrEmpty(reference))
             return null;
@@ -57,7 +56,7 @@ public class SendMessageToChannel : ApiAction
         if (!Uri.IsWellFormedUriString(reference, UriKind.Absolute))
             return null;
 
-        var uriMatch = MessageHelper.DiscordMessageUriRegex.Match(reference);
+        var uriMatch = Core.Helpers.MessageHelper.DiscordMessageUriRegex().Match(reference);
         return uriMatch.Success ? new MessageReference(uriMatch.Groups[3].Value.ToUlong(), channelId, guildId) : null;
     }
 }

@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Searching;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

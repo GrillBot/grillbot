@@ -1,11 +1,10 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.FileStorage;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.FileService;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Managers.Performance;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -17,11 +16,11 @@ public class AuditMessageDeletedHandler : IMessageDeletedEvent
 {
     private IMessageCacheManager MessageCache { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private DownloadHelper DownloadHelper { get; }
     private IFileServiceClient FileServiceClient { get; }
 
-    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, AuditLogWriteManager auditLogWriteManager, CounterManager counterManager, DownloadHelper downloadHelper,
+    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, AuditLogWriteManager auditLogWriteManager, ICounterManager counterManager, DownloadHelper downloadHelper,
         IFileServiceClient fileServiceClient)
     {
         MessageCache = messageCache;

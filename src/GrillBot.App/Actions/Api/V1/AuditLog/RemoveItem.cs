@@ -2,10 +2,9 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Common.Services.FileService;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
-using Microsoft.AspNetCore.Http;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 

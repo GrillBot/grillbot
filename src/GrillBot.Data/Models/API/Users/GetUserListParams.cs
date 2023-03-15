@@ -1,28 +1,28 @@
 ﻿using Discord;
-using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Database;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Users;
 
-public class GetUserListParams : IQueryableModel<Database.Entity.User>, IApiObject
+public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDictionaryObject
 {
     /// <summary>
     /// Username.
     /// </summary>
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
     /// <summary>
     /// Selected guild.
     /// </summary>
     [DiscordId]
-    public string GuildId { get; set; }
+    public string? GuildId { get; set; }
 
     /// <summary>
     /// Selected flags from UserFlags enum.
@@ -37,7 +37,7 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IApiObje
     /// <summary>
     /// Used invite code
     /// </summary>
-    public string UsedInviteCode { get; set; }
+    public string? UsedInviteCode { get; set; }
 
     public UserStatus? Status { get; set; }
 
@@ -65,7 +65,7 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IApiObje
             query = query.Where(o => o.Birthday != null);
 
         if (!string.IsNullOrEmpty(UsedInviteCode))
-            query = query.Where(o => o.Guilds.Any(x => EF.Functions.ILike(x.UsedInviteCode, $"{UsedInviteCode.ToLower()}%")));
+            query = query.Where(o => o.Guilds.Any(x => !string.IsNullOrEmpty(x.UsedInviteCode) && EF.Functions.ILike(x.UsedInviteCode, $"{UsedInviteCode.ToLower()}%")));
 
         if (Status != null)
             query = query.Where(o => o.Status == Status);
@@ -92,9 +92,9 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IApiObje
         };
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(Username), Username },
             { nameof(GuildId), GuildId },
@@ -105,8 +105,8 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IApiObje
 
         if (Status != null)
             result[nameof(Status)] = $"{Status} ({(int)Status.Value})";
-        result.AddApiObject(Sort, nameof(Sort));
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

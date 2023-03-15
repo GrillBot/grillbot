@@ -1,8 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Services.Common.Models.Diagnostics;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Services.Diagnostics.Models;
 
 namespace GrillBot.Common.Services.FileService;
 
@@ -10,7 +10,7 @@ public class FileServiceClient : RestServiceBase, IFileServiceClient
 {
     public override string ServiceName => "FileService";
 
-    public FileServiceClient(CounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, () => clientFactory.CreateClient("FileService"))
+    public FileServiceClient(ICounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, () => clientFactory.CreateClient("FileService"))
     {
     }
 

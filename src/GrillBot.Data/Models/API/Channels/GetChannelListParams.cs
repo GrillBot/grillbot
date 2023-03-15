@@ -1,23 +1,23 @@
 ﻿using System.Collections.Generic;
 using Discord;
-using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Database;
 using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Channels;
 
-public class GetChannelListParams : IQueryableModel<GuildChannel>, IApiObject
+public class GetChannelListParams : IQueryableModel<GuildChannel>, IDictionaryObject
 {
     [DiscordId]
-    public string GuildId { get; set; }
+    public string? GuildId { get; set; }
 
-    public string NameContains { get; set; }
+    public string? NameContains { get; set; }
     public ChannelType? ChannelType { get; set; }
 
     public bool HideDeleted { get; set; }
@@ -33,7 +33,7 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>, IApiObject
     {
         return query
             .Include(o => o.Guild)
-            .Include(o => o.Users.Where(x => x.Count > 0)).ThenInclude(o => o.User.User);
+            .Include(o => o.Users.Where(x => x.Count > 0)).ThenInclude(o => o.User!.User);
     }
 
     public IQueryable<GuildChannel> SetQuery(IQueryable<GuildChannel> query)
@@ -85,9 +85,9 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>, IApiObject
         };
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(GuildId), GuildId },
             { nameof(NameContains), NameContains },
@@ -95,8 +95,8 @@ public class GetChannelListParams : IQueryableModel<GuildChannel>, IApiObject
             { nameof(HideDeleted), HideDeleted.ToString() }
         };
 
-        result.AddApiObject(Sort, nameof(Sort));
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

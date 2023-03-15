@@ -1,13 +1,14 @@
 ﻿using GrillBot.Cache.Entity;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public class EmoteSuggestionRepository : RepositoryBase
+public class EmoteSuggestionRepository : RepositoryBase<GrillBotCacheContext>
 {
-    public EmoteSuggestionRepository(GrillBotCacheContext context, CounterManager counter) : base(context, counter)
+    public EmoteSuggestionRepository(GrillBotCacheContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Actions;
 using GrillBot.App.Infrastructure.Auth;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Data.Models.API.Guilds.GuildEvents;

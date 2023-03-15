@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Discord;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Data.Models.API.System;
 
@@ -15,13 +15,13 @@ public class Dashboard
     public long UsedMemory { get; set; }
     public bool IsActive { get; set; }
     public DateTime CurrentDateTime { get; set; }
-    
-    public Dictionary<string, int> ActiveOperations { get; set; }
-    public List<CounterStats> OperationStats { get; set; }
-    public Dictionary<string, long> TodayAvgTimes { get; set; }
-    public List<DashboardApiCall> InternalApiRequests { get; set; }
-    public List<DashboardApiCall> PublicApiRequests { get; set; }
-    public List<DashboardJob> Jobs { get; set; }
-    public List<DashboardCommand> Commands { get; set; }
+
+    public Dictionary<string, int> ActiveOperations { get; set; } = new();
+    public List<CounterStats> OperationStats { get; set; } = new();
+    public Dictionary<string, long> TodayAvgTimes { get; set; } = new();
+    public List<DashboardApiCall> InternalApiRequests { get; set; } = new();
+    public List<DashboardApiCall> PublicApiRequests { get; set; } = new();
+    public List<DashboardJob> Jobs { get; set; } = new();
+    public List<DashboardCommand> Commands { get; set; } = new();
     public List<DashboardService> Services { get; set; } = new();
 }

@@ -1,27 +1,27 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Cache.Services.Managers.MessageCache;
+﻿using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Managers.Discord;
 using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Handlers.ReactionAdded;
 
 public class EmoteStatsReactionAddedHandler : IReactionAddedEvent
 {
-    private EmoteHelper EmoteHelper { get; }
+    private IEmoteManager EmoteManager { get; }
     private IMessageCacheManager MessageCache { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public EmoteStatsReactionAddedHandler(EmoteHelper emoteHelper, IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder)
+    public EmoteStatsReactionAddedHandler(IEmoteManager emoteManager, IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder)
     {
-        EmoteHelper = emoteHelper;
+        EmoteManager = emoteManager;
         MessageCache = messageCache;
         DatabaseBuilder = databaseBuilder;
     }
 
     public async Task ProcessAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
     {
-        var supportedEmotes = await EmoteHelper.GetSupportedEmotesAsync();
+        var supportedEmotes = await EmoteManager.GetSupportedEmotesAsync();
         if (!Init(cachedChannel, supportedEmotes, reaction, out var textChannel, out var emote)) return;
 
         var message = cachedMessage.HasValue ? cachedMessage.Value : null;

@@ -2,7 +2,7 @@
 using GrillBot.Cache.Services;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Repository;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using Quartz;
 
 namespace GrillBot.App.Jobs;

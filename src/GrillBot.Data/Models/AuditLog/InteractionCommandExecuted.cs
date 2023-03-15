@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.Data.Models.AuditLog;
 
@@ -15,7 +15,7 @@ public class InteractionCommandExecuted
     public string Name { get; set; }
     public string ModuleName { get; set; }
     public string MethodName { get; set; }
-    public List<InteractionCommandParameter> Parameters { get; set; }
+    public List<InteractionCommandParameter>? Parameters { get; set; }
     public bool HasResponded { get; set; }
     public bool IsValidToken { get; set; }
     public bool IsSuccess { get; set; }
@@ -32,7 +32,7 @@ public class InteractionCommandExecuted
     {
     }
 
-    public InteractionCommandExecuted(ICommandInfo commandInfo, IResult result, int duration)
+    public InteractionCommandExecuted(ICommandInfo commandInfo, IResult? result, int duration)
     {
         Name = commandInfo.Name;
         ModuleName = commandInfo.Module.Name;
@@ -114,7 +114,7 @@ public class InteractionCommandExecuted
                 new InteractionCommandParameter { Name = $"ModalComponent({index}).Type", Type = "String", Value = component.Type.ToString() },
                 component.Values?.Count > 0 ? new InteractionCommandParameter { Name = $"ModalComponent({index}).Values", Type = "String", Value = string.Join(", ", component.Values) } : null,
                 !string.IsNullOrEmpty(component.Value) ? new InteractionCommandParameter { Name = $"ModalComponent({index}).Value", Type = "String", Value = component.Value } : null
-            }).Where(o => o != null)
+            }).Where(o => o != null).Select(o => o!)
         );
     }
 
@@ -128,11 +128,11 @@ public class InteractionCommandExecuted
     {
         return interaction switch
         {
-            SocketSlashCommand slashCommand => new InteractionCommandExecuted(commandInfo as SlashCommandInfo, slashCommand, result, duration),
-            SocketMessageCommand messageCommand => new InteractionCommandExecuted(commandInfo as MessageCommandInfo, messageCommand, result, duration),
-            SocketUserCommand userCommand => new InteractionCommandExecuted(commandInfo as UserCommandInfo, userCommand, result, duration),
-            SocketMessageComponent component => new InteractionCommandExecuted(commandInfo as ComponentCommandInfo, component, result, duration),
-            SocketModal modal => new InteractionCommandExecuted(commandInfo as ModalCommandInfo, modal, result, duration),
+            SocketSlashCommand slashCommand => new InteractionCommandExecuted((commandInfo as SlashCommandInfo)!, slashCommand, result, duration),
+            SocketMessageCommand messageCommand => new InteractionCommandExecuted((commandInfo as MessageCommandInfo)!, messageCommand, result, duration),
+            SocketUserCommand userCommand => new InteractionCommandExecuted((commandInfo as UserCommandInfo)!, userCommand, result, duration),
+            SocketMessageComponent component => new InteractionCommandExecuted((commandInfo as ComponentCommandInfo)!, component, result, duration),
+            SocketModal modal => new InteractionCommandExecuted((commandInfo as ModalCommandInfo)!, modal, result, duration),
             _ => throw new NotSupportedException("Unsupported interaction type")
         };
     }

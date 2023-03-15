@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Data.Models;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -10,10 +10,10 @@ namespace GrillBot.App.Handlers.ChannelUpdated;
 
 public class AuditChannelUpdatedHandler : IChannelUpdatedEvent
 {
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditChannelUpdatedHandler(CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditChannelUpdatedHandler(ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         CounterManager = counterManager;
         AuditLogWriteManager = auditLogWriteManager;

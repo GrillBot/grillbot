@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using GrillBot.Data.Models.API;
 using GrillBot.App.Actions;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Models.Pagination;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;

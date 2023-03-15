@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Actions.Api.V1.Unverify;
 using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using Quartz;
 
 namespace GrillBot.App.Jobs;

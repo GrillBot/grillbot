@@ -4,19 +4,19 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
+using GrillBot.Core.Infrastructure;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class ApiRequestFilter : IExtendedFilter, IApiObject
+public class ApiRequestFilter : IExtendedFilter, IDictionaryObject
 {
-    public string ControllerName { get; set; }
-    public string ActionName { get; set; }
-    public string PathTemplate { get; set; }
-    public RangeParams<int> Duration { get; set; }
-    public string Method { get; set; }
-    public string LoggedUserRole { get; set; }
+    public string? ControllerName { get; set; }
+    public string? ActionName { get; set; }
+    public string? PathTemplate { get; set; }
+    public RangeParams<int>? Duration { get; set; }
+    public string? Method { get; set; }
+    public string? LoggedUserRole { get; set; }
     public string? ApiGroupName { get; set; }
 
     public bool IsSet()
@@ -50,9 +50,9 @@ public class ApiRequestFilter : IExtendedFilter, IApiObject
     private bool IsDurationValid(TimeSpan duration)
         => Duration == null || (duration.TotalMilliseconds >= Duration.From && duration.TotalMilliseconds <= Duration.To);
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(ControllerName), ControllerName },
             { nameof(ActionName), ActionName },
@@ -62,7 +62,7 @@ public class ApiRequestFilter : IExtendedFilter, IApiObject
             { nameof(ApiGroupName), ApiGroupName }
         };
 
-        result.AddApiObject(Duration, nameof(Duration));
+        result.MergeDictionaryObjects(Duration, nameof(Duration));
         return result;
     }
 }

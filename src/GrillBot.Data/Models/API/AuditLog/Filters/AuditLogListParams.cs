@@ -1,19 +1,19 @@
-﻿using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Database;
-using GrillBot.Database.Entity;
+﻿using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
+public class AuditLogListParams : IQueryableModel<AuditLogItem>, IDictionaryObject
 {
     [DiscordId]
     public string? GuildId { get; set; }
@@ -183,7 +183,7 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
             CreatedTo = null;
     }
 
-    public Dictionary<string, string?> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
         var result = new Dictionary<string, string?>
         {
@@ -204,21 +204,21 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IApiObject
         for (var i = 0; i < ExcludedTypes.Count; i++)
             result.Add($"{nameof(ExcludedTypes)}[{i}]", $"{ExcludedTypes[i]} ({(int)ExcludedTypes[i]})");
 
-        result.AddApiObject(InfoFilter, nameof(InfoFilter));
-        result.AddApiObject(WarningFilter, nameof(WarningFilter));
-        result.AddApiObject(ErrorFilter, nameof(ErrorFilter));
-        result.AddApiObject(CommandFilter, nameof(CommandFilter));
-        result.AddApiObject(InteractionFilter, nameof(InteractionFilter));
-        result.AddApiObject(JobFilter, nameof(JobFilter));
-        result.AddApiObject(ApiRequestFilter, nameof(ApiRequestFilter));
-        result.AddApiObject(OverwriteCreatedFilter, nameof(OverwriteCreatedFilter));
-        result.AddApiObject(OverwriteDeletedFilter, nameof(OverwriteDeletedFilter));
-        result.AddApiObject(OverwriteUpdatedFilter, nameof(OverwriteUpdatedFilter));
-        result.AddApiObject(MemberRolesUpdatedFilter, nameof(MemberRolesUpdatedFilter));
-        result.AddApiObject(MemberUpdatedFilter, nameof(MemberUpdatedFilter));
-        result.AddApiObject(MessageDeletedFilter, nameof(MessageDeletedFilter));
-        result.AddApiObject(Sort, nameof(Sort));
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(InfoFilter, nameof(InfoFilter));
+        result.MergeDictionaryObjects(WarningFilter, nameof(WarningFilter));
+        result.MergeDictionaryObjects(ErrorFilter, nameof(ErrorFilter));
+        result.MergeDictionaryObjects(CommandFilter, nameof(CommandFilter));
+        result.MergeDictionaryObjects(InteractionFilter, nameof(InteractionFilter));
+        result.MergeDictionaryObjects(JobFilter, nameof(JobFilter));
+        result.MergeDictionaryObjects(ApiRequestFilter, nameof(ApiRequestFilter));
+        result.MergeDictionaryObjects(OverwriteCreatedFilter, nameof(OverwriteCreatedFilter));
+        result.MergeDictionaryObjects(OverwriteDeletedFilter, nameof(OverwriteDeletedFilter));
+        result.MergeDictionaryObjects(OverwriteUpdatedFilter, nameof(OverwriteUpdatedFilter));
+        result.MergeDictionaryObjects(MemberRolesUpdatedFilter, nameof(MemberRolesUpdatedFilter));
+        result.MergeDictionaryObjects(MemberUpdatedFilter, nameof(MemberUpdatedFilter));
+        result.MergeDictionaryObjects(MessageDeletedFilter, nameof(MessageDeletedFilter));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
 
         return result;
     }

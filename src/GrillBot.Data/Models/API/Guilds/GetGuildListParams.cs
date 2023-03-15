@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
-using GrillBot.Database;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
 
 namespace GrillBot.Data.Models.API.Guilds;
 
-public class GetGuildListParams : IQueryableModel<Database.Entity.Guild>, IApiObject
+public class GetGuildListParams : IQueryableModel<Database.Entity.Guild>, IDictionaryObject
 {
-    public string NameQuery { get; set; }
+    public string? NameQuery { get; set; }
     public PaginatedParams Pagination { get; set; } = new();
 
     public IQueryable<Database.Entity.Guild> SetIncludes(IQueryable<Database.Entity.Guild> query) => query;
@@ -27,14 +27,14 @@ public class GetGuildListParams : IQueryableModel<Database.Entity.Guild>, IApiOb
         return query.OrderBy(o => o.Name);
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(NameQuery), NameQuery }
         };
 
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

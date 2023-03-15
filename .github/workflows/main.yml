@@ -8,6 +8,10 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
 jobs:
   CheckStaticContent:
     runs-on: ubuntu-latest
@@ -32,13 +36,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Try build container
-        shell: bash
-        working-directory: src
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
+          source-url: https://nuget.pkg.github.com/GrillBot/index.json
+      - name: Install dependencies
         run: |
-          sudo docker build -t grillbot-test-image -f ./Dockerfile .
-          sudo docker rmi $(docker images --format "{{.Repository}}:{{.Tag}}" | grep 'grillbot-test-image')
+          dotnet restore -r linux-x64 src/GrillBot.Common/
+          dotnet restore -r linux-x64 src/GrillBot.Cache/
+          dotnet restore -r linux-x64 src/GrillBot.Database/
+          dotnet restore -r linux-x64 src/GrillBot.Data/
+          dotnet restore -r linux-x64 src/GrillBot.App/
+      - name: Build (DEBUG)
+        run: dotnet build -c Debug -r linux-x64 --no-self-contained --no-restore src/GrillBot.App/
+      - name: Build (RELEASE)
+        run: dotnet build -c Release -r linux-x64 --no-self-contained --no-restore src/GrillBot.App/
   BuildContainer:
     runs-on: ubuntu-latest
     needs: [CheckStaticContent, Build]

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -15,13 +14,10 @@ namespace GrillBot.App.Controllers;
 [Route("api/publicApiClients")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class PublicApiClientsController : Controller
+public class PublicApiClientsController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public PublicApiClientsController(IServiceProvider serviceProvider)
+    public PublicApiClientsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -31,12 +27,7 @@ public class PublicApiClientsController : Controller
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ApiClient>>> GetClientsListAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<GetClientsList>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetClientsList, List<ApiClient>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Create new client.
@@ -50,9 +41,7 @@ public class PublicApiClientsController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<CreateClient>();
-        await action.ProcessAsync(parameters);
-
+        await ProcessActionAsync<CreateClient>(action => action.ProcessAsync(parameters));
         return Ok();
     }
 
@@ -66,9 +55,7 @@ public class PublicApiClientsController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteClientAsync(string id)
     {
-        var action = ServiceProvider.GetRequiredService<DeleteClient>();
-        await action.ProcessAsync(id);
-
+        await ProcessActionAsync<DeleteClient>(action => action.ProcessAsync(id));
         return Ok();
     }
 
@@ -86,9 +73,7 @@ public class PublicApiClientsController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<UpdateClient>();
-        await action.ProcessAsync(id, parameters);
-
+        await ProcessActionAsync<UpdateClient>(action => action.ProcessAsync(id, parameters));
         return Ok();
     }
 }

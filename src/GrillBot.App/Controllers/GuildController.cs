@@ -1,4 +1,6 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V1.Guild;
+using GrillBot.App.Actions.Api.V2.Events;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
@@ -8,20 +10,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/guild")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class GuildController : Controller
+public class GuildController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public GuildController(IServiceProvider serviceProvider)
+    public GuildController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -37,9 +35,7 @@ public class GuildController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetGuildList>();
-        var result = await action.ProcessAsync(parameters);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetGuildList, PaginatedResponse<Guild>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -51,12 +47,7 @@ public class GuildController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id)
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetGuildDetail>();
-        var result = await action.ProcessAsync(id);
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetGuildDetail, GuildDetail>(action => action.ProcessAsync(id)));
 
     /// <summary>
     /// Update guild
@@ -72,11 +63,7 @@ public class GuildController : Controller
     public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.UpdateGuild>();
-        var result = await action.ProcessAsync(id, parameters);
-
-        return Ok(result);
+        return Ok(await ProcessActionAsync<UpdateGuild, GuildDetail>(action => action.ProcessAsync(id, parameters)));
     }
 
     /// <summary>
@@ -96,11 +83,7 @@ public class GuildController : Controller
     public async Task<ActionResult<ulong>> CreateScheduledEventAsync(ulong guildId, [FromBody] ScheduledEventParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V2.Events.CreateScheduledEvent>();
-        var result = await action.ProcessAsync(guildId, parameters);
-
-        return Ok(result);
+        return Ok(await ProcessActionAsync<CreateScheduledEvent, ulong>(action => action.ProcessAsync(guildId, parameters)));
     }
 
     /// <summary>
@@ -124,9 +107,7 @@ public class GuildController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V2.Events.UpdateScheduledEvent>();
-        await action.ProcessAsync(guildId, eventId, parameters);
-
+        await ProcessActionAsync<UpdateScheduledEvent>(action => action.ProcessAsync(guildId, eventId, parameters));
         return Ok();
     }
 
@@ -148,9 +129,7 @@ public class GuildController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> CancelScheduledEventAsync(ulong guildId, ulong eventId)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V2.Events.CancelScheduledEvent>();
-        await action.ProcessAsync(guildId, eventId);
-
+        await ProcessActionAsync<CancelScheduledEvent>(action => action.ProcessAsync(guildId, eventId));
         return Ok();
     }
 }

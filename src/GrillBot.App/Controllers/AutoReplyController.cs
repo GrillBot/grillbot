@@ -1,11 +1,11 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V1.AutoReply;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AutoReply;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -13,13 +13,10 @@ namespace GrillBot.App.Controllers;
 [Route("api/autoreply")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class AutoReplyController : Controller
+public class AutoReplyController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public AutoReplyController(IServiceProvider serviceProvider)
+    public AutoReplyController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -29,12 +26,7 @@ public class AutoReplyController : Controller
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<AutoReplyItem>>> GetAutoReplyListAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.GetAutoReplyList>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetAutoReplyList, List<AutoReplyItem>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Get reply item
@@ -46,12 +38,7 @@ public class AutoReplyController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AutoReplyItem>> GetItemAsync(long id)
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.GetAutoReplyItem>();
-        var item = await action.ProcessAsync(id);
-
-        return Ok(item);
-    }
+        => Ok(await ProcessActionAsync<GetAutoReplyItem, AutoReplyItem>(action => action.ProcessAsync(id)));
 
     /// <summary>
     /// Create new reply item.
@@ -65,10 +52,7 @@ public class AutoReplyController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.CreateAutoReplyItem>();
-        var result = await action.ProcessAsync(parameters);
-
-        return Ok(result);
+        return Ok(await ProcessActionAsync<CreateAutoReplyItem, AutoReplyItem>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -87,10 +71,7 @@ public class AutoReplyController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.UpdateAutoReplyItem>();
-        var item = await action.ProcessAsync(id, parameters);
-
-        return Ok(item);
+        return Ok(await ProcessActionAsync<UpdateAutoReplyItem, AutoReplyItem>(action => action.ProcessAsync(id, parameters)));
     }
 
     /// <summary>
@@ -104,9 +85,7 @@ public class AutoReplyController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> RemoveItemAsync(long id)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AutoReply.RemoveAutoReplyItem>();
-        await action.ProcessAsync(id);
-
+        await ProcessActionAsync<RemoveAutoReplyItem>(action => action.ProcessAsync(id));
         return Ok();
     }
 }

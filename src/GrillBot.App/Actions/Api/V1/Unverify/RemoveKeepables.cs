@@ -14,7 +14,7 @@ public class RemoveKeepables : ApiAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(string group, string name = null)
+    public async Task ProcessAsync(string group, string? name = null)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -13,13 +12,10 @@ namespace GrillBot.App.Controllers;
 [Route("api/jobs")]
 [ApiExplorerSettings(GroupName = "v1")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-public class ScheduledJobsController : Controller
+public class ScheduledJobsController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public ScheduledJobsController(IServiceProvider serviceProvider)
+    public ScheduledJobsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -29,12 +25,7 @@ public class ScheduledJobsController : Controller
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ScheduledJob>>> GetScheduledJobsAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<GetScheduledJobs>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetScheduledJobs, List<ScheduledJob>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Trigger a scheduled job.
@@ -44,9 +35,7 @@ public class ScheduledJobsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> RunScheduledJobAsync(string jobName)
     {
-        var action = ServiceProvider.GetRequiredService<RunScheduledJob>();
-        await action.ProcessAsync(jobName);
-
+        await ProcessActionAsync<RunScheduledJob>(action => action.ProcessAsync(jobName));
         return Ok();
     }
 
@@ -60,9 +49,7 @@ public class ScheduledJobsController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateJobAsync(string jobName, bool enabled)
     {
-        var action = ServiceProvider.GetRequiredService<UpdateJob>();
-        await action.ProcessAsync(jobName, enabled);
-
+        await ProcessActionAsync<UpdateJob>(action => action.ProcessAsync(jobName, enabled));
         return Ok();
     }
 }

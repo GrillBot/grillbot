@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V1.Reminder;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Reminder;
@@ -13,13 +14,10 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/remind")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class ReminderController : Controller
+public class ReminderController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public ReminderController(IServiceProvider serviceProvider)
+    public ReminderController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -34,11 +32,7 @@ public class ReminderController : Controller
     public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromBody] GetReminderListParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.GetReminderList>();
-        var result = await action.ProcessAsync(parameters);
-
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetReminderList, PaginatedResponse<RemindMessage>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -56,11 +50,14 @@ public class ReminderController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Gone)]
     public async Task<ActionResult> CancelRemindAsync(long id, [FromQuery] bool notify = false)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Reminder.FinishRemind>();
-        await action.ProcessAsync(id, notify, true);
+        var (isGone, errorMessage) = await ProcessActionAsync<FinishRemind, (bool, string?)>(async action =>
+        {
+            await action.ProcessAsync(id, notify, true);
+            return (action.IsGone, action.ErrorMessage);
+        });
 
-        if (action.IsGone)
-            return StatusCode((int)HttpStatusCode.Gone, new MessageResponse(action.ErrorMessage));
+        if (isGone)
+            return StatusCode((int)HttpStatusCode.Gone, new MessageResponse(errorMessage!));
         return Ok();
     }
 }

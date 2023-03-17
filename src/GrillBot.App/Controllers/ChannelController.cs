@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V1.Channel;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Channels;
@@ -6,20 +7,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/channel")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class ChannelController : Controller
+public class ChannelController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public ChannelController(IServiceProvider serviceProvider)
+    public ChannelController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -35,9 +32,7 @@ public class ChannelController : Controller
     {
         ApiAction.Init(this, pagination);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelUsers>();
-        var result = await action.ProcessAsync(id, pagination);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetChannelUsers, PaginatedResponse<ChannelUserStatItem>>(action => action.ProcessAsync(id, pagination)));
     }
 
     /// <summary>
@@ -58,8 +53,7 @@ public class ChannelController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.SendMessageToChannel>();
-        await action.ProcessAsync(guildId, channelId, parameters);
+        await ProcessActionAsync<SendMessageToChannel>(action => action.ProcessAsync(guildId, channelId, parameters));
         return Ok();
     }
 
@@ -74,9 +68,7 @@ public class ChannelController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelList>();
-        var result = await action.ProcessAsync(parameters);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetChannelList, PaginatedResponse<GuildChannelListItem>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -87,8 +79,7 @@ public class ChannelController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> ClearChannelCacheAsync(ulong guildId, ulong channelId)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.ClearMessageCache>();
-        await action.ProcessAsync(guildId, channelId);
+        await ProcessActionAsync<ClearMessageCache>(action => action.ProcessAsync(guildId, channelId));
         return Ok();
     }
 
@@ -103,11 +94,7 @@ public class ChannelController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id)
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelDetail>();
-        var result = await action.ProcessAsync(id);
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetChannelDetail, ChannelDetail>(action => action.ProcessAsync(id)));
 
     /// <summary>
     /// Update channel
@@ -126,8 +113,7 @@ public class ChannelController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.UpdateChannel>();
-        await action.ProcessAsync(id, parameters);
+        await ProcessActionAsync<UpdateChannel>(action => action.ProcessAsync(id, parameters));
         return Ok();
     }
 
@@ -139,9 +125,5 @@ public class ChannelController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelboard>();
-        var result = await action.ProcessAsync();
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetChannelboard, List<ChannelboardItem>>(action => action.ProcessAsync()));
 }

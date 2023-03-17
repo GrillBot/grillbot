@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V1.AuditLog;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
@@ -7,20 +8,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/auditlog")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class AuditLogController : Controller
+public class AuditLogController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public AuditLogController(IServiceProvider serviceProvider)
+    public AuditLogController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -34,9 +31,7 @@ public class AuditLogController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult> RemoveItemAsync(long id)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.RemoveItem>();
-        await action.ProcessAsync(id);
-
+        await ProcessActionAsync<RemoveItem>(action => action.ProcessAsync(id));
         return Ok();
     }
 
@@ -53,9 +48,7 @@ public class AuditLogController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.GetAuditLogList>();
-        var result = await action.ProcessAsync(parameters);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetAuditLogList, PaginatedResponse<AuditLogListItem>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -69,10 +62,8 @@ public class AuditLogController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<IActionResult> GetFileContentAsync(long id, long fileId)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.GetFileContent>();
-        var result = await action.ProcessAsync(id, fileId);
-
-        return File(result.content, result.contentType);
+        var (content, contentType) = await ProcessActionAsync<GetFileContent, (byte[], string)>(action => action.ProcessAsync(id, fileId));
+        return File(content, contentType);
     }
 
     /// <summary>
@@ -87,9 +78,7 @@ public class AuditLogController : Controller
     {
         ApiAction.Init(this, request);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.AuditLog.CreateLogItem>();
-        await action.ProcessAsync(request);
-
+        await ProcessActionAsync<CreateLogItem>(action => action.ProcessAsync(request));
         return Ok();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V1.Emote;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Validation;
 using GrillBot.Data.Models.API.Emotes;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -14,13 +14,10 @@ namespace GrillBot.App.Controllers;
 [Route("api/emotes")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class EmotesController : Controller
+public class EmotesController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public EmotesController(IServiceProvider serviceProvider)
+    public EmotesController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -34,10 +31,7 @@ public class EmotesController : Controller
     public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfSupportedEmotesAsync([FromBody] EmotesListParams @params)
     {
         ApiAction.Init(this, @params);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetStatsOfEmotes>();
-        var result = await action.ProcessAsync(@params, false);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetStatsOfEmotes, PaginatedResponse<EmoteStatItem>>(action => action.ProcessAsync(@params, false)));
     }
 
     /// <summary>
@@ -51,10 +45,7 @@ public class EmotesController : Controller
     public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfUnsupportedEmotesAsync([FromBody] EmotesListParams @params)
     {
         ApiAction.Init(this, @params);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetStatsOfEmotes>();
-        var result = await action.ProcessAsync(@params, true);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetStatsOfEmotes, PaginatedResponse<EmoteStatItem>>(action => action.ProcessAsync(@params, true)));
     }
 
     /// <summary>
@@ -68,10 +59,7 @@ public class EmotesController : Controller
     public async Task<ActionResult<int>> MergeStatsToAnotherAsync([FromBody] MergeEmoteStatsParams @params)
     {
         ApiAction.Init(this, @params);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.MergeStats>();
-        var result = await action.ProcessAsync(@params);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<MergeStats, int>(action => action.ProcessAsync(@params)));
     }
 
     /// <summary>
@@ -85,10 +73,5 @@ public class EmotesController : Controller
     public async Task<ActionResult<int>> RemoveStatisticsAsync(
         [Required(ErrorMessage = "Pro smazání je vyžadováno EmoteId.")] [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
         string emoteId
-    )
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.RemoveStats>();
-        var result = await action.ProcessAsync(emoteId);
-        return Ok(result);
-    }
+    ) => Ok(await ProcessActionAsync<RemoveStats, int>(action => action.ProcessAsync(emoteId)));
 }

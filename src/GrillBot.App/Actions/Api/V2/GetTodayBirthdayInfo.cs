@@ -2,6 +2,7 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Data.Models.API;
 
 namespace GrillBot.App.Actions.Api.V2;
 
@@ -21,13 +22,14 @@ public class GetTodayBirthdayInfo : ApiAction
         Texts = texts;
     }
 
-    public async Task<string> ProcessAsync()
+    public async Task<MessageResponse> ProcessAsync()
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var todayBirthdayUsers = await repository.User.GetUsersWithTodayBirthday();
         var users = await TransformUsersAsync(todayBirthdayUsers);
-        return Format(users);
+        var message = Format(users);
+        return new MessageResponse(message);
     }
 
     private async Task<List<(IUser user, int? age)>> TransformUsersAsync(List<Database.Entity.User> users)

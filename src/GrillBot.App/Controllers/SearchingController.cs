@@ -1,4 +1,6 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V1.Searching;
+using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Searching;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,13 +13,10 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/search")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class SearchingController : Controller
+public class SearchingController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public SearchingController(IServiceProvider serviceProvider)
+    public SearchingController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -32,10 +31,7 @@ public class SearchingController : Controller
     public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromBody] GetSearchingListParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Searching.GetSearchingList>();
-        var result = await action.ProcessAsync(parameters);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetSearchingList, PaginatedResponse<SearchingListItem>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -47,8 +43,11 @@ public class SearchingController : Controller
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Searching.RemoveSearches>();
-        await action.ProcessAsync(ids);
+        var idsLogData = new DictionaryObject<string, long>();
+        idsLogData.FromCollection(ids.Select((id, index) => new KeyValuePair<string, long>($"[{index}]", id)));
+        ApiAction.Init(this, idsLogData);
+
+        await ProcessActionAsync<RemoveSearches>(action => action.ProcessAsync(ids));
         return Ok();
     }
 }

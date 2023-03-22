@@ -19,18 +19,22 @@ public abstract class RestServiceBase
         HttpClient = clientFactory();
     }
 
-    protected async Task<TResult> ProcessRequestAsync<TResult>(Func<Task<HttpResponseMessage>> executeRequest, Func<HttpResponseMessage, Task<TResult>> fetchResult)
+    protected async Task<TResult> ProcessRequestAsync<TResult>(Func<Task<HttpResponseMessage>> executeRequest, Func<HttpResponseMessage, Task<TResult>> fetchResult,
+        Func<HttpResponseMessage, Task>? checkResponse = null)
     {
         using (CounterManager.Create($"Service.{ServiceName}"))
         {
             using var response = await executeRequest();
 
-            await EnsureSuccessResponseAsync(response);
+            if (checkResponse != null)
+                await checkResponse(response);
+            else
+                await EnsureSuccessResponseAsync(response);
             return await fetchResult(response);
         }
     }
 
-    private static async Task EnsureSuccessResponseAsync(HttpResponseMessage response)
+    protected static async Task EnsureSuccessResponseAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode) return;
 

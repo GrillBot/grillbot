@@ -1,4 +1,7 @@
-﻿using GrillBot.Core.Managers.Performance;
+﻿using System.Net;
+using System.Net.Http.Json;
+using GrillBot.Core.Managers.Performance;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Common.Services;
 
@@ -41,5 +44,11 @@ public abstract class RestServiceBase
         var content = await response.Content.ReadAsStringAsync();
         var errorMessage = $"API returned status code {response.StatusCode}\n{content}";
         throw new HttpRequestException(errorMessage, null, response.StatusCode) { Data = { { "ResponseContent", content } } };
+    }
+
+    protected static async Task<ValidationProblemDetails?> DesrializeValidationErrorsAsync(HttpResponseMessage response)
+    {
+        if (response.StatusCode != HttpStatusCode.BadRequest) return null;
+        return await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
     }
 }

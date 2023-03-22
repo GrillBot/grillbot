@@ -45,8 +45,8 @@ public class BirthdayCronJob : Job
         }
 
         var result = await GetTodayBirthdayInfo.ProcessAsync();
-        context.Result = result;
+        context.Result = result.Message;
 
-        await channel.SendMessageAsync(result);
+        await channel.SendMessageAsync(result.Message);
     }
 }

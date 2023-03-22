@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
-using GrillBot.Common.Infrastructure;
+using GrillBot.Core.Infrastructure;
 
 namespace GrillBot.Data.Models.API.Channels;
 
-public class UpdateChannelParams : IApiObject
+public class UpdateChannelParams : IDictionaryObject
 {
     public long Flags { get; set; }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, string?>
         {
             { nameof(Flags), Flags.ToString() }
         };

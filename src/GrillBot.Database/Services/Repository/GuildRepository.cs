@@ -1,17 +1,19 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models.Guilds;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class GuildRepository : RepositoryBase
+public class GuildRepository : RepositoryBase<GrillBotContext>
 {
-    public GuildRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public GuildRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

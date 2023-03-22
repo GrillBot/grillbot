@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Managers.Performance;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -9,11 +9,11 @@ namespace GrillBot.App.Handlers.GuildMemberUpdated;
 public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
 {
     private AuditLogManager AuditLogManager { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditUserRoleUpdatedHandler(AuditLogManager auditLogManager, CounterManager counterManager, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager)
+    public AuditUserRoleUpdatedHandler(AuditLogManager auditLogManager, ICounterManager counterManager, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager)
     {
         DatabaseBuilder = databaseBuilder;
         CounterManager = counterManager;

@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 
 namespace GrillBot.App.Actions.Commands.Unverify;
 

@@ -3,7 +3,7 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -37,8 +37,8 @@ public class ServiceTransferPoints : ApiAction
         await repository.Guild.GetOrCreateGuildAsync(to.Guild);
         var toGuildUser = await repository.GuildUser.GetOrCreateGuildUserAsync(to);
 
-        var fromUserTransaction = PointsHelper.CreateTransaction(fromGuildUser, null, 0, true);
-        var toUserTransaction = PointsHelper.CreateTransaction(toGuildUser, null, 0, true);
+        var fromUserTransaction = PointsHelper.CreateTransaction(fromGuildUser!, null, 0, true)!;
+        var toUserTransaction = PointsHelper.CreateTransaction(toGuildUser, null, 0, true)!;
 
         fromUserTransaction.Points = -amount;
         toUserTransaction.Points = amount;

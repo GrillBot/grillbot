@@ -1,9 +1,9 @@
 ﻿using System.Net.Http.Json;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Models.Pagination;
-using GrillBot.Common.Services.Common.Models.Diagnostics;
 using GrillBot.Common.Services.RubbergodService.Models.DirectApi;
 using GrillBot.Common.Services.RubbergodService.Models.Karma;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.Diagnostics.Models;
 
 namespace GrillBot.Common.Services.RubbergodService;
 
@@ -11,7 +11,7 @@ public class RubbergodServiceClient : RestServiceBase, IRubbergodServiceClient
 {
     public override string ServiceName => "RubbergodService";
 
-    public RubbergodServiceClient(CounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, () => clientFactory.CreateClient("RubbergodService"))
+    public RubbergodServiceClient(ICounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, () => clientFactory.CreateClient("RubbergodService"))
     {
     }
 

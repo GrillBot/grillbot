@@ -1,22 +1,23 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using GrillBot.App.Actions.Api.V1.Channel;
+using GrillBot.App.Actions.Api.V1.Emote;
+using GrillBot.App.Actions.Api.V1.Guild;
+using GrillBot.App.Actions.Api.V1.PublicApiClients;
+using GrillBot.App.Actions.Api.V1.User;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Data.Models.API.Emotes;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/data")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class DataController : Controller
+public class DataController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public DataController(IServiceProvider serviceProvider)
+    public DataController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -26,12 +27,7 @@ public class DataController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetAvailableGuilds>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetAvailableGuilds, Dictionary<string, string>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Get non paginated list of channels.
@@ -42,12 +38,7 @@ public class DataController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Channel.GetChannelSimpleList>();
-        var result = await action.ProcessAsync(guildId, ignoreThreads);
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetChannelSimpleList, Dictionary<string, string>>(action => action.ProcessAsync(guildId, ignoreThreads)));
 
     /// <summary>
     /// Get roles
@@ -56,12 +47,7 @@ public class DataController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetRolesAsync(ulong? guildId)
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Guild.GetRoles>();
-        var result = await action.ProcessAsync(guildId);
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetRoles, Dictionary<string, string>>(action => action.ProcessAsync(guildId)));
 
     /// <summary>
     /// Gets non-paginated list of users.
@@ -71,12 +57,7 @@ public class DataController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null, ulong? guildId = null)
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.User.GetAvailableUsers>();
-        var result = await action.ProcessAsync(bots, guildId);
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetAvailableUsers, Dictionary<string, string>>(action => action.ProcessAsync(bots, guildId)));
 
     /// <summary>
     /// Get currently supported emotes.
@@ -85,12 +66,7 @@ public class DataController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<EmoteItem>>> GetSupportedEmotes()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Emote.GetSupportedEmotes>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetSupportedEmotes, List<EmoteItem>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Get list of methods available from public api.
@@ -100,10 +76,5 @@ public class DataController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<List<string>> GetPublicApiMethods()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.PublicApiClients.GetPublicApiMethods>();
-        var result = action.Process();
-
-        return Ok(result);
-    }
+        => Ok(ProcessAction<GetPublicApiMethods, List<string>>(action => action.Process()));
 }

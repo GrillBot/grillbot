@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
 
 namespace GrillBot.Data.Models.API.Users;
 
-public class KarmaListParams : IApiObject
+public class KarmaListParams : IDictionaryObject
 {
     public PaginatedParams Pagination { get; set; } = new();
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>();
-        result.AddApiObject(Pagination, nameof(Pagination));
+        var result = new Dictionary<string, string?>();
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
 
         return result;
     }

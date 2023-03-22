@@ -1,29 +1,29 @@
 ﻿using System.Collections;
-using GrillBot.App.Helpers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Managers.Discord;
 
 namespace GrillBot.App.Handlers.MessageReceived;
 
 public class EmoteMessageReceivedHandler : IMessageReceivedEvent
 {
-    private EmoteHelper EmoteHelper { get; }
+    private IEmoteManager EmoteManager { get; }
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
     private ITextChannel? Channel { get; set; }
     private IGuildUser? Author { get; set; }
 
-    public EmoteMessageReceivedHandler(EmoteHelper emoteHelper, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder)
+    public EmoteMessageReceivedHandler(IEmoteManager emoteManager, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder)
     {
-        EmoteHelper = emoteHelper;
+        EmoteManager = emoteManager;
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;
     }
 
     public async Task ProcessAsync(IMessage message)
     {
-        var supportedEmotes = await EmoteHelper.GetSupportedEmotesAsync();
+        var supportedEmotes = await EmoteManager.GetSupportedEmotesAsync();
         if (!Init(message, supportedEmotes)) return;
 
         var emotes = message.GetEmotesFromMessage(supportedEmotes).ToList();

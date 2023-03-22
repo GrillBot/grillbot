@@ -18,7 +18,7 @@ public static class ActionsExtensions
         // Common
         services
             .AddScoped<ApiBridgeAction>();
-        
+
         // V1
         // AuditLog
         services
@@ -111,7 +111,7 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Searching.GetSearchingList>()
             .AddScoped<Api.V1.Searching.RemoveSearches>();
-        
+
         // Services
         services
             .AddScoped<GetServiceInfo>();
@@ -174,18 +174,18 @@ public static class ActionsExtensions
         services
             .AddScoped<Commands.Emotes.EmoteInfo>()
             .AddScoped<Commands.Emotes.GetEmotesList>();
-        
+
         // Guild
         services
             .AddScoped<Commands.Guild.GuildInfo>();
-        
+
         // EmoteSuggestion
         services
             .AddScoped<Commands.EmoteSuggestion.FormSubmitted>()
             .AddScoped<Commands.EmoteSuggestion.InitSuggestion>()
             .AddScoped<Commands.EmoteSuggestion.ProcessToVote>()
             .AddScoped<Commands.EmoteSuggestion.SetApprove>();
-        
+
         // Images
         services
             .AddScoped<Commands.Images.ImageCreator>();
@@ -219,6 +219,10 @@ public static class ActionsExtensions
             .AddScoped<Commands.Unverify.UnverifyList>();
 
         services
+            .AddScoped<Commands.Permissions.PermissionsCleaner>()
+            .AddScoped<Commands.Permissions.PermissionSetter>();
+
+        services
             .AddScoped<Commands.BotInfo>()
             .AddScoped<Commands.ChannelInfo>()
             .AddScoped<Commands.CleanChannelMessages>()
@@ -228,8 +232,6 @@ public static class ActionsExtensions
             .AddScoped<Commands.PurgePins>()
             .AddScoped<Commands.SendMessageToChannel>()
             .AddScoped<Commands.SolveExpression>()
-            .AddScoped<Commands.PermissionsCleaner>()
-            .AddScoped<Commands.PermissionsReader>()
             .AddScoped<Commands.RolesReader>()
             .AddScoped<Commands.UserInfo>()
             .AddScoped<Commands.UserAccessList>()

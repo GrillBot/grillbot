@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using GrillBot.Data.Models.API.AutoReply;
 
 namespace GrillBot.App.Actions.Api.V1.AutoReply;

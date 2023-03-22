@@ -36,10 +36,7 @@ public class SystemController : Infrastructure.ControllerBase
     [HttpGet("eventLog")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<string[]> GetEventLog()
-    {
-        var result = ProcessAction<Actions.Api.V1.System.GetEventLog, string[]>(action => action.Process());
-        return Ok(result);
-    }
+        => Ok(ProcessAction<Actions.Api.V1.System.GetEventLog, string[]>(action => action.Process()));
 
     /// <summary>
     /// Get live dashboard.
@@ -47,10 +44,7 @@ public class SystemController : Infrastructure.ControllerBase
     [HttpGet("dashboard")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dashboard>> GetDashboardAsync()
-    {
-        var result = await ProcessActionAsync<Actions.Api.V1.System.GetDashboard, Dashboard>(action => action.ProcessAsync());
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<Actions.Api.V1.System.GetDashboard, Dashboard>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Get info about microservice.
@@ -58,8 +52,5 @@ public class SystemController : Infrastructure.ControllerBase
     [HttpGet("service/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<ServiceInfo>> GetServiceInfoAsync(string id)
-    {
-        var result = await ProcessActionAsync<Actions.Api.V1.Services.GetServiceInfo, ServiceInfo>(action => action.ProcessAsync(id));
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<Actions.Api.V1.Services.GetServiceInfo, ServiceInfo>(action => action.ProcessAsync(id)));
 }

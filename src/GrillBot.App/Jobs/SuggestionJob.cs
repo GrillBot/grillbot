@@ -3,12 +3,11 @@ using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Managers.EmoteSuggestion;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
 using GrillBot.Database.Services.Repository;
 using Quartz;
-using EmoteSuggestionManager = GrillBot.Cache.Services.Managers.EmoteSuggestionManager;
 
 namespace GrillBot.App.Jobs;
 
@@ -16,17 +15,15 @@ namespace GrillBot.App.Jobs;
 [DisallowUninitialized]
 public class SuggestionJob : Job
 {
-    private EmoteSuggestionManager CacheManager { get; }
     private EmoteSuggestionHelper Helper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMessageCacheManager MessageCacheManager { get; }
     private new IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
 
-    public SuggestionJob(IServiceProvider serviceProvider, EmoteSuggestionManager cacheManager, EmoteSuggestionHelper helper, GrillBotDatabaseBuilder databaseBuilder,
+    public SuggestionJob(IServiceProvider serviceProvider, EmoteSuggestionHelper helper, GrillBotDatabaseBuilder databaseBuilder,
         IMessageCacheManager messageCacheManager, IDiscordClient discordClient, ITextsManager texts) : base(serviceProvider)
     {
-        CacheManager = cacheManager;
         Helper = helper;
         MessageCacheManager = messageCacheManager;
         DatabaseBuilder = databaseBuilder;

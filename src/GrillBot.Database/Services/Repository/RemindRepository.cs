@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class RemindRepository : RepositoryBase
+public class RemindRepository : RepositoryBase<GrillBotContext>
 {
-    public RemindRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public RemindRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

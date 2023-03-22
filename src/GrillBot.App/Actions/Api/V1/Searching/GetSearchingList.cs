@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Searching;
 
 namespace GrillBot.App.Actions.Api.V1.Searching;

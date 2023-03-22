@@ -1,10 +1,10 @@
 ﻿using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Common.Services.Common;
-using GrillBot.Common.Services.Common.Models.Diagnostics;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.RubbergodService;
+using GrillBot.Core.Services.Diagnostics.Models;
 using GrillBot.Data.Models.API.Services;
 
 namespace GrillBot.App.Actions.Api.V1.Services;
@@ -77,12 +77,12 @@ public class GetServiceInfo : ApiAction
 
         return new DiagnosticInfo
         {
-            Version = await GraphicsClient.GetVersionAsync(),
             Endpoints = stats.Endpoints,
             Uptime = metrics.Uptime,
             MeasuredFrom = stats.MeasuredFrom,
             RequestsCount = stats.RequestsCount,
-            UsedMemory = metrics.UsedMemory
+            UsedMemory = metrics.UsedMemory,
+            CpuTime = stats.CpuTime
         };
     }
 }

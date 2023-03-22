@@ -1,5 +1,5 @@
-﻿using GrillBot.Database.Services;
-using Microsoft.AspNetCore.Builder;
+﻿using GrillBot.Core;
+using GrillBot.Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,23 +9,8 @@ public static class DatabaseExtensions
 {
     public static IServiceCollection AddDatabase(this IServiceCollection services, string connectionString)
     {
-        services
-            .AddDbContext<GrillBotContext>(b =>
-            {
-                b.UseNpgsql(connectionString);
-                b.EnableDetailedErrors();
-                b.EnableThreadSafetyChecks();
-            }, optionsLifetime: ServiceLifetime.Singleton)
+        return services
+            .AddDatabaseContext<GrillBotContext>(b => b.UseNpgsql(connectionString))
             .AddSingleton<GrillBotDatabaseBuilder>();
-
-        return services;
-    }
-
-    public static void InitDatabase(this IApplicationBuilder app)
-    {
-        var builder = app.ApplicationServices.GetRequiredService<GrillBotDatabaseBuilder>();
-
-        using var repository = builder.CreateRepository();
-        repository.ProcessMigrations();
     }
 }

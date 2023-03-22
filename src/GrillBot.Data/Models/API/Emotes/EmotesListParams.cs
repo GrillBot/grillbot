@@ -1,5 +1,4 @@
-﻿using GrillBot.Database;
-using GrillBot.Database.Entity;
+﻿using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using NSwag.Annotations;
@@ -7,26 +6,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Emotes;
 
-public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IApiObject
+public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IDictionaryObject
 {
-    public string GuildId { get; set; }
+    public string? GuildId { get; set; }
 
     [OpenApiIgnore]
     [JsonIgnore]
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
 
-    public RangeParams<int?> UseCount { get; set; }
-    public RangeParams<DateTime?> FirstOccurence { get; set; }
-    public RangeParams<DateTime?> LastOccurence { get; set; }
+    public RangeParams<int?>? UseCount { get; set; }
+    public RangeParams<DateTime?>? FirstOccurence { get; set; }
+    public RangeParams<DateTime?>? LastOccurence { get; set; }
 
     public bool FilterAnimated { get; set; }
-    public string EmoteName { get; set; }
+    public string? EmoteName { get; set; }
 
     /// <summary>
     /// Available: UseCount, FirstOccurence, LastOccurence, EmoteId.
@@ -39,7 +39,7 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IApiObject
     public IQueryable<EmoteStatisticItem> SetIncludes(IQueryable<EmoteStatisticItem> query)
     {
         return query
-            .Include(o => o.User.User)
+            .Include(o => o.User!.User)
             .Include(o => o.Guild);
     }
 
@@ -62,18 +62,18 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IApiObject
 
     public IQueryable<EmoteStatisticItem> SetSort(IQueryable<EmoteStatisticItem> query) => query;
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(GuildId), GuildId },
             { nameof(FilterAnimated), FilterAnimated.ToString() },
             { nameof(EmoteName), EmoteName }
         };
 
-        result.AddApiObject(UseCount, nameof(UseCount));
-        result.AddApiObject(FirstOccurence, nameof(FirstOccurence));
-        result.AddApiObject(LastOccurence, nameof(LastOccurence));
+        result.MergeDictionaryObjects(UseCount, nameof(UseCount));
+        result.MergeDictionaryObjects(FirstOccurence, nameof(FirstOccurence));
+        result.MergeDictionaryObjects(LastOccurence, nameof(LastOccurence));
         return result;
     }
 }

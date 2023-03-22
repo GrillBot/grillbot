@@ -4,7 +4,7 @@ using GrillBot.App.Actions.Commands.Points.Chart;
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Points;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
 

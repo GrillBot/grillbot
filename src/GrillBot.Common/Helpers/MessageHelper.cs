@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
 using Discord;
 using GrillBot.Common.Extensions.Discord;
 using NeoSmart.Unicode;
@@ -9,8 +8,6 @@ namespace GrillBot.Common.Helpers;
 
 public static class MessageHelper
 {
-    public static Regex DiscordMessageUriRegex { get; } = new(@"https:\/\/discord\.com\/channels\/(@me|\d*)\/(\d+)\/(\d+)");
-
     public static IEnumerable<object> ParseMessage(string message)
     {
         var index = 0;

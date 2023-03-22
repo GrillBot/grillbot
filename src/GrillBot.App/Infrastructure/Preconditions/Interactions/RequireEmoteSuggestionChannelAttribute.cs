@@ -1,5 +1,5 @@
 ﻿using Discord.Interactions;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.Preconditions.Interactions;

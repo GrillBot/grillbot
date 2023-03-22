@@ -1,10 +1,10 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
 using GrillBot.App.Modules.Implementations.Channels;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Actions.Commands;
 

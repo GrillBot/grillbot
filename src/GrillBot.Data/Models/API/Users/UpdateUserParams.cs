@@ -1,15 +1,15 @@
 ﻿using GrillBot.Database.Enums;
 using System;
 using System.Collections.Generic;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure;
 
 namespace GrillBot.Data.Models.API.Users;
 
-public class UpdateUserParams : IApiObject
+public class UpdateUserParams : IDictionaryObject
 {
     public bool BotAdmin { get; set; }
-    public string Note { get; set; }
+    public string? Note { get; set; }
     public bool WebAdminAllowed { get; set; }
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
     public bool PublicAdminBlocked { get; set; }
@@ -26,9 +26,9 @@ public class UpdateUserParams : IApiObject
             .UpdateFlags((int)UserFlags.PointsDisabled, PointsDisabled);
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, string?>
         {
             { nameof(BotAdmin), BotAdmin.ToString() },
             { "NoteLength", Note == null ? "" : Note.Length.ToString() },

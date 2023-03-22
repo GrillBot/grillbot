@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Entity;

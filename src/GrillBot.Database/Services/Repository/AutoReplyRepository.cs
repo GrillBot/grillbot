@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class AutoReplyRepository : RepositoryBase
+public class AutoReplyRepository : RepositoryBase<GrillBotContext>
 {
-    public AutoReplyRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public AutoReplyRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

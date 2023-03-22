@@ -1,5 +1,4 @@
 ﻿using System;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -7,14 +6,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Enums.Internal;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class ChannelRepository : RepositoryBase
+public class ChannelRepository : RepositoryBase<GrillBotContext>
 {
-    public ChannelRepository(GrillBotContext dbContext, CounterManager counter) : base(dbContext, counter)
+    public ChannelRepository(GrillBotContext dbContext, ICounterManager counter) : base(dbContext, counter)
     {
     }
 

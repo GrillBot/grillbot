@@ -1,12 +1,12 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.App.Actions.Api.V1.Invite;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Invites;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -14,13 +14,10 @@ namespace GrillBot.App.Controllers;
 [Route("api/invite")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class InviteController : Controller
+public class InviteController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public InviteController(IServiceProvider serviceProvider)
+    public InviteController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -34,10 +31,7 @@ public class InviteController : Controller
     public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromBody] GetInviteListParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.GetInviteList>();
-        var result = await action.ProcessAsync(parameters);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetInviteList, PaginatedResponse<GuildInvite>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -47,12 +41,7 @@ public class InviteController : Controller
     [HttpPost("metadata/refresh")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, int>>> RefreshMetadataCacheAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.RefreshMetadata>();
-        var result = await action.ProcessAsync(true);
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<RefreshMetadata, Dictionary<string, int>>(action => action.ProcessAsync(true)));
 
     /// <summary>
     /// Get count of items in metadata cache.
@@ -61,12 +50,7 @@ public class InviteController : Controller
     [HttpGet("metadata/count")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<int>> GetCurrentMetadataCountAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.GetMetadataCount>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetMetadataCount, int>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Delete invite.
@@ -78,9 +62,7 @@ public class InviteController : Controller
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteInviteAsync(ulong guildId, string code)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Invite.DeleteInvite>();
-        await action.ProcessAsync(guildId, code);
-
+        await ProcessActionAsync<DeleteInvite>(action => action.ProcessAsync(guildId, code));
         return Ok();
     }
 }

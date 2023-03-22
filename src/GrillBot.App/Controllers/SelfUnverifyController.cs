@@ -1,11 +1,11 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.Common.Infrastructure;
+using GrillBot.App.Actions.Api.V1.Unverify;
+using GrillBot.Core.Infrastructure;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -13,13 +13,10 @@ namespace GrillBot.App.Controllers;
 [Route("api/selfunverify/keep")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class SelfUnverifyController : Controller
+public class SelfUnverifyController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public SelfUnverifyController(IServiceProvider serviceProvider)
+    public SelfUnverifyController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -29,12 +26,7 @@ public class SelfUnverifyController : Controller
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Dictionary<string, List<string>>>> GetKeepablesListAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.GetKeepablesList>();
-        var result = await action.ProcessAsync(null);
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetKeepablesList, Dictionary<string, List<string>>>(action => action.ProcessAsync(null)));
 
     /// <summary>
     /// Add new keepable role or channel.
@@ -46,10 +38,9 @@ public class SelfUnverifyController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> AddKeepableAsync([FromBody] List<KeepableParams> parameters)
     {
-        ApiAction.Init(this, parameters.OfType<IApiObject>().ToArray());
+        ApiAction.Init(this, parameters.OfType<IDictionaryObject>().ToArray());
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.AddKeepables>();
-        await action.ProcessAsync(parameters);
+        await ProcessActionAsync<AddKeepables>(action => action.ProcessAsync(parameters));
         return Ok();
     }
 
@@ -60,12 +51,7 @@ public class SelfUnverifyController : Controller
     [HttpGet("exist")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<bool>> KeepableExistsAsync([FromQuery] KeepableParams parameters)
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.KeepableExists>();
-        var result = await action.ProcessAsync(parameters);
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<KeepableExists, bool>(action => action.ProcessAsync(parameters)));
 
     /// <summary>
     /// Remove keepable item or group.
@@ -75,11 +61,9 @@ public class SelfUnverifyController : Controller
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> KeepableRemoveAsync(string group, string name = null)
+    public async Task<ActionResult> KeepableRemoveAsync(string group, string? name = null)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.RemoveKeepables>();
-        await action.ProcessAsync(group, name);
-
+        await ProcessActionAsync<RemoveKeepables>(action => action.ProcessAsync(group, name));
         return Ok();
     }
 }

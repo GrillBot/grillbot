@@ -1,8 +1,8 @@
 ﻿using Discord.Net;
 using GrillBot.Common;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Helpers;
 

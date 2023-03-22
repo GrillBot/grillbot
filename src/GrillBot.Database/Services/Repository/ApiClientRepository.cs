@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
 using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class ApiClientRepository : RepositoryBase
+public class ApiClientRepository : RepositoryBase<GrillBotContext>
 {
-    public ApiClientRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public ApiClientRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

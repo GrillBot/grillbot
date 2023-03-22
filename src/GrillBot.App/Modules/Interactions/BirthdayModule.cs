@@ -20,7 +20,7 @@ public class BirthdayModule : InteractionsModuleBase
         using var command = GetActionAsCommand<GetTodayBirthdayInfo>();
         var result = await command.Command.ProcessAsync();
 
-        await SetResponseAsync(result);
+        await SetResponseAsync(result.Message);
     }
 
     [SlashCommand("add", "Adding your date of birth.")]

@@ -5,6 +5,10 @@ ENV TZ=Europe/Prague
 ENV ASPNETCORE_URLS 'http://+:5000'
 ENV DOTNET_PRINT_TELEMETRY_MESSAGE 'false'
 
+# Run external NuGet source
+ARG github_actions_token
+RUN dotnet nuget add source https://nuget.pkg.github.com/GrillBot/index.json -n GrillBot -u Misha12 -p "${github_actions_token}" --store-password-in-clear-text
+
 # Common
 RUN mkdir -p /src/GrillBot.Common
 COPY "GrillBot.Common/GrillBot.Common.csproj" /src/GrillBot.Common

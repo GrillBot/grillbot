@@ -1,6 +1,7 @@
 ﻿using GrillBot.Cache.Services;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
+using GrillBot.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ public static class GrillBotCacheExtensions
         var connectionString = configuration.GetConnectionString("Cache");
 
         return services
-            .AddDbContext<GrillBotCacheContext>(opt => opt.EnableDetailedErrors().EnableThreadSafetyChecks().UseNpgsql(connectionString), ServiceLifetime.Scoped, ServiceLifetime.Singleton)
+            .AddDatabaseContext<GrillBotCacheContext>(builder => builder.UseNpgsql(connectionString))
             .AddSingleton<GrillBotCacheBuilder>()
             .AddSingleton<ProfilePictureManager>()
             .AddSingleton<IMessageCacheManager, MessageCacheManager>()
@@ -26,11 +27,10 @@ public static class GrillBotCacheExtensions
 
     public static void InitCache(this IApplicationBuilder app)
     {
+        app.InitDatabase<GrillBotCacheContext>();
+
         var builder = app.ApplicationServices.GetRequiredService<GrillBotCacheBuilder>();
-
         using var repository = builder.CreateRepository();
-        repository.ProcessMigrations();
-
         repository.MessageIndexRepository.DeleteAllIndexes();
         repository.InviteMetadataRepository.DeleteAllInvites();
     }

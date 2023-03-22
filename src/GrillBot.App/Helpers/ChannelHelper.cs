@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Extensions;
+﻿using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Helpers;
 

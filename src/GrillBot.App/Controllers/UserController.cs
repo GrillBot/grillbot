@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Http;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.App.Managers;
 using GrillBot.Common.Models;
-using GrillBot.Common.Models.Pagination;
 using GrillBot.Common.Services.RubbergodService;
 using GrillBot.Common.Services.RubbergodService.Models.Karma;
+using GrillBot.Core.Models.Pagination;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
@@ -41,8 +41,7 @@ public class UsersController : Infrastructure.ControllerBase
         ApiAction.Init(this, parameters);
         parameters.FixStatus();
 
-        var result = await ProcessActionAsync<Actions.Api.V1.User.GetUserList, PaginatedResponse<UserListItem>>(action => action.ProcessAsync(parameters));
-        return Ok(result);
+        return Ok(await ProcessActionAsync<Actions.Api.V1.User.GetUserList, PaginatedResponse<UserListItem>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -55,10 +54,7 @@ public class UsersController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id)
-    {
-        var result = await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessAsync(id));
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessAsync(id)));
 
     /// <summary>
     /// Get data about currently logged user.
@@ -71,10 +67,7 @@ public class UsersController : Infrastructure.ControllerBase
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
-    {
-        var result = await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessSelfAsync());
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessSelfAsync()));
 
     /// <summary>
     /// Get non paginated list of available commands from external service.
@@ -86,10 +79,7 @@ public class UsersController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service)
-    {
-        var result = await ProcessActionAsync<Actions.Api.V1.Command.GetExternalCommands, List<CommandGroup>>(action => action.ProcessAsync(service));
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<Actions.Api.V1.Command.GetExternalCommands, List<CommandGroup>>(action => action.ProcessAsync(service)));
 
     /// <summary>
     /// Update user.
@@ -180,8 +170,5 @@ public class UsersController : Infrastructure.ControllerBase
     [HttpGet("birthday/today")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<MessageResponse>> GetTodayBirthdayInfoAsync()
-    {
-        var result = await ProcessActionAsync<GetTodayBirthdayInfo, string>(action => action.ProcessAsync());
-        return Ok(new MessageResponse(result));
-    }
+        => Ok(await ProcessActionAsync<GetTodayBirthdayInfo, MessageResponse>(action => action.ProcessAsync()));
 }

@@ -2,6 +2,7 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Commands;

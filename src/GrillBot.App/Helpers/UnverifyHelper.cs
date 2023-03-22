@@ -1,5 +1,5 @@
-﻿using GrillBot.Common.Extensions;
-using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Helpers;
 

@@ -1,20 +1,20 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Cache.Services.Managers.MessageCache;
+﻿using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Managers.Discord;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
 public class EmoteMessageDeletedHandler : IMessageDeletedEvent
 {
-    private EmoteHelper EmoteHelper { get; }
+    private IEmoteManager EmoteManager { get; }
     private IMessageCacheManager MessageCache { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
 
-    public EmoteMessageDeletedHandler(EmoteHelper emoteHelper, IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
+    public EmoteMessageDeletedHandler(IEmoteManager emoteManager, IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
     {
-        EmoteHelper = emoteHelper;
+        EmoteManager = emoteManager;
         MessageCache = messageCache;
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
@@ -24,7 +24,7 @@ public class EmoteMessageDeletedHandler : IMessageDeletedEvent
     {
         if (!cachedChannel.HasValue || cachedChannel.Value is not ITextChannel) return;
 
-        var supportedEmotes = await EmoteHelper.GetSupportedEmotesAsync();
+        var supportedEmotes = await EmoteManager.GetSupportedEmotesAsync();
         if (supportedEmotes.Count == 0) return;
 
         var message = cachedMessage.HasValue ? cachedMessage.Value : null;

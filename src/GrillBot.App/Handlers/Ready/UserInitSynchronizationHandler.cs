@@ -1,5 +1,5 @@
-﻿using GrillBot.Common.Extensions;
-using GrillBot.Common.Managers.Events.Contracts;
+﻿using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Extensions;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Handlers.Ready;

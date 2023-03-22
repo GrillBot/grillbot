@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Database.Models;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 
@@ -26,7 +25,7 @@ public class GetChannelUsers : ApiAction
             .CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<ChannelUserStatItem>(entity)));
 
         for (var i = 0; i < result.Data.Count; i++)
-            result.Data[i].Position = pagination.Skip + i + 1;
+            result.Data[i].Position = pagination.Skip() + i + 1;
         return result;
     }
 }

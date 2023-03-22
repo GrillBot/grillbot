@@ -1,29 +1,29 @@
 ﻿using Discord;
-using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Database;
 using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Searching;
 
-public class GetSearchingListParams : IQueryableModel<SearchItem>, IApiObject
+public class GetSearchingListParams : IQueryableModel<SearchItem>, IDictionaryObject
 {
     [DiscordId]
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
 
     [DiscordId]
-    public string GuildId { get; set; }
+    public string? GuildId { get; set; }
 
     [DiscordId]
-    public string ChannelId { get; set; }
+    public string? ChannelId { get; set; }
 
-    public string MessageQuery { get; set; }
+    public string? MessageQuery { get; set; }
 
     /// <summary>
     /// Available: Id, User, Guild, Channel
@@ -43,8 +43,6 @@ public class GetSearchingListParams : IQueryableModel<SearchItem>, IApiObject
 
     public IQueryable<SearchItem> SetQuery(IQueryable<SearchItem> query)
     {
-        query = query.Where(o => o.Channel.ChannelType != ChannelType.DM);
-
         if (!string.IsNullOrEmpty(UserId))
             query = query.Where(o => o.UserId == UserId);
 
@@ -66,18 +64,18 @@ public class GetSearchingListParams : IQueryableModel<SearchItem>, IApiObject
         {
             "User" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.User.Username).ThenByDescending(o => o.User.Discriminator).ThenByDescending(o => o.Id),
-                _ => query.OrderBy(o => o.User.Username).ThenBy(o => o.User.Discriminator).ThenBy(o => o.Id)
+                true => query.OrderByDescending(o => o.User!.Username).ThenByDescending(o => o.User!.Discriminator).ThenByDescending(o => o.Id),
+                _ => query.OrderBy(o => o.User!.Username).ThenBy(o => o.User!.Discriminator).ThenBy(o => o.Id)
             },
             "Guild" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.Guild.Name).ThenByDescending(o => o.Id),
-                _ => query.OrderBy(o => o.Guild.Name).ThenBy(o => o.Id)
+                true => query.OrderByDescending(o => o.Guild!.Name).ThenByDescending(o => o.Id),
+                _ => query.OrderBy(o => o.Guild!.Name).ThenBy(o => o.Id)
             },
             "Channel" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.Channel.Name).ThenByDescending(o => o.Id),
-                _ => query.OrderBy(o => o.Channel.Name).ThenBy(o => o.Id)
+                true => query.OrderByDescending(o => o.Channel!.Name).ThenByDescending(o => o.Id),
+                _ => query.OrderBy(o => o.Channel!.Name).ThenBy(o => o.Id)
             },
             _ => Sort.Descending switch
             {
@@ -87,9 +85,9 @@ public class GetSearchingListParams : IQueryableModel<SearchItem>, IApiObject
         };
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(UserId), UserId },
             { nameof(GuildId), GuildId },
@@ -97,8 +95,8 @@ public class GetSearchingListParams : IQueryableModel<SearchItem>, IApiObject
             { nameof(MessageQuery), MessageQuery }
         };
 
-        result.AddApiObject(Sort, nameof(Sort));
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

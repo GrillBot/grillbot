@@ -265,16 +265,30 @@
         }
       }
     },
-    "useless": {
-      "name": "useless",
-      "description": "Čištění zbytečných oprávnění.",
-      "check": {
-        "name": "check",
-        "description": "Kontrola serveru na zbytečná oprávnění."
-      },
-      "clear": {
-        "name": "clear",
-        "description": "Provedení smazání zbytečných oprávnění."
+    "set": {
+      "name": "set",
+      "description": "Nastavení oprávnění",
+      "category": {
+        "name": "category",
+        "description": "Doplnění oprávnění role pro všechny kanály v kategorii.",
+        "category": {
+          "name": "category",
+          "description": "Kategorie"
+        },
+        "role": {
+          "name": "role",
+          "description": "Role"
+        },
+        "view-channel": {
+          "name": "view",
+          "description": "Oprávnění pro zobrazení kanálu",
+          "Allow": {
+            "name": "Povolit"
+          },
+          "Deny": {
+            "name": "Zakázat"
+          }
+        }
       }
     }
   },

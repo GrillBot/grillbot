@@ -1,14 +1,14 @@
-﻿using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Database;
-using GrillBot.Database.Entity;
+﻿using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Unverify;
@@ -16,7 +16,7 @@ namespace GrillBot.Data.Models.API.Unverify;
 /// <summary>
 /// Paginated params of unverify logs
 /// </summary>
-public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
+public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IDictionaryObject
 {
     /// <summary>
     /// Selected operation.
@@ -27,24 +27,24 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
     /// Guild ID
     /// </summary>
     [DiscordId]
-    public string GuildId { get; set; }
+    public string? GuildId { get; set; }
 
     /// <summary>
     /// Who did operation. If user have lower permission, this property is ignored.
     /// </summary>
     [DiscordId]
-    public string FromUserId { get; set; }
+    public string? FromUserId { get; set; }
 
     /// <summary>
     /// Who was target of operation. If user have lower permission, this property is ignored.
     /// </summary>
     [DiscordId]
-    public string ToUserId { get; set; }
+    public string? ToUserId { get; set; }
 
     /// <summary>
     /// Range when operation did.
     /// </summary>
-    public RangeParams<DateTime?> Created { get; set; }
+    public RangeParams<DateTime?>? Created { get; set; }
 
     /// <summary>
     /// Available: Operation, Guild, FromUser, ToUser, CreatedAt
@@ -57,8 +57,8 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
     public IQueryable<UnverifyLog> SetIncludes(IQueryable<UnverifyLog> query)
     {
         return query
-            .Include(o => o.FromUser.User)
-            .Include(o => o.ToUser.User)
+            .Include(o => o.FromUser!.User)
+            .Include(o => o.ToUser!.User)
             .Include(o => o.Guild);
     }
 
@@ -96,18 +96,18 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
             },
             "Guild" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.Guild.Name),
-                _ => query.OrderBy(o => o.Guild.Name)
+                true => query.OrderByDescending(o => o.Guild!.Name),
+                _ => query.OrderBy(o => o.Guild!.Name)
             },
             "FromUser" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.FromUser.User.Username).ThenByDescending(o => o.FromUser.User.Discriminator),
-                _ => query.OrderBy(o => o.FromUser.User.Username).ThenBy(o => o.FromUser.User.Discriminator)
+                true => query.OrderByDescending(o => o.FromUser!.User!.Username).ThenByDescending(o => o.FromUser!.User!.Discriminator),
+                _ => query.OrderBy(o => o.FromUser!.User!.Username).ThenBy(o => o.FromUser!.User!.Discriminator)
             },
             "ToUser" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.ToUser.User.Username).ThenByDescending(o => o.ToUser.User.Discriminator),
-                _ => query.OrderBy(o => o.ToUser.User.Username).ThenBy(o => o.ToUser.User.Discriminator)
+                true => query.OrderByDescending(o => o.ToUser!.User!.Username).ThenByDescending(o => o.ToUser!.User!.Discriminator),
+                _ => query.OrderBy(o => o.ToUser!.User!.Username).ThenBy(o => o.ToUser!.User!.Discriminator)
             },
             _ => Sort.Descending switch
             {
@@ -116,15 +116,12 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
             },
         };
 
-        if (Sort.Descending)
-            return sortQuery.ThenByDescending(o => o.Id);
-        else
-            return sortQuery.ThenBy(o => o.Id);
+        return Sort.Descending ? sortQuery.ThenByDescending(o => o.Id) : sortQuery.ThenBy(o => o.Id);
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(GuildId), GuildId },
             { nameof(FromUserId), FromUserId },
@@ -133,9 +130,9 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IApiObject
 
         if (Operation != null)
             result[nameof(Operation)] = $"{Operation} ({(int)Operation.Value})";
-        result.AddApiObject(Created, nameof(Created));
-        result.AddApiObject(Sort, nameof(Sort));
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(Created, nameof(Created));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

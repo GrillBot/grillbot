@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using RE = System.Text.RegularExpressions;
 
 namespace GrillBot.App.Infrastructure.TypeReaders.Implementations;

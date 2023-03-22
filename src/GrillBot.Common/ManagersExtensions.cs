@@ -1,11 +1,11 @@
 ﻿using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Cooldown;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.Common;
@@ -16,13 +16,12 @@ public static class ManagersExtensions
     {
         return services
             .AddSingleton<InitManager>()
-            .AddSingleton<CounterManager>()
             .AddScoped<ApiRequestContext>()
             .AddSingleton<EventLogManager>()
             .AddLoggingServices()
             .AddSingleton<CooldownManager>()
             .AddSingleton<EventManager>()
-            .AddSingleton<RandomizationManager>();
+            .AddCoreManagers();
     }
 
     public static IServiceCollection AddLocalization(this IServiceCollection services, string basePath, string fileMask)

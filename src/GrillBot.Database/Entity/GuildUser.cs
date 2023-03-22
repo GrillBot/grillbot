@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.Database.Entity;
 
@@ -31,9 +31,6 @@ public class GuildUser
 
     [ForeignKey(nameof(UsedInviteCode))]
     public Invite? UsedInvite { get; set; }
-
-    [Required]
-    public long Points { get; set; } = 0;
 
     public DateTime? LastPointsReactionIncrement { get; set; }
     public DateTime? LastPointsMessageIncrement { get; set; }

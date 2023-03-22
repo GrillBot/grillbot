@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Helpers;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Helpers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -39,15 +40,13 @@ public class PointsReactionAddedHandler : IReactionAddedEvent
 
         var reactionId = PointsHelper.CreateReactionId(reaction);
         var transaction = PointsHelper.CreateTransaction(guildUserEntity, reactionId, message.Id, false);
-        var migratedTransaction = PointsHelper.CreateMigratedTransaction(guildUserEntity, transaction);
-        var transactions = await PointsHelper.FilterTransactionsAsync(repository, transaction, migratedTransaction);
-        if (transactions.Count == 0) return;
+        if (!await PointsHelper.CanStoreTransactionAsync(repository, transaction)) return;
 
-        await repository.AddCollectionAsync(transactions);
+        await repository.AddAsync(transaction!);
         await repository.CommitAsync();
     }
 
-    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction, out IGuildChannel channel)
+    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction, [MaybeNullWhen(false)] out IGuildChannel channel)
     {
         channel = cachedChannel is { HasValue: true, Value: IGuildChannel guildChannel } ? guildChannel : null;
         return channel != null && reaction.Emote is Emote && channel.Guild.Emotes.Any(o => o.IsEqual(reaction.Emote));

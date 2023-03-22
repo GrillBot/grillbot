@@ -1,6 +1,6 @@
-﻿using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Actions;
@@ -16,12 +16,12 @@ public abstract class ApiAction
         ApiContext = apiContext;
     }
 
-    public static void Init(Controller controller, IApiObject apiObject)
+    public static void Init(Controller controller, IDictionaryObject apiObject)
     {
         Init(controller, new[] { apiObject });
     }
 
-    public static void Init(Controller controller, IEnumerable<IApiObject> apiObjects)
+    public static void Init(Controller controller, IEnumerable<IDictionaryObject> apiObjects)
         => controller.StoreParameters(apiObjects);
 
     /// <summary>

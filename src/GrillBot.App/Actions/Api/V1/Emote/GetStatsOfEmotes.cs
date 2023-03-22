@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using GrillBot.App.Helpers;
 using GrillBot.Common.Models;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Managers.Discord;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Emotes;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
@@ -10,18 +10,18 @@ public class GetStatsOfEmotes : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
-    private EmoteHelper EmoteHelper { get; }
+    private IEmoteManager EmoteManager { get; }
 
-    public GetStatsOfEmotes(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, EmoteHelper emoteHelper) : base(apiContext)
+    public GetStatsOfEmotes(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IEmoteManager emoteManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
-        EmoteHelper = emoteHelper;
+        EmoteManager = emoteManager;
     }
 
     public async Task<PaginatedResponse<EmoteStatItem>> ProcessAsync(EmotesListParams parameters, bool unsupported)
     {
-        var supportedEmotes = (await EmoteHelper.GetSupportedEmotesAsync()).ConvertAll(o => o.ToString());
+        var supportedEmotes = (await EmoteManager.GetSupportedEmotesAsync()).ConvertAll(o => o.ToString());
 
         await using var repository = DatabaseBuilder.CreateRepository();
 

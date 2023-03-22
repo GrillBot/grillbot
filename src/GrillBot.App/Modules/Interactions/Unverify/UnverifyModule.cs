@@ -2,7 +2,7 @@
 using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Unverify;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 using GrillBot.Data.Models.API.Unverify;
 
 namespace GrillBot.App.Modules.Interactions.Unverify;

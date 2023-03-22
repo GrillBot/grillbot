@@ -1,11 +1,11 @@
-﻿using GrillBot.Common.Managers.Counters;
+﻿using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Common.Services;
 
 public abstract class RestServiceBase
 {
     protected HttpClient HttpClient { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     public abstract string ServiceName { get; }
 
     public string Url => HttpClient.BaseAddress!.ToString();
@@ -13,7 +13,7 @@ public abstract class RestServiceBase
 
     protected static readonly Task<object?> EmptyResult = Task.FromResult((object?)null);
 
-    protected RestServiceBase(CounterManager counterManager, Func<HttpClient> clientFactory)
+    protected RestServiceBase(ICounterManager counterManager, Func<HttpClient> clientFactory)
     {
         CounterManager = counterManager;
         HttpClient = clientFactory();

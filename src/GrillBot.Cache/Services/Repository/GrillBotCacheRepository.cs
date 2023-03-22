@@ -1,19 +1,19 @@
-﻿using GrillBot.Common.Managers.Counters;
-using Microsoft.EntityFrameworkCore;
+﻿using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Cache.Services.Repository;
 
 public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
 {
     private GrillBotCacheContext Context { get; }
-    private CounterManager CounterManager { get; }
-    private List<RepositoryBase> Repositories { get; }
+    private ICounterManager CounterManager { get; }
+    private List<RepositoryBase<GrillBotCacheContext>> Repositories { get; }
 
-    public GrillBotCacheRepository(GrillBotCacheContext context, CounterManager counterManager)
+    public GrillBotCacheRepository(GrillBotCacheContext context, ICounterManager counterManager)
     {
         Context = context;
         CounterManager = counterManager;
-        Repositories = new List<RepositoryBase>();
+        Repositories = new List<RepositoryBase<GrillBotCacheContext>>();
     }
 
     public MessageIndexRepository MessageIndexRepository => GetOrCreateRepository<MessageIndexRepository>();
@@ -23,7 +23,7 @@ public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
     public DataCacheRepository DataCache => GetOrCreateRepository<DataCacheRepository>();
     public EmoteSuggestionRepository EmoteSuggestion => GetOrCreateRepository<EmoteSuggestionRepository>();
 
-    private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase
+    private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase<GrillBotCacheContext>
     {
         var repository = Repositories.OfType<TRepository>().FirstOrDefault();
         if (repository != null) return repository;
@@ -59,15 +59,6 @@ public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
         using (CounterManager.Create("Cache.Commit"))
         {
             await Context.SaveChangesAsync();
-        }
-    }
-
-    public void ProcessMigrations()
-    {
-        using (CounterManager.Create("Cache.Migrations"))
-        {
-            if (Context.Database.GetPendingMigrations().Any())
-                Context.Database.Migrate();
         }
     }
 

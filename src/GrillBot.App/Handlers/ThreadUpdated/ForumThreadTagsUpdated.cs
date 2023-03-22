@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Data.Models;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -9,11 +9,11 @@ namespace GrillBot.App.Handlers.ThreadUpdated;
 
 public class ForumThreadTagsUpdated : IThreadUpdatedEvent
 {
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public ForumThreadTagsUpdated(CounterManager counterManager, AuditLogWriteManager auditLogWriteManager, GrillBotDatabaseBuilder databaseBuilder)
+    public ForumThreadTagsUpdated(ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager, GrillBotDatabaseBuilder databaseBuilder)
     {
         CounterManager = counterManager;
         AuditLogWriteManager = auditLogWriteManager;

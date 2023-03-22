@@ -1,14 +1,14 @@
 ﻿using System.Net.Http;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.App.Helpers;
 
 public class DownloadHelper
 {
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private IHttpClientFactory HttpClientFactory { get; }
 
-    public DownloadHelper(CounterManager counterManager, IHttpClientFactory httpClientFactory)
+    public DownloadHelper(ICounterManager counterManager, IHttpClientFactory httpClientFactory)
     {
         CounterManager = counterManager;
         HttpClientFactory = httpClientFactory;

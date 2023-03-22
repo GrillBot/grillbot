@@ -1,9 +1,9 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.App.Managers.EmoteSuggestion;
 using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Actions.Commands.EmoteSuggestion;
 

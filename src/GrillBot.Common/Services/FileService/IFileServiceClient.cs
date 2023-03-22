@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Services.Common;
-using GrillBot.Common.Services.Common.Models.Diagnostics;
+using GrillBot.Core.Services.Diagnostics.Models;
 
 namespace GrillBot.Common.Services.FileService;
 

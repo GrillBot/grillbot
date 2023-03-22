@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.App.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Managers.Performance;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -10,11 +10,11 @@ namespace GrillBot.App.Handlers.ThreadDeleted;
 public class AuditThreadDeletedHandler : IThreadDeletedEvent
 {
     private ChannelHelper ChannelHelper { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public AuditThreadDeletedHandler(ChannelHelper channelHelper, CounterManager counterManager, AuditLogWriteManager auditLogWriteManager, GrillBotDatabaseBuilder databaseBuilder)
+    public AuditThreadDeletedHandler(ChannelHelper channelHelper, ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager, GrillBotDatabaseBuilder databaseBuilder)
     {
         ChannelHelper = channelHelper;
         CounterManager = counterManager;

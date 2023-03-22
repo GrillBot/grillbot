@@ -2,26 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Common.Models.Pagination;
-using GrillBot.Data.Infrastructure.Validation;
-using GrillBot.Database;
+using GrillBot.Core.Database;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Data.Models.API.Suggestions;
 
-public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSuggestion>, IApiObject
+public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSuggestion>, IDictionaryObject
 {
-    public RangeParams<DateTime?> CreatedAt { get; set; }
+    public RangeParams<DateTime?>? CreatedAt { get; set; }
 
     [DiscordId]
-    public string GuildId { get; set; }
+    public string? GuildId { get; set; }
 
     [DiscordId]
-    public string FromUserId { get; set; }
+    public string? FromUserId { get; set; }
 
-    public string EmoteName { get; set; }
+    public string? EmoteName { get; set; }
     public bool OnlyApprovedToVote { get; set; }
     public bool OnlyUnfinishedVotes { get; set; }
     public bool OnlyCommunityApproved { get; set; }
@@ -64,7 +64,7 @@ public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSug
     {
         return query
             .Include(o => o.Guild)
-            .Include(o => o.FromUser!.User);
+            .Include(o => o.FromUser.User);
     }
 
     public IQueryable<Database.Entity.EmoteSuggestion> SetSort(IQueryable<Database.Entity.EmoteSuggestion> query)
@@ -72,9 +72,9 @@ public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSug
         return Sort.Descending ? query.OrderByDescending(o => o.CreatedAt).ThenByDescending(o => o.Id) : query.OrderBy(o => o.CreatedAt).ThenBy(o => o.Id);
     }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(GuildId), GuildId },
             { nameof(FromUserId), FromUserId },
@@ -84,9 +84,9 @@ public class GetSuggestionsListParams : IQueryableModel<Database.Entity.EmoteSug
             { nameof(OnlyCommunityApproved), OnlyCommunityApproved.ToString() },
         };
 
-        result.AddApiObject(CreatedAt, nameof(CreatedAt));
-        result.AddApiObject(Sort, nameof(Sort));
-        result.AddApiObject(Pagination, nameof(Pagination));
+        result.MergeDictionaryObjects(CreatedAt, nameof(CreatedAt));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Channels;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;

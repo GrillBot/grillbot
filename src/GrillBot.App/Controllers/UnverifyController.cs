@@ -4,21 +4,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using GrillBot.Data.Models.API;
 using GrillBot.App.Actions;
-using GrillBot.Common.Models.Pagination;
-using Microsoft.Extensions.DependencyInjection;
+using GrillBot.App.Actions.Api.V1.Unverify;
+using GrillBot.Core.Models.Pagination;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/unverify")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class UnverifyController : Controller
+public class UnverifyController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public UnverifyController(IServiceProvider serviceProvider)
+    public UnverifyController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -29,12 +26,7 @@ public class UnverifyController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<List<UnverifyUserProfile>>> GetCurrentUnverifiesAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.GetCurrentUnverifies>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetCurrentUnverifies, List<UnverifyUserProfile>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Removes unverify
@@ -47,10 +39,9 @@ public class UnverifyController : Controller
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<MessageResponse>> RemoveUnverifyAsync(ulong guildId, ulong userId, bool force = false)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.RemoveUnverify>();
-        var result = await action.ProcessAsync(guildId, userId, force);
-
-        return Ok(new MessageResponse(result));
+        return Ok(new MessageResponse(
+            await ProcessActionAsync<RemoveUnverify, string>(action => action.ProcessAsync(guildId, userId, force))
+        ));
     }
 
     /// <summary>
@@ -65,9 +56,7 @@ public class UnverifyController : Controller
     {
         ApiAction.Init(this, parameters);
 
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.UpdateUnverify>();
-        var result = await action.ProcessAsync(guildId, userId, parameters);
-
+        var result = await ProcessActionAsync<UpdateUnverify, string>(action => action.ProcessAsync(guildId, userId, parameters));
         return Ok(new MessageResponse(result));
     }
 
@@ -83,11 +72,7 @@ public class UnverifyController : Controller
     public async Task<ActionResult<PaginatedResponse<UnverifyLogItem>>> GetUnverifyLogsAsync([FromBody] UnverifyLogParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.GetLogs>();
-        var result = await action.ProcessAsync(parameters);
-
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetLogs, PaginatedResponse<UnverifyLogItem>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -104,9 +89,7 @@ public class UnverifyController : Controller
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     public async Task<ActionResult> RecoverUnverifyAsync(long logId)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Unverify.RecoverState>();
-        await action.ProcessAsync(logId);
-
+        await ProcessActionAsync<RecoverState>(action => action.ProcessAsync(logId));
         return Ok();
     }
 }

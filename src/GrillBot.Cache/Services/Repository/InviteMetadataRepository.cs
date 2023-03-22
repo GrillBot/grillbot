@@ -1,13 +1,14 @@
 ﻿using Discord;
 using GrillBot.Cache.Entity;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public class InviteMetadataRepository : RepositoryBase
+public class InviteMetadataRepository : RepositoryBase<GrillBotCacheContext>
 {
-    public InviteMetadataRepository(GrillBotCacheContext context, CounterManager counter) : base(context, counter)
+    public InviteMetadataRepository(GrillBotCacheContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

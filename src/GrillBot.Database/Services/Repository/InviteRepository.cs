@@ -1,14 +1,16 @@
 ﻿using System.Threading.Tasks;
-using GrillBot.Common.Managers.Counters;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.Core.Database;
+using GrillBot.Core.Database.Repository;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class InviteRepository : RepositoryBase
+public class InviteRepository : RepositoryBase<GrillBotContext>
 {
-    public InviteRepository(GrillBotContext context, CounterManager counter) : base(context, counter)
+    public InviteRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
     }
 

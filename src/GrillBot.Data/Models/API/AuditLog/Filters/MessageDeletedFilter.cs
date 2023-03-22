@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Data.Infrastructure.Validation;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Validation;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using Newtonsoft.Json;
 
 namespace GrillBot.Data.Models.API.AuditLog.Filters;
 
-public class MessageDeletedFilter : IExtendedFilter, IApiObject
+public class MessageDeletedFilter : IExtendedFilter, IDictionaryObject
 {
     public bool? ContainsEmbed { get; set; }
     public string? ContentContains { get; set; }
@@ -38,10 +38,10 @@ public class MessageDeletedFilter : IExtendedFilter, IApiObject
 
         if (!string.IsNullOrEmpty(ContentContains) && (string.IsNullOrEmpty(data.Content) || !data.Content.Contains(ContentContains)))
             return false;
-        return !IsAuthorIdSet || data.Author.Id == ulong.Parse(AuthorId) || data.Author.UserId == AuthorId;
+        return !IsAuthorIdSet || data.Author.Id == ulong.Parse(AuthorId!) || data.Author.UserId == AuthorId;
     }
 
-    public Dictionary<string, string?> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
         return new Dictionary<string, string?>
         {

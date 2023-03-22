@@ -1,25 +1,22 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.Common.Models.Pagination;
+using GrillBot.App.Actions.Api.V1.Points;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/user/points")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class PointsController : Controller
+public class PointsController : Infrastructure.ControllerBase
 {
-    private IServiceProvider ServiceProvider { get; }
-
-    public PointsController(IServiceProvider serviceProvider)
+    public PointsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -30,12 +27,7 @@ public class PointsController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<UserPointsItem>>> GetPointsLeaderboardAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.GetPointsLeaderboard>();
-        var result = await action.ProcessAsync();
-
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<GetPointsLeaderboard, List<UserPointsItem>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Get paginated list of transactions.
@@ -49,10 +41,7 @@ public class PointsController : Controller
     public async Task<ActionResult<PaginatedResponse<PointsTransaction>>> GetTransactionListAsync([FromBody] GetPointTransactionsParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.GetTransactionList>();
-        var result = await action.ProcessAsync(parameters);
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetTransactionList, PaginatedResponse<PointsTransaction>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -67,11 +56,7 @@ public class PointsController : Controller
     public async Task<ActionResult<List<PointsSummaryBase>>> GetGraphDataAsync([FromBody] GetPointTransactionsParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.GetPointsGraphData>();
-        var result = await action.ProcessAsync(parameters);
-
-        return Ok(result);
+        return Ok(await ProcessActionAsync<GetPointsGraphData, List<PointsSummaryBase>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -82,11 +67,7 @@ public class PointsController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<UserPointsItem>>> ComputeUserPointsAsync(ulong userId)
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.ComputeUserPoints>();
-        var result = await action.ProcessAsync(userId);
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<ComputeUserPoints, List<UserPointsItem>>(action => action.ProcessAsync(userId)));
 
     /// <summary>
     /// Compute current points status of user.
@@ -96,11 +77,7 @@ public class PointsController : Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<UserPointsItem>>> ComputeLoggedUserPointsAsync()
-    {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.ComputeUserPoints>();
-        var result = await action.ProcessAsync(null);
-        return Ok(result);
-    }
+        => Ok(await ProcessActionAsync<ComputeUserPoints, List<UserPointsItem>>(action => action.ProcessAsync(null)));
 
     /// <summary>
     /// Creation of a service transaction by users with bonus points.
@@ -110,8 +87,7 @@ public class PointsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> ServiceIncrementPointsAsync(ulong guildId, ulong toUserId, int amount)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.ServiceIncrementPoints>();
-        await action.ProcessAsync(guildId, toUserId, amount);
+        await ProcessActionAsync<ServiceIncrementPoints>(action => action.ProcessAsync(guildId, toUserId, amount));
         return Ok();
     }
 
@@ -123,8 +99,7 @@ public class PointsController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> ServiceTransferPointsAsync(ulong guildId, ulong fromUserId, ulong toUserId, int amount)
     {
-        var action = ServiceProvider.GetRequiredService<Actions.Api.V1.Points.ServiceTransferPoints>();
-        await action.ProcessAsync(guildId, fromUserId, toUserId, amount);
+        await ProcessActionAsync<ServiceTransferPoints>(action => action.ProcessAsync(guildId, fromUserId, toUserId, amount));
         return Ok();
     }
 }

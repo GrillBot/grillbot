@@ -1,34 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.Infrastructure;
-using GrillBot.Data.Infrastructure.Validation;
+using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Guilds;
 
-public class UpdateGuildParams : IApiObject
+public class UpdateGuildParams : IDictionaryObject
 {
     [DiscordId]
-    public string MuteRoleId { get; set; }
+    public string? MuteRoleId { get; set; }
 
     [DiscordId]
-    public string AdminChannelId { get; set; }
+    public string? AdminChannelId { get; set; }
 
     [DiscordId]
-    public string EmoteSuggestionChannelId { get; set; }
+    public string? EmoteSuggestionChannelId { get; set; }
 
     [DiscordId]
-    public string VoteChannelId { get; set; }
+    public string? VoteChannelId { get; set; }
 
     [DiscordId]
-    public string BotRoomChannelId { get; set; }
+    public string? BotRoomChannelId { get; set; }
 
-    public RangeParams<DateTime> EmoteSuggestionsValidity { get; set; }
+    public RangeParams<DateTime>? EmoteSuggestionsValidity { get; set; }
 
-    public Dictionary<string, string> SerializeForLog()
+    public Dictionary<string, string?> ToDictionary()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string?>
         {
             { nameof(MuteRoleId), MuteRoleId },
             { nameof(AdminChannelId), AdminChannelId },
@@ -37,7 +37,7 @@ public class UpdateGuildParams : IApiObject
             { nameof(BotRoomChannelId), BotRoomChannelId }
         };
 
-        result.AddApiObject(EmoteSuggestionsValidity, nameof(EmoteSuggestionsValidity));
+        result.MergeDictionaryObjects(EmoteSuggestionsValidity, nameof(EmoteSuggestionsValidity));
         return result;
     }
 }

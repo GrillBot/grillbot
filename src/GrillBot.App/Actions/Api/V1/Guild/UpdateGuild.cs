@@ -1,7 +1,7 @@
-﻿using GrillBot.Common.Extensions;
-using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
+using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Guilds;
 
 namespace GrillBot.App.Actions.Api.V1.Guild;

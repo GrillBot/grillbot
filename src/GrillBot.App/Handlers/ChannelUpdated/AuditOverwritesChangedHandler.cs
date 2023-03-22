@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Managers;
-using GrillBot.Common.Managers.Counters;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Data.Models;
+using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
@@ -11,10 +11,10 @@ public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
 {
     private AuditLogManager AuditLogManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private CounterManager CounterManager { get; }
+    private ICounterManager CounterManager { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditOverwritesChangedHandler(AuditLogManager auditLogManager, GrillBotDatabaseBuilder databaseBuilder, CounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditOverwritesChangedHandler(AuditLogManager auditLogManager, GrillBotDatabaseBuilder databaseBuilder, ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
     {
         AuditLogManager = auditLogManager;
         DatabaseBuilder = databaseBuilder;

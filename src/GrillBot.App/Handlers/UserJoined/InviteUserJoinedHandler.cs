@@ -3,6 +3,7 @@ using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 

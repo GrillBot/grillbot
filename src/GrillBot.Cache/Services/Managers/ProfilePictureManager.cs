@@ -1,16 +1,16 @@
 ﻿using Discord;
 using GrillBot.Cache.Entity;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers.Counters;
+using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Cache.Services.Managers;
 
 public class ProfilePictureManager
 {
     private GrillBotCacheBuilder CacheBuilder { get; }
-    private CounterManager Counter { get; }
+    private ICounterManager Counter { get; }
 
-    public ProfilePictureManager(GrillBotCacheBuilder cacheBuilder, CounterManager counterManager)
+    public ProfilePictureManager(GrillBotCacheBuilder cacheBuilder, ICounterManager counterManager)
     {
         CacheBuilder = cacheBuilder;
         Counter = counterManager;

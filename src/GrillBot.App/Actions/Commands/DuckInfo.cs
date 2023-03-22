@@ -3,7 +3,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Services.KachnaOnline;
 using GrillBot.Common.Services.KachnaOnline.Models;
-using GrillBot.Data.Exceptions;
+using GrillBot.Core.Exceptions;
 
 namespace GrillBot.App.Actions.Commands;
 

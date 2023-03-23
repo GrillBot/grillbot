@@ -101,10 +101,10 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
 
     public async Task<MergeResult?> MergeTransctionsAsync()
     {
-        return (await ProcessRequestAsync(
+        return await ProcessRequestAsync(
             () => HttpClient.PostAsync("api/merge", null),
-            response => response.Content.ReadFromJsonAsync<MergeResult>()
-        ))!;
+            ReadJsonAsync<MergeResult>
+        );
     }
 
     public async Task<PointsStatus> GetStatusOfPointsAsync(string guildId, string userId)

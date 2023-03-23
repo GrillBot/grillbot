@@ -51,4 +51,12 @@ public abstract class RestServiceBase
         if (response.StatusCode != HttpStatusCode.BadRequest) return null;
         return await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
     }
+
+    protected static async Task<TResult?> ReadJsonAsync<TResult>(HttpResponseMessage response)
+    {
+        if (response.StatusCode == HttpStatusCode.NoContent)
+            return default;
+
+        return await response.Content.ReadFromJsonAsync<TResult>();
+    }
 }

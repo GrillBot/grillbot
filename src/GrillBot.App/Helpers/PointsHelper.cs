@@ -1,9 +1,13 @@
 ﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Managers.Random;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
+using Microsoft.AspNetCore.Mvc;
+using ChannelInfo = GrillBot.Common.Services.PointsService.Models.ChannelInfo;
 
 namespace GrillBot.App.Helpers;
 
@@ -12,23 +16,24 @@ public class PointsHelper
     private IConfiguration Configuration { get; }
     private IDiscordClient DiscordClient { get; }
     private IRandomManager Random { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public PointsHelper(IConfiguration configuration, IDiscordClient discordClient, IRandomManager random)
+    public PointsHelper(IConfiguration configuration, IDiscordClient discordClient, IRandomManager random, IPointsServiceClient pointsServiceClient, GrillBotDatabaseBuilder databaseBuilder)
     {
         Configuration = configuration;
         DiscordClient = discordClient;
         Random = random;
+        PointsServiceClient = pointsServiceClient;
+        DatabaseBuilder = databaseBuilder;
     }
 
     public bool CanIncrementPoints(IMessage? message)
     {
         if (message == null) return false;
         if (!message.Author.IsUser()) return false;
-        if (string.IsNullOrEmpty(message.Content)) return false;
-        if (message.Content.Length < Configuration.GetValue<int>("Points:MessageMinLength")) return false;
-        if (message.IsCommand(DiscordClient.CurrentUser)) return false;
-        if (message is IUserMessage userMsg && userMsg.ReferencedMessage?.IsCommand(DiscordClient.CurrentUser) == true) return false;
-        return message.Type != MessageType.ApplicationCommand && message.Type != MessageType.ContextMenuCommand;
+
+        return !message.IsCommand(DiscordClient.CurrentUser);
     }
 
     public static bool CanIncrementPoints(User user, GuildChannel? channel)
@@ -77,4 +82,44 @@ public class PointsHelper
 
     public static string CreateReactionId(SocketReaction reaction)
         => $"{reaction.Emote}_{reaction.UserId}";
+
+    public async Task SyncDataWithServiceAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)
+    {
+        var request = new SynchronizationRequest
+        {
+            GuildId = guild.Id.ToString()
+        };
+
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        foreach (var user in users)
+        {
+            request.Users.Add(new UserInfo
+            {
+                PointsDisabled = await repository.User.HaveDisabledPointsAsync(user),
+                Id = user.Id.ToString(),
+                IsUser = user.IsUser()
+            });
+        }
+
+        foreach (var channel in channels)
+        {
+            request.Channels.Add(new ChannelInfo
+            {
+                Id = channel.Id.ToString(),
+                PointsDisabled = await repository.Channel.HaveChannelFlagsAsync(channel, ChannelFlag.PointsDeactivated),
+                IsDeleted = await repository.Channel.HaveChannelFlagsAsync(channel, ChannelFlag.Deleted)
+            });
+        }
+
+        await PointsServiceClient.ProcessSynchronizationAsync(request);
+    }
+
+    public static bool CanSyncData(ValidationProblemDetails? details)
+    {
+        if (details is null) return false;
+        
+        var errors = details.Errors.SelectMany(o => o.Value).Distinct().ToList();
+        return errors.Contains("UnknownChannel") || errors.Contains("UnknownUser");
+    }
 }

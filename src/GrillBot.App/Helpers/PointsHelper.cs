@@ -72,9 +72,6 @@ public class PointsHelper
         return result.ConvertAll(o => o!);
     }
 
-    public static string CreateReactionId(SocketReaction reaction)
-        => $"{reaction.Emote}_{reaction.UserId}";
-
     public async Task SyncDataWithServiceAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)
     {
         var request = new SynchronizationRequest

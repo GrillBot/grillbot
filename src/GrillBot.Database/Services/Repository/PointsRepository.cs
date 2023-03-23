@@ -31,43 +31,6 @@ public class PointsRepository : RepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<PointsTransaction?> FindTransactionAsync(IGuild? guild, ulong messageId, string? reactionId, IUser? user)
-    {
-        using (CreateCounter())
-        {
-            var query = Context.PointsTransactions
-                .Where(o => o.MergedItemsCount == 0 && o.MessageId == messageId.ToString());
-
-            if (!string.IsNullOrEmpty(reactionId))
-                query = query.Where(o => o.ReactionId == reactionId);
-            else
-                query = query.Where(o => o.ReactionId == "");
-
-            if (guild != null)
-                query = query.Where(o => o.GuildId == guild.Id.ToString());
-            if (user != null)
-                query = query.Where(o => o.UserId == user.Id.ToString());
-
-            return await query.FirstOrDefaultAsync();
-        }
-    }
-
-    public async Task<List<PointsTransaction>> GetTransactionsAsync(ulong messageId, IGuild? guild, IUser? user)
-    {
-        using (CreateCounter())
-        {
-            var query = Context.PointsTransactions
-                .Where(o => o.MergedItemsCount == 0 && o.MessageId == messageId.ToString());
-
-            if (guild != null)
-                query = query.Where(o => o.GuildId == guild.Id.ToString());
-            if (user != null)
-                query = query.Where(o => o.UserId == user.Id.ToString());
-
-            return await query.ToListAsync();
-        }
-    }
-
     public async Task<int> CalculatePointsPositionAsync(IGuildUser user, long userPoints)
     {
         using (CreateCounter())
@@ -180,29 +143,6 @@ public class PointsRepository : RepositoryBase<GrillBotContext>
 
             var data = await groupedQuery.ToListAsync();
             return data.ConvertAll(o => (o.Date, o.MessagePoints, o.ReactionPoints));
-        }
-    }
-
-    private IQueryable<PointsTransaction> GetExpiredTransactionsBaseQuery()
-    {
-        var expirationDate = DateTime.Now.AddYears(-1).AddMonths(-2);
-        return Context.PointsTransactions
-            .Where(o => o.AssingnedAt <= expirationDate && o.MergedItemsCount == 0); // Select only expired and non merged records.
-    }
-
-    public async Task<bool> ExistsExpiredItemsAsync()
-    {
-        using (CreateCounter())
-        {
-            return await GetExpiredTransactionsBaseQuery().AnyAsync();
-        }
-    }
-
-    public async Task<List<PointsTransaction>> GetExpiredTransactionsAsync()
-    {
-        using (CreateCounter())
-        {
-            return await GetExpiredTransactionsBaseQuery().ToListAsync();
         }
     }
 

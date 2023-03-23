@@ -16,7 +16,8 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.SyncChannelDestroyedHandler>()
-            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>();
+            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>()
+            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.PointsChannelDestroyedHandler>();
             
         services
             .AddScoped<IChannelUpdatedEvent, ChannelUpdated.AuditChannelUpdatedHandler>()
@@ -87,7 +88,8 @@ public static class HandlerExtensions
         
         services
             .AddScoped<IThreadDeletedEvent, ThreadDeleted.SyncThreadDeletedHandler>()
-            .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();
+            .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>()
+            .AddScoped<IThreadDeletedEvent, ThreadDeleted.PointsThreadDeletedHandler>();
 
         services
             .AddScoped<IThreadUpdatedEvent, ThreadUpdated.SyncThreadUpdatedHandler>()

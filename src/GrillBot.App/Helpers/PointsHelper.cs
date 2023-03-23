@@ -28,16 +28,8 @@ public class PointsHelper
         DatabaseBuilder = databaseBuilder;
     }
 
-    public bool CanIncrementPoints(IMessage? message)
-    {
-        if (message == null) return false;
-        if (!message.Author.IsUser()) return false;
-
-        return !message.IsCommand(DiscordClient.CurrentUser);
-    }
-
-    public static bool CanIncrementPoints(User user, GuildChannel? channel)
-        => !user.HaveFlags(UserFlags.PointsDisabled) && channel != null && !channel.HasFlag(ChannelFlag.PointsDeactivated);
+    public bool CanIncrementPoints(IMessage? message) 
+        => message != null && message.Author.IsUser() && !message.IsCommand(DiscordClient.CurrentUser);
 
     public PointsTransaction? CreateTransaction(GuildUser user, string? reactionId, ulong messageId, bool ignoreCooldown)
     {

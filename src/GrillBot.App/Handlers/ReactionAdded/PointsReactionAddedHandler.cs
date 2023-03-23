@@ -1,54 +1,73 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
 
 namespace GrillBot.App.Handlers.ReactionAdded;
 
 public class PointsReactionAddedHandler : IReactionAddedEvent
 {
     private IMessageCacheManager MessageCache { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private PointsHelper PointsHelper { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
-    public PointsReactionAddedHandler(IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder, PointsHelper pointsHelper)
+    private IGuildChannel? Channel { get; set; }
+    private IUser? ReactionUser { get; set; }
+    private IUserMessage? Message { get; set; }
+
+    public PointsReactionAddedHandler(IMessageCacheManager messageCache, PointsHelper pointsHelper, IPointsServiceClient pointsServiceClient)
     {
         MessageCache = messageCache;
-        DatabaseBuilder = databaseBuilder;
         PointsHelper = pointsHelper;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task ProcessAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
     {
-        if (!Init(cachedChannel, reaction, out var channel)) return;
+        await InitAsync(cachedChannel, cachedMessage, reaction);
 
-        var user = (reaction.User.IsSpecified ? reaction.User.Value : await channel.Guild.GetUserAsync(reaction.UserId)) as IGuildUser;
-        if (user == null || !user.IsUser()) return;
+        if (Channel is null || ReactionUser is null || Message is null) return;
+        if (!ReactionUser.IsUser()) return;
+        if (!PointsHelper.CanIncrementPoints(Message) || Message.Author.Id == reaction.UserId) return;
 
-        var message = cachedMessage.HasValue ? cachedMessage.Value : null;
-        message ??= await MessageCache.GetAsync(cachedMessage.Id, cachedChannel.Value) as IUserMessage;
-        if (!PointsHelper.CanIncrementPoints(message) || message!.Author.Id == reaction.UserId) return;
+        var request = new TransactionRequest
+        {
+            GuildId = Channel.GuildId.ToString(),
+            ChannelId = Channel.Id.ToString(),
+            MessageInfo = new MessageInfo
+            {
+                Id = Message.Id.ToString(),
+                AuthorId = Message.Author.Id.ToString(),
+                ContentLength = Message.Content.Length,
+                MessageType = Message.Type
+            },
+            ReactionInfo = new ReactionInfo
+            {
+                UserId = reaction.UserId.ToString(),
+                Emote = reaction.Emote.ToString()!
+            }
+        };
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var validationErrors = await PointsServiceClient.CreateTransactionAsync(request);
+        if (PointsHelper.CanSyncData(validationErrors))
+        {
+            await PointsHelper.SyncDataWithServiceAsync(Channel.Guild, new[] { Message.Author, ReactionUser }, new[] { Channel });
+            validationErrors = await PointsServiceClient.CreateTransactionAsync(request);
+        }
 
-        await repository.Guild.GetOrCreateGuildAsync(channel.Guild);
-        var userEntity = await repository.User.GetOrCreateUserAsync(user);
-        var guildUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(user);
-        var guildChannel = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.GuildId, true);
-        if (!PointsHelper.CanIncrementPoints(userEntity, guildChannel)) return;
-
-        var reactionId = PointsHelper.CreateReactionId(reaction);
-        var transaction = PointsHelper.CreateTransaction(guildUserEntity, reactionId, message.Id, false);
-        if (!await PointsHelper.CanStoreTransactionAsync(repository, transaction)) return;
-
-        await repository.AddAsync(transaction!);
-        await repository.CommitAsync();
+        if (validationErrors is not null)
+            throw new ValidationException(JsonConvert.SerializeObject(validationErrors));
     }
 
-    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction, [MaybeNullWhen(false)] out IGuildChannel channel)
+    private async Task InitAsync(Cacheable<IMessageChannel, ulong> cachedChannel, Cacheable<IUserMessage, ulong> cachedMessage, SocketReaction reaction)
     {
-        channel = cachedChannel is { HasValue: true, Value: IGuildChannel guildChannel } ? guildChannel : null;
-        return channel != null && reaction.Emote is Emote && channel.Guild.Emotes.Any(o => o.IsEqual(reaction.Emote));
+        if (!cachedChannel.HasValue || cachedChannel.Value is not IGuildChannel guildChannel) return;
+        if (reaction.Emote is not Emote || !guildChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote))) return;
+
+        Channel = guildChannel;
+        ReactionUser = reaction.User.IsSpecified ? reaction.User.Value : await Channel.Guild.GetUserAsync(reaction.UserId);
+        Message = cachedMessage.HasValue ? cachedMessage.Value : (IUserMessage?)await MessageCache.GetAsync(cachedMessage.Id, cachedChannel.Value);
     }
 }

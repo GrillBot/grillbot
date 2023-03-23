@@ -21,7 +21,7 @@ public partial class ApiRequest
     public string StatusCode { get; set; }
     public Dictionary<string, string> Parameters { get; set; } = new();
     public string Language { get; set; }
-    public string ApiGroupName { get; set; }
+    public string? ApiGroupName { get; set; }
     public Dictionary<string, string> Headers { get; set; } = new();
     public string UserIdentification { get; set; }
     public string IpAddress { get; set; }

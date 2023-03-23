@@ -7,12 +7,14 @@ using GrillBot.Common.Models;
 using GrillBot.Common.Services.Common;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.RubbergodService;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.System;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Models;
 using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -32,12 +34,13 @@ public class GetDashboard : ApiAction
     private IGraphicsClient GraphicsClient { get; }
     private IRubbergodServiceClient RubbergodServiceClient { get; }
     private IFileServiceClient FileServiceClient { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
     private List<Exception> Errors { get; } = new();
 
     public GetDashboard(ApiRequestContext apiContext, IWebHostEnvironment webHost, IDiscordClient discordClient, InitManager initManager, ICounterManager counterManager,
         GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient,
-        IFileServiceClient fileServiceClient) : base(apiContext)
+        IFileServiceClient fileServiceClient, IPointsServiceClient pointsServiceClient) : base(apiContext)
     {
         WebHost = webHost;
         DiscordClient = discordClient;
@@ -48,6 +51,7 @@ public class GetDashboard : ApiAction
         GraphicsClient = graphicsClient;
         RubbergodServiceClient = rubbergodServiceClient;
         FileServiceClient = fileServiceClient;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task<Dashboard> ProcessAsync()
@@ -155,17 +159,17 @@ public class GetDashboard : ApiAction
 
             var parameters = new AuditLogListParams
             {
-                Sort = { OrderBy = "CreatedAt", Descending = true },
+                Sort = new SortParams { OrderBy = "CreatedAt", Descending = true },
                 Types = new List<AuditLogItemType> { AuditLogItemType.Api },
                 CreatedFrom = DateTime.Now.Date.AddMonths(-1)
             };
 
-            var auditLogs = await repository.AuditLog.GetSimpleDataAsync(parameters);
+            var auditLogs = await repository.AuditLog.GetOnlyDataAsync(parameters);
             foreach (var logItem in auditLogs)
             {
                 if (dashboard.PublicApiRequests.Count == LogRowsSize && dashboard.InternalApiRequests.Count == LogRowsSize) break;
 
-                var request = JsonConvert.DeserializeObject<ApiRequest>(logItem.Data)!;
+                var request = JsonConvert.DeserializeObject<ApiRequest>(logItem)!;
                 if (request.IsCorrupted()) continue;
                 if (request is { ControllerName: nameof(SystemController), ActionName: nameof(SystemController.GetDashboardAsync) }) continue;
 
@@ -202,13 +206,13 @@ public class GetDashboard : ApiAction
         {
             var parameters = new AuditLogListParams
             {
-                Sort = { OrderBy = "CreatedAt", Descending = true },
+                Sort = new SortParams { OrderBy = "CreatedAt", Descending = true },
                 Types = new List<AuditLogItemType> { AuditLogItemType.JobCompleted }
             };
 
-            var auditLogs = await repository.AuditLog.GetSimpleDataAsync(parameters, LogRowsSize);
+            var auditLogs = await repository.AuditLog.GetOnlyDataAsync(parameters, LogRowsSize);
             dashboard.Jobs = auditLogs
-                .Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o.Data, AuditLogWriteManager.SerializerSettings)!)
+                .Select(o => JsonConvert.DeserializeObject<JobExecutionData>(o, AuditLogWriteManager.SerializerSettings)!)
                 .Select(o => new DashboardJob
                 {
                     Duration = o.Duration(),
@@ -229,13 +233,13 @@ public class GetDashboard : ApiAction
         {
             var parameters = new AuditLogListParams
             {
-                Sort = { OrderBy = "CreatedAt", Descending = true },
+                Sort = new SortParams { OrderBy = "CreatedAt", Descending = true },
                 Types = new List<AuditLogItemType> { AuditLogItemType.InteractionCommand }
             };
 
-            var auditLogs = await repository.AuditLog.GetSimpleDataAsync(parameters, LogRowsSize);
+            var auditLogs = await repository.AuditLog.GetOnlyDataAsync(parameters, LogRowsSize);
             dashboard.Commands = auditLogs
-                .Select(logItem => JsonConvert.DeserializeObject<InteractionCommandExecuted>(logItem.Data, AuditLogWriteManager.SerializerSettings)!)
+                .Select(logItem => JsonConvert.DeserializeObject<InteractionCommandExecuted>(logItem, AuditLogWriteManager.SerializerSettings)!)
                 .Select(o => new DashboardCommand
                 {
                     Duration = o.Duration,
@@ -256,6 +260,7 @@ public class GetDashboard : ApiAction
         await AddServiceStatusAsync(dashboard, "graphics", GraphicsClient);
         await AddServiceStatusAsync(dashboard, "rubbergod", RubbergodServiceClient);
         await AddServiceStatusAsync(dashboard, "file", FileServiceClient);
+        await AddServiceStatusAsync(dashboard, "points", PointsServiceClient);
     }
 
     private async Task AddServiceStatusAsync(Dashboard dashboard, string id, IClient client)

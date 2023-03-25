@@ -487,8 +487,8 @@
         "SourceUserNotFound": "Nelze převést body, protože uživatel od kterého se přenáší body nebyl nalezen.",
         "DestUserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
         "SameAccounts": "Nelze převést body mezi stejnými účty.",
-        "UserIsBot": "Nelze převést body, protože uživatel {0} není běžný uživatel.",
-        "InsufficientAmount": "Nelze převést body od uživatele {0}, protože jich nemá dostatek.",
+        "UserIsBot": "Nelze převést body, protože uživatel není běžný uživatel.",
+        "InsufficientAmount": "Uživatel nemá požadované množství bodů k přenosu.",
         "GuildNotFound": "Požadovaný server nebyl nalezen."
       }
     },

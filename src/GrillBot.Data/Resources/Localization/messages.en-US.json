@@ -487,8 +487,8 @@
         "SourceUserNotFound": "Unable to transfer points because the user to transfer points from was not found.",
         "DestUserNotFound": "Unable to transfer points because the user to receive the points was not found.",
         "SameAccounts": "Points cannot be transferred between the same accounts.",
-        "UserIsBot": "Unable to transfer points because user {0} is a bot.",
-        "InsufficientAmount": "Unable to transfer points from user {0} because he does not have enough points.",
+        "UserIsBot": "Unable to transfer points because user is a bot.",
+        "InsufficientAmount": "The user does not have the required amount of points to transfer.",
         "GuildNotFound": "Requested guild wasn't found."
       }
     },

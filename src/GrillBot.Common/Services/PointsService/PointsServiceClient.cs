@@ -164,4 +164,40 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
             _ => EmptyResult
         );
     }
+
+    public async Task<ValidationProblemDetails?> TransferPointsAsync(TransferPointsRequest request)
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.PostAsJsonAsync("api/transaction/transfer", request),
+            async response =>
+            {
+                if (response.StatusCode == HttpStatusCode.NotAcceptable) return null;
+                return await DesrializeValidationErrorsAsync(response);
+            },
+            async response =>
+            {
+                if (response.StatusCode is HttpStatusCode.NotAcceptable or HttpStatusCode.BadRequest or HttpStatusCode.OK)
+                    return;
+                await EnsureSuccessResponseAsync(response);
+            }
+        );
+    }
+
+    public async Task<ValidationProblemDetails?> CreateTransactionAsync(AdminTransactionRequest request)
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.PostAsJsonAsync("api/admin/create", request),
+            async response =>
+            {
+                if (response.StatusCode == HttpStatusCode.NotAcceptable) return null;
+                return await DesrializeValidationErrorsAsync(response);
+            },
+            async response =>
+            {
+                if (response.StatusCode is HttpStatusCode.NotAcceptable or HttpStatusCode.BadRequest or HttpStatusCode.OK)
+                    return;
+                await EnsureSuccessResponseAsync(response);
+            }
+        );
+    }
 }

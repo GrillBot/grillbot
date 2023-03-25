@@ -19,4 +19,6 @@ public interface IPointsServiceClient : IClient
     Task<ValidationProblemDetails?> CreateTransactionAsync(TransactionRequest request);
     Task DeleteTransactionAsync(string guildId, string messageId);
     Task DeleteTransactionAsync(string guildId, string messageId, string reactionId);
+    Task<ValidationProblemDetails?> TransferPointsAsync(TransferPointsRequest request);
+    Task<ValidationProblemDetails?> CreateTransactionAsync(AdminTransactionRequest request);
 }

@@ -1,11 +1,9 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.PointsService.Models;
-using GrillBot.Core.Extensions;
 using GrillBot.Core.Managers.Random;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
 using ChannelInfo = GrillBot.Common.Services.PointsService.Models.ChannelInfo;
 
@@ -59,17 +57,6 @@ public class PointsHelper
         else
             user.LastPointsMessageIncrement = transaction.AssingnedAt;
         return transaction;
-    }
-
-    public static async Task<bool> CanStoreTransactionAsync(GrillBotRepository repository, PointsTransaction? transaction)
-        => transaction is { Points: > 0 } && !await repository.Points.ExistsTransactionAsync(transaction);
-
-    public static async Task<List<PointsTransaction>> FilterTransactionsAsync(GrillBotRepository repository, params PointsTransaction?[] transactions)
-    {
-        var result = await transactions
-            .FindAllAsync(async o => await CanStoreTransactionAsync(repository, o));
-
-        return result.ConvertAll(o => o!);
     }
 
     public async Task SyncDataWithServiceAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)

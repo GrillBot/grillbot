@@ -146,15 +146,6 @@ public class PointsRepository : RepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<bool> ExistsTransactionAsync(PointsTransaction transaction)
-    {
-        using (CreateCounter())
-        {
-            return await Context.PointsTransactions.AsNoTracking()
-                .AnyAsync(o => o.GuildId == transaction.GuildId && o.UserId == transaction.UserId && o.MessageId == transaction.MessageId && o.ReactionId == transaction.ReactionId);
-        }
-    }
-
     public async Task<bool> ExistsAnyTransactionAsync(IGuildUser user)
     {
         using (CreateCounter())

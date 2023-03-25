@@ -4,6 +4,7 @@ using System.Linq;
 using GrillBot.Common.Extensions;
 using GrillBot.Core.Database;
 using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
@@ -34,7 +35,7 @@ public class GetPointTransactionsParams : IQueryableModel<Database.Entity.Points
     /// Available: AssignedAt, User, Points
     /// Default: AssignedAt
     /// </summary>
-    public SortParams Sort { get; set; } = new() { OrderBy = "AssignedAt", Descending = true };
+    public SortParameters Sort { get; set; } = new() { OrderBy = "AssignedAt", Descending = true };
 
     public PaginatedParams Pagination { get; set; } = new();
 

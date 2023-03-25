@@ -1,5 +1,9 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V1.Points;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
@@ -53,10 +57,19 @@ public class PointsController : Infrastructure.ControllerBase
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<PointsSummaryBase>>> GetGraphDataAsync([FromBody] GetPointTransactionsParams parameters)
+    public async Task<ActionResult<List<PointsChartItem>>> GetGraphDataAsync([FromBody] AdminListRequest parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<GetPointsGraphData, List<PointsSummaryBase>>(action => action.ProcessAsync(parameters)));
+
+        return Ok(await ProcessActionAsync<ApiBridgeAction, List<PointsChartItem>>(
+            bridge => bridge.ExecuteAsync<IPointsServiceClient, List<PointsChartItem>>(async client =>
+            {
+                var result = await client.GetChartDataAsync(parameters);
+                result.ValidationErrors?.AggregateAndThrow();
+
+                return result.Response!;
+            })
+        ));
     }
 
     /// <summary>

@@ -8,12 +8,12 @@ public class Guild
     /// <summary>
     /// Guild ID.
     /// </summary>
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Name of guild.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>
     /// Member count.

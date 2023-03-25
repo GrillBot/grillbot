@@ -6,6 +6,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Diagnostics.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace GrillBot.Common.Services.PointsService;
 
@@ -189,8 +190,12 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
             () => HttpClient.PostAsJsonAsync("api/admin/create", request),
             async response =>
             {
-                if (response.StatusCode == HttpStatusCode.NotAcceptable) return null;
-                return await DesrializeValidationErrorsAsync(response);
+                if (response.StatusCode != HttpStatusCode.NotAcceptable)
+                    return await DesrializeValidationErrorsAsync(response);
+
+                var modelState = new ModelStateDictionary();
+                modelState.AddModelError("Request", "NotAcceptable");
+                return new ValidationProblemDetails(modelState);
             },
             async response =>
             {

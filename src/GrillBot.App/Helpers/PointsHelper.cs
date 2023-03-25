@@ -1,8 +1,6 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.PointsService.Models;
-using GrillBot.Core.Managers.Random;
-using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Mvc;
 using ChannelInfo = GrillBot.Common.Services.PointsService.Models.ChannelInfo;
@@ -11,53 +9,19 @@ namespace GrillBot.App.Helpers;
 
 public class PointsHelper
 {
-    private IConfiguration Configuration { get; }
     private IDiscordClient DiscordClient { get; }
-    private IRandomManager Random { get; }
     private IPointsServiceClient PointsServiceClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public PointsHelper(IConfiguration configuration, IDiscordClient discordClient, IRandomManager random, IPointsServiceClient pointsServiceClient, GrillBotDatabaseBuilder databaseBuilder)
+    public PointsHelper(IDiscordClient discordClient, IPointsServiceClient pointsServiceClient, GrillBotDatabaseBuilder databaseBuilder)
     {
-        Configuration = configuration;
         DiscordClient = discordClient;
-        Random = random;
         PointsServiceClient = pointsServiceClient;
         DatabaseBuilder = databaseBuilder;
     }
 
-    public bool CanIncrementPoints(IMessage? message) 
+    public bool CanIncrementPoints(IMessage? message)
         => message != null && message.Author.IsUser() && !message.IsCommand(DiscordClient.CurrentUser);
-
-    public PointsTransaction? CreateTransaction(GuildUser user, string? reactionId, ulong messageId, bool ignoreCooldown)
-    {
-        var isReaction = !string.IsNullOrEmpty(reactionId);
-        var cooldown = Configuration.GetValue<int>($"Points:Cooldown:{(isReaction ? "Reaction" : "Message")}");
-        var range = Configuration.GetSection($"Points:Range:{(isReaction ? "Reaction" : "Message")}");
-
-        var lastIncrement = isReaction ? user.LastPointsReactionIncrement : user.LastPointsMessageIncrement;
-        if (!ignoreCooldown && lastIncrement.HasValue && lastIncrement.Value.AddSeconds(cooldown) > DateTime.Now)
-            return null;
-
-        var transaction = new PointsTransaction
-        {
-            GuildId = user.GuildId,
-            Points = Random.GetNext("Points", range.GetValue<int>("From"), range.GetValue<int>("To")),
-            AssingnedAt = DateTime.Now,
-            ReactionId = reactionId ?? "",
-            MessageId = messageId > 0 ? messageId.ToString() : SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
-            UserId = user.UserId
-        };
-
-        if (ignoreCooldown || messageId == 0)
-            return transaction;
-
-        if (isReaction)
-            user.LastPointsReactionIncrement = transaction.AssingnedAt;
-        else
-            user.LastPointsMessageIncrement = transaction.AssingnedAt;
-        return transaction;
-    }
 
     public async Task SyncDataWithServiceAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)
     {
@@ -94,7 +58,7 @@ public class PointsHelper
     public static bool CanSyncData(ValidationProblemDetails? details)
     {
         if (details is null) return false;
-        
+
         var errors = details.Errors.SelectMany(o => o.Value).Distinct().ToList();
         return errors.Contains("UnknownChannel") || errors.Contains("UnknownUser");
     }

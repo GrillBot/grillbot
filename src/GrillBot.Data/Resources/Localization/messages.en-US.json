@@ -481,7 +481,8 @@
   "Points": {
     "Service": {
       "Increment": {
-        "UserNotFound": "Unable to transfer points because the user to receive the points was not found."
+        "UserNotFound": "Unable to transfer points because the user to receive the points was not found.",
+        "NotAcceptable": "Creating of new transaction failed. Zkontrolujte, zda uživatel není robot, má povolené body a transakce neexistuje."
       },
       "Transfer": {
         "SourceUserNotFound": "Unable to transfer points because the user to transfer points from was not found.",

@@ -481,7 +481,8 @@
   "Points": {
     "Service": {
       "Increment": {
-        "UserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen."
+        "UserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
+        "NotAcceptable": "Nepodařilo se vytvořit transakci nových bodů. Zkontrolujte, zda uživatel není bot, má povolené body a že již neexistuje stejná transakce."
       },
       "Transfer": {
         "SourceUserNotFound": "Nelze převést body, protože uživatel od kterého se přenáší body nebyl nalezen.",

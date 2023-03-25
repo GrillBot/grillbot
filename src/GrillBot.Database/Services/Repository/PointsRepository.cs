@@ -6,7 +6,6 @@ using Discord;
 using GrillBot.Core.Database;
 using GrillBot.Core.Database.Repository;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models.Points;
 using Microsoft.EntityFrameworkCore;
@@ -116,15 +115,6 @@ public class PointsRepository : RepositoryBase<GrillBotContext>
                 .OrderByDescending(o => o.PointsYearBack)
                 .ThenBy(o => o.GuildUser.FullName())
                 .ToList();
-        }
-    }
-
-    public async Task<PaginatedResponse<PointsTransaction>> GetTransactionListAsync(IQueryableModel<PointsTransaction> model, PaginatedParams pagination)
-    {
-        using (CreateCounter())
-        {
-            var query = CreateQuery(model, true);
-            return await PaginatedResponse<PointsTransaction>.CreateWithEntityAsync(query, pagination);
         }
     }
 

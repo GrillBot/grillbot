@@ -1,7 +1,11 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Points;
+using GrillBot.Database.Enums.Internal;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -9,24 +13,59 @@ public class GetTransactionList : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
-    public GetTransactionList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper) : base(apiContext)
+    public GetTransactionList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IPointsServiceClient pointsServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
+        PointsServiceClient = pointsServiceClient;
     }
 
-    public async Task<PaginatedResponse<PointsTransaction>> ProcessAsync(GetPointTransactionsParams parameters)
+    public async Task<PaginatedResponse<PointsTransaction>> ProcessAsync(AdminListRequest request)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var transactions = await PointsServiceClient.GetTransactionListAsync(request);
+        transactions.ValidationErrors.AggregateAndThrow();
 
-        var transactions = await repository.Points.GetTransactionListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions, entity =>
+        var guildCache = new Dictionary<string, Data.Models.API.Guilds.Guild>();
+        var userCache = new Dictionary<string, Data.Models.API.Users.User>();
+
+        await using var repository = DatabaseBuilder.CreateRepository();
+        return await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions.Response!, async entity =>
         {
-            var item = Mapper.Map<PointsTransaction>(entity);
-            if (entity.MergedItemsCount > 0)
-                item.MergeInfo = Mapper.Map<PointsMergeInfo>(entity);
-            return Task.FromResult(item);
+            var guild = guildCache.TryGetValue(entity.GuildId, out var cachedGuild) ? cachedGuild : null;
+            if (guild is null)
+            {
+                var dbGuild = await repository.Guild.FindGuildByIdAsync(entity.GuildId.ToUlong(), true);
+                guild = Mapper.Map<Data.Models.API.Guilds.Guild>(dbGuild);
+                guildCache.Add(entity.GuildId, guild);
+            }
+
+            var user = userCache.TryGetValue(entity.UserId, out var cachedUser) ? cachedUser : null;
+            if (user is null)
+            {
+                var dbUser = await repository.User.FindUserByIdAsync(entity.UserId.ToUlong(), UserIncludeOptions.None, true);
+                user = Mapper.Map<Data.Models.API.Users.User>(dbUser);
+                userCache.Add(entity.UserId, user);
+            }
+
+            return new PointsTransaction
+            {
+                Points = entity.Value,
+                CreatedAt = entity.CreatedAt.ToLocalTime(),
+                IsReaction = entity.IsReaction,
+                MessageId = entity.MessageId,
+                MergeInfo = entity.MergedCount > 0
+                    ? new PointsMergeInfo
+                    {
+                        MergedItemsCount = entity.MergedCount,
+                        MergeRangeFrom = entity.MergedFrom.GetValueOrDefault(),
+                        MergeRangeTo = entity.MergedTo.GetValueOrDefault()
+                    }
+                    : null,
+                Guild = guild,
+                User = user
+            };
         });
     }
 }

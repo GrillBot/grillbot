@@ -15,7 +15,7 @@ public class PointsMappingProfile : AutoMapper.Profile
         CreateMap<Database.Entity.PointsTransaction, PointsTransaction>()
             .ForMember(dst => dst.MergeInfo, opt => opt.Ignore())
             .ForMember(dst => dst.User, opt => opt.MapFrom(src => src.GuildUser.User))
-            .ForMember(dst => dst.AssignedAt, opt => opt.MapFrom(src => src.AssingnedAt))
+            .ForMember(dst => dst.CreatedAt, opt => opt.MapFrom(src => src.AssingnedAt))
             .ForMember(dst => dst.IsReaction, opt => opt.MapFrom(src => src.IsReaction()));
     }
 }

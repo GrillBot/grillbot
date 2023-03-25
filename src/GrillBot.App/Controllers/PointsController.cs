@@ -42,10 +42,10 @@ public class PointsController : Infrastructure.ControllerBase
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<PointsTransaction>>> GetTransactionListAsync([FromBody] GetPointTransactionsParams parameters)
+    public async Task<ActionResult<PaginatedResponse<PointsTransaction>>> GetTransactionListAsync([FromBody] AdminListRequest request)
     {
-        ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<GetTransactionList, PaginatedResponse<PointsTransaction>>(action => action.ProcessAsync(parameters)));
+        ApiAction.Init(this, request);
+        return Ok(await ProcessActionAsync<GetTransactionList, PaginatedResponse<PointsTransaction>>(action => action.ProcessAsync(request)));
     }
 
     /// <summary>

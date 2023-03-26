@@ -3,8 +3,12 @@ using GrillBot.App.Modules.Implementations.Points;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
-using GrillBot.Database.Models.Points;
+using GrillBot.Core.Extensions;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Commands.Points;
 
@@ -15,41 +19,49 @@ public class PointsLeaderboard : CommandAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
     private FormatHelper FormatHelper { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
-    public PointsLeaderboard(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, FormatHelper formatHelper)
+    public PointsLeaderboard(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, FormatHelper formatHelper, IPointsServiceClient pointsServiceClient)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
         FormatHelper = formatHelper;
+        PointsServiceClient = pointsServiceClient;
     }
 
-    public async Task<(Embed embed, MessageComponent paginationComponent)> ProcessAsync(int page)
+    public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
         var skip = page * MaxItemsCount;
-        var guildIds = new[] { Context.Guild.Id.ToString() };
-        var data = await repository.Points.GetPointsBoardDataAsync(guildIds, MaxItemsCount, skip: skip, allColumns: false);
-        if (data.Count == 0)
+        var guildId = Context.Guild.Id.ToString();
+
+        var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guildId, skip, MaxItemsCount);
+        leaderboard.ValidationErrors.AggregateAndThrow();
+
+        if (leaderboard.Response!.Items.Count == 0)
             throw new NotFoundException(Texts["Points/Board/NoActivity", Locale]);
 
-        var embed = CreateEmbed(data, page, skip);
-        var paginationComponents = await CreatePaginationComponents(page);
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var embed = await CreateEmbedAsync(repository, Context.Guild, leaderboard.Response.Items, page, skip);
+        var paginationComponents = await CreatePaginationComponents(page, leaderboard.Response);
         return (embed, paginationComponents);
     }
 
-    public async Task<int> ComputePagesCountAsync()
+    public async Task<int> ComputePagesCountAsync(Leaderboard? leaderboard)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        if (leaderboard is not null)
+            return (int)Math.Ceiling(leaderboard!.TotalItemsCount / (double)MaxItemsCount);
 
-        var guildIds = new[] { Context.Guild.Id.ToString() };
-        var totalCount = await repository.Points.GetPointsBoardCountAsync(guildIds);
-        return (int)Math.Ceiling(totalCount / (double)MaxItemsCount);
+        var leaderboardResult = await PointsServiceClient.GetLeaderboardAsync(Context.Guild.Id.ToString(), 0, MaxItemsCount);
+        leaderboardResult.ValidationErrors.AggregateAndThrow();
+        leaderboard = leaderboardResult.Response;
+
+        return (int)Math.Ceiling(leaderboard!.TotalItemsCount / (double)MaxItemsCount);
     }
 
-    private Embed CreateEmbed(IEnumerable<PointBoardItem> points, int page, int skip)
+    private async Task<Embed> CreateEmbedAsync(GrillBotRepository repository, IGuild guild, IReadOnlyList<BoardItem> points, int page, int skip)
     {
-        var list = string.Join("\n", points.Select((o, i) => FormatRow(i, o, skip)));
+        var list = string.Join("\n", await FormatRowsAsync(repository, points, skip, guild));
 
         return new EmbedBuilder()
             .WithFooter(Context.User)
@@ -61,15 +73,34 @@ public class PointsLeaderboard : CommandAction
             .Build();
     }
 
-    private string FormatRow(int index, PointBoardItem item, int skip)
+    private async Task<List<string>> FormatRowsAsync(GrillBotRepository repository, IReadOnlyList<BoardItem> board, int skip, IGuild guild)
     {
-        var points = FormatHelper.FormatNumber("Points/Board/Counts", Locale, item.PointsYearBack);
-        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, item.GuildUser.FullName(), points);
+        var result = new List<string>();
+
+        for (var i = 0; i < board.Count; i++)
+        {
+            var item = board[i];
+            var user = await guild.GetUserAsync(item.UserId.ToUlong());
+            if (user is null) continue;
+
+            var guildUser = await repository.GuildUser.FindGuildUserAsync(user, true);
+            if (guildUser is null) continue;
+
+            result.Add(FormatRow(i, item, skip, guildUser));
+        }
+
+        return result;
     }
 
-    private async Task<MessageComponent> CreatePaginationComponents(int currentPage)
+    private string FormatRow(int index, PointsStatus item, int skip, GuildUser guildUser)
     {
-        var pagesCount = await ComputePagesCountAsync();
+        var points = FormatHelper.FormatNumber("Points/Board/Counts", Locale, item.YearBack);
+        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, guildUser.FullName(), points);
+    }
+
+    private async Task<MessageComponent?> CreatePaginationComponents(int currentPage, Leaderboard? leaderboard)
+    {
+        var pagesCount = await ComputePagesCountAsync(leaderboard);
         return ComponentsHelper.CreatePaginationComponents(currentPage, pagesCount, "points");
     }
 }

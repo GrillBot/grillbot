@@ -35,7 +35,7 @@ public class GetPointsLeaderboard : ApiAction
 
             var guildData = Mapper.Map<Data.Models.API.Guilds.Guild>(await repository.Guild.FindGuildAsync(guild, true));
 
-            foreach (var item in leaderboard.Response!)
+            foreach (var item in leaderboard.Response!.Items)
             {
                 var user = await guild.GetUserAsync(item.UserId.ToUlong());
                 if (user is null) continue;

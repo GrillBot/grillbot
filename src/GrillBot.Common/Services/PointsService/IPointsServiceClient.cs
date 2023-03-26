@@ -11,7 +11,7 @@ public interface IPointsServiceClient : IClient
     Task<RestResponse<PaginatedResponse<TransactionItem>>> GetTransactionListAsync(AdminListRequest request);
     Task<RestResponse<List<PointsChartItem>>> GetChartDataAsync(AdminListRequest request);
     Task<DiagnosticInfo> GetDiagAsync();
-    Task<RestResponse<List<BoardItem>>> GetLeaderboardAsync(string guildId, int skip, int count);
+    Task<RestResponse<Leaderboard>> GetLeaderboardAsync(string guildId, int skip, int count);
     Task<MergeResult?> MergeTransctionsAsync();
     Task<PointsStatus> GetStatusOfPointsAsync(string guildId, string userId);
     Task<PointsStatus> GetStatusOfExpiredPointsAsync(string guildId, string userId);

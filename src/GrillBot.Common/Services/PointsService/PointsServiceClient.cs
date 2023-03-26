@@ -81,7 +81,7 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
         ))!;
     }
 
-    public async Task<RestResponse<List<BoardItem>>> GetLeaderboardAsync(string guildId, int skip, int count)
+    public async Task<RestResponse<Leaderboard>> GetLeaderboardAsync(string guildId, int skip, int count)
     {
         return await ProcessRequestAsync(
             () => HttpClient.GetAsync($"api/leaderboard/{guildId}?skip={skip}&count={count}"),
@@ -89,8 +89,8 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
             {
                 var validationError = await DesrializeValidationErrorsAsync(response);
                 return validationError is not null
-                    ? new RestResponse<List<BoardItem>>(validationError)
-                    : new RestResponse<List<BoardItem>>(await response.Content.ReadFromJsonAsync<List<BoardItem>>());
+                    ? new RestResponse<Leaderboard>(validationError)
+                    : new RestResponse<Leaderboard>(await response.Content.ReadFromJsonAsync<Leaderboard>());
             },
             async response =>
             {

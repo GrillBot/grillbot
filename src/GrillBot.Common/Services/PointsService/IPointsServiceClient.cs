@@ -21,4 +21,5 @@ public interface IPointsServiceClient : IClient
     Task DeleteTransactionAsync(string guildId, string messageId, string reactionId);
     Task<ValidationProblemDetails?> TransferPointsAsync(TransferPointsRequest request);
     Task<ValidationProblemDetails?> CreateTransactionAsync(AdminTransactionRequest request);
+    Task<bool> ExistsAnyTransactionAsync(string guildId, string userId);
 }

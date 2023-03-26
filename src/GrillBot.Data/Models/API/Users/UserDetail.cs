@@ -10,7 +10,7 @@ public class UserDetail
     public string Id { get; set; }
     public string Username { get; set; }
     public string Discriminator { get; set; }
-    public string Note { get; set; }
+    public string? Note { get; set; }
     public long Flags { get; set; }
     public bool HaveBirthday { get; set; }
     public List<GuildUserDetail> Guilds { get; set; } = new();

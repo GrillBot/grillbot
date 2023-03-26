@@ -205,4 +205,12 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
             }
         );
     }
+
+    public async Task<bool> ExistsAnyTransactionAsync(string guildId, string userId)
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/transaction/{guildId}/{userId}"),
+            response => response.Content.ReadFromJsonAsync<bool>()
+        );
+    }
 }

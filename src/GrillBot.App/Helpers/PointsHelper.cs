@@ -1,80 +1,65 @@
 ﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Core.Extensions;
-using GrillBot.Core.Managers.Random;
-using GrillBot.Database.Entity;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services.Repository;
+using Microsoft.AspNetCore.Mvc;
+using ChannelInfo = GrillBot.Common.Services.PointsService.Models.ChannelInfo;
 
 namespace GrillBot.App.Helpers;
 
 public class PointsHelper
 {
-    private IConfiguration Configuration { get; }
     private IDiscordClient DiscordClient { get; }
-    private IRandomManager Random { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public PointsHelper(IConfiguration configuration, IDiscordClient discordClient, IRandomManager random)
+    public PointsHelper(IDiscordClient discordClient, IPointsServiceClient pointsServiceClient, GrillBotDatabaseBuilder databaseBuilder)
     {
-        Configuration = configuration;
         DiscordClient = discordClient;
-        Random = random;
+        PointsServiceClient = pointsServiceClient;
+        DatabaseBuilder = databaseBuilder;
     }
 
     public bool CanIncrementPoints(IMessage? message)
+        => message != null && message.Author.IsUser() && !message.IsCommand(DiscordClient.CurrentUser);
+
+    public async Task SyncDataWithServiceAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)
     {
-        if (message == null) return false;
-        if (!message.Author.IsUser()) return false;
-        if (string.IsNullOrEmpty(message.Content)) return false;
-        if (message.Content.Length < Configuration.GetValue<int>("Points:MessageMinLength")) return false;
-        if (message.IsCommand(DiscordClient.CurrentUser)) return false;
-        if (message is IUserMessage userMsg && userMsg.ReferencedMessage?.IsCommand(DiscordClient.CurrentUser) == true) return false;
-        return message.Type != MessageType.ApplicationCommand && message.Type != MessageType.ContextMenuCommand;
-    }
-
-    public static bool CanIncrementPoints(User user, GuildChannel? channel)
-        => !user.HaveFlags(UserFlags.PointsDisabled) && channel != null && !channel.HasFlag(ChannelFlag.PointsDeactivated);
-
-    public PointsTransaction? CreateTransaction(GuildUser user, string? reactionId, ulong messageId, bool ignoreCooldown)
-    {
-        var isReaction = !string.IsNullOrEmpty(reactionId);
-        var cooldown = Configuration.GetValue<int>($"Points:Cooldown:{(isReaction ? "Reaction" : "Message")}");
-        var range = Configuration.GetSection($"Points:Range:{(isReaction ? "Reaction" : "Message")}");
-
-        var lastIncrement = isReaction ? user.LastPointsReactionIncrement : user.LastPointsMessageIncrement;
-        if (!ignoreCooldown && lastIncrement.HasValue && lastIncrement.Value.AddSeconds(cooldown) > DateTime.Now)
-            return null;
-
-        var transaction = new PointsTransaction
+        var request = new SynchronizationRequest
         {
-            GuildId = user.GuildId,
-            Points = Random.GetNext("Points", range.GetValue<int>("From"), range.GetValue<int>("To")),
-            AssingnedAt = DateTime.Now,
-            ReactionId = reactionId ?? "",
-            MessageId = messageId > 0 ? messageId.ToString() : SnowflakeUtils.ToSnowflake(DateTimeOffset.Now).ToString(),
-            UserId = user.UserId
+            GuildId = guild.Id.ToString()
         };
 
-        if (ignoreCooldown || messageId == 0)
-            return transaction;
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        if (isReaction)
-            user.LastPointsReactionIncrement = transaction.AssingnedAt;
-        else
-            user.LastPointsMessageIncrement = transaction.AssingnedAt;
-        return transaction;
+        foreach (var user in users)
+        {
+            request.Users.Add(new UserInfo
+            {
+                PointsDisabled = await repository.User.HaveDisabledPointsAsync(user),
+                Id = user.Id.ToString(),
+                IsUser = user.IsUser()
+            });
+        }
+
+        foreach (var channel in channels)
+        {
+            request.Channels.Add(new ChannelInfo
+            {
+                Id = channel.Id.ToString(),
+                PointsDisabled = await repository.Channel.HaveChannelFlagsAsync(channel, ChannelFlag.PointsDeactivated),
+                IsDeleted = await repository.Channel.HaveChannelFlagsAsync(channel, ChannelFlag.Deleted)
+            });
+        }
+
+        await PointsServiceClient.ProcessSynchronizationAsync(request);
     }
 
-    public static async Task<bool> CanStoreTransactionAsync(GrillBotRepository repository, PointsTransaction? transaction)
-        => transaction is { Points: > 0 } && !await repository.Points.ExistsTransactionAsync(transaction);
-
-    public static async Task<List<PointsTransaction>> FilterTransactionsAsync(GrillBotRepository repository, params PointsTransaction?[] transactions)
+    public static bool CanSyncData(ValidationProblemDetails? details)
     {
-        var result = await transactions
-            .FindAllAsync(async o => await CanStoreTransactionAsync(repository, o));
+        if (details is null) return false;
 
-        return result.ConvertAll(o => o!);
+        var errors = details.Errors.SelectMany(o => o.Value).Distinct().ToList();
+        return errors.Contains("UnknownChannel") || errors.Contains("UnknownUser");
     }
-
-    public static string CreateReactionId(SocketReaction reaction)
-        => $"{reaction.Emote}_{reaction.UserId}";
 }

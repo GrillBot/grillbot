@@ -4,11 +4,11 @@ using GrillBot.Common.Services.RubbergodService;
 
 namespace GrillBot.App.Handlers.UserUpdated;
 
-public class SyncUserInServicesHandler : IUserUpdatedEvent
+public class SyncRubbergodServiceUserHandler : IUserUpdatedEvent
 {
     private IRubbergodServiceClient RubbergodServiceClient { get; }
 
-    public SyncUserInServicesHandler(IRubbergodServiceClient rubbergodServiceClient)
+    public SyncRubbergodServiceUserHandler(IRubbergodServiceClient rubbergodServiceClient)
     {
         RubbergodServiceClient = rubbergodServiceClient;
     }
@@ -21,7 +21,6 @@ public class SyncUserInServicesHandler : IUserUpdatedEvent
     private async Task SyncRubbergodServiceAsync(IUser before, IUser after)
     {
         if (before.Username == after.Username && before.Discriminator == after.Discriminator && before.GetUserAvatarUrl() == after.GetUserAvatarUrl()) return;
-
         await RubbergodServiceClient.RefreshMemberAsync(after.Id);
     }
 }

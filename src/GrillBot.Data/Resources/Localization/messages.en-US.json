@@ -481,14 +481,15 @@
   "Points": {
     "Service": {
       "Increment": {
-        "UserNotFound": "Unable to transfer points because the user to receive the points was not found."
+        "UserNotFound": "Unable to transfer points because the user to receive the points was not found.",
+        "NotAcceptable": "Creating of new transaction failed. Zkontrolujte, zda uživatel není robot, má povolené body a transakce neexistuje."
       },
       "Transfer": {
         "SourceUserNotFound": "Unable to transfer points because the user to transfer points from was not found.",
         "DestUserNotFound": "Unable to transfer points because the user to receive the points was not found.",
         "SameAccounts": "Points cannot be transferred between the same accounts.",
-        "UserIsBot": "Unable to transfer points because user {0} is a bot.",
-        "InsufficientAmount": "Unable to transfer points from user {0} because he does not have enough points.",
+        "UserIsBot": "Unable to transfer points because user is a bot.",
+        "InsufficientAmount": "The user does not have the required amount of points to transfer.",
         "GuildNotFound": "Requested guild wasn't found."
       }
     },
@@ -515,6 +516,10 @@
           "Summary": "Total points of users for the last year."
         }
       }
+    },
+    "Image": {
+      "UserNotFound": "User wasn't found in the guild.",
+      "NoActivity": "User {0} showed no activity yet."
     }
   },
   "Pins": {

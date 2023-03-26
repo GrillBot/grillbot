@@ -3,6 +3,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.Graphics.Models.Chart;
+using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Managers.Random;
 using ImageMagick;
 
@@ -21,7 +22,7 @@ public class UsersChartRenderer
         RandomManager = randomManager;
     }
 
-    public async Task<MagickImage> RenderAsync(IGuild guild, Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>> data, ChartsFilter filter, string locale)
+    public async Task<MagickImage> RenderAsync(IGuild guild, Dictionary<ulong, List<PointsChartItem>> data, ChartsFilter filter, string locale)
     {
         var request = await CreateRequestAsync(guild, data, filter, locale);
         var chartData = await GraphicsClient.CreateChartAsync(request);
@@ -29,7 +30,7 @@ public class UsersChartRenderer
         return new MagickImage(chartData);
     }
 
-    private async Task<ChartRequestData> CreateRequestAsync(IGuild guild, Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>> data, ChartsFilter filter, string locale)
+    private async Task<ChartRequestData> CreateRequestAsync(IGuild guild, Dictionary<ulong, List<PointsChartItem>> data, ChartsFilter filter, string locale)
     {
         var request = ChartRequestBuilder.CreateCommonRequest();
 
@@ -41,7 +42,7 @@ public class UsersChartRenderer
         };
 
         var dates = ChartRequestBuilder.FilterData(
-            data.SelectMany(o => o.Value).GroupBy(o => o.day).Select(o => (o.Key, o.Sum(x => x.messagePoints), o.Sum(x => x.reactionPoints))),
+            data.SelectMany(o => o.Value).GroupBy(o => o.Day).SelectMany(o => o.ToList()),
             filter
         ).Select(x => x.day).OrderBy(x => x).ToList();
         var usedColors = new List<uint>();
@@ -56,8 +57,8 @@ public class UsersChartRenderer
             {
                 Data = dates.ConvertAll(day => new DataPoint
                 {
-                    Label = day.ToCzechFormat(true),
-                    Value = filtered.Where(x => x.day <= day).Sum(x => x.points)
+                    Label = day.ToCzechFormat(),
+                    Value = (int?)filtered.Where(x => x.day <= day).Sum(x => x.points)
                 }),
                 Width = 1,
                 Color = CreateColor(guildUser, usedColors).ToString(),

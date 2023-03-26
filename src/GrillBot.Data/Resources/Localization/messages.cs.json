@@ -481,14 +481,15 @@
   "Points": {
     "Service": {
       "Increment": {
-        "UserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen."
+        "UserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
+        "NotAcceptable": "Nepodařilo se vytvořit transakci nových bodů. Zkontrolujte, zda uživatel není bot, má povolené body a že již neexistuje stejná transakce."
       },
       "Transfer": {
         "SourceUserNotFound": "Nelze převést body, protože uživatel od kterého se přenáší body nebyl nalezen.",
         "DestUserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
         "SameAccounts": "Nelze převést body mezi stejnými účty.",
-        "UserIsBot": "Nelze převést body, protože uživatel {0} není běžný uživatel.",
-        "InsufficientAmount": "Nelze převést body od uživatele {0}, protože jich nemá dostatek.",
+        "UserIsBot": "Nelze převést body, protože uživatel není běžný uživatel.",
+        "InsufficientAmount": "Uživatel nemá požadované množství bodů k přenosu.",
         "GuildNotFound": "Požadovaný server nebyl nalezen."
       }
     },
@@ -515,6 +516,10 @@
           "Summary": "Celkové body uživatelů za poslední rok"
         }
       }
+    },
+    "Image": {
+      "UserNotFound": "Uživatel nebyl nalezen na serveru.",
+      "NoActivity": "Uživatel {0} ještě neprojevil na serveru žádnou aktivitu."
     }
   },
   "Pins": {

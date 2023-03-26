@@ -3,6 +3,7 @@ using GrillBot.Common.Models;
 using GrillBot.Common.Services.Common;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.RubbergodService;
 using GrillBot.Core.Services.Diagnostics.Models;
 using GrillBot.Data.Models.API.Services;
@@ -15,14 +16,16 @@ public class GetServiceInfo : ApiAction
     private IRubbergodServiceClient RubbergodServiceClient { get; }
     private IFileServiceClient FileServiceClient { get; }
     private LoggingManager LoggingManager { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
     public GetServiceInfo(ApiRequestContext apiContext, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, IFileServiceClient fileServiceClient,
-        LoggingManager loggingManager) : base(apiContext)
+        LoggingManager loggingManager, IPointsServiceClient pointsServiceClient) : base(apiContext)
     {
         GraphicsClient = graphicsClient;
         RubbergodServiceClient = rubbergodServiceClient;
         FileServiceClient = fileServiceClient;
         LoggingManager = loggingManager;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task<ServiceInfo> ProcessAsync(string id)
@@ -47,6 +50,7 @@ public class GetServiceInfo : ApiAction
             "rubbergod" => RubbergodServiceClient,
             "file" => FileServiceClient,
             "graphics" => GraphicsClient,
+            "points" => PointsServiceClient,
             _ => throw new NotSupportedException($"Unsupported service {id}")
         };
     }
@@ -60,6 +64,7 @@ public class GetServiceInfo : ApiAction
                 IRubbergodServiceClient => await RubbergodServiceClient.GetDiagAsync(),
                 IGraphicsClient => await GetGraphicsServiceInfo(),
                 IFileServiceClient => await FileServiceClient.GetDiagAsync(),
+                IPointsServiceClient => await PointsServiceClient.GetDiagAsync(),
                 _ => null
             };
         }

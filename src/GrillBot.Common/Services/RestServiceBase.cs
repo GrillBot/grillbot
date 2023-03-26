@@ -1,4 +1,7 @@
-﻿using GrillBot.Core.Managers.Performance;
+﻿using System.Net;
+using System.Net.Http.Json;
+using GrillBot.Core.Managers.Performance;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.Common.Services;
 
@@ -19,23 +22,41 @@ public abstract class RestServiceBase
         HttpClient = clientFactory();
     }
 
-    protected async Task<TResult> ProcessRequestAsync<TResult>(Func<Task<HttpResponseMessage>> executeRequest, Func<HttpResponseMessage, Task<TResult>> fetchResult)
+    protected async Task<TResult> ProcessRequestAsync<TResult>(Func<Task<HttpResponseMessage>> executeRequest, Func<HttpResponseMessage, Task<TResult>> fetchResult,
+        Func<HttpResponseMessage, Task>? checkResponse = null)
     {
         using (CounterManager.Create($"Service.{ServiceName}"))
         {
             using var response = await executeRequest();
 
-            await EnsureSuccessResponseAsync(response);
+            if (checkResponse != null)
+                await checkResponse(response);
+            else
+                await EnsureSuccessResponseAsync(response);
             return await fetchResult(response);
         }
     }
 
-    private static async Task EnsureSuccessResponseAsync(HttpResponseMessage response)
+    protected static async Task EnsureSuccessResponseAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode) return;
 
         var content = await response.Content.ReadAsStringAsync();
         var errorMessage = $"API returned status code {response.StatusCode}\n{content}";
         throw new HttpRequestException(errorMessage, null, response.StatusCode) { Data = { { "ResponseContent", content } } };
+    }
+
+    protected static async Task<ValidationProblemDetails?> DesrializeValidationErrorsAsync(HttpResponseMessage response)
+    {
+        if (response.StatusCode != HttpStatusCode.BadRequest) return null;
+        return await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+    }
+
+    protected static async Task<TResult?> ReadJsonAsync<TResult>(HttpResponseMessage response)
+    {
+        if (response.StatusCode == HttpStatusCode.NoContent)
+            return default;
+
+        return await response.Content.ReadFromJsonAsync<TResult>();
     }
 }

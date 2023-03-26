@@ -16,7 +16,8 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.SyncChannelDestroyedHandler>()
-            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>();
+            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>()
+            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.PointsChannelDestroyedHandler>();
             
         services
             .AddScoped<IChannelUpdatedEvent, ChannelUpdated.AuditChannelUpdatedHandler>()
@@ -87,7 +88,8 @@ public static class HandlerExtensions
         
         services
             .AddScoped<IThreadDeletedEvent, ThreadDeleted.SyncThreadDeletedHandler>()
-            .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();
+            .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>()
+            .AddScoped<IThreadDeletedEvent, ThreadDeleted.PointsThreadDeletedHandler>();
 
         services
             .AddScoped<IThreadUpdatedEvent, ThreadUpdated.SyncThreadUpdatedHandler>()
@@ -106,8 +108,9 @@ public static class HandlerExtensions
             .AddScoped<IUserUnbannedEvent, UserUnbanned.AuditUserUnbannedHandler>();
 
         services
-            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncUserInServicesHandler>()
-            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncUserUpdatedHandler>();
+            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncRubbergodServiceUserHandler>()
+            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncUserUpdatedHandler>()
+            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncPointsServiceUserUpdatedHandler>();
 
         return services;
     }

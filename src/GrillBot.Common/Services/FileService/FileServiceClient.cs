@@ -59,7 +59,13 @@ public class FileServiceClient : RestServiceBase, IFileServiceClient
     {
         return await ProcessRequestAsync(
             () => HttpClient.GetAsync($"api/data?filename={filename}"),
-            async response => response.StatusCode == HttpStatusCode.NotFound ? null : await response.Content.ReadAsByteArrayAsync()
+            async response => response.StatusCode == HttpStatusCode.NotFound ? null : await response.Content.ReadAsByteArrayAsync(),
+            async response =>
+            {
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                    return;
+                await EnsureSuccessResponseAsync(response);
+            }
         );
     }
 

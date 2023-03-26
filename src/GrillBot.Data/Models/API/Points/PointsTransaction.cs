@@ -1,19 +1,18 @@
 ﻿using System;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Points;
 
 public class PointsTransaction
 {
-    public Guild Guild { get; set; }
-    public User User { get; set; }
+    public Guild Guild { get; set; } = null!;
+    public User User { get; set; } = null!;
 
-    public string MessageId { get; set; }
+    public string MessageId { get; set; } = null!;
     public bool IsReaction { get; set; }
-    public DateTime AssignedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public int Points { get; set; }
 
-    public PointsMergeInfo MergeInfo { get; set; }
+    public PointsMergeInfo? MergeInfo { get; set; }
 }

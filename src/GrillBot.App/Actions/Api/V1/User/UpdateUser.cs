@@ -1,7 +1,9 @@
-﻿using GrillBot.App.Managers;
+﻿using GrillBot.App.Helpers;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
@@ -13,12 +15,17 @@ public class UpdateUser : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AuditLogWriteManager AuditLogWriteManager { get; }
     private ITextsManager Texts { get; }
+    private PointsHelper PointsHelper { get; }
+    private IDiscordClient DiscordClient { get; }
 
-    public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, ITextsManager texts) : base(apiContext)
+    public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, ITextsManager texts, PointsHelper pointsHelper,
+        IDiscordClient discordClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         AuditLogWriteManager = auditLogWriteManager;
         Texts = texts;
+        PointsHelper = pointsHelper;
+        DiscordClient = discordClient;
     }
 
     public async Task ProcessAsync(ulong id, UpdateUserParams parameters)
@@ -38,5 +45,21 @@ public class UpdateUser : ApiAction
         await AuditLogWriteManager.StoreAsync(auditLogItem);
 
         await repository.CommitAsync();
+        await TrySyncPointsService(before, user);
+    }
+
+    private async Task TrySyncPointsService(Database.Entity.User before, Database.Entity.User after)
+    {
+        if (before.HaveFlags(UserFlags.PointsDisabled) == after.HaveFlags(UserFlags.PointsDisabled))
+            return;
+
+        var guilds = await DiscordClient.GetGuildsAsync();
+        foreach (var guild in guilds)
+        {
+            var user = await guild.GetUserAsync(after.Id.ToUlong());
+            if (user is null) continue;
+
+            await PointsHelper.SyncDataWithServiceAsync(guild, new[] { user }, Enumerable.Empty<IGuildChannel>());
+        }
     }
 }

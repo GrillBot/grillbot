@@ -3,8 +3,11 @@ using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models.Guilds;
@@ -18,15 +21,17 @@ public class GetGuildDetail : ApiAction
     private IDiscordClient DiscordClient { get; }
     private GrillBotCacheBuilder CacheBuilder { get; }
     private ITextsManager Texts { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
     public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, GrillBotCacheBuilder cacheBuilder,
-        ITextsManager texts) : base(apiContext)
+        ITextsManager texts, IPointsServiceClient pointsServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = discordClient;
         CacheBuilder = cacheBuilder;
         Texts = texts;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task<GuildDetail> ProcessAsync(ulong id)
@@ -83,6 +88,27 @@ public class GetGuildDetail : ApiAction
         await using var cache = CacheBuilder.CreateRepository();
         report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
 
+        report.PointTransactions = await GetPointsTransactionsCountAsync(guildId);
         return report;
+    }
+
+    private async Task<int> GetPointsTransactionsCountAsync(ulong guildId)
+    {
+        var request = new AdminListRequest
+        {
+            GuildId = guildId.ToString(),
+            Pagination = new PaginatedParams
+            {
+                Page = 0,
+                PageSize = 1
+            }
+        };
+
+        var nonMerged = await PointsServiceClient.GetTransactionListAsync(request);
+
+        request.ShowMerged = true;
+        var merged = await PointsServiceClient.GetTransactionListAsync(request);
+
+        return Convert.ToInt32(nonMerged.Response!.TotalItemsCount + merged.Response!.TotalItemsCount);
     }
 }

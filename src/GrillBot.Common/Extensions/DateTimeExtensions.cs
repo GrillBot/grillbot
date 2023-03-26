@@ -10,4 +10,7 @@ public static class DateTimeExtensions
 
     public static string ToCzechFormat(this DateTimeOffset dateTime, bool withoutTime = false, bool withMiliseconds = false)
         => dateTime.LocalDateTime.ToCzechFormat(withoutTime, withMiliseconds);
+
+    public static string ToCzechFormat(this DateOnly dateOnly)
+        => dateOnly.ToDateTime(new TimeOnly(0, 0, 0)).ToCzechFormat(true);
 }

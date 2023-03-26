@@ -2,6 +2,7 @@
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.KachnaOnline;
 using GrillBot.Common.Services.Math;
+using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.RubbergodService;
 using GrillBot.Core.Extensions;
 using Microsoft.Extensions.Configuration;
@@ -41,6 +42,10 @@ public static class ServicesExtensions
         services
             .AddScoped<IFileServiceClient, FileServiceClient>()
             .AddHttpClient(configuration, "FileService", "FileService");
+
+        services
+            .AddScoped<IPointsServiceClient, PointsServiceClient>()
+            .AddHttpClient(configuration, "PointsService", "PointsService");
 
         return services;
     }

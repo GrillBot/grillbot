@@ -1,33 +1,30 @@
-﻿using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Managers.Events.Contracts;
+﻿using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Common.Services.PointsService;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
 public class PointsMessageDeletedHandler : IMessageDeletedEvent
 {
-    private IMessageCacheManager MessageCache { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
-    public PointsMessageDeletedHandler(IMessageCacheManager messageCache, GrillBotDatabaseBuilder databaseBuilder)
+    private IGuildChannel? Channel { get; set; }
+
+    public PointsMessageDeletedHandler(IPointsServiceClient pointsServiceClient)
     {
-        MessageCache = messageCache;
-        DatabaseBuilder = databaseBuilder;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task ProcessAsync(Cacheable<IMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel)
     {
-        if (!cachedChannel.HasValue || cachedChannel.Value is not IGuildChannel channel) return;
+        Init(cachedChannel);
+        if (Channel is null) return;
 
-        var message = cachedMessage.HasValue ? cachedMessage.Value : null;
-        message ??= await MessageCache.GetAsync(cachedMessage.Id, null, true);
-        if (message == null) return;
+        await PointsServiceClient.DeleteTransactionAsync(Channel.GuildId.ToString(), cachedMessage.Id.ToString());
+    }
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var transactions = await repository.Points.GetTransactionsAsync(message.Id, channel.Guild, null);
-        if (transactions.Count == 0) return;
-
-        repository.RemoveCollection(transactions);
-        await repository.CommitAsync();
+    private void Init(Cacheable<IMessageChannel, ulong> cachedChannel)
+    {
+        if (!cachedChannel.HasValue || cachedChannel.Value is not IGuildChannel guildChannel) return;
+        Channel = guildChannel;
     }
 }

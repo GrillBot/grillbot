@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Services.Graphics.Models.Chart;
+using GrillBot.Common.Services.PointsService.Models;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
 
@@ -7,7 +8,7 @@ public static class ChartRequestBuilder
     public const int Height = 500;
     public const int Width = 1920;
     public const string Background = "white";
-    
+
     public static ChartRequestData CreateCommonRequest()
     {
         return new ChartRequestData
@@ -32,14 +33,14 @@ public static class ChartRequestBuilder
             }
         };
     }
-    
-    public static IEnumerable<(DateTime day, int points)> FilterData(IEnumerable<(DateTime day, int messagePoints, int reactionPoints)> data, ChartsFilter filter)
+
+    public static IEnumerable<(DateOnly day, long points)> FilterData(IEnumerable<PointsChartItem> data, ChartsFilter filter)
     {
         var query = filter switch
         {
-            ChartsFilter.Messages => data.Select(o => (o.day, o.messagePoints)),
-            ChartsFilter.Reactions => data.Select(o => (o.day, o.reactionPoints)),
-            _ => data.Select(o => (o.day, o.messagePoints + o.reactionPoints))
+            ChartsFilter.Messages => data.Select(o => (o.Day, o.MessagePoints)),
+            ChartsFilter.Reactions => data.Select(o => (o.Day, o.ReactionPoints)),
+            _ => data.Select(o => (o.Day, o.MessagePoints + o.ReactionPoints))
         };
 
         return query.Where(o => o.Item2 > 0);

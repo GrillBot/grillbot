@@ -3,13 +3,13 @@ using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.PointsService;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums.Internal;
-using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -19,13 +19,16 @@ public class GetUserDetail : ApiAction
     private IMapper Mapper { get; }
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
-    public GetUserDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts) : base(apiContext)
+    public GetUserDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
+        IPointsServiceClient pointsServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = discordClient;
         Texts = texts;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task<UserDetail> ProcessSelfAsync()
@@ -62,7 +65,7 @@ public class GetUserDetail : ApiAction
 
         await AddDiscordDataAsync(result);
         foreach (var guild in entity.Guilds)
-            result.Guilds.Add(await CreateGuildDetailAsync(repository, guild));
+            result.Guilds.Add(await CreateGuildDetailAsync(guild));
 
         result.Guilds = result.Guilds.OrderByDescending(o => o.IsUserInGuild).ThenBy(o => o.Guild.Name).ToList();
         return result;
@@ -78,7 +81,7 @@ public class GetUserDetail : ApiAction
         result.IsKnown = true;
     }
 
-    private async Task<GuildUserDetail> CreateGuildDetailAsync(GrillBotRepository repository, Database.Entity.GuildUser guildUserEntity)
+    private async Task<GuildUserDetail> CreateGuildDetailAsync(Database.Entity.GuildUser guildUserEntity)
     {
         var result = Mapper.Map<GuildUserDetail>(guildUserEntity);
 
@@ -86,11 +89,11 @@ public class GetUserDetail : ApiAction
         result.Channels = result.Channels.OrderByDescending(o => o.Count).ThenBy(o => o.Channel.Name).ToList();
         result.Emotes = result.Emotes.OrderByDescending(o => o.UseCount).ThenByDescending(o => o.LastOccurence).ThenBy(o => o.Emote.Name).ToList();
 
-        await UpdateGuildDetailAsync(result, guildUserEntity, repository);
+        await UpdateGuildDetailAsync(result, guildUserEntity);
         return result;
     }
 
-    private async Task UpdateGuildDetailAsync(GuildUserDetail detail, Database.Entity.GuildUser entity, GrillBotRepository repository)
+    private async Task UpdateGuildDetailAsync(GuildUserDetail detail, Database.Entity.GuildUser entity)
     {
         var guild = await DiscordClient.GetGuildAsync(detail.Guild.Id.ToUlong());
         if (guild == null) return;
@@ -104,7 +107,7 @@ public class GetUserDetail : ApiAction
         SetUnverify(detail, entity.Unverify, guildUser, guild);
         await SetVisibleChannelsAsync(detail, guildUser, guild);
         detail.Roles = Mapper.Map<List<Role>>(guildUser.GetRoles().OrderByDescending(o => o.Position).ToList());
-        detail.HavePointsTransaction = await repository.Points.ExistsAnyTransactionAsync(guildUser);
+        detail.HavePointsTransaction = await PointsServiceClient.ExistsAnyTransactionAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString());
     }
 
     private void SetUnverify(GuildUserDetail detail, Database.Entity.Unverify? unverify, IGuildUser user, IGuild guild)

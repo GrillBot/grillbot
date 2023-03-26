@@ -1,40 +1,41 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
 
 namespace GrillBot.App.Handlers.ReactionRemoved;
 
 public class PointsReactionRemovedHandler : IReactionRemovedEvent
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
-    public PointsReactionRemovedHandler(GrillBotDatabaseBuilder databaseBuilder)
+    private IGuildChannel? Channel { get; set; }
+    private IEmote? Emote { get; set; }
+
+    public PointsReactionRemovedHandler(IPointsServiceClient pointsServiceClient)
     {
-        DatabaseBuilder = databaseBuilder;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task ProcessAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
     {
-        if (!Init(cachedChannel, reaction, out var channel)) return;
+        Init(cachedChannel, reaction);
+        if (Channel is null || Emote is null) return;
 
-        var user = reaction.User.IsSpecified ? reaction.User.Value as IGuildUser : null;
-        user ??= await channel.Guild.GetUserAsync(reaction.UserId);
+        var reactionId = new ReactionInfo
+        {
+            Emote = Emote.ToString()!,
+            UserId = reaction.UserId.ToString()
+        }.GetReactionId();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var reactionId = PointsHelper.CreateReactionId(reaction);
-        var transaction = await repository.Points.FindTransactionAsync(channel.Guild, cachedMessage.Id, reactionId, user);
-        if (transaction == null) return;
-
-        repository.Remove(transaction);
-        await repository.CommitAsync();
+        await PointsServiceClient.DeleteTransactionAsync(Channel!.GuildId.ToString(), cachedMessage.Id.ToString(), reactionId);
     }
 
-    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction, out IGuildChannel channel)
+    private void Init(Cacheable<IMessageChannel, ulong> cachedChannel, IReaction reaction)
     {
-        channel = cachedChannel is { HasValue: true, Value: IGuildChannel guildChannel } ? guildChannel : null;
+        Channel = cachedChannel is { HasValue: true, Value: IGuildChannel guildChannel } ? guildChannel : null;
+        if (Channel is null) return;
 
-        if (channel == null) return false;
-        return reaction.Emote is Emote && channel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote));
+        Emote = reaction.Emote is Emote ? Channel.Guild.Emotes.FirstOrDefault(x => x.IsEqual(reaction.Emote)) : null;
     }
 }

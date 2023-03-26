@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Services.PointsService;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
@@ -13,16 +14,18 @@ public class UserInfo : CommandAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IConfiguration Configuration { get; }
     private ITextsManager Texts { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
     private bool OverLimit { get; set; }
-    private Database.Entity.User ExecutorEntity { get; set; }
-    private IEnumerable<IGuildUser> GuildUsers { get; set; }
+    private Database.Entity.User ExecutorEntity { get; set; } = null!;
+    private IEnumerable<IGuildUser> GuildUsers { get; set; } = new List<IGuildUser>();
 
-    public UserInfo(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts)
+    public UserInfo(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts, IPointsServiceClient pointsServiceClient)
     {
         DatabaseBuilder = databaseBuilder;
         Configuration = configuration;
         Texts = texts;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task<Embed> ProcessAsync(IGuildUser user)
@@ -30,16 +33,16 @@ public class UserInfo : CommandAction
         GuildUsers = await Context.Guild.GetUsersAsync();
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        ExecutorEntity = await repository.User.FindUserAsync(Context.User, true);
-        var entity = await repository.GuildUser.FindGuildUserAsync(user, true, true);
+        ExecutorEntity = (await repository.User.FindUserAsync(Context.User, true))!;
+        var userEntity = (await repository.GuildUser.FindGuildUserAsync(user, true, true))!;
 
         var builder = Init(user);
         SetAuthor(builder, user);
         SetCommonInfo(builder, user);
         SetGuildInfo(builder, user);
-        await SetDatabaseInfoAsync(builder, user, entity, repository);
+        await SetDatabaseInfoAsync(builder, user, userEntity, repository);
 
-        if (!OverLimit || !ExecutorEntity!.HaveFlags(UserFlags.WebAdmin))
+        if (!OverLimit || !ExecutorEntity.HaveFlags(UserFlags.WebAdmin))
             return builder.Build();
 
         builder.Fields.RemoveAt(EmbedBuilder.MaxFieldCount - 1); // Remove last item to add info about over limit fields.
@@ -118,25 +121,26 @@ public class UserInfo : CommandAction
             AddField(builder, "PremiumSince", user.PremiumSince.Value.ToCzechFormat(), true);
     }
 
-    private async Task SetDatabaseInfoAsync(EmbedBuilder builder, IGuildUser user, Database.Entity.GuildUser entity, GrillBotRepository repository)
+    private async Task SetDatabaseInfoAsync(EmbedBuilder builder, IGuildUser user, Database.Entity.GuildUser userEntity, GrillBotRepository repository)
     {
-        await SetPointsInfoAsync(builder, user, repository);
+        await SetPointsInfoAsync(builder, user);
 
-        if (entity.GivenReactions + entity.ObtainedReactions > 0)
-            AddField(builder, "Reactions", $"{entity.GivenReactions} / {entity.ObtainedReactions}", true);
+        if (userEntity.GivenReactions + userEntity.ObtainedReactions > 0)
+            AddField(builder, "Reactions", $"{userEntity.GivenReactions} / {userEntity.ObtainedReactions}", true);
 
         await SetMessageInfoAsync(builder, user, repository);
         await SetUnverifyInfoAsync(builder, user, repository);
-        SetInviteInfo(builder, entity);
+        SetInviteInfo(builder, userEntity);
         await SetChannelInfoAsync(builder, user, repository);
     }
 
-    private async Task SetPointsInfoAsync(EmbedBuilder builder, IGuildUser user, GrillBotRepository repository)
+    private async Task SetPointsInfoAsync(EmbedBuilder builder, IGuildUser user)
     {
         if (OverLimit) return;
-        var points = await repository.Points.ComputePointsOfUserAsync(Context.Guild.Id, user.Id);
-        if (points > 0)
-            AddField(builder, "Points", points.ToString(), true);
+
+        var pointsStatus = await PointsServiceClient.GetStatusOfPointsAsync(Context.Guild.Id.ToString(), user.Id.ToString());
+        if (pointsStatus.YearBack > 0)
+            AddField(builder, "Points", pointsStatus.YearBack.ToString(), true);
     }
 
     private async Task SetMessageInfoAsync(EmbedBuilder builder, IGuildUser user, GrillBotRepository repository)
@@ -162,7 +166,7 @@ public class UserInfo : CommandAction
             var unverifyType = unverifyLogData.IsSelfUnverify ? "self" : "";
             var reason = unverifyLogData.IsSelfUnverify ? "" : Texts["User/InfoEmbed/ReasonRow", Locale].FormatWith(unverify.Reason);
             var row = Texts["User/InfoEmbed/UnverifyRow", Locale].FormatWith(unverifyType, unverify.EndAt.ToCzechFormat(), reason);
-            AddField(builder, "UnverifyInfo", row.Cut(EmbedFieldBuilder.MaxFieldValueLength, true), false);
+            AddField(builder, "UnverifyInfo", row.Cut(EmbedFieldBuilder.MaxFieldValueLength, true)!, false);
         }
     }
 

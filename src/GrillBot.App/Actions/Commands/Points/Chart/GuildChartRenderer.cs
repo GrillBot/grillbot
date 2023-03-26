@@ -2,6 +2,7 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.Graphics.Models.Chart;
+using GrillBot.Common.Services.PointsService.Models;
 using ImageMagick;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
@@ -17,7 +18,7 @@ public class GuildChartRenderer
         GraphicsClient = graphicsClient;
     }
 
-    public async Task<MagickImage> RenderAsync(IGuild guild, IEnumerable<(DateTime day, int messagePoints, int reactionPoints)> data, ChartsFilter filter,
+    public async Task<MagickImage> RenderAsync(IGuild guild, IEnumerable<PointsChartItem> data, ChartsFilter filter,
         string locale)
     {
         var request = CreateRequest(filter, data, guild, locale);
@@ -26,7 +27,7 @@ public class GuildChartRenderer
         return new MagickImage(graphData);
     }
 
-    private ChartRequestData CreateRequest(ChartsFilter filter, IEnumerable<(DateTime day, int messagePoints, int reactionPoints)> data, IGuild guild,
+    private ChartRequestData CreateRequest(ChartsFilter filter, IEnumerable<PointsChartItem> data, IGuild guild,
         string locale)
     {
         var request = ChartRequestBuilder.CreateCommonRequest();
@@ -44,8 +45,8 @@ public class GuildChartRenderer
         {
             Data = filteredData.ConvertAll(o => new DataPoint
             {
-                Label = o.day.ToCzechFormat(true),
-                Value = filteredData.Where(x => x.day <= o.day).Sum(x => x.points)
+                Label = o.day.ToCzechFormat(),
+                Value = (int)filteredData.Where(x => x.day <= o.day).Sum(x => x.points)
             }),
             Color = "black",
             Label = guild.Name,

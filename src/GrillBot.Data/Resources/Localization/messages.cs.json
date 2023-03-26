@@ -516,6 +516,10 @@
           "Summary": "Celkové body uživatelů za poslední rok"
         }
       }
+    },
+    "Image": {
+      "UserNotFound": "Uživatel nebyl nalezen na serveru.",
+      "NoActivity": "Uživatel {0} ještě neprojevil na serveru žádnou aktivitu."
     }
   },
   "Pins": {

@@ -2,8 +2,10 @@
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.Graphics.Models.Images;
+using GrillBot.Common.Services.PointsService;
 using GrillBot.Core.Exceptions;
 using ImageMagick;
 
@@ -14,26 +16,30 @@ public sealed class PointsImage : CommandAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
     private IGraphicsClient GraphicsClient { get; }
+    private ITextsManager Texts { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
-    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager, IGraphicsClient graphicsClient)
+    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager, IGraphicsClient graphicsClient, ITextsManager texts,
+        IPointsServiceClient pointsServiceClient)
     {
         ProfilePictureManager = profilePictureManager;
         DatabaseBuilder = databaseBuilder;
         GraphicsClient = graphicsClient;
+        Texts = texts;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task<TemporaryFile> ProcessAsync(IGuild guild, IUser user)
     {
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
         if (guildUser == null)
-            throw new NotFoundException("Uživatel nebyl nalezen na serveru.");
+            throw new NotFoundException(Texts["Points/Image/NotFound", Locale]);
 
         await using var repository = DatabaseBuilder.CreateRepository();
         if (!await repository.GuildUser.ExistsAsync(guildUser))
-            throw new NotFoundException($"{user.GetDisplayName()} ještě neprojevil na serveru žádnou aktivitu.");
+            throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
-        var userPoints = await repository.Points.ComputePointsOfUserAsync(guildUser.GuildId, guildUser.Id);
-        var position = await repository.Points.CalculatePointsPositionAsync(guildUser, userPoints);
+        var userPointsStatus = await PointsServiceClient.GetStatusOfPointsAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString());
 
         using var profilePicture = await GetProfilePictureAsync(user);
         var dominantColor = profilePicture.GetDominantColor();
@@ -41,8 +47,8 @@ public sealed class PointsImage : CommandAction
 
         var request = new PointsImageRequest
         {
-            Points = userPoints,
-            Position = position,
+            Points = userPointsStatus.YearBack,
+            Position = userPointsStatus.Position.GetValueOrDefault(),
             Nickname = user.GetDisplayName(false),
             BackgroundColor = dominantColor.ToHexString(),
             TextBackground = textBackground.ToHexString(),

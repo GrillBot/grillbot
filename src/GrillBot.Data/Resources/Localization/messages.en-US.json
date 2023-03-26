@@ -516,6 +516,10 @@
           "Summary": "Total points of users for the last year."
         }
       }
+    },
+    "Image": {
+      "UserNotFound": "User wasn't found in the guild.",
+      "NoActivity": "User {0} showed no activity yet."
     }
   },
   "Pins": {

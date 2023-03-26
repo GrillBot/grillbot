@@ -1,7 +1,8 @@
 ﻿using GrillBot.App.Infrastructure.IO;
-using GrillBot.Data.Models.API.Points;
-using GrillBot.Database.Models;
-using GrillBot.Database.Services.Repository;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Services.PointsService;
+using GrillBot.Common.Services.PointsService.Models;
+using GrillBot.Core.Extensions;
 using ImageMagick;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,17 +10,16 @@ namespace GrillBot.App.Actions.Commands.Points.Chart;
 
 public class PointsChart : CommandAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IServiceProvider ServiceProvider { get; }
+    private IPointsServiceClient PointsServiceClient { get; }
 
-    // Dictionary<UserId, List<(Day, MessagePoints, ReactionPoints)>
-    private Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>>? UsersData { get; set; }
-    private List<(DateTime day, int messagePoints, int reactionPoints)>? GuildData { get; set; }
+    private Dictionary<ulong, List<PointsChartItem>>? UsersData { get; set; }
+    private List<PointsChartItem>? GuildData { get; set; }
 
-    public PointsChart(GrillBotDatabaseBuilder databaseBuilder, IServiceProvider serviceProvider)
+    public PointsChart(IServiceProvider serviceProvider, IPointsServiceClient pointsServiceClient)
     {
-        DatabaseBuilder = databaseBuilder;
         ServiceProvider = serviceProvider;
+        PointsServiceClient = pointsServiceClient;
     }
 
     public async Task<TemporaryFile> ProcessAsync(ChartType type, IEnumerable<IUser>? users, ChartsFilter filter)
@@ -44,51 +44,53 @@ public class PointsChart : CommandAction
 
     private async Task PrepareDataAsync(ChartType type, IEnumerable<IUser>? users, ChartsFilter filter)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
         switch (type)
         {
             case ChartType.GuildChart:
-                await PrepareGuildDataAsync(repository, filter);
+                await PrepareGuildDataAsync(filter);
                 break;
             case ChartType.UserChart:
-                UsersData = new Dictionary<ulong, List<(DateTime day, int messagePoints, int reactionPoints)>>();
+                UsersData = new Dictionary<ulong, List<PointsChartItem>>();
                 if (users != null)
                 {
-                    foreach (var user in users)
-                        await PrepareUserDataAsync(repository, user, filter);
+                    foreach (var user in users.Where(o => o.IsUser()))
+                        await PrepareUserDataAsync(user, filter);
                 }
 
                 if (!UsersData.ContainsKey(Context.User.Id))
-                    await PrepareUserDataAsync(repository, Context.User, filter);
+                    await PrepareUserDataAsync(Context.User, filter);
                 break;
         }
     }
 
-    private async Task PrepareUserDataAsync(GrillBotRepository repository, IUser user, ChartsFilter filter)
+    private async Task PrepareUserDataAsync(IUser user, ChartsFilter filter)
     {
-        var parameters = CreateParameters(filter);
-        parameters.UserId = user.Id.ToString();
+        var request = CreateParameters(filter);
+        request.UserId = user.Id.ToString();
 
-        UsersData!.Add(user.Id, await repository.Points.GetGraphDataAsync(parameters));
+        var data = await PointsServiceClient.GetChartDataAsync(request);
+        data.ValidationErrors.AggregateAndThrow();
+
+        UsersData!.Add(user.Id, data.Response!);
     }
 
-    private async Task PrepareGuildDataAsync(GrillBotRepository repository, ChartsFilter filter)
+    private async Task PrepareGuildDataAsync(ChartsFilter filter)
     {
-        var parameters = CreateParameters(filter);
-        GuildData = await repository.Points.GetGraphDataAsync(parameters);
+        var request = CreateParameters(filter);
+
+        var data = await PointsServiceClient.GetChartDataAsync(request);
+        data.ValidationErrors.AggregateAndThrow();
+
+        GuildData = data.Response;
     }
 
-    private GetPointTransactionsParams CreateParameters(ChartsFilter filter)
+    private AdminListRequest CreateParameters(ChartsFilter filter)
     {
-        return new GetPointTransactionsParams
+        return new AdminListRequest
         {
-            Merged = false,
+            ShowMerged = false,
             Sort = { Descending = false, OrderBy = "AssignedAt" },
-            AssignedAt = new RangeParams<DateTime?>
-            {
-                From = DateTime.Now.AddYears(-1)
-            },
+            CreatedFrom = DateTime.Now.AddYears(-1),
             GuildId = Context.Guild.Id.ToString(),
             OnlyMessages = (filter & ChartsFilter.Messages) != 0 && (filter & ChartsFilter.Reactions) == 0 && (filter & ChartsFilter.Summary) == 0,
             OnlyReactions = (filter & ChartsFilter.Reactions) != 0 && (filter & ChartsFilter.Messages) == 0 && (filter & ChartsFilter.Summary) == 0

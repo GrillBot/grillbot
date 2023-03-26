@@ -37,10 +37,7 @@ public class GetPointsLeaderboard : ApiAction
 
             foreach (var item in leaderboard.Response!.Items)
             {
-                var user = await guild.GetUserAsync(item.UserId.ToUlong());
-                if (user is null) continue;
-
-                var guildUser = await repository.GuildUser.FindGuildUserAsync(user, true);
+                var guildUser = await repository.GuildUser.FindGuildUserByIdAsync(guild.Id, item.UserId.ToUlong(), true);
                 if (guildUser is null) continue;
 
                 result.Add(new UserPointsItem

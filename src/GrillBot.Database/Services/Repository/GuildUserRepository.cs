@@ -32,6 +32,16 @@ public class GuildUserRepository : RepositoryBase<GrillBotContext>
 
     public async Task<GuildUser?> FindGuildUserAsync(IGuildUser user, bool disableTracking = false, bool includeAll = false)
     {
+        var guildUser = await FindGuildUserByIdAsync(user.GuildId, user.Id, disableTracking, includeAll);
+        if (guildUser is null) return null;
+        
+        if(!disableTracking)
+            guildUser.Update(user);
+        return guildUser;
+    }
+
+    public async Task<GuildUser?> FindGuildUserByIdAsync(ulong guildId, ulong userId, bool disableTracking = false, bool includeAll = false)
+    {
         using (CreateCounter())
         {
             var query = Context.GuildUsers
@@ -48,13 +58,7 @@ public class GuildUserRepository : RepositoryBase<GrillBotContext>
             if (disableTracking)
                 query = query.AsNoTracking();
 
-            var entity = await query.FirstOrDefaultAsync(o => o.UserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString());
-            if (entity == null)
-                return null;
-
-            if (!disableTracking)
-                entity.Update(user);
-            return entity;
+            return await query.FirstOrDefaultAsync(o => o.UserId == userId.ToString() && o.GuildId == guildId.ToString());
         }
     }
 

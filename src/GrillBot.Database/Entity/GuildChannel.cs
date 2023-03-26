@@ -93,4 +93,23 @@ public class GuildChannel
         RolePermissionsCount = channel.PermissionOverwrites.Count(o => o.TargetType == PermissionTarget.Role && o.TargetId != channel.Guild.EveryoneRole.Id);
         UserPermissionsCount = channel.PermissionOverwrites.Count(o => o.TargetType == PermissionTarget.User);
     }
+
+    public GuildChannel Clone()
+    {
+        return new GuildChannel
+        {
+            Flags = Flags,
+            ChannelType = ChannelType,
+            Guild = Guild,
+            GuildId = GuildId,
+            Name = Name,
+            ChannelId = ChannelId,
+            ParentChannel = ParentChannel?.Clone(),
+            SearchItems = SearchItems,
+            ParentChannelId = ParentChannelId,
+            RolePermissionsCount = RolePermissionsCount,
+            UserPermissionsCount = UserPermissionsCount,
+            Users = Users
+        };
+    }
 }

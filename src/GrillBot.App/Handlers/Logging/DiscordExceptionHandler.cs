@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Infrastructure.IO;
+using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Extensions;
@@ -89,6 +90,12 @@ public class DiscordExceptionHandler : ILoggingHandler
             {
                 var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
                 var title = source == "App Commands" ? "Při provádění integrovaného příkazu došlo k chybě." : "Došlo k neočekávané chybě.";
+
+                if (exception is JobException { LoggedUser: { } } jobException)
+                {
+                    embed.AddField("Spustil", jobException.LoggedUser.GetFullName(), true);
+                    exception = exception.InnerException!;
+                }
 
                 embed.WithTitle(title)
                     .AddField("Zdroj", source, true)

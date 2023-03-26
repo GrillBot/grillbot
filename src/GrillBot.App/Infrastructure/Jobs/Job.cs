@@ -37,11 +37,14 @@ public abstract class Job : IJob
     {
         if (!await CanRunAsync()) return;
 
+        var user = context.MergedJobDataMap.Get("User") as IUser;
+
         await LoggingManager.InfoAsync(JobName, $"Triggered processing at {DateTime.Now}");
         var data = new JobExecutionData
         {
             JobName = JobName,
-            StartAt = DateTime.Now
+            StartAt = DateTime.Now,
+            StartingUser = user is null ? null : new AuditUserInfo(user)
         };
 
         try
@@ -54,7 +57,7 @@ public abstract class Job : IJob
             data.Result = ex.ToString();
             data.WasError = true;
 
-            await LoggingManager.ErrorAsync(JobName, "An error occured while job task processing.", ex);
+            await LoggingManager.ErrorAsync(JobName, "An error occured while job task processing.", new JobException(user, ex));
         }
         finally
         {

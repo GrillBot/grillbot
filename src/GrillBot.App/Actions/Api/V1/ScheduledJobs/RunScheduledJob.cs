@@ -15,6 +15,10 @@ public class RunScheduledJob : ApiAction
     public async Task ProcessAsync(string name)
     {
         var scheduler = await SchedulerFactory.GetScheduler();
-        await scheduler.TriggerJob(JobKey.Create(name));
+
+        var jobData = new JobDataMap();
+        jobData.Put("User", ApiContext.LoggedUser!);
+        
+        await scheduler.TriggerJob(JobKey.Create(name), jobData);
     }
 }

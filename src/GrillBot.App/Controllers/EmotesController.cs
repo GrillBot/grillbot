@@ -21,31 +21,17 @@ public class EmotesController : Infrastructure.ControllerBase
     }
 
     /// <summary>
-    /// Get statistics of supported emotes.
+    /// Get statistics of emotes.
     /// </summary>
-    /// <response code="200">Return paginated list with statistics of supported emotes.</response>
+    /// <response code="200">Return paginated list with statistics of emotes.</response>
     /// <response code="400">Validation of parameters failed.</response>
-    [HttpPost("stats/supported/list")]
+    [HttpPost("stats/list/{unsupported}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfSupportedEmotesAsync([FromBody] EmotesListParams @params)
+    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfEmotesAsync([FromBody] EmotesListParams @params, bool unsupported)
     {
         ApiAction.Init(this, @params);
-        return Ok(await ProcessActionAsync<GetStatsOfEmotes, PaginatedResponse<EmoteStatItem>>(action => action.ProcessAsync(@params, false)));
-    }
-
-    /// <summary>
-    /// Get statistics of unsupported emotes.
-    /// </summary>
-    /// <response code="200">Return paginated list with statistics of unsupported emotes.</response>
-    /// <response code="400">Validation of parameters failed.</response>
-    [HttpPost("stats/unsupported/list")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfUnsupportedEmotesAsync([FromBody] EmotesListParams @params)
-    {
-        ApiAction.Init(this, @params);
-        return Ok(await ProcessActionAsync<GetStatsOfEmotes, PaginatedResponse<EmoteStatItem>>(action => action.ProcessAsync(@params, true)));
+        return Ok(await ProcessActionAsync<GetStatsOfEmotes, PaginatedResponse<EmoteStatItem>>(action => action.ProcessAsync(@params, unsupported)));
     }
 
     /// <summary>

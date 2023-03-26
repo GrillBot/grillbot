@@ -105,12 +105,6 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.FromUser).WithMany().HasForeignKey(o => new { o.GuildId, o.FromUserId });
         });
 
-        modelBuilder.Entity<PointsTransaction>(builder =>
-        {
-            builder.HasKey(o => new { o.GuildId, o.UserId, o.MessageId, o.ReactionId });
-            builder.HasOne(o => o.GuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.UserId });
-        });
-
         modelBuilder.Entity<Nickname>(builder =>
         {
             builder.HasKey(o => new { o.GuildId, o.UserId, o.Id });
@@ -136,7 +130,6 @@ public class GrillBotContext : DbContext
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<EmoteSuggestion> EmoteSuggestions => Set<EmoteSuggestion>();
-    public DbSet<PointsTransaction> PointsTransactions => Set<PointsTransaction>();
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();
     public DbSet<Nickname> Nicknames => Set<Nickname>();
 }

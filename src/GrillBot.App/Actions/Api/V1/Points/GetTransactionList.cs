@@ -49,20 +49,25 @@ public class GetTransactionList : ApiAction
                 userCache.Add(entity.UserId, user);
             }
 
+            var mergeInfo = entity.MergedCount > 0
+                ? new PointsMergeInfo
+                {
+                    MergedItemsCount = entity.MergedCount,
+                    MergeRangeFrom = entity.MergedFrom.GetValueOrDefault(),
+                    MergeRangeTo = entity.MergedTo.GetValueOrDefault()
+                }
+                : null;
+
+            if (mergeInfo != null && mergeInfo.MergeRangeFrom == mergeInfo.MergeRangeTo)
+                mergeInfo.MergeRangeTo = null;
+
             return new PointsTransaction
             {
                 Points = entity.Value,
                 CreatedAt = entity.CreatedAt.ToLocalTime(),
                 IsReaction = entity.IsReaction,
                 MessageId = entity.MessageId,
-                MergeInfo = entity.MergedCount > 0
-                    ? new PointsMergeInfo
-                    {
-                        MergedItemsCount = entity.MergedCount,
-                        MergeRangeFrom = entity.MergedFrom.GetValueOrDefault(),
-                        MergeRangeTo = entity.MergedTo.GetValueOrDefault()
-                    }
-                    : null,
+                MergeInfo = mergeInfo,
                 Guild = guild,
                 User = user
             };

@@ -87,8 +87,7 @@ public class GuildRepository : RepositoryBase<GrillBotContext>
                     UnverifyLogs = g.UnverifyLogs.Count,
                     Users = g.Users.Count,
                     EmoteStats = g.EmoteStatistics.Count,
-                    EmoteSuggestions = Context.EmoteSuggestions.Count(o => o.GuildId == g.Id),
-                    PointTransactions = Context.PointsTransactions.Count(o => o.GuildId == g.Id)
+                    EmoteSuggestions = Context.EmoteSuggestions.Count(o => o.GuildId == g.Id)
                 });
 
             var data = await query.FirstOrDefaultAsync();

@@ -68,6 +68,15 @@ public class PointsReactionAddedHandler : IReactionAddedEvent
 
         Channel = guildChannel;
         ReactionUser = reaction.User.IsSpecified ? reaction.User.Value : await Channel.Guild.GetUserAsync(reaction.UserId);
-        Message = cachedMessage.HasValue ? cachedMessage.Value : (IUserMessage?)await MessageCache.GetAsync(cachedMessage.Id, cachedChannel.Value);
+
+        if (cachedMessage.HasValue)
+        {
+            Message = cachedMessage.Value;
+        }
+        else
+        {
+            var message = await MessageCache.GetAsync(cachedMessage.Id, cachedChannel.Value);
+            Message = message as IUserMessage;
+        }
     }
 }

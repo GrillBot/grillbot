@@ -89,7 +89,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         using (CounterManager.Create("Discord.API.Interactions"))
         {
             var attachmentsList = (attachments ?? Enumerable.Empty<FileAttachment>()).ToList();
-            secret = secret || !IsEphemeralChannel;
+            secret = secret || IsEphemeralChannel;
 
             if (!Context.Interaction.HasResponded)
             {

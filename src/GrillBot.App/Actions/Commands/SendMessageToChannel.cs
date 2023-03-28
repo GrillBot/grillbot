@@ -22,12 +22,12 @@ public class SendMessageToChannel : CommandAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(ITextChannel channel, string reference, string content, IEnumerable<IAttachment> attachments)
+    public async Task ProcessAsync(ITextChannel channel, string? reference, string? content, IEnumerable<IAttachment?> attachments)
     {
         SendAction.UpdateContext(Locale, Context.User);
         var parameters = new SendMessageToChannelParams
         {
-            Content = content?.Trim(),
+            Content = content?.Trim() ?? "",
             Reference = reference
         };
 
@@ -43,7 +43,7 @@ public class SendMessageToChannel : CommandAction
         }
     }
 
-    private async Task DownloadAttachmentsAsync(SendMessageToChannelParams parameters, IEnumerable<IAttachment> attachments)
+    private async Task DownloadAttachmentsAsync(SendMessageToChannelParams parameters, IEnumerable<IAttachment?> attachments)
     {
         foreach (var attachment in attachments.Where(o => o != null))
         {

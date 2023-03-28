@@ -14,20 +14,20 @@ public class AdminModule : InteractionsModuleBase
     {
     }
 
-    [SlashCommand("clean_messages", "Deletes the last N messages from the channel.")]
+    [SlashCommand("clean_messages", "Deletes the last N messages (or until concrete message ID) from the channel.")]
     [RequireBotPermission(ChannelPermission.ManageMessages | ChannelPermission.ReadMessageHistory)]
     [DeferConfiguration(RequireEphemeral = true)]
-    public async Task CleanAsync(int count, ITextChannel channel = null)
+    public async Task CleanAsync(string criterium, ITextChannel? channel = null)
     {
         using var command = GetCommand<Actions.Commands.CleanChannelMessages>();
 
-        var result = await command.Command.ProcessAsync(count, channel);
+        var result = await command.Command.ProcessAsync(criterium, channel);
         await SetResponseAsync(result, secret: true);
     }
 
     [SlashCommand("send", "Send message to command")]
     [DeferConfiguration(RequireEphemeral = true)]
-    public async Task SendMessageToChannelAsync(ITextChannel channel, string content = null, string reference = null, IAttachment attachment = null)
+    public async Task SendMessageToChannelAsync(ITextChannel channel, string? content = null, string? reference = null, IAttachment? attachment = null)
     {
         using var command = GetCommand<Actions.Commands.SendMessageToChannel>();
 

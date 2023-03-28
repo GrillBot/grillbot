@@ -503,7 +503,7 @@
     "description": "Administrační příkazy",
     "clean_messages": {
       "name": "clean_messages",
-      "description": "Smaže z kanálu zprávy do konkrétního ID (nebo posledních N)",
+      "description": "Smaže z kanálu zprávy do konkrétního ID (nezahrnuje špecifikovanou zprávu) nebo posledních N",
       "criterium": {
         "name": "kritérium",
         "description": "Počet zpráv, ID zprávy nebo odkaz na zprávu v kanálu."

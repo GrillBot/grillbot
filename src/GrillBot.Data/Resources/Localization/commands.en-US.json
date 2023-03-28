@@ -503,7 +503,7 @@
     "description": "Administration commands",
     "clean_messages": {
       "name": "clean_messages",
-      "description": "Deletes from the channel messages until concrete message ID or the last N messages.",
+      "description": "Deletes messages from the channel until concrete message ID (excluding) or the last N messages.",
       "criterium": {
         "name": "criterium",
         "description": "Count of messages, message ID or message link in the channel."

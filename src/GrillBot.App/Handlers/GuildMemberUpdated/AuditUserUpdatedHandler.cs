@@ -17,9 +17,9 @@ public class AuditUserUpdatedHandler : IGuildMemberUpdatedEvent
         AuditLogWriteManager = auditLogWriteManager;
     }
 
-    public async Task ProcessAsync(IGuildUser before, IGuildUser after)
+    public async Task ProcessAsync(IGuildUser? before, IGuildUser after)
     {
-        if (!CanProcess(before, after)) return;
+        if (before is null || !CanProcess(before, after)) return;
 
         var auditLog = await FindAuditLogAsync(after.Guild, after);
         if (auditLog == null) return;
@@ -30,9 +30,9 @@ public class AuditUserUpdatedHandler : IGuildMemberUpdatedEvent
     }
 
     private static bool CanProcess(IGuildUser before, IGuildUser after)
-        => before != null && (before.IsDeafened != after.IsDeafened || before.IsMuted != after.IsMuted || before.Nickname != after.Nickname);
+        => before.IsDeafened != after.IsDeafened || before.IsMuted != after.IsMuted || before.Nickname != after.Nickname || before.TimedOutUntil != after.TimedOutUntil;
 
-    private async Task<IAuditLogEntry> FindAuditLogAsync(IGuild guild, IUser user)
+    private async Task<IAuditLogEntry?> FindAuditLogAsync(IGuild guild, IUser user)
     {
         IReadOnlyCollection<IAuditLogEntry> auditLogs;
         using (CounterManager.Create("Discord.API.AuditLog"))

@@ -456,7 +456,8 @@
         "UsedInvite": "Used invite",
         "MostActiveChannel": "Most active channel",
         "LastMessageIn": "Last message in",
-        "WebAdminDetails": "Details"
+        "WebAdminDetails": "Details",
+        "TimeoutCount": "Timeout count"
       },
       "NoRoles": "*The user has no roles.*",
       "UnverifyRow": "User has {0}unverify to {1}. {2}",

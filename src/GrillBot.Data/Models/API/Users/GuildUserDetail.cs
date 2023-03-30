@@ -1,7 +1,9 @@
-﻿using GrillBot.Data.Models.API.Channels;
+﻿using System;
+using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
 using System.Collections.Generic;
 using GrillBot.Data.Models.API.Unverify;
+using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Users;
 
@@ -22,4 +24,5 @@ public class GuildUserDetail
     public List<Channel> VisibleChannels { get; set; }
     public List<Role> Roles { get; set; }
     public bool HavePointsTransaction { get; set; }
+    public List<RangeParams<DateTime>> TimeoutHistory { get; set; } = new();
 }

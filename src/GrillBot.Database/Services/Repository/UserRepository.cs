@@ -163,4 +163,14 @@ public class UserRepository : RepositoryBase<GrillBotContext>
                 .AnyAsync(o => o.Id == user.Id.ToString() && (o.Flags & (int)UserFlags.PointsDisabled) != 0);
         }
     }
+
+    public async Task<List<User>> GetUsersByIdsAsync(IEnumerable<string> userIds)
+    {
+        using (CreateCounter())
+        {
+            return await Context.Users.AsNoTracking()
+                .Where(o => userIds.Contains(o.Id))
+                .ToListAsync();
+        }
+    }
 }

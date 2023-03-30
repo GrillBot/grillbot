@@ -34,8 +34,8 @@ public class GuildUserRepository : RepositoryBase<GrillBotContext>
     {
         var guildUser = await FindGuildUserByIdAsync(user.GuildId, user.Id, disableTracking, includeAll);
         if (guildUser is null) return null;
-        
-        if(!disableTracking)
+
+        if (!disableTracking)
             guildUser.Update(user);
         return guildUser;
     }
@@ -88,6 +88,17 @@ public class GuildUserRepository : RepositoryBase<GrillBotContext>
             return await Context.GuildUsers
                 .Where(o => o.GuildId == guildId.ToString() && o.UsedInviteCode == code)
                 .ToListAsync();
+        }
+    }
+
+    public async Task<Dictionary<string, string>> GetUserNicknamesAsync(ulong guildId)
+    {
+        using (CreateCounter())
+        {
+            return await Context.GuildUsers.AsNoTracking()
+                .Where(o => o.GuildId == guildId.ToString() && !string.IsNullOrEmpty(o.Nickname))
+                .Select(o => new { o.UserId, o.Nickname })
+                .ToDictionaryAsync(o => o.UserId, o => o.Nickname!);
         }
     }
 }

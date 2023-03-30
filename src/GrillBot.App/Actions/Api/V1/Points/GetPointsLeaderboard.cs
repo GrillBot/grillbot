@@ -34,17 +34,19 @@ public class GetPointsLeaderboard : ApiAction
             leaderboard.ValidationErrors.AggregateAndThrow();
 
             var guildData = Mapper.Map<Data.Models.API.Guilds.Guild>(await repository.Guild.FindGuildAsync(guild, true));
+            var nicknames = await repository.GuildUser.GetUserNicknamesAsync(guild.Id);
+            var usersList = await repository.User.GetUsersByIdsAsync(leaderboard.Response!.Items.Select(o => o.UserId));
+            var users = usersList.ToDictionary(o => o.Id, o => o);
 
             foreach (var item in leaderboard.Response!.Items)
             {
-                var guildUser = await repository.GuildUser.FindGuildUserByIdAsync(guild.Id, item.UserId.ToUlong(), true);
-                if (guildUser is null) continue;
+                if (!users.TryGetValue(item.UserId, out var user)) continue;
 
                 result.Add(new UserPointsItem
                 {
                     Guild = guildData,
-                    Nickname = guildUser.Nickname,
-                    User = Mapper.Map<Data.Models.API.Users.User>(guildUser.User),
+                    Nickname = nicknames.TryGetValue(item.UserId, out var nickname) ? nickname : null,
+                    User = Mapper.Map<Data.Models.API.Users.User>(user),
                     PointsToday = item.Today,
                     TotalPoints = item.Total,
                     PointsMonthBack = item.MonthBack,

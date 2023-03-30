@@ -50,14 +50,21 @@ public class PointsLeaderboard : CommandAction
     public async Task<int> ComputePagesCountAsync(Leaderboard? leaderboard)
     {
         if (leaderboard is not null)
-            return (int)Math.Ceiling(leaderboard!.TotalItemsCount / (double)MaxItemsCount);
+            return ComputePagesCount(leaderboard.TotalItemsCount);
 
-        var leaderboardResult = await PointsServiceClient.GetLeaderboardAsync(Context.Guild.Id.ToString(), 0, MaxItemsCount);
-        leaderboardResult.ValidationErrors.AggregateAndThrow();
-        leaderboard = leaderboardResult.Response;
+        var request = new AdminListRequest
+        {
+            Pagination = { OnlyCount = true },
+            GuildId = Context.Guild.Id.ToString()
+        };
+        var result = await PointsServiceClient.GetTransactionListAsync(request);
+        result.ValidationErrors.AggregateAndThrow();
 
-        return (int)Math.Ceiling(leaderboard!.TotalItemsCount / (double)MaxItemsCount);
+        return ComputePagesCount(result.Response!.TotalItemsCount);
     }
+
+    private static int ComputePagesCount(long totalItemsCount)
+        => (int)Math.Ceiling(totalItemsCount / (double)MaxItemsCount);
 
     private async Task<Embed> CreateEmbedAsync(GrillBotRepository repository, IGuild guild, IReadOnlyList<BoardItem> points, int page, int skip)
     {

@@ -70,10 +70,18 @@ public class InteractionHandler
                     await context.Interaction.RespondAsync(reply, ephemeral: true);
                     return;
                 }
-                
-                if (context.Interaction.HasResponded || (new DateTimeOffset(DateTime.UtcNow) - context.Interaction.CreatedAt).TotalSeconds > 3.0)
+
+                if (context.Interaction.HasResponded)
                 {
-                    await context.Interaction.FollowupAsync(reply, ephemeral: true);
+                    try
+                    {
+                        await context.Interaction.FollowupAsync(reply, ephemeral: true);
+                    }
+                    catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownWebhook)
+                    {
+                        return;
+                    }
+
                     return;
                 }
 

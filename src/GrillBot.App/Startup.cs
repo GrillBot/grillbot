@@ -184,6 +184,15 @@ public class Startup
         app.InitDatabase<GrillBotContext>();
         app.InitCache();
 
+        app.Use((context, next) =>
+        {
+            context.Response.Headers.Add("X-Frame-Options", "SAMEORIGIN");
+            context.Response.Headers.Add("X-Xss-Protection", "1; mode=block");
+            context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+            
+            return next();
+        });
+
         app.UseForwardedHeaders();
         var corsOrigins = Configuration.GetSection("CORS:Origins").AsEnumerable()
             .Select(o => o.Value).Where(o => !string.IsNullOrEmpty(o)).ToArray();

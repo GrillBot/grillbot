@@ -42,5 +42,9 @@ public static class Program
                 .Enrich.FromLogContext()
                 .WriteTo.Console(theme: AnsiConsoleTheme.Code, outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
             )
-            .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+                webBuilder.ConfigureKestrel(opt => opt.AddServerHeader = false);
+            });
 }

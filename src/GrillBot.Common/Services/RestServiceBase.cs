@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Net.Sockets;
 using GrillBot.Core.Managers.Performance;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,13 +28,27 @@ public abstract class RestServiceBase
     {
         using (CounterManager.Create($"Service.{ServiceName}"))
         {
-            using var response = await executeRequest();
+            using var response = await ExecuteRequestAsync(executeRequest);
 
             if (checkResponse != null)
                 await checkResponse(response);
             else
                 await EnsureSuccessResponseAsync(response);
             return await fetchResult(response);
+        }
+    }
+
+    private static async Task<HttpResponseMessage> ExecuteRequestAsync(Func<Task<HttpResponseMessage>> executeRequest, bool isRepeat = false)
+    {
+        try
+        {
+            return await executeRequest();
+        }
+        catch (HttpRequestException ex) when (ex.InnerException is SocketException socketException &&
+                                              (socketException.NativeErrorCode == 111 || socketException.SocketErrorCode == SocketError.ConnectionRefused) && !isRepeat)
+        {
+            await Task.Delay(1000); // Wait 1 second to repeat request execution.
+            return await ExecuteRequestAsync(executeRequest, true);
         }
     }
 

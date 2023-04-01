@@ -51,20 +51,26 @@ public class DiscordExceptionHandler : ILoggingHandler
 
     public async Task ErrorAsync(string source, string message, Exception exception)
     {
+        if (LogChannel is null)
+            return;
+
         var (embed, withoutErrorsImage) = await CreateErrorDataAsync(source, message, exception);
 
         try
         {
             await StoreLastErrorDateAsync();
-            await LogChannel!.SendFileAsync(withoutErrorsImage.Path, embed: embed);
+            if (withoutErrorsImage is null)
+                await LogChannel.SendMessageAsync(embed: embed);
+            else
+                await LogChannel.SendFileAsync(withoutErrorsImage.Path, embed: embed);
         }
         finally
         {
-            withoutErrorsImage.Dispose();
+            withoutErrorsImage?.Dispose();
         }
     }
 
-    private async Task<(Embed, TemporaryFile)> CreateErrorDataAsync(string source, string message, Exception exception)
+    private async Task<(Embed, TemporaryFile?)> CreateErrorDataAsync(string source, string message, Exception exception)
     {
         var embed = new EmbedBuilder()
             .WithColor(Color.Red)
@@ -91,10 +97,14 @@ public class DiscordExceptionHandler : ILoggingHandler
                 var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
                 var title = source == "App Commands" ? "Při provádění integrovaného příkazu došlo k chybě." : "Došlo k neočekávané chybě.";
 
-                if (exception is JobException { LoggedUser: { } } jobException)
+                if (exception is JobException jobException)
                 {
-                    embed.AddField("Spustil", jobException.LoggedUser.GetFullName(), true);
+                    if (jobException.LoggedUser is not null)
+                        embed.AddField("Spustil", jobException.LoggedUser.GetFullName(), true);
+
+                    title = "Při běhu naplánované úlohy došlo k chybě.";
                     exception = exception.InnerException!;
+                    msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
                 }
 
                 embed.WithTitle(title)
@@ -106,19 +116,27 @@ public class DiscordExceptionHandler : ILoggingHandler
         }
 
         var withoutErrorsImage = await CreateWithoutErrorsImage(exception);
-        embed.WithImageUrl($"attachment://{Path.GetFileName(withoutErrorsImage.Path)}");
+        if (withoutErrorsImage is not null)
+            embed.WithImageUrl($"attachment://{Path.GetFileName(withoutErrorsImage.Path)}");
 
         return (embed.Build(), withoutErrorsImage);
     }
 
-    private async Task<TemporaryFile> CreateWithoutErrorsImage(Exception exception)
+    private async Task<TemporaryFile?> CreateWithoutErrorsImage(Exception exception)
     {
-        var user = exception.GetUser(DiscordClient);
+        try
+        {
+            var user = exception.GetUser(DiscordClient);
 
-        using var scope = ServiceProvider.CreateScope();
-        var renderer = scope.ServiceProvider.GetRequiredService<WithoutAccidentRenderer>();
+            using var scope = ServiceProvider.CreateScope();
+            var renderer = scope.ServiceProvider.GetRequiredService<WithoutAccidentRenderer>();
 
-        return await renderer.RenderAsync(user);
+            return await renderer.RenderAsync(user);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private async Task StoreLastErrorDateAsync()

@@ -184,7 +184,8 @@
         "RoleSubscriptionsAvailableForPurchase": "Placené role",
         "MemberProfiles": "Alternativní profily uživatelů",
         "NewThreadPermissions": "",
-        "ThreadsEnabledTesting": ""
+        "ThreadsEnabledTesting": "",
+        "AutoModeration": "AutoMod"
       }
     },
     "GuildDetail": {

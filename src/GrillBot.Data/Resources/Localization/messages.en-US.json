@@ -184,7 +184,8 @@
         "RoleSubscriptionsAvailableForPurchase": "Paid roles",
         "MemberProfiles": "Alternative user profiles",
         "NewThreadPermissions": "",
-        "ThreadsEnabledTesting": ""
+        "ThreadsEnabledTesting": "",
+        "AutoModeration": "AutoMod"
       }
     },
     "GuildDetail": {

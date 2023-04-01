@@ -53,7 +53,12 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
     public IQueryable<Database.Entity.User> SetQuery(IQueryable<Database.Entity.User> query)
     {
         if (!string.IsNullOrEmpty(Username))
-            query = query.Where(o => o.Username.Contains(Username));
+        {
+            query = query.Where(o =>
+                EF.Functions.ILike(o.Username, $"%{Username.ToLower()}%") ||
+                o.Guilds.Any(x => x.Nickname != null && EF.Functions.ILike(x.Nickname, $"%{Username.ToLower()}%"))
+            );
+        }
 
         if (!string.IsNullOrEmpty(GuildId))
             query = query.Where(o => o.Guilds.Any(x => x.GuildId == GuildId));

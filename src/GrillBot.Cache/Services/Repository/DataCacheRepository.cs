@@ -26,7 +26,7 @@ public class DataCacheRepository : RepositoryBase<GrillBotCacheContext>
         {
             var query = Context.DataCache.Where(o => o.Key == key);
             if (onlyValid)
-                query = query.Where(o => o.ValidTo <= DateTime.Now);
+                query = query.Where(o => o.ValidTo >= DateTime.Now);
             if (disableTracking)
                 query = query.AsNoTracking();
 

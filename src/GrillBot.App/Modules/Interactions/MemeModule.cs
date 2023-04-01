@@ -1,7 +1,6 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Actions.Commands.Images;
 using GrillBot.App.Infrastructure;
-using GrillBot.App.Infrastructure.Commands;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Cooldown;

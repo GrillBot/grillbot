@@ -1,7 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Actions.Api.V2;
 using GrillBot.App.Actions.Commands.Birthday;
-using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 
 namespace GrillBot.App.Modules.Interactions;

@@ -1,7 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Actions.Commands.Points;
 using GrillBot.App.Actions.Commands.Points.Chart;
-using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Points;
 using GrillBot.Core.Exceptions;

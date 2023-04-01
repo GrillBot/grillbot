@@ -1,5 +1,5 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Infrastructure.Commands;
+using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Unverify;
 using GrillBot.Core.Exceptions;

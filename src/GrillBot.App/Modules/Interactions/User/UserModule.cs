@@ -8,7 +8,7 @@ namespace GrillBot.App.Modules.Interactions.User;
 [Group("user", "User management")]
 [RequireUserPerms]
 [DefaultMemberPermissions(GuildPermission.ViewAuditLog | GuildPermission.UseApplicationCommands)]
-public class UserModule : Infrastructure.Commands.InteractionsModuleBase
+public class UserModule : InteractionsModuleBase
 {
     public UserModule(IServiceProvider serviceProvider) : base(serviceProvider)
     {

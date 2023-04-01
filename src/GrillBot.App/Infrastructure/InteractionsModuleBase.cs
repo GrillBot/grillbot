@@ -5,7 +5,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Managers.Performance;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GrillBot.App.Infrastructure.Commands;
+namespace GrillBot.App.Infrastructure;
 
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands)]
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>

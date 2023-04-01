@@ -189,14 +189,14 @@ public class Startup
             context.Response.Headers.Add("X-Frame-Options", "SAMEORIGIN");
             context.Response.Headers.Add("X-Xss-Protection", "1; mode=block");
             context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-            
+
             return next();
         });
 
         app.UseForwardedHeaders();
         var corsOrigins = Configuration.GetSection("CORS:Origins").AsEnumerable()
             .Select(o => o.Value).Where(o => !string.IsNullOrEmpty(o)).ToArray();
-        app.UseCors(policy => policy.AllowAnyMethod().AllowAnyHeader().WithOrigins(corsOrigins!));
+        app.UseCors(policy => policy.WithMethods("GET", "POST", "PUT", "DELETE", "PATCH").AllowAnyHeader().WithOrigins(corsOrigins!));
 
         app.UseResponseCaching();
         app.UseRouting();

@@ -534,7 +534,7 @@
     "Preconditions": {
       "DmNotAllowed": "Commands in a private conversation is not allowed.",
       "UserCommandsDisabled": "You have been banned from all commands.",
-      "ChannelDisabled": "In this channel is not abble to use commands."
+      "ChannelDisabled": "In this channel you are not able to use commands."
     }
   },
   "MessageClearSubModule": {

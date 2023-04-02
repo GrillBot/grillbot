@@ -17,7 +17,7 @@
         "WithoutYears": "**{0}**"
       },
       "Template": {
-        "SingleForm": "Today have birthday {0} {1}",
+        "SingleForm": "Today is the birthday of {0} {1}",
         "MultipleForm": "Today is the birthday of {0} and {1} {2}"
       }
     }
@@ -275,13 +275,13 @@
     },
     "RemoveSearch": {
       "Success": "The search was successfully deleted.",
-      "InsufficientPermissions": "You did not create this search and you also not have elevated permissions to delete a search."
+      "InsufficientPermissions": "You did not create this search and you also do not have elevated permissions to delete a search."
     },
     "List": {
       "Embed": {
         "Title": "Searching in the channel #{0}",
         "NoItems": "No one searching in the channel #{0} yet.",
-        "NoItemsWithQuery": "No one searching in the channel #{0} yet. Try use another search query."
+        "NoItemsWithQuery": "No one searching in the channel #{0} yet. Try to use another search query."
       }
     }
   },
@@ -466,11 +466,11 @@
       "UsedVanityInviteRow": "**{0}**\n{1}",
       "UsedInviteRow": "**{0}**\nCreated by: **{1}** (**{2}**)",
       "VanityInvite": "Universal invite",
-      "WebAdminDetails": "It was not possible to insert all the information they had here, the other information is available in the web administration."
+      "WebAdminDetails": "It was not possible to insert all the information, the rest is available in the web administration."
     },
     "AccessList": {
       "Title": "Access list of user {0}",
-      "NoAccess": "User not have access to any channel.",
+      "NoAccess": "User does not have access to any channel.",
       "WithoutCategory": "Without category"
     }
   },
@@ -532,7 +532,7 @@
       "CheckSummary": "Unnecessary permissions found: **{0}**\nCount of channels: **{1}**\nCount of users: **{2}**"
     },
     "Preconditions": {
-      "DmNotAllowed": "Commands in a private conversation is not allowed.",
+      "DmNotAllowed": "Commands in a private conversations are not allowed.",
       "UserCommandsDisabled": "You have been banned from all commands.",
       "ChannelDisabled": "In this channel you are not able to use commands."
     }
@@ -576,17 +576,17 @@
     "EventNotFound": "Unable to find event.",
     "Required": {
       "Name": "Name is required.",
-      "StartAt": "Is necessary to set start time of the event.",
-      "EndAt": "Is necessary to set end time of the event.",
+      "StartAt": "It is necessary to set start time of the event.",
+      "EndAt": "It is necessary to set end time of the event.",
       "Location": "Event location is required."
     },
     "ForbiddenAccess": "This event wasn't created via bot.",
     "CannotCancelEventEnded": "Cannot cancel cancelled event."
   },
-  "CooldownEnabled": "You're executing this command often. Wait a moment. You can execute this command again after {0}",
+  "CooldownEnabled": "You're executing this command too often. Wait a moment. You can execute this command again after {0}",
   "ClickOnCommand": "Before sending slash command you need to click on autocomplete",
   "TypeConverters": {
-    "BooleanInvalidValue": "Provided string is not valid boolean value. Allowed values is only true or false.",
+    "BooleanInvalidValue": "Provided string is not valid boolean value. Allowed values are only true or false.",
     "DateTimeInvalidFormat": "Provided string is not valid datetime.",
     "EmoteInvalidFormat": "Provided emoji could not be found.",
     "Message": {
@@ -620,7 +620,7 @@
     },
     "Info": {
       "NotSupported": "Unicode emojis not supported in this command.",
-      "NoActivity": "Wasn't detected some activity of this emote yet.",
+      "NoActivity": "No activity has been detected for this emoji yet.",
       "Row": "**{0}.** {1} ({2})",
       "UnknownUser": "Unknown user",
       "Embed": {

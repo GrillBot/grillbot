@@ -26,8 +26,6 @@ public class User
     [NotMapped]
     public bool BirthdayAcceptYear => Birthday != null && Birthday.Value.Year != 1;
 
-    public string? Note { get; set; }
-
     [StringLength(32)]
     [MinLength(2)]
     [Required]

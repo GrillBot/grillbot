@@ -60,7 +60,6 @@ public class GetUserDetail : ApiAction
             Id = entity.Id,
             Discriminator = entity.Discriminator,
             Flags = entity.Flags,
-            Note = entity.Note,
             HaveBirthday = entity.Birthday != null,
             Status = entity.Status,
             Username = entity.Username,
@@ -126,6 +125,9 @@ public class GetUserDetail : ApiAction
 
     private async Task SetVisibleChannelsAsync(GuildUserDetail detail, IGuildUser user, IGuild guild)
     {
+        if (ApiContext.IsPublic())
+            return;
+        
         var visibleChannels = await guild.GetAvailableChannelsAsync(user);
 
         detail.VisibleChannels = visibleChannels
@@ -135,14 +137,11 @@ public class GetUserDetail : ApiAction
             .ToList();
     }
 
-    private async Task SetTimeoutHistoryAsync(GrillBotRepository repository, GuildUserDetail detail, IGuildUser user)
+    private static async Task SetTimeoutHistoryAsync(GrillBotRepository repository, GuildUserDetail detail, IGuildUser user)
     {
-        if (ApiContext.IsPublic())
-            return;
-
         var parameters = new AuditLogListParams
         {
-            Sort = new SortParams { Descending = false, OrderBy = "CreatedAt" },
+            Sort = new SortParams { Descending = true, OrderBy = "CreatedAt" },
             GuildId = user.GuildId.ToString(),
             Types = new List<AuditLogItemType> { AuditLogItemType.MemberUpdated }
         };

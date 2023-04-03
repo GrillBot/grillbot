@@ -10,7 +10,6 @@ public class UserDetail
     public string Id { get; set; }
     public string Username { get; set; }
     public string Discriminator { get; set; }
-    public string? Note { get; set; }
     public long Flags { get; set; }
     public bool HaveBirthday { get; set; }
     public List<GuildUserDetail> Guilds { get; set; } = new();
@@ -24,7 +23,6 @@ public class UserDetail
 
     public void RemoveSecretData()
     {
-        Note = null;
         Guilds = Guilds.Where(o => o.IsUserInGuild).ToList();
 
         foreach (var guild in Guilds)

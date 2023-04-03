@@ -1,5 +1,6 @@
 ﻿using Discord;
 using System.Linq;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.Data.Models.API.Channels;
@@ -11,7 +12,7 @@ public class ChannelsMappingProfile : AutoMapper.Profile
         CreateMap<IGuildChannel, Channel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
             .ForMember(dst => dst.Type, opt => opt.MapFrom(src => src.GetChannelType()))
-            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.HaveCategory() ? $"{src.Name} ({src.GetCategory().Name})" : src.Name))
+            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.HaveCategory() ? $"{src.Name} ({src.GetCategory().GetPropertyValue(o => o.Name)})".Replace("()", "").TrimEnd() : src.Name))
             .ForMember(dst => dst.Flags, opt => opt.Ignore());
 
         CreateMap<Database.Entity.GuildChannel, Channel>()

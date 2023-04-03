@@ -32,9 +32,6 @@ public class GuildUser
     [ForeignKey(nameof(UsedInviteCode))]
     public Invite? UsedInvite { get; set; }
 
-    public DateTime? LastPointsReactionIncrement { get; set; }
-    public DateTime? LastPointsMessageIncrement { get; set; }
-
     [Required]
     public long GivenReactions { get; set; } = 0;
 

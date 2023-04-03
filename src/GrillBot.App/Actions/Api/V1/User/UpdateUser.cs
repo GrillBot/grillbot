@@ -37,7 +37,6 @@ public class UpdateUser : ApiAction
             throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
 
         var before = user.Clone();
-        user.Note = parameters.Note;
         user.SelfUnverifyMinimalTime = parameters.SelfUnverifyMinimalTime;
         user.Flags = parameters.GetNewFlags(user.Flags);
 

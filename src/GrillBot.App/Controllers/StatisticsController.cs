@@ -95,4 +95,20 @@ public class StatisticsController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<OperationStats> GetOperationStatistics()
         => Ok(ProcessAction<GetOperationStats, OperationStats>(action => action.Process()));
+
+    /// <summary>
+    /// Get statistics of commands cross grouped with users. 
+    /// </summary>
+    [HttpGet("interactions/users")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<UserActionCountItem>>> GetUserCommandStatisticsAsync()
+        => Ok(await ProcessActionAsync<GetUserCommandStatistics, List<UserActionCountItem>>(action => action.ProcessAsync()));
+    
+    /// <summary>
+    /// Get statistics of api requests cross grouped with users. 
+    /// </summary>
+    [HttpGet("api/users")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<UserActionCountItem>>> GetUserApiStatisticsAsync()
+        => Ok(await ProcessActionAsync<GetApiUserStatistics, List<UserActionCountItem>>(action => action.ProcessAsync()));
 }

@@ -118,13 +118,15 @@ public static class ActionsExtensions
         // Statistics
         services
             .AddScoped<Api.V1.Statistics.GetApiStatistics>()
+            .AddScoped<Api.V1.Statistics.GetApiUserStatistics>()
             .AddScoped<Api.V1.Statistics.GetAuditLogStatistics>()
             .AddScoped<Api.V1.Statistics.GetAvgTimes>()
             .AddScoped<Api.V1.Statistics.GetCommandStatistics>()
             .AddScoped<Api.V1.Statistics.GetDatabaseStatus>()
             .AddScoped<Api.V1.Statistics.GetEventStatistics>()
             .AddScoped<Api.V1.Statistics.GetUnverifyStatistics>()
-            .AddScoped<Api.V1.Statistics.GetOperationStats>();
+            .AddScoped<Api.V1.Statistics.GetOperationStats>()
+            .AddScoped<Api.V1.Statistics.GetUserCommandStatistics>();
 
         // System
         services

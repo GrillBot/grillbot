@@ -37,10 +37,12 @@ public class SendMessageToChannel : ApiAction
     private async Task<ITextChannel> FindChannelAsync(ulong guildId, ulong channelId)
     {
         var guild = await DiscordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);
-        if (guild == null) throw new NotFoundException(Texts["ChannelModule/PostMessage/GuildNotFound", ApiContext.Language]);
+        if (guild == null)
+            throw new NotFoundException(Texts["ChannelModule/PostMessage/GuildNotFound", ApiContext.Language]);
 
         var channel = await guild.GetTextChannelAsync(channelId);
-        if (channel == null) throw new NotFoundException(Texts["ChannelModule/PostMessage/ChannelNotFound", ApiContext.Language].FormatWith(guild.Name));
+        if (channel == null)
+            throw new NotFoundException(Texts["ChannelModule/PostMessage/ChannelNotFound", ApiContext.Language].FormatWith(guild.Name));
 
         return channel;
     }

@@ -47,8 +47,9 @@ public class SendMessageToChannel : CommandAction
     {
         foreach (var attachment in attachments.Where(o => o != null))
         {
-            var fileAttachment = await CreateAttachmentAsync(attachment);
-            if (fileAttachment != null) parameters.Attachments.Add(fileAttachment.Value);
+            var fileAttachment = await CreateAttachmentAsync(attachment!);
+            if (fileAttachment != null)
+                parameters.Attachments.Add(fileAttachment.Value);
         }
     }
 
@@ -69,7 +70,8 @@ public class SendMessageToChannel : CommandAction
             Disposables.Add(response);
         }
 
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+            return null;
 
         var stream = await response.Content.ReadAsStreamAsync();
         var spoiler = attachment.IsSpoiler();

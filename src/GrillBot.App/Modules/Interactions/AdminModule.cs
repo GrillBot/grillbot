@@ -26,7 +26,8 @@ public class AdminModule : InteractionsModuleBase
 
     [SlashCommand("send", "Send message to command")]
     [DeferConfiguration(RequireEphemeral = true)]
-    public async Task SendMessageToChannelAsync(ITextChannel channel, string? content = null, string? reference = null, IAttachment? attachment = null)
+    public async Task SendMessageToChannelAsync(ITextChannel channel, [Discord.Interactions.MaxLength(DiscordConfig.MaxMessageSize)] string? content = null, string? reference = null,
+        IAttachment? attachment = null)
     {
         using var command = GetCommand<Actions.Commands.SendMessageToChannel>();
 

@@ -115,4 +115,24 @@ public class PointsController : Infrastructure.ControllerBase
         await ProcessActionAsync<ServiceTransferPoints>(action => action.ProcessAsync(guildId, fromUserId, toUserId, amount));
         return Ok();
     }
+
+    /// <summary>
+    /// Remove transaction.
+    /// </summary>
+    /// <response code="200"></response>
+    [HttpDelete("{guildId}/{messageId}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> DeleteTransactionAsync(string guildId, string messageId, string? reactionId)
+    {
+        await ProcessActionAsync<ApiBridgeAction>(bridge => bridge.ExecuteAsync<IPointsServiceClient>(async client =>
+        {
+            if (!string.IsNullOrEmpty(reactionId))
+                await client.DeleteTransactionAsync(guildId, messageId, reactionId);
+            else
+                await client.DeleteTransactionAsync(guildId, messageId);
+        }));
+
+        return Ok();
+    }
 }

@@ -33,16 +33,14 @@ public class GetTransactionList : ApiAction
         await using var repository = DatabaseBuilder.CreateRepository();
         return await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions.Response!, async entity =>
         {
-            var guild = guildCache.TryGetValue(entity.GuildId, out var cachedGuild) ? cachedGuild : null;
-            if (guild is null)
+            if (!guildCache.TryGetValue(entity.GuildId, out var guild))
             {
                 var dbGuild = await repository.Guild.FindGuildByIdAsync(entity.GuildId.ToUlong(), true);
                 guild = Mapper.Map<Data.Models.API.Guilds.Guild>(dbGuild);
                 guildCache.Add(entity.GuildId, guild);
             }
 
-            var user = userCache.TryGetValue(entity.UserId, out var cachedUser) ? cachedUser : null;
-            if (user is null)
+            if (!userCache.TryGetValue(entity.UserId, out var user))
             {
                 var dbUser = await repository.User.FindUserByIdAsync(entity.UserId.ToUlong(), UserIncludeOptions.None, true);
                 user = Mapper.Map<Data.Models.API.Users.User>(dbUser);
@@ -65,7 +63,7 @@ public class GetTransactionList : ApiAction
             {
                 Points = entity.Value,
                 CreatedAt = entity.CreatedAt.ToLocalTime(),
-                IsReaction = entity.IsReaction,
+                ReactionId = entity.ReactionId,
                 MessageId = entity.MessageId,
                 MergeInfo = mergeInfo,
                 Guild = guild,

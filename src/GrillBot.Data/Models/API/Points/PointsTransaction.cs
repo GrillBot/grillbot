@@ -10,7 +10,7 @@ public class PointsTransaction
     public User User { get; set; } = null!;
 
     public string MessageId { get; set; } = null!;
-    public bool IsReaction { get; set; }
+    public string ReactionId { get; set; } = "";
     public DateTime CreatedAt { get; set; }
     public int Points { get; set; }
 

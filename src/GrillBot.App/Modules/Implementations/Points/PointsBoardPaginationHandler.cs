@@ -26,7 +26,7 @@ public class PointsBoardPaginationHandler : ComponentInteractionHandler
         var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.Points.PointsLeaderboard>();
         action.Init(context);
 
-        var pagesCount = await action.ComputePagesCountAsync(null);
+        var pagesCount = await action.ComputePagesCountAsync();
         var page = CheckNewPageNumber(Page, pagesCount);
         if (page == metadata.Page)
         {

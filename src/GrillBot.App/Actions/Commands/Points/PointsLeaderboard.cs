@@ -34,33 +34,23 @@ public class PointsLeaderboard : CommandAction
         var skip = page * MaxItemsCount;
         var guildId = Context.Guild.Id.ToString();
 
-        var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guildId, skip, MaxItemsCount);
+        var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guildId, skip, MaxItemsCount, true);
         leaderboard.ValidationErrors.AggregateAndThrow();
 
-        if (leaderboard.Response!.Items.Count == 0)
+        if (leaderboard.Response!.Count == 0)
             throw new NotFoundException(Texts["Points/Board/NoActivity", Locale]);
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var embed = await CreateEmbedAsync(repository, Context.Guild, leaderboard.Response.Items, page, skip);
-        var paginationComponents = await CreatePaginationComponents(page, leaderboard.Response);
+        var embed = await CreateEmbedAsync(repository, Context.Guild, leaderboard.Response, page, skip);
+        var paginationComponents = await CreatePaginationComponents(page);
         return (embed, paginationComponents);
     }
 
-    public async Task<int> ComputePagesCountAsync(Leaderboard? leaderboard)
+    public async Task<int> ComputePagesCountAsync()
     {
-        if (leaderboard is not null)
-            return ComputePagesCount(leaderboard.TotalItemsCount);
-
-        var request = new AdminListRequest
-        {
-            Pagination = { OnlyCount = true },
-            GuildId = Context.Guild.Id.ToString()
-        };
-        var result = await PointsServiceClient.GetTransactionListAsync(request);
-        result.ValidationErrors.AggregateAndThrow();
-
-        return ComputePagesCount(result.Response!.TotalItemsCount);
+        var totalItemsCount = await PointsServiceClient.GetLeaderboardCountAsync(Context.Guild.Id.ToString());
+        return ComputePagesCount(totalItemsCount);
     }
 
     private static int ComputePagesCount(long totalItemsCount)
@@ -105,9 +95,9 @@ public class PointsLeaderboard : CommandAction
         return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, guildUser.FullName(), points);
     }
 
-    private async Task<MessageComponent?> CreatePaginationComponents(int currentPage, Leaderboard? leaderboard)
+    private async Task<MessageComponent?> CreatePaginationComponents(int currentPage)
     {
-        var pagesCount = await ComputePagesCountAsync(leaderboard);
+        var pagesCount = await ComputePagesCountAsync();
         return ComponentsHelper.CreatePaginationComponents(currentPage, pagesCount, "points");
     }
 }

@@ -30,15 +30,15 @@ public class GetPointsLeaderboard : ApiAction
 
         foreach (var guild in await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId()))
         {
-            var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guild.Id.ToString(), 0, 0);
+            var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guild.Id.ToString(), 0, 0, false);
             leaderboard.ValidationErrors.AggregateAndThrow();
 
             var guildData = Mapper.Map<Data.Models.API.Guilds.Guild>(await repository.Guild.FindGuildAsync(guild, true));
             var nicknames = await repository.GuildUser.GetUserNicknamesAsync(guild.Id);
-            var usersList = await repository.User.GetUsersByIdsAsync(leaderboard.Response!.Items.Select(o => o.UserId));
+            var usersList = await repository.User.GetUsersByIdsAsync(leaderboard.Response!.Select(o => o.UserId));
             var users = usersList.ToDictionary(o => o.Id, o => o);
 
-            foreach (var item in leaderboard.Response!.Items)
+            foreach (var item in leaderboard.Response!)
             {
                 if (!users.TryGetValue(item.UserId, out var user)) continue;
 

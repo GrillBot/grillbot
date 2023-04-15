@@ -39,7 +39,7 @@ public sealed class PointsImage : CommandAction
         if (!await repository.GuildUser.ExistsAsync(guildUser))
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
-        var userPointsStatus = await PointsServiceClient.GetStatusOfPointsAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString());
+        var status = await PointsServiceClient.GetImagePointsStatusAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString());
 
         using var profilePicture = await GetProfilePictureAsync(user);
         var dominantColor = profilePicture.GetDominantColor();
@@ -47,8 +47,8 @@ public sealed class PointsImage : CommandAction
 
         var request = new PointsImageRequest
         {
-            Points = userPointsStatus.YearBack,
-            Position = userPointsStatus.Position.GetValueOrDefault(),
+            Points = status.Points,
+            Position = status.Position,
             Nickname = user.GetDisplayName(false),
             BackgroundColor = dominantColor.ToHexString(),
             TextBackground = textBackground.ToHexString(),

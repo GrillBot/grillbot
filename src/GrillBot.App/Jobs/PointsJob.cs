@@ -18,6 +18,9 @@ public class PointsJob : Job
     {
         var result = await PointsServiceClient.MergeTransctionsAsync();
         if (result is not null)
-            context.Result = $"MergeTransactions(Expired:{result.ExpiredCount}, Merged:{result.MergedCount}, {result.Duration})";
+        {
+            const string messageTemplate = "Expired:{0}, Merged:{1}, Duration: {2}, GuildCount: {3}, UserCount: {4}, TotalPoints: {5}";
+            context.Result = $"MergeTransactions({messageTemplate.FormatWith(result.ExpiredCount, result.MergedCount, result.Duration, result.GuildCount, result.UserCount, result.TotalPoints)})";
+        }
     }
 }

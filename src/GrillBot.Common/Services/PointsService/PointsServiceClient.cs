@@ -81,22 +81,30 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
         ))!;
     }
 
-    public async Task<RestResponse<Leaderboard>> GetLeaderboardAsync(string guildId, int skip, int count)
+    public async Task<RestResponse<List<BoardItem>>> GetLeaderboardAsync(string guildId, int skip, int count, bool simple)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/leaderboard/{guildId}?skip={skip}&count={count}"),
+            () => HttpClient.GetAsync($"api/leaderboard/{guildId}?skip={skip}&count={count}&simple={(simple ? "true" : "false")}"),
             async response =>
             {
                 var validationError = await DesrializeValidationErrorsAsync(response);
                 return validationError is not null
-                    ? new RestResponse<Leaderboard>(validationError)
-                    : new RestResponse<Leaderboard>(await response.Content.ReadFromJsonAsync<Leaderboard>());
+                    ? new RestResponse<List<BoardItem>>(validationError)
+                    : new RestResponse<List<BoardItem>>(await response.Content.ReadFromJsonAsync<List<BoardItem>>());
             },
             async response =>
             {
                 if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest) return;
                 await EnsureSuccessResponseAsync(response);
             }
+        );
+    }
+
+    public async Task<int> GetLeaderboardCountAsync(string guildId)
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/leaderboard/{guildId}/count"),
+            response => response.Content.ReadFromJsonAsync<int>()
         );
     }
 
@@ -121,6 +129,14 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
         return (await ProcessRequestAsync(
             () => HttpClient.GetAsync($"api/status/{guildId}/{userId}/expired"),
             response => response.Content.ReadFromJsonAsync<PointsStatus>()
+        ))!;
+    }
+
+    public async Task<ImagePointsStatus> GetImagePointsStatusAsync(string guildId, string userId)
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/status/{guildId}/{userId}/image"),
+            response => response.Content.ReadFromJsonAsync<ImagePointsStatus>()
         ))!;
     }
 

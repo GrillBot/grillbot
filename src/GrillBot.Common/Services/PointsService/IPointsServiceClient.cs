@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Services.Common;
+using GrillBot.Common.Services.Graphics.Models.Images;
 using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Diagnostics.Models;
@@ -11,10 +12,12 @@ public interface IPointsServiceClient : IClient
     Task<RestResponse<PaginatedResponse<TransactionItem>>> GetTransactionListAsync(AdminListRequest request);
     Task<RestResponse<List<PointsChartItem>>> GetChartDataAsync(AdminListRequest request);
     Task<DiagnosticInfo> GetDiagAsync();
-    Task<RestResponse<Leaderboard>> GetLeaderboardAsync(string guildId, int skip, int count);
+    Task<RestResponse<List<BoardItem>>> GetLeaderboardAsync(string guildId, int skip, int count, bool simple);
+    Task<int> GetLeaderboardCountAsync(string guildId);
     Task<MergeResult?> MergeTransctionsAsync();
     Task<PointsStatus> GetStatusOfPointsAsync(string guildId, string userId);
     Task<PointsStatus> GetStatusOfExpiredPointsAsync(string guildId, string userId);
+    Task<ImagePointsStatus> GetImagePointsStatusAsync(string guildId, string userId);
     Task ProcessSynchronizationAsync(SynchronizationRequest request);
     Task<ValidationProblemDetails?> CreateTransactionAsync(TransactionRequest request);
     Task DeleteTransactionAsync(string guildId, string messageId);

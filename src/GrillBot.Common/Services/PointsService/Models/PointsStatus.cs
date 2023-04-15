@@ -2,7 +2,6 @@
 
 public class PointsStatus
 {
-    public int? Position { get; set; }
     public int YearBack { get; set; }
     public int MonthBack { get; set; }
     public int Today { get; set; }

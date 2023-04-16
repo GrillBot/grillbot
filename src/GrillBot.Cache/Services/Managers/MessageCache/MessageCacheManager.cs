@@ -179,9 +179,9 @@ public class MessageCacheManager : IMessageCacheManager
             {
                 return await channel.GetMessageAsync(id);
             }
-            catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.InternalServerError)
+            catch (HttpException ex) when (IsApiExpectedError(ex))
             {
-                // Catches errors from discord API. Internal server error are expected.
+                // Catches expected errors from discord API.
                 return null;
             }
         }
@@ -197,12 +197,22 @@ public class MessageCacheManager : IMessageCacheManager
                     ? (await channel.GetMessagesAsync(range.Value.messageId, range.Value.direction, limit).FlattenAsync()).ToList()
                     : (await channel.GetMessagesAsync(limit).FlattenAsync()).ToList();
             }
-            catch (HttpException ex) when (ex.HttpCode is HttpStatusCode.InternalServerError or HttpStatusCode.ServiceUnavailable)
+            catch (HttpException ex) when (IsApiExpectedError(ex))
             {
-                // Catches errors from discord API. Internal server error are expected.
+                // Catches expected errors from discord API.
                 return new List<IMessage>();
             }
         }
+    }
+
+    /// <summary>
+    /// Checks if error created from discord api is expected.
+    /// Expected is InternalServerError, ServiceUnavailable, UnknownChannel and UnknownMessage. 
+    /// </summary>
+    private static bool IsApiExpectedError(HttpException ex)
+    {
+        return ex.HttpCode == HttpStatusCode.InternalServerError || ex.HttpCode == HttpStatusCode.ServiceUnavailable || ex.DiscordCode == DiscordErrorCode.UnknownChannel ||
+               ex.DiscordCode == DiscordErrorCode.UnknownMessage;
     }
 
     private async Task ProcessDownloadedMessages(List<IMessage> messages, bool forceDelete = false)

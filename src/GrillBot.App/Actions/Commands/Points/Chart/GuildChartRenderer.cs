@@ -39,7 +39,9 @@ public class GuildChartRenderer
             _ => Texts["Points/Chart/Title/Guild/Summary", locale]
         };
 
-        var filteredData = ChartRequestBuilder.FilterData(data, filter).ToList();
+        var filteredData = ChartRequestBuilder.FilterData(data, filter)
+            .OrderBy(o => o.day)
+            .ToList();
 
         request.Data.Datasets.Add(new Dataset
         {

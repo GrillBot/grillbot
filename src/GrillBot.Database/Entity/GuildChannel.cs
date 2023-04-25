@@ -56,7 +56,7 @@ public class GuildChannel
             ChannelType = channelType
         };
 
-        if (channel is IThreadChannel { CategoryId: { } } thread)
+        if (channel is IThreadChannel { CategoryId: not null } thread)
             guildChannel.ParentChannelId = thread.CategoryId.Value.ToString();
 
         guildChannel.Update(channel);

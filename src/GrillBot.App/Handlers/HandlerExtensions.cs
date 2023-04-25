@@ -1,4 +1,6 @@
 ﻿using GrillBot.App.Handlers.Logging;
+using GrillBot.App.Handlers.Synchronization.Database;
+using GrillBot.App.Handlers.Synchronization.Services;
 using GrillBot.Common.Managers.Events.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,6 +10,8 @@ public static class HandlerExtensions
 {
     public static IServiceCollection AddHandlers(this IServiceCollection services)
     {
+        RegisterSynchronization(services);
+
         services
             .AddSingleton<InteractionHandler>();
 
@@ -15,27 +19,19 @@ public static class HandlerExtensions
             .AddScoped<IChannelCreatedEvent, ChannelCreated.AuditChannelCreatedHandler>();
 
         services
-            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.SyncChannelDestroyedHandler>()
-            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>()
-            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.PointsChannelDestroyedHandler>();
-            
+            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>();
+
         services
             .AddScoped<IChannelUpdatedEvent, ChannelUpdated.AuditChannelUpdatedHandler>()
-            .AddScoped<IChannelUpdatedEvent, ChannelUpdated.AuditOverwritesChangedHandler>()
-            .AddScoped<IChannelUpdatedEvent, ChannelUpdated.SyncChannelUpdatedHandler>();
+            .AddScoped<IChannelUpdatedEvent, ChannelUpdated.AuditOverwritesChangedHandler>();
 
         services
-            .AddScoped<IGuildAvailableEvent, GuildAvailable.SyncGuildAvailableHandler>();
-
-        services
-            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.UserUpdatedSyncHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.ServerBoosterHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserUpdatedHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserRoleUpdatedHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.UserNicknameUpdatedHandler>();
 
         services
-            .AddScoped<IGuildUpdatedEvent, GuildUpdated.SyncGuildUpdatedHandler>()
             .AddScoped<IGuildUpdatedEvent, GuildUpdated.AuditGuildUpdatedHandler>()
             .AddScoped<IGuildUpdatedEvent, GuildUpdated.AuditEmotesGuildUpdatedHandler>();
 
@@ -47,7 +43,6 @@ public static class HandlerExtensions
             .AddScoped<IInviteCreatedEvent, InviteCreated.InviteToCacheHandler>();
 
         services
-            .AddScoped<IJoinedGuildEvent, JoinedGuild.SyncJoinedGuildHandler>()
             .AddScoped<WithoutAccidentRenderer>();
 
         services
@@ -85,19 +80,15 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.InviteReadyHandler>()
             .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
-        
-        services
-            .AddScoped<IThreadDeletedEvent, ThreadDeleted.SyncThreadDeletedHandler>()
-            .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>()
-            .AddScoped<IThreadDeletedEvent, ThreadDeleted.PointsThreadDeletedHandler>();
 
         services
-            .AddScoped<IThreadUpdatedEvent, ThreadUpdated.SyncThreadUpdatedHandler>()
+            .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();
+
+        services
             .AddScoped<IThreadUpdatedEvent, ThreadUpdated.ForumThreadTagsUpdated>();
 
         services
             .AddScoped<IUserJoinedEvent, UserJoined.InviteUserJoinedHandler>()
-            .AddScoped<IUserJoinedEvent, UserJoined.UserJoinedSyncHandler>()
             .AddScoped<IUserJoinedEvent, UserJoined.AuditUserJoinedHandler>();
 
         services
@@ -107,11 +98,39 @@ public static class HandlerExtensions
         services
             .AddScoped<IUserUnbannedEvent, UserUnbanned.AuditUserUnbannedHandler>();
 
-        services
-            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncRubbergodServiceUserHandler>()
-            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncUserUpdatedHandler>()
-            .AddScoped<IUserUpdatedEvent, UserUpdated.SyncPointsServiceUserUpdatedHandler>();
-
         return services;
+    }
+
+    private static void RegisterSynchronization(this IServiceCollection services)
+    {
+        // Channels
+        services
+            .AddScoped<IChannelCreatedEvent, ChannelSynchronizationHandler>()
+            .AddScoped<IChannelUpdatedEvent, ChannelSynchronizationHandler>()
+            .AddScoped<IChannelDestroyedEvent, ChannelSynchronizationHandler>();
+
+        // Guild
+        services
+            .AddScoped<IGuildAvailableEvent, GuildSynchronizationHandler>()
+            .AddScoped<IGuildUpdatedEvent, GuildSynchronizationHandler>()
+            .AddScoped<IJoinedGuildEvent, GuildSynchronizationHandler>();
+
+        // Threads
+        services
+            .AddScoped<IThreadDeletedEvent, ThreadSynchronizationHandler>()
+            .AddScoped<IThreadUpdatedEvent, ThreadSynchronizationHandler>();
+
+        // Users
+        services
+            .AddScoped<IUserJoinedEvent, UserSynchronizationHandler>()
+            .AddScoped<IGuildMemberUpdatedEvent, UserSynchronizationHandler>()
+            .AddScoped<IUserUpdatedEvent, UserSynchronizationHandler>();
+
+        // Services
+        services
+            .AddScoped<IUserUpdatedEvent, RubbergodServiceSynchronizationHandler>()
+            .AddScoped<IUserUpdatedEvent, PointsServiceSynchronizationHandler>()
+            .AddScoped<IChannelDestroyedEvent, PointsServiceSynchronizationHandler>()
+            .AddScoped<IThreadDeletedEvent, PointsServiceSynchronizationHandler>();
     }
 }

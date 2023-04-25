@@ -115,7 +115,10 @@ public class ChannelRepository : RepositoryBase<GrillBotContext>
                 .FirstOrDefaultAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString());
 
             if (entity != null)
+            {
+                entity.Update(channel);
                 return entity;
+            }
 
             entity = GuildChannel.FromDiscord(channel, channel.GetChannelType() ?? ChannelType.DM);
             await Context.AddAsync(entity);

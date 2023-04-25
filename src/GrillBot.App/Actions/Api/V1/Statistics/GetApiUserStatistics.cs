@@ -11,24 +11,44 @@ namespace GrillBot.App.Actions.Api.V1.Statistics;
 public class GetApiUserStatistics : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    
+
     public GetApiUserStatistics(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
     }
-    
-    public async Task<List<UserActionCountItem>> ProcessAsync()
+
+    public async Task<List<UserActionCountItem>> ProcessAsync(string criteria)
     {
         var logs = await GetLogsAsync();
 
         return logs
-            .Select(o => new { Item = o, Data = JsonConvert.DeserializeObject<ApiRequest>(o.Data, AuditLogWriteManager.SerializerSettings)! })
-            .Where(o => !o.Data.IsCorrupted() && (o.Item.ProcessedUser != null || o.Data.UserIdentification != null))
-            .GroupBy(o => new { Username = o.Item.ProcessedUser?.FullName() ?? o.Data.UserIdentification, o.Data.TemplatePath })
+            .Select(ReadItem)
+            .Where(o => CanProcess(o.item, o.request, criteria))
+            .GroupBy(o => new { Username = o.item.ProcessedUser?.FullName() ?? o.request.UserIdentification, o.request.TemplatePath })
             .Where(o => !string.IsNullOrEmpty(o.Key.Username))
             .Select(o => new UserActionCountItem(o.Key.Username!, o.Key.TemplatePath, o.Count()))
             .OrderBy(o => o.Username).ThenBy(o => o.Action)
             .ToList();
+    }
+
+    private static (AuditLogItem item, ApiRequest request) ReadItem(AuditLogItem item)
+        => (item, JsonConvert.DeserializeObject<ApiRequest>(item.Data, AuditLogWriteManager.SerializerSettings)!);
+
+    private static bool CanProcess(AuditLogItem item, ApiRequest request, string criteria)
+    {
+        if (request.IsCorrupted())
+            return false;
+
+        if (item.ProcessedUser is null && string.IsNullOrEmpty(request.UserIdentification))
+            return false;
+
+        return criteria switch
+        {
+            "v1-private" => (request.ApiGroupName ?? "V1").ToUpper() == "V1" && request.LoggedUserRole.ToLower() == "admin",
+            "v1-public" => (request.ApiGroupName ?? "V1").ToUpper() == "V1" && request.LoggedUserRole.ToLower() == "user",
+            "v2" => (request.ApiGroupName ?? "V1").ToUpper() == "V2",
+            _ => throw new NotSupportedException("Unsupported criteria.")
+        };
     }
 
     private async Task<List<AuditLogItem>> GetLogsAsync()

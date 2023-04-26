@@ -75,8 +75,9 @@ public class EventManager
     {
         var eventType = typeof(TInterface);
         var eventName = eventType.Name[1..];
+        var isReadyEvent = eventType == typeof(IReadyEvent);
 
-        if (!InitManager.Get() && eventType != typeof(IReadyEvent))
+        if (!InitManager.Get() && !isReadyEvent)
             return;
 
         using (CounterManager.Create($"Events.{eventName}"))
@@ -84,13 +85,14 @@ public class EventManager
             using var scope = ServiceProvider.CreateScope();
 
             var services = scope.ServiceProvider.GetServices<TInterface>();
-            var actions = services.Select(processAction);
 
-            await Task.WhenAll(actions);
+            foreach (var service in services)
+                await processAction(service);
         }
 
-        if (storeToLogAction != null) await storeToLogAction;
-        if (eventType == typeof(IReadyEvent))
+        if (storeToLogAction != null)
+            await storeToLogAction;
+        if (isReadyEvent)
             InitManager.Set(true);
     }
 }

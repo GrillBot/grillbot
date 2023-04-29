@@ -57,7 +57,7 @@ public class GuildInfo : CommandAction
             .AddField(GetText("BanCount"), banCount, true)
             .AddField(GetText("CreatedAt"), Context.Guild.CreatedAt.LocalDateTime.ToCzechFormat(), true)
             .AddField(GetText("Owner"), owner.GetFullName())
-            .AddField(GetText("MemberCount"), Context.Guild.ApproximateMemberCount ?? 0, true)
+            .AddField(GetText("MemberCount"), Context.Guild.GetMemberCount(), true)
             .AddField(GetText("PremiumTier"), tier, true)
             .AddField(GetText("BoosterCount"), Context.Guild.PremiumSubscriptionCount, true);
 

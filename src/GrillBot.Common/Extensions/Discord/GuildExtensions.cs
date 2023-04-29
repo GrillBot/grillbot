@@ -1,4 +1,6 @@
 ﻿using Discord;
+using Discord.Rest;
+using Discord.WebSocket;
 using GrillBot.Core.Extensions;
 
 namespace GrillBot.Common.Extensions.Discord;
@@ -27,5 +29,15 @@ public static class GuildExtensions
     {
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
         return guildUser != null && guildUser.CanManageInvites();
+    }
+
+    public static long GetMemberCount(this IGuild guild)
+    {
+        return guild switch
+        {
+            SocketGuild socketGuild => socketGuild.MemberCount,
+            RestGuild restGuild => restGuild.ApproximateMemberCount ?? 0,
+            _ => throw new NotSupportedException()
+        };
     }
 }

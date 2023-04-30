@@ -1,10 +1,7 @@
 ﻿using GrillBot.App.Infrastructure.IO;
-using GrillBot.Cache.Entity;
 using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Extensions;
-using GrillBot.Common.Services.Graphics;
-using GrillBot.Common.Services.Graphics.Models.Images;
-using ImageMagick;
+using GrillBot.Common.Services.ImageProcessing;
+using GrillBot.Common.Services.ImageProcessing.Models;
 
 namespace GrillBot.App.Handlers.Logging;
 
@@ -12,35 +9,37 @@ public class WithoutAccidentRenderer
 {
     private DataCacheManager DataCacheManager { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
-    private IGraphicsClient GraphicsClient { get; }
+    private IImageProcessingClient ImageProcessingClient { get; }
 
-    public WithoutAccidentRenderer(ProfilePictureManager profilePictureManager, DataCacheManager dataCacheManager, IGraphicsClient graphicsClient)
+    public WithoutAccidentRenderer(ProfilePictureManager profilePictureManager, DataCacheManager dataCacheManager, IImageProcessingClient imageProcessingClient)
     {
         DataCacheManager = dataCacheManager;
         ProfilePictureManager = profilePictureManager;
-        GraphicsClient = graphicsClient;
+        ImageProcessingClient = imageProcessingClient;
     }
 
     public async Task<TemporaryFile> RenderAsync(IUser user)
     {
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, size: 512);
-        var request = new WithoutAccidentRequestData
+        var days = await GetLastErrorDays();
+
+        var request = new WithoutAccidentImageRequest
         {
-            Days = await GetLastErrorDays(),
-            ProfilePicture = ReadAvatarToBase64(profilePicture)
+            AvatarInfo = new AvatarInfo
+            {
+                Type = "png",
+                AvatarContent = profilePicture.Data,
+                AvatarId = profilePicture.AvatarId
+            },
+            DaysCount = days,
+            UserId = user.Id.ToString()
         };
 
-        var image = await GraphicsClient.CreateWithoutAccidentImage(request);
+        var image = await ImageProcessingClient.CreateWithoutAccidentImageAsync(request);
         var tmpFile = new TemporaryFile("png");
         await File.WriteAllBytesAsync(tmpFile.Path, image);
 
         return tmpFile;
-    }
-
-    private static string ReadAvatarToBase64(ProfilePicture profilePicture)
-    {
-        using var avatarCollection = new MagickImageCollection(profilePicture.Data);
-        return avatarCollection[0].ToBase64();
     }
 
     private async Task<int> GetLastErrorDays()

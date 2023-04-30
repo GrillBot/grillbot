@@ -1,13 +1,11 @@
 ﻿using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Common.Services.Graphics;
-using GrillBot.Common.Services.Graphics.Models.Images;
+using GrillBot.Common.Services.ImageProcessing;
+using GrillBot.Common.Services.ImageProcessing.Models;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Core.Exceptions;
-using ImageMagick;
 
 namespace GrillBot.App.Actions.Commands.Points;
 
@@ -15,18 +13,18 @@ public sealed class PointsImage : CommandAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
-    private IGraphicsClient GraphicsClient { get; }
     private ITextsManager Texts { get; }
     private IPointsServiceClient PointsServiceClient { get; }
+    private IImageProcessingClient ImageProcessingClient { get; }
 
-    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager, IGraphicsClient graphicsClient, ITextsManager texts,
-        IPointsServiceClient pointsServiceClient)
+    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager, ITextsManager texts, IPointsServiceClient pointsServiceClient,
+        IImageProcessingClient imageProcessingClient)
     {
         ProfilePictureManager = profilePictureManager;
         DatabaseBuilder = databaseBuilder;
-        GraphicsClient = graphicsClient;
         Texts = texts;
         PointsServiceClient = pointsServiceClient;
+        ImageProcessingClient = imageProcessingClient;
     }
 
     public async Task<TemporaryFile> ProcessAsync(IGuild guild, IUser user)
@@ -39,32 +37,27 @@ public sealed class PointsImage : CommandAction
         if (!await repository.GuildUser.ExistsAsync(guildUser))
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
+        var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
         var status = await PointsServiceClient.GetImagePointsStatusAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString());
 
-        using var profilePicture = await GetProfilePictureAsync(user);
-        var dominantColor = profilePicture.GetDominantColor();
-        var textBackground = dominantColor.CreateDarkerBackgroundColor();
-
-        var request = new PointsImageRequest
+        var request = new PointsRequest
         {
-            Points = status.Points,
             Position = status.Position,
-            Nickname = user.GetDisplayName(false),
-            BackgroundColor = dominantColor.ToHexString(),
-            TextBackground = textBackground.ToHexString(),
-            ProfilePicture = profilePicture.ToBase64()
+            Username = user.GetDisplayName(false),
+            AvatarInfo = new AvatarInfo
+            {
+                Type = "png",
+                AvatarContent = profilePicture.Data,
+                AvatarId = profilePicture.AvatarId
+            },
+            PointsValue = status.Points,
+            UserId = user.Id.ToString()
         };
 
-        var image = await GraphicsClient.CreatePointsImageAsync(request);
+        var image = await ImageProcessingClient.CreatePointsImageAsync(request);
+        var result = new TemporaryFile("png");
+        await File.WriteAllBytesAsync(result.Path, image);
 
-        var tmpFile = new TemporaryFile("png");
-        await File.WriteAllBytesAsync(tmpFile.Path, image);
-        return tmpFile;
-    }
-
-    private async Task<MagickImage> GetProfilePictureAsync(IUser user)
-    {
-        var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
-        return new MagickImage(profilePicture.Data);
+        return result;
     }
 }

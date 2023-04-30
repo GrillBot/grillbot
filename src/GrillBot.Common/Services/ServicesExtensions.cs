@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.ImageProcessing;
 using GrillBot.Common.Services.KachnaOnline;
 using GrillBot.Common.Services.Math;
 using GrillBot.Common.Services.PointsService;
@@ -12,9 +13,9 @@ namespace GrillBot.Common.Services;
 
 public static class ServicesExtensions
 {
-    private static IHttpClientBuilder AddHttpClient(this IServiceCollection services, IConfiguration configuration, string serviceId, string serviceConfigName)
+    private static void AddHttpClient(this IServiceCollection services, IConfiguration configuration, string serviceId, string serviceConfigName)
     {
-        return services.AddHttpClient(serviceId, client =>
+        services.AddHttpClient(serviceId, client =>
         {
             client.BaseAddress = new Uri(configuration[$"Services:{serviceConfigName}:Api"]!);
             client.Timeout = TimeSpan.FromMilliseconds(configuration[$"Services:{serviceConfigName}:Timeout"]!.ToInt());
@@ -46,6 +47,10 @@ public static class ServicesExtensions
         services
             .AddScoped<IPointsServiceClient, PointsServiceClient>()
             .AddHttpClient(configuration, "PointsService", "PointsService");
+
+        services
+            .AddScoped<IImageProcessingClient, ImageProcessingClient>()
+            .AddHttpClient(configuration, "ImageProcessing", "ImageProcessing");
 
         return services;
     }

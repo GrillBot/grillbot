@@ -194,8 +194,8 @@ public static class ActionsExtensions
         // Points
         services
             .AddScoped<Commands.Points.Chart.PointsChart>()
-            .AddScoped<Commands.Points.Chart.UsersChartRenderer>()
-            .AddScoped<Commands.Points.Chart.GuildChartRenderer>()
+            .AddScoped<Commands.Points.Chart.UserChartBuilder>()
+            .AddScoped<Commands.Points.Chart.GuildChartBuilder>()
             .AddScoped<Commands.Points.PointsLeaderboard>()
             .AddScoped<Commands.Points.PointsImage>();
 

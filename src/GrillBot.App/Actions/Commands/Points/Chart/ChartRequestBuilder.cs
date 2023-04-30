@@ -5,19 +5,15 @@ namespace GrillBot.App.Actions.Commands.Points.Chart;
 
 public static class ChartRequestBuilder
 {
-    public const int Height = 500;
-    public const int Width = 1920;
-    public const string Background = "white";
-
     public static ChartRequestData CreateCommonRequest()
     {
         return new ChartRequestData
         {
             Options = new ChartOptions
             {
-                Height = Height,
-                Width = Width,
-                BackgroundColor = Background,
+                Height = 500,
+                Width = 1920,
+                BackgroundColor = "white",
                 LegendPosition = "bottom",
                 PointsRadius = 1
             },

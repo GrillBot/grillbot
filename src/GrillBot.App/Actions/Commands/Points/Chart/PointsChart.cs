@@ -1,9 +1,10 @@
 ﻿using GrillBot.App.Infrastructure.IO;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Services.ImageProcessing;
+using GrillBot.Common.Services.ImageProcessing.Models;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Extensions;
-using ImageMagick;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
@@ -12,32 +13,27 @@ public class PointsChart : CommandAction
 {
     private IServiceProvider ServiceProvider { get; }
     private IPointsServiceClient PointsServiceClient { get; }
+    private IImageProcessingClient ImageProcessingClient { get; }
 
     private Dictionary<ulong, List<PointsChartItem>>? UsersData { get; set; }
     private List<PointsChartItem>? GuildData { get; set; }
 
-    public PointsChart(IServiceProvider serviceProvider, IPointsServiceClient pointsServiceClient)
+    public PointsChart(IServiceProvider serviceProvider, IPointsServiceClient pointsServiceClient, IImageProcessingClient imageProcessingClient)
     {
         ServiceProvider = serviceProvider;
         PointsServiceClient = pointsServiceClient;
+        ImageProcessingClient = imageProcessingClient;
     }
 
     public async Task<TemporaryFile> ProcessAsync(ChartType type, IEnumerable<IUser>? users, ChartsFilter filter)
     {
         await PrepareDataAsync(type, users, filter);
 
-        var charts = new List<MagickImage>();
         var resultFile = new TemporaryFile("png");
 
-        try
-        {
-            await RenderChartsAsync(charts, filter, type);
-            await MergeAndSaveCharts(resultFile, charts);
-        }
-        finally
-        {
-            charts.ForEach(o => o.Dispose());
-        }
+        var request = await CreateRequestAsync(filter, type);
+        var image = await ImageProcessingClient.CreateChartImageAsync(request);
+        await File.WriteAllBytesAsync(resultFile.Path, image);
 
         return resultFile;
     }
@@ -97,48 +93,22 @@ public class PointsChart : CommandAction
         };
     }
 
-    private async Task RenderChartsAsync(ICollection<MagickImage> result, ChartsFilter filter, ChartType type)
+    private async Task<ChartRequest> CreateRequestAsync(ChartsFilter filter, ChartType type)
     {
-        if (type == ChartType.GuildChart)
+        switch (type)
         {
-            var renderer = ServiceProvider.GetRequiredService<GuildChartRenderer>();
-
-            if ((filter & ChartsFilter.Messages) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Messages, Locale));
-            if ((filter & ChartsFilter.Reactions) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Reactions, Locale));
-            if ((filter & ChartsFilter.Summary) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, GuildData!, ChartsFilter.Summary, Locale));
+            case ChartType.GuildChart:
+            {
+                var builder = ServiceProvider.GetRequiredService<GuildChartBuilder>().Init(GuildData!, Context.Guild);
+                return await builder.CreateRequestAsync(filter, Locale);
+            }
+            case ChartType.UserChart:
+            {
+                var builder = ServiceProvider.GetRequiredService<UserChartBuilder>().Init(UsersData!, Context.Guild);
+                return await builder.CreateRequestAsync(filter, Locale);
+            }
+            default:
+                throw new NotSupportedException();
         }
-        else if (type == ChartType.UserChart)
-        {
-            var renderer = ServiceProvider.GetRequiredService<UsersChartRenderer>();
-
-            if ((filter & ChartsFilter.Messages) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Messages, Locale));
-            if ((filter & ChartsFilter.Reactions) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Reactions, Locale));
-            if ((filter & ChartsFilter.Summary) != ChartsFilter.None)
-                result.Add(await renderer.RenderAsync(Context.Guild, UsersData!, ChartsFilter.Summary, Locale));
-        }
-    }
-
-    private static async Task MergeAndSaveCharts(TemporaryFile resultFile, IReadOnlyList<MagickImage> charts)
-    {
-        var finalHeight = charts.Count * ChartRequestBuilder.Height;
-        using var image = new MagickImage(new MagickColor(ChartRequestBuilder.Background), ChartRequestBuilder.Width, finalHeight);
-
-        IDrawables<byte> drawables = new Drawables();
-        for (var i = 0; i < charts.Count; i++)
-        {
-            var top = i * ChartRequestBuilder.Height;
-            drawables = drawables.Composite(0, top, CompositeOperator.Multiply, charts[i]);
-
-            if (i > 0)
-                drawables = drawables.Line(0, top, ChartRequestBuilder.Width, top);
-        }
-
-        drawables.Draw(image);
-        await image.WriteAsync(resultFile.Path);
     }
 }

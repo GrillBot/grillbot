@@ -33,8 +33,6 @@ public static class UserExtensions
         };
     }
 
-    public static bool HaveAnimatedAvatar(this IUser user) => user.AvatarId?.StartsWith("a_") ?? false;
-
     public static IRole? GetHighestRole(this IGuildUser user, bool requireColor = false)
     {
         var roles = user.GetRoles();

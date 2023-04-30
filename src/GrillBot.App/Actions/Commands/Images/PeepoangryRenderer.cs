@@ -1,66 +1,41 @@
 ﻿using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Helpers;
-using GrillBot.Common.Services.Graphics;
-using ImageMagick;
+using GrillBot.Common.Services.ImageProcessing;
+using GrillBot.Common.Services.ImageProcessing.Models;
 
 namespace GrillBot.App.Actions.Commands.Images;
 
 public sealed class PeepoangryRenderer
 {
     private ProfilePictureManager ProfilePictureManager { get; }
-    private IGraphicsClient GraphicsClient { get; }
+    private IImageProcessingClient ImageProcessingClient { get; }
 
-    public PeepoangryRenderer(ProfilePictureManager profilePictureManager, IGraphicsClient graphicsClient)
+    public PeepoangryRenderer(ProfilePictureManager profilePictureManager, IImageProcessingClient imageProcessingClient)
     {
         ProfilePictureManager = profilePictureManager;
-        GraphicsClient = graphicsClient;
+        ImageProcessingClient = imageProcessingClient;
     }
 
     public async Task<TemporaryFile> RenderAsync(IUser user, IGuild guild)
     {
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 64);
-        var profilePictureFrames = new List<byte[]>();
-        var result = new TemporaryFile(user.HaveAnimatedAvatar() ? ".gif" : ".png");
 
-        if (profilePicture.IsAnimated && !MessageHelper.CanSendAttachment(profilePicture.Data.Length, guild))
-            result.ChangeExtension(".png");
-
-        using var originalImage = new MagickImageCollection(profilePicture.Data);
-
-        if (Path.GetExtension(result.Path) == ".gif")
+        var request = new PeepoRequest
         {
-            originalImage.Coalesce();
-            profilePictureFrames.AddRange(originalImage.Select(userFrame => userFrame.ToByteArray()));
-        }
-        else
-        {
-            profilePictureFrames.Add(originalImage[0].ToByteArray());
-        }
-
-        var createdFrames = await GraphicsClient.CreatePeepoAngryAsync(profilePictureFrames);
-        if (createdFrames.Count == 1)
-        {
-            // User not have profile picture.
-            using var img = new MagickImage(createdFrames[0]);
-            await img.WriteAsync(result.Path, MagickFormat.Png);
-        }
-        else
-        {
-            // User have gif
-            var framesQuery = createdFrames.Select(o =>
+            AvatarInfo = new AvatarInfo
             {
-                var frame = new MagickImage(o, MagickFormat.Png);
-                frame.GifDisposeMethod = GifDisposeMethod.None;
+                Type = profilePicture.IsAnimated ? "gif" : "png",
+                AvatarContent = profilePicture.Data,
+                AvatarId = profilePicture.AvatarId
+            },
+            UserId = user.Id.ToString(),
+            GuildUploadLimit = (long)guild.MaxUploadLimit
+        };
 
-                return frame;
-            });
+        var image = await ImageProcessingClient.CreatePeepoangryImageAsync(request);
+        var result = new TemporaryFile($".{request.AvatarInfo.Type}");
 
-            using var collection = new MagickImageCollection(framesQuery);
-            await collection.WriteAsync(result.Path, MagickFormat.Gif);
-        }
-
+        await File.WriteAllBytesAsync(result.Path, image);
         return result;
     }
 }

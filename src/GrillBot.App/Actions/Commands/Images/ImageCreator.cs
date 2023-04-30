@@ -1,29 +1,29 @@
 ﻿using GrillBot.App.Infrastructure.IO;
 using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Services.Graphics;
+using GrillBot.Common.Services.ImageProcessing;
 
 namespace GrillBot.App.Actions.Commands.Images;
 
 public class ImageCreator : CommandAction
 {
     private ProfilePictureManager ProfilePictureManager { get; }
-    private IGraphicsClient GraphicsClient { get; }
+    private IImageProcessingClient ImageProcessingClient { get; }
 
-    public ImageCreator(ProfilePictureManager profilePictureManager, IGraphicsClient graphicsClient)
+    public ImageCreator(ProfilePictureManager profilePictureManager, IImageProcessingClient imageProcessingClient)
     {
         ProfilePictureManager = profilePictureManager;
-        GraphicsClient = graphicsClient;
+        ImageProcessingClient = imageProcessingClient;
     }
 
     public async Task<TemporaryFile> PeepoloveAsync(IUser? user)
     {
-        var renderer = new PeepoloveRenderer(ProfilePictureManager, GraphicsClient);
+        var renderer = new PeepoloveRenderer(ProfilePictureManager, ImageProcessingClient);
         return await renderer.RenderAsync(user ?? Context.User, Context.Guild);
     }
 
     public async Task<TemporaryFile> PeepoangryAsync(IUser? user)
     {
-        var renderer = new PeepoangryRenderer(ProfilePictureManager, GraphicsClient);
+        var renderer = new PeepoangryRenderer(ProfilePictureManager, ImageProcessingClient);
         return await renderer.RenderAsync(user ?? Context.User, Context.Guild);
     }
 }

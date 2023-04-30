@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Discord;
-using GrillBot.Common.Extensions.Discord;
 using NeoSmart.Unicode;
 using Emoji = Discord.Emoji;
 
@@ -62,7 +61,4 @@ public static class MessageHelper
             }
         }
     }
-
-    public static bool CanSendAttachment(int attachmentSize, IGuild guild)
-        => attachmentSize <= 2 * (guild.CalculateFileUploadLimit() * 1024 * 1024 / 3);
 }

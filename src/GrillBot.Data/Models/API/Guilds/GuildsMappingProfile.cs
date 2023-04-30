@@ -1,8 +1,6 @@
-﻿using System;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Database.Models;
 
 namespace GrillBot.Data.Models.API.Guilds;
 
@@ -17,7 +15,7 @@ public class GuildsMappingProfile : AutoMapper.Profile
 
         CreateMap<IGuild, Guild>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
-            .ForMember(dst => dst.MemberCount, opt => opt.MapFrom(src => src.ApproximateMemberCount ?? 0));
+            .ForMember(dst => dst.MemberCount, opt => opt.MapFrom(src => src.GetMemberCount()));
 
         CreateMap<Database.Entity.Guild, GuildDetail>()
             .IncludeBase<Database.Entity.Guild, Guild>();

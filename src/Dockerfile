@@ -49,9 +49,7 @@ LABEL org.opencontainers.image.source https://github.com/grillbot/grillbot
 # Dependencies
 WORKDIR /app
 RUN sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
-RUN apt update && apt install -y --no-install-recommends tzdata ttf-mscorefonts-installer fontconfig libc6-dev libgdiplus libx11-dev
-RUN ln -s /usr/lib/libgdiplus.so /usr/lib/gdiplus.dll
-RUN fc-cache -fv
+RUN apt update && apt install -y --no-install-recommends tzdata libc6-dev
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY --from=Build /publish .

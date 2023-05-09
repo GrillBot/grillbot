@@ -12,7 +12,7 @@ public class PinModule : InteractionsModuleBase
     {
     }
 
-    [SlashCommand("purge", "Unpinn N messages")]
+    [SlashCommand("purge", "Unpin N messages")]
     [DeferConfiguration(RequireEphemeral = true)]
     public async Task ProcessAsync(int count, ITextChannel channel = null)
     {

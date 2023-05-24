@@ -13,7 +13,7 @@ public class ChannelInfo : CommandAction
     private FormatHelper FormatHelper { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public string ErrorMessage { get; private set; }
+    public string? ErrorMessage { get; private set; }
     public bool IsOk => string.IsNullOrEmpty(ErrorMessage);
 
     public ChannelInfo(ITextsManager texts, FormatHelper formatHelper, GrillBotDatabaseBuilder databaseBuilder)
@@ -23,7 +23,7 @@ public class ChannelInfo : CommandAction
         Texts = texts;
     }
 
-    public async Task<Embed> ProcessAsync(IGuildChannel channel, bool excludeThreads)
+    public async Task<Embed?> ProcessAsync(IGuildChannel channel, bool excludeThreads)
     {
         await CheckAccessAsync(channel);
         if (!IsOk) return null;
@@ -63,7 +63,7 @@ public class ChannelInfo : CommandAction
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
             .WithTitle((isThread ? "" : "#") + channel.Name)
-            .AddField(Texts["ChannelModule/ChannelInfo/CreatedAt", Locale], channel.CreatedAt.ToCzechFormat(), true);
+            .AddField(Texts["ChannelModule/ChannelInfo/CreatedAt", Locale], channel.CreatedAt.ToTimestampMention(), true);
     }
 
     private async Task SetMemberCountAsync(EmbedBuilder builder, IGuildChannel channel, bool isThread)
@@ -90,7 +90,7 @@ public class ChannelInfo : CommandAction
 
     private async Task SetThreadInfoAsync(EmbedBuilder builder, IGuildChannel channel)
     {
-        var parentChannelId = ((IThreadChannel)channel).CategoryId!.Value!;
+        var parentChannelId = ((IThreadChannel)channel).CategoryId!.Value;
         var parentChannel = await Context.Guild.GetChannelAsync(parentChannelId);
 
         if (parentChannel != null)
@@ -151,9 +151,9 @@ public class ChannelInfo : CommandAction
         var firstMessage = visibleStatistics.Count == 0 ? DateTime.MinValue : visibleStatistics.Min(o => o.FirstMessageAt);
         var lastMessage = visibleStatistics.Count == 0 ? DateTime.MinValue : visibleStatistics.Max(o => o.LastMessageAt);
         if (firstMessage != DateTime.MinValue)
-            builder.AddField(Texts["ChannelModule/ChannelInfo/FirstMessage", Locale], firstMessage.ToCzechFormat(), true);
+            builder.AddField(Texts["ChannelModule/ChannelInfo/FirstMessage", Locale], firstMessage.ToTimestampMention(), true);
         if (lastMessage != DateTime.MinValue)
-            builder.AddField(Texts["ChannelModule/ChannelInfo/LastMessage", Locale], lastMessage.ToCzechFormat(), true);
+            builder.AddField(Texts["ChannelModule/ChannelInfo/LastMessage", Locale], lastMessage.ToTimestampMention(), true);
 
         var flagsData = Enum.GetValues<ChannelFlag>()
             .Where(o => channelData.HasFlag(o))

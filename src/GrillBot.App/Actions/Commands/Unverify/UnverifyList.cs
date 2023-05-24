@@ -76,8 +76,8 @@ public class UnverifyList : CommandAction
 
     private async IAsyncEnumerable<EmbedFieldBuilder> CreateEmbedFieldsAsync(UnverifyUserProfile profile)
     {
-        yield return CreateField("StartAt", profile.Start.ToCzechFormat(), true);
-        yield return CreateField("EndAt", profile.End.ToCzechFormat(), true);
+        yield return CreateField("StartAt", profile.Start.ToTimestampMention(), true);
+        yield return CreateField("EndAt", profile.End.ToTimestampMention(), true);
         yield return CreateField("EndFor", FormatEndDate(profile.End), true);
         yield return CreateField("Selfunverify", FormatHelper.FormatBoolean("Unverify/ListEmbed/Boolean", Locale, profile.IsSelfUnverify), true);
 

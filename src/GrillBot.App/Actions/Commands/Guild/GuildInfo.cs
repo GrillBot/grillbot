@@ -55,7 +55,7 @@ public class GuildInfo : CommandAction
             .AddField(GetText("RoleCount"), Context.Guild.Roles.Count, true)
             .AddField(GetText("EmoteCount"), $"{basicEmotesCount} / {animatedCount}", true)
             .AddField(GetText("BanCount"), banCount, true)
-            .AddField(GetText("CreatedAt"), Context.Guild.CreatedAt.LocalDateTime.ToCzechFormat(), true)
+            .AddField(GetText("CreatedAt"), Context.Guild.CreatedAt.ToTimestampMention(), true)
             .AddField(GetText("Owner"), owner.GetFullName())
             .AddField(GetText("MemberCount"), Context.Guild.GetMemberCount(), true)
             .AddField(GetText("PremiumTier"), tier, true)

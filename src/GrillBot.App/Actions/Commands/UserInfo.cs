@@ -71,7 +71,7 @@ public class UserInfo : CommandAction
     private void SetCommonInfo(EmbedBuilder builder, IUser user)
     {
         SetUserState(builder, user);
-        AddField(builder, "CreatedAt", user.CreatedAt.ToCzechFormat(), true);
+        AddField(builder, "CreatedAt", user.CreatedAt.ToTimestampMention(), true);
 
         if (user.ActiveClients.Count > 0)
             AddField(builder, "ActiveDevices", string.Join(", ", user.ActiveClients), true);
@@ -117,11 +117,11 @@ public class UserInfo : CommandAction
         if (user.JoinedAt != null)
         {
             var joinPosition = GuildUsers.Count(o => o.JoinedAt != null && o.JoinedAt.Value < user.JoinedAt.Value);
-            AddField(builder, "JoinedAt", $"{user.JoinedAt.Value.ToCzechFormat()} ({joinPosition})", true);
+            AddField(builder, "JoinedAt", $"{user.JoinedAt.Value.ToTimestampMention()} ({joinPosition})", true);
         }
 
         if (user.PremiumSince != null)
-            AddField(builder, "PremiumSince", user.PremiumSince.Value.ToCzechFormat(), true);
+            AddField(builder, "PremiumSince", user.PremiumSince.Value.ToTimestampMention(), true);
     }
 
     private async Task SetDatabaseInfoAsync(EmbedBuilder builder, IGuildUser user, Database.Entity.GuildUser userEntity, GrillBotRepository repository)

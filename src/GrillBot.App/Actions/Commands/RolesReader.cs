@@ -97,7 +97,7 @@ public class RolesReader : CommandAction
     {
         var result = new List<EmbedFieldBuilder>
         {
-            CreateField("CreatedAt", role.CreatedAt.LocalDateTime.ToCzechFormat(), true),
+            CreateField("CreatedAt", role.CreatedAt.ToTimestampMention(), true),
             CreateField("Everyone", FormatHelper.FormatBoolean("Roles/Boolean", Locale, role.Id == Context.Guild.EveryoneRole.Id), true),
             CreateField("Hoisted", FormatHelper.FormatBoolean("Roles/Boolean", Locale, role.IsHoisted), true),
             CreateField("Managed", FormatHelper.FormatBoolean("Roles/Boolean", Locale, role.IsManaged), true),

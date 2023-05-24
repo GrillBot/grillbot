@@ -49,7 +49,7 @@ public class PointsChart : CommandAction
                 UsersData = new Dictionary<ulong, List<PointsChartItem>>();
                 if (users != null)
                 {
-                    foreach (var user in users.Where(o => o.IsUser()))
+                    foreach (var user in users.Where(o => o.IsUser()).DistinctBy(o => o.Id))
                         await PrepareUserDataAsync(user, filter);
                 }
 

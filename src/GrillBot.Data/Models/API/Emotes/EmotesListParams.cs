@@ -74,6 +74,8 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IDictionary
         result.MergeDictionaryObjects(UseCount, nameof(UseCount));
         result.MergeDictionaryObjects(FirstOccurence, nameof(FirstOccurence));
         result.MergeDictionaryObjects(LastOccurence, nameof(LastOccurence));
+        result.MergeDictionaryObjects(Sort, nameof(Sort));
+        result.MergeDictionaryObjects(Pagination, nameof(Pagination));
         return result;
     }
 }

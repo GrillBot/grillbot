@@ -6,6 +6,7 @@ using Discord;
 using GrillBot.Core.Database;
 using GrillBot.Core.Database.Repository;
 using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models.Emotes;
 using Microsoft.EntityFrameworkCore;
@@ -107,6 +108,15 @@ public class EmoteRepository : RepositoryBase<GrillBotContext>
             };
             await Context.AddAsync(entity);
             return entity;
+        }
+    }
+
+    public async Task<PaginatedResponse<EmoteStatisticItem>> GetUserStatisticsOfEmoteAsync(IQueryableModel<EmoteStatisticItem> model, PaginatedParams pagination)
+    {
+        using (CreateCounter())
+        {
+            var query = CreateQuery(model, true);
+            return await PaginatedResponse<EmoteStatisticItem>.CreateWithEntityAsync(query, pagination);
         }
     }
 }

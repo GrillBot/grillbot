@@ -60,4 +60,15 @@ public class EmotesController : Infrastructure.ControllerBase
         [Required(ErrorMessage = "Pro smazání je vyžadováno EmoteId.")] [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
         string emoteId
     ) => Ok(await ProcessActionAsync<RemoveStats, int>(action => action.ProcessAsync(emoteId)));
+
+    /// <summary>
+    /// Get a paginated list of users who use a specific emote.
+    /// </summary>
+    /// <response code="200">Returns paginated list of users.</response>
+    /// <response code="400">Validation of parameters failed.</response>
+    [HttpPost("list/users")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PaginatedResponse<EmoteStatsUserListItem>>> GetUserStatisticsOfEmoteAsync([FromBody] EmoteStatsUserListParams parameters)
+        => Ok(await ProcessActionAsync<GetUserStatisticsOfEmote, PaginatedResponse<EmoteStatsUserListItem>>(action => action.ProcessAsync(parameters)));
 }

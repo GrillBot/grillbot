@@ -57,6 +57,7 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Emote.GetEmoteSuggestionsList>()
             .AddScoped<Api.V1.Emote.GetStatsOfEmotes>()
             .AddScoped<Api.V1.Emote.GetSupportedEmotes>()
+            .AddScoped<Api.V1.Emote.GetUserStatisticsOfEmote>()
             .AddScoped<Api.V1.Emote.MergeStats>()
             .AddScoped<Api.V1.Emote.RemoveStats>();
 

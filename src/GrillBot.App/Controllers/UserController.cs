@@ -6,7 +6,6 @@ using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GrillBot.Data.Models.API.Help;
 using Microsoft.AspNetCore.Http;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.App.Managers;
@@ -68,18 +67,6 @@ public class UsersController : Infrastructure.ControllerBase
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
         => Ok(await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessSelfAsync()));
-
-    /// <summary>
-    /// Get non paginated list of available commands from external service.
-    /// </summary>
-    /// <response code="200">Success</response>
-    /// <response code="500">Something is wrong</response>
-    [HttpGet("me/commands/{service}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<List<CommandGroup>>> GetAvailableExternalCommandsAsync(string service)
-        => Ok(await ProcessActionAsync<Actions.Api.V1.Command.GetExternalCommands, List<CommandGroup>>(action => action.ProcessAsync(service)));
 
     /// <summary>
     /// Update user.

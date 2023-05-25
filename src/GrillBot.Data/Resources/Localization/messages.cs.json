@@ -521,7 +521,8 @@
     },
     "Image": {
       "UserNotFound": "Uživatel nebyl nalezen na serveru.",
-      "NoActivity": "Uživatel {0} ještě neprojevil na serveru žádnou aktivitu."
+      "NoActivity": "Uživatel {0} ještě neprojevil na serveru žádnou aktivitu.",
+      "IsBot": "Boti nesbírají žádné boty, tudíž nelze žádné body zobrazit."
     }
   },
   "Pins": {

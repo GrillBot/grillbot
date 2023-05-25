@@ -33,6 +33,9 @@ public sealed class PointsImage : CommandAction
         if (guildUser == null)
             throw new NotFoundException(Texts["Points/Image/NotFound", Locale]);
 
+        if (!guildUser.IsUser())
+            throw new InvalidOperationException(Texts["Points/Image/IsBot", Locale]);
+
         await using var repository = DatabaseBuilder.CreateRepository();
         if (!await repository.GuildUser.ExistsAsync(guildUser))
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));

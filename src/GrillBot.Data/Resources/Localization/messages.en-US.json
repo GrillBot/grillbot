@@ -521,7 +521,8 @@
     },
     "Image": {
       "UserNotFound": "User wasn't found in the guild.",
-      "NoActivity": "User {0} showed no activity yet."
+      "NoActivity": "User {0} showed no activity yet.",
+      "IsBot": "The bots don't gather any points, therefore these points cannot be displayed."
     }
   },
   "Pins": {

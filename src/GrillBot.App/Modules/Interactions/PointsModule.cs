@@ -27,7 +27,7 @@ public class PointsModule : InteractionsModuleBase
             using var img = await command.Command.ProcessAsync(Context.Guild, user ?? Context.User);
             await FollowupWithFileAsync(img.Path);
         }
-        catch (NotFoundException ex)
+        catch (Exception ex) when (ex is NotFoundException or InvalidOperationException)
         {
             await SetResponseAsync(ex.Message);
         }

@@ -41,7 +41,11 @@ public class DiscordService : IHostedService
         InitServices();
 
         var token = Configuration.GetValue<string>("Discord:Token");
-        InteractionService.RegisterTypeConverters();
+
+        InteractionService.AddTypeConverter<DateTime>(new DateTimeTypeConverter());
+        InteractionService.AddTypeConverter<IEmote>(new EmotesTypeConverter());
+        InteractionService.AddTypeConverter<IMessage>(new MessageTypeConverter());
+        InteractionService.AddTypeConverter<IEnumerable<IUser>>(new UsersTypeConverter());
 
         var assembly = Assembly.GetEntryAssembly();
         await InteractionService.AddModulesAsync(assembly, Provider);

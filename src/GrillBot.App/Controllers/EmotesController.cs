@@ -71,4 +71,18 @@ public class EmotesController : Infrastructure.ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaginatedResponse<EmoteStatsUserListItem>>> GetUserStatisticsOfEmoteAsync([FromBody] EmoteStatsUserListParams parameters)
         => Ok(await ProcessActionAsync<GetUserStatisticsOfEmote, PaginatedResponse<EmoteStatsUserListItem>>(action => action.ProcessAsync(parameters)));
+
+    /// <summary>
+    /// Get statistics of one emote.
+    /// </summary>
+    /// <response code="200">Returns statistics of emote.</response>
+    /// <response code="400">Validation failed.</response>
+    /// <response code="404">Emote not found.</response>
+    [HttpGet("stats")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<EmoteStatItem>> GetStatOfEmoteAsync(
+        [Required(ErrorMessage = "Je vyžadování EmoteId.")] [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
+        string emoteId
+    ) => Ok(await ProcessActionAsync<GetStatOfEmote, EmoteStatItem>(action => action.ProcessAsync(emoteId)));
 }

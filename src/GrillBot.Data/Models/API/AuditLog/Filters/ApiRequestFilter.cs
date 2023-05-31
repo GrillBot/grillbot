@@ -36,6 +36,7 @@ public class ApiRequestFilter : IExtendedFilter, IDictionaryObject
     {
         var request = JsonConvert.DeserializeObject<ApiRequest>(item.Data, settings)!;
 
+        if (request.IsCorrupted()) return false;
         if (!string.IsNullOrEmpty(ControllerName) && !request.ControllerName.Contains(ControllerName, StringComparison.InvariantCultureIgnoreCase)) return false;
         if (!string.IsNullOrEmpty(ActionName) && !request.ActionName.Contains(ActionName, StringComparison.InvariantCultureIgnoreCase)) return false;
         if (!IsDurationValid(request.EndAt - request.StartAt)) return false;

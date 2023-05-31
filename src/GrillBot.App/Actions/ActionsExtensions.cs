@@ -55,6 +55,7 @@ public static class ActionsExtensions
         // Emote
         services
             .AddScoped<Api.V1.Emote.GetEmoteSuggestionsList>()
+            .AddScoped<Api.V1.Emote.GetStatOfEmote>()
             .AddScoped<Api.V1.Emote.GetStatsOfEmotes>()
             .AddScoped<Api.V1.Emote.GetSupportedEmotes>()
             .AddScoped<Api.V1.Emote.GetUserStatisticsOfEmote>()
@@ -89,6 +90,7 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.PublicApiClients.GetPublicApiMethods>()
             .AddScoped<Api.V1.PublicApiClients.CreateClient>()
             .AddScoped<Api.V1.PublicApiClients.DeleteClient>()
+            .AddScoped<Api.V1.PublicApiClients.GetClient>()
             .AddScoped<Api.V1.PublicApiClients.UpdateClient>()
             .AddScoped<Api.V1.PublicApiClients.GetClientsList>();
 

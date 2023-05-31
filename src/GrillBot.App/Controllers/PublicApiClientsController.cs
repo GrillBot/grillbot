@@ -76,4 +76,15 @@ public class PublicApiClientsController : Infrastructure.ControllerBase
         await ProcessActionAsync<UpdateClient>(action => action.ProcessAsync(id, parameters));
         return Ok();
     }
+
+    /// <summary>
+    /// Get client.
+    /// </summary>
+    /// <response code="200">Returns client data</response>
+    /// <response code="404">Client not found</response>
+    [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiClient>> GetClientAsync(string id)
+        => await ProcessActionAsync<GetClient, ApiClient>(action => action.ProcessAsync(id));
 }

@@ -58,7 +58,8 @@ public static class HandlerExtensions
             .AddScoped<IMessageReceivedEvent, MessageReceived.UnsucessCommandHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.AutoReplyHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteMessageReceivedHandler>()
-            .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteChainHandler>();
+            .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteChainHandler>()
+            .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelPinMessageReceivedHandler>();
 
         services
             .AddScoped<IMessageUpdatedEvent, MessageUpdated.AuditMessageUpdatedHandler>();
@@ -129,6 +130,7 @@ public static class HandlerExtensions
         // Services
         services
             .AddScoped<IUserUpdatedEvent, RubbergodServiceSynchronizationHandler>()
+            .AddScoped<IMessageReceivedEvent, RubbergodServiceSynchronizationHandler>()
             .AddScoped<IUserUpdatedEvent, PointsServiceSynchronizationHandler>()
             .AddScoped<IChannelDestroyedEvent, PointsServiceSynchronizationHandler>()
             .AddScoped<IThreadDeletedEvent, PointsServiceSynchronizationHandler>();

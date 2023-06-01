@@ -76,4 +76,20 @@ public class RubbergodServiceClient : RestServiceBase, IRubbergodServiceClient
             _ => EmptyResult
         );
     }
+
+    public async Task InvalidatePinCacheAsync(ulong guildId, ulong channelId)
+    {
+        await ProcessRequestAsync(
+            () => HttpClient.DeleteAsync($"api/pins/{guildId}/{channelId}"),
+            _ => EmptyResult
+        );
+    }
+
+    public async Task<byte[]> GetPinsAsync(ulong guildId, ulong channelId, bool markdown)
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/pins/{guildId}/{channelId}?markdown={markdown}"),
+            response => response.Content.ReadAsByteArrayAsync()
+        );
+    }
 }

@@ -36,10 +36,14 @@ public class ChannelSynchronizationHandler : BaseSynchronizationHandler, IChanne
         channelEntity.MarkDeleted(true);
         channelEntity.RolePermissionsCount = 0;
         channelEntity.UserPermissionsCount = 0;
+        channelEntity.PinCount = 0;
 
         var threads = await repository.Channel.GetChildChannelsAsync(guildChannel.Id, guildChannel.GuildId);
         foreach (var thread in threads)
+        {
             thread.MarkDeleted(true);
+            thread.PinCount = 0;
+        }
 
         await repository.CommitAsync();
     }

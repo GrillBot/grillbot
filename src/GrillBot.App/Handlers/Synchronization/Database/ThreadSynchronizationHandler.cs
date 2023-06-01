@@ -19,6 +19,8 @@ public class ThreadSynchronizationHandler : BaseSynchronizationHandler, IThreadD
 
         var thread = await repository.Channel.GetOrCreateChannelAsync(cachedThread);
         thread.MarkDeleted(true);
+        thread.PinCount = 0;
+
         await repository.CommitAsync();
     }
 

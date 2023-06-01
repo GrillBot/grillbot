@@ -41,6 +41,8 @@ public class GuildChannel
     public int UserPermissionsCount { get; set; }
     public int RolePermissionsCount { get; set; }
 
+    public int PinCount { get; set; }
+
     public GuildChannel()
     {
         SearchItems = new HashSet<SearchItem>();

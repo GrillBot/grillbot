@@ -13,4 +13,6 @@ public interface IRubbergodServiceClient : IClient
     Task<string> SendDirectApiCommand(string service, DirectApiCommand command);
     Task<PaginatedResponse<UserKarma>> GetKarmaPageAsync(PaginatedParams parameters);
     Task StoreKarmaAsync(List<KarmaItem> items);
+    Task InvalidatePinCacheAsync(ulong guildId, ulong channelId);
+    Task<byte[]> GetPinsAsync(ulong guildId, ulong channelId, bool markdown);
 }

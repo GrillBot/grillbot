@@ -181,24 +181,6 @@ public class ChannelRepository : RepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<GuildChannel?> FindThreadAsync(IThreadChannel thread)
-    {
-        using (CreateCounter())
-        {
-            var query = Context.Channels
-                .Where(o =>
-                    o.GuildId == thread.GuildId.ToString() &&
-                    new[] { ChannelType.NewsThread, ChannelType.PrivateThread, ChannelType.PublicThread }.Contains(o.ChannelType) &&
-                    o.ChannelId == thread.Id.ToString()
-                );
-
-            if (thread.CategoryId != null)
-                query = query.Where(o => o.ParentChannelId == thread.CategoryId.ToString());
-
-            return await query.FirstOrDefaultAsync();
-        }
-    }
-
     public async Task<PaginatedResponse<GuildChannel>> GetChannelListAsync(IQueryableModel<GuildChannel> model, PaginatedParams pagination)
     {
         using (CreateCounter())
@@ -311,6 +293,16 @@ public class ChannelRepository : RepositoryBase<GrillBotContext>
         {
             return await Context.Channels.AsNoTracking()
                 .AnyAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString() && (o.Flags & (long)flag) != 0);
+        }
+    }
+
+    public async Task<List<GuildChannel>> GetChannelsWithPinsAsync(List<IGuild> guilds)
+    {
+        using (CreateCounter())
+        {
+            return await Context.Channels.AsNoTracking()
+                .Where(o => (o.Flags & (long)ChannelFlag.Deleted) == 0 && o.PinCount > 0)
+                .ToListAsync();
         }
     }
 }

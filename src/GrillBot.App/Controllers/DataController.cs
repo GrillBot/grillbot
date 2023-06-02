@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Actions.Api.V1.Channel;
+﻿using GrillBot.App.Actions.Api.V1.Channel.SimpleList;
 using GrillBot.App.Actions.Api.V1.Emote;
 using GrillBot.App.Actions.Api.V1.Guild;
 using GrillBot.App.Actions.Api.V1.PublicApiClients;
@@ -39,6 +39,16 @@ public class DataController : Infrastructure.ControllerBase
     [ProducesResponseType((int)HttpStatusCode.OK)]
     public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
         => Ok(await ProcessActionAsync<GetChannelSimpleList, Dictionary<string, string>>(action => action.ProcessAsync(guildId, ignoreThreads)));
+
+    /// <summary>
+    /// Get non paginated list of channels that contains some pin.
+    /// </summary>
+    /// <response code="200">Returns simple list of channels that contains some pin.</response>
+    [HttpGet("channels/pins")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Dictionary<string, string>>> GetChannelsWithPinsAsync()
+        => Ok(await ProcessActionAsync<GetChannelSimpleListWithPins, Dictionary<string, string>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Get roles

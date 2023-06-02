@@ -50,7 +50,9 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Channel.GetChannelDetail>()
             .AddScoped<Api.V1.Channel.UpdateChannel>()
             .AddScoped<Api.V1.Channel.GetChannelboard>()
-            .AddScoped<Api.V1.Channel.GetChannelSimpleList>();
+            .AddScoped<Api.V1.Channel.SimpleList.GetChannelSimpleList>()
+            .AddScoped<Api.V1.Channel.SimpleList.GetChannelSimpleListWithPins>()
+            .AddScoped<Api.V1.Channel.GetPins>();
 
         // Emote
         services

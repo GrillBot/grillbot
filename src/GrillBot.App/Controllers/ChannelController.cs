@@ -126,4 +126,21 @@ public class ChannelController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync()
         => Ok(await ProcessActionAsync<GetChannelboard, List<ChannelboardItem>>(action => action.ProcessAsync()));
+
+    /// <summary>
+    /// Get all pins from channel.
+    /// </summary>
+    /// <response code="200">Returns pins in the channel in markdown or json format.</response>
+    /// <response code="404">Guild wasn't found.</response>
+    [HttpGet("{channelId}/pins")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<string>> GetChannelPinsAsync(ulong channelId, bool markdown)
+    {
+        return Content(
+            await ProcessActionAsync<GetPins, string>(action => action.ProcessAsync(channelId, markdown)),
+            markdown ? "text/markdown" : "application/json"
+        );
+    }
 }

@@ -43,7 +43,7 @@ public class ChannelInitSynchronizationHandler : IReadyEvent
                     continue;
 
                 dbChannel.Update(channel);
-                if (channel is not ITextChannel textChannel)
+                if (channel is IVoiceChannel || channel is not ITextChannel textChannel)
                     continue;
 
                 await UpdatePinCountAsync(textChannel, dbChannel);

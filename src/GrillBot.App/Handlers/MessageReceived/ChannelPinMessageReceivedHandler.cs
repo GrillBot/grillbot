@@ -13,7 +13,7 @@ public class ChannelPinMessageReceivedHandler : IMessageReceivedEvent
 
     public async Task ProcessAsync(IMessage message)
     {
-        if (!CanProcess(message) || message.Channel is not ITextChannel channel)
+        if (!CanProcess(message) || message.Channel is IVoiceChannel || message.Channel is not ITextChannel channel)
             return;
 
         var pins = await channel.GetPinnedMessagesAsync();

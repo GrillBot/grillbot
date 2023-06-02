@@ -27,7 +27,7 @@ public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler
 
     private async Task ProcessPinChangesAsync(IMessage message)
     {
-        if (message.Source != MessageSource.System || message.Type != MessageType.ChannelPinnedMessage || message.Channel is not ITextChannel channel)
+        if (message.Source != MessageSource.System || message.Type != MessageType.ChannelPinnedMessage || message.Channel is IVoiceChannel || message.Channel is not ITextChannel channel)
             return;
 
         await ServiceClient.InvalidatePinCacheAsync(channel.GuildId, channel.Id);

@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Infrastructure.IO;
-using GrillBot.App.Infrastructure.Jobs;
+﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Extensions;
@@ -7,6 +6,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.IO;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers.Logging;

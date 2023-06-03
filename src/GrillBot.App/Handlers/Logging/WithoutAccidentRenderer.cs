@@ -1,7 +1,7 @@
-﻿using GrillBot.App.Infrastructure.IO;
-using GrillBot.Cache.Services.Managers;
+﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Services.ImageProcessing;
 using GrillBot.Common.Services.ImageProcessing.Models;
+using GrillBot.Core.IO;
 
 namespace GrillBot.App.Handlers.Logging;
 

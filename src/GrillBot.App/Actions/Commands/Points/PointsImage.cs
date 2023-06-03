@@ -1,11 +1,11 @@
-﻿using GrillBot.App.Infrastructure.IO;
-using GrillBot.Cache.Services.Managers;
+﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.ImageProcessing;
 using GrillBot.Common.Services.ImageProcessing.Models;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.IO;
 
 namespace GrillBot.App.Actions.Commands.Points;
 

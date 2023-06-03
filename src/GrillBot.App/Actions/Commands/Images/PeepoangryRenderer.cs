@@ -1,7 +1,7 @@
-﻿using GrillBot.App.Infrastructure.IO;
-using GrillBot.Cache.Services.Managers;
+﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Services.ImageProcessing;
 using GrillBot.Common.Services.ImageProcessing.Models;
+using GrillBot.Core.IO;
 
 namespace GrillBot.App.Actions.Commands.Images;
 
@@ -33,7 +33,7 @@ public sealed class PeepoangryRenderer
         };
 
         var image = await ImageProcessingClient.CreatePeepoangryImageAsync(request);
-        var result = new TemporaryFile($".{request.AvatarInfo.Type}");
+        var result = new TemporaryFile(request.AvatarInfo.Type);
 
         await File.WriteAllBytesAsync(result.Path, image);
         return result;

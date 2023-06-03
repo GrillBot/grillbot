@@ -1,10 +1,10 @@
-﻿using GrillBot.App.Infrastructure.IO;
-using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Services.ImageProcessing;
 using GrillBot.Common.Services.ImageProcessing.Models;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.IO;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
@@ -30,7 +30,6 @@ public class PointsChart : CommandAction
         await PrepareDataAsync(type, users, filter);
 
         var resultFile = new TemporaryFile("png");
-
         var request = await CreateRequestAsync(filter, type);
         var image = await ImageProcessingClient.CreateChartImageAsync(request);
         await File.WriteAllBytesAsync(resultFile.Path, image);

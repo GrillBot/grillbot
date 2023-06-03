@@ -68,7 +68,7 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
     {
         var storage = FileStorageFactory.Create("Unverify");
         var backupFilename = $"UnverifyLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
-        var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
+        var fileinfo = await storage.GetFileInfoAsync(backupFilename);
 
         await using (var stream = fileinfo.OpenWrite())
         {

@@ -122,7 +122,7 @@ public class AuditLogClearingJob : ArchivationJobBase
     {
         var storage = FileStorage.Create("Audit");
         var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
-        var fileinfo = await storage.GetFileInfoAsync("Clearing", backupFilename);
+        var fileinfo = await storage.GetFileInfoAsync(backupFilename);
 
         await using (var stream = fileinfo.OpenWrite())
         {
@@ -133,38 +133,29 @@ public class AuditLogClearingJob : ArchivationJobBase
         if (File.Exists(zipFilename)) File.Delete(zipFilename);
         using var archive = ZipFile.Open(zipFilename, ZipArchiveMode.Create);
         archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
-        await AddFilesToArchiveAsync(logItems, storage, archive);
+        await AddFilesToArchiveAsync(logItems, archive);
 
         File.Delete(fileinfo.FullName);
     }
 
-    private async Task AddFilesToArchiveAsync(IEnumerable<AuditLogItem> logs, IFileStorage storage, ZipArchive archive)
+    private async Task AddFilesToArchiveAsync(IEnumerable<AuditLogItem> logs, ZipArchive archive)
     {
         foreach (var log in logs.Where(o => o.Files.Count > 0))
         {
             foreach (var file in log.Files.Select(o => o.Filename))
             {
-                var attachmentFile = await storage.GetFileInfoAsync("DeletedAttachments", file);
-                if (!attachmentFile.Exists)
-                {
-                    // If file not exists, try read it and delete from file service.
-                    var fileContent = await FileServiceClient.DownloadFileAsync(file);
-                    if (fileContent == null) continue;
+                // If file not exists, try read it and delete from file service.
+                var fileContent = await FileServiceClient.DownloadFileAsync(file);
+                if (fileContent is null) continue;
 
-                    var entry = archive.CreateEntry(file);
-                    entry.LastWriteTime = log.CreatedAt;
+                var entry = archive.CreateEntry(file);
+                entry.LastWriteTime = log.CreatedAt;
 
-                    using var ms = new MemoryStream(fileContent);
-                    await using var archiveStream = entry.Open();
-                    await ms.CopyToAsync(archiveStream);
+                using var ms = new MemoryStream(fileContent);
+                await using var archiveStream = entry.Open();
+                await ms.CopyToAsync(archiveStream);
 
-                    await FileServiceClient.DeleteFileAsync(file);
-                }
-                else
-                {
-                    archive.CreateEntryFromFile(attachmentFile.FullName, file, CompressionLevel.Optimal);
-                    attachmentFile.Delete();
-                }
+                await FileServiceClient.DeleteFileAsync(file);
             }
         }
     }

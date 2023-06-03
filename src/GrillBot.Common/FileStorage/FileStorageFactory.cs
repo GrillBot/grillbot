@@ -11,7 +11,7 @@ public class FileStorageFactory
         Configuration = configuration.GetSection("FileStorage");
     }
 
-    public virtual IFileStorage Create(string categoryName)
+    public FileStorage Create(string categoryName)
     {
         if (string.IsNullOrEmpty(categoryName))
             throw new ArgumentNullException(nameof(categoryName));

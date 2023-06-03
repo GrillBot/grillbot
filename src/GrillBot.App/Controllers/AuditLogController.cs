@@ -52,21 +52,6 @@ public class AuditLogController : Infrastructure.ControllerBase
     }
 
     /// <summary>
-    /// Gets file that stored in log.
-    /// </summary>
-    /// <response code="200">Success.</response>
-    /// <response code="404">Item not found or file not exists.</response>
-    [HttpGet("{id}/{fileId}")]
-    [ProducesResponseType(typeof(FileContentResult), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetFileContentAsync(long id, long fileId)
-    {
-        var (content, contentType) = await ProcessActionAsync<GetFileContent, (byte[], string)>(action => action.ProcessAsync(id, fileId));
-        return File(content, contentType);
-    }
-
-    /// <summary>
     /// Creates log item from client application.
     /// </summary>
     /// <response code="200"></response>

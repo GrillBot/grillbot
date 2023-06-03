@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
-using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Common.Services.FileService;
@@ -21,16 +20,13 @@ public class GetAuditLogList : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
     private ITextsManager Texts { get; }
-    private FileStorageFactory FileStorageFactory { get; }
     private IFileServiceClient FileServiceClient { get; }
 
-    public GetAuditLogList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, ITextsManager texts, FileStorageFactory fileStorageFactory,
-        IFileServiceClient fileServiceClient) : base(apiContext)
+    public GetAuditLogList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, ITextsManager texts, IFileServiceClient fileServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         Texts = texts;
-        FileStorageFactory = fileStorageFactory;
         FileServiceClient = fileServiceClient;
     }
 
@@ -138,24 +134,13 @@ public class GetAuditLogList : ApiAction
             AuditLogItemType.ThreadDeleted => JsonConvert.DeserializeObject<AuditThreadInfo>(entity.Data, AuditLogWriteManager.SerializerSettings),
             AuditLogItemType.JobCompleted => JsonConvert.DeserializeObject<JobExecutionData>(entity.Data, AuditLogWriteManager.SerializerSettings),
             AuditLogItemType.Api => JsonConvert.DeserializeObject<ApiRequest>(entity.Data, AuditLogWriteManager.SerializerSettings),
-            AuditLogItemType.ThreadUpdated =>JsonConvert.DeserializeObject<Diff<AuditThreadInfo>>(entity.Data, AuditLogWriteManager.SerializerSettings),
+            AuditLogItemType.ThreadUpdated => JsonConvert.DeserializeObject<Diff<AuditThreadInfo>>(entity.Data, AuditLogWriteManager.SerializerSettings),
             _ => null
         };
 
-        await MapFilesAsync(mapped);
+        foreach (var file in mapped.Files)
+            file.SasLink = await FileServiceClient.GenerateLinkAsync(file.Filename);
+
         return mapped;
-    }
-
-    private async Task MapFilesAsync(AuditLogListItem listItem)
-    {
-        if (listItem.Files.Count == 0) return;
-        var storage = FileStorageFactory.Create("Audit");
-
-        foreach (var file in listItem.Files)
-        {
-            var localInfo = await storage.GetFileInfoAsync("DeletedAttachments", file.Filename);
-            if (!localInfo.Exists)
-                file.SasLink = await FileServiceClient.GenerateLinkAsync(file.Filename);
-        }
     }
 }

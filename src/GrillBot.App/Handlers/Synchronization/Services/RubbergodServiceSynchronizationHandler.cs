@@ -5,7 +5,7 @@ using GrillBot.Common.Services.RubbergodService;
 
 namespace GrillBot.App.Handlers.Synchronization.Services;
 
-public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler<IRubbergodServiceClient>, IUserUpdatedEvent, IMessageReceivedEvent, IMessageUpdatedEvent
+public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler<IRubbergodServiceClient>, IUserUpdatedEvent, IMessageUpdatedEvent
 {
     private IMessageCacheManager MessageCache { get; }
 
@@ -24,22 +24,14 @@ public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler
         await ServiceClient.RefreshMemberAsync(after.Id);
     }
 
-    // MessageReceived
-    public async Task ProcessAsync(IMessage message)
-    {
-        await ProcessPinChangesAsync(message);
-    }
-
-    private async Task ProcessPinChangesAsync(IMessage message)
-    {
-        if (message.Source != MessageSource.System || message.Type != MessageType.ChannelPinnedMessage || message.Channel is IVoiceChannel || message.Channel is not ITextChannel channel)
-            return;
-
-        await ServiceClient.InvalidatePinCacheAsync(channel.GuildId, channel.Id);
-    }
-
     // MessageUpdated
     public async Task ProcessAsync(Cacheable<IMessage, ulong> before, IMessage after, IMessageChannel channel)
+    {
+        await ProcessPinContentModifiedAsync(before, after, channel);
+        await ProcessPinStateChangeAsync(before, after, channel);
+    }
+
+    private async Task ProcessPinContentModifiedAsync(Cacheable<IMessage, ulong> before, IMessage after, IMessageChannel channel)
     {
         if (!after.IsPinned || channel is IVoiceChannel || channel is not ITextChannel textChannel) // Ignore non-pinned messages and non text channels.
             return;
@@ -47,6 +39,19 @@ public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler
         var oldMessage = before.HasValue ? before.Value : null;
         oldMessage ??= await MessageCache.GetAsync(before.Id, null);
         if (oldMessage is null || (oldMessage.Content == after.Content && oldMessage.Attachments.Count == after.Attachments.Count)) // Message not exists or nothing was changed.
+            return;
+
+        await ServiceClient.InvalidatePinCacheAsync(textChannel.GuildId, textChannel.Id);
+    }
+
+    private async Task ProcessPinStateChangeAsync(Cacheable<IMessage, ulong> before, IMessage after, IMessageChannel channel)
+    {
+        if (channel is IVoiceChannel || channel is not ITextChannel textChannel)
+            return;
+
+        var oldMessage = before.HasValue ? before.Value : null;
+        oldMessage ??= await MessageCache.GetAsync(before.Id, null);
+        if (oldMessage is null || oldMessage.IsPinned == after.IsPinned)
             return;
 
         await ServiceClient.InvalidatePinCacheAsync(textChannel.GuildId, textChannel.Id);

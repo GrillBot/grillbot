@@ -115,6 +115,10 @@ public static class HandlerExtensions
             .AddScoped<IGuildAvailableEvent, GuildSynchronizationHandler>()
             .AddScoped<IGuildUpdatedEvent, GuildSynchronizationHandler>()
             .AddScoped<IJoinedGuildEvent, GuildSynchronizationHandler>();
+        
+        // Messages
+        services
+            .AddScoped<IMessageUpdatedEvent, MessageSynchronizationHandler>();
 
         // Threads
         services
@@ -138,7 +142,6 @@ public static class HandlerExtensions
         // RubbergodService
         services
             .AddScoped<IUserUpdatedEvent, RubbergodServiceSynchronizationHandler>()
-            .AddScoped<IMessageReceivedEvent, RubbergodServiceSynchronizationHandler>()
             .AddScoped<IMessageUpdatedEvent, RubbergodServiceSynchronizationHandler>();
     }
 }

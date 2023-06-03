@@ -1,18 +1,21 @@
-﻿using GrillBot.Cache.Services.Managers.MessageCache;
+﻿using GrillBot.App.Helpers;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.RubbergodService;
 
 namespace GrillBot.App.Handlers.Synchronization.Services;
 
-public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler<IRubbergodServiceClient>, IUserUpdatedEvent, IMessageUpdatedEvent
+public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler<IRubbergodServiceClient>, IUserUpdatedEvent, IMessageUpdatedEvent, IThreadDeletedEvent, IChannelDestroyedEvent
 {
     private IMessageCacheManager MessageCache { get; }
+    private ChannelHelper ChannelHelper { get; }
 
-    public RubbergodServiceSynchronizationHandler(IRubbergodServiceClient serviceClient, GrillBotDatabaseBuilder databaseBuilder, IMessageCacheManager messageCache) : base(serviceClient,
-        databaseBuilder)
+    public RubbergodServiceSynchronizationHandler(IRubbergodServiceClient serviceClient, GrillBotDatabaseBuilder databaseBuilder, IMessageCacheManager messageCache, ChannelHelper channelHelper) :
+        base(serviceClient, databaseBuilder)
     {
         MessageCache = messageCache;
+        ChannelHelper = channelHelper;
     }
 
     // UserUpdated
@@ -52,6 +55,25 @@ public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler
         var oldMessage = before.HasValue ? before.Value : null;
         oldMessage ??= await MessageCache.GetAsync(before.Id, null);
         if (oldMessage is null || oldMessage.IsPinned == after.IsPinned)
+            return;
+
+        await ServiceClient.InvalidatePinCacheAsync(textChannel.GuildId, textChannel.Id);
+    }
+
+    // ThreadDeleted
+    public async Task ProcessAsync(IThreadChannel? cachedThread, ulong threadId)
+    {
+        var guild = await ChannelHelper.GetGuildFromChannelAsync(cachedThread, threadId);
+        if (guild is null)
+            return;
+        
+        await ServiceClient.InvalidatePinCacheAsync(guild.Id, threadId);
+    }
+
+    // ChannelDestroyed
+    public async Task ProcessAsync(IChannel channel)
+    {
+        if (channel is IVoiceChannel || channel is not ITextChannel textChannel)
             return;
 
         await ServiceClient.InvalidatePinCacheAsync(textChannel.GuildId, textChannel.Id);

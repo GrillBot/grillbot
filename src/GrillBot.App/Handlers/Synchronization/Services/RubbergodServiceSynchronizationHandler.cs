@@ -41,7 +41,7 @@ public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler
     // MessageUpdated
     public async Task ProcessAsync(Cacheable<IMessage, ulong> before, IMessage after, IMessageChannel channel)
     {
-        if (!after.IsPinned || channel is IVoiceChannel || channel is not ITextChannel textChannel) // Ignore non-pinned messages and not text channels.
+        if (!after.IsPinned || channel is IVoiceChannel || channel is not ITextChannel textChannel) // Ignore non-pinned messages and non text channels.
             return;
 
         var oldMessage = before.HasValue ? before.Value : null;

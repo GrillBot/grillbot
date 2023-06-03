@@ -143,4 +143,16 @@ public class ChannelController : Infrastructure.ControllerBase
             markdown ? "text/markdown" : "application/json"
         );
     }
+
+    /// <summary>
+    /// Get all pins with attachments as zip archive.
+    /// </summary>
+    /// <response code="200">Returns pins and attachments in the channel in the zip.</response>
+    /// <response code="404">Guild wasn't found.</response>
+    [HttpGet("{channelId}/pins/attachments")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetChannelPinsWithAttachmentsAsync(ulong channelId)
+        => File(await ProcessActionAsync<GetPinsWithAttachments, byte[]>(action => action.ProcessAsync(channelId)), "application/zip");
 }

@@ -1,13 +1,18 @@
-﻿using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Cache.Services.Managers.MessageCache;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.RubbergodService;
 
 namespace GrillBot.App.Handlers.Synchronization.Services;
 
-public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler<IRubbergodServiceClient>, IUserUpdatedEvent, IMessageReceivedEvent
+public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler<IRubbergodServiceClient>, IUserUpdatedEvent, IMessageReceivedEvent, IMessageUpdatedEvent
 {
-    public RubbergodServiceSynchronizationHandler(IRubbergodServiceClient serviceClient, GrillBotDatabaseBuilder databaseBuilder) : base(serviceClient, databaseBuilder)
+    private IMessageCacheManager MessageCache { get; }
+
+    public RubbergodServiceSynchronizationHandler(IRubbergodServiceClient serviceClient, GrillBotDatabaseBuilder databaseBuilder, IMessageCacheManager messageCache) : base(serviceClient,
+        databaseBuilder)
     {
+        MessageCache = messageCache;
     }
 
     // UserUpdated
@@ -31,5 +36,19 @@ public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler
             return;
 
         await ServiceClient.InvalidatePinCacheAsync(channel.GuildId, channel.Id);
+    }
+
+    // MessageUpdated
+    public async Task ProcessAsync(Cacheable<IMessage, ulong> before, IMessage after, IMessageChannel channel)
+    {
+        if (!after.IsPinned || channel is IVoiceChannel || channel is not ITextChannel textChannel) // Ignore non-pinned messages and not text channels.
+            return;
+
+        var oldMessage = before.HasValue ? before.Value : null;
+        oldMessage ??= await MessageCache.GetAsync(before.Id, null);
+        if (oldMessage is null || (oldMessage.Content == after.Content && oldMessage.Attachments.Count == after.Attachments.Count)) // Message not exists or nothing was changed.
+            return;
+
+        await ServiceClient.InvalidatePinCacheAsync(textChannel.GuildId, textChannel.Id);
     }
 }

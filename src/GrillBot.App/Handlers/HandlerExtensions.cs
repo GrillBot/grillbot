@@ -128,11 +128,17 @@ public static class HandlerExtensions
             .AddScoped<IUserUpdatedEvent, UserSynchronizationHandler>();
 
         // Services
+
+        // PointsService
         services
-            .AddScoped<IUserUpdatedEvent, RubbergodServiceSynchronizationHandler>()
-            .AddScoped<IMessageReceivedEvent, RubbergodServiceSynchronizationHandler>()
             .AddScoped<IUserUpdatedEvent, PointsServiceSynchronizationHandler>()
             .AddScoped<IChannelDestroyedEvent, PointsServiceSynchronizationHandler>()
             .AddScoped<IThreadDeletedEvent, PointsServiceSynchronizationHandler>();
+
+        // RubbergodService
+        services
+            .AddScoped<IUserUpdatedEvent, RubbergodServiceSynchronizationHandler>()
+            .AddScoped<IMessageReceivedEvent, RubbergodServiceSynchronizationHandler>()
+            .AddScoped<IMessageUpdatedEvent, RubbergodServiceSynchronizationHandler>();
     }
 }

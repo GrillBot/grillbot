@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Managers;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models;
@@ -35,7 +36,7 @@ public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
         await AuditLogWriteManager.StoreAsync(logItems);
     }
 
-    private bool Init(IChannel channel, out IGuildChannel guildChannelAfter)
+    private bool Init(IChannel channel, [MaybeNullWhen(false)] out IGuildChannel guildChannelAfter)
     {
         guildChannelAfter = channel as IGuildChannel;
 
@@ -87,7 +88,7 @@ public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
             ActionType.OverwriteDeleted => CreateOverwriteDeletedData(item, channel),
             ActionType.OverwriteUpdated => CreateOverwriteUpdatedData(item, channel),
             _ => null
-        }).Where(o => o != null);
+        }).Where(o => o != null)!;
     }
 
     private static AuditLogDataWrapper CreateOverwriteCreatedData(IAuditLogEntry entry, IGuildChannel channel)

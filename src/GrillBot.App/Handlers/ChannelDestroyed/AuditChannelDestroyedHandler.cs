@@ -29,7 +29,7 @@ public class AuditChannelDestroyedHandler : IChannelDestroyedEvent
         await AuditLogWriteManager.StoreAsync(item);
     }
 
-    private async Task<IAuditLogEntry> FindAuditLogAsync(IGuildChannel guildChannel)
+    private async Task<IAuditLogEntry?> FindAuditLogAsync(IGuildChannel guildChannel)
     {
         IReadOnlyCollection<IAuditLogEntry> auditLogs;
         using (CounterManager.Create("Discord.API.AuditLog"))

@@ -51,7 +51,7 @@ public static class EmbedMetadataExtensions
     /// <summary>
     /// Serializes the provided instance of <paramref name="embedMetadata"/> into a URL query string-ish representation.
     /// </summary>
-    private static string SerializeMetadata(IEmbedMetadata embedMetadata, NameValueCollection existingFragmentData = null)
+    private static string SerializeMetadata(IEmbedMetadata embedMetadata, NameValueCollection? existingFragmentData = null)
     {
         var fragmentData = existingFragmentData ?? new NameValueCollection();
         var fragmentDict = new Dictionary<string, string>();
@@ -66,7 +66,7 @@ public static class EmbedMetadataExtensions
         // Make a list of query pairs
         var keyValuePairs = fragmentData.AllKeys
             .OrderBy(k => k, StringComparer.OrdinalIgnoreCase)
-            .Select(key => Escape(key) + "=" + Escape(fragmentData[key]));
+            .Select(key => Escape(key!) + "=" + Escape(fragmentData[key]!));
 
         return string.Join("&", keyValuePairs);
     }
@@ -86,17 +86,17 @@ public static class EmbedMetadataExtensions
         embedMetadata = new TMetadata();
 
         NameValueCollection metadata;
-        var sourceUrl = embed?.Author?.IconUrl ?? embed?.Image?.Url;
+        var sourceUrl = embed.Author?.IconUrl ?? embed.Image?.Url;
         if (sourceUrl != null)
             metadata = HttpUtility.ParseQueryString(new UriBuilder(sourceUrl).Fragment.TrimStart('#'));
-        else if (embed?.Footer?.IconUrl is { } footerUrl)
+        else if (embed.Footer?.IconUrl is { } footerUrl)
             metadata = HttpUtility.ParseQueryString(new UriBuilder(footerUrl).Fragment.TrimStart('#'));
         else
             return false;
 
         var fragmentDict = new Dictionary<string, string>();
         foreach (var key in metadata.AllKeys.Where(o => o != null))
-            fragmentDict[key] = metadata[key];
+            fragmentDict[key!] = metadata[key]!;
 
         if (!fragmentDict.TryGetValue("_k", out var embedKind))
             return false;

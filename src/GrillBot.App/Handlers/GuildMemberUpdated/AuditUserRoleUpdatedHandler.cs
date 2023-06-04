@@ -21,7 +21,7 @@ public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
         AuditLogWriteManager = auditLogWriteManager;
     }
 
-    public async Task ProcessAsync(IGuildUser before, IGuildUser after)
+    public async Task ProcessAsync(IGuildUser? before, IGuildUser after)
     {
         if (!CanProcess(before, after)) return;
 
@@ -40,7 +40,7 @@ public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
             });
 
             var logData = new MemberUpdatedData(new AuditUserInfo(after));
-            logData.Roles.AddRange(roles);
+            logData.Roles!.AddRange(roles!);
 
             items.Add(new AuditLogDataWrapper(AuditLogItemType.MemberRoleUpdated, logData, after.Guild, processedUser: log.User,
                 discordAuditLogItemId: log.Id.ToString(), createdAt: log.CreatedAt.LocalDateTime));
@@ -49,8 +49,8 @@ public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
         await AuditLogWriteManager.StoreAsync(items);
     }
 
-    private bool CanProcess(IGuildUser before, IGuildUser after)
-        => before != null && DateTime.Now >= AuditLogManager.GetNextMemberRoleEvent(after.GuildId) && !before.RoleIds.SequenceEqual(after.RoleIds);
+    private bool CanProcess(IGuildUser? before, IGuildUser after)
+        => before is not null && DateTime.Now >= AuditLogManager.GetNextMemberRoleEvent(after.GuildId) && !before.RoleIds.SequenceEqual(after.RoleIds);
 
     private async Task<List<ulong>> GetIgnoredAuditLogIdsAsync(IGuild guild)
     {

@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
                     .WithIdentity($"{jobName}-Trigger");
 
                 if (useCron)
-                    opt.WithCronSchedule(configuration.GetValue<string>(configurationKey));
+                    opt.WithCronSchedule(configuration.GetValue<string>(configurationKey)!);
                 else
                     opt.WithSimpleSchedule(builder => builder.RepeatForever().WithInterval(configuration.GetValue<TimeSpan>(configurationKey)));
             });

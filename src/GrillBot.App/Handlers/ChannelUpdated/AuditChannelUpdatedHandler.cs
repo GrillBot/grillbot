@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Managers;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Managers.Performance;
@@ -24,15 +25,15 @@ public class AuditChannelUpdatedHandler : IChannelUpdatedEvent
         if (!Init(before, after, out var guildChannelBefore, out var guildChannelAfter)) return;
 
         var auditLog = await FindAuditLogAsync(guildChannelAfter);
-        if (auditLog == null && guildChannelBefore.Position == guildChannelAfter.Position) return;
+        if (auditLog is null && guildChannelBefore.Position == guildChannelAfter.Position) return;
 
-        var auditData = (ChannelUpdateAuditLogData)auditLog?.Data;
+        var auditData = auditLog?.Data as ChannelUpdateAuditLogData;
         var data = CreateLogData(auditData, guildChannelBefore, guildChannelAfter);
         var item = new AuditLogDataWrapper(AuditLogItemType.ChannelUpdated, data, guildChannelAfter.Guild, guildChannelAfter, auditLog?.User, auditLog?.Id.ToString());
         await AuditLogWriteManager.StoreAsync(item);
     }
 
-    private static bool Init(IChannel before, IChannel after, out IGuildChannel guildChannelBefore, out IGuildChannel guildChannelAfter)
+    private static bool Init(IChannel before, IChannel after, [MaybeNullWhen(false)] out IGuildChannel guildChannelBefore, [MaybeNullWhen(false)] out IGuildChannel guildChannelAfter)
     {
         guildChannelBefore = before as IGuildChannel;
         guildChannelAfter = after as IGuildChannel;
@@ -41,7 +42,7 @@ public class AuditChannelUpdatedHandler : IChannelUpdatedEvent
         return !guildChannelBefore.IsEqual(guildChannelAfter);
     }
 
-    private async Task<IAuditLogEntry> FindAuditLogAsync(IGuildChannel channel)
+    private async Task<IAuditLogEntry?> FindAuditLogAsync(IGuildChannel channel)
     {
         IReadOnlyCollection<IAuditLogEntry> auditLogs;
         using (CounterManager.Create("Discord.API.AuditLog"))
@@ -53,11 +54,11 @@ public class AuditChannelUpdatedHandler : IChannelUpdatedEvent
             .FirstOrDefault(o => ((ChannelUpdateAuditLogData)o.Data).ChannelId == channel.Id);
     }
 
-    private static Diff<AuditChannelInfo> CreateLogData(ChannelUpdateAuditLogData auditData, IGuildChannel before, IGuildChannel after)
+    private static Diff<AuditChannelInfo> CreateLogData(ChannelUpdateAuditLogData? auditData, IGuildChannel before, IGuildChannel after)
     {
         // Position change is not logged into discord audit log.
-        var infoBefore = auditData == null ? new AuditChannelInfo(before) : new AuditChannelInfo(auditData.ChannelId, auditData.Before, before);
-        var infoAfter = auditData == null ? new AuditChannelInfo(after) : new AuditChannelInfo(auditData.ChannelId, auditData.After, after);
+        var infoBefore = auditData is null ? new AuditChannelInfo(before) : new AuditChannelInfo(auditData.ChannelId, auditData.Before, before);
+        var infoAfter = auditData is null ? new AuditChannelInfo(after) : new AuditChannelInfo(auditData.ChannelId, auditData.After, after);
 
         return new Diff<AuditChannelInfo>(infoBefore, infoAfter);
     }

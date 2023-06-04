@@ -31,7 +31,7 @@ public class SearchingModule : InteractionsModuleBase
     [ComponentInteraction("search:*", ignoreGroupNames: true)]
     public async Task HandleSearchingListPaginationAsync(int page)
     {
-        var handler = new SearchingPaginationHandler(ServiceProvider!, page);
+        var handler = new SearchingPaginationHandler(ServiceProvider, page);
         await handler.ProcessAsync(Context);
     }
 

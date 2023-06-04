@@ -14,7 +14,7 @@ public class PinModule : InteractionsModuleBase
 
     [SlashCommand("purge", "Unpin N messages")]
     [DeferConfiguration(RequireEphemeral = true)]
-    public async Task ProcessAsync(int count, ITextChannel channel = null)
+    public async Task ProcessAsync(int count, ITextChannel? channel = null)
     {
         using var command = GetCommand<Actions.Commands.PurgePins>();
 

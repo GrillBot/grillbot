@@ -29,10 +29,10 @@ public class Emojization : CommandAction
         var tokens = CheckAndParseContent(message);
         var emotes = ConvertTokensToEmotes(tokens, false).ToList();
         emotes = FilterUnknownEmotes(emotes);
-        emotes = emotes.Where(o => o != null).Take(maxCount).ToList();
+        emotes = emotes.Where(o => o is not null).Take(maxCount).ToList();
         EnsureNotEmpty(emotes);
 
-        return emotes;
+        return emotes!;
     }
 
     private List<object> CheckAndParseContent(string message)
@@ -43,9 +43,9 @@ public class Emojization : CommandAction
         return MessageHelper.ParseMessage(message).ToList();
     }
 
-    private List<IEmote> ConvertTokensToEmotes(List<object> tokens, bool allowDuplicity)
+    private List<IEmote?> ConvertTokensToEmotes(List<object> tokens, bool allowDuplicity)
     {
-        var result = new List<IEmote>();
+        var result = new List<IEmote?>();
 
         void AddEmoteFromChar(char @char)
         {
@@ -90,14 +90,14 @@ public class Emojization : CommandAction
         return result;
     }
 
-    private void EnsureNotEmpty(IReadOnlyCollection<IEmote> emotes)
+    private void EnsureNotEmpty(IReadOnlyCollection<IEmote?> emotes)
     {
-        var isEmpty = emotes.Count == 0 || emotes.All(o => o == null);
+        var isEmpty = emotes.Count == 0 || emotes.All(o => o is null);
         if (isEmpty)
             throw new ValidationException(Texts["Emojization/EmptyResult", Locale]);
     }
 
-    private static IEnumerable<IEmote> AddSpaces(IEnumerable<IEmote> emotes)
+    private static IEnumerable<IEmote?> AddSpaces(IEnumerable<IEmote?> emotes)
     {
         foreach (var emote in emotes)
         {
@@ -106,7 +106,7 @@ public class Emojization : CommandAction
         }
     }
 
-    private static string BuildMessage(IEnumerable<IEmote> emotes)
+    private static string BuildMessage(IEnumerable<IEmote?> emotes)
     {
         var builder = new StringBuilder();
 
@@ -119,15 +119,13 @@ public class Emojization : CommandAction
             builder.Append(str);
         }
 
-        foreach (var emoteValue in emotes.Select(emote => emote == null ? " " : emote.ToString()))
-        {
+        foreach (var emoteValue in emotes.Select(emote => emote is null ? " " : emote.ToString()!))
             AppendValue(emoteValue);
-        }
 
         return builder.ToString().Trim();
     }
 
-    private List<IEmote> FilterUnknownEmotes(List<IEmote> emotes)
+    private List<IEmote?> FilterUnknownEmotes(List<IEmote?> emotes)
     {
         var guildEmotes = Context.Guild.Emotes;
         return emotes.FindAll(o => o is null or Emoji || guildEmotes.Any(x => Equals(x, o)));

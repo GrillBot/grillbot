@@ -20,7 +20,7 @@ public class GetEmotesList : CommandAction
         Texts = texts;
     }
 
-    public async Task<(Embed embed, MessageComponent paginationComponent)> ProcessAsync(int page, string sort, bool descending, IUser ofUser, bool filterAnimated)
+    public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page, string sort, bool descending, IUser? ofUser, bool filterAnimated)
     {
         var parameters = CreateParameters(page, sort, descending, ofUser, filterAnimated);
         var list = await ApiAction.ProcessAsync(parameters, false);
@@ -31,7 +31,7 @@ public class GetEmotesList : CommandAction
         return (embed, paginationComponent);
     }
 
-    public async Task<int> ComputePagesCountAsync(string sort, bool descending, IUser ofUser, bool filterAnimated)
+    public async Task<int> ComputePagesCountAsync(string sort, bool descending, IUser? ofUser, bool filterAnimated)
     {
         var parameters = CreateParameters(0, sort, descending, ofUser, filterAnimated);
         var list = await ApiAction.ProcessAsync(parameters, false);
@@ -41,7 +41,7 @@ public class GetEmotesList : CommandAction
     private static int ComputePagesCount(long totalCount) =>
         (int)Math.Ceiling(totalCount / (double)(EmbedBuilder.MaxFieldCount - 1));
 
-    private EmotesListParams CreateParameters(int page, string sort, bool descending, IUser ofUser, bool filterAnimated)
+    private EmotesListParams CreateParameters(int page, string sort, bool descending, IUser? ofUser, bool filterAnimated)
     {
         return new EmotesListParams
         {
@@ -61,7 +61,7 @@ public class GetEmotesList : CommandAction
         };
     }
 
-    private Embed CreateEmbed(PaginatedResponse<EmoteStatItem> list, string sort, bool descending, bool filterAnimated, IUser ofUser)
+    private Embed CreateEmbed(PaginatedResponse<EmoteStatItem> list, string sort, bool descending, bool filterAnimated, IUser? ofUser)
     {
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)

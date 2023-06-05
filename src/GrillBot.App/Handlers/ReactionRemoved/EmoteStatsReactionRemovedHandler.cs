@@ -1,4 +1,5 @@
-﻿using GrillBot.Cache.Services.Managers.MessageCache;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Managers.Discord;
@@ -42,23 +43,24 @@ public class EmoteStatsReactionRemovedHandler : IReactionRemovedEvent
         await repository.CommitAsync();
     }
 
-    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, List<GuildEmote> supportedEmotes, IReaction reaction, out ITextChannel textChannel, out Emote emote)
+    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, List<GuildEmote> supportedEmotes, IReaction reaction, [MaybeNullWhen(false)] out ITextChannel textChannel,
+        [MaybeNullWhen(false)] out Emote emote)
     {
-        textChannel = cachedChannel.HasValue && cachedChannel.Value is ITextChannel channel ? channel : null;
+        textChannel = cachedChannel is { HasValue: true, Value: ITextChannel channel } ? channel : null;
         emote = reaction.Emote is Emote tmpEmote && supportedEmotes.Count > 0 ? supportedEmotes.Find(o => o.IsEqual(tmpEmote)) : null;
 
-        return textChannel != null && emote != null;
+        return textChannel is not null && emote is not null;
     }
 
     private static async Task UpdateEmoteStatsAsync(GrillBotRepository repository, IUser user, IEmote emote, IGuild guild)
     {
         var statistics = await repository.Emote.FindStatisticAsync(emote, user, guild);
-        if (statistics == null || statistics.UseCount == 0) return;
+        if (statistics is null || statistics.UseCount == 0) return;
 
         statistics.UseCount--;
     }
 
-    private static void UpdateUserStats(GuildUser authorEntity, GuildUser reactingUserEntity)
+    private static void UpdateUserStats(GuildUser? authorEntity, GuildUser? reactingUserEntity)
     {
         if (reactingUserEntity is { GivenReactions: > 0 })
             reactingUserEntity.GivenReactions--;

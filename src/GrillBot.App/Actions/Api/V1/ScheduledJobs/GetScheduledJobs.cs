@@ -5,6 +5,7 @@ using GrillBot.Data.Models.API.AuditLog.Filters;
 using GrillBot.Data.Models.API.Jobs;
 using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Models;
 using Quartz;
 using Quartz.Impl.Matchers;
 
@@ -80,7 +81,7 @@ public class GetScheduledJobs : ApiAction
     {
         var parameters = new AuditLogListParams
         {
-            Sort = { Descending = true },
+            Sort = new SortParams { Descending = true },
             Types = new List<AuditLogItemType> { AuditLogItemType.JobCompleted },
         };
 
@@ -96,6 +97,6 @@ public class GetScheduledJobs : ApiAction
     private async Task<List<string>> GetDisabledJobsAsync()
     {
         var data = await DataCacheManager.GetValueAsync("DisabledJobs");
-        return string.IsNullOrEmpty(data) ? new List<string>() : JsonConvert.DeserializeObject<List<string>>(data);
+        return string.IsNullOrEmpty(data) ? new List<string>() : JsonConvert.DeserializeObject<List<string>>(data)!;
     }
 }

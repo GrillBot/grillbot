@@ -23,7 +23,7 @@ public class GetChannelboard : CommandAction
         FormatHelper = formatHelper;
     }
 
-    public async Task<(Embed embed, MessageComponent paginationComponents)> ProcessAsync(int page)
+    public async Task<(Embed embed, MessageComponent? paginationComponents)> ProcessAsync(int page)
     {
         var visibleChannels = await GetAvailableChannelsAsync();
 

@@ -42,6 +42,8 @@ public class CopyRemind : CommandAction
             throw new ValidationException(Texts["RemindModule/Copy/CopyExists", Locale]);
 
         var fromUser = await Context.Client.FindUserAsync(original.FromUserId.ToUlong());
+        if (fromUser is null)
+            throw new NotFoundException(Texts["RemindModule/Copy/RemindNotFound", Locale]);
 
         CreateRemind.Init(Context);
         await CreateRemind.ProcessAsync(fromUser, Context.User, original.At, original.Message, original.OriginalMessageId!.ToUlong());

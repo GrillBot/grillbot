@@ -10,7 +10,7 @@ public class RolesReader : CommandAction
     private FormatHelper FormatHelper { get; }
     private ITextsManager Texts { get; }
 
-    private IReadOnlyCollection<IGuildUser> Users { get; set; }
+    private IReadOnlyCollection<IGuildUser> Users { get; set; } = null!;
 
     public RolesReader(FormatHelper formatHelper, ITextsManager texts)
     {
@@ -69,7 +69,7 @@ public class RolesReader : CommandAction
         return Texts["Roles/GuildSummary", Locale].FormatWith(Context.Guild.Roles.Count, totalMembersWithRole, totalMembersWithoutRole);
     }
 
-    private Embed CreateEmbed(IEnumerable<EmbedFieldBuilder> fields, Color color, string title, string summary = null)
+    private Embed CreateEmbed(IEnumerable<EmbedFieldBuilder> fields, Color color, string title, string? summary = null)
     {
         var builder = new EmbedBuilder()
             .WithFooter(Context.User)

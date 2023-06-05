@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure.Embeds;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.App.Infrastructure.Embeds;
 
 namespace GrillBot.App.Infrastructure;
 
@@ -6,7 +7,8 @@ public abstract class ComponentInteractionHandler
 {
     public abstract Task ProcessAsync(IInteractionContext context);
 
-    protected static bool TryParseData<TMetadata>(IDiscordInteraction interaction, out SocketMessageComponent component, out TMetadata metadata) where TMetadata : IEmbedMetadata, new()
+    protected static bool TryParseData<TMetadata>(IDiscordInteraction interaction, [MaybeNullWhen(false)] out SocketMessageComponent component, [MaybeNullWhen(false)] out TMetadata metadata)
+        where TMetadata : IEmbedMetadata, new()
     {
         metadata = default;
         component = interaction as SocketMessageComponent;
@@ -18,10 +20,11 @@ public abstract class ComponentInteractionHandler
         return embed.TryParseMetadata(out metadata);
     }
 
-    protected static bool TryParseMesasge(IDiscordInteraction interaction, out IUserMessage message)
+    protected static bool TryParseMesasge(IDiscordInteraction interaction, [MaybeNullWhen(false)] out IUserMessage message)
     {
         message = null;
-        if (interaction is not IComponentInteraction componentInteraction) return false;
+        if (interaction is not IComponentInteraction componentInteraction)
+            return false;
 
         message = componentInteraction.Message;
         return true;

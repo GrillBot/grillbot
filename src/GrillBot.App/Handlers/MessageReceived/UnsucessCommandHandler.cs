@@ -51,6 +51,9 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
     private async Task<string?> FindLocalCommandMentionAsync(IReadOnlyCollection<string> parts, IChannel channel)
     {
         var guild = await ChannelHelper.GetGuildFromChannelAsync(channel, channel.Id);
+        if (guild is null) 
+            return null;
+        
         var commands = await InteractionService.RestClient.GetGuildApplicationCommands(guild.Id);
         var commandMentions = commands.GetCommandMentions();
         return TryMatchMention(commandMentions, parts);

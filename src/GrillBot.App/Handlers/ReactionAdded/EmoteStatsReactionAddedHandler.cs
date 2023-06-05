@@ -1,4 +1,5 @@
-﻿using GrillBot.Cache.Services.Managers.MessageCache;
+﻿using System.Diagnostics.CodeAnalysis;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Managers.Discord;
@@ -46,9 +47,10 @@ public class EmoteStatsReactionAddedHandler : IReactionAddedEvent
         await repository.CommitAsync();
     }
 
-    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, List<GuildEmote> supportedEmotes, IReaction reaction, out ITextChannel textChannel, out Emote emote)
+    private static bool Init(Cacheable<IMessageChannel, ulong> cachedChannel, List<GuildEmote> supportedEmotes, IReaction reaction, [MaybeNullWhen(false)] out ITextChannel textChannel,
+        [MaybeNullWhen(false)] out Emote emote)
     {
-        textChannel = cachedChannel.HasValue && cachedChannel.Value is ITextChannel channel ? channel : null;
+        textChannel = cachedChannel is { HasValue: true, Value: ITextChannel channel } ? channel : null;
         emote = reaction.Emote is Emote tmpEmote && supportedEmotes.Count > 0 ? supportedEmotes.Find(o => o.IsEqual(tmpEmote)) : null;
 
         return textChannel != null && emote != null;

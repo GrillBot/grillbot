@@ -23,7 +23,7 @@ public class GetReminderList : CommandAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<(Embed embed, MessageComponent paginationComponent)> ProcessAsync(int page)
+    public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page)
     {
         ApiAction.UpdateContext(Locale, Context.User);
 

@@ -18,11 +18,12 @@ public class FinishRemind : ApiAction
 
     public bool IsGone { get; private set; }
     public bool IsAuthorized { get; private set; }
-    public string ErrorMessage { get; private set; }
+    public string? ErrorMessage { get; private set; }
 
     private bool IsCancel => ApiContext.GetUserId() != DiscordClient.CurrentUser.Id;
 
-    public FinishRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, IDiscordClient discordClient, ITextsManager texts) : base(apiContext)
+    public FinishRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, IDiscordClient discordClient,
+        ITextsManager texts) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         AuditLogWriteManager = auditLogWriteManager;

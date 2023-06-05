@@ -31,7 +31,7 @@ public class Mock : CommandAction
         if (IsStringMocked(original))
             return original;
 
-        original = original.ToLower().Cut(MaxMessageLength, true);
+        original = original.ToLower().Cut(MaxMessageLength, true)!;
 
         var resultBuilder = new StringBuilder();
         var coeffIndex = 0;

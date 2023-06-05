@@ -22,7 +22,7 @@ public class CreateRemind : CommandAction
     private int MinimalTimeMinutes => Configuration.GetValue<int>("Reminder:MinimalTimeMinutes");
     private string MinimalTime => FormatHelper.FormatNumber("RemindModule/Create/Validation/MinimalTime", Locale, MinimalTimeMinutes);
 
-    public async Task<long> ProcessAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
+    public async Task<long> ProcessAsync(IUser from, IUser to, DateTime at, string? message, ulong originalMessageId)
     {
         ValidateInput(at, message);
 
@@ -30,7 +30,7 @@ public class CreateRemind : CommandAction
         {
             At = at,
             Language = Locale,
-            Message = message,
+            Message = message!,
             OriginalMessageId = originalMessageId.ToString(),
             FromUserId = from.Id.ToString(),
             ToUserId = to.Id.ToString()
@@ -47,7 +47,7 @@ public class CreateRemind : CommandAction
         return entity.Id;
     }
 
-    private void ValidateInput(DateTime at, string message)
+    private void ValidateInput(DateTime at, string? message)
     {
         ValidateTime(at);
         ValidateMessage(message);
@@ -62,7 +62,7 @@ public class CreateRemind : CommandAction
             throw new ValidationException(Texts["RemindModule/Create/Validation/MinimalTimeTemplate", Locale].FormatWith(MinimalTime));
     }
 
-    private void ValidateMessage(string message)
+    private void ValidateMessage(string? message)
     {
         message = message?.Trim();
         if (string.IsNullOrEmpty(message))

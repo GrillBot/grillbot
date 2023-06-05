@@ -39,14 +39,16 @@ public class CreateToken : ApiAction
     {
         var user = await FindUserAsync(userId);
 
-        if (user == null)
+        if (user is null)
             return new OAuth2LoginToken(Texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var userEntity = await repository.User.FindUserAsync(user, true);
-        var checkResult = CheckUserLogin(userEntity, isPublic);
+        if (userEntity is null)
+            return new OAuth2LoginToken(Texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
 
+        var checkResult = CheckUserLogin(userEntity, isPublic);
         if (!string.IsNullOrEmpty(checkResult))
             return new OAuth2LoginToken(checkResult);
 
@@ -70,10 +72,10 @@ public class CreateToken : ApiAction
         throw new WebException(json);
     }
 
-    private async Task<IUser> FindUserAsync(ulong? userId)
+    private async Task<IUser?> FindUserAsync(ulong? userId)
         => userId == null ? null : await DiscordClient.FindUserAsync(userId.Value);
 
-    private string CheckUserLogin(Database.Entity.User user, bool isPublic)
+    private string? CheckUserLogin(Database.Entity.User user, bool isPublic)
     {
         return isPublic switch
         {

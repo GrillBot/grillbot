@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using System.Runtime.Serialization;
 using GrillBot.Core.Models;
 
@@ -29,53 +28,6 @@ public class GuildUpdatedData
     public Diff<PremiumTier>? PremiumTier { get; set; }
     public Diff<SystemChannelMessageDeny>? SystemChannelFlags { get; set; }
     public Diff<NsfwLevel>? NsfwLevel { get; set; }
-
-    public GuildUpdatedData()
-    {
-    }
-
-    public GuildUpdatedData(SocketGuild before, SocketGuild after)
-    {
-        DefaultMessageNotifications = new Diff<DefaultMessageNotifications>(before.DefaultMessageNotifications, after.DefaultMessageNotifications);
-        Description = new Diff<string>(before.Description, after.Description);
-        VanityUrl = new Diff<string>(before.VanityURLCode, after.VanityURLCode);
-        BannerChanged = before.BannerId != after.BannerId;
-        DiscoverySplashChanged = before.DiscoverySplashId != after.DiscoverySplashId;
-        SplashChanged = before.SplashId != after.SplashId;
-        IconChanged = before.IconId != after.IconId;
-        VoiceRegionId = new Diff<string>(before.VoiceRegionId, after.VoiceRegionId);
-        Owner = new Diff<AuditUserInfo>(new AuditUserInfo(before.Owner), new AuditUserInfo(after.Owner));
-
-        PublicUpdatesChannel = new Diff<AuditChannelInfo?>(
-            before.PublicUpdatesChannel == null ? null : new AuditChannelInfo(before.PublicUpdatesChannel),
-            after.PublicUpdatesChannel == null ? null : new AuditChannelInfo(after.PublicUpdatesChannel)
-        );
-
-        RulesChannel = new Diff<AuditChannelInfo?>(
-            before.RulesChannel == null ? null : new AuditChannelInfo(before.RulesChannel),
-            after.RulesChannel == null ? null : new AuditChannelInfo(after.RulesChannel)
-        );
-
-        SystemChannel = new Diff<AuditChannelInfo?>(
-            before.SystemChannel == null ? null : new AuditChannelInfo(before.SystemChannel),
-            after.SystemChannel == null ? null : new AuditChannelInfo(after.SystemChannel)
-        );
-
-        AfkChannel = new Diff<AuditChannelInfo?>(
-            before.AFKChannel == null ? null : new AuditChannelInfo(before.AFKChannel),
-            after.AFKChannel == null ? null : new AuditChannelInfo(after.AFKChannel)
-        );
-
-        AfkTimeout = new Diff<int>(before.AFKTimeout, after.AFKTimeout);
-        Name = new Diff<string>(before.Name, after.Name);
-        MfaLevel = new Diff<MfaLevel>(before.MfaLevel, after.MfaLevel);
-        VerificationLevel = new Diff<VerificationLevel>(before.VerificationLevel, after.VerificationLevel);
-        ExplicitContentFilter = new Diff<ExplicitContentFilterLevel>(before.ExplicitContentFilter, after.ExplicitContentFilter);
-        Features = new Diff<GuildFeature>(before.Features.Value, after.Features.Value);
-        PremiumTier = new Diff<PremiumTier>(before.PremiumTier, after.PremiumTier);
-        SystemChannelFlags = new Diff<SystemChannelMessageDeny>(before.SystemChannelFlags, after.SystemChannelFlags);
-        NsfwLevel = new Diff<NsfwLevel>(before.NsfwLevel, after.NsfwLevel);
-    }
 
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)

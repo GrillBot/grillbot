@@ -1,32 +1,64 @@
-﻿using GrillBot.App.Managers;
+﻿using AuditLogService.Models.Request;
+using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Managers.Performance;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
 
 namespace GrillBot.App.Handlers.GuildUpdated;
 
-public class AuditGuildUpdatedHandler : IGuildUpdatedEvent
+public class AuditGuildUpdatedHandler : AuditLogServiceHandler, IGuildUpdatedEvent
 {
-    private ICounterManager CounterManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
+    private DownloadHelper DownloadHelper { get; }
 
-    public AuditGuildUpdatedHandler(ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditGuildUpdatedHandler(IAuditLogServiceClient client, DownloadHelper downloadHelper) : base(client)
     {
-        CounterManager = counterManager;
-        AuditLogWriteManager = auditLogWriteManager;
+        DownloadHelper = downloadHelper;
     }
 
     public async Task ProcessAsync(IGuild before, IGuild after)
     {
         if (!CanProcess(before, after)) return;
 
-        var auditLog = await FindAuditLogAsync(after);
-        if (auditLog == null) return;
+        var infoBefore = await CreateInfoRequestAsync(before);
+        var infoAfter = await CreateInfoRequestAsync(after);
+        var request = CreateRequest(LogType.GuildUpdated, after);
+        request.GuildUpdated = new DiffRequest<GuildInfoRequest>()
+        {
+            After = infoAfter,
+            Before = infoBefore
+        };
 
-        var data = new GuildUpdatedData((SocketGuild)before, (SocketGuild)after);
-        var item = new AuditLogDataWrapper(AuditLogItemType.GuildUpdated, data, after, processedUser: auditLog.User, discordAuditLogItemId: auditLog.Id.ToString());
-        await AuditLogWriteManager.StoreAsync(item);
+        await SendRequestAsync(request);
+    }
+
+    private async Task<GuildInfoRequest> CreateInfoRequestAsync(IGuild guild)
+    {
+        return new GuildInfoRequest
+        {
+            Description = guild.Description,
+            Features = guild.Features.Value,
+            Name = guild.Name,
+            BannerId = guild.BannerId,
+            MfaLevel = guild.MfaLevel,
+            PremiumTier = guild.PremiumTier,
+            SplashId = guild.SplashId,
+            NsfwLevel = guild.NsfwLevel,
+            VerificationLevel = guild.VerificationLevel,
+            IconId = guild.IconId,
+            DefaultMessageNotifications = guild.DefaultMessageNotifications,
+            DiscoverySplashId = guild.DiscoverySplashId,
+            ExplicitContentFilter = guild.ExplicitContentFilter,
+            RulesChannelId = guild.RulesChannelId?.ToString(),
+            SystemChannelFlags = guild.SystemChannelFlags,
+            OwnerId = guild.OwnerId.ToString(),
+            VoiceRegionId = guild.VoiceRegionId,
+            PublicUpdatesChannelId = guild.PublicUpdatesChannelId?.ToString(),
+            SystemChannelId = guild.SystemChannelId?.ToString(),
+            AfkTimeout = guild.AFKTimeout,
+            AfkChannelId = guild.AFKChannelId?.ToString(),
+            VanityUrl = guild.VanityURLCode,
+            IconData = await DownloadHelper.DownloadFileAsync(guild.IconUrl)
+        };
     }
 
     private static bool CanProcess(IGuild before, IGuild after)
@@ -54,19 +86,5 @@ public class AuditGuildUpdatedHandler : IGuildUpdatedEvent
             before.SystemChannelFlags != after.SystemChannelFlags ||
             before.Description != after.Description ||
             before.NsfwLevel != after.NsfwLevel;
-    }
-
-    private async Task<IAuditLogEntry> FindAuditLogAsync(IGuild guild)
-    {
-        IReadOnlyCollection<IAuditLogEntry> auditLogs;
-        using (CounterManager.Create("Discord.API.AuditLog"))
-        {
-            auditLogs = await guild.GetAuditLogsAsync(actionType: ActionType.GuildUpdated);
-        }
-
-        var timeLimit = DateTime.Now.AddMinutes(-5);
-        return auditLogs
-            .Where(o => o.CreatedAt.LocalDateTime >= timeLimit)
-            .MaxBy(o => o.CreatedAt.LocalDateTime);
     }
 }

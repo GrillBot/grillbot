@@ -1,5 +1,4 @@
-﻿using Discord;
-using GrillBot.Core.Models;
+﻿using GrillBot.Core.Models;
 
 namespace GrillBot.Data.Models.AuditLog;
 
@@ -16,10 +15,5 @@ public class MessageEditedData
     {
         Diff = new Diff<string>(before, after);
         JumpUrl = jumpUrl;
-    }
-
-    public MessageEditedData(IMessage before, IMessage after)
-        : this(before.Content, after.Content, after.GetJumpUrl())
-    {
     }
 }

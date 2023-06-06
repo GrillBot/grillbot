@@ -4,6 +4,7 @@ using GrillBot.App.Managers;
 using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.Common;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
@@ -37,12 +38,13 @@ public class GetDashboard : ApiAction
     private IFileServiceClient FileServiceClient { get; }
     private IPointsServiceClient PointsServiceClient { get; }
     private IImageProcessingClient ImageProcessingClient { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
     private List<Exception> Errors { get; } = new();
 
     public GetDashboard(ApiRequestContext apiContext, IWebHostEnvironment webHost, IDiscordClient discordClient, InitManager initManager, ICounterManager counterManager,
         GrillBotDatabaseBuilder databaseBuilder, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, IFileServiceClient fileServiceClient,
-        IPointsServiceClient pointsServiceClient, IImageProcessingClient imageProcessingClient) : base(apiContext)
+        IPointsServiceClient pointsServiceClient, IImageProcessingClient imageProcessingClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         WebHost = webHost;
         DiscordClient = discordClient;
@@ -55,6 +57,7 @@ public class GetDashboard : ApiAction
         FileServiceClient = fileServiceClient;
         PointsServiceClient = pointsServiceClient;
         ImageProcessingClient = imageProcessingClient;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     public async Task<Dashboard> ProcessAsync()
@@ -265,6 +268,7 @@ public class GetDashboard : ApiAction
         await AddServiceStatusAsync(dashboard, "file", FileServiceClient);
         await AddServiceStatusAsync(dashboard, "points", PointsServiceClient);
         await AddServiceStatusAsync(dashboard, "image-processing", ImageProcessingClient);
+        await AddServiceStatusAsync(dashboard, "audit-log", AuditLogServiceClient);
     }
 
     private async Task AddServiceStatusAsync(Dashboard dashboard, string id, IClient client)

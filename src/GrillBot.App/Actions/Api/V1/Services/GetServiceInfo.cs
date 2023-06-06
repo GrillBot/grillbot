@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.Common;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
@@ -19,9 +20,10 @@ public class GetServiceInfo : ApiAction
     private LoggingManager LoggingManager { get; }
     private IPointsServiceClient PointsServiceClient { get; }
     private IImageProcessingClient ImageProcessingClient { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
     public GetServiceInfo(ApiRequestContext apiContext, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, IFileServiceClient fileServiceClient,
-        LoggingManager loggingManager, IPointsServiceClient pointsServiceClient, IImageProcessingClient imageProcessingClient) : base(apiContext)
+        LoggingManager loggingManager, IPointsServiceClient pointsServiceClient, IImageProcessingClient imageProcessingClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         GraphicsClient = graphicsClient;
         RubbergodServiceClient = rubbergodServiceClient;
@@ -29,6 +31,7 @@ public class GetServiceInfo : ApiAction
         LoggingManager = loggingManager;
         PointsServiceClient = pointsServiceClient;
         ImageProcessingClient = imageProcessingClient;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     public async Task<ServiceInfo> ProcessAsync(string id)
@@ -55,6 +58,7 @@ public class GetServiceInfo : ApiAction
             "graphics" => GraphicsClient,
             "points" => PointsServiceClient,
             "image-processing" => ImageProcessingClient,
+            "audit-log" => AuditLogServiceClient,
             _ => throw new NotSupportedException($"Unsupported service {id}")
         };
     }
@@ -70,6 +74,7 @@ public class GetServiceInfo : ApiAction
                 IFileServiceClient => await FileServiceClient.GetDiagAsync(),
                 IPointsServiceClient => await PointsServiceClient.GetDiagAsync(),
                 IImageProcessingClient => await ImageProcessingClient.GetDiagAsync(),
+                IAuditLogServiceClient => await AuditLogServiceClient.GetDiagAsync(),
                 _ => null
             };
         }

@@ -27,11 +27,6 @@ public class AuditChannelInfo : AuditChannelBaseInfo
         Position = position;
     }
 
-    public AuditChannelInfo(ChannelDeleteAuditLogData data, IGuildChannel channel)
-        : this(data.ChannelId, data.ChannelName, data.ChannelType, data.IsNsfw, data.Bitrate, data.SlowModeInterval, (channel as ITextChannel)?.Topic, channel.Position)
-    {
-    }
-
     public AuditChannelInfo(ulong id, ChannelInfo info, IGuildChannel channel)
         : this(id, info.Name, info.ChannelType, info.IsNsfw, info.Bitrate, info.SlowModeInterval, info.Topic, channel.Position)
     {

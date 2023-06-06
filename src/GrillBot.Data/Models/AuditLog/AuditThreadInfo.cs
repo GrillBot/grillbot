@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Discord;
-using Discord.Rest;
 
 namespace GrillBot.Data.Models.AuditLog;
 
@@ -25,11 +24,6 @@ public class AuditThreadInfo : AuditChannelBaseInfo
         ArchiveDuration = archiveDuration;
         IsLocked = isLocked;
         Tags = new List<string>();
-    }
-
-    public AuditThreadInfo(ThreadDeleteAuditLogData data)
-        : this(data.ThreadId, data.ThreadName, data.ThreadType, data.IsArchived, data.AutoArchiveDuration, data.IsLocked, data.SlowModeInterval)
-    {
     }
 
     public AuditThreadInfo(IThreadChannel thread) : this(thread.Id, thread.Name, thread.Type, thread.IsArchived, thread.AutoArchiveDuration,

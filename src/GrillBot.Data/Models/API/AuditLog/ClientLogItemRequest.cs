@@ -1,5 +1,4 @@
-﻿using GrillBot.Database.Enums;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using GrillBot.Core.Infrastructure;
 
@@ -13,12 +12,6 @@ public class ClientLogItemRequest : IDictionaryObject
 
     [Required]
     public string Content { get; set; } = null!;
-
-    public AuditLogItemType GetAuditLogType()
-    {
-        if (IsError) return AuditLogItemType.Error;
-        return IsWarning ? AuditLogItemType.Warning : AuditLogItemType.Info;
-    }
 
     public Dictionary<string, string?> ToDictionary()
     {

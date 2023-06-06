@@ -1,44 +1,28 @@
-﻿using GrillBot.App.Managers;
+﻿using AuditLogService.Models.Request;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Managers.Performance;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 
 namespace GrillBot.App.Handlers.ChannelCreated;
 
-public class AuditChannelCreatedHandler : IChannelCreatedEvent
+public class AuditChannelCreatedHandler : AuditLogServiceHandler, IChannelCreatedEvent
 {
-    private ICounterManager CounterManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
-
-    public AuditChannelCreatedHandler(ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditChannelCreatedHandler(IAuditLogServiceClient client) : base(client)
     {
-        CounterManager = counterManager;
-        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IChannel channel)
     {
         if (channel is not IGuildChannel guildChannel) return;
 
-        var auditLog = await FindAuditLogAsync(guildChannel);
-        if (auditLog == null) return;
-
-        var data = new AuditChannelInfo((ChannelCreateAuditLogData)auditLog.Data, guildChannel);
-        var item = new AuditLogDataWrapper(AuditLogItemType.ChannelCreated, data, guildChannel.Guild, channel, auditLog.User, auditLog.Id.ToString());
-
-        await AuditLogWriteManager.StoreAsync(item);
-    }
-
-    private async Task<IAuditLogEntry?> FindAuditLogAsync(IGuildChannel channel)
-    {
-        IReadOnlyCollection<IAuditLogEntry> auditLogs;
-        using (CounterManager.Create("Discord.API.AuditLog"))
+        var request = CreateRequest(LogType.ChannelCreated, guildChannel.Guild, guildChannel);
+        request.ChannelInfo = new ChannelInfoRequest
         {
-            auditLogs = await channel.Guild.GetAuditLogsAsync(actionType: ActionType.ChannelCreated);
-        }
+            Position = guildChannel.Position,
+            Topic = (guildChannel as ITextChannel)?.Topic
+        };
 
-        return auditLogs
-            .FirstOrDefault(o => ((ChannelCreateAuditLogData)o.Data).ChannelId == channel.Id);
+        await SendRequestAsync(request);
     }
 }

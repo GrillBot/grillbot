@@ -19,16 +19,16 @@ public abstract class AuditLogServiceHandler
     protected async Task SendRequestsAsync(List<LogRequest> requests)
         => await Client.CreateItemsAsync(requests);
 
-    protected static LogRequest CreateRequest(LogType type, ulong? guildId = null, ulong? channelId = null, ulong? userId = null, ulong? discordId = null)
+    protected static LogRequest CreateRequest(LogType type, IGuild? guild = null, IChannel? channel = null, IUser? user = null, IAuditLogEntry? auditLogEntry = null)
     {
         return new LogRequest
         {
             Type = type,
-            ChannelId = channelId?.ToString(),
+            ChannelId = channel?.Id.ToString(),
             CreatedAt = DateTime.UtcNow,
-            DiscordId = discordId?.ToString(),
-            GuildId = guildId?.ToString(),
-            UserId = userId?.ToString()
+            DiscordId = auditLogEntry?.Id.ToString(),
+            GuildId = guild?.Id.ToString(),
+            UserId = user?.Id.ToString()
         };
     }
 }

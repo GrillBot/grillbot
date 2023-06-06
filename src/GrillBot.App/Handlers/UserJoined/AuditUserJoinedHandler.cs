@@ -16,7 +16,7 @@ public class AuditUserJoinedHandler : AuditLogServiceHandler, IUserJoinedEvent
     {
         if (!user.IsUser() || user.Guild is not SocketGuild guild) return;
 
-        var request = CreateRequest(LogType.UserJoined, user.GuildId, null, user.Id);
+        var request = CreateRequest(LogType.UserJoined, user.Guild, null, user);
         request.UserJoined = new UserJoinedRequest { MemberCount = guild.MemberCount };
 
         await SendRequestAsync(request);

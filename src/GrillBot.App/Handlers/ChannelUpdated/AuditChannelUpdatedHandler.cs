@@ -1,36 +1,31 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using GrillBot.App.Managers;
+using AuditLogService.Models.Request;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.Models;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 
 namespace GrillBot.App.Handlers.ChannelUpdated;
 
-public class AuditChannelUpdatedHandler : IChannelUpdatedEvent
+public class AuditChannelUpdatedHandler : AuditLogServiceHandler, IChannelUpdatedEvent
 {
-    private ICounterManager CounterManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
-
-    public AuditChannelUpdatedHandler(ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditChannelUpdatedHandler(IAuditLogServiceClient auditLogServiceClient) : base(auditLogServiceClient)
     {
-        CounterManager = counterManager;
-        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IChannel before, IChannel after)
     {
         if (!Init(before, after, out var guildChannelBefore, out var guildChannelAfter)) return;
 
-        var auditLog = await FindAuditLogAsync(guildChannelAfter);
-        if (auditLog is null && guildChannelBefore.Position == guildChannelAfter.Position) return;
+        var request = CreateRequest(LogType.ChannelUpdated, guildChannelAfter.Guild, guildChannelAfter);
+        request.ChannelUpdated = new DiffRequest<ChannelInfoRequest>
+        {
+            After = CreateChannelInfoRequest(guildChannelAfter),
+            Before = CreateChannelInfoRequest(guildChannelBefore)
+        };
 
-        var auditData = auditLog?.Data as ChannelUpdateAuditLogData;
-        var data = CreateLogData(auditData, guildChannelBefore, guildChannelAfter);
-        var item = new AuditLogDataWrapper(AuditLogItemType.ChannelUpdated, data, guildChannelAfter.Guild, guildChannelAfter, auditLog?.User, auditLog?.Id.ToString());
-        await AuditLogWriteManager.StoreAsync(item);
+        await SendRequestAsync(request);
     }
 
     private static bool Init(IChannel before, IChannel after, [MaybeNullWhen(false)] out IGuildChannel guildChannelBefore, [MaybeNullWhen(false)] out IGuildChannel guildChannelAfter)
@@ -38,28 +33,15 @@ public class AuditChannelUpdatedHandler : IChannelUpdatedEvent
         guildChannelBefore = before as IGuildChannel;
         guildChannelAfter = after as IGuildChannel;
 
-        if (guildChannelBefore == null || guildChannelAfter == null) return false;
-        return !guildChannelBefore.IsEqual(guildChannelAfter);
+        return guildChannelBefore is not null && guildChannelAfter is not null && !guildChannelBefore.IsEqual(guildChannelAfter);
     }
 
-    private async Task<IAuditLogEntry?> FindAuditLogAsync(IGuildChannel channel)
+    private static ChannelInfoRequest CreateChannelInfoRequest(IGuildChannel channel)
     {
-        IReadOnlyCollection<IAuditLogEntry> auditLogs;
-        using (CounterManager.Create("Discord.API.AuditLog"))
+        return new ChannelInfoRequest
         {
-            auditLogs = await channel.Guild.GetAuditLogsAsync(actionType: ActionType.ChannelUpdated);
-        }
-
-        return auditLogs
-            .FirstOrDefault(o => ((ChannelUpdateAuditLogData)o.Data).ChannelId == channel.Id);
-    }
-
-    private static Diff<AuditChannelInfo> CreateLogData(ChannelUpdateAuditLogData? auditData, IGuildChannel before, IGuildChannel after)
-    {
-        // Position change is not logged into discord audit log.
-        var infoBefore = auditData is null ? new AuditChannelInfo(before) : new AuditChannelInfo(auditData.ChannelId, auditData.Before, before);
-        var infoAfter = auditData is null ? new AuditChannelInfo(after) : new AuditChannelInfo(auditData.ChannelId, auditData.After, after);
-
-        return new Diff<AuditChannelInfo>(infoBefore, infoAfter);
+            Position = channel.Position,
+            Topic = (channel as ITextChannel)?.Topic
+        };
     }
 }

@@ -1,7 +1,8 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace GrillBot.App.Infrastructure.RequestProcessing;
@@ -9,13 +10,13 @@ namespace GrillBot.App.Infrastructure.RequestProcessing;
 public class ResultFilter : IAsyncResultFilter
 {
     private ApiRequest ApiRequest { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ApiRequestContext ApiRequestContext { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public ResultFilter(ApiRequest apiRequest, AuditLogWriteManager auditLogWriteManager, ApiRequestContext apiRequestContext)
+    public ResultFilter(ApiRequest apiRequest, ApiRequestContext apiRequestContext, IAuditLogServiceClient auditLogServiceClient)
     {
         ApiRequest = apiRequest;
-        AuditLogWriteManager = auditLogWriteManager;
+        AuditLogServiceClient = auditLogServiceClient;
         ApiRequestContext = apiRequestContext;
     }
 
@@ -27,8 +28,34 @@ public class ResultFilter : IAsyncResultFilter
         ApiRequest.StatusCode = $"{response.StatusCode} ({(HttpStatusCode)response.StatusCode})";
         ApiRequest.EndAt = DateTime.Now;
 
-        var processedUser = ApiRequestContext.LoggedUser;
-        var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, processedUser, null, DateTime.Now);
-        await AuditLogWriteManager.StoreAsync(wrapper);
+        await WriteToAuditLogAsync();
+    }
+
+    private async Task WriteToAuditLogAsync()
+    {
+        var logRequest = new LogRequest
+        {
+            ApiRequest = new ApiRequestRequest
+            {
+                EndAt = ApiRequest.EndAt,
+                Headers = ApiRequest.Headers,
+                Identification = ApiRequest.UserIdentification,
+                Ip = ApiRequest.IpAddress,
+                Language = ApiRequest.Language,
+                Method = ApiRequest.Method,
+                Parameters = ApiRequest.Parameters,
+                Path = ApiRequest.Path,
+                ActionName = ApiRequest.ActionName,
+                ControllerName = ApiRequest.ControllerName,
+                StartAt = ApiRequest.StartAt,
+                TemplatePath = ApiRequest.TemplatePath,
+                ApiGroupName = ApiRequest.ApiGroupName!
+            },
+            Type = LogType.Api,
+            CreatedAt = DateTime.UtcNow,
+            UserId = ApiRequestContext.GetUserId().ToString()
+        };
+
+        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
     }
 }

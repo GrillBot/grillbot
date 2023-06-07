@@ -60,14 +60,18 @@ public class RequestFilter : IAsyncActionFilter
 
     private async Task SetLoggedUserAsync(ActionContext context)
     {
+        var publicType = ApiRequestContext.IsPublic() ? "Public" : "Private";
         if (!(context.HttpContext.User.Identity?.IsAuthenticated ?? false))
+        {
+            ApiRequest.UserIdentification = $"ApiV1({publicType}/Anonymous)";
             return;
+        }
 
         ApiRequestContext.LoggedUserData = context.HttpContext.User;
 
         var loggedUserId = ApiRequestContext.GetUserId();
         ApiRequestContext.LoggedUser = await DiscordClient.FindUserAsync(loggedUserId);
-        ApiRequest.UserIdentification = $"ApiV1({(ApiRequestContext.IsPublic() ? "Public" : "Private")}/{ApiRequestContext.LoggedUser!.GetFullName()})";
+        ApiRequest.UserIdentification = $"ApiV1({publicType}/{ApiRequestContext.LoggedUser!.GetFullName()})";
     }
 
     private void SetApiRequest(ActionContext context)

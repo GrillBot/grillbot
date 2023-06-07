@@ -23,7 +23,7 @@ public partial class ApiRequest
     public string Language { get; set; }
     public string? ApiGroupName { get; set; }
     public Dictionary<string, string> Headers { get; set; } = new();
-    public string? UserIdentification { get; set; }
+    public string UserIdentification { get; set; } = null!;
     public string IpAddress { get; set; }
 
     [OnSerializing]

@@ -1,53 +1,32 @@
-﻿using GrillBot.App.Managers;
+﻿using AuditLogService.Models.Request;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Managers.Performance;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 
 namespace GrillBot.App.Handlers.GuildUpdated;
 
-public class AuditEmotesGuildUpdatedHandler : IGuildUpdatedEvent
+public class AuditEmotesGuildUpdatedHandler : AuditLogServiceHandler, IGuildUpdatedEvent
 {
-    private ICounterManager CounterManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
-
-    public AuditEmotesGuildUpdatedHandler(ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditEmotesGuildUpdatedHandler(IAuditLogServiceClient auditLogServiceClient) : base(auditLogServiceClient)
     {
-        CounterManager = counterManager;
-        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IGuild before, IGuild after)
     {
-        if (!CanProcess(before, after)) return;
+        var removedEmotes = before.Emotes.Where(e => !after.Emotes.Contains(e)).ToList();
+        if (removedEmotes.Count == 0)
+            return;
 
-        // TODO Implement sticker support.
-        var logItems = await GetDeletedEmotesAsync(before, after);
-        await AuditLogWriteManager.StoreAsync(logItems);
-    }
-
-    private static bool CanProcess(IGuild before, IGuild after)
-    {
-        return !before.Emotes.Select(o => o.Id).SequenceEqual(after.Emotes.Select(o => o.Id));
-    }
-
-    private async Task<List<AuditLogDataWrapper>> GetDeletedEmotesAsync(IGuild before, IGuild after)
-    {
-        var removedEmotes = before.Emotes.Where(o => !after.Emotes.Contains(o)).ToList();
-
-        IReadOnlyCollection<IAuditLogEntry> auditLogs;
-        using (CounterManager.Create("Discord.API.AuditLog"))
+        var requests = new List<LogRequest>();
+        foreach (var emote in removedEmotes)
         {
-            auditLogs = await after.GetAuditLogsAsync(actionType: ActionType.EmojiDeleted);
+            var request = CreateRequest(LogType.EmoteDeleted, after);
+            request.DeletedEmote = new DeletedEmoteRequest { EmoteId = emote.ToString() };
+
+            requests.Add(request);
         }
 
-        return removedEmotes
-            .Select(e => auditLogs.FirstOrDefault(o => ((EmoteDeleteAuditLogData)o.Data).EmoteId == e.Id))
-            .Where(o => o != null)
-            .Select(logItem =>
-            {
-                var data = new AuditEmoteInfo((EmoteDeleteAuditLogData)logItem.Data);
-                return new AuditLogDataWrapper(AuditLogItemType.EmojiDeleted, data, after, processedUser: logItem.User, discordAuditLogItemId: logItem.Id.ToString());
-            }).ToList();
+        await SendRequestsAsync(requests);
     }
 }

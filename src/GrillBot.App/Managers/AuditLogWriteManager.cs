@@ -18,9 +18,6 @@ public class AuditLogWriteManager
         DatabaseBuilder = databaseBuilder;
     }
 
-    public Task StoreAsync(AuditLogDataWrapper item)
-        => StoreAsync(new List<AuditLogDataWrapper> { item });
-
     public async Task StoreAsync(List<AuditLogDataWrapper> items)
     {
         await using var repository = DatabaseBuilder.CreateRepository();

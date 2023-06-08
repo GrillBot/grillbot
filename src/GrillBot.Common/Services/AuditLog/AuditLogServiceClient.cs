@@ -1,5 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Services.Diagnostics.Models;
 
@@ -33,7 +35,7 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
     public async Task CreateItemsAsync(List<LogRequest> requests)
     {
         await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/log", requests),
+            () => HttpClient.PostAsJsonAsync("api/logItem", requests),
             _ => EmptyResult
         );
     }
@@ -44,5 +46,14 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
             () => HttpClient.GetAsync("api/diag"),
             response => response.Content.ReadFromJsonAsync<DiagnosticInfo>()
         ))!;
+    }
+
+    public async Task<DeleteItemResponse> DeleteItemAsync(Guid id)
+    {
+        return (await ProcessRequestAsync(
+                () => HttpClient.DeleteAsync($"api/logItem/{id}"),
+                response => response.Content.ReadFromJsonAsync<DeleteItemResponse>(),
+                response => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound ? Task.CompletedTask : EnsureSuccessResponseAsync(response))
+            )!;
     }
 }

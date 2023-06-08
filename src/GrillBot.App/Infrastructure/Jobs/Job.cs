@@ -1,11 +1,13 @@
 ﻿using GrillBot.Common.Managers;
 using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 using Quartz;
 using System.Reflection;
-using GrillBot.App.Managers;
+using AuditLogService.Models.Request;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers.Logging;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.Jobs;
@@ -43,7 +45,7 @@ public abstract class Job : IJob
         var data = new JobExecutionData
         {
             JobName = JobName,
-            StartAt = DateTime.Now,
+            StartAt = DateTime.UtcNow,
             StartingUser = user is null ? null : new AuditUserInfo(user)
         };
 
@@ -70,11 +72,27 @@ public abstract class Job : IJob
 
     private async Task WriteToAuditLogAsync(JobExecutionData executionData)
     {
-        if (string.IsNullOrEmpty(executionData.Result)) return;
+        if (string.IsNullOrEmpty(executionData.Result)) 
+            return;
 
-        var auditLogWriter = ServiceProvider.GetRequiredService<AuditLogWriteManager>();
-        var logItem = new AuditLogDataWrapper(AuditLogItemType.JobCompleted, executionData, processedUser: DiscordClient.CurrentUser);
-        await auditLogWriter.StoreAsync(logItem);
+        var logRequest = new LogRequest
+        {
+            Type = LogType.JobCompleted,
+            CreatedAt = DateTime.UtcNow,
+            JobExecution = new JobExecutionRequest
+            {
+                Result = executionData.Result,
+                EndAt = executionData.EndAt,
+                JobName = executionData.JobName,
+                StartAt = executionData.StartAt,
+                WasError = executionData.WasError,
+                StartUserId = executionData.StartingUser?.UserId
+            },
+            UserId = DiscordClient.CurrentUser.Id.ToString()
+        };
+
+        var auditLogServiceClient = ServiceProvider.GetRequiredService<IAuditLogServiceClient>();
+        await auditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
     }
 
     private async Task<bool> CanRunAsync()

@@ -13,7 +13,7 @@ public class JobExecutionData
 
     public void MarkFinished()
     {
-        EndAt = DateTime.Now;
+        EndAt = DateTime.UtcNow;
     }
 
     public int Duration()

@@ -25,12 +25,6 @@ public class MemberUpdatedData
         Target = target;
     }
 
-    public MemberUpdatedData(Database.Entity.User before, Database.Entity.User after) : this(new AuditUserInfo(after))
-    {
-        SelfUnverifyMinimalTime = new Diff<TimeSpan?>(before.SelfUnverifyMinimalTime, after.SelfUnverifyMinimalTime);
-        Flags = new Diff<int>(before.Flags, after.Flags);
-    }
-
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)
     {

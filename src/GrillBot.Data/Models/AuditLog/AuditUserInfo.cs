@@ -22,13 +22,6 @@ public class AuditUserInfo : IComparable
         Discriminator = user.Discriminator;
     }
 
-    public AuditUserInfo(Database.Entity.User user)
-    {
-        UserId = user.Id;
-        Username = user.Username;
-        Discriminator = user.Discriminator;
-    }
-
     public override string ToString() => string.IsNullOrEmpty(Discriminator) ? Username : $"{Username}#{Discriminator}";
 
     public int CompareTo(object obj)

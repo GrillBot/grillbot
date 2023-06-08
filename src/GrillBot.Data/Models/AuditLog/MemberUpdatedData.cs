@@ -16,15 +16,6 @@ public class MemberUpdatedData
     public Diff<int>? Flags { get; set; }
     public Diff<DateTime?>? TimeoutUntil { get; set; }
 
-    public MemberUpdatedData()
-    {
-    }
-
-    public MemberUpdatedData(AuditUserInfo target)
-    {
-        Target = target;
-    }
-
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)
     {

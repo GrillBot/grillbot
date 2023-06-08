@@ -1,66 +1,39 @@
 ﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Handlers.GuildMemberUpdated;
 
-public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
+public class AuditUserRoleUpdatedHandler : AuditLogServiceHandler, IGuildMemberUpdatedEvent
 {
     private AuditLogManager AuditLogManager { get; }
     private ICounterManager CounterManager { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditUserRoleUpdatedHandler(AuditLogManager auditLogManager, ICounterManager counterManager, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager)
+    public AuditUserRoleUpdatedHandler(AuditLogManager auditLogManager, ICounterManager counterManager, IAuditLogServiceClient auditLogServiceClient) : base(auditLogServiceClient)
     {
-        DatabaseBuilder = databaseBuilder;
         CounterManager = counterManager;
         AuditLogManager = auditLogManager;
-        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IGuildUser? before, IGuildUser after)
     {
         if (!CanProcess(before, after)) return;
-
         AuditLogManager.OnMemberRoleUpdatedEvent(after.GuildId, DateTime.Now.AddMinutes(1));
-        var ignoredLogIdsAsync = await GetIgnoredAuditLogIdsAsync(after.Guild);
-        var auditLogs = await GetAuditLogsAsync(after.Guild, ignoredLogIdsAsync, after);
-        if (auditLogs.Count == 0) return;
 
-        var items = new List<AuditLogDataWrapper>();
-        foreach (var log in auditLogs)
-        {
-            var roles = ((MemberRoleAuditLogData)log.Data).Roles.Select(o =>
-            {
-                var role = after.Guild.GetRole(o.RoleId);
-                return role != null ? new AuditRoleUpdateInfo(role, o.Added) : null;
-            });
+        var auditLogs = await GetAuditLogsAsync(after.Guild, after);
+        if (auditLogs.Count == 0)
+            return;
 
-            var logData = new MemberUpdatedData(new AuditUserInfo(after));
-            logData.Roles!.AddRange(roles!);
-
-            items.Add(new AuditLogDataWrapper(AuditLogItemType.MemberRoleUpdated, logData, after.Guild, processedUser: log.User,
-                discordAuditLogItemId: log.Id.ToString(), createdAt: log.CreatedAt.LocalDateTime));
-        }
-
-        await AuditLogWriteManager.StoreAsync(items);
+        var requests = auditLogs.ConvertAll(entry => CreateRequest(LogType.MemberRoleUpdated, after.Guild, null, after, entry));
+        await SendRequestsAsync(requests);
     }
 
     private bool CanProcess(IGuildUser? before, IGuildUser after)
-        => before is not null && DateTime.Now >= AuditLogManager.GetNextMemberRoleEvent(after.GuildId) && !before.RoleIds.SequenceEqual(after.RoleIds);
+        => before is not null && DateTime.Now >= AuditLogManager.GetNextMemberRoleEvent(after.GuildId) && !before.RoleIds.OrderBy(o => o).SequenceEqual(after.RoleIds.OrderBy(o => o));
 
-    private async Task<List<ulong>> GetIgnoredAuditLogIdsAsync(IGuild guild)
-    {
-        var timeLimit = DateTime.Now.AddMonths(-2);
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.AuditLog.GetDiscordAuditLogIdsAsync(guild, null, new[] { AuditLogItemType.MemberRoleUpdated }, timeLimit);
-    }
-
-    private async Task<List<IAuditLogEntry>> GetAuditLogsAsync(IGuild guild, ICollection<ulong> ignoredLogIds, IUser user)
+    private async Task<List<IAuditLogEntry>> GetAuditLogsAsync(IGuild guild, IUser user)
     {
         IReadOnlyCollection<IAuditLogEntry> auditLogs;
         using (CounterManager.Create("Discord.API.AuditLog"))
@@ -69,7 +42,7 @@ public class AuditUserRoleUpdatedHandler : IGuildMemberUpdatedEvent
         }
 
         return auditLogs
-            .Where(o => !ignoredLogIds.Contains(o.Id) && ((MemberRoleAuditLogData)o.Data).Target.Id == user.Id)
+            .Where(o => ((MemberRoleAuditLogData)o.Data).Target.Id == user.Id)
             .ToList();
     }
 }

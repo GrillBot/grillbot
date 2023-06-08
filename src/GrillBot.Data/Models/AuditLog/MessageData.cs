@@ -8,5 +8,5 @@ public class MessageData
     public AuditUserInfo Author { get; set; }
     public DateTime CreatedAt { get; set; }
     public string Content { get; set; }
-    public List<EmbedInfo> Embeds { get; set; } 
+    public List<EmbedInfo>? Embeds { get; set; } 
 }

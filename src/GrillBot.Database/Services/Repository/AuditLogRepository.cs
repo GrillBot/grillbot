@@ -83,18 +83,6 @@ public class AuditLogRepository : RepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<AuditLogItem?> FindLogItemByIdAsync(long id, bool includeFiles = false)
-    {
-        using (CreateCounter())
-        {
-            var query = Context.AuditLogs.AsQueryable();
-            if (includeFiles)
-                query = query.Include(o => o.Files);
-
-            return await query.FirstOrDefaultAsync(o => o.Id == id);
-        }
-    }
-
     public async Task<Dictionary<AuditLogItemType, int>> GetStatisticsByTypeAsync()
     {
         using (CreateCounter())
@@ -127,4 +115,7 @@ public class AuditLogRepository : RepositoryBase<GrillBotContext>
                 .ToListAsync();
         }
     }
+
+    public async Task<List<AuditLogItem>> GetItemsByType(AuditLogItemType type)
+        => await Context.AuditLogs.Include(o => o.Files).Where(o => o.Type == type).OrderByDescending(o => o.Id).ToListAsync();
 }

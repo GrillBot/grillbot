@@ -28,4 +28,7 @@ public class AuditChannelBaseInfo : IComparable
     public static bool operator <(AuditChannelBaseInfo left, AuditChannelBaseInfo right) => left.CompareTo(right) != 0;
     public static bool operator <=(AuditChannelBaseInfo left, AuditChannelBaseInfo right) => left.CompareTo(right) != 0;
     public static bool operator >=(AuditChannelBaseInfo left, AuditChannelBaseInfo right) => left.CompareTo(right) != 0;
+
+    public string GetId()
+        => Id > 0 ? Id.ToString() : ChannelId;
 }

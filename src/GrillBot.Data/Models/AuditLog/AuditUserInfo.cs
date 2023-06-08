@@ -39,4 +39,7 @@ public class AuditUserInfo : IComparable
     public static bool operator <(AuditUserInfo left, AuditUserInfo right) => left.CompareTo(right) != 0;
     public static bool operator <=(AuditUserInfo left, AuditUserInfo right) => left.CompareTo(right) != 0;
     public static bool operator >=(AuditUserInfo left, AuditUserInfo right) => left.CompareTo(right) != 0;
+
+    public string GetId()
+        => Id > 0 ? Id.ToString() : UserId;
 }

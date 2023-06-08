@@ -13,5 +13,5 @@ public class EmbedInfo
     public string ProviderName { get; set; }
     public string ThumbnailInfo { get; set; }
     public int FieldsCount { get; set; }
-    public List<EmbedFieldInfo> Fields { get; set; }
+    public List<EmbedFieldInfo>? Fields { get; set; }
 }

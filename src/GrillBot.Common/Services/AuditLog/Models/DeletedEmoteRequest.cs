@@ -1,10 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace AuditLogService.Models.Request;
+﻿namespace GrillBot.Common.Services.AuditLog.Models;
 
 public class DeletedEmoteRequest
 {
-    [Required]
-    [StringLength(32)]
     public string EmoteId { get; set; } = null!;
 }

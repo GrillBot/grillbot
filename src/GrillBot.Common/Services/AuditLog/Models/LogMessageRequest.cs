@@ -1,13 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Discord;
+﻿using Discord;
 
-namespace AuditLogService.Models.Request;
+namespace GrillBot.Common.Services.AuditLog.Models;
 
 public class LogMessageRequest
 {
-    [Required]
     public string Message { get; set; } = null!;
-
-    [Required]
     public LogSeverity Severity { get; set; }
 }

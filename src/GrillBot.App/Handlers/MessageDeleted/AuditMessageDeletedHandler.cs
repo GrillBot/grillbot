@@ -1,5 +1,4 @@
-﻿using AuditLogService.Models.Request;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.AuditLog;

@@ -1,4 +1,4 @@
-﻿namespace AuditLogService.Models.Request;
+﻿namespace GrillBot.Common.Services.AuditLog.Models;
 
 public class DiffRequest<TType>
 {

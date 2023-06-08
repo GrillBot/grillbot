@@ -1,10 +1,10 @@
-﻿using AuditLogService.Models.Request;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using GrillBot.App.Services.Discord;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Handlers.InteractionCommandExecuted;

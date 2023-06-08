@@ -1,5 +1,4 @@
-﻿using AuditLogService.Models.Request;
-using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;

@@ -1,8 +1,8 @@
-﻿using AuditLogService.Models.Request;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 
 namespace GrillBot.App.Handlers.GuildUpdated;
 

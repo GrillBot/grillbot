@@ -1,5 +1,4 @@
-﻿using AuditLogService.Models.Request;
-using GrillBot.Common.Services.AuditLog.Enums;
+﻿using GrillBot.Common.Services.AuditLog.Enums;
 
 namespace GrillBot.Common.Services.AuditLog.Models;
 

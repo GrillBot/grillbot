@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Discord;
+﻿using Discord;
 
 namespace GrillBot.Common.Services.AuditLog.Models;
 

@@ -1,5 +1,4 @@
-﻿using AuditLogService.Models.Request;
-using GrillBot.App.Infrastructure.Jobs;
+﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;

@@ -2,7 +2,6 @@
 using GrillBot.Data.Models.AuditLog;
 using Quartz;
 using System.Reflection;
-using AuditLogService.Models.Request;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Services.AuditLog;

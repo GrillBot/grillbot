@@ -1,9 +1,9 @@
-﻿using AuditLogService.Models.Request;
-using GrillBot.Cache.Services.Managers;
+﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Handlers.UserJoined;

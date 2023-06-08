@@ -1,5 +1,4 @@
-﻿using AuditLogService.Models.Request;
-using GrillBot.Cache.Services.Managers.MessageCache;
+﻿using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Models;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;

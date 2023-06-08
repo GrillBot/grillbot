@@ -1,6 +1,4 @@
-﻿using AuditLogService.Models.Request;
-
-namespace GrillBot.Common.Services.AuditLog.Models;
+﻿namespace GrillBot.Common.Services.AuditLog.Models;
 
 public class UserLeftRequest : UserJoinedRequest
 {

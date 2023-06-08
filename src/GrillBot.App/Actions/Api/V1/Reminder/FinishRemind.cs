@@ -1,20 +1,21 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
+﻿using AuditLogService.Models.Request;
+using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 using GrillBot.Core.Exceptions;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Reminder;
 
 public class FinishRemind : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ITextsManager Texts { get; }
     private RemindHelper RemindHelper { get; }
     private IDiscordClient DiscordClient { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
     public bool IsGone { get; private set; }
     public bool IsAuthorized { get; private set; }
@@ -22,13 +23,13 @@ public class FinishRemind : ApiAction
 
     private bool IsCancel => ApiContext.GetUserId() != DiscordClient.CurrentUser.Id;
 
-    public FinishRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, IDiscordClient discordClient,
-        ITextsManager texts) : base(apiContext)
+    public FinishRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient, ITextsManager texts,
+        IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriteManager = auditLogWriteManager;
         Texts = texts;
         DiscordClient = discordClient;
+        AuditLogServiceClient = auditLogServiceClient;
 
         RemindHelper = new RemindHelper(discordClient, texts);
     }
@@ -93,8 +94,18 @@ public class FinishRemind : ApiAction
         // Is not required create log item while processing from scheduled jobs.
         if (!IsCancel) return;
 
-        var logItem = new AuditLogDataWrapper(AuditLogItemType.Info, $"Bylo stornováno upozornění s ID {remind.Id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(), null,
-            null, ApiContext.LoggedUser);
-        await AuditLogWriteManager.StoreAsync(logItem);
+        var logRequest = new LogRequest
+        {
+            Type = LogType.Info,
+            CreatedAt = DateTime.UtcNow,
+            LogMessage = new LogMessageRequest
+            {
+                Message = $"Bylo stornováno upozornění s ID {remind.Id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(),
+                Severity = LogSeverity.Info
+            },
+            UserId = ApiContext.GetUserId().ToString(),
+        };
+
+        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
     }
 }

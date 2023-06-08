@@ -25,11 +25,11 @@ public class AuditLogController : Infrastructure.ControllerBase
     /// </summary>
     /// <response code="200">Success.</response>
     /// <response code="404">Item not found.</response>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult> RemoveItemAsync(long id)
+    public async Task<ActionResult> RemoveItemAsync(Guid id)
     {
         await ProcessActionAsync<RemoveItem>(action => action.ProcessAsync(id));
         return Ok();

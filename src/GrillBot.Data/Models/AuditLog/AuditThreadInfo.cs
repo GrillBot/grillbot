@@ -12,25 +12,6 @@ public class AuditThreadInfo : AuditChannelBaseInfo
     public bool IsLocked { get; set; }
     public List<string>? Tags { get; set; }
 
-    public AuditThreadInfo()
-    {
-    }
-
-    public AuditThreadInfo(ulong id, string name, ThreadType threadType, bool isArchived, ThreadArchiveDuration archiveDuration,
-        bool isLocked, int? slowMode) : base(id, name, slowMode)
-    {
-        ThreadType = threadType;
-        IsArchived = isArchived;
-        ArchiveDuration = archiveDuration;
-        IsLocked = isLocked;
-        Tags = new List<string>();
-    }
-
-    public AuditThreadInfo(IThreadChannel thread) : this(thread.Id, thread.Name, thread.Type, thread.IsArchived, thread.AutoArchiveDuration,
-        thread.IsLocked, thread.SlowModeInterval)
-    {
-    }
-
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)
     {

@@ -1,12 +1,14 @@
-﻿using GrillBot.App.Helpers;
+﻿using AuditLogService.Models.Request;
+using GrillBot.App.Helpers;
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.Models;
 using GrillBot.Data.Models.API.Channels;
-using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
@@ -15,22 +17,22 @@ public class UpdateChannel : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private AutoReplyManager AutoReplyManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ITextsManager Texts { get; }
     private ChannelHelper ChannelHelper { get; }
     private PointsHelper PointsHelper { get; }
     private IDiscordClient DiscordClient { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, ITextsManager texts, AutoReplyManager autoReplyManager,
-        ChannelHelper channelHelper, PointsHelper pointsHelper, IDiscordClient discordClient) : base(apiContext)
+    public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, AutoReplyManager autoReplyManager, ChannelHelper channelHelper,
+        PointsHelper pointsHelper, IDiscordClient discordClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriteManager = auditLogWriteManager;
         Texts = texts;
         AutoReplyManager = autoReplyManager;
         ChannelHelper = channelHelper;
         PointsHelper = pointsHelper;
         DiscordClient = discordClient;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     public async Task ProcessAsync(ulong id, UpdateChannelParams parameters)
@@ -47,12 +49,7 @@ public class UpdateChannel : ApiAction
         var success = await repository.CommitAsync() > 0;
         if (!success) return;
 
-        var guild = await ChannelHelper.GetGuildFromChannelAsync(null, id);
-        var guildChannel = guild == null ? null : await guild.GetChannelAsync(id);
-        var logItem = new AuditLogDataWrapper(AuditLogItemType.ChannelUpdated, new Diff<AuditChannelInfo>(new AuditChannelInfo(before), new AuditChannelInfo(channel)), guild, guildChannel,
-            ApiContext.LoggedUser);
-        await AuditLogWriteManager.StoreAsync(logItem);
-
+        await WriteToAuditLogAsync(id, before, channel);
         await TryReloadAutoReplyAsync(before, channel);
         await TrySyncPointsService(before, channel);
     }
@@ -73,5 +70,28 @@ public class UpdateChannel : ApiAction
         if (channel is null) return;
 
         await PointsHelper.SyncDataWithServiceAsync(guild, Enumerable.Empty<IUser>(), new[] { channel });
+    }
+
+    private async Task WriteToAuditLogAsync(ulong channelId, Database.Entity.GuildChannel before, Database.Entity.GuildChannel after)
+    {
+        if (before.Flags == after.Flags)
+            return;
+
+        var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId);
+        var logRequest = new LogRequest
+        {
+            ChannelId = channelId.ToString(),
+            ChannelUpdated = new DiffRequest<ChannelInfoRequest>
+            {
+                After = new ChannelInfoRequest { Flags = after.Flags },
+                Before = new ChannelInfoRequest { Flags = before.Flags }
+            },
+            GuildId = guild?.Id.ToString(),
+            Type = LogType.ChannelUpdated,
+            CreatedAt = DateTime.UtcNow,
+            UserId = ApiContext.GetUserId().ToString()
+        };
+
+        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
     }
 }

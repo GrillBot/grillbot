@@ -7,5 +7,5 @@ public class MessageDeletedRequest
     public string AuthorId { get; set; } = null!;
     public DateTime MessageCreatedAt { get; set; }
     public string? Content { get; set; }
-    public List<string> Embeds { get; set; } = new();
+    public List<EmbedRequest> Embeds { get; set; } = new();
 }

@@ -1,4 +1,4 @@
-﻿namespace GrillBot.Common.Services.AuditLog.Models;
+﻿namespace GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 
 public class ApiRequestRequest
 {
@@ -15,4 +15,5 @@ public class ApiRequestRequest
     public Dictionary<string, string> Headers { get; set; } = new();
     public string Identification { get; set; } = null!;
     public string Ip { get; set; } = null!;
+    public string Result { get; set; } = null!;
 }

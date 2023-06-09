@@ -17,7 +17,7 @@ public partial class ApiRequest
     public string Method { get; set; }
     public string TemplatePath { get; set; }
     public string Path { get; set; }
-    public string LoggedUserRole { get; set; }
+    public string? LoggedUserRole { get; set; }
     public string StatusCode { get; set; }
     public Dictionary<string, string> Parameters { get; set; } = new();
     public string Language { get; set; }

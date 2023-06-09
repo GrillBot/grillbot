@@ -1,9 +1,9 @@
 ﻿using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api.V1.AuditLog;
+using GrillBot.Common.Services.AuditLog.Models.Request.Search;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
-using GrillBot.Data.Models.API.AuditLog.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -44,11 +44,10 @@ public class AuditLogController : Infrastructure.ControllerBase
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<PaginatedResponse<AuditLogListItem>>> GetAuditLogListAsync([FromBody] AuditLogListParams parameters)
+    public async Task<ActionResult<PaginatedResponse<LogListItem>>> SearchAuditLogsAsync([FromBody] SearchRequest request)
     {
-        ApiAction.Init(this, parameters);
-
-        return Ok(await ProcessActionAsync<GetAuditLogList, PaginatedResponse<AuditLogListItem>>(action => action.ProcessAsync(parameters)));
+        ApiAction.Init(this, request);
+        return Ok(await ProcessActionAsync<GetAuditLogList, PaginatedResponse<LogListItem>>(action => action.ProcessAsync(request)));
     }
 
     /// <summary>

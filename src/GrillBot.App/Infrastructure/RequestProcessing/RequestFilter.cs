@@ -77,14 +77,14 @@ public class RequestFilter : IAsyncActionFilter
     private void SetApiRequest(ActionContext context)
     {
         var descriptor = (ControllerActionDescriptor)context.ActionDescriptor;
-        ApiRequest.StartAt = DateTime.Now;
-        ApiRequest.TemplatePath = descriptor.AttributeRouteInfo!.Template;
+        ApiRequest.StartAt = DateTime.UtcNow;
+        ApiRequest.TemplatePath = descriptor.AttributeRouteInfo!.Template!;
         ApiRequest.Path = context.HttpContext.Request.Path.ToString();
         ApiRequest.ActionName = descriptor.MethodInfo.Name;
         ApiRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
         ApiRequest.Method = context.HttpContext.Request.Method;
         ApiRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
-        ApiRequest.IpAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString();
+        ApiRequest.IpAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString()!;
 
         foreach (var item in context.HttpContext.Request.Query)
             ApiRequest.AddParameter(item.Key, item.Value.ToString());

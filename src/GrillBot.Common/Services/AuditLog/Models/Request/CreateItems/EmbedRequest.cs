@@ -1,7 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Discord;
+﻿using Discord;
 
-namespace GrillBot.Common.Services.AuditLog.Models;
+namespace GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 
 public class EmbedRequest
 {

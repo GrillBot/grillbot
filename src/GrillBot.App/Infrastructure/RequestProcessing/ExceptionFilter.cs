@@ -3,7 +3,6 @@ using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;
-using GrillBot.Common.Services.AuditLog.Models;
 using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Exceptions;
 using GrillBot.Data.Models.API;
@@ -32,7 +31,7 @@ public class ExceptionFilter : IAsyncExceptionFilter
 
     public async Task OnExceptionAsync(ExceptionContext context)
     {
-        ApiRequest.EndAt = DateTime.Now;
+        ApiRequest.EndAt = DateTime.UtcNow;
 
         switch (context.Exception)
         {
@@ -53,6 +52,11 @@ public class ExceptionFilter : IAsyncExceptionFilter
                 break;
             case GrillBotException:
                 context.Result = new ObjectResult(new MessageResponse(context.Exception.Message)) { StatusCode = StatusCodes.Status500InternalServerError };
+                break;
+            case AggregateException aggregateException:
+                var validationExceptions = aggregateException.InnerExceptions.OfType<ValidationException>().Where(o => o.ValidationResult.MemberNames.Any()).ToList();
+                if (validationExceptions.Count > 0)
+                    SetValidationErrors(context, validationExceptions);
                 break;
         }
 
@@ -80,6 +84,20 @@ public class ExceptionFilter : IAsyncExceptionFilter
         ApiRequest.StatusCode = "400 (BadRequest)";
     }
 
+    private void SetValidationErrors(ExceptionContext context, IEnumerable<ValidationException> exceptions)
+    {
+        var modelState = new ModelStateDictionary();
+        foreach (var exception in exceptions)
+        {
+            foreach (var memberName in exception.ValidationResult.MemberNames)
+                modelState.AddModelError(memberName, exception.ValidationResult.ErrorMessage ?? "");
+        }
+
+        context.ExceptionHandled = true;
+        context.Result = new BadRequestObjectResult(new ValidationProblemDetails(modelState));
+        ApiRequest.StatusCode = "400 (BadRequest)";
+    }
+
     private void SetNotFound(ExceptionContext context)
     {
         context.ExceptionHandled = true;
@@ -96,10 +114,11 @@ public class ExceptionFilter : IAsyncExceptionFilter
 
     private async Task WriteToAuditLogAsync()
     {
+        var userId = ApiRequestContext.GetUserId();
         var logRequest = new LogRequest
         {
             Type = LogType.Api,
-            UserId = ApiRequestContext.GetUserId().ToString(),
+            UserId = userId > 0 ? userId.ToString() : null,
             CreatedAt = DateTime.UtcNow,
             ApiRequest = new ApiRequestRequest
             {
@@ -115,7 +134,8 @@ public class ExceptionFilter : IAsyncExceptionFilter
                 Parameters = ApiRequest.Parameters,
                 StartAt = ApiRequest.StartAt,
                 TemplatePath = ApiRequest.TemplatePath,
-                ApiGroupName = ApiRequest.ApiGroupName!
+                ApiGroupName = ApiRequest.ApiGroupName!,
+                Result = ApiRequest.StatusCode
             }
         };
 

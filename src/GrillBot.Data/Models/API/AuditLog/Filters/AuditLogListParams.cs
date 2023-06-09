@@ -63,28 +63,6 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IDictionaryObje
 
     public PaginatedParams Pagination { get; set; } = new();
 
-    public bool AnyExtendedFilter()
-    {
-        var conditions = new[]
-        {
-            () => Types.Contains(AuditLogItemType.Info) && InfoFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.Warning) && WarningFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.Error) && ErrorFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.Command) && CommandFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.InteractionCommand) && InteractionFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.JobCompleted) && JobFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.Api) && ApiRequestFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.OverwriteCreated) && OverwriteCreatedFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.OverwriteDeleted) && OverwriteDeletedFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.OverwriteUpdated) && OverwriteUpdatedFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.MemberUpdated) && MemberUpdatedFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.MemberRoleUpdated) && MemberRolesUpdatedFilter?.IsSet() == true,
-            () => Types.Contains(AuditLogItemType.MessageDeleted) && MessageDeletedFilter?.IsSet() == true
-        };
-
-        return conditions.Any(o => o());
-    }
-
     public IQueryable<AuditLogItem> SetIncludes(IQueryable<AuditLogItem> query)
     {
         return query
@@ -172,15 +150,6 @@ public class AuditLogListParams : IQueryableModel<AuditLogItem>, IDictionaryObje
         };
 
         return Sort.Descending ? sortQuery.ThenByDescending(o => o.Id) : sortQuery.ThenBy(o => o.Id);
-    }
-
-    public void UpdateStartDate(DateTime startAt)
-    {
-        if (!OnlyFromStart) return;
-
-        CreatedFrom = startAt;
-        if (CreatedTo <= startAt)
-            CreatedTo = null;
     }
 
     public Dictionary<string, string?> ToDictionary()

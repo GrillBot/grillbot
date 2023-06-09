@@ -193,9 +193,10 @@ public class AuditLogMigrationJob : Job
         await MigrateAsync<AuditEmoteInfo>(AuditLogItemType.EmojiDeleted, source, target, async (headerId, data) =>
         {
             var emote = (AuditEmoteInfo)data;
+            var emoteId = emote.Id > 0 ? emote.Id.ToString() : emote.EmoteId;
 
             await using var command = target.CreateCommand();
-            command.CommandText = $"INSERT INTO \"DeletedEmotes\" (\"LogItemId\", \"EmoteId\", \"EmoteName\") VALUES ('{headerId}', '{emote.Id}', @name)";
+            command.CommandText = $"INSERT INTO \"DeletedEmotes\" (\"LogItemId\", \"EmoteId\", \"EmoteName\") VALUES ('{headerId}', '{emoteId}', @name)";
             command.Parameters.AddWithValue("@name", emote.Name);
             await command.ExecuteNonQueryAsync();
         });
@@ -467,7 +468,8 @@ public class AuditLogMigrationJob : Job
             var msg = (MessageDeletedData)data;
             var authorId = msg.Data.Author.GetId();
             var msgCreated = msg.Data.CreatedAt;
-            var messageCreatedAt = new DateTime(msgCreated.Year, msgCreated.Month, msgCreated.Day, msgCreated.Hour, msgCreated.Minute, msgCreated.Second).ToUniversalTime().ToString("o");
+            var messageCreatedAt = new DateTime(msgCreated.Year, msgCreated.Month, msgCreated.Day, msgCreated.Hour, msgCreated.Minute, msgCreated.Second, msgCreated.Millisecond, DateTimeKind.Local)
+                .ToUniversalTime().ToString("o");
 
             await using var message = target.CreateCommand();
             message.CommandText =
@@ -574,9 +576,10 @@ public class AuditLogMigrationJob : Job
         await MigrateAsync<JobExecutionData>(AuditLogItemType.JobCompleted, source, target, async (headerId, data) =>
         {
             var job = (JobExecutionData)data;
-            var start = new DateTime(job.StartAt.Year, job.StartAt.Month, job.StartAt.Day, job.StartAt.Hour, job.StartAt.Minute, job.StartAt.Second, DateTimeKind.Local)
+            var start = new DateTime(job.StartAt.Year, job.StartAt.Month, job.StartAt.Day, job.StartAt.Hour, job.StartAt.Minute, job.StartAt.Second, job.StartAt.Millisecond, DateTimeKind.Local)
                 .ToUniversalTime().ToString("o");
-            var end = new DateTime(job.EndAt.Year, job.EndAt.Month, job.EndAt.Day, job.EndAt.Hour, job.EndAt.Minute, job.EndAt.Second, DateTimeKind.Local).ToUniversalTime().ToString("o");
+            var end = new DateTime(job.EndAt.Year, job.EndAt.Month, job.EndAt.Day, job.EndAt.Hour, job.EndAt.Minute, job.EndAt.Second, job.EndAt.Millisecond, DateTimeKind.Local).ToUniversalTime()
+                .ToString("o");
             var startUser = job.StartingUser?.GetId() ?? "NULL";
 
             await using var jobInfo = target.CreateCommand();
@@ -592,14 +595,15 @@ public class AuditLogMigrationJob : Job
         await MigrateAsync<ApiRequest>(AuditLogItemType.Api, source, target, async (headerId, data) =>
         {
             var api = (ApiRequest)data;
-            var start = new DateTime(api.StartAt.Year, api.StartAt.Month, api.StartAt.Day, api.StartAt.Hour, api.StartAt.Minute, api.StartAt.Second, DateTimeKind.Local)
+            var start = new DateTime(api.StartAt.Year, api.StartAt.Month, api.StartAt.Day, api.StartAt.Hour, api.StartAt.Minute, api.StartAt.Second, api.StartAt.Millisecond, DateTimeKind.Local)
                 .ToUniversalTime().ToString("o");
-            var end = new DateTime(api.EndAt.Year, api.EndAt.Month, api.EndAt.Day, api.EndAt.Hour, api.EndAt.Minute, api.EndAt.Second, DateTimeKind.Local).ToUniversalTime().ToString("o");
+            var end = new DateTime(api.EndAt.Year, api.EndAt.Month, api.EndAt.Day, api.EndAt.Hour, api.EndAt.Minute, api.EndAt.Second, api.EndAt.Millisecond, DateTimeKind.Local).ToUniversalTime()
+                .ToString("o");
 
             await using var request = target.CreateCommand();
             request.CommandText =
-                $"INSERT INTO \"ApiRequests\" (\"LogItemId\", \"ControllerName\", \"ActionName\", \"StartAt\", \"EndAt\", \"Method\", \"TemplatePath\", \"Path\", \"Parameters\", \"Language\", \"ApiGroupName\", \"Headers\", \"Identification\", \"Ip\") " +
-                $"VALUES ('{headerId}', '{api.ControllerName}', '{api.ActionName}', '{start}', '{end}', '{api.Method}', @templatePath, @path, @parameters, '{api.Language}', '{(api.ApiGroupName ?? "V1")}', @headers, @identification, '{api.IpAddress}')";
+                $"INSERT INTO \"ApiRequests\" (\"LogItemId\", \"ControllerName\", \"ActionName\", \"StartAt\", \"EndAt\", \"Method\", \"TemplatePath\", \"Path\", \"Parameters\", \"Language\", \"ApiGroupName\", \"Headers\", \"Identification\", \"Ip\", \"Result\") " +
+                $"VALUES ('{headerId}', '{api.ControllerName}', '{api.ActionName}', '{start}', '{end}', '{api.Method}', @templatePath, @path, @parameters, '{api.Language}', '{(api.ApiGroupName ?? "V1")}', @headers, @identification, '{api.IpAddress}', '{api.StatusCode}')";
             request.Parameters.AddWithValue("@templatePath", api.TemplatePath);
             request.Parameters.AddWithValue("@path", api.Path);
             request.Parameters.AddWithValue("@parameters", NpgsqlDbType.Jsonb, api.Parameters);
@@ -683,8 +687,8 @@ public class AuditLogMigrationJob : Job
     private static async Task<Guid> InserHeaderItemAsync(NpgsqlConnection connection, AuditLogItem item)
     {
         var headerId = Guid.NewGuid();
-        var createdAt = new DateTime(item.CreatedAt.Year, item.CreatedAt.Month, item.CreatedAt.Day, item.CreatedAt.Hour, item.CreatedAt.Minute, item.CreatedAt.Second, DateTimeKind.Local)
-            .ToUniversalTime().ToString("o");
+        var createdAt = new DateTime(item.CreatedAt.Year, item.CreatedAt.Month, item.CreatedAt.Day, item.CreatedAt.Hour, item.CreatedAt.Minute, item.CreatedAt.Second, item.CreatedAt.Millisecond,
+            DateTimeKind.Local).ToUniversalTime().ToString("o");
         var guildId = string.IsNullOrEmpty(item.GuildId) ? "NULL" : $"'{item.GuildId}'";
         var userId = string.IsNullOrEmpty(item.ProcessedUserId) ? "NULL" : $"'{item.ProcessedUserId}'";
         var channelId = string.IsNullOrEmpty(item.ChannelId) ? "NULL" : $"'{item.ChannelId}'";

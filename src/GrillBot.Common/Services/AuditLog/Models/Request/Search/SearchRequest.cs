@@ -10,6 +10,7 @@ public class SearchRequest : IDictionaryObject
 {
     public string? GuildId { get; set; }
     public List<string> UserIds { get; set; } = new();
+    public string? ChannelId { get; set; }
     public List<LogType> ShowTypes { get; set; } = new();
     public List<LogType> IgnoreTypes { get; set; } = new();
     public DateTime? CreatedFrom { get; set; }
@@ -27,7 +28,8 @@ public class SearchRequest : IDictionaryObject
             { nameof(GuildId), GuildId },
             { nameof(CreatedFrom), CreatedFrom?.ToString("o") },
             { nameof(CreatedTo), CreatedTo?.ToString("o") },
-            { nameof(OnlyWithFiles), OnlyWithFiles.ToString() }
+            { nameof(OnlyWithFiles), OnlyWithFiles.ToString() },
+            { nameof(ChannelId), ChannelId }
         };
 
         for (var i = 0; i < UserIds.Count; i++)

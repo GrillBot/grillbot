@@ -37,12 +37,31 @@ public class GetAuditLogList : ApiAction
 
     public async Task<PaginatedResponse<LogListItem>> ProcessAsync(SearchRequest request)
     {
+        FixDateTimes(request);
+
         var response = await AuditLogServiceClient.SearchItemsAsync(request);
         if (response.ValidationErrors is not null)
             throw CreateValidationExceptions(response.ValidationErrors);
 
         await using var repository = DatabaseBuilder.CreateRepository();
         return await PaginatedResponse<LogListItem>.CopyAndMapAsync(response.Response!, async entity => await MapListItemAsync(repository, entity));
+    }
+
+    private static void FixDateTimes(SearchRequest request)
+    {
+        request.CreatedFrom = FixDateTime(request.CreatedFrom);
+        request.CreatedTo = FixDateTime(request.CreatedTo);
+    }
+
+    private static DateTime? FixDateTime(DateTime? dateTime)
+    {
+        if (dateTime is null)
+            return null;
+        if (dateTime.Value.Kind == DateTimeKind.Utc)
+            return dateTime;
+
+        var val = dateTime.Value;
+        return new DateTime(val.Year, val.Month, val.Day, val.Hour, val.Minute, val.Second, val.Millisecond, DateTimeKind.Local).ToUniversalTime();
     }
 
     private static AggregateException CreateValidationExceptions(ValidationProblemDetails validationProblemDetails)

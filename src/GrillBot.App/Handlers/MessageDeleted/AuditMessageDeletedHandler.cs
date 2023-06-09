@@ -4,6 +4,7 @@ using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;
 using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Core.Extensions;
 using Microsoft.AspNetCore.StaticFiles;

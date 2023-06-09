@@ -3,6 +3,7 @@ using GrillBot.Common.Models;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;
 using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Data.Models.API.AuditLog;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;

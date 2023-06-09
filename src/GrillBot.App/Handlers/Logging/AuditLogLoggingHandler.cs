@@ -5,6 +5,7 @@ using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.AuditLog.Enums;
 using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers.Logging;

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Services.Diagnostics.Models;

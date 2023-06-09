@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Common.Services.Common;
 using GrillBot.Core.Services.Diagnostics.Models;

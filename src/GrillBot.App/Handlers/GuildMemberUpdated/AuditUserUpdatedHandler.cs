@@ -17,11 +17,11 @@ public class AuditUserUpdatedHandler : AuditLogServiceHandler, IGuildMemberUpdat
         if (before is null || !CanProcess(before, after)) return;
 
         var request = CreateRequest(LogType.MemberUpdated, after.Guild);
-        request.MemberUpdated = new MemberUpdatedRequest();
+        request.MemberUpdated = new MemberUpdatedRequest { UserId = after.Id.ToString() };
 
         await SendRequestAsync(request);
     }
 
     private static bool CanProcess(IGuildUser before, IGuildUser after)
-        => before.IsDeafened != after.IsDeafened || before.IsMuted != after.IsMuted || before.Nickname != after.Nickname || before.TimedOutUntil != after.TimedOutUntil;
+        => before.IsDeafened != after.IsDeafened || before.IsMuted != after.IsMuted || before.Nickname != after.Nickname;
 }

@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api.V1.AuditLog;
 using GrillBot.Common.Services.AuditLog.Models.Request.Search;
+using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
@@ -41,8 +42,8 @@ public class AuditLogController : Infrastructure.ControllerBase
     /// <response code="200">Returns paginated list of audit log items.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("list")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult<PaginatedResponse<LogListItem>>> SearchAuditLogsAsync([FromBody] SearchRequest request)
     {
@@ -65,4 +66,13 @@ public class AuditLogController : Infrastructure.ControllerBase
         await ProcessActionAsync<CreateLogItem>(action => action.ProcessAsync(request));
         return Ok();
     }
+
+    /// <summary>
+    /// Get detailed information of log item.
+    /// </summary>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    public async Task<ActionResult<Detail?>> DetailAsync(Guid id)
+        => Ok(await ProcessActionAsync<GetAuditLogDetail, Detail?>(action => action.ProcessAsync(id)));
 }

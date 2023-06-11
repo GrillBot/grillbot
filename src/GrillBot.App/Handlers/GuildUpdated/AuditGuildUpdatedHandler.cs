@@ -50,7 +50,6 @@ public class AuditGuildUpdatedHandler : AuditLogServiceHandler, IGuildUpdatedEve
             ExplicitContentFilter = guild.ExplicitContentFilter,
             RulesChannelId = guild.RulesChannelId?.ToString(),
             SystemChannelFlags = guild.SystemChannelFlags,
-            OwnerId = guild.OwnerId.ToString(),
             VoiceRegionId = guild.VoiceRegionId,
             PublicUpdatesChannelId = guild.PublicUpdatesChannelId?.ToString(),
             SystemChannelId = guild.SystemChannelId?.ToString(),
@@ -77,7 +76,6 @@ public class AuditGuildUpdatedHandler : AuditLogServiceHandler, IGuildUpdatedEve
             before.SystemChannelId != after.SystemChannelId ||
             before.RulesChannelId != after.RulesChannelId ||
             before.PublicUpdatesChannelId != after.PublicUpdatesChannelId ||
-            before.OwnerId != after.OwnerId ||
             before.VoiceRegionId != after.VoiceRegionId ||
             before.Features.Value != after.Features.Value ||
             before.PremiumTier != after.PremiumTier ||

@@ -1,5 +1,4 @@
-﻿using System.Data;
-using GrillBot.App.Infrastructure.Jobs;
+﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Managers;
 using GrillBot.Core.Models;
 using GrillBot.Data.Models.AuditLog;
@@ -7,7 +6,6 @@ using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 using Npgsql;
 using NpgsqlTypes;
 using Quartz;
@@ -315,14 +313,14 @@ public class AuditLogMigrationJob : Job
             await before.ExecuteNonQueryAsync();
 
             await using var after = target.CreateCommand();
-            before.CommandText = $"INSERT INTO \"MemberInfos\" (\"Id\", \"UserId\", \"Nickname\", \"IsMuted\", \"IsDeaf\", \"SelfUnverifyMinimalTime\", \"Flags\") " +
+            after.CommandText = $"INSERT INTO \"MemberInfos\" (\"Id\", \"UserId\", \"Nickname\", \"IsMuted\", \"IsDeaf\", \"SelfUnverifyMinimalTime\", \"Flags\") " +
                                  $"VALUES ('{afterId}', '{userId}', @nickname, @muted, @deaf, @selfunverify, @flags)";
-            before.Parameters.AddWithValue("@nickname", (object)member.Nickname?.After ?? DBNull.Value);
-            before.Parameters.AddWithValue("@muted", (object)member.IsMuted?.After ?? DBNull.Value);
-            before.Parameters.AddWithValue("@deaf", (object)member.IsDeaf?.After ?? DBNull.Value);
-            before.Parameters.AddWithValue("@selfunverify", (object)member.SelfUnverifyMinimalTime?.After?.ToString("c") ?? DBNull.Value);
-            before.Parameters.AddWithValue("@flags", (object)member.Flags?.After ?? DBNull.Value);
-            await before.ExecuteNonQueryAsync();
+            after.Parameters.AddWithValue("@nickname", (object)member.Nickname?.After ?? DBNull.Value);
+            after.Parameters.AddWithValue("@muted", (object)member.IsMuted?.After ?? DBNull.Value);
+            after.Parameters.AddWithValue("@deaf", (object)member.IsDeaf?.After ?? DBNull.Value);
+            after.Parameters.AddWithValue("@selfunverify", (object)member.SelfUnverifyMinimalTime?.After?.ToString("c") ?? DBNull.Value);
+            after.Parameters.AddWithValue("@flags", (object)member.Flags?.After ?? DBNull.Value);
+            await after.ExecuteNonQueryAsync();
 
             await using var channelCreatedItem = target.CreateCommand();
             channelCreatedItem.CommandText = $"INSERT INTO \"MemberUpdatedItems\" (\"LogItemId\", \"BeforeId\", \"AfterId\") VALUES ('{headerId}', '{beforeId}', '{afterId}')";
@@ -342,13 +340,13 @@ public class AuditLogMigrationJob : Job
                 var id = Guid.NewGuid();
                 var roleId = role.Id > 0 ? role.Id.ToString() : role.RoleId;
 
-                await using var before = target.CreateCommand();
-                before.CommandText = $"INSERT INTO \"MemberRoleUpdatedItems\" (\"Id\", \"LogItemId\", \"UserId\", \"RoleId\", \"RoleName\", \"RoleColor\", \"IsAdded\") " +
+                await using var roleCommand = target.CreateCommand();
+                roleCommand.CommandText = $"INSERT INTO \"MemberRoleUpdatedItems\" (\"Id\", \"LogItemId\", \"UserId\", \"RoleId\", \"RoleName\", \"RoleColor\", \"IsAdded\") " +
                                      $"VALUES ('{id}', '{headerId}', '{userId}', '{roleId}', @name, @color, @added)";
-                before.Parameters.AddWithValue("@name", role.Name);
-                before.Parameters.AddWithValue("@color", new Color(role.Color).ToString());
-                before.Parameters.AddWithValue("@added", role.Added);
-                await before.ExecuteNonQueryAsync();
+                roleCommand.Parameters.AddWithValue("@name", role.Name);
+                roleCommand.Parameters.AddWithValue("@color", new Color(role.Color).ToString());
+                roleCommand.Parameters.AddWithValue("@added", role.Added);
+                await roleCommand.ExecuteNonQueryAsync();
             }
         });
     }
@@ -398,7 +396,7 @@ public class AuditLogMigrationJob : Job
             after.Parameters.AddWithValue("@discoverySplashId", guild.DiscoverySplashChanged ? "Changed" : DBNull.Value);
             after.Parameters.AddWithValue("@splashId", guild.SplashChanged ? "Changed" : DBNull.Value);
             after.Parameters.AddWithValue("@iconId", guild.IconChanged ? "Changed" : DBNull.Value);
-            after.Parameters.AddWithValue("@ownerId", (object)guild.Owner?.After.GetId() ?? "0");
+            after.Parameters.AddWithValue("@ownerId", "0");
             after.Parameters.AddWithValue("@publicUpdatesChannelId", (object)guild.PublicUpdatesChannel?.After?.GetId() ?? DBNull.Value);
             after.Parameters.AddWithValue("@systemChannelId", (object)guild.SystemChannel?.After?.GetId() ?? DBNull.Value);
             after.Parameters.AddWithValue("@afkChannelId", (object)guild.AfkChannel?.After?.GetId() ?? DBNull.Value);
@@ -580,11 +578,11 @@ public class AuditLogMigrationJob : Job
                 .ToUniversalTime().ToString("o");
             var end = new DateTime(job.EndAt.Year, job.EndAt.Month, job.EndAt.Day, job.EndAt.Hour, job.EndAt.Minute, job.EndAt.Second, job.EndAt.Millisecond, DateTimeKind.Local).ToUniversalTime()
                 .ToString("o");
-            var startUser = job.StartingUser?.GetId() ?? "NULL";
+            var startUser = job.StartingUser is null ? "NULL" : $"'{job.StartingUser.GetId()}'";
 
             await using var jobInfo = target.CreateCommand();
             jobInfo.CommandText = $"INSERT INTO \"JobExecutions\" (\"LogItemId\", \"JobName\", \"Result\", \"StartAt\", \"EndAt\", \"WasError\", \"StartUserId\") " +
-                                  $"VALUES ('{headerId}', '{job.JobName}', @result, '{start}', '{end}', {job.WasError.ToString().ToLower()}, '{startUser}')";
+                                  $"VALUES ('{headerId}', '{job.JobName}', @result, '{start}', '{end}', {job.WasError.ToString().ToLower()}, {startUser})";
             jobInfo.Parameters.AddWithValue("@result", job.Result!);
             await jobInfo.ExecuteNonQueryAsync();
         });

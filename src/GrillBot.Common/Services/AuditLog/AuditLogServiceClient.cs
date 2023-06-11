@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Common.Services.AuditLog.Models.Request.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response;
+using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Common.Services.AuditLog.Models.Response.Search;
 using GrillBot.Common.Services.Common;
 using GrillBot.Core.Managers.Performance;
@@ -76,6 +77,25 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
             {
                 if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest) return;
                 await EnsureSuccessResponseAsync(response);
+            }
+        );
+    }
+
+    public async Task<Detail?> DetailAsync(Guid id)
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/logItem/{id}"),
+            async response =>
+            {
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<Detail>();
+                return null;
+            },
+            response =>
+            {
+                if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+                    return Task.CompletedTask;
+                return EnsureSuccessResponseAsync(response);
             }
         );
     }

@@ -9,7 +9,6 @@ public class GuildUpdatedPreview
     public bool DiscoverySplashId { get; set; }
     public bool SplashId { get; set; }
     public bool IconId { get; set; }
-    public bool OwnerId { get; set; }
     public bool PublicUpdatesChannelId { get; set; }
     public bool RulesChannelId { get; set; }
     public bool SystemChannelId { get; set; }

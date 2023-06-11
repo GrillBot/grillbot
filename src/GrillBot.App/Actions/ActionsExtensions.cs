@@ -24,7 +24,8 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.AuditLog.RemoveItem>()
             .AddScoped<Api.V1.AuditLog.GetAuditLogList>()
-            .AddScoped<Api.V1.AuditLog.CreateLogItem>();
+            .AddScoped<Api.V1.AuditLog.CreateLogItem>()
+            .AddScoped<Api.V1.AuditLog.GetAuditLogDetail>();
 
         // Auth
         services

@@ -42,8 +42,6 @@ public class AuditLogClearingJob : ArchivationJobBase
         await ProcessUsersAsync(repository, archivationResult.UserIds, xmlData);
 
         var zipName = await StoreDataAsync(xmlData, archivationResult.Files);
-        await repository.CommitAsync();
-
         var totalFilesSize = archivationResult.TotalFilesSize.Bytes().ToString();
         var xmlSize = Encoding.UTF8.GetBytes(xmlData.ToString()).Length.Bytes().ToString();
         var zipSize = new FileInfo(zipName).Length.Bytes().ToString();

@@ -64,7 +64,9 @@ public class AuditLogLoggingHandler : ILoggingHandler
             LogMessage = new LogMessageRequest
             {
                 Message = logMessage,
-                Severity = severity
+                Severity = severity,
+                SourceAppName = "GrillBot",
+                Source = source
             },
             CreatedAt = DateTime.UtcNow,
             UserId = user?.Id.ToString()

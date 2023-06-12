@@ -50,7 +50,6 @@ public class AuditGuildUpdatedHandler : AuditLogServiceHandler, IGuildUpdatedEve
             ExplicitContentFilter = guild.ExplicitContentFilter,
             RulesChannelId = guild.RulesChannelId?.ToString(),
             SystemChannelFlags = guild.SystemChannelFlags,
-            VoiceRegionId = guild.VoiceRegionId,
             PublicUpdatesChannelId = guild.PublicUpdatesChannelId?.ToString(),
             SystemChannelId = guild.SystemChannelId?.ToString(),
             AfkTimeout = guild.AFKTimeout,

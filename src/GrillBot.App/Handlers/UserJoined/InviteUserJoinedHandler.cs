@@ -100,7 +100,9 @@ public class InviteUserJoinedHandler : AuditLogServiceHandler, IUserJoinedEvent
         request.LogMessage = new LogMessageRequest
         {
             Message = $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
-            Severity = LogSeverity.Warning
+            Severity = LogSeverity.Warning,
+            Source = nameof(InviteUserJoinedHandler),
+            SourceAppName = "GrillBot"
         };
 
         await SendRequestAsync(request);

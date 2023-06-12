@@ -16,7 +16,7 @@ public class SearchRequest : IDictionaryObject
     public DateTime? CreatedFrom { get; set; }
     public DateTime? CreatedTo { get; set; }
     public bool OnlyWithFiles { get; set; }
-    public List<Guid> Ids { get; set; } = new();
+    public List<Guid>? Ids { get; set; }
     public AdvancedSearchRequest? AdvancedSearch { get; set; }
     public SortParameters Sort { get; set; } = new() { Descending = true, OrderBy = "CreatedAt" };
     public PaginatedParams Pagination { get; set; } = new();
@@ -38,8 +38,12 @@ public class SearchRequest : IDictionaryObject
             result.Add($"{nameof(ShowTypes)}[{i}]", ShowTypes[i].ToString());
         for (var i = 0; i < IgnoreTypes.Count; i++)
             result.Add($"{nameof(IgnoreTypes)}[{i}]", IgnoreTypes[i].ToString());
-        for (var i = 0; i < Ids.Count; i++)
-            result.Add($"{nameof(Ids)}[{i}]", Ids[i].ToString());
+
+        if (Ids is not null)
+        {
+            for (var i = 0; i < Ids.Count; i++)
+                result.Add($"{nameof(Ids)}[{i}]", Ids[i].ToString());
+        }
 
         result.MergeDictionaryObjects(AdvancedSearch, nameof(AdvancedSearch));
         result.MergeDictionaryObjects(Sort, nameof(Sort));

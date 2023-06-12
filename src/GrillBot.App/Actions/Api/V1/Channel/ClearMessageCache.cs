@@ -38,7 +38,9 @@ public class ClearMessageCache : ApiAction
             LogMessage = new LogMessageRequest
             {
                 Message = $"Byla ručně smazána cache zpráv kanálu. Smazaných zpráv: {count}",
-                Severity = LogSeverity.Info
+                Severity = LogSeverity.Info,
+                SourceAppName = "GrillBot",
+                Source = nameof(ClearMessageCache)
             },
             UserId = ApiContext.GetUserId().ToString()
         };

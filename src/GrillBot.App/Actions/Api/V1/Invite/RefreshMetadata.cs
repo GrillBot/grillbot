@@ -52,7 +52,9 @@ public class RefreshMetadata : ApiAction
             LogMessage = new LogMessageRequest
             {
                 Message = $"Invites for guild \"{guild.Name}\" was {(isReload ? "reloaded" : "loaded")}. Loaded invites: {invites.Count}",
-                Severity = LogSeverity.Info
+                Severity = LogSeverity.Info,
+                SourceAppName = "GrillBot",
+                Source = $"Invite.{nameof(RefreshMetadata)}"
             },
             UserId = ApiContext.GetUserId().ToString()
         };

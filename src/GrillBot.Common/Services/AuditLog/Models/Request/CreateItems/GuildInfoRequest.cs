@@ -12,7 +12,6 @@ public class GuildInfoRequest
     public string? SplashId { get; set; }
     public string? IconId { get; set; }
     public byte[]? IconData { get; set; }
-    public string? VoiceRegionId { get; set; }
     public string? PublicUpdatesChannelId { get; set; }
     public string? RulesChannelId { get; set; }
     public string? SystemChannelId { get; set; }

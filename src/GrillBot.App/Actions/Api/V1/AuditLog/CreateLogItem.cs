@@ -28,7 +28,9 @@ public class CreateLogItem : ApiAction
             UserId = ApiContext.GetUserId().ToString(),
             LogMessage = new LogMessageRequest
             {
-                Message = request.Content
+                Message = request.Content,
+                Source = request.Source,
+                SourceAppName = request.AppName
             }
         };
 

@@ -38,7 +38,9 @@ public class RemoveStats : ApiAction
             LogMessage = new LogMessageRequest
             {
                 Message = $"Statistiky emotu {emoteId} byly smazány. Smazáno záznamů: {emotesCount}",
-                Severity = LogSeverity.Info
+                Severity = LogSeverity.Info,
+                SourceAppName = "GrillBot",
+                Source = $"Emote.{nameof(RemoveStats)}"
             },
             UserId = ApiContext.GetUserId().ToString()
         };

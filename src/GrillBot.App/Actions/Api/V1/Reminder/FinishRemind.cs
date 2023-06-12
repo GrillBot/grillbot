@@ -101,7 +101,9 @@ public class FinishRemind : ApiAction
             LogMessage = new LogMessageRequest
             {
                 Message = $"Bylo stornováno upozornění s ID {remind.Id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(),
-                Severity = LogSeverity.Info
+                Severity = LogSeverity.Info,
+                Source = $"Remind.{nameof(FinishRemind)}",
+                SourceAppName = "GrillBot"
             },
             UserId = ApiContext.GetUserId().ToString(),
         };

@@ -80,7 +80,9 @@ public class MergeStats : ApiAction
             LogMessage = new LogMessageRequest
             {
                 Message = $"Provedeno sloučení emotů {parameters.SourceEmoteId} do {parameters.DestinationEmoteId}. Sloučeno záznamů: {sourceStatsCount}/{destinationStatsCount}",
-                Severity = LogSeverity.Info
+                Severity = LogSeverity.Info,
+                SourceAppName = "GrillBot",
+                Source = $"Emote.{nameof(MergeStats)}"
             }
         };
 

@@ -13,6 +13,14 @@ public class ClientLogItemRequest : IDictionaryObject
     [Required]
     public string Content { get; set; } = null!;
 
+    [Required]
+    [StringLength(100)]
+    public string AppName { get; set; } = null!;
+
+    [Required]
+    [StringLength(512)]
+    public string Source { get; set; } = null!;
+
     public Dictionary<string, string?> ToDictionary()
     {
         return new Dictionary<string, string?>
@@ -20,7 +28,9 @@ public class ClientLogItemRequest : IDictionaryObject
             { nameof(IsInfo), IsInfo.ToString() },
             { nameof(IsError), IsError.ToString() },
             { nameof(IsWarning), IsWarning.ToString() },
-            { nameof(Content), Content }
+            { nameof(Content), Content },
+            { nameof(AppName), AppName },
+            { nameof(Source), Source }
         };
     }
 }

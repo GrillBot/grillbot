@@ -99,4 +99,12 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
             }
         );
     }
+
+    public async Task<ArchivationResult?> ProcessArchivationAsync()
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.PostAsync("api/archivation", null),
+            async response => response.StatusCode == HttpStatusCode.NoContent ? null : await response.Content.ReadFromJsonAsync<ArchivationResult>()
+        );
+    }
 }

@@ -16,4 +16,5 @@ public interface IAuditLogServiceClient : IClient
     Task<DeleteItemResponse> DeleteItemAsync(Guid id);
     Task<RestResponse<PaginatedResponse<LogListItem>>> SearchItemsAsync(SearchRequest request);
     Task<Detail?> DetailAsync(Guid id);
+    Task<ArchivationResult?> ProcessArchivationAsync();
 }

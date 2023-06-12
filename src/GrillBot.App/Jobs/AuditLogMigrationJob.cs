@@ -361,8 +361,8 @@ public class AuditLogMigrationJob : Job
 
             await using var before = target.CreateCommand();
             before.CommandText =
-                $"INSERT INTO \"GuildInfoItems\" (\"Id\", \"DefaultMessageNotifications\", \"Description\", \"VanityUrl\", \"BannerId\", \"DiscoverySplashId\", \"SplashId\", \"IconId\", \"IconData\", \"VoiceRegionId\", \"OwnerId\", \"PublicUpdatesChannelId\", \"SystemChannelId\", \"AfkChannelId\", \"AfkTimeout\", \"Name\", \"MfaLevel\", \"VerificationLevel\", \"ExplicitContentFilter\", \"Features\", \"PremiumTier\", \"SystemChannelFlags\", \"NsfwLevel\") " +
-                $"VALUES ('{beforeId}', @defaultMessageNotifications, @description, @vanityUrl, @bannerId, @discoverySplashId, @splashId, @iconId, NULL, 'deprecated', @ownerId, @publicUpdatesChannelId, @systemChannelId, @afkChannelId, @afkTimeout, @name, @mfaLevel, @verificationLevel, @explicitContentFilter, @features, @premiumTier, @systemChannelFlags, @nsfwLevel)";
+                $"INSERT INTO \"GuildInfoItems\" (\"Id\", \"DefaultMessageNotifications\", \"Description\", \"VanityUrl\", \"BannerId\", \"DiscoverySplashId\", \"SplashId\", \"IconId\", \"IconData\", \"PublicUpdatesChannelId\", \"SystemChannelId\", \"AfkChannelId\", \"AfkTimeout\", \"Name\", \"MfaLevel\", \"VerificationLevel\", \"ExplicitContentFilter\", \"Features\", \"PremiumTier\", \"SystemChannelFlags\", \"NsfwLevel\") " +
+                $"VALUES ('{beforeId}', @defaultMessageNotifications, @description, @vanityUrl, @bannerId, @discoverySplashId, @splashId, @iconId, NULL, @publicUpdatesChannelId, @systemChannelId, @afkChannelId, @afkTimeout, @name, @mfaLevel, @verificationLevel, @explicitContentFilter, @features, @premiumTier, @systemChannelFlags, @nsfwLevel)";
             before.Parameters.AddWithValue("@defaultMessageNotifications", (int?)guild.DefaultMessageNotifications?.Before ?? 1);
             before.Parameters.AddWithValue("@description", (object)guild.Description?.Before ?? DBNull.Value);
             before.Parameters.AddWithValue("@vanityUrl", (object)guild.VanityUrl?.Before ?? DBNull.Value);
@@ -370,7 +370,6 @@ public class AuditLogMigrationJob : Job
             before.Parameters.AddWithValue("@discoverySplashId", guild.DiscoverySplashChanged ? "Changed" : DBNull.Value);
             before.Parameters.AddWithValue("@splashId", guild.SplashChanged ? "Changed" : DBNull.Value);
             before.Parameters.AddWithValue("@iconId", guild.IconChanged ? "Changed" : DBNull.Value);
-            before.Parameters.AddWithValue("@ownerId", (object)guild.Owner?.Before.GetId() ?? "0");
             before.Parameters.AddWithValue("@publicUpdatesChannelId", (object)guild.PublicUpdatesChannel?.Before?.GetId() ?? DBNull.Value);
             before.Parameters.AddWithValue("@systemChannelId", (object)guild.SystemChannel?.Before?.GetId() ?? DBNull.Value);
             before.Parameters.AddWithValue("@afkChannelId", (object)guild.AfkChannel?.Before?.GetId() ?? DBNull.Value);
@@ -387,8 +386,8 @@ public class AuditLogMigrationJob : Job
 
             await using var after = target.CreateCommand();
             after.CommandText =
-                $"INSERT INTO \"GuildInfoItems\" (\"Id\", \"DefaultMessageNotifications\", \"Description\", \"VanityUrl\", \"BannerId\", \"DiscoverySplashId\", \"SplashId\", \"IconId\", \"IconData\", \"VoiceRegionId\", \"OwnerId\", \"PublicUpdatesChannelId\", \"SystemChannelId\", \"AfkChannelId\", \"AfkTimeout\", \"Name\", \"MfaLevel\", \"VerificationLevel\", \"ExplicitContentFilter\", \"Features\", \"PremiumTier\", \"SystemChannelFlags\", \"NsfwLevel\") " +
-                $"VALUES ('{afterId}', @defaultMessageNotifications, @description, @vanityUrl, @bannerId, @discoverySplashId, @splashId, @iconId, NULL, 'deprecated', @ownerId, @publicUpdatesChannelId, @systemChannelId, @afkChannelId, @afkTimeout, @name, @mfaLevel, @verificationLevel, @explicitContentFilter, @features, @premiumTier, @systemChannelFlags, @nsfwLevel)";
+                $"INSERT INTO \"GuildInfoItems\" (\"Id\", \"DefaultMessageNotifications\", \"Description\", \"VanityUrl\", \"BannerId\", \"DiscoverySplashId\", \"SplashId\", \"IconId\", \"IconData\", \"PublicUpdatesChannelId\", \"SystemChannelId\", \"AfkChannelId\", \"AfkTimeout\", \"Name\", \"MfaLevel\", \"VerificationLevel\", \"ExplicitContentFilter\", \"Features\", \"PremiumTier\", \"SystemChannelFlags\", \"NsfwLevel\") " +
+                $"VALUES ('{afterId}', @defaultMessageNotifications, @description, @vanityUrl, @bannerId, @discoverySplashId, @splashId, @iconId, NULL, @publicUpdatesChannelId, @systemChannelId, @afkChannelId, @afkTimeout, @name, @mfaLevel, @verificationLevel, @explicitContentFilter, @features, @premiumTier, @systemChannelFlags, @nsfwLevel)";
             after.Parameters.AddWithValue("@defaultMessageNotifications", (int?)guild.DefaultMessageNotifications?.After ?? 1);
             after.Parameters.AddWithValue("@description", (object)guild.Description?.After ?? DBNull.Value);
             after.Parameters.AddWithValue("@vanityUrl", (object)guild.VanityUrl?.After ?? DBNull.Value);
@@ -396,7 +395,6 @@ public class AuditLogMigrationJob : Job
             after.Parameters.AddWithValue("@discoverySplashId", guild.DiscoverySplashChanged ? "Changed" : DBNull.Value);
             after.Parameters.AddWithValue("@splashId", guild.SplashChanged ? "Changed" : DBNull.Value);
             after.Parameters.AddWithValue("@iconId", guild.IconChanged ? "Changed" : DBNull.Value);
-            after.Parameters.AddWithValue("@ownerId", "0");
             after.Parameters.AddWithValue("@publicUpdatesChannelId", (object)guild.PublicUpdatesChannel?.After?.GetId() ?? DBNull.Value);
             after.Parameters.AddWithValue("@systemChannelId", (object)guild.SystemChannel?.After?.GetId() ?? DBNull.Value);
             after.Parameters.AddWithValue("@afkChannelId", (object)guild.AfkChannel?.After?.GetId() ?? DBNull.Value);

@@ -22,9 +22,9 @@ public abstract class ArchivationJobBase : Job
             .DistinctBy(o => o!.Id)
             .Select(o => new XElement("Guild", new XAttribute("Id", o!.Id), new XAttribute("Name", o.Name)));
     }
-    
-    protected static IEnumerable<XElement> TransformUsers(IEnumerable<Database.Entity.User> users)
-        => users.DistinctBy(o => o.Id).Select(TransformUser);
+
+    protected static IEnumerable<XElement> TransformUsers(IEnumerable<Database.Entity.User?> users)
+        => users.Where(o => o is not null).DistinctBy(o => o!.Id).Select(u => TransformUser(u!));
 
     protected static IEnumerable<XElement> TransformGuildUsers(IEnumerable<Database.Entity.GuildUser> guildUsers)
     {

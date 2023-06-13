@@ -4,6 +4,7 @@ using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Common.Services.AuditLog.Models.Request.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
+using GrillBot.Common.Services.AuditLog.Models.Response.Info;
 using GrillBot.Common.Services.AuditLog.Models.Response.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response.Statistics;
 using GrillBot.Common.Services.Common;
@@ -146,7 +147,7 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
         return (await ProcessRequestAsync(
             () => HttpClient.GetAsync($"api/statistics/api/userstats/{criteria}"),
             response => response.Content.ReadFromJsonAsync<List<UserActionCountItem>>()
-        ))!; 
+        ))!;
     }
 
     public async Task<List<UserActionCountItem>> GetUserCommandStatisticsAsync()
@@ -154,6 +155,14 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
         return (await ProcessRequestAsync(
             () => HttpClient.GetAsync($"api/statistics/interactions/userstats"),
             response => response.Content.ReadFromJsonAsync<List<UserActionCountItem>>()
-        ))!; 
+        ))!;
+    }
+
+    public async Task<List<JobInfo>> GetJobsInfoAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/info/jobs"),
+            response => response.Content.ReadFromJsonAsync<List<JobInfo>>()
+        ))!;
     }
 }

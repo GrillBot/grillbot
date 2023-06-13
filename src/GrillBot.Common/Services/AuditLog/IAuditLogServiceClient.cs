@@ -2,6 +2,7 @@
 using GrillBot.Common.Services.AuditLog.Models.Request.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
+using GrillBot.Common.Services.AuditLog.Models.Response.Info;
 using GrillBot.Common.Services.AuditLog.Models.Response.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response.Statistics;
 using GrillBot.Common.Services.Common;
@@ -24,4 +25,5 @@ public interface IAuditLogServiceClient : IClient
     Task<List<StatisticItem>> GetInteractionStatisticsListAsync();
     Task<List<UserActionCountItem>> GetUserApiStatisticsAsync(string criteria);
     Task<List<UserActionCountItem>> GetUserCommandStatisticsAsync();
+    Task<List<JobInfo>> GetJobsInfoAsync();
 }

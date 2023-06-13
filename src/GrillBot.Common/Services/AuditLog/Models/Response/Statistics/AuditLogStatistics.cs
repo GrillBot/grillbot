@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace GrillBot.Data.Models.API.Statistics;
+﻿namespace GrillBot.Common.Services.AuditLog.Models.Response.Statistics;
 
 public class AuditLogStatistics
 {

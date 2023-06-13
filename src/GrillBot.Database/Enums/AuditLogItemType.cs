@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace GrillBot.Database.Enums;
+﻿namespace GrillBot.Database.Enums;
 
 public enum AuditLogItemType
 {

@@ -5,6 +5,7 @@ using GrillBot.Common.Services.AuditLog.Models.Request.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Common.Services.AuditLog.Models.Response.Search;
+using GrillBot.Common.Services.AuditLog.Models.Response.Statistics;
 using GrillBot.Common.Services.Common;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
@@ -106,5 +107,53 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
             () => HttpClient.PostAsync("api/archivation", null),
             async response => response.StatusCode == HttpStatusCode.NoContent ? null : await response.Content.ReadFromJsonAsync<ArchivationResult>()
         );
+    }
+
+    public async Task<ApiStatistics> GetApiStatisticsAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync("api/statistics/api/stats"),
+            response => response.Content.ReadFromJsonAsync<ApiStatistics>()
+        ))!;
+    }
+
+    public async Task<AuditLogStatistics> GetAuditLogStatisticsAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync("api/statistics/auditlog"),
+            response => response.Content.ReadFromJsonAsync<AuditLogStatistics>()
+        ))!;
+    }
+
+    public async Task<AvgExecutionTimes> GetAvgTimesAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync("api/statistics/avgtimes"),
+            response => response.Content.ReadFromJsonAsync<AvgExecutionTimes>()
+        ))!;
+    }
+
+    public async Task<List<StatisticItem>> GetInteractionStatisticsListAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync("api/statistics/interactions/list"),
+            response => response.Content.ReadFromJsonAsync<List<StatisticItem>>()
+        ))!;
+    }
+
+    public async Task<List<UserActionCountItem>> GetUserApiStatisticsAsync(string criteria)
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/statistics/api/userstats/{criteria}"),
+            response => response.Content.ReadFromJsonAsync<List<UserActionCountItem>>()
+        ))!; 
+    }
+
+    public async Task<List<UserActionCountItem>> GetUserCommandStatisticsAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/statistics/interactions/userstats"),
+            response => response.Content.ReadFromJsonAsync<List<UserActionCountItem>>()
+        ))!; 
     }
 }

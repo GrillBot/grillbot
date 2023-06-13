@@ -3,6 +3,7 @@ using GrillBot.Common.Services.AuditLog.Models.Request.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Common.Services.AuditLog.Models.Response.Search;
+using GrillBot.Common.Services.AuditLog.Models.Response.Statistics;
 using GrillBot.Common.Services.Common;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Diagnostics.Models;
@@ -17,4 +18,10 @@ public interface IAuditLogServiceClient : IClient
     Task<RestResponse<PaginatedResponse<LogListItem>>> SearchItemsAsync(SearchRequest request);
     Task<Detail?> DetailAsync(Guid id);
     Task<ArchivationResult?> ProcessArchivationAsync();
+    Task<ApiStatistics> GetApiStatisticsAsync();
+    Task<AuditLogStatistics> GetAuditLogStatisticsAsync();
+    Task<AvgExecutionTimes> GetAvgTimesAsync();
+    Task<List<StatisticItem>> GetInteractionStatisticsListAsync();
+    Task<List<UserActionCountItem>> GetUserApiStatisticsAsync(string criteria);
+    Task<List<UserActionCountItem>> GetUserCommandStatisticsAsync();
 }

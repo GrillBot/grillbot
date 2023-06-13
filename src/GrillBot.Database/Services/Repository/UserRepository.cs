@@ -150,7 +150,6 @@ public class UserRepository : RepositoryBase<GrillBotContext>
 
             return await query
                 .OrderBy(o => o.Username)
-                .ThenBy(o => o.Discriminator)
                 .ToListAsync();
         }
     }
@@ -164,10 +163,13 @@ public class UserRepository : RepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<List<User>> GetUsersByIdsAsync(IEnumerable<string> userIds)
+    public async Task<List<User>> GetUsersByIdsAsync(List<string> userIds)
     {
         using (CreateCounter())
         {
+            if (!userIds.Any())
+                return new List<User>();
+            
             return await Context.Users.AsNoTracking()
                 .Where(o => userIds.Contains(o.Id))
                 .ToListAsync();

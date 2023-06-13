@@ -1,5 +1,4 @@
 ﻿using Discord.Interactions;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -19,9 +18,6 @@ public class InteractionCommandExecuted
     public int Duration { get; set; }
     public string Exception { get; set; }
     public string Locale { get; set; }
-
-    [JsonIgnore]
-    public string FullName => $"{Name} ({ModuleName}/{MethodName})";
 
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)

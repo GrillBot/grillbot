@@ -5,6 +5,7 @@ using GrillBot.Common.Services.AuditLog.Models.Request.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Common.Services.AuditLog.Models.Response.Info;
+using GrillBot.Common.Services.AuditLog.Models.Response.Info.Dashboard;
 using GrillBot.Common.Services.AuditLog.Models.Response.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response.Statistics;
 using GrillBot.Common.Services.Common;
@@ -163,6 +164,14 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
         return (await ProcessRequestAsync(
             () => HttpClient.GetAsync($"api/info/jobs"),
             response => response.Content.ReadFromJsonAsync<List<JobInfo>>()
+        ))!;
+    }
+
+    public async Task<DashboardInfo> GetDashboardInfoAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/info/dashboard"),
+            response => response.Content.ReadFromJsonAsync<DashboardInfo>()
         ))!;
     }
 }

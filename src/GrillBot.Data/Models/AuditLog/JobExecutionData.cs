@@ -15,7 +15,4 @@ public class JobExecutionData
     {
         EndAt = DateTime.UtcNow;
     }
-
-    public int Duration()
-        => (int)Math.Ceiling((EndAt - StartAt).TotalMilliseconds);
 }

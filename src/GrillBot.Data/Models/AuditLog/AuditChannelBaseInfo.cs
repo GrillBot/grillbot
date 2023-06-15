@@ -11,25 +11,15 @@ public class AuditChannelBaseInfo : IComparable
     public string Name { get; set; }
     public int? SlowMode { get; set; }
 
-    public AuditChannelBaseInfo()
-    {
-    }
-
-    public AuditChannelBaseInfo(ulong id, string name, int? slowMode)
-    {
-        ChannelId = id.ToString();
-        Name = name;
-        SlowMode = slowMode;
-    }
-
     public int CompareTo(object obj)
     {
-        if(obj is not AuditChannelBaseInfo channel) return 1;
+        if (obj is not AuditChannelBaseInfo channel) return 1;
 
         var currentChannelId = !string.IsNullOrEmpty(ChannelId) ? ChannelId : Id.ToString();
         var otherChannelId = !string.IsNullOrEmpty(channel.ChannelId) ? channel.ChannelId : channel.Id.ToString();
         return otherChannelId == currentChannelId ? 0 : 1;
     }
+
     public override bool Equals(object obj) => CompareTo(obj) == 0;
     public override int GetHashCode() => (string.IsNullOrEmpty(ChannelId) ? Id.ToString() : ChannelId).GetHashCode();
     public static bool operator ==(AuditChannelBaseInfo left, AuditChannelBaseInfo right) => EqualityComparer<AuditChannelBaseInfo>.Default.Equals(left, right);
@@ -38,4 +28,7 @@ public class AuditChannelBaseInfo : IComparable
     public static bool operator <(AuditChannelBaseInfo left, AuditChannelBaseInfo right) => left.CompareTo(right) != 0;
     public static bool operator <=(AuditChannelBaseInfo left, AuditChannelBaseInfo right) => left.CompareTo(right) != 0;
     public static bool operator >=(AuditChannelBaseInfo left, AuditChannelBaseInfo right) => left.CompareTo(right) != 0;
+
+    public string GetId()
+        => Id > 0 ? Id.ToString() : ChannelId;
 }

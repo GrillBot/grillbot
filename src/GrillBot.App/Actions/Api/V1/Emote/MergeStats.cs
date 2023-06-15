@@ -1,9 +1,10 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Managers.Discord;
 using GrillBot.Data.Models.API.Emotes;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
 
@@ -11,13 +12,13 @@ public class MergeStats : ApiAction
 {
     private IEmoteManager EmoteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public MergeStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager, IEmoteManager emoteManager) : base(apiContext)
+    public MergeStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IEmoteManager emoteManager, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriteManager = auditLogWriteManager;
         EmoteManager = emoteManager;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     public async Task<int> ProcessAsync(MergeEmoteStatsParams parameters)
@@ -54,10 +55,7 @@ public class MergeStats : ApiAction
             repository.Remove(item);
         }
 
-        var logItem = new AuditLogDataWrapper(AuditLogItemType.Info,
-            $"Provedeno sloučení emotů {parameters.SourceEmoteId} do {parameters.DestinationEmoteId}. Sloučeno záznamů: {sourceStats.Count}/{destinationStats.Count}",
-            null, null, ApiContext.LoggedUser);
-        await AuditLogWriteManager.StoreAsync(logItem);
+        await WriteToAuditLogAsync(parameters, sourceStats.Count, destinationStats.Count);
         return await repository.CommitAsync();
     }
 
@@ -70,5 +68,24 @@ public class MergeStats : ApiAction
                 new ValidationResult("Nelze sloučit statistiku do neexistujícího emotu.", new[] { nameof(@params.DestinationEmoteId) }), null, @params.DestinationEmoteId
             );
         }
+    }
+
+    private async Task WriteToAuditLogAsync(MergeEmoteStatsParams parameters, int sourceStatsCount, int destinationStatsCount)
+    {
+        var logRequest = new LogRequest
+        {
+            UserId = ApiContext.GetUserId().ToString(),
+            Type = LogType.Info,
+            CreatedAt = DateTime.UtcNow,
+            LogMessage = new LogMessageRequest
+            {
+                Message = $"Provedeno sloučení emotů {parameters.SourceEmoteId} do {parameters.DestinationEmoteId}. Sloučeno záznamů: {sourceStatsCount}/{destinationStatsCount}",
+                Severity = LogSeverity.Info,
+                SourceAppName = "GrillBot",
+                Source = $"Emote.{nameof(MergeStats)}"
+            }
+        };
+
+        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
     }
 }

@@ -49,15 +49,12 @@ public static class DiscordClientExtensions
             .FindAllAsync(async g => await g.GetUserAsync(userId) != null);
     }
 
-    public static async Task<ITextChannel?> FindTextChannelAsync(this IDiscordClient client, ulong id)
+    public static async Task<IRole?> FindRoleAsync(this IDiscordClient discordClient, ulong roleId)
     {
-        foreach (var guild in await client.GetGuildsAsync())
-        {
-            var textChannel = await guild.GetTextChannelAsync(id);
-            if (textChannel != null)
-                return textChannel;
-        }
+        var guilds = await discordClient.GetGuildsAsync();
 
-        return null;
+        return guilds
+            .Select(g => g.GetRole(roleId))
+            .FirstOrDefault(r => r is not null);
     }
 }

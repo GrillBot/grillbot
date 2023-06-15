@@ -1,19 +1,20 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Models;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
+﻿using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
 
 public class RemoveStats : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public RemoveStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, AuditLogWriteManager auditLogWriteManager) : base(apiContext)
+    public RemoveStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AuditLogWriteManager = auditLogWriteManager;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     public async Task<int> ProcessAsync(string emoteId)
@@ -23,10 +24,27 @@ public class RemoveStats : ApiAction
         var emotes = await repository.Emote.FindStatisticsByEmoteIdAsync(emoteId);
         if (emotes.Count == 0) return 0;
 
-        var auditLogItem = new AuditLogDataWrapper(AuditLogItemType.Info, $"Statistiky emotu {emoteId} byly smazány. Smazáno záznamů: {emotes.Count}", null, null, ApiContext.LoggedUser);
-        await AuditLogWriteManager.StoreAsync(auditLogItem);
-
+        await WriteToAuditlogAsync(emoteId, emotes.Count);
         repository.RemoveCollection(emotes);
         return await repository.CommitAsync();
+    }
+
+    private async Task WriteToAuditlogAsync(string emoteId, int emotesCount)
+    {
+        var logRequest = new LogRequest
+        {
+            Type = LogType.Info,
+            CreatedAt = DateTime.UtcNow,
+            LogMessage = new LogMessageRequest
+            {
+                Message = $"Statistiky emotu {emoteId} byly smazány. Smazáno záznamů: {emotesCount}",
+                Severity = LogSeverity.Info,
+                SourceAppName = "GrillBot",
+                Source = $"Emote.{nameof(RemoveStats)}"
+            },
+            UserId = ApiContext.GetUserId().ToString()
+        };
+
+        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
     }
 }

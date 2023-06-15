@@ -2,7 +2,7 @@
 
 public class DashboardCommand
 {
-    public string CommandName { get; set; }
+    public string CommandName { get; set; } = null!;
     public int Duration { get; set; }
     public bool Success { get; set; }
 }

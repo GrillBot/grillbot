@@ -24,7 +24,8 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.AuditLog.RemoveItem>()
             .AddScoped<Api.V1.AuditLog.GetAuditLogList>()
-            .AddScoped<Api.V1.AuditLog.CreateLogItem>();
+            .AddScoped<Api.V1.AuditLog.CreateLogItem>()
+            .AddScoped<Api.V1.AuditLog.GetAuditLogDetail>();
 
         // Auth
         services
@@ -118,11 +119,7 @@ public static class ActionsExtensions
 
         // Statistics
         services
-            .AddScoped<Api.V1.Statistics.GetApiStatistics>()
             .AddScoped<Api.V1.Statistics.GetApiUserStatistics>()
-            .AddScoped<Api.V1.Statistics.GetAuditLogStatistics>()
-            .AddScoped<Api.V1.Statistics.GetAvgTimes>()
-            .AddScoped<Api.V1.Statistics.GetCommandStatistics>()
             .AddScoped<Api.V1.Statistics.GetDatabaseStatus>()
             .AddScoped<Api.V1.Statistics.GetEventStatistics>()
             .AddScoped<Api.V1.Statistics.GetUnverifyStatistics>()

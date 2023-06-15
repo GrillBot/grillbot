@@ -35,7 +35,7 @@ public class GetPointsLeaderboard : ApiAction
 
             var guildData = Mapper.Map<Data.Models.API.Guilds.Guild>(await repository.Guild.FindGuildAsync(guild, true));
             var nicknames = await repository.GuildUser.GetUserNicknamesAsync(guild.Id);
-            var usersList = await repository.User.GetUsersByIdsAsync(leaderboard.Response!.Select(o => o.UserId));
+            var usersList = await repository.User.GetUsersByIdsAsync(leaderboard.Response!.Select(o => o.UserId).Distinct().ToList());
             var users = usersList.ToDictionary(o => o.Id, o => o);
 
             foreach (var item in leaderboard.Response!)

@@ -32,7 +32,7 @@ public class GetSuggestions : CommandAction
 
         var items = await ApiAction.ProcessAsync(parameters);
         return items.Data.Select(o => new AutocompleteResult(
-            $"#{o.Id} - " + (isAdmin ? $"{o.User.Username}#{o.User.Discriminator} - " : "") + $"({o.Message.Cut(20)})",
+            $"#{o.Id} - " + (isAdmin ? $"{o.User.Username} - " : "") + $"({o.Message.Cut(20)})",
             o.Id
         )).ToList();
     }

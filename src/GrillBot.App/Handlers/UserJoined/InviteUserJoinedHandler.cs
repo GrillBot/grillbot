@@ -1,26 +1,25 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Cache.Services.Managers;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Extensions;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Handlers.UserJoined;
 
-public class InviteUserJoinedHandler : IUserJoinedEvent
+public class InviteUserJoinedHandler : AuditLogServiceHandler, IUserJoinedEvent
 {
     private IDiscordClient DiscordClient { get; }
     private InviteManager InviteManager { get; }
-    private AuditLogWriteManager AuditLogWriteManagerWriteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public InviteUserJoinedHandler(IDiscordClient discordClient, InviteManager inviteManager, AuditLogWriteManager auditLogWriteManager, GrillBotDatabaseBuilder databaseBuilder)
+    public InviteUserJoinedHandler(IDiscordClient discordClient, InviteManager inviteManager, GrillBotDatabaseBuilder databaseBuilder, IAuditLogServiceClient auditLogServiceClient) :
+        base(auditLogServiceClient)
     {
         DiscordClient = discordClient;
         InviteManager = inviteManager;
-        AuditLogWriteManagerWriteManager = auditLogWriteManager;
         DatabaseBuilder = databaseBuilder;
     }
 
@@ -38,13 +37,16 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
         var cachedInvites = await InviteManager.GetInvitesAsync(guild);
 
         // Try find invite with limited count of usage. If invite was used as last, discord will automatically remove this invite.
-        var missingInvite = cachedInvites.FirstOrDefault(o => !latestData.Select(x => x.Code).Contains(o.Code));
-        if (missingInvite != null) return missingInvite;
+        var missingInvite = cachedInvites
+            .OrderByDescending(o => o.CreatedAt ?? DateTimeOffset.MinValue)
+            .FirstOrDefault(o => !latestData.Select(x => x.Code).Contains(o.Code));
+        if (missingInvite is not null)
+            return missingInvite;
 
         // Find invite which have incremented use count against the cache.
         var result = cachedInvites
             .Select(o => new { Cached = o, Current = latestData.Find(x => x.Code == o.Code) })
-            .FirstOrDefault(o => o.Current != null && o.Current.Uses > o.Cached.Uses);
+            .FirstOrDefault(o => o.Current is not null && o.Current.Uses > o.Cached.Uses);
 
         return InviteManager.ConvertMetadata(result?.Current);
     }
@@ -53,8 +55,7 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
     {
         if (usedInvite == null)
         {
-            var item = new AuditLogDataWrapper(AuditLogItemType.Warning, $"User {user.GetFullName()} ({user.Id}) used unknown invite.", guild, processedUser: user);
-            await AuditLogWriteManagerWriteManager.StoreAsync(item);
+            await WriteUnknownInviteToLogAsync(user);
             return;
         }
 
@@ -91,5 +92,19 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
 
         await repository.CommitAsync();
         await InviteManager.UpdateMetadataAsync(guild, latestInvites);
+    }
+
+    private async Task WriteUnknownInviteToLogAsync(IGuildUser user)
+    {
+        var request = CreateRequest(LogType.Warning, user.Guild, null, user);
+        request.LogMessage = new LogMessageRequest
+        {
+            Message = $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
+            Severity = LogSeverity.Warning,
+            Source = nameof(InviteUserJoinedHandler),
+            SourceAppName = "GrillBot"
+        };
+
+        await SendRequestAsync(request);
     }
 }

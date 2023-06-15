@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Services.FileService;
+﻿using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.FileService;
 using GrillBot.Common.Services.Graphics;
 using GrillBot.Common.Services.ImageProcessing;
 using GrillBot.Common.Services.KachnaOnline;
@@ -13,45 +14,33 @@ namespace GrillBot.Common.Services;
 
 public static class ServicesExtensions
 {
-    private static void AddHttpClient(this IServiceCollection services, IConfiguration configuration, string serviceId, string serviceConfigName)
+    private static void AddHttpClient(this IServiceCollection services, IConfiguration configuration, string serviceId)
     {
         services.AddHttpClient(serviceId, client =>
         {
-            client.BaseAddress = new Uri(configuration[$"Services:{serviceConfigName}:Api"]!);
-            client.Timeout = TimeSpan.FromMilliseconds(configuration[$"Services:{serviceConfigName}:Timeout"]!.ToInt());
+            client.BaseAddress = new Uri(configuration[$"Services:{serviceId}:Api"]!);
+            client.Timeout = TimeSpan.FromMilliseconds(configuration[$"Services:{serviceId}:Timeout"]!.ToInt());
         });
     }
 
-    public static IServiceCollection AddThirdPartyServices(this IServiceCollection services, IConfiguration configuration)
+    private static void AddService<TInterface, TImplementation>(this IServiceCollection services, IConfiguration configuration, string serviceName)
+        where TInterface : class
+        where TImplementation : class, TInterface
     {
         services
-            .AddScoped<IGraphicsClient, GraphicsClient>()
-            .AddHttpClient(configuration, "Graphics", "Graphics");
+            .AddScoped<TInterface, TImplementation>()
+            .AddHttpClient(configuration, serviceName);
+    }
 
-        services
-            .AddScoped<IKachnaOnlineClient, KachnaOnlineClient>()
-            .AddHttpClient(configuration, "KachnaOnline", "KachnaOnline");
-
-        services
-            .AddScoped<IMathClient, MathClient>()
-            .AddHttpClient(configuration, "Math", "Math");
-
-        services
-            .AddScoped<IRubbergodServiceClient, RubbergodServiceClient>()
-            .AddHttpClient(configuration, "RubbergodService", "RubbergodService");
-
-        services
-            .AddScoped<IFileServiceClient, FileServiceClient>()
-            .AddHttpClient(configuration, "FileService", "FileService");
-
-        services
-            .AddScoped<IPointsServiceClient, PointsServiceClient>()
-            .AddHttpClient(configuration, "PointsService", "PointsService");
-
-        services
-            .AddScoped<IImageProcessingClient, ImageProcessingClient>()
-            .AddHttpClient(configuration, "ImageProcessing", "ImageProcessing");
-
-        return services;
+    public static void AddThirdPartyServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddService<IGraphicsClient, GraphicsClient>(configuration, "Graphics");
+        services.AddService<IKachnaOnlineClient, KachnaOnlineClient>(configuration, "KachnaOnline");
+        services.AddService<IMathClient, MathClient>(configuration, "Math");
+        services.AddService<IRubbergodServiceClient, RubbergodServiceClient>(configuration, "RubbergodService");
+        services.AddService<IFileServiceClient, FileServiceClient>(configuration, "FileService");
+        services.AddService<IPointsServiceClient, PointsServiceClient>(configuration, "PointsService");
+        services.AddService<IImageProcessingClient, ImageProcessingClient>(configuration, "ImageProcessing");
+        services.AddService<IAuditLogServiceClient, AuditLogServiceClient>(configuration, "AuditLog");
     }
 }

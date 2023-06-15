@@ -2,7 +2,7 @@
 
 public class DashboardApiCall
 {
-    public string Endpoint { get; set; }
+    public string Endpoint { get; set; } = null!;
     public long Duration { get; set; }
-    public string StatusCode { get; set; }
+    public string StatusCode { get; set; } = null!;
 }

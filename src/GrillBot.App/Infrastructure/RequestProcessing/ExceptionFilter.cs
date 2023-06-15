@@ -1,11 +1,12 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Exceptions;
+﻿using GrillBot.Common.Exceptions;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Exceptions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -16,21 +17,21 @@ namespace GrillBot.App.Infrastructure.RequestProcessing;
 public class ExceptionFilter : IAsyncExceptionFilter
 {
     private ApiRequest ApiRequest { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private LoggingManager LoggingManager { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public ExceptionFilter(ApiRequest apiRequest, AuditLogWriteManager auditLogWriteManager, ApiRequestContext apiRequestContext, LoggingManager loggingManager)
+    public ExceptionFilter(ApiRequest apiRequest, ApiRequestContext apiRequestContext, LoggingManager loggingManager, IAuditLogServiceClient auditLogServiceClient)
     {
         ApiRequest = apiRequest;
-        AuditLogWriteManager = auditLogWriteManager;
         ApiRequestContext = apiRequestContext;
         LoggingManager = loggingManager;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     public async Task OnExceptionAsync(ExceptionContext context)
     {
-        ApiRequest.EndAt = DateTime.Now;
+        ApiRequest.EndAt = DateTime.UtcNow;
 
         switch (context.Exception)
         {
@@ -52,14 +53,18 @@ public class ExceptionFilter : IAsyncExceptionFilter
             case GrillBotException:
                 context.Result = new ObjectResult(new MessageResponse(context.Exception.Message)) { StatusCode = StatusCodes.Status500InternalServerError };
                 break;
+            case AggregateException aggregateException:
+                var validationExceptions = aggregateException.InnerExceptions.OfType<ValidationException>().Where(o => o.ValidationResult.MemberNames.Any()).ToList();
+                if (validationExceptions.Count > 0)
+                    SetValidationErrors(context, validationExceptions);
+                break;
         }
 
         if (context.ExceptionHandled) return;
         if (string.IsNullOrEmpty(ApiRequest.StatusCode))
             ApiRequest.StatusCode = "500 (InternalServerError)";
 
-        var wrapper = new AuditLogDataWrapper(AuditLogItemType.Api, ApiRequest, null, null, ApiRequestContext.LoggedUser);
-        await AuditLogWriteManager.StoreAsync(wrapper);
+        await WriteToAuditLogAsync();
 
         var path = $"{ApiRequest.Method} {ApiRequest.Path}";
         var controllerInfo = $"{ApiRequest.ControllerName}.{ApiRequest.ActionName}";
@@ -79,6 +84,20 @@ public class ExceptionFilter : IAsyncExceptionFilter
         ApiRequest.StatusCode = "400 (BadRequest)";
     }
 
+    private void SetValidationErrors(ExceptionContext context, IEnumerable<ValidationException> exceptions)
+    {
+        var modelState = new ModelStateDictionary();
+        foreach (var exception in exceptions)
+        {
+            foreach (var memberName in exception.ValidationResult.MemberNames)
+                modelState.AddModelError(memberName, exception.ValidationResult.ErrorMessage ?? "");
+        }
+
+        context.ExceptionHandled = true;
+        context.Result = new BadRequestObjectResult(new ValidationProblemDetails(modelState));
+        ApiRequest.StatusCode = "400 (BadRequest)";
+    }
+
     private void SetNotFound(ExceptionContext context)
     {
         context.ExceptionHandled = true;
@@ -91,5 +110,35 @@ public class ExceptionFilter : IAsyncExceptionFilter
         context.ExceptionHandled = true;
         context.Result = new ObjectResult(new MessageResponse(context.Exception.Message)) { StatusCode = StatusCodes.Status403Forbidden };
         ApiRequest.StatusCode = "403 (Forbidden)";
+    }
+
+    private async Task WriteToAuditLogAsync()
+    {
+        var userId = ApiRequestContext.GetUserId();
+        var logRequest = new LogRequest
+        {
+            Type = LogType.Api,
+            UserId = userId > 0 ? userId.ToString() : null,
+            CreatedAt = DateTime.UtcNow,
+            ApiRequest = new ApiRequestRequest
+            {
+                Path = ApiRequest.Path,
+                Method = ApiRequest.Method,
+                ActionName = ApiRequest.ActionName,
+                ControllerName = ApiRequest.ControllerName,
+                EndAt = ApiRequest.EndAt,
+                Headers = ApiRequest.Headers,
+                Identification = ApiRequest.UserIdentification,
+                Ip = ApiRequest.IpAddress,
+                Language = ApiRequest.Language,
+                Parameters = ApiRequest.Parameters,
+                StartAt = ApiRequest.StartAt,
+                TemplatePath = ApiRequest.TemplatePath,
+                ApiGroupName = ApiRequest.ApiGroupName!,
+                Result = ApiRequest.StatusCode
+            }
+        };
+
+        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
     }
 }

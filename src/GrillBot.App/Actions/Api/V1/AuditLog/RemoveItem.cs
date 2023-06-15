@@ -1,45 +1,31 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Core.Exceptions;
-using GrillBot.Database.Entity;
-using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 
 public class RemoveItem : ApiAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
     private IFileServiceClient FileServiceClient { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public RemoveItem(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IFileServiceClient fileServiceClient) : base(apiContext)
+    public RemoveItem(ApiRequestContext apiContext, ITextsManager texts, IFileServiceClient fileServiceClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
-        DatabaseBuilder = databaseBuilder;
         Texts = texts;
         FileServiceClient = fileServiceClient;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task ProcessAsync(long id)
+    public async Task ProcessAsync(Guid id)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var logItem = await repository.AuditLog.FindLogItemByIdAsync(id, true);
-        if (logItem == null)
+        var response = await AuditLogServiceClient.DeleteItemAsync(id);
+        if (!response.Exists)
             throw new NotFoundException(Texts["AuditLog/RemoveItem/NotFound", ApiContext.Language]);
 
-        await RemoveFilesAsync(repository, logItem);
-        repository.Remove(logItem);
-
-        await repository.CommitAsync();
-    }
-
-    private async Task RemoveFilesAsync(GrillBotRepository repository, AuditLogItem logItem)
-    {
-        if (logItem.Files.Count == 0) return;
-
-        foreach (var file in logItem.Files)
-            await FileServiceClient.DeleteFileAsync(file.Filename);
-        repository.RemoveCollection(logItem.Files);
+        foreach (var file in response.FilesToDelete)
+            await FileServiceClient.DeleteFileAsync(file);
     }
 }

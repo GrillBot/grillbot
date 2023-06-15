@@ -1,59 +1,36 @@
-﻿using GrillBot.App.Managers;
+﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Managers.Performance;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Handlers.UserLeft;
 
-public class AuditUserLeftHandler : IUserLeftEvent
+public class AuditUserLeftHandler : AuditLogServiceHandler, IUserLeftEvent
 {
-    private ICounterManager CounterManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
-
-    public AuditUserLeftHandler(ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditUserLeftHandler(IAuditLogServiceClient auditLogServiceClient) : base(auditLogServiceClient)
     {
-        CounterManager = counterManager;
-        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IGuild guild, IUser user)
     {
-        if (!await CanProcessAsync(guild, user) || guild is not SocketGuild socketGuild) return;
+        if (!await CanProcessAsync(guild, user))
+            return;
 
-        var ban = await FindBanAsync(guild, user);
-        var auditLog = await FindAuditLogAsync(ban, guild, user);
+        var request = CreateRequest(LogType.UserLeft, guild, null, user);
+        request.UserLeft = new UserLeftRequest
+        {
+            UserId = user.Id.ToString(),
+            MemberCount = Convert.ToInt32(guild.GetMemberCount())
+        };
 
-        var data = new UserLeftGuildData(socketGuild, user, ban != null, ban?.Reason);
-        var item = new AuditLogDataWrapper(AuditLogItemType.UserLeft, data, guild, processedUser: auditLog?.User ?? user, discordAuditLogItemId: auditLog?.Id.ToString());
-        await AuditLogWriteManager.StoreAsync(item);
+        await SendRequestAsync(request);
     }
 
     private static async Task<bool> CanProcessAsync(IGuild guild, IUser user)
     {
         var currentUser = await guild.GetCurrentUserAsync();
-        return user != null && user.Id != currentUser.Id && currentUser.GuildPermissions is { ViewAuditLog: true, BanMembers: true };
-    }
-
-    private async Task<IBan> FindBanAsync(IGuild guild, IUser user)
-    {
-        using (CounterManager.Create("Discord.API.Ban"))
-        {
-            return await guild.GetBanAsync(user);
-        }
-    }
-
-    private async Task<IAuditLogEntry> FindAuditLogAsync(IBan ban, IGuild guild, IUser user)
-    {
-        var actionType = ban == null ? ActionType.Kick : ActionType.Ban;
-        IReadOnlyCollection<IAuditLogEntry> auditLogs;
-        using (CounterManager.Create("Discord.API.AuditLog"))
-        {
-            auditLogs = await guild.GetAuditLogsAsync(actionType: actionType);
-        }
-
-        var timeLimit = DateTime.Now.AddMinutes(-1);
-        var query = auditLogs.Where(o => o.CreatedAt.LocalDateTime >= timeLimit);
-        return ban != null ? query.FirstOrDefault(o => ((BanAuditLogData)o.Data).Target.Id == user.Id) : query.FirstOrDefault(o => ((KickAuditLogData)o.Data).Target.Id == user.Id);
+        return user.Id != currentUser.Id && currentUser.GuildPermissions is { ViewAuditLog: true, BanMembers: true };
     }
 }

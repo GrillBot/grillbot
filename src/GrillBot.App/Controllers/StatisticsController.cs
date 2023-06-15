@@ -1,9 +1,11 @@
 ﻿using GrillBot.App.Actions.Api.V1.Statistics;
+using GrillBot.Common.Services.AuditLog;
 using GrillBot.Data.Models.API.Statistics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using AuditLog = GrillBot.Common.Services.AuditLog.Models.Response.Statistics;
 
 namespace GrillBot.App.Controllers;
 
@@ -32,8 +34,8 @@ public class StatisticsController : Infrastructure.ControllerBase
     /// <response code="200">Returns statistics about audit log (by type, by date, files by count, files by size)</response>
     [HttpGet("audit-log")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<AuditLogStatistics>> GetAuditLogStatisticsAsync()
-        => Ok(await ProcessActionAsync<GetAuditLogStatistics, AuditLogStatistics>(action => action.ProcessAsync()));
+    public async Task<ActionResult<AuditLog.AuditLogStatistics>> GetAuditLogStatisticsAsync()
+        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, AuditLog.AuditLogStatistics>(client => client.GetAuditLogStatisticsAsync()));
 
     /// <summary>
     /// Gets statistics about interactions.
@@ -41,8 +43,8 @@ public class StatisticsController : Infrastructure.ControllerBase
     /// <response code="200">Returns statistics about interaction commannds</response>
     [HttpGet("interactions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<StatisticItem>>> GetInteractionsStatusAsync()
-        => Ok(await ProcessActionAsync<GetCommandStatistics, List<StatisticItem>>(action => action.ProcessInteractionsAsync()));
+    public async Task<ActionResult<List<AuditLog.StatisticItem>>> GetInteractionsStatusAsync()
+        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, List<AuditLog.StatisticItem>>(client => client.GetInteractionStatisticsListAsync()));
 
     /// <summary>
     /// Get statistics about unverify logs by type.
@@ -68,8 +70,8 @@ public class StatisticsController : Infrastructure.ControllerBase
     /// <returns></returns>
     [HttpGet("api")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiStatistics>> GetApiStatisticsAsync()
-        => Ok(await ProcessActionAsync<GetApiStatistics, ApiStatistics>(action => action.ProcessAsync()));
+    public async Task<ActionResult<AuditLog.ApiStatistics>> GetApiStatisticsAsync()
+        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, AuditLog.ApiStatistics>(client => client.GetApiStatisticsAsync()));
 
     /// <summary>
     /// Get Discord event statistics.
@@ -85,8 +87,8 @@ public class StatisticsController : Infrastructure.ControllerBase
     /// </summary>
     [HttpGet("avg-times")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<AvgExecutionTimes>> GetAvgTimesAsync()
-        => Ok(await ProcessActionAsync<GetAvgTimes, AvgExecutionTimes>(action => action.ProcessAsync()));
+    public async Task<ActionResult<AuditLog.AvgExecutionTimes>> GetAvgTimesAsync()
+        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, AuditLog.AvgExecutionTimes>(client => client.GetAvgTimesAsync()));
 
     /// <summary>
     /// Get full statistics of operations.

@@ -1,21 +1,21 @@
-﻿using GrillBot.App.Managers;
+﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Handlers.MessageUpdated;
 
-public class AuditMessageUpdatedHandler : IMessageUpdatedEvent
+public class AuditMessageUpdatedHandler : AuditLogServiceHandler, IMessageUpdatedEvent
 {
     private IMessageCacheManager MessageCacheManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditMessageUpdatedHandler(IMessageCacheManager messageCacheManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditMessageUpdatedHandler(IMessageCacheManager messageCacheManager, IAuditLogServiceClient client) : base(client)
     {
         MessageCacheManager = messageCacheManager;
-        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(Cacheable<IMessage, ulong> before, IMessage after, IMessageChannel channel)
@@ -25,17 +25,22 @@ public class AuditMessageUpdatedHandler : IMessageUpdatedEvent
         if (!Init(channel, oldMessage, after, out var textChannel)) return;
 
         var author = after.Author as IGuildUser ?? await textChannel.Guild.GetUserAsync(after.Author.Id);
-        var data = new MessageEditedData(oldMessage, after);
-        var item = new AuditLogDataWrapper(AuditLogItemType.MessageEdited, data, textChannel.Guild, textChannel, author);
+        var request = CreateRequest(LogType.MessageEdited, textChannel.Guild, textChannel, author);
+        request.MessageEdited = new MessageEditedRequest
+        {
+            ContentAfter = after.Content,
+            ContentBefore = oldMessage!.Content,
+            JumpUrl = after.GetJumpUrl()
+        };
 
-        await AuditLogWriteManager.StoreAsync(item);
+        await SendRequestAsync(request);
     }
 
-    private static bool Init(IMessageChannel channel, IMessage before, IMessage after, out ITextChannel textChannel)
+    private static bool Init(IMessageChannel channel, IMessage? before, IMessage after, [MaybeNullWhen(false)] out ITextChannel textChannel)
     {
         textChannel = channel as ITextChannel;
 
-        return textChannel != null && before != null && before.Author.IsUser() && !string.IsNullOrEmpty(after.Content) && before.Content != after.Content &&
+        return textChannel is not null && before is not null && before.Author.IsUser() && !string.IsNullOrEmpty(after.Content) && before.Content != after.Content &&
                before.Type != MessageType.ApplicationCommand;
     }
 }

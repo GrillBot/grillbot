@@ -13,11 +13,6 @@ public class User
     public string Username { get; set; }
 
     /// <summary>
-    /// User hash.
-    /// </summary>
-    public string Discriminator { get; set; }
-
-    /// <summary>
     /// Flag that describe user is bot.
     /// </summary>
     public bool IsBot { get; set; }

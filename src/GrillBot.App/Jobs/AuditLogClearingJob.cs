@@ -1,8 +1,11 @@
 ﻿using System.IO.Compression;
 using System.Xml.Linq;
 using GrillBot.Common.FileStorage;
+using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.FileService;
+using GrillBot.Core.Extensions;
 using GrillBot.Database.Entity;
+using GrillBot.Database.Services.Repository;
 using Quartz;
 
 namespace GrillBot.App.Jobs;
@@ -13,88 +16,42 @@ public class AuditLogClearingJob : ArchivationJobBase
     private GrillBotDatabaseBuilder DbFactory { get; }
     private FileStorageFactory FileStorage { get; }
     private IFileServiceClient FileServiceClient { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public AuditLogClearingJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider, FileStorageFactory fileStorage, IFileServiceClient fileServiceClient) : base(serviceProvider)
+    public AuditLogClearingJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider, FileStorageFactory fileStorage, IFileServiceClient fileServiceClient,
+        IAuditLogServiceClient auditLogServiceClient) : base(serviceProvider)
     {
         DbFactory = dbFactory;
         FileStorage = fileStorage;
         FileServiceClient = fileServiceClient;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        var expirationDate = DateTime.Now.AddYears(-1);
-
-        await using var repository = DbFactory.CreateRepository();
-        if (!await repository.AuditLog.ExistsExpiredItemAsync(expirationDate))
+        var archivationResult = await AuditLogServiceClient.ProcessArchivationAsync();
+        if (archivationResult is null)
             return;
 
-        var data = await repository.AuditLog.GetExpiredDataAsync(expirationDate);
-        var logRoot = new XElement("AuditLogBackup");
+        var xmlData = XElement.Parse(archivationResult.Xml);
 
-        logRoot.Add(CreateMetadata(data.Count));
-        logRoot.Add(TransformGuilds(data.Select(o => o.Guild)));
+        await using var repository = DbFactory.CreateRepository();
 
-        var guildUsers = data.Select(o => o.ProcessedGuildUser).Where(o => o != null).DistinctBy(o => $"{o!.UserId}/{o.GuildId}").ToList();
-        var users = data.Select(o => o.ProcessedUser).Where(o => o != null && guildUsers.All(x => x!.UserId != o.Id)).DistinctBy(o => o!.Id).ToList();
+        await ProcessGuildsAsync(repository, archivationResult.GuildIds, xmlData);
+        await ProcessChannelsAsync(repository, archivationResult.ChannelIds, xmlData);
+        await ProcessUsersAsync(repository, archivationResult.UserIds, xmlData);
 
-        logRoot.Add(TransformGuildUsers(guildUsers!));
-        logRoot.Add(TransformUsers(users!));
-        logRoot.Add(TransformChannels(data));
-
-        foreach (var item in data)
-        {
-            var element = new XElement("Item");
-
-            element.Add(
-                new XAttribute("Id", item.Id),
-                new XAttribute("Type", item.Type.ToString()),
-                new XAttribute("CreatedAt", item.CreatedAt.ToString("o")),
-                new XElement("Data", string.IsNullOrEmpty(item.Data) ? "-" : item.Data)
-            );
-
-            if (item.Guild != null)
-                element.Add(new XAttribute("GuildId", item.GuildId!));
-
-            if (item.ProcessedGuildUser != null)
-                element.Add(new XAttribute("ProcessedUserId", item.ProcessedUserId!));
-
-            if (!string.IsNullOrEmpty(item.DiscordAuditLogItemId))
-                element.Add(new XAttribute("DiscordAuditLogItemId", item.DiscordAuditLogItemId));
-
-            if (item.GuildChannel != null)
-                element.Add(new XAttribute("ChannelId", item.ChannelId!));
-
-            foreach (var fileEntity in item.Files)
-            {
-                var file = new XElement("File");
-
-                file.Add(
-                    new XAttribute("Id", fileEntity.Id),
-                    new XAttribute("Filename", fileEntity.Filename),
-                    new XAttribute("Size", fileEntity.Size)
-                );
-
-                element.Add(file);
-            }
-
-            logRoot.Add(element);
-            repository.Remove(item);
-        }
-
-        await StoreDataAsync(logRoot, data);
-        await repository.CommitAsync();
-
-        var totalFilesSize = data.SelectMany(o => o.Files).Sum(x => x.Size).Bytes().ToString();
-        var xmlSize = Encoding.UTF8.GetBytes(logRoot.ToString()).Length.Bytes().ToString();
-        context.Result = $"Items: {data.Count}, Files: {data.Sum(o => o.Files.Count)} ({totalFilesSize}), XmlSize: {xmlSize}";
+        var zipName = await StoreDataAsync(xmlData, archivationResult.Files);
+        var totalFilesSize = archivationResult.TotalFilesSize.Bytes().ToString();
+        var xmlSize = Encoding.UTF8.GetBytes(xmlData.ToString()).Length.Bytes().ToString();
+        var zipSize = new FileInfo(zipName).Length.Bytes().ToString();
+        context.Result = $"Items: {archivationResult.ItemsCount}, Files: {archivationResult.Files.Count} ({totalFilesSize}), XmlSize: {xmlSize}, ZipSize: {zipSize}";
     }
 
-    private static IEnumerable<XElement> TransformChannels(IEnumerable<AuditLogItem> channels)
+    private static IEnumerable<XElement> TransformChannels(IEnumerable<GuildChannel?> channels)
     {
         return channels
-            .Select(o => o.GuildChannel)
-            .Where(o => o != null)
+            .Where(o => o is not null)
             .DistinctBy(o => $"{o!.ChannelId}/{o.GuildId}").Select(ch =>
             {
                 var channel = new XElement("Channel");
@@ -118,7 +75,7 @@ public class AuditLogClearingJob : ArchivationJobBase
             });
     }
 
-    private async Task StoreDataAsync(XElement xml, IEnumerable<AuditLogItem> logItems)
+    private async Task<string> StoreDataAsync(XElement xml, IEnumerable<string> files)
     {
         var storage = FileStorage.Create("Audit");
         var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
@@ -133,30 +90,55 @@ public class AuditLogClearingJob : ArchivationJobBase
         if (File.Exists(zipFilename)) File.Delete(zipFilename);
         using var archive = ZipFile.Open(zipFilename, ZipArchiveMode.Create);
         archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
-        await AddFilesToArchiveAsync(logItems, archive);
+        await AddFilesToArchiveAsync(files, archive);
 
         File.Delete(fileinfo.FullName);
+        return zipFilename;
     }
 
-    private async Task AddFilesToArchiveAsync(IEnumerable<AuditLogItem> logs, ZipArchive archive)
+    private async Task AddFilesToArchiveAsync(IEnumerable<string> files, ZipArchive archive)
     {
-        foreach (var log in logs.Where(o => o.Files.Count > 0))
+        foreach (var file in files)
         {
-            foreach (var file in log.Files.Select(o => o.Filename))
-            {
-                // If file not exists, try read it and delete from file service.
-                var fileContent = await FileServiceClient.DownloadFileAsync(file);
-                if (fileContent is null) continue;
+            // If file not exists, try read it and delete from file service.
+            var fileContent = await FileServiceClient.DownloadFileAsync(file);
+            if (fileContent is null) continue;
 
-                var entry = archive.CreateEntry(file);
-                entry.LastWriteTime = log.CreatedAt;
+            var entry = archive.CreateEntry(file);
+            entry.LastWriteTime = DateTimeOffset.UtcNow;
 
-                using var ms = new MemoryStream(fileContent);
-                await using var archiveStream = entry.Open();
-                await ms.CopyToAsync(archiveStream);
+            using var ms = new MemoryStream(fileContent);
+            await using var archiveStream = entry.Open();
+            await ms.CopyToAsync(archiveStream);
 
-                await FileServiceClient.DeleteFileAsync(file);
-            }
+            await FileServiceClient.DeleteFileAsync(file);
         }
+    }
+
+    private static async Task ProcessGuildsAsync(GrillBotRepository repository, List<string> guildIds, XContainer xmlData)
+    {
+        var guilds = new List<Guild?>();
+        foreach (var guildId in guildIds)
+            guilds.Add(await repository.Guild.FindGuildByIdAsync(guildId.ToUlong(), true));
+
+        xmlData.Add(TransformGuilds(guilds));
+    }
+
+    private static async Task ProcessChannelsAsync(GrillBotRepository repository, List<string> channelIds, XContainer xmlData)
+    {
+        var channels = new List<GuildChannel?>();
+        foreach (var channelId in channelIds)
+            channels.Add(await repository.Channel.FindChannelByIdAsync(channelId.ToUlong(), disableTracking: true, includeDeleted: true));
+
+        xmlData.Add(TransformChannels(channels));
+    }
+
+    private static async Task ProcessUsersAsync(GrillBotRepository repository, List<string> userIds, XContainer xmlData)
+    {
+        var users = new List<User?>();
+        foreach (var userId in userIds)
+            users.Add(await repository.User.FindUserByIdAsync(userId.ToUlong(), disableTracking: true));
+
+        xmlData.Add(TransformUsers(users));
     }
 }

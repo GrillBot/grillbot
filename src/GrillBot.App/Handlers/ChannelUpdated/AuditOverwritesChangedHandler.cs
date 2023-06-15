@@ -1,39 +1,42 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.Models;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Handlers.ChannelUpdated;
 
-public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
+public class AuditOverwritesChangedHandler : AuditLogServiceHandler, IChannelUpdatedEvent
 {
     private AuditLogManager AuditLogManager { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ICounterManager CounterManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
 
-    public AuditOverwritesChangedHandler(AuditLogManager auditLogManager, GrillBotDatabaseBuilder databaseBuilder, ICounterManager counterManager, AuditLogWriteManager auditLogWriteManager)
+    public AuditOverwritesChangedHandler(AuditLogManager auditLogManager, ICounterManager counterManager, IAuditLogServiceClient auditLogServiceClient) : base(auditLogServiceClient)
     {
         AuditLogManager = auditLogManager;
-        DatabaseBuilder = databaseBuilder;
         CounterManager = counterManager;
-        AuditLogWriteManager = auditLogWriteManager;
     }
 
     public async Task ProcessAsync(IChannel before, IChannel after)
     {
         if (!Init(after, out var guildChannel)) return;
-
         AuditLogManager.OnOverwriteChangedEvent(after.Id, DateTime.Now.AddMinutes(1));
-        var ignoredLogIds = await GetIgnoredAuditLogIdsAsync(guildChannel);
-        var auditLogs = await GetAuditLogsAsync(ignoredLogIds, guildChannel);
-        if (auditLogs.Count == 0) return;
 
-        var logItems = TransformItems(auditLogs, guildChannel).ToList();
-        await AuditLogWriteManager.StoreAsync(logItems);
+        var requests = new List<LogRequest>();
+        var auditLogs = await GetAuditLogsAsync(guildChannel, ActionType.OverwriteCreated);
+        requests.AddRange(auditLogs.Select(entry => CreateRequest(LogType.OverwriteCreated, guildChannel.Guild, guildChannel, null, entry)));
+
+        auditLogs = await GetAuditLogsAsync(guildChannel, ActionType.OverwriteDeleted);
+        requests.AddRange(auditLogs.Select(entry => CreateRequest(LogType.OverwriteDeleted, guildChannel.Guild, guildChannel, null, entry)));
+
+        auditLogs = await GetAuditLogsAsync(guildChannel, ActionType.OverwriteUpdated);
+        requests.AddRange(auditLogs.Select(entry => CreateRequest(LogType.OverwriteUpdated, guildChannel.Guild, guildChannel, null, entry)));
+
+        if (requests.Count > 0)
+            await SendRequestsAsync(requests);
     }
 
     private bool Init(IChannel channel, [MaybeNullWhen(false)] out IGuildChannel guildChannelAfter)
@@ -44,33 +47,21 @@ public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
         return AuditLogManager.GetNextOverwriteEvent(channel.Id) <= DateTime.Now;
     }
 
-    private async Task<List<ulong>> GetIgnoredAuditLogIdsAsync(IGuildChannel channel)
+    private async Task<List<IAuditLogEntry>> GetAuditLogsAsync(IGuildChannel channel, ActionType actionType)
     {
-        var timeLimit = DateTime.Now.AddMonths(-2);
-
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.AuditLog.GetDiscordAuditLogIdsAsync(channel.Guild, channel,
-            new[] { AuditLogItemType.OverwriteCreated, AuditLogItemType.OverwriteDeleted, AuditLogItemType.OverwriteUpdated }, timeLimit);
-    }
-
-    private async Task<List<IAuditLogEntry>> GetAuditLogsAsync(ICollection<ulong> ignoredLogIds, IGuildChannel channel)
-    {
-        var auditLogs = new List<IAuditLogEntry>();
+        IReadOnlyCollection<IAuditLogEntry> auditLogs;
         using (CounterManager.Create("Discord.API.AuditLog"))
         {
-            auditLogs.AddRange(await channel.Guild.GetAuditLogsAsync(actionType: ActionType.OverwriteCreated));
-            auditLogs.AddRange(await channel.Guild.GetAuditLogsAsync(actionType: ActionType.OverwriteDeleted));
-            auditLogs.AddRange(await channel.Guild.GetAuditLogsAsync(actionType: ActionType.OverwriteUpdated));
+            auditLogs = await channel.Guild.GetAuditLogsAsync(actionType: actionType);
         }
 
         return auditLogs
-            .FindAll(o => IsValidEntry(o, ignoredLogIds, channel));
+            .Where(o => IsValidEntry(o, channel))
+            .ToList();
     }
 
-    private static bool IsValidEntry(IAuditLogEntry entry, ICollection<ulong> ignoredLogIds, IGuildChannel channel)
+    private static bool IsValidEntry(IAuditLogEntry entry, IGuildChannel channel)
     {
-        if (ignoredLogIds.Contains(entry.Id)) return false;
-
         return entry.Action switch
         {
             ActionType.OverwriteCreated => ((OverwriteCreateAuditLogData)entry.Data).ChannelId == channel.Id,
@@ -78,37 +69,5 @@ public class AuditOverwritesChangedHandler : IChannelUpdatedEvent
             ActionType.OverwriteUpdated => ((OverwriteUpdateAuditLogData)entry.Data).ChannelId == channel.Id,
             _ => false
         };
-    }
-
-    private static IEnumerable<AuditLogDataWrapper> TransformItems(IEnumerable<IAuditLogEntry> auditLogs, IGuildChannel channel)
-    {
-        return auditLogs.Select(item => item.Action switch
-        {
-            ActionType.OverwriteCreated => CreateOverwriteCreatedData(item, channel),
-            ActionType.OverwriteDeleted => CreateOverwriteDeletedData(item, channel),
-            ActionType.OverwriteUpdated => CreateOverwriteUpdatedData(item, channel),
-            _ => null
-        }).Where(o => o != null)!;
-    }
-
-    private static AuditLogDataWrapper CreateOverwriteCreatedData(IAuditLogEntry entry, IGuildChannel channel)
-    {
-        var data = new AuditOverwriteInfo(((OverwriteCreateAuditLogData)entry.Data).Overwrite);
-        return new AuditLogDataWrapper(AuditLogItemType.OverwriteCreated, data, channel.Guild, channel, entry.User, entry.Id.ToString(), entry.CreatedAt.LocalDateTime);
-    }
-
-    private static AuditLogDataWrapper CreateOverwriteDeletedData(IAuditLogEntry entry, IGuildChannel channel)
-    {
-        var data = new AuditOverwriteInfo(((OverwriteDeleteAuditLogData)entry.Data).Overwrite);
-        return new AuditLogDataWrapper(AuditLogItemType.OverwriteDeleted, data, channel.Guild, channel, entry.User, entry.Id.ToString(), entry.CreatedAt.LocalDateTime);
-    }
-
-    private static AuditLogDataWrapper CreateOverwriteUpdatedData(IAuditLogEntry entry, IGuildChannel channel)
-    {
-        var auditData = (OverwriteUpdateAuditLogData)entry.Data;
-        var oldPerms = new Overwrite(auditData.OverwriteTargetId, auditData.OverwriteType, auditData.OldPermissions);
-        var newPerms = new Overwrite(auditData.OverwriteTargetId, auditData.OverwriteType, auditData.NewPermissions);
-        var data = new Diff<AuditOverwriteInfo>(new AuditOverwriteInfo(oldPerms), new AuditOverwriteInfo(newPerms));
-        return new AuditLogDataWrapper(AuditLogItemType.OverwriteUpdated, data, channel.Guild, channel, entry.User, entry.Id.ToString(), entry.CreatedAt.LocalDateTime);
     }
 }

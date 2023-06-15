@@ -1,9 +1,10 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Cache.Services.Managers;
+﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
-using GrillBot.Data.Models.AuditLog;
-using GrillBot.Database.Enums;
+using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Common.Services.AuditLog.Models;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Actions.Api.V1.Invite;
 
@@ -11,13 +12,13 @@ public class RefreshMetadata : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private InviteManager InviteManager { get; }
-    private AuditLogWriteManager AuditLogWriteManager { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public RefreshMetadata(ApiRequestContext apiContext, IDiscordClient discordClient, InviteManager inviteManager, AuditLogWriteManager auditLogWriteManager) : base(apiContext)
+    public RefreshMetadata(ApiRequestContext apiContext, IDiscordClient discordClient, InviteManager inviteManager, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         DiscordClient = discordClient;
         InviteManager = inviteManager;
-        AuditLogWriteManager = auditLogWriteManager;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     public async Task<Dictionary<string, int>> ProcessAsync(bool isReload)
@@ -36,13 +37,28 @@ public class RefreshMetadata : ApiAction
 
     private async Task<int> RefreshMetadataAsync(IGuild guild, bool isReload)
     {
-        if (!await guild.CanManageInvitesAsync(DiscordClient.CurrentUser)) return 0;
+        if (!await guild.CanManageInvitesAsync(DiscordClient.CurrentUser))
+            return 0;
 
         var invites = await InviteManager.DownloadInvitesAsync(guild);
-        if (invites.Count == 0) return 0;
+        if (invites.Count == 0)
+            return 0;
 
-        await AuditLogWriteManager.StoreAsync(new AuditLogDataWrapper(AuditLogItemType.Info,
-            $"Invites for guild \"{guild.Name}\" was {(isReload ? "reloaded" : "loaded")}. Loaded invites: {invites.Count}", guild, processedUser: ApiContext.LoggedUser));
+        var logRequest = new LogRequest
+        {
+            Type = LogType.Info,
+            CreatedAt = DateTime.UtcNow,
+            GuildId = guild.Id.ToString(),
+            LogMessage = new LogMessageRequest
+            {
+                Message = $"Invites for guild \"{guild.Name}\" was {(isReload ? "reloaded" : "loaded")}. Loaded invites: {invites.Count}",
+                Severity = LogSeverity.Info,
+                SourceAppName = "GrillBot",
+                Source = $"Invite.{nameof(RefreshMetadata)}"
+            },
+            UserId = ApiContext.GetUserId().ToString()
+        };
+        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
 
         await InviteManager.UpdateMetadataAsync(guild, invites);
         return invites.Count;

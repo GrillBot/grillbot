@@ -1,5 +1,4 @@
-﻿using Discord;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using GrillBot.Core.Models;
@@ -16,29 +15,6 @@ public class MemberUpdatedData
     public Diff<TimeSpan?>? SelfUnverifyMinimalTime { get; set; }
     public Diff<int>? Flags { get; set; }
     public Diff<DateTime?>? TimeoutUntil { get; set; }
-
-    public MemberUpdatedData()
-    {
-    }
-
-    public MemberUpdatedData(AuditUserInfo target)
-    {
-        Target = target;
-    }
-
-    public MemberUpdatedData(IGuildUser before, IGuildUser after) : this(new AuditUserInfo(before))
-    {
-        Nickname = new Diff<string>(before.Nickname, after.Nickname);
-        IsMuted = new Diff<bool>(before.IsMuted, after.IsMuted);
-        IsDeaf = new Diff<bool>(before.IsDeafened, after.IsDeafened);
-        TimeoutUntil = new Diff<DateTime?>(before.TimedOutUntil?.LocalDateTime, after.TimedOutUntil?.LocalDateTime);
-    }
-
-    public MemberUpdatedData(Database.Entity.User before, Database.Entity.User after) : this(new AuditUserInfo(after))
-    {
-        SelfUnverifyMinimalTime = new Diff<TimeSpan?>(before.SelfUnverifyMinimalTime, after.SelfUnverifyMinimalTime);
-        Flags = new Diff<int>(before.Flags, after.Flags);
-    }
 
     [OnSerializing]
     internal void OnSerializing(StreamingContext _)

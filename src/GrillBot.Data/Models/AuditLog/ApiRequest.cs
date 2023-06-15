@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
 using GrillBot.Core.Infrastructure;
 using Microsoft.Extensions.Primitives;
 
 namespace GrillBot.Data.Models.AuditLog;
 
-public partial class ApiRequest
+public class ApiRequest
 {
     public string ControllerName { get; set; }
     public string ActionName { get; set; }
@@ -17,13 +16,13 @@ public partial class ApiRequest
     public string Method { get; set; }
     public string TemplatePath { get; set; }
     public string Path { get; set; }
-    public string LoggedUserRole { get; set; }
+    public string? LoggedUserRole { get; set; }
     public string StatusCode { get; set; }
     public Dictionary<string, string> Parameters { get; set; } = new();
     public string Language { get; set; }
     public string? ApiGroupName { get; set; }
     public Dictionary<string, string> Headers { get; set; } = new();
-    public string? UserIdentification { get; set; }
+    public string UserIdentification { get; set; } = null!;
     public string IpAddress { get; set; }
 
     [OnSerializing]
@@ -63,27 +62,8 @@ public partial class ApiRequest
             Headers[id] = value!;
     }
 
-    public string? GetStatusCode()
-    {
-        if (string.IsNullOrEmpty(StatusCode)) return null;
-
-        // Valid format of status code.
-        if (StatusCodeRegex().IsMatch(StatusCode))
-            return StatusCode;
-
-        // Reformat status code to valid format.
-        var statusCodeData = StatusCode.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        return $"{statusCodeData[0]} ({string.Concat(statusCodeData.Skip(1))})";
-    }
-
     public bool IsCorrupted()
     {
         return string.IsNullOrEmpty(StatusCode) || StartAt == DateTime.MinValue || string.IsNullOrEmpty(Method) || string.IsNullOrEmpty(TemplatePath);
     }
-
-    public int Duration()
-        => (int)Math.Round((EndAt - StartAt).TotalMilliseconds);
-
-    [GeneratedRegex("\\d+\\s+\\([^\\)]+\\)")]
-    private static partial Regex StatusCodeRegex();
 }

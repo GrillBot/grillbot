@@ -46,7 +46,7 @@ public sealed class PointsImage : CommandAction
         var request = new PointsRequest
         {
             Position = status.Position,
-            Username = user.GetDisplayName(false),
+            Username = user.GetDisplayName(),
             AvatarInfo = new AvatarInfo
             {
                 Type = "png",

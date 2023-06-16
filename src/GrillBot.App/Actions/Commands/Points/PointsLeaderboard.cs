@@ -92,7 +92,7 @@ public class PointsLeaderboard : CommandAction
     private string FormatRow(int index, PointsStatus item, int skip, GuildUser guildUser)
     {
         var points = FormatHelper.FormatNumber("Points/Board/Counts", Locale, item.YearBack);
-        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, guildUser.FullName(), points);
+        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, guildUser.DisplayName, points);
     }
 
     private async Task<MessageComponent?> CreatePaginationComponents(int currentPage)

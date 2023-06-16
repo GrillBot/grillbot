@@ -23,15 +23,8 @@ public static class UserExtensions
 
     public static bool IsUser(this IUser user) => !user.IsBot && !user.IsWebhook;
 
-    public static string GetDisplayName(this IUser user, bool withDiscriminator = true)
-    {
-        return user switch
-        {
-            null => "Neznámý uživatel",
-            IGuildUser sgu when !string.IsNullOrEmpty(sgu.Nickname) => sgu.Nickname,
-            _ => withDiscriminator ? $"{user.Username}#{user.Discriminator}" : user.Username
-        };
-    }
+    public static string GetDisplayName(this IUser user)
+        => user is IGuildUser guildUser && !string.IsNullOrEmpty(guildUser.DisplayName) ? $"{guildUser.Nickname} ({user.Username})" : user.Username;
 
     public static IRole? GetHighestRole(this IGuildUser user, bool requireColor = false)
     {

@@ -49,6 +49,10 @@ public class GuildUser
     public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
     public ISet<Nickname> Nicknames { get; set; }
 
+    [NotMapped]
+    public string? DisplayName
+        => string.IsNullOrEmpty(Nickname) ? User?.Username : Nickname;
+
     public GuildUser()
     {
         CreatedInvites = new HashSet<Invite>();

@@ -20,39 +20,48 @@ public class ProcessCallback : ApiAction
         var state = AuthState.Decode(encodedState);
         var accessToken = await RetrieveAccessTokenAsync(code);
         var returnUrl = GetReturnUrl(state);
+        var uriBuilder = new UriBuilder(returnUrl);
 
-        var uriBuilder = new UriBuilder(returnUrl)
-        {
-            Query = string.Join("&", $"sessionId={accessToken}", $"isPublic={state.IsPublic}")
-        };
+        if (!string.IsNullOrEmpty(accessToken))
+            uriBuilder.Query = string.Join("&", $"sessionId={accessToken}", $"isPublic={state.IsPublic}");
 
         return uriBuilder.ToString();
     }
 
-    private async Task<string> RetrieveAccessTokenAsync(string code)
+    private async Task<string?> RetrieveAccessTokenAsync(string code)
     {
         using var message = new HttpRequestMessage(HttpMethod.Post, "https://discord.com/api/oauth2/token")
         {
             Content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                { "client_id", Configuration["ClientId"] },
-                { "client_secret", Configuration["ClientSecret"] },
+                { "client_id", Configuration["ClientId"]! },
+                { "client_secret", Configuration["ClientSecret"]! },
                 { "grant_type", "authorization_code" },
                 { "code", code },
                 { "scope", "identify" },
-                { "redirect_uri", Configuration["RedirectUrl"] }
+                { "redirect_uri", Configuration["RedirectUrl"]! }
             })
         };
 
         using var response = await HttpClient.SendAsync(message);
-        var json = await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync();
 
-        if (!response.IsSuccessStatusCode)
-            throw new WebException(json);
+        if (response.IsSuccessStatusCode)
+            return JObject.Parse(content)["access_token"]!.ToString();
 
-        return JObject.Parse(json)["access_token"]!.ToString();
+        try
+        {
+            var jsonData = JObject.Parse(content);
+            if (jsonData.ContainsKey("error") && jsonData["error"]!.ToString() == "invalid_grant")
+                return null;
+            throw new WebException(content);
+        }
+        catch (Exception ex) when (ex is not WebException)
+        {
+            throw new WebException(content);
+        }
     }
 
     private string GetReturnUrl(AuthState state)
-        => !string.IsNullOrEmpty(state.ReturnUrl) ? state.ReturnUrl : Configuration[state.IsPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"];
+        => !string.IsNullOrEmpty(state.ReturnUrl) ? state.ReturnUrl : Configuration[state.IsPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"]!;
 }

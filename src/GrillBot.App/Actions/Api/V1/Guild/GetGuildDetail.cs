@@ -3,6 +3,7 @@ using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Common.Services.AuditLog;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
@@ -22,9 +23,10 @@ public class GetGuildDetail : ApiAction
     private GrillBotCacheBuilder CacheBuilder { get; }
     private ITextsManager Texts { get; }
     private IPointsServiceClient PointsServiceClient { get; }
+    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
     public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, GrillBotCacheBuilder cacheBuilder,
-        ITextsManager texts, IPointsServiceClient pointsServiceClient) : base(apiContext)
+        ITextsManager texts, IPointsServiceClient pointsServiceClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
@@ -32,6 +34,7 @@ public class GetGuildDetail : ApiAction
         CacheBuilder = cacheBuilder;
         Texts = texts;
         PointsServiceClient = pointsServiceClient;
+        AuditLogServiceClient = auditLogServiceClient;
     }
 
     public async Task<GuildDetail> ProcessAsync(ulong id)
@@ -83,7 +86,9 @@ public class GetGuildDetail : ApiAction
     private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
+        
         var report = await repository.Guild.GetDatabaseReportDataAsync(guildId);
+        report.AuditLogs = await AuditLogServiceClient.GetItemsCountOfGuildAsync(guildId);
 
         await using var cache = CacheBuilder.CreateRepository();
         report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);

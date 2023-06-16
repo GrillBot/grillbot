@@ -110,7 +110,7 @@ public class DiscordExceptionHandler : ILoggingHandler
                 embed.WithTitle(title)
                     .AddField("Zdroj", source, true)
                     .AddField("Typ", exception.GetType().Name, true)
-                    .AddField("Obsah chyby", msg.Trim());
+                    .AddField("Obsah chyby", msg.Trim().Cut(EmbedFieldBuilder.MaxFieldValueLength));
                 break;
             }
         }

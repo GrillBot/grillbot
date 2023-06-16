@@ -174,4 +174,12 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
             response => response.Content.ReadFromJsonAsync<DashboardInfo>()
         ))!;
     }
+
+    public async Task<int> GetItemsCountOfGuildAsync(ulong guildId)
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/info/guild/{guildId}/count"),
+            response => response.Content.ReadFromJsonAsync<int>()
+        ));
+    }
 }

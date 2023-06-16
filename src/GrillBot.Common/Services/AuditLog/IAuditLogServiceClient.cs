@@ -28,4 +28,5 @@ public interface IAuditLogServiceClient : IClient
     Task<List<UserActionCountItem>> GetUserCommandStatisticsAsync();
     Task<List<JobInfo>> GetJobsInfoAsync();
     Task<DashboardInfo> GetDashboardInfoAsync();
+    Task<int> GetItemsCountOfGuildAsync(ulong guildId);
 }

@@ -79,7 +79,6 @@ public class GuildRepository : RepositoryBase<GrillBotContext>
                 .Where(o => o.Id == guildId.ToString())
                 .Select(g => new GuildDatabaseReport
                 {
-                    AuditLogs = g.AuditLogs.Count,
                     Channels = g.Channels.Count,
                     Invites = g.Invites.Count,
                     Searches = g.Searches.Count,

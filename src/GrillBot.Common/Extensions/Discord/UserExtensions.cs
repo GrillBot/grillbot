@@ -8,12 +8,7 @@ public static class UserExtensions
         => user.GetAvatarUrl(size: size) ?? user.GetDefaultAvatarUrl();
 
     public static string GetFullName(this IUser user)
-    {
-        if (user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname))
-            return $"{sgu.Nickname} ({sgu.Username}#{sgu.Discriminator})";
-
-        return $"{user.Username}#{user.Discriminator}";
-    }
+        => user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname) ? $"{sgu.Nickname} ({sgu.Username})" : user.Username;
 
     public static IEnumerable<IRole> GetRoles(this IGuildUser user, bool withEveryone = false)
     {

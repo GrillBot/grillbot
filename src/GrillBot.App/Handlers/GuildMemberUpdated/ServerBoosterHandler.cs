@@ -21,13 +21,13 @@ public class ServerBoosterHandler : IGuildMemberUpdatedEvent
         if (!CanProcess(before, after)) return;
 
         var guild = await FindGuildAsync(after.Guild);
-        if (guild == null || string.IsNullOrEmpty(guild.BoosterRoleId) || string.IsNullOrEmpty(guild.AdminChannelId)) return;
+        if (guild is null || string.IsNullOrEmpty(guild.BoosterRoleId) || string.IsNullOrEmpty(guild.AdminChannelId)) return;
 
         var boostRole = after.Guild.GetRole(guild.BoosterRoleId.ToUlong());
-        if (boostRole == null) return;
+        if (boostRole is null) return;
 
         var adminChannel = await before!.Guild.GetTextChannelAsync(guild.AdminChannelId.ToUlong());
-        if (adminChannel == null) return;
+        if (adminChannel is null) return;
 
         var boostBefore = before.RoleIds.Any(o => o == boostRole.Id);
         var boostAfter = after.RoleIds.Any(o => o == boostRole.Id);
@@ -53,7 +53,7 @@ public class ServerBoosterHandler : IGuildMemberUpdatedEvent
     }
 
     private static bool CanProcess(IGuildUser? before, IGuildUser after)
-        => before != null && !before.RoleIds.SequenceEqual(after.RoleIds);
+        => before is not null && !before.RoleIds.SequenceEqual(after.RoleIds);
 
     private async Task<Guild?> FindGuildAsync(IGuild guild)
     {

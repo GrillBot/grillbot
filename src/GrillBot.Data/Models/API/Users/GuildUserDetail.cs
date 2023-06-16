@@ -24,5 +24,4 @@ public class GuildUserDetail
     public List<Channel> VisibleChannels { get; set; }
     public List<Role> Roles { get; set; }
     public bool HavePointsTransaction { get; set; }
-    public List<RangeParams<DateTime>> TimeoutHistory { get; set; } = new();
 }

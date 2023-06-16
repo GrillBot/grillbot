@@ -1,11 +1,8 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Core.Extensions;
-using GrillBot.Data.Models.API.AuditLog.Filters;
-using GrillBot.Data.Models.AuditLog;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
@@ -132,7 +129,6 @@ public class UserInfo : CommandAction
             AddField(builder, "Reactions", $"{userEntity.GivenReactions} / {userEntity.ObtainedReactions}", true);
 
         await SetMessageInfoAsync(builder, user, repository);
-        await SetTimeoutCountAsync(builder, user, repository);
         await SetUnverifyInfoAsync(builder, user, repository);
         SetInviteInfo(builder, userEntity);
         await SetChannelInfoAsync(builder, user, repository);
@@ -194,26 +190,6 @@ public class UserInfo : CommandAction
             AddField(builder, "MostActiveChannel", $"<#{mostActiveChanel.ChannelId}> ({mostActiveChanel.Count})", false);
         if (lastActiveChannel != null)
             AddField(builder, "LastMessageIn", $"<#{lastActiveChannel.ChannelId}> ({lastActiveChannel.Count})", false);
-    }
-
-    private async Task SetTimeoutCountAsync(EmbedBuilder builder, IGuildUser user, GrillBotRepository repository)
-    {
-        if (OverLimit) return;
-        
-        var parameters = new AuditLogListParams
-        {
-            Sort = null,
-            GuildId = user.GuildId.ToString(),
-            Types = new List<AuditLogItemType> { AuditLogItemType.MemberUpdated }
-        };
-
-        var data = await repository.AuditLog.GetOnlyDataAsync(parameters);
-        var count = data
-            .Select(o => JsonConvert.DeserializeObject<MemberUpdatedData>(o, AuditLogWriteManager.SerializerSettings)!)
-            .Count(o => o.Target.UserId == user.Id.ToString() && o.TimeoutUntil is not null && o.TimeoutUntil.Before is null && o.TimeoutUntil.After is not null);
-
-        if (count > 0)
-            AddField(builder, "TimeoutCount", count.ToString(), true);
     }
 
     private void AddField(EmbedBuilder builder, string fieldId, string value, bool inline)

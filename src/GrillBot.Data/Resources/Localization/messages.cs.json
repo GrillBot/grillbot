@@ -457,8 +457,7 @@
         "UsedInvite": "Použitá pozvánka",
         "MostActiveChannel": "Nejaktivnější kanál",
         "LastMessageIn": "Poslední zpráva",
-        "WebAdminDetails": "Podrobnosti na webu",
-        "TimeoutCount": "Počet umlčení"
+        "WebAdminDetails": "Podrobnosti na webu"
       },
       "NoRoles": "*Uživatel nemá žádné role.*",
       "UnverifyRow": "Uděleno {0}unverify do {1}. {2}",

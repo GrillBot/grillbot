@@ -26,7 +26,6 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public GuildRepository Guild => GetOrCreateRepository<GuildRepository>();
     public GuildUserRepository GuildUser => GetOrCreateRepository<GuildUserRepository>();
     public InviteRepository Invite => GetOrCreateRepository<InviteRepository>();
-    public AuditLogRepository AuditLog => GetOrCreateRepository<AuditLogRepository>();
     public EmoteRepository Emote => GetOrCreateRepository<EmoteRepository>();
     public SearchingRepository Searching => GetOrCreateRepository<SearchingRepository>();
     public SelfUnverifyRepository SelfUnverify => GetOrCreateRepository<SelfUnverifyRepository>();

@@ -25,13 +25,6 @@ public class ApiRequest
     public string UserIdentification { get; set; } = null!;
     public string IpAddress { get; set; }
 
-    [OnSerializing]
-    internal void OnSerializing(StreamingContext _)
-    {
-        if (Parameters?.Count == 0) Parameters = null;
-        if (Headers?.Count == 0) Headers = null;
-    }
-
     public void AddParameters(IDictionaryObject? apiObject, int index = -1)
     {
         if (apiObject == null) return;
@@ -60,10 +53,5 @@ public class ApiRequest
 
         foreach (var value in values.Where(o => !string.IsNullOrEmpty(o)))
             Headers[id] = value!;
-    }
-
-    public bool IsCorrupted()
-    {
-        return string.IsNullOrEmpty(StatusCode) || StartAt == DateTime.MinValue || string.IsNullOrEmpty(Method) || string.IsNullOrEmpty(TemplatePath);
     }
 }

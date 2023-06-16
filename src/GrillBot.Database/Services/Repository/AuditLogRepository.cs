@@ -41,7 +41,4 @@ public class AuditLogRepository : RepositoryBase<GrillBotContext>
             return await query.ToListAsync();
         }
     }
-
-    public async Task<List<AuditLogItem>> GetItemsByType(AuditLogItemType type)
-        => await Context.AuditLogs.Include(o => o.Files).Where(o => o.Type == type).OrderByDescending(o => o.Id).Take(100000).ToListAsync();
 }

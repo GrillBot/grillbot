@@ -102,7 +102,7 @@ public class CreateToken : ApiAction
             ),
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim(ClaimTypes.Name, user.FullName()),
+                new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Role, isPublic ? "User" : "Admin")
             })

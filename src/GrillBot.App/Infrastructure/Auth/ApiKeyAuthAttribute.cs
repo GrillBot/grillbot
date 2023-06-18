@@ -1,4 +1,6 @@
-﻿using GrillBot.Data.Models.AuditLog;
+﻿using System.Security.Claims;
+using GrillBot.Common.Models;
+using GrillBot.Data.Models.AuditLog;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
@@ -78,5 +80,13 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
     {
         var apiRequest = context.HttpContext.RequestServices.GetRequiredService<ApiRequest>();
         apiRequest.UserIdentification = $"PublicApiV2({client.Name})";
+
+        var apiRequestContext = context.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
+        apiRequestContext.LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, client.Name),
+                new Claim(ClaimTypes.Role, "V2")
+            })
+        );
     }
 }

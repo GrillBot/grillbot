@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Actions;
-using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V2;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Users;
@@ -117,11 +116,7 @@ public class UsersController : Infrastructure.ControllerBase
     {
         ApiAction.Init(this, parameters);
 
-        var result = await ProcessActionAsync<ApiBridgeAction, PaginatedResponse<UserKarma>>(
-            bridge => bridge.ExecuteAsync<IRubbergodServiceClient, PaginatedResponse<UserKarma>>(client => client.GetKarmaPageAsync(parameters.Pagination))
-        );
-
-        return Ok(result);
+        return Ok(await ProcessBridgeAsync<IRubbergodServiceClient, PaginatedResponse<UserKarma>>(client => client.GetKarmaPageAsync(parameters.Pagination)));
     }
 
     /// <summary>
@@ -141,10 +136,7 @@ public class UsersController : Infrastructure.ControllerBase
     {
         ApiAction.Init(this, items.ToArray());
 
-        await ProcessActionAsync<ApiBridgeAction>(
-            bridge => bridge.ExecuteAsync<IRubbergodServiceClient>(client => client.StoreKarmaAsync(items))
-        );
-
+        await ProcessBridgeAsync<IRubbergodServiceClient>(client => client.StoreKarmaAsync(items));
         return Ok();
     }
 

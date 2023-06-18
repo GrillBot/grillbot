@@ -1,10 +1,13 @@
 ﻿using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api.V1.AuditLog;
+using GrillBot.App.Actions.Api.V2.AuditLog;
+using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Common.Services.AuditLog.Models.Request.Search;
 using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;
+using GrillBot.Data.Models.API.AuditLog.Public;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -75,4 +78,22 @@ public class AuditLogController : Infrastructure.ControllerBase
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<ActionResult<Detail?>> DetailAsync(Guid id)
         => Ok(await ProcessActionAsync<GetAuditLogDetail, Detail?>(action => action.ProcessAsync(id)));
+
+    /// <summary>
+    /// Create text based log item.
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <response code="400">Validation failed.</response>
+    [HttpPost("create/message")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
+    public async Task<ActionResult> CreateMessageLogItemAsync(LogMessageRequest request)
+    {
+        ApiAction.Init(this, request);
+
+        await ProcessActionAsync<CreateAuditLogMessageAction>(action => action.ProcessAsync(request));
+        return Ok();
+    }
 }

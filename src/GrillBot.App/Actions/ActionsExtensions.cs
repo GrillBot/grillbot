@@ -156,7 +156,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()
             .AddScoped<Api.V2.Events.CreateScheduledEvent>()
             .AddScoped<Api.V2.Events.UpdateScheduledEvent>()
-            .AddScoped<Api.V2.Events.CancelScheduledEvent>();
+            .AddScoped<Api.V2.Events.CancelScheduledEvent>()
+            .AddScoped<Api.V2.AuditLog.CreateAuditLogMessageAction>();
 
         return services;
     }

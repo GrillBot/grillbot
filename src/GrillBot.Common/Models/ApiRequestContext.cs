@@ -16,7 +16,7 @@ public class ApiRequestContext
     public IUser? LoggedUser { get; set; }
 
     public string Language { get; set; } = "cs";
-
+    
     public ulong GetUserId()
     {
         if (LoggedUserData == null)
@@ -31,4 +31,7 @@ public class ApiRequestContext
 
     public string? GetUserRole()
         => LoggedUserData?.FindFirst(ClaimTypes.Role)?.Value;
+
+    public string? GetUsername()
+        => LoggedUser is null ? LoggedUserData?.FindFirst(ClaimTypes.Name)?.Value : LoggedUser.Username;
 }

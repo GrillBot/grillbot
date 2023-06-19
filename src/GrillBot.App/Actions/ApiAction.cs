@@ -1,7 +1,9 @@
-﻿using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Extensions.AuditLog;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
 
@@ -18,11 +20,16 @@ public abstract class ApiAction
 
     public static void Init(Controller controller, IDictionaryObject apiObject)
     {
-        Init(controller, new[] { apiObject });
+        var apiRequestContext = controller.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
+        apiRequestContext.LogRequest.AddParameters(apiObject);
     }
 
-    public static void Init(Controller controller, IEnumerable<IDictionaryObject> apiObjects)
-        => controller.StoreParameters(apiObjects);
+    public static void Init(Controller controller, IDictionaryObject[] apiObjects)
+    {
+        var apiRequestContext = controller.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
+        for (var i = 0; i < apiObjects.Length; i++)
+            apiRequestContext.LogRequest.AddParameters(apiObjects[i], i);
+    }
 
     /// <summary>
     /// Manually update context. Use only if ApiAction is used in commands.

@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Discord;
+using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.Common.Models;
 
@@ -16,6 +17,8 @@ public class ApiRequestContext
     public IUser? LoggedUser { get; set; }
 
     public string Language { get; set; } = "cs";
+
+    public ApiRequestRequest LogRequest { get; set; } = new();
     
     public ulong GetUserId()
     {
@@ -28,9 +31,6 @@ public class ApiRequestContext
 
     public bool IsPublic()
         => LoggedUserData?.IsInRole("User") ?? false;
-
-    public string? GetUserRole()
-        => LoggedUserData?.FindFirst(ClaimTypes.Role)?.Value;
 
     public string? GetUsername()
         => LoggedUser is null ? LoggedUserData?.FindFirst(ClaimTypes.Name)?.Value : LoggedUser.Username;

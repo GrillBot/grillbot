@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Managers;
+using GrillBot.Common.Extensions.AuditLog;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Data.Models.AuditLog;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -11,14 +11,12 @@ namespace GrillBot.App.Infrastructure.RequestProcessing;
 
 public class RequestFilter : IAsyncActionFilter
 {
-    private ApiRequest ApiRequest { get; }
     private ApiRequestContext ApiRequestContext { get; }
     private IDiscordClient DiscordClient { get; }
     private UserManager UserManager { get; }
 
-    public RequestFilter(ApiRequest apiRequest, ApiRequestContext apiRequestContext, IDiscordClient discordClient, UserManager userManager)
+    public RequestFilter(ApiRequestContext apiRequestContext, IDiscordClient discordClient, UserManager userManager)
     {
-        ApiRequest = apiRequest;
         ApiRequestContext = apiRequestContext;
         DiscordClient = discordClient;
         UserManager = userManager;
@@ -54,8 +52,7 @@ public class RequestFilter : IAsyncActionFilter
             ApiRequestContext.Language = TextsManager.FixLocale(value.ToString());
         }
 
-        ApiRequest.LoggedUserRole = ApiRequestContext.GetUserRole();
-        ApiRequest.Language = ApiRequestContext.Language;
+        ApiRequestContext.LogRequest.Language = ApiRequestContext.Language;
     }
 
     private async Task SetLoggedUserAsync(ActionContext context)
@@ -63,7 +60,7 @@ public class RequestFilter : IAsyncActionFilter
         var publicType = ApiRequestContext.IsPublic() ? "Public" : "Private";
         if (!(context.HttpContext.User.Identity?.IsAuthenticated ?? false))
         {
-            ApiRequest.UserIdentification = $"ApiV1({publicType}/Anonymous)";
+            ApiRequestContext.LogRequest.Identification = $"ApiV1({publicType}/Anonymous)";
             return;
         }
 
@@ -71,29 +68,29 @@ public class RequestFilter : IAsyncActionFilter
 
         var loggedUserId = ApiRequestContext.GetUserId();
         ApiRequestContext.LoggedUser = await DiscordClient.FindUserAsync(loggedUserId);
-        ApiRequest.UserIdentification = $"ApiV1({publicType}/{ApiRequestContext.LoggedUser!.GetFullName()})";
+        ApiRequestContext.LogRequest.Identification = $"ApiV1({publicType}/{ApiRequestContext.LoggedUser!.GetFullName()})";
     }
 
     private void SetApiRequest(ActionContext context)
     {
         var descriptor = (ControllerActionDescriptor)context.ActionDescriptor;
-        ApiRequest.StartAt = DateTime.UtcNow;
-        ApiRequest.TemplatePath = descriptor.AttributeRouteInfo!.Template!;
-        ApiRequest.Path = context.HttpContext.Request.Path.ToString();
-        ApiRequest.ActionName = descriptor.MethodInfo.Name;
-        ApiRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
-        ApiRequest.Method = context.HttpContext.Request.Method;
-        ApiRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
-        ApiRequest.IpAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString()!;
+        ApiRequestContext.LogRequest.StartAt = DateTime.UtcNow;
+        ApiRequestContext.LogRequest.TemplatePath = descriptor.AttributeRouteInfo!.Template!;
+        ApiRequestContext.LogRequest.Path = context.HttpContext.Request.Path.ToString();
+        ApiRequestContext.LogRequest.ActionName = descriptor.MethodInfo.Name;
+        ApiRequestContext.LogRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
+        ApiRequestContext.LogRequest.Method = context.HttpContext.Request.Method;
+        ApiRequestContext.LogRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
+        ApiRequestContext.LogRequest.Ip = context.HttpContext.Connection.RemoteIpAddress?.ToString()!;
 
         foreach (var item in context.HttpContext.Request.Query)
-            ApiRequest.AddParameter(item.Key, item.Value.ToString());
+            ApiRequestContext.LogRequest.AddParameter(item.Key, item.Value.ToString());
         foreach (var (name, values) in context.HttpContext.Request.Headers)
         {
             if (name is "Authorization" or "ApiKey")
-                ApiRequest.AddHeader(name, $"<{name} header removed>");
+                ApiRequestContext.LogRequest.AddHeaders(name, $"<{name} header removed>");
             else
-                ApiRequest.AddHeader(name, values);
+                ApiRequestContext.LogRequest.AddHeaders(name, values);
         }
     }
 }

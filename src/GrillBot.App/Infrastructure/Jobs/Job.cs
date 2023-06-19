@@ -1,5 +1,4 @@
 ﻿using GrillBot.Common.Managers;
-using GrillBot.Data.Models.AuditLog;
 using Quartz;
 using System.Reflection;
 using GrillBot.Cache.Services.Managers;
@@ -39,59 +38,51 @@ public abstract class Job : IJob
         if (!await CanRunAsync()) return;
 
         var user = context.MergedJobDataMap.Get("User") as IUser;
-
         await LoggingManager.InfoAsync(JobName, $"Triggered processing at {DateTime.Now}");
-        var data = new JobExecutionData
+
+        var logRequest = new JobExecutionRequest
         {
             JobName = JobName,
             StartAt = DateTime.UtcNow,
-            StartingUser = user is null ? null : new AuditUserInfo(user)
+            StartUserId = user?.Id.ToString()
         };
 
         try
         {
             await RunAsync(context);
-            data.Result = context.Result?.ToString();
+            logRequest.Result = context.Result?.ToString() ?? "";
         }
         catch (Exception ex)
         {
-            data.Result = ex.ToString();
-            data.WasError = true;
+            logRequest.Result = ex.ToString();
+            logRequest.WasError = true;
 
             await LoggingManager.ErrorAsync(JobName, "An error occured while job task processing.", new JobException(user, ex));
         }
         finally
         {
-            data.MarkFinished();
+            logRequest.EndAt = DateTime.UtcNow;
 
-            await WriteToAuditLogAsync(data);
-            await LoggingManager.InfoAsync(JobName, $"Processing completed. Duration: {data.EndAt - data.StartAt}");
+            await WriteToAuditLogAsync(logRequest);
+            await LoggingManager.InfoAsync(JobName, $"Processing completed. Duration: {logRequest.EndAt - logRequest.StartAt}");
         }
     }
 
-    private async Task WriteToAuditLogAsync(JobExecutionData executionData)
+    private async Task WriteToAuditLogAsync(JobExecutionRequest logRequest)
     {
-        if (string.IsNullOrEmpty(executionData.Result)) 
+        if (string.IsNullOrEmpty(logRequest.Result))
             return;
 
-        var logRequest = new LogRequest
+        var request = new LogRequest
         {
             Type = LogType.JobCompleted,
             CreatedAt = DateTime.UtcNow,
-            JobExecution = new JobExecutionRequest
-            {
-                Result = executionData.Result,
-                EndAt = executionData.EndAt,
-                JobName = executionData.JobName,
-                StartAt = executionData.StartAt,
-                WasError = executionData.WasError,
-                StartUserId = executionData.StartingUser?.UserId
-            },
+            JobExecution = logRequest,
             UserId = DiscordClient.CurrentUser.Id.ToString()
         };
 
         var auditLogServiceClient = ServiceProvider.GetRequiredService<IAuditLogServiceClient>();
-        await auditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await auditLogServiceClient.CreateItemsAsync(new List<LogRequest> { request });
     }
 
     private async Task<bool> CanRunAsync()

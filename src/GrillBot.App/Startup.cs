@@ -15,7 +15,6 @@ using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.App.Jobs;
 using GrillBot.App.Managers;
-using GrillBot.Data.Models.AuditLog;
 using GrillBot.Cache;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Common;
@@ -78,7 +77,6 @@ public class Startup
             .AddCaching(Configuration)
             .AddDatabase(connectionString!)
             .AddMemoryCache()
-            .AddScoped<ApiRequest>()
             .AddActions()
             .AddSingleton<FileStorageFactory>()
             .AddControllers(c =>

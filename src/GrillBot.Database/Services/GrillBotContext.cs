@@ -88,15 +88,6 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.Guild).WithMany(o => o.UnverifyLogs);
         });
 
-        modelBuilder.Entity<AuditLogItem>(builder =>
-        {
-            builder.HasOne(o => o.Guild).WithMany(o => o.AuditLogs);
-            builder.HasOne(o => o.ProcessedGuildUser).WithMany().HasForeignKey(o => new { o.GuildId, o.ProcessedUserId });
-            builder.HasOne(o => o.GuildChannel).WithMany().HasForeignKey(o => new { o.GuildId, o.ChannelId });
-            builder.HasOne(o => o.ProcessedUser).WithMany().HasForeignKey(o => o.ProcessedUserId);
-            builder.HasMany(o => o.Files).WithOne(o => o.AuditLogItem);
-        });
-
         modelBuilder.Entity<SelfunverifyKeepable>(builder => builder.HasKey(o => new { o.GroupName, o.Name }));
 
         modelBuilder.Entity<EmoteSuggestion>(builder =>
@@ -123,8 +114,6 @@ public class GrillBotContext : DbContext
     public DbSet<SearchItem> SearchItems => Set<SearchItem>();
     public DbSet<Unverify> Unverifies => Set<Unverify>();
     public DbSet<UnverifyLog> UnverifyLogs => Set<UnverifyLog>();
-    public DbSet<AuditLogItem> AuditLogs => Set<AuditLogItem>();
-    public DbSet<AuditLogFileMeta> AuditLogFiles => Set<AuditLogFileMeta>();
     public DbSet<EmoteStatisticItem> Emotes => Set<EmoteStatisticItem>();
     public DbSet<RemindMessage> Reminders => Set<RemindMessage>();
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();

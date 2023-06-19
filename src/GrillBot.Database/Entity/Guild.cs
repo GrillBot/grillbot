@@ -48,7 +48,6 @@ public class Guild
     public ISet<SearchItem> Searches { get; set; }
     public ISet<Unverify> Unverifies { get; set; }
     public ISet<UnverifyLog> UnverifyLogs { get; set; }
-    public ISet<AuditLogItem> AuditLogs { get; set; }
     public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
 
     public Guild()
@@ -59,7 +58,6 @@ public class Guild
         Unverifies = new HashSet<Unverify>();
         UnverifyLogs = new HashSet<UnverifyLog>();
         Searches = new HashSet<SearchItem>();
-        AuditLogs = new HashSet<AuditLogItem>();
         EmoteStatistics = new HashSet<EmoteStatisticItem>();
     }
 

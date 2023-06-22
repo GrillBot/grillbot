@@ -22,7 +22,7 @@ public static class GuildExtensions
         if (suppressThreads)
             allChannels = allChannels.Where(o => o is not IThreadChannel);
 
-        return await allChannels.FindAllAsync(o => o.HaveAccessAsync(user));
+        return await allChannels.FindAllAsync(async o => await o.HaveAccessAsync(user));
     }
 
     public static async Task<bool> CanManageInvitesAsync(this IGuild guild, IUser user)

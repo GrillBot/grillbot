@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
+using GrillBot.Core.Exceptions;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -16,7 +17,7 @@ public class AdminModule : InteractionsModuleBase
     [SlashCommand("clean_messages", "Deletes the last N messages (or until concrete message ID) from the channel.")]
     [RequireBotPermission(ChannelPermission.ManageMessages | ChannelPermission.ReadMessageHistory)]
     [DeferConfiguration(RequireEphemeral = true)]
-    public async Task CleanAsync(string criterium, ITextChannel? channel = null)
+    public async Task CleanAsync(string criterium, IGuildChannel? channel = null)
     {
         using var command = GetCommand<Actions.Commands.CleanChannelMessages>();
 
@@ -26,7 +27,7 @@ public class AdminModule : InteractionsModuleBase
 
     [SlashCommand("send", "Send message to command")]
     [DeferConfiguration(RequireEphemeral = true)]
-    public async Task SendMessageToChannelAsync(ITextChannel channel, [Discord.Interactions.MaxLength(DiscordConfig.MaxMessageSize)] string? content = null, string? reference = null,
+    public async Task SendMessageToChannelAsync(IGuildChannel channel, [Discord.Interactions.MaxLength(DiscordConfig.MaxMessageSize)] string? content = null, string? reference = null,
         IAttachment? attachment = null)
     {
         using var command = GetCommand<Actions.Commands.SendMessageToChannel>();
@@ -36,7 +37,7 @@ public class AdminModule : InteractionsModuleBase
             await command.Command.ProcessAsync(channel, reference, content, new[] { attachment });
             await SetResponseAsync(Texts["ChannelModule/PostMessage/Success", Locale], secret: true);
         }
-        catch (ValidationException ex)
+        catch (Exception ex) when (ex is ValidationException or NotFoundException)
         {
             await SetResponseAsync(ex.Message, secret: true);
         }

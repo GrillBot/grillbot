@@ -22,7 +22,7 @@ public class SendMessageToChannel : CommandAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(ITextChannel channel, string? reference, string? content, IEnumerable<IAttachment?> attachments)
+    public async Task ProcessAsync(IGuildChannel channel, string? reference, string? content, IEnumerable<IAttachment?> attachments)
     {
         SendAction.UpdateContext(Locale, Context.User);
         var parameters = new SendMessageToChannelParams

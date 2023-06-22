@@ -23,14 +23,16 @@ public class CleanChannelMessages : CommandAction
         Texts = texts;
     }
 
-    public async Task<string> ProcessAsync(string criterium, ITextChannel? channel)
+    public async Task<string> ProcessAsync(string criterium, IGuildChannel? channel)
     {
-        channel ??= (ITextChannel)Context.Channel;
+        if (channel is not null && channel is not ITextChannel)
+            return Texts["ChannelModule/Clean/UnsupportedChannel", Locale];
 
+        var guildTextChannel = channel as ITextChannel ?? (ITextChannel)Context.Channel;
         var countOrIdValue = ParseValue(criterium);
-        var messages = await GetMessagesAsync(countOrIdValue, channel);
+        var messages = await GetMessagesAsync(countOrIdValue, guildTextChannel);
         var count = countOrIdValue < DiscordEpoch ? Convert.ToInt32(countOrIdValue) : 0;
-        var (totalCount, pinnedCount) = await ProcessMessagesAsync(channel, messages, count);
+        var (totalCount, pinnedCount) = await ProcessMessagesAsync(guildTextChannel, messages, count);
 
         return Texts["ChannelModule/Clean/ResultMessage", Locale].FormatWith(totalCount, pinnedCount);
     }

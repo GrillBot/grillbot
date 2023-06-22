@@ -118,7 +118,8 @@
       "NoMutualGuild": "Požadovaný server nesdílíš s botem."
     },
     "Clean": {
-      "ResultMessage": "Bylo úspěšně smazáno zpráv: **{0}**\nZ toho připnutých: **{1}**"
+      "ResultMessage": "Bylo úspěšně smazáno zpráv: **{0}**\nZ toho připnutých: **{1}**",
+      "UnsupportedChannel": "Mazat zprávy lze pouze z textových kanálů."
     }
   },
   "DuckModule": {

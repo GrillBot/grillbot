@@ -111,8 +111,14 @@ public class AuditMessageDeletedHandler : AuditLogServiceHandler, IMessageDelete
         if (providerName != "Twitch")
             return $"{video.Value.Url} {size}";
 
+        const StringSplitOptions splitFlags = StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries;
+
         var url = new Uri(video.Value.Url);
-        var queryFields = url.Query[1..].Split('&').Select(o => o.Split('=')).ToDictionary(o => o[0], o => o[1]);
-        return $"{queryFields["channel"]} {size}";
+        var channels = url.Query[1..]
+            .Split('&', splitFlags)
+            .Where(o => o.StartsWith("channel="))
+            .Select(o => o["channel=".Length..]);
+
+        return $"{string.Join(", ", channels)} {size}";
     }
 }

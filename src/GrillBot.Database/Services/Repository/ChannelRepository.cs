@@ -120,7 +120,7 @@ public class ChannelRepository : RepositoryBase<GrillBotContext>
                 return entity;
             }
 
-            entity = GuildChannel.FromDiscord(channel, channel.GetChannelType() ?? ChannelType.DM);
+            entity = GuildChannel.FromDiscord(channel, channel.GetChannelType() ?? ChannelType.Text);
             await Context.AddAsync(entity);
 
             return entity;

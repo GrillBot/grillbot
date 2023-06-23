@@ -111,7 +111,8 @@ public class GuildChannel
             ParentChannelId = ParentChannelId,
             RolePermissionsCount = RolePermissionsCount,
             UserPermissionsCount = UserPermissionsCount,
-            Users = Users
+            Users = Users,
+            PinCount = PinCount
         };
     }
 }

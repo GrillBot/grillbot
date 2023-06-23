@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using System.Reflection;
 using GrillBot.App.Handlers;
+using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Managers.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,7 @@ public class DiscordService : IHostedService
         Provider.GetRequiredService<EventLogManager>();
         Provider.GetRequiredService<EventManager>();
         Provider.GetRequiredService<InteractionHandler>();
+        Provider.GetRequiredService<PinManager>();
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

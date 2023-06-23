@@ -10,9 +10,7 @@ public class AuditLogManager
     {
         lock (_locker)
         {
-            if (!NextMemberRoleEvents.ContainsKey(guildId))
-                NextMemberRoleEvents.Add(guildId, DateTime.MinValue);
-
+            NextMemberRoleEvents.TryAdd(guildId, DateTime.MinValue);
             NextMemberRoleEvents[guildId] = newDate;
         }
     }
@@ -21,9 +19,7 @@ public class AuditLogManager
     {
         lock (_locker)
         {
-            if (!NextOverwriteEvents.ContainsKey(channelId))
-                NextOverwriteEvents.Add(channelId, DateTime.MinValue);
-
+            NextOverwriteEvents.TryAdd(channelId, DateTime.MinValue);
             NextOverwriteEvents[channelId] = newDate;
         }
     }

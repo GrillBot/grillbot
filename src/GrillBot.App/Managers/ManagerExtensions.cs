@@ -14,7 +14,8 @@ public static class ManagerExtensions
             .AddScoped<UnverifyLogManager>()
             .AddScoped<UnverifyProfileManager>()
             .AddScoped<UnverifyMessageManager>()
-            .AddScoped<UnverifyCheckManager>();
+            .AddScoped<UnverifyCheckManager>()
+            .AddSingleton<PinManager>();
 
         return services;
     }

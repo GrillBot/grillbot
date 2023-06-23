@@ -18,23 +18,6 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
     {
     }
 
-    public async Task<bool> IsAvailableAsync()
-    {
-        try
-        {
-            await ProcessRequestAsync(
-                () => HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "health")),
-                _ => EmptyResult
-            );
-
-            return true;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-    }
-
     public async Task<RestResponse<PaginatedResponse<TransactionItem>>> GetTransactionListAsync(AdminListRequest request)
     {
         return await ProcessRequestAsync(

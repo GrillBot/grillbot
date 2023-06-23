@@ -23,23 +23,6 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
     {
     }
 
-    public async Task<bool> IsAvailableAsync()
-    {
-        try
-        {
-            await ProcessRequestAsync(
-                () => HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "health")),
-                _ => EmptyResult
-            );
-
-            return true;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-    }
-
     public async Task CreateItemsAsync(List<LogRequest> requests)
     {
         await ProcessRequestAsync(

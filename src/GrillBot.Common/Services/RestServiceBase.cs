@@ -74,4 +74,25 @@ public abstract class RestServiceBase
 
         return await response.Content.ReadFromJsonAsync<TResult>();
     }
+
+    public async Task<bool> IsAvailableAsync()
+    {
+        try
+        {
+            await ProcessRequestAsync(
+                async () =>
+                {
+                    using var message = new HttpRequestMessage(HttpMethod.Head, "health");
+                    return await HttpClient.SendAsync(message);
+                },
+                _ => EmptyResult
+            );
+
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
 }

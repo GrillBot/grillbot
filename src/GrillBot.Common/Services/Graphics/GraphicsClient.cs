@@ -15,23 +15,6 @@ public class GraphicsClient : RestServiceBase, IGraphicsClient
     {
     }
 
-    public async Task<bool> IsAvailableAsync()
-    {
-        try
-        {
-            await ProcessRequestAsync(
-                () => HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "health")),
-                _ => Task.FromResult((object?)null)
-            );
-
-            return true;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-    }
-
     public async Task<byte[]> CreateChartAsync(ChartRequestData request)
     {
         return await ProcessRequestAsync(

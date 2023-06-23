@@ -14,23 +14,6 @@ public class FileServiceClient : RestServiceBase, IFileServiceClient
     {
     }
 
-    public async Task<bool> IsAvailableAsync()
-    {
-        try
-        {
-            await ProcessRequestAsync(
-                () => HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "health")),
-                _ => EmptyResult
-            );
-
-            return true;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-    }
-
     public async Task<DiagnosticInfo> GetDiagAsync()
     {
         return (await ProcessRequestAsync(

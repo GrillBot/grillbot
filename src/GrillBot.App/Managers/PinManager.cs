@@ -69,10 +69,18 @@ public class PinManager
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbChannel = await repository.Channel.GetOrCreateChannelAsync(channel);
-        dbChannel.PinCount = pinCount;
-
-        await repository.CommitAsync();
-        InitializedChannels.Add(channel.Id);
+        await Lock.WaitAsync();
+        try
+        {
+            var dbChannel = await repository.Channel.GetOrCreateChannelAsync(channel);
+            dbChannel.PinCount = pinCount;
+            
+            await repository.CommitAsync();
+            InitializedChannels.Add(channel.Id);
+        }
+        finally
+        {
+            Lock.Release();
+        }
     }
 }

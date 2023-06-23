@@ -117,7 +117,8 @@ public class AuditMessageDeletedHandler : AuditLogServiceHandler, IMessageDelete
         var channels = url.Query[1..]
             .Split('&', splitFlags)
             .Where(o => o.StartsWith("channel="))
-            .Select(o => o["channel=".Length..]);
+            .Select(o => o["channel=".Length..].Trim())
+            .Where(o => !string.IsNullOrEmpty(o));
 
         return $"{string.Join(", ", channels)} {size}";
     }

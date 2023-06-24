@@ -101,13 +101,13 @@ public class UnverifyLogParams : IQueryableModel<UnverifyLog>, IDictionaryObject
             },
             "FromUser" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.FromUser!.User!.Username).ThenByDescending(o => o.FromUser!.User!.Discriminator),
-                _ => query.OrderBy(o => o.FromUser!.User!.Username).ThenBy(o => o.FromUser!.User!.Discriminator)
+                true => query.OrderByDescending(o => o.FromUser!.User!.Username),
+                _ => query.OrderBy(o => o.FromUser!.User!.Username)
             },
             "ToUser" => Sort.Descending switch
             {
-                true => query.OrderByDescending(o => o.ToUser!.User!.Username).ThenByDescending(o => o.ToUser!.User!.Discriminator),
-                _ => query.OrderBy(o => o.ToUser!.User!.Username).ThenBy(o => o.ToUser!.User!.Discriminator)
+                true => query.OrderByDescending(o => o.ToUser!.User!.Username),
+                _ => query.OrderBy(o => o.ToUser!.User!.Username)
             },
             _ => Sort.Descending switch
             {

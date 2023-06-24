@@ -27,7 +27,7 @@ public class UnverifyCronJob : Job
         while (unverify != null)
         {
             await RemoveUnverify.ProcessAutoRemoveAsync(unverify.GuildId.ToUlong(), unverify.UserId.ToUlong());
-            processed.Add($"{unverify.Guild!.Name} - {unverify.GuildUser!.FullName()} (Roles:{unverify.Roles.Count}, Channels:{unverify.Channels.Count})");
+            processed.Add($"{unverify.Guild!.Name} - {unverify.GuildUser!.DisplayName} (Roles:{unverify.Roles.Count}, Channels:{unverify.Channels.Count})");
             unverify = await repository.Unverify.GetFirstPendingUnverifyAsync();
         }
 

@@ -28,7 +28,6 @@ public class UsersMappingProfile : AutoMapper.Profile
 
         CreateMap<Database.Entity.User, UserListItem>()
             .ForMember(dst => dst.HaveBirthday, opt => opt.MapFrom(src => src.Birthday != null))
-            .ForMember(dst => dst.Username, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.Discriminator) ? src.Username : $"{src.Username}#{src.Discriminator}"))
             .ForMember(dst => dst.Guilds, opt => opt.Ignore())
             .ForMember(dst => dst.DiscordStatus, opt => opt.MapFrom(src => src.Status))
             .ForMember(dst => dst.RegisteredAt, opt => opt.MapFrom(src => SnowflakeUtils.FromSnowflake(src.Id.ToUlong()).LocalDateTime));

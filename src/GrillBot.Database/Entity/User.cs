@@ -31,10 +31,6 @@ public class User
     [Required]
     public string Username { get; set; } = null!;
 
-    [Required]
-    [StringLength(4)]
-    public string Discriminator { get; set; } = null!;
-
     public UserStatus Status { get; set; }
 
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
@@ -73,7 +69,6 @@ public class User
     public void Update(IUser user)
     {
         Username = user.IsUser() ? user.Username : user.Username.Cut(32, true)!;
-        Discriminator = user.Discriminator;
         Status = user.GetStatus();
 
         if (user.IsUser())
@@ -81,7 +76,4 @@ public class User
         else
             Flags |= (int)UserFlags.NotUser;
     }
-
-    public string FullName(bool noDiscriminator = false)
-        => $"{Username}{(noDiscriminator ? "" : $"#{Discriminator}")}";
 }

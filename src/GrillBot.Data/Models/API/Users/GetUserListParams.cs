@@ -82,8 +82,8 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
     {
         return Sort.Descending switch
         {
-            true => query.OrderByDescending(o => o.Username).ThenByDescending(o => o.Discriminator),
-            _ => query.OrderBy(o => o.Username).ThenBy(o => o.Discriminator)
+            true => query.OrderByDescending(o => o.Username),
+            _ => query.OrderBy(o => o.Username)
         };
     }
 

@@ -21,12 +21,13 @@ public class GetAvailableUsers : ApiAction
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.User.GetFullListOfUsers(bots, mutualGuilds, guildId);
-        return data.ToDictionary(o => o.Id, o => o.FullName());
+        return data.ToDictionary(o => o.Id, o => o.Username);
     }
 
-    private async Task<List<string>> GetMutualGuildsAsync()
+    private async Task<List<string>?> GetMutualGuildsAsync()
     {
-        if (!ApiContext.IsPublic()) return null;
+        if (!ApiContext.IsPublic())
+            return null;
 
         return (await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId()))
             .ConvertAll(o => o.Id.ToString());

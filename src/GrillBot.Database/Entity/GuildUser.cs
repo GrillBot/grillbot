@@ -51,7 +51,7 @@ public class GuildUser
 
     [NotMapped]
     public string? DisplayName
-        => string.IsNullOrEmpty(Nickname) ? User?.Username : Nickname;
+        => string.IsNullOrEmpty(Nickname) ? User?.Username : $"{Nickname} ({User?.Username})";
 
     public GuildUser()
     {
@@ -77,11 +77,5 @@ public class GuildUser
     {
         Nickname = user.IsUser() ? user.Nickname : user.Nickname?.Cut(32, true);
         User?.Update(user);
-    }
-
-    public string FullName(bool noDiscriminator = false)
-    {
-        var username = User?.FullName(noDiscriminator) ?? "";
-        return string.IsNullOrEmpty(Nickname) ? username : $"{Nickname} ({username})";
     }
 }

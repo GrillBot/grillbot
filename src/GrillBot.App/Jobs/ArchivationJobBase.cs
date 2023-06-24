@@ -34,7 +34,7 @@ public abstract class ArchivationJobBase : Job
             user.Name = "GuildUser";
 
             user.Add(new XAttribute("GuildId", u.GuildId));
-            user.Attribute("FullName")!.Value = u.FullName();
+            user.Attribute("FullName")!.Value = u.DisplayName ?? "";
 
             if (!string.IsNullOrEmpty(u.UsedInviteCode))
                 user.Add(new XAttribute("UsedInviteCode", u.UsedInviteCode));
@@ -48,7 +48,7 @@ public abstract class ArchivationJobBase : Job
         var element = new XElement(
             "User",
             new XAttribute("Id", user.Id),
-            new XAttribute("FullName", user.FullName())
+            new XAttribute("FullName", user.Username)
         );
 
         if (user.Flags > 0)

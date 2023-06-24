@@ -40,6 +40,6 @@ public class GetSuggestions : CommandAction
     private string GetRow(bool incoming, RemindMessage remind)
     {
         var textId = incoming ? "Incoming" : "Outgoing";
-        return Texts[$"RemindModule/Suggestions/{textId}", Locale].FormatWith(remind.Id, remind.At.ToCzechFormat(), remind.FromUser!.FullName());
+        return Texts[$"RemindModule/Suggestions/{textId}", Locale].FormatWith(remind.Id, remind.At.ToCzechFormat(), remind.FromUser!.Username);
     }
 }

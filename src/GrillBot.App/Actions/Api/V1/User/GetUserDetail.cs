@@ -53,7 +53,6 @@ public class GetUserDetail : ApiAction
         {
             Language = entity.Language,
             Id = entity.Id,
-            Discriminator = entity.Discriminator,
             Flags = entity.Flags,
             HaveBirthday = entity.Birthday != null,
             Status = entity.Status,

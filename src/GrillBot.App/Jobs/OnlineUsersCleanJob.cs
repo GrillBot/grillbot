@@ -19,15 +19,18 @@ public class OnlineUsersCleanJob : Job
         await using var repository = DbFactory.CreateRepository();
 
         var users = await repository.User.GetOnlineUsersAsync();
-        if (users.Count == 0) return;
+        if (users.Count == 0) 
+            return;
 
         var privateUsersOnline = new List<string>();
         var publicUsersOnline = new List<string>();
 
         foreach (var user in users)
         {
-            if (user.HaveFlags(UserFlags.PublicAdminOnline)) publicUsersOnline.Add(user.FullName());
-            if (user.HaveFlags(UserFlags.WebAdminOnline)) privateUsersOnline.Add(user.FullName());
+            if (user.HaveFlags(UserFlags.PublicAdminOnline))
+                publicUsersOnline.Add(user.Username);
+            if (user.HaveFlags(UserFlags.WebAdminOnline))
+                privateUsersOnline.Add(user.Username);
 
             user.Flags &= ~(int)UserFlags.WebAdminOnline;
             user.Flags &= ~(int)UserFlags.PublicAdminOnline;

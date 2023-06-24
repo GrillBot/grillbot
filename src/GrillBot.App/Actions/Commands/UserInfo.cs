@@ -177,7 +177,7 @@ public class UserInfo : CommandAction
         var invite = entity.UsedInvite;
         var inviteRow = invite.Code == Context.Guild.VanityURLCode
             ? Texts["User/InfoEmbed/UsedVanityInviteRow", Locale].FormatWith(invite.Code, Texts["User/InfoEmbed/VanityInvite", Locale])
-            : Texts["User/InfoEmbed/UsedInviteRow", Locale].FormatWith(invite.Code, invite.Creator!.FullName(), invite.CreatedAt!.Value.ToCzechFormat());
+            : Texts["User/InfoEmbed/UsedInviteRow", Locale].FormatWith(invite.Code, invite.Creator!.DisplayName, invite.CreatedAt!.Value.ToCzechFormat());
         AddField(builder, "UsedInvite", inviteRow, false);
     }
 

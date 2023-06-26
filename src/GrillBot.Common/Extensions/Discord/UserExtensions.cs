@@ -19,7 +19,7 @@ public static class UserExtensions
     public static bool IsUser(this IUser user) => !user.IsBot && !user.IsWebhook;
 
     public static string GetDisplayName(this IUser user)
-        => user is IGuildUser guildUser && !string.IsNullOrEmpty(guildUser.DisplayName) ? $"{guildUser.Nickname} ({user.Username})" : user.Username;
+        => user is IGuildUser guildUser && !string.IsNullOrEmpty(guildUser.Nickname) ? $"{guildUser.Nickname} ({user.Username})" : user.Username;
 
     public static IRole? GetHighestRole(this IGuildUser user, bool requireColor = false)
     {

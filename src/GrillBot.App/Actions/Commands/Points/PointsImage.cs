@@ -43,10 +43,14 @@ public sealed class PointsImage : CommandAction
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
         var status = await PointsServiceClient.GetImagePointsStatusAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString());
 
+        var username = guildUser.GetDisplayName();
+        if (username.Length > 32)
+            username = !string.IsNullOrEmpty(guildUser.Nickname) ? guildUser.Nickname : guildUser.Username;
+
         var request = new PointsRequest
         {
             Position = status.Position,
-            Username = user.GetDisplayName(),
+            Username = username,
             AvatarInfo = new AvatarInfo
             {
                 Type = "png",

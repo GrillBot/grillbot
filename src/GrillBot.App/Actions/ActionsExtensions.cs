@@ -54,6 +54,13 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Channel.SimpleList.GetChannelSimpleListWithPins>()
             .AddScoped<Api.V1.Channel.GetPins>()
             .AddScoped<Api.V1.Channel.GetPinsWithAttachments>();
+        
+        // Dashboard
+        services
+            .AddScoped<Api.V1.Dashboard.GetActiveOperations>()
+            .AddScoped<Api.V1.Dashboard.GetCommonInfo>()
+            .AddScoped<Api.V1.Dashboard.GetOperationStats>()
+            .AddScoped<Api.V1.Dashboard.GetServicesList>();
 
         // Emote
         services
@@ -129,8 +136,7 @@ public static class ActionsExtensions
         // System
         services
             .AddScoped<Api.V1.System.ChangeBotStatus>()
-            .AddScoped<Api.V1.System.GetEventLog>()
-            .AddScoped<Api.V1.System.GetDashboard>();
+            .AddScoped<Api.V1.System.GetEventLog>();
 
         // Unverify
         services

@@ -1,5 +1,4 @@
 ﻿using GrillBot.Data.Models.API.Services;
-using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -39,15 +38,7 @@ public class SystemController : Infrastructure.ControllerBase
         => Ok(ProcessAction<Actions.Api.V1.System.GetEventLog, string[]>(action => action.Process()));
 
     /// <summary>
-    /// Get live dashboard.
-    /// </summary>
-    [HttpGet("dashboard")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dashboard>> GetDashboardAsync()
-        => Ok(await ProcessActionAsync<Actions.Api.V1.System.GetDashboard, Dashboard>(action => action.ProcessAsync()));
-
-    /// <summary>
-    /// Get info about microservice.
+    /// Get info about service.
     /// </summary>
     [HttpGet("service/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]

@@ -150,19 +150,43 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
         ))!;
     }
 
-    public async Task<DashboardInfo> GetDashboardInfoAsync()
+    public async Task<int> GetItemsCountOfGuildAsync(ulong guildId)
+    {
+        return await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/info/guild/{guildId}/count"),
+            response => response.Content.ReadFromJsonAsync<int>()
+        );
+    }
+
+    public async Task<List<DashboardInfoRow>> GetApiDashboardAsync(string apiGroup)
     {
         return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/info/dashboard"),
-            response => response.Content.ReadFromJsonAsync<DashboardInfo>()
+            () => HttpClient.GetAsync($"api/dashboard/api/{apiGroup}"),
+            response => response.Content.ReadFromJsonAsync<List<DashboardInfoRow>>()
         ))!;
     }
 
-    public async Task<int> GetItemsCountOfGuildAsync(ulong guildId)
+    public async Task<List<DashboardInfoRow>> GetInteractionsDashboardAsync()
     {
         return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/info/guild/{guildId}/count"),
-            response => response.Content.ReadFromJsonAsync<int>()
-        ));
+            () => HttpClient.GetAsync($"api/dashboard/interactions"),
+            response => response.Content.ReadFromJsonAsync<List<DashboardInfoRow>>()
+        ))!;
+    }
+
+    public async Task<List<DashboardInfoRow>> GetJobsDashboardAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/dashboard/jobs"),
+            response => response.Content.ReadFromJsonAsync<List<DashboardInfoRow>>()
+        ))!;
+    }
+
+    public async Task<TodayAvgTimes> GetTodayAvgTimes()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/dashboard/todayavgtimes"),
+            response => response.Content.ReadFromJsonAsync<TodayAvgTimes>()
+        ))!;
     }
 }

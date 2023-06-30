@@ -85,7 +85,8 @@ public class PointsChart : CommandAction
         {
             ShowMerged = false,
             Sort = { Descending = false, OrderBy = "AssignedAt" },
-            CreatedFrom = DateTime.Now.AddYears(-1),
+            CreatedFrom = DateTime.UtcNow.AddYears(-1),
+            CreatedTo = DateTime.MaxValue.ToUniversalTime(),
             GuildId = Context.Guild.Id.ToString(),
             OnlyMessages = (filter & ChartsFilter.Messages) != 0 && (filter & ChartsFilter.Reactions) == 0 && (filter & ChartsFilter.Summary) == 0,
             OnlyReactions = (filter & ChartsFilter.Reactions) != 0 && (filter & ChartsFilter.Messages) == 0 && (filter & ChartsFilter.Summary) == 0

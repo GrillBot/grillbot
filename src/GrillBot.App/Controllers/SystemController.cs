@@ -1,5 +1,4 @@
-﻿using GrillBot.Data.Models.API.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,12 +35,4 @@ public class SystemController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<string[]> GetEventLog()
         => Ok(ProcessAction<Actions.Api.V1.System.GetEventLog, string[]>(action => action.Process()));
-
-    /// <summary>
-    /// Get info about service.
-    /// </summary>
-    [HttpGet("service/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<ServiceInfo>> GetServiceInfoAsync(string id)
-        => Ok(await ProcessActionAsync<Actions.Api.V1.Services.GetServiceInfo, ServiceInfo>(action => action.ProcessAsync(id)));
 }

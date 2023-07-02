@@ -212,4 +212,12 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
             response => response.Content.ReadFromJsonAsync<bool>()
         );
     }
+
+    public async Task<StatusInfo> GetStatusInfoAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync($"api/diag/status"),
+            response => response.Content.ReadFromJsonAsync<StatusInfo>()
+        ))!;
+    }
 }

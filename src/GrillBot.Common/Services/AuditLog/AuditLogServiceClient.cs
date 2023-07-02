@@ -185,8 +185,16 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
     public async Task<TodayAvgTimes> GetTodayAvgTimes()
     {
         return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/dashboard/todayavgtimes"),
+            () => HttpClient.GetAsync("api/dashboard/todayavgtimes"),
             response => response.Content.ReadFromJsonAsync<TodayAvgTimes>()
+        ))!;
+    }
+
+    public async Task<StatusInfo> GetStatusInfoAsync()
+    {
+        return (await ProcessRequestAsync(
+            () => HttpClient.GetAsync("api/diag/status"),
+            response => response.Content.ReadFromJsonAsync<StatusInfo>()
         ))!;
     }
 }

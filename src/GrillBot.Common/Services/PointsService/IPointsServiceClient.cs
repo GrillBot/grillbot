@@ -1,5 +1,4 @@
 ﻿using GrillBot.Common.Services.Common;
-using GrillBot.Common.Services.Graphics.Models.Images;
 using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Diagnostics.Models;
@@ -25,4 +24,5 @@ public interface IPointsServiceClient : IClient
     Task<ValidationProblemDetails?> TransferPointsAsync(TransferPointsRequest request);
     Task<ValidationProblemDetails?> CreateTransactionAsync(AdminTransactionRequest request);
     Task<bool> ExistsAnyTransactionAsync(string guildId, string userId);
+    Task<StatusInfo> GetStatusInfoAsync();
 }

@@ -246,7 +246,7 @@ public class MessageCacheManager : IMessageCacheManager
 
         await using var cache = CacheBuilder.CreateRepository();
 
-        await cache.AddRangeAsync(entities);
+        await cache.AddCollectionAsync(entities);
         await cache.CommitAsync();
     }
 

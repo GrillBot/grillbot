@@ -3,17 +3,13 @@ using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
+public sealed class GrillBotCacheRepository : RepositoryBase<GrillBotCacheContext>, IDisposable, IAsyncDisposable
 {
-    private GrillBotCacheContext Context { get; }
-    private ICounterManager CounterManager { get; }
-    private List<RepositoryBase<GrillBotCacheContext>> Repositories { get; }
+    private List<SubRepositoryBase<GrillBotCacheContext>> Repositories { get; }
 
-    public GrillBotCacheRepository(GrillBotCacheContext context, ICounterManager counterManager)
+    public GrillBotCacheRepository(GrillBotCacheContext context, ICounterManager counterManager) : base(context, counterManager)
     {
-        Context = context;
-        CounterManager = counterManager;
-        Repositories = new List<RepositoryBase<GrillBotCacheContext>>();
+        Repositories = new List<SubRepositoryBase<GrillBotCacheContext>>();
     }
 
     public MessageIndexRepository MessageIndexRepository => GetOrCreateRepository<MessageIndexRepository>();
@@ -23,7 +19,7 @@ public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
     public DataCacheRepository DataCache => GetOrCreateRepository<DataCacheRepository>();
     public EmoteSuggestionRepository EmoteSuggestion => GetOrCreateRepository<EmoteSuggestionRepository>();
 
-    private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase<GrillBotCacheContext>
+    private TRepository GetOrCreateRepository<TRepository>() where TRepository : SubRepositoryBase<GrillBotCacheContext>
     {
         var repository = Repositories.OfType<TRepository>().FirstOrDefault();
         if (repository != null) return repository;
@@ -34,32 +30,6 @@ public sealed class GrillBotCacheRepository : IDisposable, IAsyncDisposable
 
         Repositories.Add(repository);
         return repository;
-    }
-
-    public Task AddAsync<TEntity>(TEntity entity) where TEntity : class
-        => Context.Set<TEntity>().AddAsync(entity).AsTask();
-
-    public Task AddRangeAsync<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
-        => Context.Set<TEntity>().AddRangeAsync(collection);
-
-    public void Remove<TEntity>(TEntity entity) where TEntity : class
-        => Context.Set<TEntity>().Remove(entity);
-
-    public void RemoveCollection<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
-    {
-        var enumerable = collection as List<TEntity> ?? collection.ToList();
-        if (enumerable.Count == 0)
-            return;
-
-        Context.Set<TEntity>().RemoveRange(enumerable);
-    }
-
-    public async Task CommitAsync()
-    {
-        using (CounterManager.Create("Cache.Commit"))
-        {
-            await Context.SaveChangesAsync();
-        }
     }
 
     public void Dispose()

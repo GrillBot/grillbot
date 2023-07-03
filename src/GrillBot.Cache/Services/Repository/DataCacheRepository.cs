@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public class DataCacheRepository : RepositoryBase<GrillBotCacheContext>
+public class DataCacheRepository : SubRepositoryBase<GrillBotCacheContext>
 {
     public DataCacheRepository(GrillBotCacheContext context, ICounterManager counter) : base(context, counter)
     {

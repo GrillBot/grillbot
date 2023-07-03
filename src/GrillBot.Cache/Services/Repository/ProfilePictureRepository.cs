@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public class ProfilePictureRepository : RepositoryBase<GrillBotCacheContext>
+public class ProfilePictureRepository : SubRepositoryBase<GrillBotCacheContext>
 {
     public ProfilePictureRepository(GrillBotCacheContext context, ICounterManager counter) : base(context, counter)
     {

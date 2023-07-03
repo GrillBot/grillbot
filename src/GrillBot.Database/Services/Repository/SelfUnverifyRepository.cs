@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class SelfUnverifyRepository : RepositoryBase<GrillBotContext>
+public class SelfUnverifyRepository : SubRepositoryBase<GrillBotContext>
 {
     public SelfUnverifyRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

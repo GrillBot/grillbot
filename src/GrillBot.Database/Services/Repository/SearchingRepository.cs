@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class SearchingRepository : RepositoryBase<GrillBotContext>
+public class SearchingRepository : SubRepositoryBase<GrillBotContext>
 {
     public SearchingRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public class InviteMetadataRepository : RepositoryBase<GrillBotCacheContext>
+public class InviteMetadataRepository : SubRepositoryBase<GrillBotCacheContext>
 {
     public InviteMetadataRepository(GrillBotCacheContext context, ICounterManager counter) : base(context, counter)
     {

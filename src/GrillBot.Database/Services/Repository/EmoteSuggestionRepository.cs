@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class EmoteSuggestionRepository : RepositoryBase<GrillBotContext>
+public class EmoteSuggestionRepository : SubRepositoryBase<GrillBotContext>
 {
     public EmoteSuggestionRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

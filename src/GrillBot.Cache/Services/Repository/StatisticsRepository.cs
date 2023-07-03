@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public class StatisticsRepository : RepositoryBase<GrillBotCacheContext>
+public class StatisticsRepository : SubRepositoryBase<GrillBotCacheContext>
 {
     public StatisticsRepository(GrillBotCacheContext context, ICounterManager counter) : base(context, counter)
     {

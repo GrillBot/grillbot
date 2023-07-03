@@ -7,16 +7,12 @@ using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Database.Services.Repository;
 
-public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
+public sealed class GrillBotRepository : RepositoryBase<GrillBotContext>, IDisposable, IAsyncDisposable
 {
-    private GrillBotContext Context { get; set; }
-    private List<RepositoryBase<GrillBotContext>> Repositories { get; set; } = new();
-    private ICounterManager CounterManager { get; }
+    private List<SubRepositoryBase<GrillBotContext>> Repositories { get; set; } = new();
 
-    public GrillBotRepository(GrillBotContext context, ICounterManager counterManager)
+    public GrillBotRepository(GrillBotContext context, ICounterManager counterManager) : base(context, counterManager)
     {
-        Context = context;
-        CounterManager = counterManager;
     }
 
     public ChannelRepository Channel => GetOrCreateRepository<ChannelRepository>();
@@ -35,7 +31,7 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
     public ApiClientRepository ApiClientRepository => GetOrCreateRepository<ApiClientRepository>();
     public NicknameRepository Nickname => GetOrCreateRepository<NicknameRepository>();
 
-    private TRepository GetOrCreateRepository<TRepository>() where TRepository : RepositoryBase<GrillBotContext>
+    private TRepository GetOrCreateRepository<TRepository>() where TRepository : SubRepositoryBase<GrillBotContext>
     {
         var repository = Repositories.OfType<TRepository>().FirstOrDefault();
         if (repository != null)
@@ -46,41 +42,13 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
             throw new InvalidOperationException($"Error while creating repository {typeof(TRepository).Name}");
 
         Repositories.Add(repository);
-
         return repository;
-    }
-
-    public Task AddAsync<TEntity>(TEntity entity) where TEntity : class
-        => Context.Set<TEntity>().AddAsync(entity).AsTask();
-
-    public Task AddCollectionAsync<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
-        => Context.Set<TEntity>().AddRangeAsync(collection);
-
-    public void Remove<TEntity>(TEntity entity) where TEntity : class
-        => Context.Set<TEntity>().Remove(entity);
-
-    public void RemoveCollection<TEntity>(IEnumerable<TEntity> collection) where TEntity : class
-    {
-        var enumerable = collection as List<TEntity> ?? collection.ToList();
-        if (enumerable.Count == 0)
-            return;
-
-        Context.Set<TEntity>().RemoveRange(enumerable);
-    }
-
-    public async Task<int> CommitAsync()
-    {
-        using (CounterManager.Create("Database.Commit"))
-        {
-            return await Context.SaveChangesAsync();
-        }
     }
 
     public void Dispose()
     {
         Context.ChangeTracker.Clear();
         Context.Dispose();
-        Context = null!;
 
         Repositories.Clear();
         Repositories = null!;
@@ -93,6 +61,5 @@ public sealed class GrillBotRepository : IDisposable, IAsyncDisposable
 
         Context.ChangeTracker.Clear();
         await Context.DisposeAsync();
-        Context = null!;
     }
 }

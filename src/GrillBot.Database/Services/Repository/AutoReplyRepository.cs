@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class AutoReplyRepository : RepositoryBase<GrillBotContext>
+public class AutoReplyRepository : SubRepositoryBase<GrillBotContext>
 {
     public AutoReplyRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

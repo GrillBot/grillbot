@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Discord;
 using GrillBot.Core.Database;
 using GrillBot.Core.Database.Repository;
-using GrillBot.Core.Extensions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Entity;
@@ -14,23 +13,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class UnverifyRepository : RepositoryBase<GrillBotContext>
+public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
 {
     public UnverifyRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {
-    }
-
-    public async Task<List<ulong>> GetUserIdsWithUnverify(IGuild guild)
-    {
-        using (CreateCounter())
-        {
-            var ids = await Context.Unverifies.AsNoTracking()
-                .Where(o => o.GuildId == guild.Id.ToString())
-                .Select(o => o.UserId)
-                .ToListAsync();
-
-            return ids.ConvertAll(o => o.ToUlong());
-        }
     }
 
     public async Task<(int unverify, int selfunverify)> GetUserStatsAsync(IGuildUser user)

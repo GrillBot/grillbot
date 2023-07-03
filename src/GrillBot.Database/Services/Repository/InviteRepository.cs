@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class InviteRepository : RepositoryBase<GrillBotContext>
+public class InviteRepository : SubRepositoryBase<GrillBotContext>
 {
     public InviteRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

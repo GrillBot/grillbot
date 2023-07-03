@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class NicknameRepository : RepositoryBase<GrillBotContext>
+public class NicknameRepository : SubRepositoryBase<GrillBotContext>
 {
     public NicknameRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

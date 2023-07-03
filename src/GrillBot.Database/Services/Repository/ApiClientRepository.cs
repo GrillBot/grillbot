@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class ApiClientRepository : RepositoryBase<GrillBotContext>
+public class ApiClientRepository : SubRepositoryBase<GrillBotContext>
 {
     public ApiClientRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

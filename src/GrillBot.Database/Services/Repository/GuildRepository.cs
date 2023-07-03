@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class GuildRepository : RepositoryBase<GrillBotContext>
+public class GuildRepository : SubRepositoryBase<GrillBotContext>
 {
     public GuildRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class RemindRepository : RepositoryBase<GrillBotContext>
+public class RemindRepository : SubRepositoryBase<GrillBotContext>
 {
     public RemindRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

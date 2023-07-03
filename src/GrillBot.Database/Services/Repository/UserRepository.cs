@@ -14,7 +14,7 @@ using GrillBot.Database.Enums.Internal;
 
 namespace GrillBot.Database.Services.Repository;
 
-public class UserRepository : RepositoryBase<GrillBotContext>
+public class UserRepository : SubRepositoryBase<GrillBotContext>
 {
     public UserRepository(GrillBotContext context, ICounterManager counter) : base(context, counter)
     {

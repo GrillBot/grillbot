@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace GrillBot.Cache.Services.Repository;
 
-public class EmoteSuggestionRepository : RepositoryBase<GrillBotCacheContext>
+public class EmoteSuggestionRepository : SubRepositoryBase<GrillBotCacheContext>
 {
     public EmoteSuggestionRepository(GrillBotCacheContext context, ICounterManager counter) : base(context, counter)
     {

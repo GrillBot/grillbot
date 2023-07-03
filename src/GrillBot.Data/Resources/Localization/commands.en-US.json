@@ -139,13 +139,13 @@
           "name": "Date and time of last use"
         }
       },
-      "direction": {
+      "sort": {
         "name": "direction",
         "description": "Ascending/Descending",
-        "Ascending": {
+        "ascending": {
           "name": "Ascending"
         },
-        "Descending": {
+        "descending": {
           "name": "Descending"
         }
       },

@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Emotes;
+using GrillBot.Data.Enums;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -32,8 +33,8 @@ public class EmoteModule : InteractionsModuleBase
     public async Task GetEmoteStatsListAsync(
         [Summary("order", "Sort by")] [Choice("Number of uses", "UseCount")] [Choice("Date and time of last use", "LastOccurence")]
         string orderBy,
-        [Summary("direction", "Ascending/Descending")] [Choice("Ascending", "false")] [Choice("Descending", "true")]
-        bool descending,
+        [Summary("sort", "Ascending/Descending")]
+        SortType sort,
         [Summary("user", "Show statistics of only one user")]
         IUser? ofUser = null,
         [Summary("animated", "Do I want to show animated emotes in the list too?")] [Choice("Show animated emotes", "false")] [Choice("Hide animated emotes", "true")]
@@ -41,7 +42,7 @@ public class EmoteModule : InteractionsModuleBase
     )
     {
         using var command = GetCommand<Actions.Commands.Emotes.GetEmotesList>();
-        var (embed, paginationComponent) = await command.Command.ProcessAsync(0, orderBy, descending, ofUser, filterAnimated);
+        var (embed, paginationComponent) = await command.Command.ProcessAsync(0, orderBy, sort, ofUser, filterAnimated);
 
         await SetResponseAsync(embed: embed, components: paginationComponent);
     }

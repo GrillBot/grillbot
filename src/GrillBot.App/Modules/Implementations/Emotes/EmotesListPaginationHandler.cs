@@ -29,7 +29,7 @@ public class EmotesListPaginationHandler : ComponentInteractionHandler
         var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.Emotes.GetEmotesList>();
         action.Init(context);
 
-        var pagesCount = await action.ComputePagesCountAsync(metadata.OrderBy, metadata.Descending, ofUser, metadata.FilterAnimated);
+        var pagesCount = await action.ComputePagesCountAsync(metadata.OrderBy, metadata.SortType, ofUser, metadata.FilterAnimated);
         var newPage = CheckNewPageNumber(Page, pagesCount);
         if (newPage == metadata.Page)
         {
@@ -37,7 +37,7 @@ public class EmotesListPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var (embed, paginationComponent) = await action.ProcessAsync(newPage, metadata.OrderBy, metadata.Descending, ofUser, metadata.FilterAnimated);
+        var (embed, paginationComponent) = await action.ProcessAsync(newPage, metadata.OrderBy, metadata.SortType, ofUser, metadata.FilterAnimated);
         await component.UpdateAsync(msg =>
         {
             msg.Components = paginationComponent;

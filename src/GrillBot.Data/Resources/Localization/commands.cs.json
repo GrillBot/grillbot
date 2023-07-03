@@ -139,13 +139,13 @@
           "name": "Data a času posledního použití"
         }
       },
-      "direction": {
+      "sort": {
         "name": "smer",
         "description": "Vzestupně/Sestupně",
-        "Ascending": {
+        "ascending": {
           "name": "Vzestupně"
         },
-        "Descending": {
+        "descending": {
           "name": "Sestupně"
         }
       },

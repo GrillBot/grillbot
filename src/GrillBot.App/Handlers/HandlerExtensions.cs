@@ -141,7 +141,6 @@ public static class HandlerExtensions
 
         // RubbergodService
         services
-            .AddScoped<IUserUpdatedEvent, RubbergodServiceSynchronizationHandler>()
             .AddScoped<IMessageUpdatedEvent, RubbergodServiceSynchronizationHandler>()
             .AddScoped<IThreadDeletedEvent, RubbergodServiceSynchronizationHandler>()
             .AddScoped<IChannelDestroyedEvent, RubbergodServiceSynchronizationHandler>();

@@ -1,8 +1,8 @@
-﻿namespace GrillBot.Common.Services.RubbergodService.Models.Karma;
+﻿namespace GrillBot.Data.Models.API.Users;
 
-public class UserKarma
+public class KarmaListItem
 {
-    public string UserId { get; set; } = null!;
+    public User User { get; set; } = null!;
     public int Negative { get; set; }
     public int Positive { get; set; }
     public int Value { get; set; }

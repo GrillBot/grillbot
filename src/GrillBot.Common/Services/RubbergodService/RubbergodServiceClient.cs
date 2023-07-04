@@ -23,14 +23,6 @@ public class RubbergodServiceClient : RestServiceBase, IRubbergodServiceClient
         ))!;
     }
 
-    public async Task RefreshMemberAsync(ulong memberId)
-    {
-        await ProcessRequestAsync(
-            () => HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Patch, $"api/user/{memberId}")),
-            _ => EmptyResult
-        );
-    }
-
     public async Task<string> SendDirectApiCommand(string service, DirectApiCommand command)
     {
         var result = await ProcessRequestAsync(

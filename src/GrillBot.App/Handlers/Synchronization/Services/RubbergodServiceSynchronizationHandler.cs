@@ -6,7 +6,7 @@ using GrillBot.Common.Services.RubbergodService;
 
 namespace GrillBot.App.Handlers.Synchronization.Services;
 
-public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler<IRubbergodServiceClient>, IUserUpdatedEvent, IMessageUpdatedEvent, IThreadDeletedEvent, IChannelDestroyedEvent
+public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler<IRubbergodServiceClient>, IMessageUpdatedEvent, IThreadDeletedEvent, IChannelDestroyedEvent
 {
     private IMessageCacheManager MessageCache { get; }
     private ChannelHelper ChannelHelper { get; }
@@ -16,15 +16,6 @@ public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler
     {
         MessageCache = messageCache;
         ChannelHelper = channelHelper;
-    }
-
-    // UserUpdated
-    public async Task ProcessAsync(IUser before, IUser after)
-    {
-        if (before.Username == after.Username && before.Discriminator == after.Discriminator && before.GetUserAvatarUrl() == after.GetUserAvatarUrl())
-            return;
-
-        await ServiceClient.RefreshMemberAsync(after.Id);
     }
 
     // MessageUpdated

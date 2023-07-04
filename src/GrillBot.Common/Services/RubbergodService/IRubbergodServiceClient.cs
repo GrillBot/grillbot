@@ -9,7 +9,6 @@ namespace GrillBot.Common.Services.RubbergodService;
 public interface IRubbergodServiceClient : IClient
 {
     Task<DiagnosticInfo> GetDiagAsync();
-    Task RefreshMemberAsync(ulong memberId);
     Task<string> SendDirectApiCommand(string service, DirectApiCommand command);
     Task<PaginatedResponse<UserKarma>> GetKarmaPageAsync(PaginatedParams parameters);
     Task StoreKarmaAsync(List<KarmaItem> items);

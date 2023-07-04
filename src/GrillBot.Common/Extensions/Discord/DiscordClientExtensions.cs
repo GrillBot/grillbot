@@ -26,15 +26,14 @@ public static class DiscordClientExtensions
     public static async Task<IUser?> FindUserAsync(this IDiscordClient client, ulong id)
     {
         var user = await client.GetUserAsync(id);
-
-        if (user != null)
+        if (user is not null)
             return user;
 
         foreach (var guild in await client.GetGuildsAsync())
         {
             user = await guild.GetUserAsync(id);
 
-            if (user != null)
+            if (user is not null)
                 return user;
         }
 

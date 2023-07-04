@@ -1,5 +1,7 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api.V1.User;
 using GrillBot.App.Actions.Api.V2;
+using GrillBot.App.Actions.Api.V2.User;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,7 +41,7 @@ public class UsersController : Infrastructure.ControllerBase
         ApiAction.Init(this, parameters);
         parameters.FixStatus();
 
-        return Ok(await ProcessActionAsync<Actions.Api.V1.User.GetUserList, PaginatedResponse<UserListItem>>(action => action.ProcessAsync(parameters)));
+        return Ok(await ProcessActionAsync<GetUserList, PaginatedResponse<UserListItem>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>
@@ -52,7 +54,7 @@ public class UsersController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id)
-        => Ok(await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessAsync(id)));
+        => Ok(await ProcessActionAsync<GetUserDetail, UserDetail>(action => action.ProcessAsync(id)));
 
     /// <summary>
     /// Get data about currently logged user.
@@ -65,7 +67,7 @@ public class UsersController : Infrastructure.ControllerBase
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
-        => Ok(await ProcessActionAsync<Actions.Api.V1.User.GetUserDetail, UserDetail>(action => action.ProcessSelfAsync()));
+        => Ok(await ProcessActionAsync<GetUserDetail, UserDetail>(action => action.ProcessSelfAsync()));
 
     /// <summary>
     /// Update user.
@@ -82,7 +84,7 @@ public class UsersController : Infrastructure.ControllerBase
     {
         ApiAction.Init(this, parameters);
 
-        await ProcessActionAsync<Actions.Api.V1.User.UpdateUser>(action => action.ProcessAsync(id, parameters));
+        await ProcessActionAsync<UpdateUser>(action => action.ProcessAsync(id, parameters));
         return Ok();
     }
 
@@ -115,8 +117,7 @@ public class UsersController : Infrastructure.ControllerBase
     public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        return Ok(await ProcessBridgeAsync<IRubbergodServiceClient, PaginatedResponse<UserKarma>>(client => client.GetKarmaPageAsync(parameters.Pagination)));
+        return Ok(await ProcessActionAsync<GetRubbergodUserKarma, PaginatedResponse<KarmaListItem>>(action => action.ProcessAsync(parameters)));
     }
 
     /// <summary>

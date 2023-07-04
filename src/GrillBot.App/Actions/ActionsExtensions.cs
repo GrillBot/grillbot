@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Actions.Api;
-using GrillBot.App.Actions.Api.V1.Services;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
 
@@ -17,7 +15,7 @@ public static class ActionsExtensions
     {
         // Common
         services
-            .AddScoped<ApiBridgeAction>();
+            .AddScoped<Api.ApiBridgeAction>();
 
         // V1
         // AuditLog
@@ -122,7 +120,7 @@ public static class ActionsExtensions
 
         // Services
         services
-            .AddScoped<GetServiceInfo>();
+            .AddScoped<Api.V1.Services.GetServiceInfo>();
 
         // Statistics
         services
@@ -163,7 +161,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.Events.CreateScheduledEvent>()
             .AddScoped<Api.V2.Events.UpdateScheduledEvent>()
             .AddScoped<Api.V2.Events.CancelScheduledEvent>()
-            .AddScoped<Api.V2.AuditLog.CreateAuditLogMessageAction>();
+            .AddScoped<Api.V2.AuditLog.CreateAuditLogMessageAction>()
+            .AddScoped<Api.V2.User.GetRubbergodUserKarma>();
 
         return services;
     }

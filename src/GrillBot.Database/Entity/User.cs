@@ -19,7 +19,7 @@ public class User
     public string Id { get; set; } = null!;
 
     [Required]
-    public int Flags { get; set; } = 0;
+    public int Flags { get; set; }
 
     public DateTime? Birthday { get; set; }
 
@@ -37,6 +37,9 @@ public class User
     
     [StringLength(50)]
     public string? Language { get; set; }
+
+    [StringLength(1024)]
+    public string? AvatarUrl { get; set; }
 
     public ISet<GuildUser> Guilds { get; set; }
     public ISet<RemindMessage> IncomingReminders { get; set; }
@@ -70,6 +73,7 @@ public class User
     {
         Username = user.IsUser() ? user.Username : user.Username.Cut(32, true)!;
         Status = user.GetStatus();
+        AvatarUrl = user.GetUserAvatarUrl();
 
         if (user.IsUser())
             Flags &= ~(int)UserFlags.NotUser;

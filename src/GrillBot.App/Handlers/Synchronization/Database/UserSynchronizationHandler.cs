@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.Synchronization.Database;
 
@@ -8,6 +9,7 @@ public class UserSynchronizationHandler : BaseSynchronizationHandler, IUserJoine
     {
     }
 
+    // UserJoined
     public async Task ProcessAsync(IGuildUser user)
     {
         await using var repository = CreateRepository();
@@ -22,9 +24,10 @@ public class UserSynchronizationHandler : BaseSynchronizationHandler, IUserJoine
         await repository.CommitAsync();
     }
 
+    // GuildMemberUpdated
     public async Task ProcessAsync(IGuildUser? before, IGuildUser after)
     {
-        if (before is null || (before.Nickname == after.Nickname && before.Username == after.Username && before.Discriminator == after.Discriminator))
+        if (before is null || (before.Nickname == after.Nickname && before.Username == after.Username && before.GetUserAvatarUrl() == after.GetUserAvatarUrl()))
             return;
 
         await using var repository = CreateRepository();
@@ -39,9 +42,10 @@ public class UserSynchronizationHandler : BaseSynchronizationHandler, IUserJoine
         await repository.CommitAsync();
     }
 
+    // UserUpdated
     public async Task ProcessAsync(IUser before, IUser after)
     {
-        if (before.Username == after.Username && before.Discriminator == after.Discriminator)
+        if (before.Username == after.Username && before.GetUserAvatarUrl() == after.GetUserAvatarUrl())
             return;
 
         await using var repository = CreateRepository();

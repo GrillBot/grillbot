@@ -34,7 +34,6 @@ public class UsersMappingProfile : AutoMapper.Profile
 
         CreateMap<Database.Entity.User, UserDetail>()
             .ForMember(dst => dst.HaveBirthday, opt => opt.MapFrom(src => src.Birthday != null))
-            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(_ => CDN.GetDefaultUserAvatarUrl(0)))
             .ForMember(dst => dst.Guilds, opt => opt.Ignore())
             .ForMember(dst => dst.RegisteredAt, opt => opt.MapFrom(src => SnowflakeUtils.FromSnowflake(src.Id.ToUlong()).LocalDateTime));
 

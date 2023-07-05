@@ -1,35 +1,44 @@
-﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
 using GrillBot.Common.Services.RubbergodService;
 using GrillBot.Common.Services.RubbergodService.Models.Karma;
-using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Users;
+using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Api.V2.User;
 
 public class GetRubbergodUserKarma : ApiAction
 {
     private IRubbergodServiceClient RubbergodServiceClient { get; }
-    private IDiscordClient DiscordClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public GetRubbergodUserKarma(ApiRequestContext apiContext, IRubbergodServiceClient rubbergodServiceClient, IDiscordClient discordClient) : base(apiContext)
+    public GetRubbergodUserKarma(ApiRequestContext apiContext, IRubbergodServiceClient rubbergodServiceClient, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
     {
         RubbergodServiceClient = rubbergodServiceClient;
-        DiscordClient = discordClient;
+        DatabaseBuilder = databaseBuilder;
     }
 
     public async Task<PaginatedResponse<KarmaListItem>> ProcessAsync(KarmaListParams parameters)
     {
         var page = await RubbergodServiceClient.GetKarmaPageAsync(parameters.Pagination);
-        return await PaginatedResponse<KarmaListItem>.CopyAndMapAsync(page, MapAsync);
+        var users = await ReadUsersAsync(page.Data.ConvertAll(o => o.UserId));
+
+        return await PaginatedResponse<KarmaListItem>.CopyAndMapAsync(page, entity => Task.FromResult(Map(entity, users)));
     }
 
-    private async Task<KarmaListItem> MapAsync(UserKarma entity)
+    private async Task<Dictionary<string, Database.Entity.User>> ReadUsersAsync(List<string> userIds)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var users = await repository.User.GetUsersByIdsAsync(userIds);
+
+        return users.ToDictionary(o => o.Id, o => o);
+    }
+
+    private static KarmaListItem Map(UserKarma entity, IReadOnlyDictionary<string, Database.Entity.User> users)
     {
         return new KarmaListItem
         {
-            User = await FindAndMapUserAsync(entity.UserId),
+            User = FindAndMapUser(entity.UserId, users),
             Negative = entity.Negative,
             Position = entity.Position,
             Positive = entity.Positive,
@@ -37,17 +46,16 @@ public class GetRubbergodUserKarma : ApiAction
         };
     }
 
-    private async Task<Data.Models.API.Users.User> FindAndMapUserAsync(string userId)
+    private static Data.Models.API.Users.User FindAndMapUser(string userId, IReadOnlyDictionary<string, Database.Entity.User> users)
     {
-        var user = await DiscordClient.FindUserAsync(userId.ToUlong());
-        if (user is not null)
+        if (users.TryGetValue(userId, out var userEntity))
         {
             return new Data.Models.API.Users.User
             {
-                Id = user.Id.ToString(),
-                Username = user.GlobalName ?? user.Username, // TODO Review after usernames rework.
-                AvatarUrl = user.GetUserAvatarUrl(),
-                IsBot = user.IsUser()
+                Username = userEntity.Username,
+                AvatarUrl = userEntity.AvatarUrl ?? CDN.GetDefaultUserAvatarUrl(0UL),
+                IsBot = userEntity.HaveFlags(UserFlags.NotUser),
+                Id = userEntity.Id
             };
         }
 

@@ -16,7 +16,7 @@ public class UserDetail
     public UserStatus Status { get; set; }
     public List<string> ActiveClients { get; set; } = new();
     public bool IsKnown { get; set; }
-    public string AvatarUrl { get; set; } = null!;
+    public string? AvatarUrl { get; set; }
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
     public DateTime? RegisteredAt { get; set; }
     public string? Language { get; set; }

@@ -54,11 +54,12 @@ public class GetUserDetail : ApiAction
             Language = entity.Language,
             Id = entity.Id,
             Flags = entity.Flags,
-            HaveBirthday = entity.Birthday != null,
+            HaveBirthday = entity.Birthday is not null,
             Status = entity.Status,
             Username = entity.Username,
             SelfUnverifyMinimalTime = entity.SelfUnverifyMinimalTime,
-            RegisteredAt = SnowflakeUtils.FromSnowflake(entity.Id.ToUlong()).LocalDateTime
+            RegisteredAt = SnowflakeUtils.FromSnowflake(entity.Id.ToUlong()).LocalDateTime,
+            AvatarUrl = entity.AvatarUrl
         };
 
         await AddDiscordDataAsync(result);
@@ -72,10 +73,9 @@ public class GetUserDetail : ApiAction
     private async Task AddDiscordDataAsync(UserDetail result)
     {
         var user = await DiscordClient.FindUserAsync(result.Id.ToUlong());
-        if (user == null) return;
+        if (user is null) return;
 
         result.ActiveClients = user.ActiveClients.Select(o => o.ToString()).ToList();
-        result.AvatarUrl = user.GetUserAvatarUrl();
         result.IsKnown = true;
     }
 

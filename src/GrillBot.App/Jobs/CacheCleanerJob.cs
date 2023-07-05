@@ -64,7 +64,7 @@ public class CacheCleanerJob : Job
             }
             else
             {
-                var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId;
+                var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId;
                 if (avatarId != profilePicture.AvatarId)
                 {
                     cacheRepository.Remove(profilePicture);

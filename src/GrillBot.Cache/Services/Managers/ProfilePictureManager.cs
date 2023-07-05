@@ -20,7 +20,7 @@ public class ProfilePictureManager
     {
         await using var cache = CacheBuilder.CreateRepository();
 
-        var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId;
+        var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId;
         var profilePictures = await cache.ProfilePictureRepository.GetProfilePicturesAsync(user.Id, avatarId);
         var profilePicture = profilePictures.Find(o => o.Size == size);
 
@@ -36,7 +36,7 @@ public class ProfilePictureManager
         var avatarData = await DownloadAvatarAsync(user, size);
         var entity = new ProfilePicture
         {
-            AvatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId,
+            AvatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId,
             IsAnimated = user.AvatarId?.StartsWith("a_") ?? false,
             Size = (short)size,
             UserId = user.Id.ToString(),
@@ -65,7 +65,7 @@ public class ProfilePictureManager
     {
         await using var cache = CacheBuilder.CreateRepository();
 
-        var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Discriminator : user.AvatarId;
+        var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId;
         var invalidProfilePictures = await cache.ProfilePictureRepository.GetProfilePicturesExceptOneAsync(user.Id, avatarId);
         if (invalidProfilePictures.Count == 0) return;
 

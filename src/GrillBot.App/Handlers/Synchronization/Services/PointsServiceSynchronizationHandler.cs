@@ -20,6 +20,7 @@ public class PointsServiceSynchronizationHandler : BaseSynchronizationHandler<IP
         DiscordClient = discordClient;
     }
 
+    // UserUpdated
     public async Task ProcessAsync(IUser before, IUser after)
     {
         if (!after.IsUser())
@@ -30,6 +31,7 @@ public class PointsServiceSynchronizationHandler : BaseSynchronizationHandler<IP
             await PointsHelper.SyncDataWithServiceAsync(guild, new[] { after }, Enumerable.Empty<IGuildChannel>());
     }
 
+    // ChannelDestroyed
     public async Task ProcessAsync(IChannel channel)
     {
         if (channel is IThreadChannel || channel is not IGuildChannel guildChannel)
@@ -39,6 +41,7 @@ public class PointsServiceSynchronizationHandler : BaseSynchronizationHandler<IP
         await ServiceClient.ProcessSynchronizationAsync(request);
     }
 
+    // ThreadDeleted
     public async Task ProcessAsync(IThreadChannel? cachedThread, ulong threadId)
     {
         if (cachedThread is null) return;
@@ -64,6 +67,5 @@ public class PointsServiceSynchronizationHandler : BaseSynchronizationHandler<IP
             },
             GuildId = channel.GuildId.ToString()
         };
-        ;
     }
 }

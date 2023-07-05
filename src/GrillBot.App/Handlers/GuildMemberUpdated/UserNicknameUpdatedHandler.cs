@@ -20,8 +20,8 @@ public class UserNicknameUpdatedHandler : IGuildMemberUpdatedEvent
         await using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(after.Guild);
-        await repository.GuildUser.GetOrCreateGuildUserAsync(after);
         await repository.User.GetOrCreateUserAsync(after);
+        await repository.GuildUser.GetOrCreateGuildUserAsync(after);
 
         var canSave = await CreateEntityAsync(repository, before!) || await CreateEntityAsync(repository, after);
         if (canSave)

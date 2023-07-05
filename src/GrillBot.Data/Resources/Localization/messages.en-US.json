@@ -186,7 +186,23 @@
         "MemberProfiles": "Alternative user profiles",
         "NewThreadPermissions": "",
         "ThreadsEnabledTesting": "",
-        "AutoModeration": "AutoMod"
+        "AutoModeration": "AutoMod",
+        "DiscoverableDisabled": "",
+        "EnabledDiscoverableBefore": "",
+        "Featureable": "",
+        "ForceRelay": "",
+        "HasDirectoryEntry": "",
+        "InternalEmployeeOnly": "Only for Discord staff",
+        "LinkedToHub": "Linked with school server",
+        "PremiumTier3Override": "",
+        "RelayEnabled": "",
+        "RoleSubscriptionsEnabled": "Paid roles enabled",
+        "ThreadsDefaultAutoArchiveDuration": "",
+        "DeveloperSupportServer": "Support server",
+        "InvitesDisabled": "",
+        "RaidAlertsDisabled": "Raid alerts disabled",
+        "ClydeEnabled": "Clyde AI",
+        "GuildWebPageVanityUrl": "Web page vanity URL"
       }
     },
     "GuildDetail": {

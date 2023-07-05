@@ -186,7 +186,23 @@
         "MemberProfiles": "Alternativní profily uživatelů",
         "NewThreadPermissions": "",
         "ThreadsEnabledTesting": "",
-        "AutoModeration": "AutoMod"
+        "AutoModeration": "AutoMod",
+        "DiscoverableDisabled": "",
+        "EnabledDiscoverableBefore": "",
+        "Featureable": "",
+        "ForceRelay": "",
+        "HasDirectoryEntry": "",
+        "InternalEmployeeOnly": "Pouze pro zaměstnance Discordu",
+        "LinkedToHub": "Propojení se školním serverem",
+        "PremiumTier3Override": "",
+        "RelayEnabled": "",
+        "RoleSubscriptionsEnabled": "Povoleny placené role",
+        "ThreadsDefaultAutoArchiveDuration": "",
+        "DeveloperSupportServer": "Server podpory",
+        "InvitesDisabled": "",
+        "RaidAlertsDisabled": "Upozornění na raid vypnuto",
+        "ClydeEnabled": "Clyde AI",
+        "GuildWebPageVanityUrl": "Web page vanity URL"
       }
     },
     "GuildDetail": {

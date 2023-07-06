@@ -10,6 +10,7 @@ public class UserDetail
 {
     public string Id { get; set; } = null!;
     public string Username { get; set; } = null!;
+    public string? GlobalAlias { get; set; }
     public long Flags { get; set; }
     public bool HaveBirthday { get; set; }
     public List<GuildUserDetail> Guilds { get; set; } = new();

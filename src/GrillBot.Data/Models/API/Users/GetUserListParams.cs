@@ -56,6 +56,7 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
         {
             query = query.Where(o =>
                 EF.Functions.ILike(o.Username, $"%{Username.ToLower()}%") ||
+                (o.GlobalAlias != null && EF.Functions.ILike(o.GlobalAlias, $"%{Username.ToLower()}%")) ||
                 o.Guilds.Any(x => x.Nickname != null && EF.Functions.ILike(x.Nickname, $"%{Username.ToLower()}%"))
             );
         }

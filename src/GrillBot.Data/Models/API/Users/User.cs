@@ -5,12 +5,14 @@ public class User
     /// <summary>
     /// Discord ID of user.
     /// </summary>
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Username.
     /// </summary>
-    public string Username { get; set; }
+    public string Username { get; set; } = null!;
+    
+    public string? GlobalAlias { get; set; }
 
     /// <summary>
     /// Flag that describe user is bot.
@@ -20,5 +22,5 @@ public class User
     /// <summary>
     /// Avatar url.
     /// </summary>
-    public string AvatarUrl { get; set; }
+    public string AvatarUrl { get; set; } = null!;
 }

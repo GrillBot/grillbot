@@ -148,9 +148,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
             if (guildId != null)
                 query = query.Where(o => o.Guilds.Any(x => x.GuildId == guildId.Value.ToString()));
 
-            return await query
-                .OrderBy(o => o.Username)
-                .ToListAsync();
+            return await query.ToListAsync();
         }
     }
 

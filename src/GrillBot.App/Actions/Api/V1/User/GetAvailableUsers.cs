@@ -21,7 +21,10 @@ public class GetAvailableUsers : ApiAction
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.User.GetFullListOfUsers(bots, mutualGuilds, guildId);
-        return data.ToDictionary(o => o.Id, o => o.Username);
+        return data
+            .Select(o => new { o.Id, DisplayName = o.GetDisplayName() })
+            .OrderBy(o => o.DisplayName)
+            .ToDictionary(o => o.Id, o => o.DisplayName);
     }
 
     private async Task<List<string>?> GetMutualGuildsAsync()

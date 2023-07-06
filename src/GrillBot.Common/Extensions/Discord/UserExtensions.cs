@@ -8,7 +8,16 @@ public static class UserExtensions
         => user.GetAvatarUrl(size: size) ?? user.GetDefaultAvatarUrl();
 
     public static string GetFullName(this IUser user)
-        => user is IGuildUser sgu && !string.IsNullOrEmpty(sgu.Nickname) ? $"{sgu.Nickname} ({sgu.Username})" : user.Username;
+    {
+        if (user is IGuildUser guildUser && !string.IsNullOrEmpty(guildUser.Nickname))
+        {
+            return !string.IsNullOrEmpty(user.GlobalName) && user.GlobalName != user.Username
+                ? $"{guildUser.Nickname} ({user.GlobalName} / {user.Username})"
+                : $"{guildUser.Nickname} ({user.Username})";
+        }
+
+        return !string.IsNullOrEmpty(user.GlobalName) && user.GlobalName != user.Username ? $"{user.GlobalName} ({user.Username})" : user.Username;
+    }
 
     public static IEnumerable<IRole> GetRoles(this IGuildUser user, bool withEveryone = false)
     {
@@ -16,10 +25,14 @@ public static class UserExtensions
         return ids.Select(user.Guild.GetRole).Where(o => o != null);
     }
 
-    public static bool IsUser(this IUser user) => !user.IsBot && !user.IsWebhook;
+    public static bool IsUser(this IUser user) => user is { IsBot: false, IsWebhook: false };
 
     public static string GetDisplayName(this IUser user)
-        => user is IGuildUser guildUser && !string.IsNullOrEmpty(guildUser.Nickname) ? $"{guildUser.Nickname} ({user.Username})" : user.Username;
+    {
+        if (user is IGuildUser guildUser && !string.IsNullOrEmpty(guildUser.Nickname))
+            return guildUser.Nickname;
+        return string.IsNullOrEmpty(user.GlobalName) ? user.Username : user.GlobalName;
+    }
 
     public static IRole? GetHighestRole(this IGuildUser user, bool requireColor = false)
     {

@@ -34,12 +34,15 @@ public class User
     public UserStatus Status { get; set; }
 
     public TimeSpan? SelfUnverifyMinimalTime { get; set; }
-    
+
     [StringLength(50)]
     public string? Language { get; set; }
 
     [StringLength(1024)]
     public string? AvatarUrl { get; set; }
+
+    [StringLength(32)]
+    public string? GlobalAlias { get; set; }
 
     public ISet<GuildUser> Guilds { get; set; }
     public ISet<RemindMessage> IncomingReminders { get; set; }
@@ -71,13 +74,17 @@ public class User
 
     public void Update(IUser user)
     {
-        Username = user.IsUser() ? user.Username : user.Username.Cut(32, true)!;
+        Username = user.Username.Cut(32, true)!;
         Status = user.GetStatus();
         AvatarUrl = user.GetUserAvatarUrl();
+        GlobalAlias = user.GlobalName.Cut(32, true)!;
 
         if (user.IsUser())
             Flags &= ~(int)UserFlags.NotUser;
         else
             Flags |= (int)UserFlags.NotUser;
     }
+
+    public string GetDisplayName()
+        => !string.IsNullOrEmpty(GlobalAlias) ? $"{GlobalAlias} ({Username})" : Username;
 }

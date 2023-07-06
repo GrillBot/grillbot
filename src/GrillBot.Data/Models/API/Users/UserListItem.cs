@@ -6,10 +6,11 @@ namespace GrillBot.Data.Models.API.Users;
 
 public class UserListItem
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
     public int Flags { get; set; }
     public bool HaveBirthday { get; set; }
-    public string Username { get; set; }
+    public string Username { get; set; } = null!;
+    public string? GlobalAlias { get; set; }
     public UserStatus DiscordStatus { get; set; }
     public DateTime? RegisteredAt { get; set; }
 

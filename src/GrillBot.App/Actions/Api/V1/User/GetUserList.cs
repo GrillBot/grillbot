@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Users;
@@ -9,13 +8,11 @@ namespace GrillBot.App.Actions.Api.V1.User;
 public class GetUserList : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
     private IDiscordClient DiscordClient { get; }
 
-    public GetUserList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient) : base(apiContext)
+    public GetUserList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
         DiscordClient = discordClient;
     }
 
@@ -31,14 +28,25 @@ public class GetUserList : ApiAction
 
     private async Task<UserListItem> MapItemAsync(Database.Entity.User entity)
     {
-        var result = Mapper.Map<UserListItem>(entity);
+        var result = new UserListItem
+        {
+            Username = entity.Username,
+            Flags = entity.Flags,
+            Guilds = new Dictionary<string, bool>(),
+            Id = entity.Id,
+            GlobalAlias = entity.GlobalAlias,
+            DiscordStatus = entity.Status,
+            HaveBirthday = entity.Birthday is not null,
+            RegisteredAt = SnowflakeUtils.FromSnowflake(entity.Id.ToUlong()).LocalDateTime
+        };
 
         foreach (var guild in entity.Guilds.OrderBy(o => o.Guild!.Name))
         {
             var discordGuild = await DiscordClient.GetGuildAsync(guild.GuildId.ToUlong());
             var guildUser = discordGuild != null ? await discordGuild.GetUserAsync(guild.UserId.ToUlong()) : null;
+            var guildName = !string.IsNullOrEmpty(guild.Nickname) ? $"{guild.Guild!.Name} ({guild.Nickname})" : guild.Guild!.Name;
 
-            result.Guilds.Add(guild.Guild!.Name, guildUser != null);
+            result.Guilds.Add(guildName, guildUser != null);
         }
 
         return result;

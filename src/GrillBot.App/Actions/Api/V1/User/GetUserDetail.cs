@@ -59,7 +59,8 @@ public class GetUserDetail : ApiAction
             Username = entity.Username,
             SelfUnverifyMinimalTime = entity.SelfUnverifyMinimalTime,
             RegisteredAt = SnowflakeUtils.FromSnowflake(entity.Id.ToUlong()).LocalDateTime,
-            AvatarUrl = entity.AvatarUrl
+            AvatarUrl = entity.AvatarUrl,
+            GlobalAlias = entity.GlobalAlias
         };
 
         await AddDiscordDataAsync(result);

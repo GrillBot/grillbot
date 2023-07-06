@@ -19,6 +19,7 @@ public class UsersMappingProfile : AutoMapper.Profile
         CreateMap<Database.Entity.GuildUser, GuildUser>()
             .ForMember(o => o.Id, opt => opt.MapFrom(src => src.User!.Id))
             .ForMember(o => o.Username, opt => opt.MapFrom(src => src.User!.Username))
+            .ForMember(o => o.GlobalAlias, opt => opt.MapFrom(src => src.User!.GlobalAlias))
             .ForMember(o => o.IsBot, opt => opt.MapFrom(src => src.User!.HaveFlags(UserFlags.NotUser)));
 
         CreateMap<Database.Models.Points.PointBoardItem, UserPointsItem>()

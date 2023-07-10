@@ -27,7 +27,7 @@ public class UserSynchronizationHandler : BaseSynchronizationHandler, IUserJoine
     // GuildMemberUpdated
     public async Task ProcessAsync(IGuildUser? before, IGuildUser after)
     {
-        if (before is null || (before.Nickname == after.Nickname && before.Username == after.Username && before.GetUserAvatarUrl() == after.GetUserAvatarUrl()))
+        if (before is null || (before.Nickname == after.Nickname && before.Username == after.Username && before.GetUserAvatarUrl() == after.GetUserAvatarUrl() && before.GlobalName == after.GlobalName))
             return;
 
         await using var repository = CreateRepository();
@@ -45,7 +45,7 @@ public class UserSynchronizationHandler : BaseSynchronizationHandler, IUserJoine
     // UserUpdated
     public async Task ProcessAsync(IUser before, IUser after)
     {
-        if (before.Username == after.Username && before.GetUserAvatarUrl() == after.GetUserAvatarUrl())
+        if (before.Username == after.Username && before.GetUserAvatarUrl() == after.GetUserAvatarUrl() && before.GlobalName == after.GlobalName)
             return;
 
         await using var repository = CreateRepository();

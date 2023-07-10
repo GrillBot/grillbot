@@ -50,4 +50,7 @@ public class LoggingManager
 
     public Task ErrorAsync(string source, string message, Exception exception)
         => OnLogAsync(new LogMessage(LogSeverity.Error, source, message, exception));
+
+    public Task WarningAsync(string source, string message, Exception? exception = null)
+        => OnLogAsync(new LogMessage(LogSeverity.Warning, source, message, exception));
 }

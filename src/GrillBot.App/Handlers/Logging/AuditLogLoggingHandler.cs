@@ -47,7 +47,7 @@ public class AuditLogLoggingHandler : ILoggingHandler
                 break;
         }
 
-        var isWarning = exception != null && LoggingHelper.IsWarning(exception);
+        var isWarning = exception != null && LoggingHelper.IsWarning(source, exception);
         var logRequest = CreateLogRequest(isWarning, source, message, exception, user);
         await SendLogRequestAsync(logRequest);
     }

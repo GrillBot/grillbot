@@ -6,6 +6,7 @@ using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 
@@ -72,14 +73,14 @@ public class RemoveUnverify : ApiAction
         var fromUser = guild == null ? null : await guild.GetUserAsync(ApiContext.GetUserId());
 
         ValidateData(guild, toUser);
-        return (guild, toUser, fromUser);
+        return (guild!, toUser!, fromUser!);
     }
 
-    private void ValidateData(IGuild guild, IGuildUser toUser)
+    private void ValidateData(IGuild? guild, IGuildUser? toUser)
     {
-        if (guild == null)
+        if (guild is null)
             throw new NotFoundException(Texts["Unverify/GuildNotFound", ApiContext.Language]);
-        if (toUser == null)
+        if (toUser is null)
             throw new NotFoundException(Texts["Unverify/DestUserNotFound", ApiContext.Language]);
     }
 
@@ -116,8 +117,15 @@ public class RemoveUnverify : ApiAction
             await profile.ReturnRolesAsync();
         }
 
-        repository.Remove(unverify);
-        await repository.CommitAsync();
+        try
+        {
+            repository.Remove(unverify);
+            await repository.CommitAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            await LoggingManager.WarningAsync(nameof(RemoveUnverify), "A database error occurred while processing unverify.", ex);
+        }
 
         if (IsAutoRemove)
             return MessageManager.CreateRemoveAccessManuallyToChannel(toUser, ApiContext.Language);

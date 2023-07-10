@@ -31,7 +31,7 @@ public class DiscordExceptionHandler : ILoggingHandler
         if (exception == null || !Configuration.GetValue<bool>("Enabled")) return false;
         if (severity != LogSeverity.Critical && severity != LogSeverity.Error && severity != LogSeverity.Warning) return false;
 
-        var isWarning = LoggingHelper.IsWarning(exception);
+        var isWarning = LoggingHelper.IsWarning(source, exception);
         if (LogChannel != null) return !isWarning;
 
         var guild = await DiscordClient.GetGuildAsync(Configuration.GetValue<ulong>("GuildId"));

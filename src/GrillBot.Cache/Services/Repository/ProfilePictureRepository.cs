@@ -25,16 +25,6 @@ public class ProfilePictureRepository : SubRepositoryBase<GrillBotCacheContext>
         }
     }
 
-    public async Task<List<ProfilePicture>> GetProfilePicturesExceptOneAsync(ulong userId, string avatarId)
-    {
-        using (CreateCounter())
-        {
-            return await Context.ProfilePictures
-                .Where(o => o.UserId == userId.ToString() && o.AvatarId != avatarId)
-                .ToListAsync();
-        }
-    }
-
     public async Task<List<ProfilePicture>> GetAllProfilePicturesAsync()
     {
         using (CreateCounter())

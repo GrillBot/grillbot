@@ -27,7 +27,6 @@ public class ProfilePictureManager
         if (profilePicture != null)
             return profilePicture;
 
-        await CleanCacheForUserAsync(user); // Remove all profile pictures if user changed picture.
         return await CreatePictureAsync(user, size);
     }
 
@@ -59,17 +58,5 @@ public class ProfilePictureManager
             using var httpClient = new HttpClient();
             return await httpClient.GetByteArrayAsync(url);
         }
-    }
-
-    private async Task CleanCacheForUserAsync(IUser user)
-    {
-        await using var cache = CacheBuilder.CreateRepository();
-
-        var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId;
-        var invalidProfilePictures = await cache.ProfilePictureRepository.GetProfilePicturesExceptOneAsync(user.Id, avatarId);
-        if (invalidProfilePictures.Count == 0) return;
-
-        cache.RemoveCollection(invalidProfilePictures);
-        await cache.CommitAsync();
     }
 }

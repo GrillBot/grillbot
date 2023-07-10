@@ -16,13 +16,13 @@ public interface IPointsServiceClient : IClient
     Task<MergeResult?> MergeTransctionsAsync();
     Task<PointsStatus> GetStatusOfPointsAsync(string guildId, string userId);
     Task<PointsStatus> GetStatusOfExpiredPointsAsync(string guildId, string userId);
-    Task<ImagePointsStatus> GetImagePointsStatusAsync(string guildId, string userId);
+    Task<ImagePointsStatus?> GetImagePointsStatusAsync(string guildId, string userId);
     Task ProcessSynchronizationAsync(SynchronizationRequest request);
     Task<ValidationProblemDetails?> CreateTransactionAsync(TransactionRequest request);
+    Task<ValidationProblemDetails?> CreateTransactionAsync(AdminTransactionRequest request);
     Task DeleteTransactionAsync(string guildId, string messageId);
     Task DeleteTransactionAsync(string guildId, string messageId, string reactionId);
     Task<ValidationProblemDetails?> TransferPointsAsync(TransferPointsRequest request);
-    Task<ValidationProblemDetails?> CreateTransactionAsync(AdminTransactionRequest request);
     Task<bool> ExistsAnyTransactionAsync(string guildId, string userId);
     Task<StatusInfo> GetStatusInfoAsync();
 }

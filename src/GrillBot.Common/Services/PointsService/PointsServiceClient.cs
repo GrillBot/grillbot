@@ -115,12 +115,13 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
         ))!;
     }
 
-    public async Task<ImagePointsStatus> GetImagePointsStatusAsync(string guildId, string userId)
+    public async Task<ImagePointsStatus?> GetImagePointsStatusAsync(string guildId, string userId)
     {
-        return (await ProcessRequestAsync(
+        return await ProcessRequestAsync(
             () => HttpClient.GetAsync($"api/status/{guildId}/{userId}/image"),
-            response => response.Content.ReadFromJsonAsync<ImagePointsStatus>()
-        ))!;
+            async response => response.StatusCode == HttpStatusCode.NotFound ? null : await response.Content.ReadFromJsonAsync<ImagePointsStatus>(),
+            response => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound ? Task.CompletedTask : EnsureSuccessResponseAsync(response)
+        );
     }
 
     public async Task ProcessSynchronizationAsync(SynchronizationRequest request)

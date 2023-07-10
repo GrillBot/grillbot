@@ -50,24 +50,25 @@ public class CacheCleanerJob : Job
         if (!InitManager.Get()) return;
 
         var cleared = 0;
-        var processedUsers = new HashSet<ulong>();
+        var processedUsers = new List<ulong>();
         var profilePictures = await cacheRepository.ProfilePictureRepository.GetAllProfilePicturesAsync();
 
-        foreach (var profilePicture in profilePictures)
+        foreach (var userProfilePictures in profilePictures.GroupBy(o => o.UserId))
         {
-            var userId = profilePicture.UserId.ToUlong();
+            var userId = userProfilePictures.Key.ToUlong();
             var user = await DiscordClient.GetUserAsync(userId);
-            if (user == null)
+            if (user is null)
             {
-                cacheRepository.Remove(profilePicture);
-                cleared++;
+                cacheRepository.RemoveCollection(userProfilePictures);
+                cleared += userProfilePictures.Count();
             }
             else
             {
                 var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId;
-                if (avatarId != profilePicture.AvatarId)
+
+                foreach (var picture in userProfilePictures.Where(p => p.AvatarId != avatarId))
                 {
-                    cacheRepository.Remove(profilePicture);
+                    cacheRepository.Remove(picture);
                     cleared++;
                 }
             }

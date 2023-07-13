@@ -69,6 +69,7 @@ public class UserInfo : CommandAction
     {
         SetUserState(builder, user);
         AddField(builder, "CreatedAt", user.CreatedAt.ToTimestampMention(), true);
+        SetUserBadges(builder, user);
 
         if (user.ActiveClients.Count > 0)
             AddField(builder, "ActiveDevices", string.Join(", ", user.ActiveClients), true);
@@ -80,6 +81,30 @@ public class UserInfo : CommandAction
         var emote = Configuration.GetValue<string>($"Discord:Emotes:{status}");
 
         AddField(builder, "State", $"{Emote.Parse(emote)} {Texts[$"User/UserStatus/{status}", Locale]}", true);
+    }
+
+    private void SetUserBadges(EmbedBuilder builder, IUser user)
+    {
+        if (user.PublicFlags is null || user.PublicFlags == UserProperties.None)
+            return;
+
+        var badges = new List<string>();
+
+        if (user.PublicFlags.Value.HasFlag(UserProperties.HypeSquadBravery))
+            badges.Add(Configuration.GetValue<string>("Discord:Emotes:HypeSquadBravery")!);
+        if (user.PublicFlags.Value.HasFlag(UserProperties.HypeSquadBalance))
+            badges.Add(Configuration.GetValue<string>("Discord:Emotes:HypeSquadBalance")!);
+        if (user.PublicFlags.Value.HasFlag(UserProperties.HypeSquadBrilliance))
+            badges.Add(Configuration.GetValue<string>("Discord:Emotes:HypeSquadBriliance")!);
+        if(user.PublicFlags.Value.HasFlag(UserProperties.ActiveDeveloper))
+            badges.Add(Configuration.GetValue<string>("Discord:Emotes:ActiveDeveloper")!);
+        if (user.PublicFlags.Value.HasFlag(UserProperties.Partner))
+            badges.Add(Configuration.GetValue<string>("Discord:Emotes:Partner")!);
+        if (user.PublicFlags.Value.HasFlag(UserProperties.EarlySupporter))
+            badges.Add(Configuration.GetValue<string>("Discord:Emotes:EarlySupporter")!);
+
+        if (badges.Count > 0)
+            AddField(builder, "Badges", string.Join(" ", badges), false);
     }
 
     private void SetRoles(EmbedBuilder builder, IGuildUser user)
@@ -113,7 +138,7 @@ public class UserInfo : CommandAction
 
         if (user.JoinedAt != null)
         {
-            var joinPosition = GuildUsers.Count(o => o.JoinedAt != null && o.JoinedAt.Value < user.JoinedAt.Value);
+            var joinPosition = GuildUsers.Count(o => o.JoinedAt < user.JoinedAt.Value);
             AddField(builder, "JoinedAt", $"{user.JoinedAt.Value.ToTimestampMention()} ({joinPosition})", true);
         }
 

@@ -91,4 +91,4 @@ jobs:
           username: ${{ secrets.SSH_Username }}
           password: ${{ secrets.SSH_Password }}
           port: 22
-          script: echo '${{ secrets.SSH_Password }}' | sudo -S /scripts/podman-reload.py grillbot
+          script: echo '${{ secrets.SSH_Password }}' | sudo -S python3 /scripts/deploy/deploy.py prod/grillbot-app

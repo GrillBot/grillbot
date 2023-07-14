@@ -28,7 +28,7 @@ public class BotInfo : CommandAction
             .AddField(GetText("Repository"), "https://github.com/grillbot")
             .AddField(GetText("Documentation"), "https://docs.grillbot.eu/")
             .AddField(GetText("Swagger"), "https://grillbot.eu/swagger")
-            .AddField(GetText("Navigation page"), "https://grillbot.eu")
+            .AddField(GetText("NavigationPage"), "https://grillbot.eu")
             .AddField(GetText("PrivateAdmin"), "https://private.grillbot.eu")
             .AddField(GetText("PublicAdmin"), "https://public.grillbot.eu/")
             .WithColor(color)

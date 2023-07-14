@@ -30,7 +30,8 @@
       "Documentation": "Documentation",
       "Swagger": "Swagger",
       "PrivateAdmin": "Administration (Only admins)",
-      "PublicAdmin": "Administration (For everyone)"
+      "PublicAdmin": "Administration (For everyone)",
+      "NavigationPage": "Navigation page"
     }
   },
   "ChannelModule": {

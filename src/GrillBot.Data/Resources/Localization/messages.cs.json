@@ -30,7 +30,8 @@
       "Documentation": "Dokumentace",
       "Swagger": "Swagger",
       "PrivateAdmin": "Administrace (Vyšší role)",
-      "PublicAdmin": "Administrace (Pro každého)"
+      "PublicAdmin": "Administrace (Pro každého)",
+      "NavigationPage": "Rozcestník"
     }
   },
   "ChannelModule": {

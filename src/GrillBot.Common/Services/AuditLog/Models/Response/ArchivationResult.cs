@@ -7,6 +7,7 @@ public class ArchivationResult
     public List<string> UserIds { get; set; } = new();
     public List<string> GuildIds { get; set; } = new();
     public List<string> ChannelIds { get; set; } = new();
+    public List<Guid> Ids { get; set; } = new();
     public int ItemsCount { get; set; }
     public long TotalFilesSize { get; set; }
 }

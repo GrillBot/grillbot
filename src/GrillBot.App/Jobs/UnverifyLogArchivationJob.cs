@@ -10,19 +10,25 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private FileStorageFactory FileStorageFactory { get; }
+    private IConfiguration Configuration { get; }
 
-    public UnverifyLogArchivationJob(IServiceProvider serviceProvider, GrillBotDatabaseBuilder databaseBuilder, FileStorageFactory fileStorageFactory) : base(serviceProvider)
+    public UnverifyLogArchivationJob(IServiceProvider serviceProvider, GrillBotDatabaseBuilder databaseBuilder, FileStorageFactory fileStorageFactory,
+        IConfiguration configuration) : base(serviceProvider)
     {
         DatabaseBuilder = databaseBuilder;
         FileStorageFactory = fileStorageFactory;
+        Configuration = configuration;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        var expirationMilestone = DateTime.Now.AddYears(-2);
-
         await using var repository = DatabaseBuilder.CreateRepository();
-        if (!await repository.Unverify.ExistsItemsForArchivationAsync(expirationMilestone))
+
+        var expirationMilestone = DateTime.Now.AddYears(-2);
+        var minimalCount = Configuration.GetValue<int>("Unverify:MinimalCountToArchivation");
+        var countToArchivation = await repository.Unverify.GetCountForArchivationAsync(expirationMilestone);
+
+        if (countToArchivation <= minimalCount)
             return;
 
         var data = await repository.Unverify.GetLogsForArchivationAsync(expirationMilestone);

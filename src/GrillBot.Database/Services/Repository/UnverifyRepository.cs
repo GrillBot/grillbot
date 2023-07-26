@@ -153,12 +153,10 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
             .Where(o => o.CreatedAt <= expirationMilestone);
     }
 
-    public async Task<bool> ExistsItemsForArchivationAsync(DateTime expirationMilestone)
+    public async Task<int> GetCountForArchivationAsync(DateTime expirationMilestone)
     {
         using (CreateCounter())
-        {
-            return await GetLogsForArchivationQuery(expirationMilestone).AnyAsync();
-        }
+            return await GetLogsForArchivationQuery(expirationMilestone).CountAsync();
     }
 
     public async Task<List<UnverifyLog>> GetLogsForArchivationAsync(DateTime exiprationMilestone)

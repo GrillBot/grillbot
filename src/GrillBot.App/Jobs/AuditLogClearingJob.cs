@@ -1,7 +1,9 @@
 ﻿using System.IO.Compression;
+using System.Linq;
 using System.Xml.Linq;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Services.AuditLog;
+using GrillBot.Common.Services.AuditLog.Models.Response;
 using GrillBot.Common.Services.FileService;
 using GrillBot.Core.Extensions;
 using GrillBot.Database.Entity;
@@ -42,14 +44,12 @@ public class AuditLogClearingJob : ArchivationJobBase
         await ProcessUsersAsync(repository, archivationResult.UserIds, xmlData);
 
         var zipName = await StoreDataAsync(xmlData, archivationResult.Files);
-        var totalFilesSize = archivationResult.TotalFilesSize.Bytes().ToString();
         var xmlSize = Encoding.UTF8.GetBytes(xmlData.ToString()).Length.Bytes().ToString();
         var zipSize = new FileInfo(zipName).Length.Bytes().ToString();
 
         foreach (var id in archivationResult.Ids)
             await AuditLogServiceClient.DeleteItemAsync(id);
-
-        context.Result = $"Items: {archivationResult.ItemsCount}, Files: {archivationResult.Files.Count} ({totalFilesSize}), XmlSize: {xmlSize}, ZipSize: {zipSize}";
+        context.Result = BuildReport(archivationResult, xmlSize, zipSize);
     }
 
     private static IEnumerable<XElement> TransformChannels(IEnumerable<GuildChannel?> channels)
@@ -144,5 +144,22 @@ public class AuditLogClearingJob : ArchivationJobBase
             users.Add(await repository.User.FindUserByIdAsync(userId.ToUlong(), disableTracking: true));
 
         xmlData.Add(TransformUsers(users));
+    }
+
+    private static string BuildReport(ArchivationResult result, string xmlSize, string zipSize)
+    {
+        var totalFilesSize = result.TotalFilesSize.Bytes().ToString();
+
+        var builder = new StringBuilder()
+            .AppendFormat("Items: {0}, Files: {1} ({2}), XmlSize: {3}, ZipSize: {4}", result.ItemsCount, result.Files.Count, totalFilesSize, xmlSize, zipSize)
+            .AppendLine();
+
+        var indent = new string(' ', 5);
+        builder.Append("Archived types: (");
+        foreach (var type in result.PerType)
+            builder.AppendFormat("{0}{1}: {2}", indent, type.Key, type.Value).AppendLine();
+        builder.Append(')');
+
+        return builder.ToString();
     }
 }

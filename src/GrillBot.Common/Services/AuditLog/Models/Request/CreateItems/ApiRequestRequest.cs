@@ -16,4 +16,5 @@ public class ApiRequestRequest
     public string Identification { get; set; } = null!;
     public string Ip { get; set; } = null!;
     public string Result { get; set; } = null!;
+    public string? Role { get; set; }
 }

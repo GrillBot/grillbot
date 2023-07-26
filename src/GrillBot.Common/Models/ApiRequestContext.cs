@@ -34,4 +34,7 @@ public class ApiRequestContext
 
     public string? GetUsername()
         => LoggedUser is null ? LoggedUserData?.FindFirst(ClaimTypes.Name)?.Value : LoggedUser.Username;
+
+    public string? GetRole()
+        => LoggedUserData?.FindFirst(ClaimTypes.Role)?.Value;
 }

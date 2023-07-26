@@ -10,4 +10,5 @@ public class ArchivationResult
     public List<Guid> Ids { get; set; } = new();
     public int ItemsCount { get; set; }
     public long TotalFilesSize { get; set; }
+    public Dictionary<string, long> PerType { get; set; } = new();
 }

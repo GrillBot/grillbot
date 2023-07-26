@@ -16,4 +16,5 @@ public class ApiRequestDetail
     public string Ip { get; set; } = null!;
     public string Result { get; set; } = null!;
     public string? Role { get; set; }
+    public string? ForwardedIp { get; set; }
 }

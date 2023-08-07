@@ -11,13 +11,11 @@ namespace GrillBot.App.Actions.Commands.Searching;
 public class GetSearchingList : CommandAction
 {
     private Api.V1.Searching.GetSearchingList GetSearchingListAction { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
 
-    public GetSearchingList(Api.V1.Searching.GetSearchingList getSearchingListAction, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts)
+    public GetSearchingList(Api.V1.Searching.GetSearchingList getSearchingListAction, ITextsManager texts)
     {
         GetSearchingListAction = getSearchingListAction;
-        DatabaseBuilder = databaseBuilder;
         Texts = texts;
     }
 
@@ -26,32 +24,32 @@ public class GetSearchingList : CommandAction
         GetSearchingListAction.UpdateContext(Locale, Context.User);
         channel ??= Context.Channel;
 
-        var parameters = CreateParameters(page, query, channel);
+        var embed = CreateEmptyEmbed(page, query, channel);
+        var parameters = CreateParameters(query, channel);
         var list = await GetSearchingListAction.ProcessAsync(parameters);
-        var pagesCount = ComputePagesCount(list.TotalItemsCount);
-        var embed = CreateEmbed(list, page, query, channel);
-        var paginationComponents = ComponentsHelper.CreatePaginationComponents(page, pagesCount, "search");
+        var fields = CreateFields(list);
+        SetPage(embed, fields, page, channel, query, out var pagesCount);
 
-        return (embed, paginationComponents);
+        var paginationComponents = ComponentsHelper.CreatePaginationComponents(page, pagesCount, "search");
+        return (embed.Build(), paginationComponents);
     }
 
     public async Task<int> ComputePagesCountAsync(string? query, IChannel channel)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        GetSearchingListAction.UpdateContext(Locale, Context.User);
 
-        var parameters = CreateParameters(0, query, channel);
-        var totalCount = await repository.Searching.GetSearchesCountAsync(parameters, new List<string>());
-        return ComputePagesCount(totalCount);
+        var parameters = CreateParameters(query, channel);
+        var list = await GetSearchingListAction.ProcessAsync(parameters);
+        var fields = CreateFields(list);
+        var embed = CreateEmptyEmbed(0, query, channel);
+        return EmbedHelper.SplitToPages(fields, embed).Count;
     }
 
-    private static int ComputePagesCount(long totalCount)
-        => (int)Math.Ceiling(totalCount / (double)EmbedBuilder.MaxFieldCount);
-
-    private GetSearchingListParams CreateParameters(int page, string? query, IChannel channel)
+    private GetSearchingListParams CreateParameters(string? query, IChannel channel)
     {
         return new GetSearchingListParams
         {
-            Pagination = { Page = page, PageSize = EmbedBuilder.MaxFieldCount },
+            Pagination = { Page = 0, PageSize = int.MaxValue },
             Sort = { Descending = false, OrderBy = "Id" },
             ChannelId = channel.Id.ToString(),
             GuildId = Context.Guild.Id.ToString(),
@@ -59,27 +57,23 @@ public class GetSearchingList : CommandAction
         };
     }
 
-    private Embed CreateEmbed(PaginatedResponse<SearchingListItem> list, int page, string? query, IChannel channel)
+    private EmbedBuilder CreateEmptyEmbed(int page, string? query, IChannel channel)
     {
-        var embed = new EmbedBuilder()
+        return new EmbedBuilder()
             .WithFooter(Context.User)
             .WithMetadata(new SearchingMetadata { Page = page, MessageQuery = query, ChannelId = channel.Id })
             .WithTitle(Texts["SearchingModule/List/Embed/Title", Locale].FormatWith(channel.Name))
             .WithColor(Color.Blue)
             .WithCurrentTimestamp();
+    }
 
+    private static List<EmbedFieldBuilder> CreateFields(PaginatedResponse<SearchingListItem> list)
+    {
         if (list.TotalItemsCount == 0)
-        {
-            var textsKey = string.IsNullOrEmpty(query) ? "NoItems" : "NoItemsWithQuery";
-            embed.WithDescription(Texts[$"SearchingModule/List/Embed/{textsKey}", Locale].FormatWith(channel.GetHyperlink(Context.Guild)));
-        }
-        else
-        {
-            foreach (var item in list.Data)
-                embed.AddField($"**{item.Id} - **{item.User.Username}**", FixMessage(item.Message));
-        }
+            return new List<EmbedFieldBuilder>();
 
-        return embed.Build();
+        return list.Data
+            .ConvertAll(o => new EmbedFieldBuilder().WithName($"**{o.Id} - **{o.User.Username}**").WithValue(FixMessage(o.Message)));
     }
 
     private static string FixMessage(string message)
@@ -88,5 +82,20 @@ public class GetSearchingList : CommandAction
         if (!message.EndsWith('"')) message += "\"";
 
         return message;
+    }
+
+    private void SetPage(EmbedBuilder embed, IReadOnlyList<EmbedFieldBuilder> fields, int page, IChannel channel, string? query, out int pagesCount)
+    {
+        if (fields.Count == 0)
+        {
+            var textsKey = string.IsNullOrEmpty(query) ? "NoItems" : "NoItemsWithQuery";
+            embed.WithDescription(Texts[$"SearchingModule/List/Embed/{textsKey}", Locale].FormatWith(channel.GetHyperlink(Context.Guild)));
+            pagesCount = 1;
+            return;
+        }
+
+        var pages = EmbedHelper.SplitToPages(fields, embed);
+        pagesCount = pages.Count;
+        embed.WithFields(pages[page]);
     }
 }

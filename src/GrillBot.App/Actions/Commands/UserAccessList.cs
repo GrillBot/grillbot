@@ -45,7 +45,7 @@ public class UserAccessList : CommandAction
             return;
         }
 
-        var pages = SplitToPages(fields, builder);
+        var pages = EmbedHelper.SplitToPages(fields, builder);
         pagesCount = pages.Count;
         builder.WithFields(pages[page]);
     }
@@ -112,34 +112,6 @@ public class UserAccessList : CommandAction
         var visibleChannels = await Context.Guild.GetAvailableChannelsAsync(user);
         var fields = CreateFields(visibleChannels);
         var embed = CreateEmbed(user, 0);
-        return SplitToPages(fields, embed).Count;
-    }
-
-    private static List<List<EmbedFieldBuilder>> SplitToPages(IReadOnlyList<EmbedFieldBuilder> fields, EmbedBuilder embed)
-    {
-        var embedClone = embed.Build().ToEmbedBuilder();
-        var pages = new List<List<EmbedFieldBuilder>>();
-
-        for (var i = 0; i < fields.Count; i++)
-        {
-            var field = fields[i];
-            embedClone.AddField(field);
-
-            if (embedClone.Length > EmbedBuilder.MaxEmbedLength)
-            {
-                pages.Add(embedClone.Fields.Take(embedClone.Fields.Count - 1).ToList());
-                embedClone.Fields.Clear();
-                i--;
-            }
-            else if (embedClone.Fields.Count == EmbedBuilder.MaxFieldCount)
-            {
-                pages.Add(embedClone.Fields);
-                embedClone.Fields.Clear();
-            }
-        }
-
-        if (embedClone.Fields.Count > 0)
-            pages.Add(embedClone.Fields);
-        return pages;
+        return EmbedHelper.SplitToPages(fields, embed).Count;
     }
 }

@@ -135,7 +135,6 @@ public static class HandlerExtensions
 
         // PointsService
         services
-            .AddScoped<IUserUpdatedEvent, PointsServiceSynchronizationHandler>()
             .AddScoped<IChannelDestroyedEvent, PointsServiceSynchronizationHandler>()
             .AddScoped<IThreadDeletedEvent, PointsServiceSynchronizationHandler>();
 

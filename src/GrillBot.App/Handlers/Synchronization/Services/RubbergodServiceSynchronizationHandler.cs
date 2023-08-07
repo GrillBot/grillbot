@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.RubbergodService;
 
@@ -57,7 +56,7 @@ public class RubbergodServiceSynchronizationHandler : BaseSynchronizationHandler
         var guild = await ChannelHelper.GetGuildFromChannelAsync(cachedThread, threadId);
         if (guild is null)
             return;
-        
+
         await ServiceClient.InvalidatePinCacheAsync(guild.Id, threadId);
     }
 

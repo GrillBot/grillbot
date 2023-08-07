@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers.Events.Contracts;
+﻿using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Services.PointsService;
 using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Database.Enums;
@@ -8,27 +6,10 @@ using ChannelInfo = GrillBot.Common.Services.PointsService.Models.ChannelInfo;
 
 namespace GrillBot.App.Handlers.Synchronization.Services;
 
-public class PointsServiceSynchronizationHandler : BaseSynchronizationHandler<IPointsServiceClient>, IUserUpdatedEvent, IChannelDestroyedEvent, IThreadDeletedEvent
+public class PointsServiceSynchronizationHandler : BaseSynchronizationHandler<IPointsServiceClient>, IChannelDestroyedEvent, IThreadDeletedEvent
 {
-    private PointsHelper PointsHelper { get; }
-    private IDiscordClient DiscordClient { get; }
-
-    public PointsServiceSynchronizationHandler(IPointsServiceClient serviceClient, PointsHelper pointsHelper, GrillBotDatabaseBuilder databaseBuilder,
-        IDiscordClient discordClient) : base(serviceClient, databaseBuilder)
+    public PointsServiceSynchronizationHandler(IPointsServiceClient serviceClient, GrillBotDatabaseBuilder databaseBuilder) : base(serviceClient, databaseBuilder)
     {
-        PointsHelper = pointsHelper;
-        DiscordClient = discordClient;
-    }
-
-    // UserUpdated
-    public async Task ProcessAsync(IUser before, IUser after)
-    {
-        if (!after.IsUser())
-            return;
-
-        var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(after.Id);
-        foreach (var guild in mutualGuilds)
-            await PointsHelper.SyncDataWithServiceAsync(guild, new[] { after }, Enumerable.Empty<IGuildChannel>());
     }
 
     // ChannelDestroyed

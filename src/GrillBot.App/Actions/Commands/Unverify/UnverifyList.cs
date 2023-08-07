@@ -26,7 +26,7 @@ public class UnverifyList : CommandAction
         FormatHelper = formatHelper;
     }
 
-    public async Task<(Embed embed, MessageComponent paginationComponent)> ProcessAsync(int page)
+    public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -132,22 +132,26 @@ public class UnverifyList : CommandAction
             var channel = await Context.Guild.GetChannelAsync(channelOverride.ChannelId);
             if (channel == null) continue;
 
-            var mention = channel.GetMention();
-            if (channelMentions.Length + mention.Length + 1 > EmbedFieldBuilder.MaxFieldValueLength)
+            var hyperlink = channel.GetHyperlink();
+            if (channelMentions.Length + hyperlink.Length + 1 > EmbedFieldBuilder.MaxFieldValueLength)
             {
                 var mentionsValue = channelMentions.ToString();
                 channelMentions.Clear();
                 yield return CreateField(fieldId, mentionsValue, false);
             }
 
-            channelMentions.Append(mention).Append(' ');
+            channelMentions.Append(hyperlink).Append(", ");
         }
 
-        if (channelMentions.Length > 0)
-            yield return CreateField(fieldId, channelMentions.ToString(), false);
+        var channelMentionsText = channelMentions.ToString().Trim();
+        if (channelMentionsText.EndsWith(','))
+            channelMentionsText = channelMentionsText[..^1];
+
+        if (channelMentionsText.Length > 0)
+            yield return CreateField(fieldId, channelMentionsText, false);
     }
 
-    private async Task<MessageComponent> CreatePaginationComponentsAsync(int currentPage)
+    private async Task<MessageComponent?> CreatePaginationComponentsAsync(int currentPage)
     {
         var pagesCount = await ComputeCountOfUnverifies();
         return ComponentsHelper.CreatePaginationComponents(currentPage, pagesCount, "unverify");

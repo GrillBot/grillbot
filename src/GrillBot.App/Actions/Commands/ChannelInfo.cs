@@ -94,7 +94,7 @@ public class ChannelInfo : CommandAction
         var parentChannel = await Context.Guild.GetChannelAsync(parentChannelId);
 
         if (parentChannel != null)
-            builder.AddField(Texts["ChannelModule/ChannelInfo/Channel", Locale], parentChannel.GetMention(), true);
+            builder.AddField(Texts["ChannelModule/ChannelInfo/Channel", Locale], parentChannel.GetHyperlink(), true);
     }
 
     private void SetPermissionsInfo(EmbedBuilder builder, IGuildChannel channel)

@@ -6,8 +6,6 @@ namespace GrillBot.Common.Extensions.Discord;
 
 public static class ChannelExtensions
 {
-    public static string GetMention(this IChannel channel) => $"<#{channel.Id}>";
-
     public static async Task<bool> HaveAccessAsync(this IGuildChannel channel, IGuildUser user)
     {
         if (channel is IThreadChannel { CategoryId: not null } thread)
@@ -110,4 +108,10 @@ public static class ChannelExtensions
             _ => null
         };
     }
+
+    public static string GetHyperlink(this IChannel channel, IGuild guild)
+        => $"[#{channel.Name}](https://discord.com/channels/{guild.Id}/{channel.Id}/{SnowflakeUtils.ToSnowflake(DateTimeOffset.Now)})";
+
+    public static string GetHyperlink(this IGuildChannel guildChannel)
+        => GetHyperlink(guildChannel, guildChannel.Guild);
 }

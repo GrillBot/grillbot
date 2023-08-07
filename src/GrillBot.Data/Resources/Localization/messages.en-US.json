@@ -298,8 +298,8 @@
     "List": {
       "Embed": {
         "Title": "Searching in the channel #{0}",
-        "NoItems": "No one searching in the channel #{0} yet.",
-        "NoItemsWithQuery": "No one searching in the channel #{0} yet. Try to use another search query."
+        "NoItems": "No one searching in the channel {0} yet.",
+        "NoItemsWithQuery": "No one searching in the channel {0} yet. Try to use another search query."
       }
     }
   },

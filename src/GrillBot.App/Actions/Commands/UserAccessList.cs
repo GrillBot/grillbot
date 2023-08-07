@@ -15,7 +15,7 @@ public class UserAccessList : CommandAction
         Texts = texts;
     }
 
-    public async Task<(Embed embed, MessageComponent paginationComponent)> ProcessAsync(IGuildUser user, int page)
+    public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(IGuildUser user, int page)
     {
         var visibleChannels = await Context.Guild.GetAvailableChannelsAsync(user);
         var embed = CreateEmbed(user, page);
@@ -59,7 +59,7 @@ public class UserAccessList : CommandAction
         var fieldBuilder = new StringBuilder();
         foreach (var category in categorizedChannels)
         {
-            foreach (var channel in category.Value.OrderBy(o => o.Name).Select(o => o.GetMention()))
+            foreach (var channel in category.Value.OrderBy(o => o.Name).Select(o => o.GetHyperlink()))
             {
                 if (fieldBuilder.Length + channel.Length + 1 >= EmbedFieldBuilder.MaxFieldValueLength)
                 {
@@ -67,7 +67,7 @@ public class UserAccessList : CommandAction
                     fieldBuilder.Clear();
                 }
 
-                fieldBuilder.Append(channel).Append(' ');
+                fieldBuilder.Append(channel).Append(", ");
             }
 
             if (fieldBuilder.Length <= 0)
@@ -75,6 +75,14 @@ public class UserAccessList : CommandAction
 
             result.Add(new EmbedFieldBuilder().WithName(category.Key).WithValue(fieldBuilder.ToString()));
             fieldBuilder.Clear();
+        }
+
+        foreach (var field in result)
+        {
+            var fieldValue = field.Value.ToString()!.Trim();
+            if (fieldValue.EndsWith(','))
+                fieldValue = fieldValue[..^1];
+            field.WithValue(fieldValue);
         }
 
         return result;

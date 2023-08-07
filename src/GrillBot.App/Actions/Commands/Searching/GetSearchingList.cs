@@ -71,7 +71,7 @@ public class GetSearchingList : CommandAction
         if (list.TotalItemsCount == 0)
         {
             var textsKey = string.IsNullOrEmpty(query) ? "NoItems" : "NoItemsWithQuery";
-            embed.WithDescription(Texts[$"SearchingModule/List/Embed/{textsKey}", Locale].FormatWith(channel.GetMention()));
+            embed.WithDescription(Texts[$"SearchingModule/List/Embed/{textsKey}", Locale].FormatWith(channel.GetHyperlink(Context.Guild)));
         }
         else
         {
@@ -84,8 +84,8 @@ public class GetSearchingList : CommandAction
 
     private static string FixMessage(string message)
     {
-        if (!message.StartsWith("\"")) message = "\"" + message;
-        if (!message.EndsWith("\"")) message += "\"";
+        if (!message.StartsWith('"')) message = "\"" + message;
+        if (!message.EndsWith('"')) message += "\"";
 
         return message;
     }

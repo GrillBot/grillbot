@@ -155,7 +155,7 @@ public class AuditLogClearingJob : ArchivationJobBase
             .AppendLine();
 
         var indent = new string(' ', 5);
-        builder.Append("Archived types: (");
+        builder.AppendLine("Archived types: (");
         foreach (var type in result.PerType)
             builder.AppendFormat("{0}{1}: {2}", indent, type.Key, type.Value).AppendLine();
         builder.Append(')');

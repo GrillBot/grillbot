@@ -78,21 +78,17 @@ public class PointsLeaderboard : CommandAction
         {
             var item = board[i];
             var user = await guild.GetUserAsync(item.UserId.ToUlong());
-            if (user is null) continue;
-
-            var guildUser = await repository.GuildUser.FindGuildUserAsync(user, true);
-            if (guildUser is null) continue;
-
-            result.Add(FormatRow(i, item, skip, guildUser));
+            if (user is not null)
+                result.Add(FormatRow(i, item, skip, user));
         }
 
         return result;
     }
 
-    private string FormatRow(int index, PointsStatus item, int skip, GuildUser guildUser)
+    private string FormatRow(int index, PointsStatus item, int skip, IGuildUser guildUser)
     {
         var points = FormatHelper.FormatNumber("Points/Board/Counts", Locale, item.YearBack);
-        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, guildUser.DisplayName, points);
+        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, guildUser.GetFullName(), points);
     }
 
     private async Task<MessageComponent?> CreatePaginationComponents(int currentPage)

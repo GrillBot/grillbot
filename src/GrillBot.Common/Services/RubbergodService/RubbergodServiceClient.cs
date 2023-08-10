@@ -11,61 +11,38 @@ public class RubbergodServiceClient : RestServiceBase, IRubbergodServiceClient
 {
     public override string ServiceName => "RubbergodService";
 
-    public RubbergodServiceClient(ICounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, () => clientFactory.CreateClient("RubbergodService"))
+    public RubbergodServiceClient(ICounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, clientFactory)
     {
     }
 
     public async Task<DiagnosticInfo> GetDiagAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/diag"),
-            response => response.Content.ReadFromJsonAsync<DiagnosticInfo>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/diag", cancellationToken), ReadJsonAsync<DiagnosticInfo>);
 
     public async Task<string> SendDirectApiCommand(string service, DirectApiCommand command)
     {
-        var result = await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync($"api/directApi/{service}", command),
-            response => response.Content.ReadAsStringAsync()
+        return await ProcessRequestAsync(
+            cancellationToken => HttpClient.PostAsJsonAsync($"api/directApi/{service}", command, cancellationToken),
+            (response, cancellationToken) => response.Content.ReadAsStringAsync(cancellationToken: cancellationToken)!
         );
-
-        return result;
     }
 
     public async Task<PaginatedResponse<UserKarma>> GetKarmaPageAsync(PaginatedParams parameters)
     {
         var query = $"Page={parameters.Page}&PageSize={parameters.PageSize}";
-
-        var result = await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/karma?{query}"),
-            response => response.Content.ReadFromJsonAsync<PaginatedResponse<UserKarma>>()
-        );
-
-        return result!;
+        return await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync($"api/karma?{query}", cancellationToken), ReadJsonAsync<PaginatedResponse<UserKarma>>);
     }
 
     public async Task StoreKarmaAsync(List<KarmaItem> items)
-    {
-        await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/karma", items),
-            _ => EmptyResult
-        );
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.PostAsJsonAsync("api/karma", items, cancellationToken), EmptyResponseAsync);
 
     public async Task InvalidatePinCacheAsync(ulong guildId, ulong channelId)
-    {
-        await ProcessRequestAsync(
-            () => HttpClient.DeleteAsync($"api/pins/{guildId}/{channelId}"),
-            _ => EmptyResult
-        );
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.DeleteAsync($"api/pins/{guildId}/{channelId}", cancellationToken), EmptyResponseAsync);
 
     public async Task<byte[]> GetPinsAsync(ulong guildId, ulong channelId, bool markdown)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/pins/{guildId}/{channelId}?markdown={markdown}"),
-            response => response.Content.ReadAsByteArrayAsync()
+            cancellationToken => HttpClient.GetAsync($"api/pins/{guildId}/{channelId}?markdown={markdown}", cancellationToken),
+            (response, cancellationToken) => response.Content.ReadAsByteArrayAsync(cancellationToken: cancellationToken)!
         );
     }
 }

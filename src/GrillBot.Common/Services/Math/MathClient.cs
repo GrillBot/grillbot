@@ -10,7 +10,7 @@ public class MathClient : RestServiceBase, IMathClient
 {
     public override string ServiceName => "MathJS";
 
-    public MathClient(ICounterManager counterManager, IHttpClientFactory httpClientFactory) : base(counterManager, () => httpClientFactory.CreateClient("Math"))
+    public MathClient(ICounterManager counterManager, IHttpClientFactory httpClientFactory) : base(counterManager, httpClientFactory)
     {
     }
 
@@ -18,17 +18,12 @@ public class MathClient : RestServiceBase, IMathClient
     {
         try
         {
-            var result = await ProcessRequestAsync(
-                () => HttpClient.PostAsJsonAsync("", request),
-                response => response.Content.ReadFromJsonAsync<MathJsResult>()
-            );
-
-            return result!;
+            return await ProcessRequestAsync(cancellationToken => HttpClient.PostAsJsonAsync("", request, cancellationToken), ReadJsonAsync<MathJsResult>);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
         {
             var response = ex.Data["ResponseContent"] as string;
-            if (string.IsNullOrEmpty(response) || !response.StartsWith("{"))
+            if (string.IsNullOrEmpty(response) || !response.StartsWith('{'))
                 throw;
 
             return JsonSerializer.Deserialize<MathJsResult>(response)!;

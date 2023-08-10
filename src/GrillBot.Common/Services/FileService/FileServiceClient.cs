@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Services.Diagnostics.Models;
 
@@ -10,61 +9,54 @@ public class FileServiceClient : RestServiceBase, IFileServiceClient
 {
     public override string ServiceName => "FileService";
 
-    public FileServiceClient(ICounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, () => clientFactory.CreateClient("FileService"))
+    public FileServiceClient(ICounterManager counterManager, IHttpClientFactory clientFactory) : base(counterManager, clientFactory)
     {
     }
 
     public async Task<DiagnosticInfo> GetDiagAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/diag"),
-            response => response.Content.ReadFromJsonAsync<DiagnosticInfo>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/diag", cancellationToken), ReadJsonAsync<DiagnosticInfo>);
 
     public async Task UploadFileAsync(string filename, byte[] content, string contentType)
     {
         await ProcessRequestAsync(
-            () =>
+            cancellationToken =>
             {
                 var fileContent = new ByteArrayContent(content);
                 fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
 
-                var formData = new MultipartFormDataContent();
-                formData.Add(fileContent, "file", filename);
-                return HttpClient.PostAsync("api/data", formData);
+                var formData = new MultipartFormDataContent
+                {
+                    { fileContent, "file", filename }
+                };
+                return HttpClient.PostAsync("api/data", formData, cancellationToken);
             },
-            _ => EmptyResult
+            EmptyResponseAsync,
+            timeout: System.Threading.Timeout.InfiniteTimeSpan
         );
     }
 
     public async Task<byte[]?> DownloadFileAsync(string filename)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/data?filename={filename}"),
-            async response => response.StatusCode == HttpStatusCode.NotFound ? null : await response.Content.ReadAsByteArrayAsync(),
-            async response =>
-            {
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                    return;
-                await EnsureSuccessResponseAsync(response);
-            }
+            cancellationToken => HttpClient.GetAsync($"api/data?filename={filename}", cancellationToken),
+            async (response, cancellationToken) => response.StatusCode == HttpStatusCode.NotFound ? null : await response.Content.ReadAsByteArrayAsync(cancellationToken: cancellationToken),
+            (response, cancellationToken) => response.StatusCode == HttpStatusCode.NotFound ? Task.CompletedTask : EnsureSuccessResponseAsync(response, cancellationToken)
         );
     }
 
     public async Task DeleteFileAsync(string filename)
     {
         await ProcessRequestAsync(
-            () => HttpClient.DeleteAsync($"api/data?filename={filename}"),
-            _ => EmptyResult
+            cancellationToken => HttpClient.DeleteAsync($"api/data?filename={filename}", cancellationToken),
+            EmptyResponseAsync
         );
     }
 
     public async Task<string?> GenerateLinkAsync(string filename)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/data/link?filename={filename}"),
-            response => response.Content.ReadAsStringAsync()
+            cancellationToken => HttpClient.GetAsync($"api/data/link?filename={filename}", cancellationToken),
+            (response, cancellationToken) => response.Content.ReadAsStringAsync(cancellationToken: cancellationToken)!
         );
     }
 }

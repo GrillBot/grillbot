@@ -11,25 +11,25 @@ public class GraphicsClient : RestServiceBase, IGraphicsClient
 {
     public override string ServiceName => "Graphics";
 
-    public GraphicsClient(IHttpClientFactory httpClientFactory, ICounterManager counterManager) : base(counterManager, () => httpClientFactory.CreateClient("Graphics"))
+    public GraphicsClient(IHttpClientFactory httpClientFactory, ICounterManager counterManager) : base(counterManager, httpClientFactory)
     {
     }
 
     public async Task<byte[]> CreateChartAsync(ChartRequestData request)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("chart", request),
-            response => response.Content.ReadAsByteArrayAsync()
+            cancellationToken => HttpClient.PostAsJsonAsync("chart", request, cancellationToken),
+            (response, cancellationToken) => response.Content.ReadAsByteArrayAsync(cancellationToken: cancellationToken)!
         );
     }
 
     public async Task<Metrics> GetMetricsAsync()
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync("metrics"),
-            async response =>
+            cancellationToken => HttpClient.GetAsync("metrics", cancellationToken),
+            async (response, cancellationToken) =>
             {
-                var json = JObject.Parse(await response.Content.ReadAsStringAsync());
+                var json = JObject.Parse(await response.Content.ReadAsStringAsync(cancellationToken: cancellationToken));
                 return new Metrics
                 {
                     Uptime = (long)System.Math.Ceiling(json["uptime"]!.Value<double>() * 1000),
@@ -42,52 +42,33 @@ public class GraphicsClient : RestServiceBase, IGraphicsClient
     public async Task<string> GetVersionAsync()
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync("info"),
-            async response => JObject.Parse(await response.Content.ReadAsStringAsync())["build"]!["version"]!.Value<string>()!
+            cancellationToken => HttpClient.GetAsync("info", cancellationToken),
+            async (response, cancellationToken) => JObject.Parse(await response.Content.ReadAsStringAsync(cancellationToken: cancellationToken))["build"]!["version"]!.Value<string>()!
         );
     }
 
     public async Task<Stats> GetStatisticsAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("stats"),
-            response => response.Content.ReadFromJsonAsync<Stats>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("stats", cancellationToken), ReadJsonAsync<Stats>);
 
     public async Task<byte[]> CreateWithoutAccidentImage(WithoutAccidentRequestData request)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("image/without-accident", request),
-            response => response.Content.ReadAsByteArrayAsync()
+            cancellationToken => HttpClient.PostAsJsonAsync("image/without-accident", request, cancellationToken),
+            (response, cancellationToken) => response.Content.ReadAsByteArrayAsync(cancellationToken: cancellationToken)!
         );
     }
 
-    public async Task<byte[]> CreatePointsImageAsync(PointsImageRequest request)
+    public async Task<byte[]> CreatePointsImageAsync(PointsImageRequest imageRequest)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("image/points", request),
-            response => response.Content.ReadAsByteArrayAsync()
+            cancellationToken => HttpClient.PostAsJsonAsync("image/points", imageRequest, cancellationToken),
+            (response, cancellationToken) => response.Content.ReadAsByteArrayAsync(cancellationToken: cancellationToken)!
         );
     }
 
     public async Task<List<byte[]>> CreatePeepoAngryAsync(List<byte[]> avatarFrames)
-    {
-        var result = await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("image/peepo/angry", avatarFrames),
-            response => response.Content.ReadFromJsonAsync<List<byte[]>>()
-        );
-
-        return result!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.PostAsJsonAsync("image/peepo/angry", avatarFrames, cancellationToken), ReadJsonAsync<List<byte[]>>);
 
     public async Task<List<byte[]>> CreatePeepoLoveAsync(List<byte[]> avatarFrames)
-    {
-        var result = await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("image/peepo/love", avatarFrames),
-            response => response.Content.ReadFromJsonAsync<List<byte[]>>()
-        );
-
-        return result!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.PostAsJsonAsync("image/peepo/love", avatarFrames, cancellationToken), ReadJsonAsync<List<byte[]>>);
 }

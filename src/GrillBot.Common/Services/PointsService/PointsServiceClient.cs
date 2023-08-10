@@ -14,25 +14,19 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
 {
     public override string ServiceName => "PointsService";
 
-    public PointsServiceClient(ICounterManager counterManager, IHttpClientFactory httpClientFactory) : base(counterManager, () => httpClientFactory.CreateClient("PointsService"))
+    public PointsServiceClient(ICounterManager counterManager, IHttpClientFactory httpClientFactory) : base(counterManager, httpClientFactory)
     {
     }
 
     public async Task<RestResponse<PaginatedResponse<TransactionItem>>> GetTransactionListAsync(AdminListRequest request)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/admin/list", request),
-            async response =>
-            {
-                var validationError = await DesrializeValidationErrorsAsync(response);
-                return validationError is not null
-                    ? new RestResponse<PaginatedResponse<TransactionItem>>(validationError)
-                    : new RestResponse<PaginatedResponse<TransactionItem>>(await response.Content.ReadFromJsonAsync<PaginatedResponse<TransactionItem>>());
-            },
-            async response =>
+            cancellationToken => HttpClient.PostAsJsonAsync("api/admin/list", request, cancellationToken),
+            ReadRestResponseAsync<PaginatedResponse<TransactionItem>>,
+            async (response, cancellationToken) =>
             {
                 if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest) return;
-                await EnsureSuccessResponseAsync(response);
+                await EnsureSuccessResponseAsync(response, cancellationToken);
             }
         );
     }
@@ -40,146 +34,100 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
     public async Task<RestResponse<List<PointsChartItem>>> GetChartDataAsync(AdminListRequest request)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/chart", request),
-            async response =>
-            {
-                var validationError = await DesrializeValidationErrorsAsync(response);
-                return validationError is not null
-                    ? new RestResponse<List<PointsChartItem>>(validationError)
-                    : new RestResponse<List<PointsChartItem>>(await response.Content.ReadFromJsonAsync<List<PointsChartItem>>());
-            },
-            async response =>
+            cancellationToken => HttpClient.PostAsJsonAsync("api/chart", request, cancellationToken),
+            ReadRestResponseAsync<List<PointsChartItem>>,
+            async (response, cancellationToken) =>
             {
                 if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest) return;
-                await EnsureSuccessResponseAsync(response);
+                await EnsureSuccessResponseAsync(response, cancellationToken);
             }
         );
     }
 
     public async Task<DiagnosticInfo> GetDiagAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/diag"),
-            response => response.Content.ReadFromJsonAsync<DiagnosticInfo>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/diag", cancellationToken), ReadJsonAsync<DiagnosticInfo>);
 
     public async Task<RestResponse<List<BoardItem>>> GetLeaderboardAsync(string guildId, int skip, int count, bool simple)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/leaderboard/{guildId}?skip={skip}&count={count}&simple={(simple ? "true" : "false")}"),
-            async response =>
-            {
-                var validationError = await DesrializeValidationErrorsAsync(response);
-                return validationError is not null
-                    ? new RestResponse<List<BoardItem>>(validationError)
-                    : new RestResponse<List<BoardItem>>(await response.Content.ReadFromJsonAsync<List<BoardItem>>());
-            },
-            async response =>
+            cancellationToken => HttpClient.GetAsync($"api/leaderboard/{guildId}?skip={skip}&count={count}&simple={(simple ? "true" : "false")}", cancellationToken),
+            ReadRestResponseAsync<List<BoardItem>>,
+            async (response, cancellationToken) =>
             {
                 if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest) return;
-                await EnsureSuccessResponseAsync(response);
+                await EnsureSuccessResponseAsync(response, cancellationToken);
             }
         );
     }
 
     public async Task<int> GetLeaderboardCountAsync(string guildId)
-    {
-        return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/leaderboard/{guildId}/count"),
-            response => response.Content.ReadFromJsonAsync<int>()
-        );
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync($"api/leaderboard/{guildId}/count", cancellationToken), ReadJsonAsync<int>);
 
     public async Task<MergeResult?> MergeTransctionsAsync()
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsync("api/merge", null),
-            ReadJsonAsync<MergeResult>
+            cancellationToken => HttpClient.PostAsync("api/merge", null, cancellationToken),
+            ReadJsonAsync<MergeResult>,
+            timeout: System.Threading.Timeout.InfiniteTimeSpan
         );
     }
 
     public async Task<PointsStatus> GetStatusOfPointsAsync(string guildId, string userId)
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/status/{guildId}/{userId}"),
-            response => response.Content.ReadFromJsonAsync<PointsStatus>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync($"api/status/{guildId}/{userId}", cancellationToken), ReadJsonAsync<PointsStatus>);
 
     public async Task<PointsStatus> GetStatusOfExpiredPointsAsync(string guildId, string userId)
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/status/{guildId}/{userId}/expired"),
-            response => response.Content.ReadFromJsonAsync<PointsStatus>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync($"api/status/{guildId}/{userId}/expired", cancellationToken), ReadJsonAsync<PointsStatus>);
 
     public async Task<ImagePointsStatus?> GetImagePointsStatusAsync(string guildId, string userId)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/status/{guildId}/{userId}/image"),
-            async response => response.StatusCode == HttpStatusCode.NotFound ? null : await response.Content.ReadFromJsonAsync<ImagePointsStatus>(),
-            response => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound ? Task.CompletedTask : EnsureSuccessResponseAsync(response)
+            cancellationToken => HttpClient.GetAsync($"api/status/{guildId}/{userId}/image", cancellationToken),
+            async (response, cancellationToken) => response.StatusCode == HttpStatusCode.NotFound ? null : await ReadJsonAsync<ImagePointsStatus>(response, cancellationToken),
+            (response, cancellationToken) => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound ? Task.CompletedTask : EnsureSuccessResponseAsync(response, cancellationToken)
         );
     }
 
     public async Task ProcessSynchronizationAsync(SynchronizationRequest request)
+        => await ProcessRequestAsync(cancellationToken => HttpClient.PostAsJsonAsync("api/synchronization", request, cancellationToken), EmptyResponseAsync);
+
+    public async Task DeleteTransactionAsync(string guildId, string messageId)
+        => await ProcessRequestAsync(cancellationToken => HttpClient.DeleteAsync($"api/transaction/{guildId}/{messageId}", cancellationToken), EmptyResponseAsync);
+
+    public async Task DeleteTransactionAsync(string guildId, string messageId, string reactionId)
+        => await ProcessRequestAsync(cancellationToken => HttpClient.DeleteAsync($"api/transaction/{guildId}/{messageId}/{reactionId}", cancellationToken), EmptyResponseAsync);
+
+    public async Task<ValidationProblemDetails?> TransferPointsAsync(TransferPointsRequest request)
     {
-        await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/synchronization", request),
-            _ => EmptyResult
+        return await ProcessRequestAsync(
+            cancellationToken => HttpClient.PostAsJsonAsync("api/transaction/transfer", request, cancellationToken),
+            async (response, cancellationToken) =>
+            {
+                if (response.StatusCode == HttpStatusCode.NotAcceptable) return null;
+                return await DeserializeValidationErrorsAsync(response, cancellationToken);
+            },
+            async (response, cancellationToken) =>
+            {
+                if (response.StatusCode is HttpStatusCode.NotAcceptable or HttpStatusCode.BadRequest or HttpStatusCode.OK)
+                    return;
+                await EnsureSuccessResponseAsync(response, cancellationToken);
+            }
         );
     }
 
     public async Task<ValidationProblemDetails?> CreateTransactionAsync(TransactionRequest request)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/transaction", request),
-            async response =>
+            cancellationToken => HttpClient.PostAsJsonAsync("api/transaction", request, cancellationToken),
+            async (response, cancellationToken) =>
             {
                 if (response.StatusCode == HttpStatusCode.NotAcceptable) return null;
-                return await DesrializeValidationErrorsAsync(response);
+                return await DeserializeValidationErrorsAsync(response, cancellationToken);
             },
-            async response =>
+            async (response, cancellationToken) =>
             {
                 if (response.StatusCode is HttpStatusCode.NotAcceptable or HttpStatusCode.BadRequest or HttpStatusCode.OK)
                     return;
-                await EnsureSuccessResponseAsync(response);
-            }
-        );
-    }
-
-    public async Task DeleteTransactionAsync(string guildId, string messageId)
-    {
-        await ProcessRequestAsync(
-            () => HttpClient.DeleteAsync($"api/transaction/{guildId}/{messageId}"),
-            _ => EmptyResult
-        );
-    }
-
-    public async Task DeleteTransactionAsync(string guildId, string messageId, string reactionId)
-    {
-        await ProcessRequestAsync(
-            () => HttpClient.DeleteAsync($"api/transaction/{guildId}/{messageId}/{reactionId}"),
-            _ => EmptyResult
-        );
-    }
-
-    public async Task<ValidationProblemDetails?> TransferPointsAsync(TransferPointsRequest request)
-    {
-        return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/transaction/transfer", request),
-            async response =>
-            {
-                if (response.StatusCode == HttpStatusCode.NotAcceptable) return null;
-                return await DesrializeValidationErrorsAsync(response);
-            },
-            async response =>
-            {
-                if (response.StatusCode is HttpStatusCode.NotAcceptable or HttpStatusCode.BadRequest or HttpStatusCode.OK)
-                    return;
-                await EnsureSuccessResponseAsync(response);
+                await EnsureSuccessResponseAsync(response, cancellationToken);
             }
         );
     }
@@ -187,38 +135,28 @@ public class PointsServiceClient : RestServiceBase, IPointsServiceClient
     public async Task<ValidationProblemDetails?> CreateTransactionAsync(AdminTransactionRequest request)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/admin/create", request),
-            async response =>
+            cancellationToken => HttpClient.PostAsJsonAsync("api/admin/create", request, cancellationToken),
+            async (response, cancellationToken) =>
             {
                 if (response.StatusCode != HttpStatusCode.NotAcceptable)
-                    return await DesrializeValidationErrorsAsync(response);
+                    return await DeserializeValidationErrorsAsync(response, cancellationToken);
 
                 var modelState = new ModelStateDictionary();
                 modelState.AddModelError("Request", "NotAcceptable");
                 return new ValidationProblemDetails(modelState);
             },
-            async response =>
+            async (response, cancellationToken) =>
             {
                 if (response.StatusCode is HttpStatusCode.NotAcceptable or HttpStatusCode.BadRequest or HttpStatusCode.OK)
                     return;
-                await EnsureSuccessResponseAsync(response);
+                await EnsureSuccessResponseAsync(response, cancellationToken);
             }
         );
     }
 
     public async Task<bool> ExistsAnyTransactionAsync(string guildId, string userId)
-    {
-        return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/transaction/{guildId}/{userId}"),
-            response => response.Content.ReadFromJsonAsync<bool>()
-        );
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync($"api/transaction/{guildId}/{userId}", cancellationToken), ReadJsonAsync<bool>);
 
     public async Task<StatusInfo> GetStatusInfoAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/diag/status"),
-            response => response.Content.ReadFromJsonAsync<StatusInfo>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/diag/status", cancellationToken), ReadJsonAsync<StatusInfo>);
 }

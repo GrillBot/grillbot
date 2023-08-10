@@ -19,182 +19,88 @@ public class AuditLogServiceClient : RestServiceBase, IAuditLogServiceClient
 {
     public override string ServiceName => "AuditLog";
 
-    public AuditLogServiceClient(ICounterManager counterManager, IHttpClientFactory httpClientFactory) : base(counterManager, () => httpClientFactory.CreateClient("AuditLog"))
+    public AuditLogServiceClient(ICounterManager counterManager, IHttpClientFactory httpClientFactory) : base(counterManager, httpClientFactory)
     {
     }
 
     public async Task CreateItemsAsync(List<LogRequest> requests)
-    {
-        await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/logItem", requests),
-            _ => EmptyResult
-        );
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.PostAsJsonAsync("api/logItem", requests, cancellationToken), EmptyResponseAsync);
 
     public async Task<DiagnosticInfo> GetDiagAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/diag"),
-            response => response.Content.ReadFromJsonAsync<DiagnosticInfo>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/diag", cancellationToken), ReadJsonAsync<DiagnosticInfo>);
 
     public async Task<DeleteItemResponse> DeleteItemAsync(Guid id)
     {
-        return (await ProcessRequestAsync(
-                () => HttpClient.DeleteAsync($"api/logItem/{id}"),
-                response => response.Content.ReadFromJsonAsync<DeleteItemResponse>(),
-                response => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound ? Task.CompletedTask : EnsureSuccessResponseAsync(response))
-            )!;
+        return await ProcessRequestAsync(
+            cancellationToken => HttpClient.DeleteAsync($"api/logItem/{id}", cancellationToken),
+            async (response, cancellationToken) => response.StatusCode == HttpStatusCode.NotFound ? default : await ReadJsonAsync<DeleteItemResponse>(response, cancellationToken),
+            (response, cancellationToken) => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound ? Task.CompletedTask : EnsureSuccessResponseAsync(response, cancellationToken)
+        );
     }
 
     public async Task<RestResponse<PaginatedResponse<LogListItem>>> SearchItemsAsync(SearchRequest request)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsJsonAsync("api/logItem/search", request),
-            async response =>
-            {
-                var validationError = await DesrializeValidationErrorsAsync(response);
-                return validationError is not null
-                    ? new RestResponse<PaginatedResponse<LogListItem>>(validationError)
-                    : new RestResponse<PaginatedResponse<LogListItem>>(await response.Content.ReadFromJsonAsync<PaginatedResponse<LogListItem>>());
-            },
-            async response =>
-            {
-                if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest) return;
-                await EnsureSuccessResponseAsync(response);
-            }
+            cancellationToken => HttpClient.PostAsJsonAsync("api/logItem/search", request, cancellationToken),
+            ReadRestResponseAsync<PaginatedResponse<LogListItem>>,
+            (response, cancellationToken) => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest ? Task.CompletedTask : EnsureSuccessResponseAsync(response, cancellationToken)
         );
     }
 
     public async Task<Detail?> DetailAsync(Guid id)
     {
         return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/logItem/{id}"),
-            async response =>
-            {
-                if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadFromJsonAsync<Detail>();
-                return null;
-            },
-            response =>
-            {
-                if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
-                    return Task.CompletedTask;
-                return EnsureSuccessResponseAsync(response);
-            }
+            cancellationToken => HttpClient.GetAsync($"api/logItem/{id}", cancellationToken),
+            async (response, cancellationToken) => response.StatusCode == HttpStatusCode.NotFound ? null : await ReadJsonAsync<Detail>(response, cancellationToken),
+            (response, cancellationToken) => response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound ? Task.CompletedTask : EnsureSuccessResponseAsync(response, cancellationToken)
         );
     }
 
     public async Task<ArchivationResult?> ProcessArchivationAsync()
     {
         return await ProcessRequestAsync(
-            () => HttpClient.PostAsync("api/archivation", null),
-            async response => response.StatusCode == HttpStatusCode.NoContent ? null : await response.Content.ReadFromJsonAsync<ArchivationResult>()
+            cancellationToken => HttpClient.PostAsync("api/archivation", null, cancellationToken),
+            ReadJsonAsync<ArchivationResult>,
+            timeout: System.Threading.Timeout.InfiniteTimeSpan
         );
     }
 
     public async Task<ApiStatistics> GetApiStatisticsAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/statistics/api/stats"),
-            response => response.Content.ReadFromJsonAsync<ApiStatistics>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/statistics/api/stats", cancellationToken), ReadJsonAsync<ApiStatistics>);
 
     public async Task<AuditLogStatistics> GetAuditLogStatisticsAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/statistics/auditlog"),
-            response => response.Content.ReadFromJsonAsync<AuditLogStatistics>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/statistics/auditlog", cancellationToken), ReadJsonAsync<AuditLogStatistics>);
 
     public async Task<AvgExecutionTimes> GetAvgTimesAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/statistics/avgtimes"),
-            response => response.Content.ReadFromJsonAsync<AvgExecutionTimes>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/statistics/avgtimes", cancellationToken), ReadJsonAsync<AvgExecutionTimes>);
 
     public async Task<List<StatisticItem>> GetInteractionStatisticsListAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/statistics/interactions/list"),
-            response => response.Content.ReadFromJsonAsync<List<StatisticItem>>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/statistics/interactions/list", cancellationToken), ReadJsonAsync<List<StatisticItem>>);
 
     public async Task<List<UserActionCountItem>> GetUserApiStatisticsAsync(string criteria)
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/statistics/api/userstats/{criteria}"),
-            response => response.Content.ReadFromJsonAsync<List<UserActionCountItem>>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync($"api/statistics/api/userstats/{criteria}", cancellationToken), ReadJsonAsync<List<UserActionCountItem>>);
 
     public async Task<List<UserActionCountItem>> GetUserCommandStatisticsAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/statistics/interactions/userstats"),
-            response => response.Content.ReadFromJsonAsync<List<UserActionCountItem>>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/statistics/interactions/userstats", cancellationToken), ReadJsonAsync<List<UserActionCountItem>>);
 
     public async Task<List<JobInfo>> GetJobsInfoAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/info/jobs"),
-            response => response.Content.ReadFromJsonAsync<List<JobInfo>>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/info/jobs", cancellationToken), ReadJsonAsync<List<JobInfo>>);
 
     public async Task<int> GetItemsCountOfGuildAsync(ulong guildId)
-    {
-        return await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/info/guild/{guildId}/count"),
-            response => response.Content.ReadFromJsonAsync<int>()
-        );
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync($"api/info/guild/{guildId}/count", cancellationToken), ReadJsonAsync<int>);
 
     public async Task<List<DashboardInfoRow>> GetApiDashboardAsync(string apiGroup)
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/dashboard/api/{apiGroup}"),
-            response => response.Content.ReadFromJsonAsync<List<DashboardInfoRow>>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync($"api/dashboard/api/{apiGroup}", cancellationToken), ReadJsonAsync<List<DashboardInfoRow>>);
 
     public async Task<List<DashboardInfoRow>> GetInteractionsDashboardAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/dashboard/interactions"),
-            response => response.Content.ReadFromJsonAsync<List<DashboardInfoRow>>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/dashboard/interactions", cancellationToken), ReadJsonAsync<List<DashboardInfoRow>>);
 
     public async Task<List<DashboardInfoRow>> GetJobsDashboardAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync($"api/dashboard/jobs"),
-            response => response.Content.ReadFromJsonAsync<List<DashboardInfoRow>>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/dashboard/jobs", cancellationToken), ReadJsonAsync<List<DashboardInfoRow>>);
 
     public async Task<TodayAvgTimes> GetTodayAvgTimes()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/dashboard/todayavgtimes"),
-            response => response.Content.ReadFromJsonAsync<TodayAvgTimes>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/dashboard/todayavgtimes", cancellationToken), ReadJsonAsync<TodayAvgTimes>);
 
     public async Task<StatusInfo> GetStatusInfoAsync()
-    {
-        return (await ProcessRequestAsync(
-            () => HttpClient.GetAsync("api/diag/status"),
-            response => response.Content.ReadFromJsonAsync<StatusInfo>()
-        ))!;
-    }
+        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("api/diag/status", cancellationToken), ReadJsonAsync<StatusInfo>);
 }

@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Runtime.InteropServices;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
@@ -322,6 +323,24 @@ public class MessageCacheManager : IMessageCacheManager
             }
 
             return messages.Count;
+        }
+        finally
+        {
+            ReaderLock.Release();
+            WriterLock.Release();
+        }
+    }
+
+    public async Task DeleteAsync(ulong messageId)
+    {
+        await WriterLock.WaitAsync();
+        await ReaderLock.WaitAsync();
+        try
+        {
+            DeletedMessages.Add(messageId);
+
+            if (MessagesForUpdate.Contains(messageId))
+                MessagesForUpdate.Remove(messageId);
         }
         finally
         {

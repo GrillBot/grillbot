@@ -1,4 +1,6 @@
-﻿using GrillBot.Common.Extensions.Discord;
+﻿using Discord.Net;
+using GrillBot.Cache.Services.Managers.MessageCache;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Helpers;
@@ -10,6 +12,7 @@ public class CleanChannelMessages : CommandAction
     private const long DiscordEpoch = 1420070400000L;
 
     private ITextsManager Texts { get; }
+    private IMessageCacheManager MessageCache { get; }
 
     private RequestOptions RequestOptions => new()
     {
@@ -18,9 +21,10 @@ public class CleanChannelMessages : CommandAction
         AuditLogReason = $"GrillBot channel clean command. Exexcuted {Context.User.GetFullName()} in {Context.Channel.Name}"
     };
 
-    public CleanChannelMessages(ITextsManager texts)
+    public CleanChannelMessages(ITextsManager texts, IMessageCacheManager messageCache)
     {
         Texts = texts;
+        MessageCache = messageCache;
     }
 
     public async Task<string> ProcessAsync(string criterium, IGuildChannel? channel)
@@ -32,7 +36,7 @@ public class CleanChannelMessages : CommandAction
         var countOrIdValue = ParseValue(criterium);
         var messages = await GetMessagesAsync(countOrIdValue, guildTextChannel);
         var count = countOrIdValue < DiscordEpoch ? Convert.ToInt32(countOrIdValue) : 0;
-        var (totalCount, pinnedCount) = await ProcessMessagesAsync(guildTextChannel, messages, count);
+        var (totalCount, pinnedCount) = await ProcessMessagesAsync(messages, count);
 
         return Texts["ChannelModule/Clean/ResultMessage", Locale].FormatWith(totalCount, pinnedCount);
     }
@@ -53,36 +57,35 @@ public class CleanChannelMessages : CommandAction
     }
 
 
-    private async Task<(int total, int pinned)> ProcessMessagesAsync(ITextChannel channel, IEnumerable<IMessage> messages, int count)
+    private async Task<(int total, int pinned)> ProcessMessagesAsync(IEnumerable<IMessage> messages, int count)
     {
         var messagesQuery = messages.Where(o => o.Id != Context.Interaction.Id && o.Interaction?.Id != Context.Interaction.Id);
         if (count > 0) messagesQuery = messagesQuery.OrderByDescending(o => o.CreatedAt).Take(count);
         var messagesData = messagesQuery.ToList();
 
         var pinnedCount = messagesData.Count(o => o.IsPinned);
-        var deleteIndividually = messagesData.Where(o => IsOld(o) || (o.Source == MessageSource.System && o.Type != MessageType.ApplicationCommand && o.Type != MessageType.ContextMenuCommand))
-            .ToDictionary(o => o.Id, o => o);
-        var deletePerGroups = messagesData.Where(o => !deleteIndividually.ContainsKey(o.Id)).ToList();
+        foreach (var message in messagesData)
+            await DeleteMessageAsync(message);
 
-        // Only one message cannot be deleted in batch.
-        if (deletePerGroups.Count == 1)
-        {
-            deleteIndividually.Add(deletePerGroups[0].Id, deletePerGroups[0]);
-            deletePerGroups.Clear();
-        }
-
-        for (var i = 0; i < deletePerGroups.Count; i += Math.Min(deletePerGroups.Count, 100))
-        {
-            var group = deletePerGroups.Skip(i).Take(Math.Min(deletePerGroups.Count, 100)).ToList(); // Can delete max 100 messages per request.
-            await channel.DeleteMessagesAsync(group, RequestOptions);
-        }
-
-        foreach (var message in deleteIndividually)
-            await message.Value.DeleteAsync(RequestOptions);
-
-        return (deleteIndividually.Count + deletePerGroups.Count, pinnedCount);
+        return (messagesData.Count, pinnedCount);
     }
 
-    private static bool IsOld(ISnowflakeEntity message)
-        => (DateTime.UtcNow - message.CreatedAt).TotalDays >= 14.0;
+    private async Task DeleteMessageAsync(IMessage message)
+    {
+        try
+        {
+            await MessageCache.DeleteAsync(message.Id);
+            await message.DeleteAsync(RequestOptions);
+        }
+        catch (HttpException ex) when (IsExpectedApiError(ex))
+        {
+            // Ignore expected exceptions.
+        }
+    }
+
+    private static bool IsExpectedApiError(HttpException ex)
+    {
+        return ex.HttpCode == HttpStatusCode.InternalServerError || ex.HttpCode == HttpStatusCode.ServiceUnavailable || ex.DiscordCode == DiscordErrorCode.UnknownChannel ||
+               ex.DiscordCode == DiscordErrorCode.UnknownMessage;
+    }
 }

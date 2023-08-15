@@ -1,11 +1,9 @@
 ﻿using Discord.Interactions;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.RubbergodService;
-using GrillBot.Common.Services.RubbergodService.Models.DirectApi;
-using GrillBot.Data.Models.Rubbergod;
+using GrillBot.Common.Services.RubbergodService.Models.Help;
 
 namespace GrillBot.App.Handlers.MessageReceived;
 
@@ -14,17 +12,15 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
     private ITextsManager Texts { get; }
     private InteractionService InteractionService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private DataCacheManager DataCacheManager { get; }
     private Helpers.ChannelHelper ChannelHelper { get; }
     private IRubbergodServiceClient RubbergodServiceClient { get; }
 
-    public UnsucessCommandHandler(ITextsManager texts, InteractionService interactionService, GrillBotDatabaseBuilder databaseBuilder, DataCacheManager dataCacheManager,
-        Helpers.ChannelHelper channelHelper, IRubbergodServiceClient rubbergodServiceClient)
+    public UnsucessCommandHandler(ITextsManager texts, InteractionService interactionService, GrillBotDatabaseBuilder databaseBuilder, Helpers.ChannelHelper channelHelper,
+        IRubbergodServiceClient rubbergodServiceClient)
     {
         Texts = texts;
         InteractionService = interactionService;
         DatabaseBuilder = databaseBuilder;
-        DataCacheManager = dataCacheManager;
         ChannelHelper = channelHelper;
         RubbergodServiceClient = rubbergodServiceClient;
     }
@@ -44,16 +40,16 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
         }
 
         var locale = await GetLastUserLocaleAsync(message.Author);
-        var text = Texts["ClickOnCommand", locale] + (string.IsNullOrEmpty(commandMention) ? "" : $" ({commandMention})");
+        var text = Texts["ClickOnCommand", locale] + $" ({commandMention})";
         await message.Channel.SendMessageAsync(text, messageReference: reference);
     }
 
     private async Task<string?> FindLocalCommandMentionAsync(IReadOnlyCollection<string> parts, IChannel channel)
     {
         var guild = await ChannelHelper.GetGuildFromChannelAsync(channel, channel.Id);
-        if (guild is null) 
+        if (guild is null)
             return null;
-        
+
         var commands = await InteractionService.RestClient.GetGuildApplicationCommands(guild.Id);
         var commandMentions = commands.GetCommandMentions();
         return TryMatchMention(commandMentions, parts);
@@ -61,16 +57,7 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
 
     private async Task<string?> FindRubbergodCommandAsync(IReadOnlyCollection<string> parts)
     {
-        var commands = await DataCacheManager.GetValueAsync("RubbergodCommands");
-        if (string.IsNullOrEmpty(commands) || commands == "{}")
-        {
-            var command = new DirectApiCommand("Help")
-                .WithParameter("command", "slash_commands");
-            commands = await RubbergodServiceClient.SendDirectApiCommand("Rubbergod", command);
-            await DataCacheManager.SetValueAsync("RubbergodCommands", commands, DateTime.Now.AddDays(7));
-        }
-
-        var rubbergodCommands = JsonConvert.DeserializeObject<Dictionary<string, RubbergodCog?>>(commands)!;
+        var rubbergodCommands = await RubbergodServiceClient.GetSlashCommandsAsync();
         var cmdMentions = GetRubbergodCommandMentions(rubbergodCommands);
         return TryMatchMention(cmdMentions, parts);
     }
@@ -87,12 +74,12 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
         return null;
     }
 
-    private static Dictionary<string, string> GetRubbergodCommandMentions(Dictionary<string, RubbergodCog?> cogs)
+    private static Dictionary<string, string> GetRubbergodCommandMentions(Dictionary<string, Cog> cogs)
     {
         var result = new Dictionary<string, string>();
-        foreach (var cog in cogs.Where(o => o.Value?.Id != null))
+        foreach (var cog in cogs.Where(o => o.Value.Id != null))
         {
-            if (cog.Value!.Children.Count == 0)
+            if (cog.Value.Children.Count == 0)
             {
                 result.Add(cog.Key, $"</{cog.Key}:{cog.Value.Id}>");
                 continue;

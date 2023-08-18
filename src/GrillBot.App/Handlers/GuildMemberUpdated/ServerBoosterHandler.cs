@@ -36,7 +36,7 @@ public class ServerBoosterHandler : IGuildMemberUpdatedEvent
         var embed = new EmbedBuilder()
             .WithColor(boostRole.Color)
             .WithCurrentTimestamp()
-            .AddField("Uživatel", after.GetFullName())
+            .AddField("Uživatel", $"`{after.GetFullName()}`")
             .WithThumbnailUrl(after.GetUserAvatarUrl());
 
         switch (boostBefore)

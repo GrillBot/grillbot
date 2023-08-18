@@ -12,81 +12,99 @@ namespace GrillBot.App.Actions.Commands.Reminder;
 
 public class GetReminderList : CommandAction
 {
-    private Actions.Api.V1.Reminder.GetReminderList ApiAction { get; }
+    private Api.V1.Reminder.GetReminderList ApiAction { get; }
     private ITextsManager Texts { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public GetReminderList(Actions.Api.V1.Reminder.GetReminderList apiAction, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder)
+    private string ForUser
+        => Context.User.GetDisplayName();
+
+    public GetReminderList(Api.V1.Reminder.GetReminderList apiAction, ITextsManager texts)
     {
         ApiAction = apiAction;
         Texts = texts;
-        DatabaseBuilder = databaseBuilder;
     }
 
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page)
     {
         ApiAction.UpdateContext(Locale, Context.User);
 
-        var parameters = GetParameters(page);
-        var data = await ApiAction.ProcessAsync(parameters);
-        var pagesCount = ComputePagesCount(data.TotalItemsCount);
-        var embed = await CreateEmbedAsync(data, page);
-        var paginationComponents = ComponentsHelper.CreatePaginationComponents(page, pagesCount, "remind");
+        var embed = CreateEmptyEmbed(page);
+        var parameters = CreateParameters();
+        var list = await ApiAction.ProcessAsync(parameters);
+        var fields = await CreateFieldsAsync(list);
+        SetPage(embed, fields, page, out var pagesCount);
 
-        return (embed, paginationComponents);
+        var paginationComponents = ComponentsHelper.CreatePaginationComponents(page, pagesCount, "remind");
+        return (embed.Build(), paginationComponents);
     }
 
     public async Task<int> ComputePagesCountAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        ApiAction.UpdateContext(Locale, Context.User);
 
-        var parameters = GetParameters(0);
-        var count = await repository.Remind.GetRemindersCountAsync(parameters);
-        return ComputePagesCount(count);
+        var parameters = CreateParameters();
+        var list = await ApiAction.ProcessAsync(parameters);
+        var fields = await CreateFieldsAsync(list);
+        var embed = CreateEmptyEmbed(0);
+
+        return EmbedHelper.SplitToPages(fields, embed).Count;
     }
 
-    private static int ComputePagesCount(long totalCount)
-        => (int)Math.Ceiling(totalCount / (double)EmbedBuilder.MaxFieldCount);
-
-    private GetReminderListParams GetParameters(int page)
+    private GetReminderListParams CreateParameters()
     {
         return new GetReminderListParams
         {
-            Pagination = { Page = page, PageSize = EmbedBuilder.MaxFieldCount },
+            Pagination = { Page = 0, PageSize = int.MaxValue },
             Sort = { OrderBy = "At", Descending = true },
             ToUserId = Context.User.Id.ToString(),
             OnlyWaiting = true
         };
     }
 
-    private async Task<Embed> CreateEmbedAsync(PaginatedResponse<RemindMessage> data, int page)
+    private async Task<List<EmbedFieldBuilder>> CreateFieldsAsync(PaginatedResponse<RemindMessage> list)
     {
-        var forUser = Context.User.GetDisplayName();
-        var embed = new EmbedBuilder()
+        var result = new List<EmbedFieldBuilder>();
+        if (list.TotalItemsCount == 0)
+            return result;
+
+        var now = DateTime.Now;
+        var titleTemplate = Texts["RemindModule/List/Embed/RowTitle", Locale];
+
+        foreach (var remind in list.Data)
+        {
+            var fromUser = await Context.Client.FindUserAsync(remind.FromUser.Id.ToUlong());
+            var at = remind.At.ToCzechFormat();
+            var remaining = (now - remind.At).Humanize(culture: Texts.GetCulture(Locale));
+            var title = titleTemplate.FormatWith(remind.Id, fromUser?.GetDisplayName(), at, remaining);
+            var message = remind.Message[..Math.Min(remind.Message.Length, EmbedFieldBuilder.MaxFieldValueLength)];
+
+            result.Add(new EmbedFieldBuilder().WithName(title).WithValue(message));
+        }
+
+        return result;
+    }
+
+    private EmbedBuilder CreateEmptyEmbed(int page)
+    {
+        return new EmbedBuilder()
             .WithFooter(Context.User)
             .WithMetadata(new RemindListMetadata { Page = page })
-            .WithAuthor(Texts["RemindModule/List/Embed/Title", Locale].FormatWith(forUser))
+            .WithAuthor(Texts["RemindModule/List/Embed/Title", Locale].FormatWith(ForUser))
             .WithColor(Color.Blue)
             .WithCurrentTimestamp();
+    }
 
-        if (data.TotalItemsCount == 0)
+    private void SetPage(EmbedBuilder embed, IReadOnlyList<EmbedFieldBuilder> fields, int page, out int pagesCount)
+    {
+        if (fields.Count == 0)
         {
-            embed.WithDescription(Texts["RemindModule/List/Embed/NoItems", Locale].FormatWith(forUser));
-        }
-        else
-        {
-            foreach (var remind in data.Data)
-            {
-                var fromUser = (await Context.Client.FindUserAsync(remind.FromUser.Id.ToUlong()))?.GetDisplayName();
-                var at = remind.At.ToCzechFormat();
-                var timeTo = (DateTime.Now - remind.At).Humanize(culture: Texts.GetCulture(Locale));
-                var title = Texts["RemindModule/List/Embed/RowTitle", Locale].FormatWith(remind.Id, fromUser, at, timeTo);
-                var message = remind.Message[..Math.Min(remind.Message.Length, EmbedFieldBuilder.MaxFieldValueLength)];
-
-                embed.AddField(title, message);
-            }
+            embed.WithDescription(Texts["RemindModule/List/Embed/NoItems", Locale].FormatWith(ForUser));
+            pagesCount = 1;
+            return;
         }
 
-        return embed.Build();
+        var pages = EmbedHelper.SplitToPages(fields, embed);
+        pagesCount = pages.Count;
+        embed.WithFields(pages[page]);
     }
 }

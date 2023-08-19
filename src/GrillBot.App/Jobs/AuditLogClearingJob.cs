@@ -103,7 +103,6 @@ public class AuditLogClearingJob : ArchivationJobBase
     {
         foreach (var file in files)
         {
-            // If file not exists, try read it and delete from file service.
             var fileContent = await FileServiceClient.DownloadFileAsync(file);
             if (fileContent is null) continue;
 

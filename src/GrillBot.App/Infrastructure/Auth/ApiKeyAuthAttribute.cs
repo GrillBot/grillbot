@@ -21,7 +21,7 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
         await using var repository = databaseFactory.CreateRepository();
 
         var apiClient = await repository.ApiClientRepository.FindClientById(apiKey);
-        if (apiClient == null || apiClient.AllowedMethods.Count == 0)
+        if (apiClient is null || apiClient.AllowedMethods.Count == 0 || apiClient.Disabled)
         {
             AsUnauthorized(context);
             return;
@@ -78,6 +78,7 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
     private static void SetIdentification(ActionContext context, ApiClient client)
     {
         var apiRequestContext = context.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
+
         apiRequestContext.LogRequest.Identification = $"PublicApiV2({client.Name})";
         apiRequestContext.LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {

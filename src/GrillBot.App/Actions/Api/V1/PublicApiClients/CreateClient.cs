@@ -19,7 +19,8 @@ public class CreateClient : ApiAction
         {
             Id = Guid.NewGuid().ToString(),
             AllowedMethods = parameters.AllowedMethods,
-            Name = parameters.Name
+            Name = parameters.Name,
+            Disabled = parameters.Disabled
         };
 
         await using var repository = DatabaseBuilder.CreateRepository();

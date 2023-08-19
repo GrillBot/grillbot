@@ -17,8 +17,10 @@ public class ApiClient
 
     [Column(TypeName = "jsonb")]
     public List<string> AllowedMethods { get; set; } = new();
-    
+
     public int UseCount { get; set; }
-    
+
     public DateTime LastUse { get; set; }
+
+    public bool Disabled { get; set; }
 }

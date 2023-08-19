@@ -26,6 +26,7 @@ public class UpdateClient : ApiAction
 
         apiClient.AllowedMethods = parameters.AllowedMethods;
         apiClient.Name = parameters.Name;
+        apiClient.Disabled = parameters.Disabled;
         await repository.CommitAsync();
     }
 }

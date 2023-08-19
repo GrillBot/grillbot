@@ -2,10 +2,10 @@
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Enums;
-using GrillBot.Common.Services.AuditLog.Models;
-using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models;
+using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers.Logging;

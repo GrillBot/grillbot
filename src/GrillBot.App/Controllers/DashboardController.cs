@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Actions.Api.V1.Dashboard;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Models.Response.Info.Dashboard;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Models.Response.Info.Dashboard;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Http;

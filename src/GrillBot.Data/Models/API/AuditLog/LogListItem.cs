@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Data.Models.API.Users;

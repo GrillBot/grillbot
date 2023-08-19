@@ -3,12 +3,12 @@ using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.PointsService;
-using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models.Guilds;
@@ -86,7 +86,7 @@ public class GetGuildDetail : ApiAction
     private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-        
+
         var report = await repository.Guild.GetDatabaseReportDataAsync(guildId);
         report.AuditLogs = await AuditLogServiceClient.GetItemsCountOfGuildAsync(guildId);
 

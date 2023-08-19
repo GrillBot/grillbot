@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.PointsService;
-using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Database.Enums.Internal;
 

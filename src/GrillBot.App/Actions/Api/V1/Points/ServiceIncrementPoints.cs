@@ -2,8 +2,8 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.PointsService;
-using GrillBot.Common.Services.PointsService.Models;
+using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 

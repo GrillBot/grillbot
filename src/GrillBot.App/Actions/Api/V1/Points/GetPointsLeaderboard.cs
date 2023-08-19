@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.PointsService;
+using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 

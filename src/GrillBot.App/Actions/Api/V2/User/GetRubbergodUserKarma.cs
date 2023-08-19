@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Models;
-using GrillBot.Common.Services.RubbergodService;
-using GrillBot.Common.Services.RubbergodService.Models.Karma;
+using GrillBot.Core.Services.RubbergodService;
+using GrillBot.Core.Services.RubbergodService.Models.Karma;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;

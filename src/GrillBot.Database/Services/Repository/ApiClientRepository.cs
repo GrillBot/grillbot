@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using GrillBot.Core.Database.Repository;
 using GrillBot.Core.Managers.Performance;
@@ -26,7 +27,9 @@ public class ApiClientRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.ApiClients.ToListAsync();
+            return await Context.ApiClients
+                .OrderBy(o => o.Name)
+                .ToListAsync();
         }
     }
 }

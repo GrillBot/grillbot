@@ -1,11 +1,11 @@
 ﻿using GrillBot.App.Actions.Api.V1.Statistics;
-using GrillBot.Common.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog;
 using GrillBot.Data.Models.API.Statistics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using AuditLog = GrillBot.Common.Services.AuditLog.Models.Response.Statistics;
+using AuditLog = GrillBot.Core.Services.AuditLog.Models.Response.Statistics;
 
 namespace GrillBot.App.Controllers;
 

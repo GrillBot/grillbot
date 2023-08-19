@@ -6,7 +6,7 @@ namespace GrillBot.App.Actions.Api.V1.PublicApiClients;
 public class GetClientsList : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    
+
     public GetClientsList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;

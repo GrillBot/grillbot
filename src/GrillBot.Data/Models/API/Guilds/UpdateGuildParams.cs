@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Validation;
 using GrillBot.Database.Models;

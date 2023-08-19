@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Services.Common;
+﻿using GrillBot.Core.Services.Common;
 
 namespace GrillBot.App.Handlers.Synchronization.Services;
 

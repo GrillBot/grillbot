@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Actions.Api;
-using GrillBot.Common.Services.Common;
+using GrillBot.Core.Services.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 

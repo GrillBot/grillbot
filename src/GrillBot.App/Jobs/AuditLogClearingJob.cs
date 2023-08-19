@@ -1,10 +1,10 @@
 ﻿using System.IO.Compression;
 using System.Xml.Linq;
 using GrillBot.Common.FileStorage;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Models.Response;
-using GrillBot.Common.Services.FileService;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Models.Response;
+using GrillBot.Core.Services.FileService;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 using Quartz;

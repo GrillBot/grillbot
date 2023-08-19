@@ -1,6 +1,6 @@
-﻿using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Models.Response.Info;
-using GrillBot.Common.Services.PointsService;
+﻿using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Models.Response.Info;
+using GrillBot.Core.Services.PointsService;
 using GrillBot.Data.Models.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -44,6 +44,6 @@ public class ServiceController : ControllerBase
     /// <response code="200">Returns additional status info.</response>
     [HttpGet("points/status")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Common.Services.PointsService.Models.StatusInfo>> GetPointsServiceSatusInfoAsync()
-        => Ok(await ProcessBridgeAsync<IPointsServiceClient, Common.Services.PointsService.Models.StatusInfo>(client => client.GetStatusInfoAsync()));
+    public async Task<ActionResult<Core.Services.PointsService.Models.StatusInfo>> GetPointsServiceSatusInfoAsync()
+        => Ok(await ProcessBridgeAsync<IPointsServiceClient, Core.Services.PointsService.Models.StatusInfo>(client => client.GetStatusInfoAsync()));
 }

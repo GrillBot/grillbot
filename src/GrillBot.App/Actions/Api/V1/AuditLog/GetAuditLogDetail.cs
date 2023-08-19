@@ -2,10 +2,10 @@
 using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Enums;
-using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Response.Detail;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 

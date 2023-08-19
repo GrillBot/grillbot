@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Enums;
-using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Handlers.ChannelDestroyed;
 

@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.Common.Services.PointsService;
+using GrillBot.Core.Services.PointsService;
 using Quartz;
 
 namespace GrillBot.App.Jobs;

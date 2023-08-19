@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Common.Services.Graphics.Models.Chart;
-using GrillBot.Common.Services.PointsService.Models;
+using GrillBot.Core.Services.Graphics.Models.Chart;
+using GrillBot.Core.Services.PointsService.Models;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
 

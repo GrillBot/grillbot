@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Common.Services.RubbergodService;
+using GrillBot.Core.Services.RubbergodService;
 
 namespace GrillBot.App.Handlers.Synchronization.Services;
 

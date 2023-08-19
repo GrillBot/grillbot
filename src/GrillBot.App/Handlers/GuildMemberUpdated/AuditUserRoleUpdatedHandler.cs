@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.App.Handlers.GuildMemberUpdated;

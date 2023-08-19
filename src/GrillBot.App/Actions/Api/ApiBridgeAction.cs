@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Models;
-using GrillBot.Common.Services.Common;
+using GrillBot.Core.Services.Common;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Api;

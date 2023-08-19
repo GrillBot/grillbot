@@ -3,11 +3,10 @@ using GrillBot.App.Modules.Implementations.Points;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Common.Services.PointsService;
-using GrillBot.Common.Services.PointsService.Models;
+using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
-using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Commands.Points;

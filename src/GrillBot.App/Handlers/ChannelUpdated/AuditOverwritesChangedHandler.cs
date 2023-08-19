@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Enums;
-using GrillBot.Common.Services.AuditLog.Models;
-using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models;
+using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.App.Handlers.ChannelUpdated;

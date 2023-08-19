@@ -1,8 +1,8 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.FileService;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.FileService;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 

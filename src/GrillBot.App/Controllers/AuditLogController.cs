@@ -2,8 +2,8 @@
 using GrillBot.App.Actions.Api.V1.AuditLog;
 using GrillBot.App.Actions.Api.V2.AuditLog;
 using GrillBot.App.Infrastructure.Auth;
-using GrillBot.Common.Services.AuditLog.Models.Request.Search;
-using GrillBot.Common.Services.AuditLog.Models.Response.Detail;
+using GrillBot.Core.Services.AuditLog.Models.Request.Search;
+using GrillBot.Core.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.AuditLog;

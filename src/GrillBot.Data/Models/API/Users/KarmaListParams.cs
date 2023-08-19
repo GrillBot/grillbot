@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Models.Pagination;
 

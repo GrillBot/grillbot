@@ -1,9 +1,8 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Enums;
-using GrillBot.Common.Services.AuditLog.Models;
-using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Data.Models.API.AuditLog;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
@@ -59,7 +58,7 @@ public class CreateLogItem : ApiAction
         var names = new[] { nameof(request.IsInfo), nameof(request.IsWarning), nameof(request.IsError) };
 
         ValidationResult? result = null;
-        if (!flags.Any(o => o))
+        if (!Array.Exists(flags, o => o))
             result = new ValidationResult(Texts["AuditLog/CreateLogItem/Required", ApiContext.Language], names);
         else if (flags.Count(o => o) > 1)
             result = new ValidationResult(Texts["AuditLog/CreateLogItem/MultipleTypes", ApiContext.Language], names);

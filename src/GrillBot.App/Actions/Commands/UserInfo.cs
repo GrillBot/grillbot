@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Common.Services.PointsService;
+using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;

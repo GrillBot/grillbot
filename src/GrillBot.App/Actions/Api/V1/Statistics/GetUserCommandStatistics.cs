@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Models;
-using GrillBot.Common.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog;
 using GrillBot.Data.Models.API.Statistics;
 
 namespace GrillBot.App.Actions.Api.V1.Statistics;

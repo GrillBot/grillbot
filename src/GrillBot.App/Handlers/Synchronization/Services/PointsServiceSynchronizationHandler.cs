@@ -1,8 +1,8 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Common.Services.PointsService;
-using GrillBot.Common.Services.PointsService.Models;
+using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Database.Enums;
-using ChannelInfo = GrillBot.Common.Services.PointsService.Models.ChannelInfo;
+using ChannelInfo = GrillBot.Core.Services.PointsService.Models.ChannelInfo;
 
 namespace GrillBot.App.Handlers.Synchronization.Services;
 

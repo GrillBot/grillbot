@@ -1,12 +1,12 @@
 ﻿using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.Common;
-using GrillBot.Common.Services.FileService;
-using GrillBot.Common.Services.Graphics;
-using GrillBot.Common.Services.ImageProcessing;
-using GrillBot.Common.Services.PointsService;
-using GrillBot.Common.Services.RubbergodService;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.FileService;
+using GrillBot.Core.Services.Graphics;
+using GrillBot.Core.Services.ImageProcessing;
+using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Data.Models.API.System;
 
 namespace GrillBot.App.Actions.Api.V1.Dashboard;

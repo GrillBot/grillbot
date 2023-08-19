@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using GrillBot.Common.Services.AuditLog.Models.Response.Search;
+using GrillBot.Core.Services.AuditLog.Models.Response.Search;
 using GrillBot.Data.Models.API.Users;
 
 namespace GrillBot.Data.Models.API.AuditLog.Preview;

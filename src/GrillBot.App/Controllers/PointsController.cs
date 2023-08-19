@@ -1,10 +1,10 @@
 ﻿using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V1.Points;
-using GrillBot.Common.Services.PointsService;
-using GrillBot.Common.Services.PointsService.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

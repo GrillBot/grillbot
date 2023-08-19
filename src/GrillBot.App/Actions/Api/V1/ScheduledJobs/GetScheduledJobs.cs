@@ -1,7 +1,7 @@
 ﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Models.Response.Info;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Models.Response.Info;
 using GrillBot.Data.Models.API.Jobs;
 using Quartz;
 using Quartz.Impl.Matchers;

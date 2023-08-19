@@ -2,7 +2,7 @@
 using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.RubbergodService;
+using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.IO;
 

@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Http;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.App.Managers;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.RubbergodService;
-using GrillBot.Common.Services.RubbergodService.Models.Karma;
+using GrillBot.Core.Services.RubbergodService;
+using GrillBot.Core.Services.RubbergodService.Models.Karma;
 using GrillBot.Core.Models.Pagination;
 using Microsoft.Extensions.DependencyInjection;
 

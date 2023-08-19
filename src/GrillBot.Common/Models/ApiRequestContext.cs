@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using Discord;
-using GrillBot.Common.Services.AuditLog.Models.Request.CreateItems;
+using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.Common.Models;
 
@@ -19,7 +19,7 @@ public class ApiRequestContext
     public string Language { get; set; } = "cs";
 
     public ApiRequestRequest LogRequest { get; set; } = new();
-    
+
     public ulong GetUserId()
     {
         if (LoggedUserData == null)

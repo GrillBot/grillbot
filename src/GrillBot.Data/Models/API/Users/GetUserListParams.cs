@@ -2,12 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
-using GrillBot.Common.Extensions;
 using GrillBot.Core.Database;
 using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Validation;
 using GrillBot.Database.Models;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.Data.Models.API.Users;
 

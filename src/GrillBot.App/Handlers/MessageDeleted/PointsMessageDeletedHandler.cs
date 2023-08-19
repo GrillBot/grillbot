@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Common.Services.PointsService;
+using GrillBot.Core.Services.PointsService;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 

@@ -2,18 +2,18 @@
 using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
-using GrillBot.Common.Services.AuditLog;
-using GrillBot.Common.Services.AuditLog.Enums;
-using GrillBot.Common.Services.AuditLog.Models.Request.Search;
-using GrillBot.Common.Services.FileService;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Request.Search;
+using GrillBot.Core.Services.FileService;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Preview;
 using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
 using File = GrillBot.Data.Models.API.AuditLog.File;
-using SearchModels = GrillBot.Common.Services.AuditLog.Models.Response.Search;
+using SearchModels = GrillBot.Core.Services.AuditLog.Models.Response.Search;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 
@@ -140,98 +140,98 @@ public class GetAuditLogList : ApiAction
             case LogType.EmoteDeleted:
                 return jsonElement.Deserialize<SearchModels.EmoteDeletedPreview>(options);
             case LogType.OverwriteCreated or LogType.OverwriteDeleted:
-            {
-                var preview = jsonElement.Deserialize<SearchModels.OverwritePreview>(options)!;
-                var role = preview.TargetType == PermissionTarget.Role ? await DiscordClient.FindRoleAsync(preview.TargetId.ToUlong()) : null;
-                var user = preview.TargetType == PermissionTarget.User ? await repository.User.FindUserByIdAsync(preview.TargetId.ToUlong()) : null;
-
-                return new OverwritePreview
                 {
-                    Role = Mapper.Map<Data.Models.API.Role>(role),
-                    User = Mapper.Map<Data.Models.API.Users.User>(user),
-                    Allow = preview.Allow,
-                    Deny = preview.Deny
-                };
-            }
+                    var preview = jsonElement.Deserialize<SearchModels.OverwritePreview>(options)!;
+                    var role = preview.TargetType == PermissionTarget.Role ? await DiscordClient.FindRoleAsync(preview.TargetId.ToUlong()) : null;
+                    var user = preview.TargetType == PermissionTarget.User ? await repository.User.FindUserByIdAsync(preview.TargetId.ToUlong()) : null;
+
+                    return new OverwritePreview
+                    {
+                        Role = Mapper.Map<Data.Models.API.Role>(role),
+                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                        Allow = preview.Allow,
+                        Deny = preview.Deny
+                    };
+                }
             case LogType.OverwriteUpdated:
-            {
-                var preview = jsonElement.Deserialize<SearchModels.OverwriteUpdatedPreview>(options)!;
-                var role = preview.TargetType == PermissionTarget.Role ? await DiscordClient.FindRoleAsync(preview.TargetId.ToUlong()) : null;
-                var user = preview.TargetType == PermissionTarget.User ? await repository.User.FindUserByIdAsync(preview.TargetId.ToUlong(), disableTracking: true) : null;
-
-                return new OverwriteUpdatedPreview
                 {
-                    Role = Mapper.Map<Data.Models.API.Role>(role),
-                    User = Mapper.Map<Data.Models.API.Users.User>(user),
-                };
-            }
+                    var preview = jsonElement.Deserialize<SearchModels.OverwriteUpdatedPreview>(options)!;
+                    var role = preview.TargetType == PermissionTarget.Role ? await DiscordClient.FindRoleAsync(preview.TargetId.ToUlong()) : null;
+                    var user = preview.TargetType == PermissionTarget.User ? await repository.User.FindUserByIdAsync(preview.TargetId.ToUlong(), disableTracking: true) : null;
+
+                    return new OverwriteUpdatedPreview
+                    {
+                        Role = Mapper.Map<Data.Models.API.Role>(role),
+                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                    };
+                }
             case LogType.Unban:
-            {
-                var preview = jsonElement.Deserialize<SearchModels.UnbanPreview>(options)!;
-                var user = await repository.User.FindUserByIdAsync(preview.UserId.ToUlong(), disableTracking: true);
-
-                return new UnbanPreview
                 {
-                    User = Mapper.Map<Data.Models.API.Users.User>(user)
-                };
-            }
+                    var preview = jsonElement.Deserialize<SearchModels.UnbanPreview>(options)!;
+                    var user = await repository.User.FindUserByIdAsync(preview.UserId.ToUlong(), disableTracking: true);
+
+                    return new UnbanPreview
+                    {
+                        User = Mapper.Map<Data.Models.API.Users.User>(user)
+                    };
+                }
             case LogType.MemberUpdated:
-            {
-                var preview = jsonElement.Deserialize<SearchModels.MemberUpdatedPreview>(options)!;
-                var user = await repository.User.FindUserByIdAsync(preview.UserId.ToUlong(), disableTracking: true);
-
-                return new MemberUpdatedPreview
                 {
-                    User = Mapper.Map<Data.Models.API.Users.User>(user),
-                    SelfUnverifyMinimalTimeChange = preview.SelfUnverifyMinimalTimeChange,
-                    FlagsChanged = preview.FlagsChanged,
-                    NicknameChanged = preview.NicknameChanged,
-                    VoiceMuteChanged = preview.VoiceMuteChanged
-                };
-            }
+                    var preview = jsonElement.Deserialize<SearchModels.MemberUpdatedPreview>(options)!;
+                    var user = await repository.User.FindUserByIdAsync(preview.UserId.ToUlong(), disableTracking: true);
+
+                    return new MemberUpdatedPreview
+                    {
+                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                        SelfUnverifyMinimalTimeChange = preview.SelfUnverifyMinimalTimeChange,
+                        FlagsChanged = preview.FlagsChanged,
+                        NicknameChanged = preview.NicknameChanged,
+                        VoiceMuteChanged = preview.VoiceMuteChanged
+                    };
+                }
             case LogType.MemberRoleUpdated:
-            {
-                var preview = jsonElement.Deserialize<SearchModels.MemberRoleUpdatedPreview>(options)!;
-                var user = await repository.User.FindUserByIdAsync(preview.UserId.ToUlong(), disableTracking: true);
-
-                return new MemberRoleUpdatedPreview
                 {
-                    ModifiedRoles = preview.ModifiedRoles,
-                    User = Mapper.Map<Data.Models.API.Users.User>(user)
-                };
-            }
+                    var preview = jsonElement.Deserialize<SearchModels.MemberRoleUpdatedPreview>(options)!;
+                    var user = await repository.User.FindUserByIdAsync(preview.UserId.ToUlong(), disableTracking: true);
+
+                    return new MemberRoleUpdatedPreview
+                    {
+                        ModifiedRoles = preview.ModifiedRoles,
+                        User = Mapper.Map<Data.Models.API.Users.User>(user)
+                    };
+                }
             case LogType.GuildUpdated:
                 return jsonElement.Deserialize<SearchModels.GuildUpdatedPreview>(options);
             case LogType.UserLeft:
-            {
-                var preview = jsonElement.Deserialize<SearchModels.UserLeftPreview>(options)!;
-                var user = await repository.User.FindUserByIdAsync(preview.UserId.ToUlong(), disableTracking: true);
-
-                return new UserLeftPreview
                 {
-                    User = Mapper.Map<Data.Models.API.Users.User>(user),
-                    BanReason = preview.BanReason,
-                    IsBan = preview.IsBan,
-                    MemberCount = preview.MemberCount
-                };
-            }
+                    var preview = jsonElement.Deserialize<SearchModels.UserLeftPreview>(options)!;
+                    var user = await repository.User.FindUserByIdAsync(preview.UserId.ToUlong(), disableTracking: true);
+
+                    return new UserLeftPreview
+                    {
+                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                        BanReason = preview.BanReason,
+                        IsBan = preview.IsBan,
+                        MemberCount = preview.MemberCount
+                    };
+                }
             case LogType.UserJoined:
                 return jsonElement.Deserialize<SearchModels.UserJoinedPreview>(options);
             case LogType.MessageEdited:
                 return jsonElement.Deserialize<SearchModels.MessageEditedPreview>(options);
             case LogType.MessageDeleted:
-            {
-                var preview = jsonElement.Deserialize<SearchModels.MessageDeletedPreview>(options)!;
-                var user = await repository.User.FindUserByIdAsync(preview.AuthorId.ToUlong(), disableTracking: true);
-
-                return new MessageDeletedPreview
                 {
-                    User = Mapper.Map<Data.Models.API.Users.User>(user),
-                    Content = preview.Content,
-                    Embeds = preview.Embeds,
-                    MessageCreatedAt = preview.MessageCreatedAt.ToLocalTime()
-                };
-            }
+                    var preview = jsonElement.Deserialize<SearchModels.MessageDeletedPreview>(options)!;
+                    var user = await repository.User.FindUserByIdAsync(preview.AuthorId.ToUlong(), disableTracking: true);
+
+                    return new MessageDeletedPreview
+                    {
+                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                        Content = preview.Content,
+                        Embeds = preview.Embeds,
+                        MessageCreatedAt = preview.MessageCreatedAt.ToLocalTime()
+                    };
+                }
             case LogType.InteractionCommand:
                 return jsonElement.Deserialize<SearchModels.InteractionCommandPreview>(options);
             case LogType.ThreadDeleted:

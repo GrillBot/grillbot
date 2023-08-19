@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GrillBot.Common.Extensions;
 using GrillBot.Core.Database;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Validation;

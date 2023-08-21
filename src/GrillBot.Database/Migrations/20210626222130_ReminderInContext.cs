@@ -25,13 +25,13 @@ namespace GrillBot.Database.Migrations
 
             migrationBuilder.RenameIndex(
                 name: "IX_RemindMessage_ToUserId",
-                table: "Reminders",
-                newName: "IX_Reminders_ToUserId");
+                newName: "IX_Reminders_ToUserId",
+                table: "Reminders");
 
             migrationBuilder.RenameIndex(
                 name: "IX_RemindMessage_FromUserId",
-                table: "Reminders",
-                newName: "IX_Reminders_FromUserId");
+                newName: "IX_Reminders_FromUserId",
+                table: "Reminders");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_Reminders",
@@ -75,13 +75,13 @@ namespace GrillBot.Database.Migrations
 
             migrationBuilder.RenameIndex(
                 name: "IX_Reminders_ToUserId",
-                table: "RemindMessage",
-                newName: "IX_RemindMessage_ToUserId");
+                newName: "IX_RemindMessage_ToUserId",
+                table: "RemindMessage");
 
             migrationBuilder.RenameIndex(
                 name: "IX_Reminders_FromUserId",
-                table: "RemindMessage",
-                newName: "IX_RemindMessage_FromUserId");
+                newName: "IX_RemindMessage_FromUserId",
+                table: "RemindMessage");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_RemindMessage",

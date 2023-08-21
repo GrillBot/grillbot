@@ -13,18 +13,21 @@ public static class LoggingHelper
 {
     public static bool IsWarning(string source, Exception ex)
     {
-        if (ex is GatewayReconnectException || ex.InnerException is GatewayReconnectException) return true;
-        if (ex.InnerException == null && ex.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase)) return true;
-        if (ex is TaskCanceledException or HttpRequestException && ex.InnerException is IOException { InnerException: SocketException se } &&
-            new[] { SocketError.TimedOut, SocketError.ConnectionAborted }.Contains(se.SocketErrorCode)) return true;
-        // 11 is magic constant represents error "Resource temporarily unavailable".
-        if (ex is HttpRequestException && ex.InnerException is SocketException { ErrorCode: 11 }) return true;
-        if (ex.InnerException is WebSocketException or WebSocketClosedException) return true;
-        if (ex is TaskCanceledException && ex.InnerException is null) return true;
-        if (ex is HttpException { HttpCode: HttpStatusCode.ServiceUnavailable }) return true;
-        if (ex is TimeoutException && ex.Message.Contains("defer")) return true;
-        if (source == "RemoveUnverify" && ex is DbUpdateConcurrencyException) return true;
+        var conditions = new Func<bool>[]
+        {
+            () => ex is GatewayReconnectException || ex.InnerException is GatewayReconnectException,
+            () => ex.InnerException is null && ex.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase),
+            () => ex is TaskCanceledException or HttpRequestException && ex.InnerException is IOException { InnerException: SocketException se } &&
+                new[] { SocketError.TimedOut, SocketError.ConnectionAborted }.Contains(se.SocketErrorCode),
+            // 11 is magic constant represents error "Resource temporarily unavailable".
+            () => ex is HttpRequestException && ex.InnerException is SocketException { ErrorCode: 11 },
+            () => ex.InnerException is WebSocketException or WebSocketClosedException,
+            () => ex is TaskCanceledException && ex.InnerException is null,
+            () => ex is HttpException { HttpCode: HttpStatusCode.ServiceUnavailable },
+            () => ex is TimeoutException && ex.Message.Contains("defer"),
+            () => source == "RemoveUnverify" && ex is DbUpdateConcurrencyException
+        };
 
-        return false;
+        return Array.Exists(conditions, o => o());
     }
 }

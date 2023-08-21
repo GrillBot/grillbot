@@ -6,7 +6,7 @@ namespace GrillBot.Common.Extensions.Discord;
 public static class MessageExtensions
 {
     private const string MessagePrefix = "$";
-    
+
     public static bool IsInteractionCommand(this IMessage message)
         => message.Type is MessageType.ApplicationCommand or MessageType.ContextMenuCommand;
 
@@ -45,7 +45,7 @@ public static class MessageExtensions
             .Distinct(); // Without duplicates.
 
         if (supportedEmotes != null)
-            query = query.Where(e => supportedEmotes.Any(x => x.IsEqual(e))); // Only supported emotes.
+            query = query.Where(e => supportedEmotes.Exists(x => x.IsEqual(e))); // Only supported emotes.
 
         return query;
     }

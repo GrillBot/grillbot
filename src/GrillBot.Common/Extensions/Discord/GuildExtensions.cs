@@ -28,7 +28,7 @@ public static class GuildExtensions
     public static async Task<bool> CanManageInvitesAsync(this IGuild guild, IUser user)
     {
         var guildUser = user as IGuildUser ?? await guild.GetUserAsync(user.Id);
-        return guildUser != null && guildUser.CanManageInvites();
+        return guildUser?.CanManageInvites() == true;
     }
 
     public static long GetMemberCount(this IGuild guild)

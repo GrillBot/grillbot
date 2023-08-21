@@ -14,13 +14,13 @@ public class EmoteSuggestion
     [Required]
     [StringLength(30)]
     public string SuggestionMessageId { get; set; } = null!;
-    
+
     [StringLength(30)]
     public string? VoteMessageId { get; set; }
-    
+
     [Required]
     public DateTime CreatedAt { get; set; }
-    
+
     public DateTime? VoteEndsAt { get; set; }
 
     [Required]
@@ -47,17 +47,17 @@ public class EmoteSuggestion
     [MinLength(2)]
     [Required]
     public string EmoteName { get; set; } = null!;
-    
+
     [StringLength(EmbedFieldBuilder.MaxFieldValueLength)]
     public string? Description { get; set; }
-    
+
     public bool? ApprovedForVote { get; set; }
-    
+
     public bool VoteFinished { get; set; }
-    
+
     public bool CommunityApproved { get; set; }
-    
+
     public int UpVotes { get; set; }
-    
+
     public int DownVotes { get; set; }
 }

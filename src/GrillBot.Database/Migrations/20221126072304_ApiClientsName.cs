@@ -16,7 +16,7 @@ namespace GrillBot.Database.Migrations
                 maxLength: 100,
                 nullable: false,
                 defaultValue: "");
-            
+
             migrationBuilder.Sql("UPDATE public.\"ApiClients\" SET \"Name\"=\"Id\"");
         }
 

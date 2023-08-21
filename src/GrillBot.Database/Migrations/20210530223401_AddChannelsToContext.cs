@@ -33,8 +33,8 @@ namespace GrillBot.Database.Migrations
 
             migrationBuilder.RenameIndex(
                 name: "IX_GuildChannel_UserId",
-                table: "Channels",
-                newName: "IX_Channels_UserId");
+                newName: "IX_Channels_UserId",
+                table: "Channels");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_Channels",
@@ -102,8 +102,8 @@ namespace GrillBot.Database.Migrations
 
             migrationBuilder.RenameIndex(
                 name: "IX_Channels_UserId",
-                table: "GuildChannel",
-                newName: "IX_GuildChannel_UserId");
+                newName: "IX_GuildChannel_UserId",
+                table: "GuildChannel");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_GuildChannel",

@@ -9,7 +9,7 @@ public class ApiException : Exception
     public IUser? LoggedUser { get; }
     public string? Path { get; }
     public string? ControllerInfo { get; }
-    
+
     public ApiException()
     {
     }
@@ -26,6 +26,10 @@ public class ApiException : Exception
     }
 
     protected ApiException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
+    }
+
+    public ApiException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
 }

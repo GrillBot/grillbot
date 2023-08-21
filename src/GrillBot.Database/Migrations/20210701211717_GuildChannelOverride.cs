@@ -7,12 +7,7 @@ namespace GrillBot.Database.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-
-        }
-
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-
+            // Changed JSON model
         }
     }
 }

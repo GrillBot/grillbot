@@ -26,12 +26,12 @@ public enum ChannelFlag : long
     /// Automatic replies are disabled in this channel.
     /// </summary>
     AutoReplyDeactivated = 8,
-    
+
     /// <summary>
     /// Points counting in the channel is disabled.
     /// </summary>
     PointsDeactivated = 16,
-    
+
     /// <summary>
     /// Commands are executed as ephemeral.
     /// </summary>

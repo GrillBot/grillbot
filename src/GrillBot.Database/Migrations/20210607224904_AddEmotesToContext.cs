@@ -21,8 +21,8 @@ namespace GrillBot.Database.Migrations
 
             migrationBuilder.RenameIndex(
                 name: "IX_EmoteStatisticItem_UserId",
-                table: "Emotes",
-                newName: "IX_Emotes_UserId");
+                newName: "IX_Emotes_UserId",
+                table: "Emotes");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_Emotes",
@@ -54,8 +54,8 @@ namespace GrillBot.Database.Migrations
 
             migrationBuilder.RenameIndex(
                 name: "IX_Emotes_UserId",
-                table: "EmoteStatisticItem",
-                newName: "IX_EmoteStatisticItem_UserId");
+                newName: "IX_EmoteStatisticItem_UserId",
+                table: "EmoteStatisticItem");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_EmoteStatisticItem",

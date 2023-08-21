@@ -32,13 +32,13 @@ public class Guild
 
     [StringLength(30)]
     public string? EmoteSuggestionChannelId { get; set; }
-    
+
     [StringLength(30)]
     public string? VoteChannelId { get; set; }
-    
+
     public DateTime? EmoteSuggestionsFrom { get; set; }
     public DateTime? EmoteSuggestionsTo { get; set; }
-    
+
     [StringLength(30)]
     public string? BotRoomChannelId { get; set; }
 

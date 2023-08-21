@@ -11,7 +11,7 @@ public enum ChannelsIncludeUsersMode
     /// Include all users except bots and inactive.
     /// </summary>
     IncludeExceptInactive = 1,
-    
+
     /// <summary>
     /// Include all users.
     /// </summary>

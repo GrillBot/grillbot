@@ -167,7 +167,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
         {
             if (!userIds.Any())
                 return new List<User>();
-            
+
             return await Context.Users.AsNoTracking()
                 .Where(o => userIds.Contains(o.Id))
                 .ToListAsync();

@@ -57,6 +57,7 @@ public static class Emojis
     public static Emoji InformationSource => new("ℹ️");
     public static Emoji ThumbsUp => new("👍");
     public static Emoji ThumbsDown => new("👎");
+    public static Emoji TrashBin => new("🗑");
 
     public static Dictionary<int, Emoji> NumberToEmojiMap => new()
     {

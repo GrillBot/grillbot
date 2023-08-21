@@ -22,4 +22,31 @@ public static class ComponentsHelper
 
         return builder.Build();
     }
+
+    public static MessageComponent? CreateWrappedComponents(IReadOnlyList<IMessageComponent> components)
+    {
+        if (components.Count == 0)
+            return null;
+        if (components.Count > ComponentBuilder.MaxActionRowCount * ActionRowBuilder.MaxChildCount)
+            throw new ArgumentException("Unable to create wrapped components for more than 5 rows.", nameof(components));
+
+        var builder = new ComponentBuilder();
+        var row = new ActionRowBuilder();
+
+        for (var i = 0; i < components.Count; i++)
+        {
+            row.AddComponent(components[i]);
+
+            if (row.Components.Count != ActionRowBuilder.MaxChildCount)
+                continue;
+
+            builder.AddRow(row);
+            row = new ActionRowBuilder();
+        }
+
+        if (row.Components.Count > 0)
+            builder.AddRow(row);
+
+        return builder.Build();
+    }
 }

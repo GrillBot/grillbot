@@ -1,6 +1,7 @@
 ﻿using Discord.Net;
 using GrillBot.Common;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 
@@ -28,7 +29,7 @@ public class RemindHelper
 
         try
         {
-            var postponeComponents = !force ? CreatePostponeComponents() : null;
+            var postponeComponents = CreatePostponeComponents(force);
             var msg = await destination.SendMessageAsync(embed: embed.Build(), components: postponeComponents);
             return msg.Id.ToString();
         }
@@ -38,23 +39,23 @@ public class RemindHelper
         }
     }
 
-    private static MessageComponent CreatePostponeComponents()
+    private static MessageComponent? CreatePostponeComponents(bool force)
     {
-        var builder = new ComponentBuilder();
-        var row = new ActionRowBuilder();
-        var emojisMap = Emojis.NumberToEmojiMap.Values.ToList();
+        var removalButton = new ButtonBuilder(customId: "remove_remind", style: ButtonStyle.Danger, emote: Emojis.TrashBin).Build();
+        var components = new List<IMessageComponent>();
 
-        for (var i = 1; i < emojisMap.Count; i++)
+        if (force)
         {
-            var item = emojisMap[i];
-            row.AddComponent(new ButtonBuilder(customId: $"remind_postpone:{i}", emote: item).Build());
-            if (i % ActionRowBuilder.MaxChildCount != 0 && i != emojisMap.Count - 1) continue;
-
-            builder.AddRow(row);
-            row = new ActionRowBuilder();
+            components.Add(removalButton);
+            return ComponentsHelper.CreateWrappedComponents(components);
         }
 
-        return builder.Build();
+        components.AddRange(
+            Emojis.NumberToEmojiMap.Skip(1).Select((e, i) => new ButtonBuilder(customId: $"remind_postpone:{i + 1}", emote: e.Value).Build())
+        );
+        components.Add(removalButton);
+
+        return ComponentsHelper.CreateWrappedComponents(components);
     }
 
     private async Task<EmbedBuilder> CreateRemindEmbedAsync(Database.Entity.RemindMessage remind, bool force = false)

@@ -69,7 +69,7 @@ public class RemindModule : InteractionsModuleBase
     {
         using var command = GetCommand<Actions.Commands.Reminder.GetReminderList>();
         var (embed, paginationComponent) = await command.Command.ProcessAsync(0);
-        
+
         await SetResponseAsync(embed: embed, components: paginationComponent);
     }
 
@@ -113,4 +113,9 @@ public class RemindModule : InteractionsModuleBase
         var handler = new RemindPostponeHandler(hours, ServiceProvider);
         await handler.ProcessAsync(Context);
     }
+
+    [ComponentInteraction("remove_remind", ignoreGroupNames: true)]
+    [AllowDms]
+    public async Task RemoveRemindAsync()
+        => await new RemindRemoveHandler().ProcessAsync(Context);
 }

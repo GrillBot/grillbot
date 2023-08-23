@@ -19,7 +19,8 @@ public static class HandlerExtensions
             .AddScoped<IChannelCreatedEvent, ChannelCreated.AuditChannelCreatedHandler>();
 
         services
-            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>();
+            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>()
+            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.GuildConfigurationChannelDestroyedHandler>();
 
         services
             .AddScoped<IChannelUpdatedEvent, ChannelUpdated.AuditChannelUpdatedHandler>()
@@ -76,11 +77,15 @@ public static class HandlerExtensions
             .AddScoped<IReactionRemovedEvent, ReactionRemoved.EmoteStatsReactionRemovedHandler>();
 
         services
+            .AddScoped<IReadyEvent, Ready.GuildSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.CommandsRegistrationHandler>()
             .AddScoped<IReadyEvent, Ready.AutoReplyReadyHandler>()
             .AddScoped<IReadyEvent, Ready.InviteReadyHandler>()
             .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
+
+        services
+            .AddScoped<IRoleDeleted, RoleDeleted.GuildConfigurationRoleDeletedHandler>();
 
         services
             .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();

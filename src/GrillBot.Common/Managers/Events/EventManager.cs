@@ -9,6 +9,8 @@ namespace GrillBot.Common.Managers.Events;
 
 public class EventManager
 {
+    private static readonly Type _readyEventType = typeof(IReadyEvent);
+
     private DiscordSocketClient DiscordClient { get; }
     private IServiceProvider ServiceProvider { get; }
     private InitManager InitManager { get; }
@@ -58,6 +60,7 @@ public class EventManager
         DiscordClient.JoinedGuild += guild => ProcessEventAsync<IJoinedGuildEvent>(@event => @event.ProcessAsync(guild), EventLogManager.JoinedGuild(guild));
         DiscordClient.GuildAvailable += guild => ProcessEventAsync<IGuildAvailableEvent>(@event => @event.ProcessAsync(guild), EventLogManager.GuildAvailable(guild));
         DiscordClient.ChannelCreated += channel => ProcessEventAsync<IChannelCreatedEvent>(@event => @event.ProcessAsync(channel), EventLogManager.ChannelCreated(channel));
+        DiscordClient.RoleDeleted += role => ProcessEventAsync<IRoleDeleted>(@event => @event.ProcessAsync(role), EventLogManager.RoleDeleted(role));
 
         InteractionService.SlashCommandExecuted += (command, context, result) =>
             ProcessEventAsync<IInteractionCommandExecutedEvent>(@event => @event.ProcessAsync(command, context, result), EventLogManager.InteractionExecuted(command, context, result));
@@ -75,7 +78,7 @@ public class EventManager
     {
         var eventType = typeof(TInterface);
         var eventName = eventType.Name[1..];
-        var isReadyEvent = eventType == typeof(IReadyEvent);
+        var isReadyEvent = eventType == _readyEventType;
 
         if (!InitManager.Get() && !isReadyEvent)
             return;

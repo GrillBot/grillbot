@@ -61,6 +61,9 @@ public class EventLogManager
     public Task InteractionExecuted(ICommandInfo command, IInteractionContext context, IResult result) => AddToLog(nameof(InteractionExecuted), command.Name, command.MethodName, command.Module.Name,
         context.User.GetFullName(), $"Guild:{context.Guild?.Name ?? "NoGuild"}", $"Channel:{context.Channel.Name}", result.IsSuccess.ToString(), result.ErrorReason);
 
+    public Task RoleDeleted(IRole role)
+        => AddToLog(nameof(RoleDeleted), $"Guild:{role.Guild?.Name ?? "NoGuild"}", $"RoleId:{role.Id}", $"RoleName:{role.Name}");
+
     private Task AddToLog(string method, params string[] parameters)
     {
         var paramsData = parameters.Length == 0 ? "" : $" - {string.Join(", ", parameters)}";

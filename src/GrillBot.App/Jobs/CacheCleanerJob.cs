@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure.Jobs;
+﻿using Discord.Net;
+using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Cache.Services;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Repository;
@@ -28,7 +29,17 @@ public class CacheCleanerJob : Job
         await ClearProfilePicturesAsync(repository, reportFields);
 
         if (reportFields.Count > 0)
-            context.Result = $"CacheCleaner({string.Join(", ", reportFields)})";
+        {
+            var indent = new string(' ', 5);
+            var builder = new StringBuilder()
+                .AppendLine("CacheCleaner(");
+
+            foreach (var field in reportFields)
+                builder.Append(indent).AppendLine(field);
+            builder.Append(')');
+
+            context.Result = builder.ToString();
+        }
     }
 
     private static async Task ClearDataCacheAsync(GrillBotCacheRepository cacheRepository, ICollection<string> report)
@@ -56,21 +67,34 @@ public class CacheCleanerJob : Job
         foreach (var userProfilePictures in profilePictures.GroupBy(o => o.UserId))
         {
             var userId = userProfilePictures.Key.ToUlong();
-            var user = await DiscordClient.GetUserAsync(userId);
-            if (user is null)
+
+            try
+            {
+                var user = await DiscordClient.GetUserAsync(userId);
+                if (user?.Username.StartsWith("Deleted User", StringComparison.InvariantCultureIgnoreCase) != false)
+                {
+                    cacheRepository.RemoveCollection(userProfilePictures);
+                    cleared += userProfilePictures.Count();
+                }
+                else
+                {
+                    var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId;
+
+                    foreach (var picture in userProfilePictures.Where(p => p.AvatarId != avatarId))
+                    {
+                        cacheRepository.Remove(picture);
+                        cleared++;
+                    }
+                }
+            }
+            catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.ServiceUnavailable)
+            {
+                continue;
+            }
+            catch (HttpException ex) when (ex.DiscordCode is not null && ex.DiscordCode == DiscordErrorCode.UnknownUser)
             {
                 cacheRepository.RemoveCollection(userProfilePictures);
                 cleared += userProfilePictures.Count();
-            }
-            else
-            {
-                var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId;
-
-                foreach (var picture in userProfilePictures.Where(p => p.AvatarId != avatarId))
-                {
-                    cacheRepository.Remove(picture);
-                    cleared++;
-                }
             }
 
             processedUsers.Add(userId);
@@ -78,6 +102,6 @@ public class CacheCleanerJob : Job
 
         if (cleared == 0) return;
         await cacheRepository.CommitAsync();
-        report.Add($"ProfilePictures: (Cleared: {cleared}, Users: {processedUsers.Count})");
+        report.Add($"ProfilePictures: (Cleared: {cleared}, Users: {processedUsers.Count}, TotalPictures: {profilePictures.Count})");
     }
 }

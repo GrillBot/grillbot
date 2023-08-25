@@ -96,7 +96,7 @@ public class UserInfo : CommandAction
             badges.Add(Configuration.GetValue<string>("Discord:Emotes:HypeSquadBalance")!);
         if (user.PublicFlags.Value.HasFlag(UserProperties.HypeSquadBrilliance))
             badges.Add(Configuration.GetValue<string>("Discord:Emotes:HypeSquadBriliance")!);
-        if(user.PublicFlags.Value.HasFlag(UserProperties.ActiveDeveloper))
+        if (user.PublicFlags.Value.HasFlag(UserProperties.ActiveDeveloper))
             badges.Add(Configuration.GetValue<string>("Discord:Emotes:ActiveDeveloper")!);
         if (user.PublicFlags.Value.HasFlag(UserProperties.Partner))
             badges.Add(Configuration.GetValue<string>("Discord:Emotes:Partner")!);
@@ -208,13 +208,14 @@ public class UserInfo : CommandAction
 
     private async Task SetChannelInfoAsync(EmbedBuilder builder, IGuildUser user, GrillBotRepository repository)
     {
-        if (OverLimit) return;
+        if (OverLimit)
+            return;
         var (lastActiveChannel, mostActiveChanel) = await repository.Channel.GetTopChannelStatsOfUserAsync(user);
 
-        if (mostActiveChanel != null)
-            AddField(builder, "MostActiveChannel", $"<#{mostActiveChanel.ChannelId}> ({mostActiveChanel.Count})", false);
-        if (lastActiveChannel != null)
-            AddField(builder, "LastMessageIn", $"<#{lastActiveChannel.ChannelId}> ({lastActiveChannel.Count})", false);
+        if (mostActiveChanel is not null)
+            AddField(builder, "MostActiveChannel", $"{mostActiveChanel.Channel.GetHyperlink()} ({mostActiveChanel.Count})", false);
+        if (lastActiveChannel is not null)
+            AddField(builder, "LastMessageIn", $"{lastActiveChannel.Channel.GetHyperlink()} ({lastActiveChannel.Count})", false);
     }
 
     private void AddField(EmbedBuilder builder, string fieldId, string value, bool inline)

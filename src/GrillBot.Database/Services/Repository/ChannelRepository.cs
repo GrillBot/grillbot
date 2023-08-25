@@ -149,6 +149,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
         using (CreateCounter())
         {
             var baseQuery = Context.UserChannels.AsNoTracking()
+                .Include(o => o.Channel)
                 .Where(o =>
                     o.GuildId == user.GuildId.ToString() &&
                     (o.Channel.Flags & (long)ChannelFlag.StatsHidden) == 0 &&

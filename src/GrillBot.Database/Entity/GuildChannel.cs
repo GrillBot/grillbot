@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
 using GrillBot.Core.Extensions;
+using System;
 
 namespace GrillBot.Database.Entity;
 
@@ -115,4 +116,7 @@ public class GuildChannel
             PinCount = PinCount
         };
     }
+
+    public string GetHyperlink()
+        => $"[#{Name}](https://discord.com/channels/{GuildId}/{ChannelId}/{SnowflakeUtils.ToSnowflake(DateTimeOffset.Now)})";
 }

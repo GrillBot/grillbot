@@ -1,6 +1,5 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using Humanizer;
-using Markdig;
 
 namespace GrillBot.Common.Helpers;
 
@@ -11,16 +10,6 @@ public class FormatHelper
     public FormatHelper(ITextsManager texts)
     {
         Texts = texts;
-    }
-
-    public static string? FormatCommandDescription(string? description, string prefix, bool toHtml = false)
-    {
-        if (string.IsNullOrEmpty(description)) return null;
-
-        description = description.Trim().Replace("{prefix}", prefix);
-        description = description.Replace("<", "&lt;").Replace(">", "&gt;");
-
-        return toHtml ? Markdown.ToHtml(description).Replace("\n", " ") : description;
     }
 
     public string FormatNumber(string id, string locale, long count)

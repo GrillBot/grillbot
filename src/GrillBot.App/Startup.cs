@@ -134,8 +134,6 @@ public class Startup
 
         services.AddQuartz(q =>
         {
-            q.UseMicrosoftDependencyInjectionJobFactory();
-
             q.AddTriggeredJob<MessageCacheJob>(Configuration, "Discord:MessageCache:Period");
             q.AddTriggeredJob<AuditLogClearingJob>(Configuration, "AuditLog:CleaningCron");
             q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
@@ -177,7 +175,7 @@ public class Startup
         services.Configure<ForwardedHeadersOptions>(opt => opt.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app)
     {
         app.InitDatabase<GrillBotContext>();
         app.InitCache();

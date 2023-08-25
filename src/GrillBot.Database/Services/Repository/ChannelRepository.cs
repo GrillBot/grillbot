@@ -301,8 +301,10 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
+            var guildIds = guilds.ConvertAll(o => o.Id.ToString());
+
             return await Context.Channels.AsNoTracking()
-                .Where(o => (o.Flags & (long)ChannelFlag.Deleted) == 0 && o.PinCount > 0)
+                .Where(o => (o.Flags & (long)ChannelFlag.Deleted) == 0 && o.PinCount > 0 && guildIds.Contains(o.GuildId))
                 .ToListAsync();
         }
     }

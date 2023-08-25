@@ -24,7 +24,7 @@ public class GetChannelSimpleListWithPins : SimpleListBase
         var channelsWithPins = await repository.Channel.GetChannelsWithPinsAsync(guilds);
 
         var filteredChannels = availableChannels.FindAll(o =>
-            channelsWithPins.Any(x => x.GuildId == o.GuildId.ToString() && x.ChannelId == o.Id.ToString())
+            channelsWithPins.Exists(x => x.GuildId == o.GuildId.ToString() && x.ChannelId == o.Id.ToString())
         );
 
         return CreateResult(Map(filteredChannels));

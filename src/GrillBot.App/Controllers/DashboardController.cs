@@ -5,12 +5,15 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Data.Models.API.System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
 [ApiExplorerSettings(GroupName = "v1")]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 public class DashboardController : Infrastructure.ControllerBase
 {
     public DashboardController(IServiceProvider serviceProvider) : base(serviceProvider)

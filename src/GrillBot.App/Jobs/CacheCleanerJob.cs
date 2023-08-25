@@ -91,6 +91,10 @@ public class CacheCleanerJob : Job
             {
                 continue;
             }
+            catch (TimeoutException)
+            {
+                continue;
+            }
             catch (HttpException ex) when (ex.DiscordCode is not null && ex.DiscordCode == DiscordErrorCode.UnknownUser)
             {
                 cacheRepository.RemoveCollection(userProfilePictures);

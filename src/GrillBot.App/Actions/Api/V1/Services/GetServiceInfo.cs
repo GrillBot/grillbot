@@ -40,7 +40,6 @@ public class GetServiceInfo : ApiAction
 
         var info = new ServiceInfo
         {
-            Timeout = client.Timeout,
             Url = client.Url,
             Name = client.ServiceName
         };

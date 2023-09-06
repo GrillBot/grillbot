@@ -123,6 +123,9 @@ public class GetAuditLogDetail : ApiAction
             case LogType.ThreadUpdated:
                 detail.Data = jsonElement.Deserialize<ThreadUpdatedDetail>(options);
                 break;
+            case LogType.RoleDeleted:
+                detail.Data = jsonElement.Deserialize<RoleDeletedDetail>(options);
+                break;
         }
 
         return detail;

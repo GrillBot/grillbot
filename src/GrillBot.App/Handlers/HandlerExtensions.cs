@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Handlers.Logging;
+using GrillBot.App.Handlers.RoleDeleted;
 using GrillBot.App.Handlers.Synchronization.Database;
 using GrillBot.App.Handlers.Synchronization.Services;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -85,6 +86,7 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
 
         services
+            .AddScoped<IRoleDeleted, AuditRoleDeletedHandler>()
             .AddScoped<IRoleDeleted, RoleDeleted.GuildConfigurationRoleDeletedHandler>();
 
         services

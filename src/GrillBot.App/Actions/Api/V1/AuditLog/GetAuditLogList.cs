@@ -242,6 +242,8 @@ public class GetAuditLogList : ApiAction
                 return jsonElement.Deserialize<SearchModels.ApiPreview>(options);
             case LogType.ThreadUpdated:
                 return jsonElement.Deserialize<SearchModels.ThreadUpdatedPreview>(options);
+            case LogType.RoleDeleted:
+                return jsonElement.Deserialize<SearchModels.RoleDeletedPreview>(options);
         }
 
         return null;

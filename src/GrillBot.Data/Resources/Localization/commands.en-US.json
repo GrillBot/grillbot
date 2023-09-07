@@ -456,6 +456,20 @@
         "name": "users",
         "description": "Mentions of users. Can be used only with combination with UserChart."
       }
+    },
+    "board": {
+      "name": "board",
+      "description": "Leaderboard TOP 10 most active users.",
+      "over-all-time": {
+        "name": "over-all-time",
+        "description": "Display the TOP 10 statistics, including expired points.",
+        "True": {
+          "name": "Yes"
+        },
+        "False": {
+          "name": "No"
+        }
+      }
     }
   },
   "message": {

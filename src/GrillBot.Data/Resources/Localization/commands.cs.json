@@ -456,6 +456,20 @@
         "name": "users",
         "description": "Vybraní uživatelé. Používá se pouze v kombinaci grafů za jednotlivé uživatele."
       }
+    },
+    "board": {
+      "name": "board",
+      "description": "Leaderboard TOP 10 nejaktivnějších uživatelů.",
+      "over-all-time": {
+        "name": "za-celou-dobu",
+        "description": "Zobrazit TOP 10 statistiku včetně neaktivních bodů.",
+        "True": {
+          "name": "Ano"
+        },
+        "False": {
+          "name": "Ne"
+        }
+      }
     }
   },
   "message": {

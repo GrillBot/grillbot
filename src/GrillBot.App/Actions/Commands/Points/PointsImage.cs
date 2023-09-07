@@ -45,14 +45,10 @@ public sealed class PointsImage : CommandAction
         if (status is null)
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
-        var username = guildUser.GetFullName();
-        if (username.Length > 32)
-            username = guildUser.GetDisplayName();
-
         var request = new PointsRequest
         {
             Position = status.Position,
-            Username = username,
+            Username = guildUser.GetDisplayName(),
             AvatarInfo = new AvatarInfo
             {
                 Type = "png",

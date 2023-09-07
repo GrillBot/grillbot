@@ -34,13 +34,15 @@ public class PointsModule : InteractionsModuleBase
     }
 
     [SlashCommand("board", "Get leaderboard of the points.")]
-    public async Task GetPointsBoardAsync()
+    public async Task GetPointsBoardAsync(
+        bool overAllTime = false
+    )
     {
         using var command = GetCommand<PointsLeaderboard>();
 
         try
         {
-            var (embed, paginationComponent) = await command.Command.ProcessAsync(0);
+            var (embed, paginationComponent) = await command.Command.ProcessAsync(0, overAllTime);
 
             await SetResponseAsync(embed: embed, components: paginationComponent);
         }

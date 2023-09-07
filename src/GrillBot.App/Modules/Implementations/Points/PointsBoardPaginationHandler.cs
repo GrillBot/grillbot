@@ -34,7 +34,7 @@ public class PointsBoardPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        var (embed, paginationComponent) = await action.ProcessAsync(page);
+        var (embed, paginationComponent) = await action.ProcessAsync(page, metadata.OverAllTime);
         await component.UpdateAsync(msg =>
         {
             msg.Components = paginationComponent;

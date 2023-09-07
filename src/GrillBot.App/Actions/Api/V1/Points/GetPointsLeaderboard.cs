@@ -4,6 +4,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
+using GrillBot.Core.Services.PointsService.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -28,9 +29,12 @@ public class GetPointsLeaderboard : ApiAction
         var result = new List<UserPointsItem>();
         await using var repository = DatabaseBuilder.CreateRepository();
 
+        const LeaderboardColumnFlag leaderboardColumns = LeaderboardColumnFlag.YearBack | LeaderboardColumnFlag.MonthBack | LeaderboardColumnFlag.Today | LeaderboardColumnFlag.Total;
+        const LeaderboardSortOptions leaderboardSort = LeaderboardSortOptions.ByTotalDescending;
+
         foreach (var guild in await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId()))
         {
-            var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guild.Id.ToString(), 0, 0, false);
+            var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guild.Id.ToString(), 0, 0, leaderboardColumns, leaderboardSort);
             leaderboard.ValidationErrors.AggregateAndThrow();
 
             var guildData = Mapper.Map<Data.Models.API.Guilds.Guild>(await repository.Guild.FindGuildAsync(guild, true));

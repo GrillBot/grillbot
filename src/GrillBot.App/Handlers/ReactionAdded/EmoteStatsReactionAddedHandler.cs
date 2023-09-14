@@ -60,6 +60,7 @@ public class EmoteStatsReactionAddedHandler : IReactionAddedEvent
     {
         var statistics = await repository.Emote.GetOrCreateStatisticAsync(emote, user, guild);
 
+        statistics.IsEmoteSupported = true;
         statistics.UseCount++;
         statistics.LastOccurence = DateTime.Now;
     }

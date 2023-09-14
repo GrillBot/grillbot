@@ -1,9 +1,11 @@
-﻿using GrillBot.Common.Models;
+﻿using GrillBot.Common.Extensions;
+using GrillBot.Common.Models;
 using GrillBot.Core.Managers.Discord;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Data.Models.API.Emotes;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
 
@@ -22,8 +24,8 @@ public class MergeStats : ApiAction
 
     public async Task<int> ProcessAsync(MergeEmoteStatsParams parameters)
     {
-        await ValidateMergeAsync(parameters);
         await using var repository = DatabaseBuilder.CreateRepository();
+        await ValidateMergeAsync(repository, parameters);
 
         var sourceStats = await repository.Emote.FindStatisticsByEmoteIdAsync(parameters.SourceEmoteId);
         if (sourceStats.Count == 0) return 0;
@@ -50,6 +52,7 @@ public class MergeStats : ApiAction
             if (item.FirstOccurence != DateTime.MinValue && (item.FirstOccurence < destinationStatItem.FirstOccurence || destinationStatItem.FirstOccurence == DateTime.MinValue))
                 destinationStatItem.FirstOccurence = item.FirstOccurence;
 
+            destinationStatItem.IsEmoteSupported = true;
             destinationStatItem.UseCount += item.UseCount;
             repository.Remove(item);
         }
@@ -58,15 +61,13 @@ public class MergeStats : ApiAction
         return await repository.CommitAsync();
     }
 
-    private async Task ValidateMergeAsync(MergeEmoteStatsParams @params)
+    private static async Task ValidateMergeAsync(GrillBotRepository repository, MergeEmoteStatsParams @params)
     {
-        var supportedEmotes = (await EmoteManager.GetSupportedEmotesAsync()).ConvertAll(o => o.ToString());
-        if (!supportedEmotes.Contains(@params.DestinationEmoteId))
-        {
-            throw new ValidationException(
-                new ValidationResult("Nelze sloučit statistiku do neexistujícího emotu.", new[] { nameof(@params.DestinationEmoteId) }), null, @params.DestinationEmoteId
-            );
-        }
+        if (!await repository.Emote.IsEmoteSupportedAsync(@params.DestinationEmoteId))
+            throw new ValidationException("Nelze sloučit statistiku do neexistujícího emotu.").ToBadRequestValidation(null, @params.DestinationEmoteId);
+
+        if (await repository.Emote.IsEmoteSupportedAsync(@params.SourceEmoteId))
+            throw new ValidationException("Nelze slučovat statistiku zatím existujícího emotu.").ToBadRequestValidation(null, @params.SourceEmoteId);
     }
 
     private async Task WriteToAuditLogAsync(MergeEmoteStatsParams parameters, int sourceStatsCount, int destinationStatsCount)

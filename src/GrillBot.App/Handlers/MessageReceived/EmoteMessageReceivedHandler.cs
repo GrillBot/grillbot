@@ -39,6 +39,7 @@ public class EmoteMessageReceivedHandler : IMessageReceivedEvent
         {
             var emoteEntity = await repository.Emote.GetOrCreateStatisticAsync(emote, Author!, Channel.Guild);
 
+            emoteEntity.IsEmoteSupported = true;
             emoteEntity.LastOccurence = DateTime.Now;
             emoteEntity.UseCount++;
         }

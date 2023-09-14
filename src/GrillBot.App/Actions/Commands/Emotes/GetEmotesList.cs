@@ -23,7 +23,7 @@ public class GetEmotesList : CommandAction
 
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page, string sort, SortType sortType, IUser? ofUser, bool filterAnimated)
     {
-        var parameters = CreateParameters(page, sort, sortType, ofUser, filterAnimated);
+        var parameters = CreateParameters(page, sort, sortType, ofUser, filterAnimated, false);
         var list = await ApiAction.ProcessAsync(parameters, false);
         var embed = CreateEmbed(list, sort, sortType, filterAnimated, ofUser);
         var pagesCount = ComputePagesCount(list.TotalItemsCount);
@@ -34,7 +34,7 @@ public class GetEmotesList : CommandAction
 
     public async Task<int> ComputePagesCountAsync(string sort, SortType sortType, IUser? ofUser, bool filterAnimated)
     {
-        var parameters = CreateParameters(0, sort, sortType, ofUser, filterAnimated);
+        var parameters = CreateParameters(0, sort, sortType, ofUser, filterAnimated, true);
         var list = await ApiAction.ProcessAsync(parameters, false);
         return ComputePagesCount(list.TotalItemsCount);
     }
@@ -42,7 +42,8 @@ public class GetEmotesList : CommandAction
     private static int ComputePagesCount(long totalCount) =>
         (int)Math.Ceiling(totalCount / (double)(EmbedBuilder.MaxFieldCount - 1));
 
-    private EmotesListParams CreateParameters(int page, string sort, SortType sortType, IUser? ofUser, bool filterAnimated)
+    private EmotesListParams CreateParameters(int page, string sort, SortType sortType, IUser? ofUser, bool filterAnimated,
+        bool onlyCount)
     {
         return new EmotesListParams
         {
@@ -57,7 +58,8 @@ public class GetEmotesList : CommandAction
             Pagination =
             {
                 Page = page,
-                PageSize = EmbedBuilder.MaxFieldCount - 1
+                PageSize = EmbedBuilder.MaxFieldCount - 1,
+                OnlyCount = onlyCount
             }
         };
     }

@@ -29,4 +29,6 @@ public class EmoteStatisticItem
 
     [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; set; }
+
+    public bool IsEmoteSupported { get; set; }
 }

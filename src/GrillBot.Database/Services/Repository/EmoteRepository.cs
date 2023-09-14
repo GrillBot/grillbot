@@ -20,12 +20,13 @@ public class EmoteRepository : SubRepositoryBase<GrillBotContext>
     }
 
     public async Task<List<EmoteStatItem>> GetEmoteStatisticsDataAsync(IQueryableModel<EmoteStatisticItem> model,
-        IEnumerable<string> emoteIds, bool unsupported)
+        bool unsupported)
     {
         using (CreateCounter())
         {
-            var query = CreateQuery(model, true);
-            query = unsupported ? query.Where(o => !emoteIds.Contains(o.EmoteId)) : query.Where(o => emoteIds.Contains(o.EmoteId));
+            var isSupported = !unsupported;
+            var query = CreateQuery(model, true)
+                .Where(o => o.IsEmoteSupported == isSupported);
 
             var grouped = CreateGroupingQuery(query);
             return await grouped.ToListAsync();
@@ -97,7 +98,8 @@ public class EmoteRepository : SubRepositoryBase<GrillBotContext>
         using (CreateCounter())
         {
             var entity = await FindStatisticAsync(emote, user, guild);
-            if (entity != null) return entity;
+            if (entity != null)
+                return entity;
 
             entity = new EmoteStatisticItem
             {
@@ -106,6 +108,7 @@ public class EmoteRepository : SubRepositoryBase<GrillBotContext>
                 FirstOccurence = DateTime.Now,
                 UserId = user.Id.ToString()
             };
+
             await Context.AddAsync(entity);
             return entity;
         }
@@ -117,6 +120,33 @@ public class EmoteRepository : SubRepositoryBase<GrillBotContext>
         {
             var query = CreateQuery(model, true);
             return await PaginatedResponse<EmoteStatisticItem>.CreateWithEntityAsync(query, pagination);
+        }
+    }
+
+    public async Task<bool> IsEmoteSupportedAsync(string emoteId)
+    {
+        using (CreateCounter())
+        {
+            return await Context.Emotes.AsNoTracking()
+                .AnyAsync(o => o.EmoteId == emoteId && o.IsEmoteSupported);
+        }
+    }
+
+    public async Task<List<EmoteStatisticItem>> GetAllStatisticsAsync()
+    {
+        using (CreateCounter())
+        {
+            return await Context.Emotes.ToListAsync();
+        }
+    }
+
+    public async Task<List<EmoteStatisticItem>> GetStatisticsOfGuildAsync(IGuild guild)
+    {
+        using (CreateCounter())
+        {
+            return await Context.Emotes
+                .Where(o => o.GuildId == guild.Id.ToString())
+                .ToListAsync();
         }
     }
 }

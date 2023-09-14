@@ -57,6 +57,7 @@ public class EmoteStatsReactionRemovedHandler : IReactionRemovedEvent
         var statistics = await repository.Emote.FindStatisticAsync(emote, user, guild);
         if (statistics is null || statistics.UseCount == 0) return;
 
+        statistics.IsEmoteSupported = true;
         statistics.UseCount--;
     }
 

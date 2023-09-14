@@ -39,6 +39,7 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.UpdateUserLanguageHandler>()
+            .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.EmoteSupportCheckInteractionCommandHandler>()
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.AuditInteractionCommandHandler>();
 
         services
@@ -83,7 +84,8 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.AutoReplyReadyHandler>()
             .AddScoped<IReadyEvent, Ready.InviteReadyHandler>()
             .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
-            .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
+            .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>()
+            .AddScoped<IReadyEvent, Ready.EmoteInitSynchronizationHandler>();
 
         services
             .AddScoped<IRoleDeleted, AuditRoleDeletedHandler>()

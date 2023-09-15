@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using GrillBot.Core.Database;
@@ -91,6 +92,19 @@ public class GuildRepository : SubRepositoryBase<GrillBotContext>
 
             var data = await query.FirstOrDefaultAsync();
             return data ?? new GuildDatabaseReport();
+        }
+    }
+
+    public async Task<List<Guild>> GetGuildsByIdsAsync(List<string> guildIds)
+    {
+        using (CreateCounter())
+        {
+            if (guildIds.Count == 0)
+                return new List<Guild>();
+
+            return await Context.Guilds.AsNoTracking()
+                .Where(o => guildIds.Contains(o.Id))
+                .ToListAsync();
         }
     }
 }

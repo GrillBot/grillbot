@@ -91,7 +91,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Points.GetPointsLeaderboard>()
             .AddScoped<Api.V1.Points.GetTransactionList>()
             .AddScoped<Api.V1.Points.ServiceIncrementPoints>()
-            .AddScoped<Api.V1.Points.ServiceTransferPoints>();
+            .AddScoped<Api.V1.Points.ServiceTransferPoints>()
+            .AddScoped<Api.V1.Points.GetUserList>();
 
         // PublicApiClients
         services

@@ -5,6 +5,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
+using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -134,5 +135,20 @@ public class PointsController : Infrastructure.ControllerBase
         }));
 
         return Ok();
+    }
+
+    /// <summary>
+    /// Gets paginated list of users.
+    /// </summary>
+    /// <response code="200">Returns paginated list of users from points service.</response>
+    /// <response code="400">Validation failed.</response>
+    [HttpPost("users/list")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    public async Task<ActionResult<PaginatedResponse<Data.Models.API.Points.UserListItem>>> GetUserListAsync(UserListRequest request)
+    {
+        ApiAction.Init(this, request);
+        return await ProcessActionAsync<GetUserList, PaginatedResponse<Data.Models.API.Points.UserListItem>>(action => action.ProcessAsync(request));
     }
 }

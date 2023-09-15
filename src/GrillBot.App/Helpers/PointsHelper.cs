@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
+using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Mvc;
 using ChannelInfo = GrillBot.Core.Services.PointsService.Models.ChannelInfo;

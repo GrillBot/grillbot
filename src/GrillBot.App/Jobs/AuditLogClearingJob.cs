@@ -46,8 +46,7 @@ public class AuditLogClearingJob : ArchivationJobBase
         var xmlSize = Encoding.UTF8.GetBytes(xmlData.ToString()).Length.Bytes().ToString();
         var zipSize = new FileInfo(zipName).Length.Bytes().ToString();
 
-        foreach (var id in archivationResult.Ids)
-            await AuditLogServiceClient.DeleteItemAsync(id);
+        await AuditLogServiceClient.BulkDeleteAsync(archivationResult.Ids);
         context.Result = BuildReport(archivationResult, xmlSize, zipSize);
     }
 

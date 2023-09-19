@@ -89,7 +89,10 @@ public class AuditMessageDeletedHandler : AuditLogServiceHandler, IMessageDelete
                 ContainsFooter = embed.Footer is not null,
                 ProviderName = providerName,
                 VideoInfo = ParseVideoInfo(embed.Video, providerName),
-                Fields = embed.Fields.Select(o => new EmbedFieldBuilder().WithName(o.Name).WithValue(o.Value).WithIsInline(o.Inline)).ToList()
+                Fields = embed.Fields
+                    .Where(o => !string.IsNullOrEmpty(o.Value))
+                    .Select(o => new EmbedFieldBuilder().WithName(o.Name).WithValue(o.Value).WithIsInline(o.Inline))
+                    .ToList()
             };
 
             if (embed.Image is not null)

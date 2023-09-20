@@ -24,7 +24,7 @@ public static class LoggingHelper
             () => ex.InnerException is WebSocketException or WebSocketClosedException,
             () => ex is TaskCanceledException && ex.InnerException is null,
             () => ex is HttpException { HttpCode: HttpStatusCode.ServiceUnavailable },
-            () => ex is TimeoutException && ex.Message.Contains("defer"),
+            () => ex is TimeoutException && (ex.Message.Contains("defer") || ex.Message.Contains("Cannot respond to an interaction after 3 seconds!")),
             () => source == "RemoveUnverify" && ex is DbUpdateConcurrencyException
         };
 

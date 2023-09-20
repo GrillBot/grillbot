@@ -308,4 +308,14 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
                 .ToListAsync();
         }
     }
+
+    public async Task<List<GuildChannel>> GetChannelsByIdsAsync(List<string> channelIds)
+    {
+        using (CreateCounter())
+        {
+            return await Context.Channels.AsNoTracking()
+                .Where(o => channelIds.Contains(o.ChannelId))
+                .ToListAsync();
+        }
+    }
 }

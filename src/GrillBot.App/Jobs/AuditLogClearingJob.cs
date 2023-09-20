@@ -118,18 +118,17 @@ public class AuditLogClearingJob : ArchivationJobBase
 
     private static async Task ProcessGuildsAsync(GrillBotRepository repository, List<string> guildIds, XContainer xmlData)
     {
-        var guilds = new List<Guild?>();
-        foreach (var guildId in guildIds)
-            guilds.Add(await repository.Guild.FindGuildByIdAsync(guildId.ToUlong(), true));
-
+        var guilds = new List<Guild>();
+        foreach (var guildChunk in guildIds.Chunk(100))
+            guilds.AddRange(await repository.Guild.GetGuildsByIdsAsync(guildChunk.ToList()));
         xmlData.Add(TransformGuilds(guilds));
     }
 
     private static async Task ProcessChannelsAsync(GrillBotRepository repository, List<string> channelIds, XContainer xmlData)
     {
         var channels = new List<GuildChannel?>();
-        foreach (var channelId in channelIds)
-            channels.Add(await repository.Channel.FindChannelByIdAsync(channelId.ToUlong(), disableTracking: true, includeDeleted: true));
+        foreach (var channelChunk in channelIds.Chunk(100))
+            channels.AddRange(await repository.Channel.GetChannelsByIdsAsync(channelChunk.ToList()));
 
         xmlData.Add(TransformChannels(channels));
     }
@@ -137,8 +136,8 @@ public class AuditLogClearingJob : ArchivationJobBase
     private static async Task ProcessUsersAsync(GrillBotRepository repository, List<string> userIds, XContainer xmlData)
     {
         var users = new List<User?>();
-        foreach (var userId in userIds)
-            users.Add(await repository.User.FindUserByIdAsync(userId.ToUlong(), disableTracking: true));
+        foreach (var userChunk in userIds.Chunk(100))
+            users.AddRange(await repository.User.GetUsersByIdsAsync(userChunk.ToList()));
 
         xmlData.Add(TransformUsers(users));
     }

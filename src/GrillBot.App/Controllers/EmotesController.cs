@@ -28,10 +28,10 @@ public class EmotesController : Infrastructure.ControllerBase
     [HttpPost("stats/list/{unsupported}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteStatItem>>> GetStatsOfEmotesAsync([FromBody] EmotesListParams @params, bool unsupported)
+    public async Task<ActionResult<PaginatedResponse<GuildEmoteStatItem>>> GetStatsOfEmotesAsync([FromBody] EmotesListParams @params, bool unsupported)
     {
         ApiAction.Init(this, @params);
-        return Ok(await ProcessActionAsync<GetStatsOfEmotes, PaginatedResponse<EmoteStatItem>>(action => action.ProcessAsync(@params, unsupported)));
+        return Ok(await ProcessActionAsync<GetStatsOfEmotes, PaginatedResponse<GuildEmoteStatItem>>(action => action.ProcessAsync(@params, unsupported)));
     }
 
     /// <summary>

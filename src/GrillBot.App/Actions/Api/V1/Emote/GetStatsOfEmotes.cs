@@ -16,7 +16,7 @@ public class GetStatsOfEmotes : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<EmoteStatItem>> ProcessAsync(EmotesListParams parameters, bool unsupported)
+    public async Task<PaginatedResponse<GuildEmoteStatItem>> ProcessAsync(EmotesListParams parameters, bool unsupported)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -24,12 +24,25 @@ public class GetStatsOfEmotes : ApiAction
         var filtered = SetStatsFilter(data, parameters);
         filtered = SetStatsSort(filtered, parameters);
 
-        var stats = filtered.Select(o => Mapper.Map<EmoteStatItem>(o)).ToList();
-        var result = PaginatedResponse<EmoteStatItem>.Create(stats, parameters.Pagination);
+        var guilds = await repository.Guild.GetGuildsByIdsAsync(
+            filtered.Select(o => o.GuildId).Distinct().ToList()
+        );
+        var stats = filtered.Select(o => MapItem(o, guilds)).ToList();
+        var result = PaginatedResponse<GuildEmoteStatItem>.Create(stats, parameters.Pagination);
         if (unsupported)
             result.Data.ForEach(o => o.Emote.ImageUrl = null);
 
         return result;
+    }
+
+    private GuildEmoteStatItem MapItem(Database.Models.Emotes.EmoteStatItem item, List<Database.Entity.Guild> guilds)
+    {
+        var mapped = Mapper.Map<GuildEmoteStatItem>(item);
+
+        var guild = guilds.First(o => o.Id == item.GuildId);
+        mapped.Guild = Mapper.Map<Data.Models.API.Guilds.Guild>(guild);
+
+        return mapped;
     }
 
     private static IEnumerable<Database.Models.Emotes.EmoteStatItem> SetStatsFilter(IEnumerable<Database.Models.Emotes.EmoteStatItem> data, EmotesListParams @params)

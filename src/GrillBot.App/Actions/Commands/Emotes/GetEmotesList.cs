@@ -64,7 +64,7 @@ public class GetEmotesList : CommandAction
         };
     }
 
-    private Embed CreateEmbed(PaginatedResponse<EmoteStatItem> list, string sort, SortType sortType, bool filterAnimated, IUser? ofUser)
+    private Embed CreateEmbed(PaginatedResponse<GuildEmoteStatItem> list, string sort, SortType sortType, bool filterAnimated, IUser? ofUser)
     {
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)

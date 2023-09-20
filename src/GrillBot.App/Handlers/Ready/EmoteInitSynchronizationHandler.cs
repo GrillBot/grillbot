@@ -1,5 +1,4 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Managers.Discord;
 
 namespace GrillBot.App.Handlers.Ready;
 
@@ -17,25 +16,14 @@ public class EmoteInitSynchronizationHandler : IReadyEvent
     public async Task ProcessAsync()
     {
         var guilds = await DiscordClient.GetGuildsAsync();
+        var supportedEmotes = guilds.SelectMany(o => o.Emotes).Select(o => o.ToString()).ToHashSet();
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var statistics = await repository.Emote.GetAllStatisticsAsync();
         foreach (var statistic in statistics)
         {
-            statistic.IsEmoteSupported = false;
-        }
-
-        var statisticsPerGuild = statistics.GroupBy(o => o.GuildId).ToDictionary(o => o.Key, o => o.ToList());
-
-        foreach (var guild in guilds)
-        {
-            if (!statisticsPerGuild.TryGetValue(guild.Id.ToString(), out var guildStats))
-                continue;
-
-            var supportedEmotes = guild.Emotes.Select(o => o.ToString()).ToHashSet();
-            foreach (var stat in guildStats)
-                stat.IsEmoteSupported = supportedEmotes.Contains(stat.EmoteId);
+            statistic.IsEmoteSupported = supportedEmotes.Contains(statistic.EmoteId);
         }
 
         await repository.CommitAsync();

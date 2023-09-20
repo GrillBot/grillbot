@@ -19,7 +19,11 @@ public class MathClient : RestServiceBase, IMathClient
     {
         try
         {
-            return await ProcessRequestAsync(cancellationToken => HttpClient.PostAsJsonAsync("", request, cancellationToken), ReadJsonAsync<MathJsResult>);
+            return await ProcessRequestAsync(
+                cancellationToken => HttpClient.PostAsJsonAsync("", request, cancellationToken),
+                ReadJsonAsync<MathJsResult>,
+                timeout: TimeSpan.FromSeconds(10)
+            );
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
         {

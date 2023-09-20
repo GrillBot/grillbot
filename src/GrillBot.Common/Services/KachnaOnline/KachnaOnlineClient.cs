@@ -13,5 +13,11 @@ public class KachnaOnlineClient : RestServiceBase, IKachnaOnlineClient
     }
 
     public async Task<DuckState> GetCurrentStateAsync()
-        => await ProcessRequestAsync(cancellationToken => HttpClient.GetAsync("states/current", cancellationToken), ReadJsonAsync<DuckState>);
+    {
+        return await ProcessRequestAsync(
+            cancellationToken => HttpClient.GetAsync("states/current", cancellationToken),
+            ReadJsonAsync<DuckState>,
+            timeout: TimeSpan.FromSeconds(10)
+        );
+    }
 }

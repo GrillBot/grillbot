@@ -48,5 +48,10 @@ public enum UserFlags
     /// <summary>
     /// Points counting is disabled for the user.
     /// </summary>
-    PointsDisabled = 128
+    PointsDisabled = 128,
+
+    /// <summary>
+    /// User was deleted on the discord side.
+    /// </summary>
+    IsDeletedOnDiscord = 256
 }

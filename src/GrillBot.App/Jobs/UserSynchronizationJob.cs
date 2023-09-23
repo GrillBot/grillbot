@@ -8,11 +8,11 @@ using Quartz;
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
-public class UserPresenceSynchronizationJob : CleanerJobBase
+public class UserSynchronizationJob : CleanerJobBase
 {
     private GrillBotDatabaseBuilder DbFactory { get; }
 
-    public UserPresenceSynchronizationJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider) : base(serviceProvider)
+    public UserSynchronizationJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         DbFactory = dbFactory;
     }
@@ -24,6 +24,7 @@ public class UserPresenceSynchronizationJob : CleanerJobBase
         await using var repository = DbFactory.CreateRepository();
 
         await ProcessOnlineUsersAsync(repository, reportFields);
+        await SynchronizeDeletedStateAsync(repository, reportFields);
         await SynchronizeUsersStatusAsync(repository, reportFields);
 
         context.Result = FormatReportFromFields(reportFields);
@@ -55,7 +56,7 @@ public class UserPresenceSynchronizationJob : CleanerJobBase
 
     private async Task SynchronizeUsersStatusAsync(GrillBotRepository repository, List<string> reportFields)
     {
-        var users = await repository.User.GetAllUsersAsync();
+        var users = await repository.User.GetAllUsersExceptDeletedAsync();
 
         var stateChangeStats = new Dictionary<string, int>();
         var oldStates = new Dictionary<UserStatus, int>();
@@ -93,6 +94,31 @@ public class UserPresenceSynchronizationJob : CleanerJobBase
         if (user?.Username.StartsWith("Deleted User", StringComparison.InvariantCultureIgnoreCase) != false)
             return UserStatus.Offline;
         return user.GetStatus();
+    }
+
+    private async Task SynchronizeDeletedStateAsync(GrillBotRepository repository, List<string> reportFields)
+    {
+        var users = await repository.User.GetAllUsersExceptDeletedAsync();
+        var deletedCount = 0;
+
+        foreach (var user in users)
+        {
+            var discordUser = await DiscordClient.FindUserAsync(user.Id.ToUlong());
+            if (discordUser?.Username.Contains("Deleted User", StringComparison.InvariantCultureIgnoreCase) == false)
+                continue;
+
+            deletedCount++;
+
+            user.Status = UserStatus.Offline;
+            user.Flags = user.Flags.UpdateFlags((int)UserFlags.BotAdmin, false);
+            user.Flags = user.Flags.UpdateFlags((int)UserFlags.WebAdmin, false);
+            user.Flags = user.Flags.UpdateFlags((int)UserFlags.WebAdminOnline, false);
+            user.Flags = user.Flags.UpdateFlags((int)UserFlags.PublicAdminOnline, false);
+            user.Flags = user.Flags.UpdateFlags((int)UserFlags.IsDeletedOnDiscord, true);
+        }
+
+        reportFields.Add($"SynchronizeDeletedState (TotalUsers: {users.Count}, DeletedUsers: {deletedCount})");
+        await repository.CommitAsync();
     }
 
     private static string BuildReport(IReadOnlyCollection<string> privateAdmin, IReadOnlyCollection<string> publicAdmin, int count)

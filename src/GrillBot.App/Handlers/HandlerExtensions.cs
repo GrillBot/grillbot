@@ -68,9 +68,6 @@ public static class HandlerExtensions
             .AddScoped<IMessageUpdatedEvent, MessageUpdated.AuditMessageUpdatedHandler>();
 
         services
-            .AddScoped<IPresenceUpdatedEvent, PresenceUpdated.UserPresenceSynchronizationHandler>();
-
-        services
             .AddScoped<IReactionAddedEvent, ReactionAdded.PointsReactionAddedHandler>()
             .AddScoped<IReactionAddedEvent, ReactionAdded.EmoteStatsReactionAddedHandler>();
 

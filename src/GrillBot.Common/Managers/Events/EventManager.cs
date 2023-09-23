@@ -33,7 +33,6 @@ public class EventManager
 
     private void InitEvents()
     {
-        DiscordClient.PresenceUpdated += (user, before, after) => ProcessEventAsync<IPresenceUpdatedEvent>(@event => @event.ProcessAsync(user, before, after), null);
         DiscordClient.MessageReceived += message => ProcessEventAsync<IMessageReceivedEvent>(@event => @event.ProcessAsync(message), EventLogManager.MessageReceived(message));
         DiscordClient.Ready += () => ProcessEventAsync<IReadyEvent>(@event => @event.ProcessAsync(), EventLogManager.Ready());
         DiscordClient.MessageDeleted += (msg, channel) => ProcessEventAsync<IMessageDeletedEvent>(@event => @event.ProcessAsync(msg, channel), EventLogManager.MessageDeleted(msg.Id, channel.Id));

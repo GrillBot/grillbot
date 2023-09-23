@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Xml.Linq;
+using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.AuditLog;

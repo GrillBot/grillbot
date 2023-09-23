@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using GrillBot.App.Infrastructure.Jobs;
 
-namespace GrillBot.App.Jobs;
+namespace GrillBot.App.Jobs.Abstractions;
 
 public abstract class ArchivationJobBase : Job
 {

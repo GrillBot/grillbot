@@ -1,5 +1,5 @@
 ﻿using Discord.Net;
-using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Cache.Services;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Repository;
@@ -9,7 +9,7 @@ using Quartz;
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
-public class CacheCleanerJob : Job
+public class CacheCleanerJob : CleanerJobBase
 {
     private GrillBotCacheBuilder CacheBuilder { get; }
 
@@ -28,18 +28,7 @@ public class CacheCleanerJob : Job
         await ClearEmoteSuggestionsAsync(repository, reportFields);
         await ClearProfilePicturesAsync(repository, reportFields);
 
-        if (reportFields.Count > 0)
-        {
-            var indent = new string(' ', 5);
-            var builder = new StringBuilder()
-                .AppendLine("CacheCleaner(");
-
-            foreach (var field in reportFields)
-                builder.Append(indent).AppendLine(field);
-            builder.Append(')');
-
-            context.Result = builder.ToString();
-        }
+        context.Result = FormatReportFromFields(reportFields);
     }
 
     private static async Task ClearDataCacheAsync(GrillBotCacheRepository cacheRepository, ICollection<string> report)

@@ -139,7 +139,7 @@ public class Startup
             q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
             q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron", true);
             q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
-            q.AddTriggeredJob<OnlineUsersCleanJob>(Configuration, "OnlineUsersCheckPeriodTime");
+            q.AddTriggeredJob<UserPresenceSynchronizationJob>(Configuration, "UsersPresencePeriodTime");
             q.AddTriggeredJob<SuggestionJob>(Configuration, "SuggestionsCleaningInterval");
             q.AddTriggeredJob<PointsJob>(Configuration, "Points:JobInterval");
             q.AddTriggeredJob<CacheCleanerJob>(Configuration, "CacheCleanerInterval");

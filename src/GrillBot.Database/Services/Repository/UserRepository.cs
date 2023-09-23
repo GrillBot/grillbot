@@ -11,6 +11,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Enums.Internal;
+using System.Runtime.InteropServices;
 
 namespace GrillBot.Database.Services.Repository;
 
@@ -171,6 +172,14 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
             return await Context.Users.AsNoTracking()
                 .Where(o => userIds.Contains(o.Id))
                 .ToListAsync();
+        }
+    }
+
+    public async Task<List<User>> GetAllUsersAsync()
+    {
+        using (CreateCounter())
+        {
+            return await Context.Users.ToListAsync();
         }
     }
 }

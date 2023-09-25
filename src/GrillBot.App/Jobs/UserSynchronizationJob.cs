@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Jobs.Abstractions;
+﻿using Discord.Net;
+using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Database.Enums;
@@ -65,8 +66,8 @@ public class UserSynchronizationJob : CleanerJobBase
         foreach (var user in users)
         {
             var oldState = user.Status;
-            var discordUser = await DiscordClient.FindUserAsync(user.Id.ToUlong());
-            var newState = ComputeNewState(discordUser);
+            var discordUser = await GetUserAsync(user.Id);
+            var newState = (discordUser?.GetStatus()) ?? UserStatus.Offline;
             if (oldState == newState) continue;
 
             var stateChangeKey = $"{oldState} => {newState}";
@@ -89,13 +90,6 @@ public class UserSynchronizationJob : CleanerJobBase
         await repository.CommitAsync();
     }
 
-    private static UserStatus ComputeNewState(IUser? user)
-    {
-        if (user?.Username.StartsWith("Deleted User", StringComparison.InvariantCultureIgnoreCase) != false)
-            return UserStatus.Offline;
-        return user.GetStatus();
-    }
-
     private async Task SynchronizeDeletedStateAsync(GrillBotRepository repository, List<string> reportFields)
     {
         var users = await repository.User.GetAllUsersExceptDeletedAsync();
@@ -103,9 +97,19 @@ public class UserSynchronizationJob : CleanerJobBase
 
         foreach (var user in users)
         {
-            var discordUser = await DiscordClient.FindUserAsync(user.Id.ToUlong());
-            if (discordUser?.Username.Contains("Deleted User", StringComparison.InvariantCultureIgnoreCase) == false)
-                continue;
+            bool isDeleted = false;
+
+            try
+            {
+                var discordUser = await GetUserAsync(user.Id);
+                isDeleted = discordUser?.Username.Contains("Deleted User", StringComparison.InvariantCultureIgnoreCase) == true;
+            }
+            catch (HttpException ex) when (ex.DiscordCode is not null && ex.DiscordCode == DiscordErrorCode.UnknownUser)
+            {
+                isDeleted = true;
+            }
+
+            if (!isDeleted) continue;
 
             deletedCount++;
 
@@ -119,6 +123,22 @@ public class UserSynchronizationJob : CleanerJobBase
 
         reportFields.Add($"SynchronizeDeletedState (TotalUsers: {users.Count}, DeletedUsers: {deletedCount})");
         await repository.CommitAsync();
+    }
+
+    private async Task<IUser?> GetUserAsync(string userId)
+    {
+        try
+        {
+            return await DiscordClient.FindUserAsync(userId.ToUlong());
+        }
+        catch (HttpException ex) when (ex.HttpCode == HttpStatusCode.ServiceUnavailable)
+        {
+            return null;
+        }
+        catch (TimeoutException)
+        {
+            return null;
+        }
     }
 
     private static string BuildReport(IReadOnlyCollection<string> privateAdmin, IReadOnlyCollection<string> publicAdmin, int count)

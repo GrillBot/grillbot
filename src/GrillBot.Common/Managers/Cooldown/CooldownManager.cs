@@ -2,7 +2,7 @@
 
 public class CooldownManager
 {
-    private Dictionary<string, (int used, DateTime? until)> ActiveCooldowns { get; } = new();
+    private Dictionary<string, (int used, int max, DateTime? until)> ActiveCooldowns { get; } = new();
     private readonly object _locker = new();
 
     public void SetCooldown(string id, CooldownType type, int maxCount, DateTime until)
@@ -33,9 +33,22 @@ public class CooldownManager
         }
     }
 
+    public void DecreaseCooldown(string id, CooldownType type, DateTime until)
+    {
+        lock (_locker)
+        {
+            var key = CreateKey(id, type);
+
+            if (!ActiveCooldowns.TryGetValue(key, out var data))
+                return;
+
+            ActiveCooldowns[key] = CreateItem(data.used - 1, data.max, until);
+        }
+    }
+
     private static string CreateKey(string id, CooldownType type)
         => $"{type}-{id}";
 
-    private static (int used, DateTime? until) CreateItem(int used, int max, DateTime until)
-        => used >= max ? (used, until) : (used, null);
+    private static (int used, int max, DateTime? until) CreateItem(int used, int max, DateTime until)
+        => used >= max ? (used, max, until) : (used, max, null);
 }

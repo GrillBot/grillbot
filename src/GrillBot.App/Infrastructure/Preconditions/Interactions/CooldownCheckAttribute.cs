@@ -1,5 +1,4 @@
 ﻿using Discord.Interactions;
-using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Cooldown;
 using GrillBot.Common.Managers.Localization;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,8 +7,8 @@ namespace GrillBot.App.Infrastructure.Preconditions.Interactions;
 
 public class CooldownCheckAttribute : PreconditionAttribute
 {
-    private CooldownType Type { get; }
-    private int Seconds { get; }
+    public CooldownType Type { get; }
+    public int Seconds { get; }
     private int MaxAllowedCount { get; }
 
     public CooldownCheckAttribute(CooldownType type, int seconds, int maxAllowedCount)
@@ -36,7 +35,7 @@ public class CooldownCheckAttribute : PreconditionAttribute
         return Task.FromResult(PreconditionResult.FromSuccess());
     }
 
-    private static string PickId(IInteractionContext context, CooldownType type)
+    public static string PickId(IInteractionContext context, CooldownType type)
     {
         return type switch
         {

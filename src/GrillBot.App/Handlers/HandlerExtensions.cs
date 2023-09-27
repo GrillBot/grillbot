@@ -38,6 +38,7 @@ public static class HandlerExtensions
             .AddScoped<IGuildUpdatedEvent, GuildUpdated.AuditEmotesGuildUpdatedHandler>();
 
         services
+            .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.InteractionFailedCommandHandler>()
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.UpdateUserLanguageHandler>()
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.EmoteSupportCheckInteractionCommandHandler>()
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.AuditInteractionCommandHandler>();

@@ -83,9 +83,6 @@ public class User
             Flags &= ~(int)UserFlags.NotUser;
         else
             Flags |= (int)UserFlags.NotUser;
-
-        if (Username.Contains("Deleted User", StringComparison.InvariantCultureIgnoreCase))
-            Flags |= (int)UserFlags.IsDeletedOnDiscord;
     }
 
     public string GetDisplayName()

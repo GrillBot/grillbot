@@ -11,7 +11,6 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Enums.Internal;
-using System.Runtime.InteropServices;
 
 namespace GrillBot.Database.Services.Repository;
 
@@ -61,7 +60,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
         using (CreateCounter())
         {
             return await Context.Users
-                .Where(o => (o.Flags & (int)UserFlags.IsDeletedOnDiscord) == 0 && ((o.Flags & (int)UserFlags.PublicAdminOnline) != 0 || (o.Flags & (int)UserFlags.WebAdminOnline) != 0))
+                .Where(o => (o.Flags & (int)UserFlags.PublicAdminOnline) != 0 || (o.Flags & (int)UserFlags.WebAdminOnline) != 0)
                 .ToListAsync();
         }
     }
@@ -108,7 +107,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
         var today = DateTime.Now;
 
         return Context.Users.AsNoTracking()
-            .Where(o => (o.Flags & (int)UserFlags.IsDeletedOnDiscord) == 0 && o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
+            .Where(o => o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
             .OrderBy(o => o.Id);
     }
 
@@ -171,16 +170,6 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
 
             return await Context.Users.AsNoTracking()
                 .Where(o => userIds.Contains(o.Id))
-                .ToListAsync();
-        }
-    }
-
-    public async Task<List<User>> GetAllUsersExceptDeletedAsync()
-    {
-        using (CreateCounter())
-        {
-            return await Context.Users
-                .Where(o => (o.Flags & (int)UserFlags.IsDeletedOnDiscord) == 0)
                 .ToListAsync();
         }
     }

@@ -82,14 +82,17 @@ public class EventManager
         if (!InitManager.Get() && !isReadyEvent)
             return;
 
-        using (CounterManager.Create($"Events.{eventName}"))
+        using var scope = ServiceProvider.CreateScope();
+
+        var services = scope.ServiceProvider.GetServices<TInterface>();
+        foreach (var service in services)
         {
-            using var scope = ServiceProvider.CreateScope();
+            var serviceName = service!.GetType().Name;
 
-            var services = scope.ServiceProvider.GetServices<TInterface>();
-
-            foreach (var service in services)
+            using (CounterManager.Create($"Events.{eventName}.{serviceName}"))
+            {
                 await processAction(service);
+            }
         }
 
         if (storeToLogAction != null)

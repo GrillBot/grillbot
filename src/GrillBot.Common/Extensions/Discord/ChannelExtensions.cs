@@ -62,7 +62,10 @@ public static class ChannelExtensions
         {
             if (textChannel.CategoryId != anotherTextChannel.CategoryId) return false;
             if (textChannel.IsNsfw != anotherTextChannel.IsNsfw) return false;
-            if (textChannel.SlowModeInterval != anotherTextChannel.SlowModeInterval) return false;
+
+            if (textChannel is not INewsChannel && textChannel.SlowModeInterval != anotherTextChannel.SlowModeInterval)
+                return false;
+
             if (textChannel.Topic != anotherTextChannel.Topic) return false;
         }
 
@@ -103,6 +106,7 @@ public static class ChannelExtensions
             RestCategoryChannel restCategoryChannel => restCategoryChannel,
             SocketThreadChannel socketThreadChannel => socketThreadChannel.ParentChannel,
             SocketVoiceChannel socketVoiceChannel => socketVoiceChannel.Category,
+            SocketNewsChannel socketNewsChannel => socketNewsChannel.Category,
             SocketTextChannel socketTextChannel => socketTextChannel.Category,
             SocketForumChannel socketForumChannel => socketForumChannel.Category,
             _ => null

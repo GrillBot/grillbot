@@ -8,6 +8,7 @@ using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.PointsService.Enums;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Commands.Points;
 
@@ -18,12 +19,15 @@ public class PointsLeaderboard : CommandAction
     private ITextsManager Texts { get; }
     private FormatHelper FormatHelper { get; }
     private IPointsServiceClient PointsServiceClient { get; }
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public PointsLeaderboard(ITextsManager texts, FormatHelper formatHelper, IPointsServiceClient pointsServiceClient)
+    public PointsLeaderboard(ITextsManager texts, FormatHelper formatHelper, IPointsServiceClient pointsServiceClient,
+        GrillBotDatabaseBuilder databaseBuilder)
     {
         Texts = texts;
         FormatHelper = formatHelper;
         PointsServiceClient = pointsServiceClient;
+        DatabaseBuilder = databaseBuilder;
     }
 
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page, bool overAllTime)
@@ -82,22 +86,34 @@ public class PointsLeaderboard : CommandAction
     {
         var result = new List<string>();
 
+        await using var repository = DatabaseBuilder.CreateRepository();
+
         for (var i = 0; i < board.Count; i++)
         {
             var item = board[i];
-            var user = await guild.GetUserAsync(item.UserId.ToUlong());
-            if (user is not null)
-                result.Add(FormatRow(i, item, skip, user, overAllTime));
+            var username = await ResolveUsernameAsync(item.UserId.ToUlong(), guild, repository);
+
+            result.Add(FormatRow(i, item, skip, username, overAllTime));
         }
 
         return result;
     }
 
-    private string FormatRow(int index, PointsStatus item, int skip, IGuildUser guildUser, bool overAllTime)
+    private static async Task<string> ResolveUsernameAsync(ulong userId, IGuild guild, GrillBotRepository repository)
+    {
+        var guildUser = await guild.GetUserAsync(userId);
+        if (guildUser is not null)
+            return guildUser.GetDisplayName();
+
+        var dbUser = await repository.User.FindUserByIdAsync(userId, disableTracking: true);
+        return dbUser?.GetDisplayName() ?? $"UnknownUser {userId}";
+    }
+
+    private string FormatRow(int index, PointsStatus item, int skip, string username, bool overAllTime)
     {
         var value = overAllTime ? item.Total : item.YearBack;
         var points = FormatHelper.FormatNumber("Points/Board/Counts", Locale, value);
-        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, guildUser.GetFullName(), points);
+        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, username, points);
     }
 
     private async Task<MessageComponent?> CreatePaginationComponents(int currentPage)

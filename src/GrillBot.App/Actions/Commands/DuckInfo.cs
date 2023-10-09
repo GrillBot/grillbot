@@ -4,6 +4,7 @@ using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Services.KachnaOnline;
 using GrillBot.Common.Services.KachnaOnline.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Actions.Commands;
 
@@ -15,7 +16,6 @@ public class DuckInfo : CommandAction
     private LoggingManager LoggingManager { get; }
 
     private string InfoChannel => Configuration.GetRequiredSection("Services:KachnaOnline:InfoChannel").Get<string>()!;
-    private CultureInfo Culture => Texts.GetCulture(Locale);
 
     public DuckInfo(IKachnaOnlineClient client, ITextsManager texts, IConfiguration configuration, LoggingManager loggingManager)
     {
@@ -30,6 +30,8 @@ public class DuckInfo : CommandAction
         try
         {
             var currentState = await Client.GetCurrentStateAsync();
+            ConvertDateTimesToUtc(currentState);
+
             return CreateEmbed(currentState);
         }
         catch (HttpRequestException ex)
@@ -37,6 +39,17 @@ public class DuckInfo : CommandAction
             await LoggingManager.ErrorAsync("DuckInfo", "An error occured while executing request on KachnaOnline.", ex);
             throw new GrillBotException(GetText("CannotGetState").FormatWith(InfoChannel));
         }
+    }
+
+    private static void ConvertDateTimesToUtc(DuckState state)
+    {
+        state.Start = state.Start.WithKind(DateTimeKind.Local).ToUniversalTime();
+
+        if (state.PlannedEnd is not null)
+            state.PlannedEnd = state.PlannedEnd.Value.WithKind(DateTimeKind.Local).ToUniversalTime();
+
+        if (state.FollowingState is not null)
+            ConvertDateTimesToUtc(state.FollowingState);
     }
 
     private Embed CreateEmbed(DuckState currentState)
@@ -81,25 +94,25 @@ public class DuckInfo : CommandAction
 
     private void FormatWithNextOpening(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
-        var left = state.FollowingState!.Start - DateTime.Now;
+        var tag = TimestampTag.FromDateTime(state.FollowingState!.Start);
 
-        titleBuilder
-            .Append(GetText("NextOpenAt").FormatWith(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)));
-
+        titleBuilder.Append(GetText("NextOpenAt").FormatWith(tag.ToString(TimestampTagStyles.Relative)));
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 
     private void ProcessOpenBar(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
         titleBuilder.Append(GetText("Opened"));
-        embedBuilder.AddField(GetText("Open"), state.Start.ToString("HH:mm"), true);
+
+        var openingAt = TimestampTag.FromDateTimeOffset(state.Start);
+        embedBuilder.AddField(GetText("Open"), openingAt.ToString(TimestampTagStyles.ShortTime), true);
 
         if (state.PlannedEnd.HasValue)
         {
-            var left = state.PlannedEnd.Value - DateTime.Now;
+            var tag = TimestampTag.FromDateTime(state.PlannedEnd.Value);
 
-            titleBuilder.Append(GetText("TimeToClose").FormatWith(left.Humanize(culture: Culture, precision: int.MaxValue, minUnit: TimeUnit.Minute)));
-            embedBuilder.AddField(GetText("Closing"), state.PlannedEnd.Value.ToString("HH:mm"), true);
+            titleBuilder.Append(GetText("TimeToClose").FormatWith(tag.ToString(TimestampTagStyles.Relative)));
+            embedBuilder.AddField(GetText("Closing"), tag.ToString(TimestampTagStyles.ShortTime), true);
         }
 
         AddNoteToEmbed(embedBuilder, state.Note);
@@ -107,9 +120,9 @@ public class DuckInfo : CommandAction
 
     private void ProcessChillzone(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
-        titleBuilder
-            .Append(GetText("ChillzoneTo").FormatWith(state.PlannedEnd!.Value.ToString("HH:mm")));
+        var closingAt = TimestampTag.FromDateTime(state.PlannedEnd!.Value);
 
+        titleBuilder.Append(GetText("ChillzoneTo").FormatWith(closingAt.ToString(TimestampTagStyles.ShortTime)));
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 

@@ -48,7 +48,8 @@ public class Startup
             AlwaysResolveStickers = true,
             DefaultRetryMode = RetryMode.RetryRatelimit,
             SuppressUnknownDispatchWarnings = true,
-            LogGatewayIntentWarnings = false
+            LogGatewayIntentWarnings = false,
+            UseInteractionSnowflakeDate = false
         };
 
         var currentAssembly = Assembly.GetExecutingAssembly();

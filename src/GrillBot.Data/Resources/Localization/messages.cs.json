@@ -129,10 +129,10 @@
       "DuckName": "U kachničky",
       "Closed": "Kachna je zavřená.",
       "NextOpenNotPlanned": "Další otvíračka není naplánovaná.",
-      "NextOpenAt": "Další otvíračka bude za {0}.",
+      "NextOpenAt": "Další otvíračka bude {0}.",
       "Opened": "Kachna je otevřená!",
       "Open": "Otevřeno",
-      "TimeToClose": " Do konce zbývá {0}.",
+      "TimeToClose": " Otvíračka končí {0}.",
       "Closing": "Zavíráme",
       "ChillzoneTo": "Kachna je otevřená v režimu chillzóna až do {0}!",
       "Note": "Poznámka"

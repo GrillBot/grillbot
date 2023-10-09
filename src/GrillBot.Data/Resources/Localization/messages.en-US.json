@@ -129,10 +129,10 @@
       "DuckName": "U kachničky",
       "Closed": "Kachna is closed.",
       "NextOpenNotPlanned": "The next opener is not scheduled.",
-      "NextOpenAt": "Opening hours start at {0}.",
+      "NextOpenAt": "Opening hours start {0}.",
       "Opened": "Kachna is open!",
       "Open": "OPEN",
-      "TimeToClose": " {0} left to go.",
+      "TimeToClose": " Opening hours ends {0}.",
       "Closing": "We are closing",
       "ChillzoneTo": "The duck is open in chillzone mode until {0}!",
       "Note": "Note"

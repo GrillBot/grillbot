@@ -1,12 +1,16 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Managers.Discord;
 using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Handlers.Synchronization.Database;
 
 public class GuildSynchronizationHandler : BaseSynchronizationHandler, IGuildAvailableEvent, IGuildUpdatedEvent, IJoinedGuildEvent
 {
-    public GuildSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder) : base(databaseBuilder)
+    private IEmoteManager EmoteManager { get; }
+
+    public GuildSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder, IEmoteManager emoteManager) : base(databaseBuilder)
     {
+        EmoteManager = emoteManager;
     }
 
     // GuildAvailable
@@ -15,7 +19,9 @@ public class GuildSynchronizationHandler : BaseSynchronizationHandler, IGuildAva
         await using var repository = CreateRepository();
         await repository.Guild.GetOrCreateGuildAsync(guild);
 
-        var supportedEmotes = guild.Emotes.Select(o => o.ToString()).ToHashSet();
+        var guildEmotes = await EmoteManager.GetSupportedEmotesAsync();
+        var supportedEmotes = guildEmotes.Select(o => o.ToString()).ToHashSet();
+
         var statistics = await repository.Emote.GetStatisticsOfGuildAsync(guild);
         foreach (var stat in statistics)
             stat.IsEmoteSupported = supportedEmotes.Contains(stat.EmoteId);

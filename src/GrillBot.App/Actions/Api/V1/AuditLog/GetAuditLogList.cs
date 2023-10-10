@@ -60,8 +60,7 @@ public class GetAuditLogList : ApiAction
         if (dateTime.Value.Kind == DateTimeKind.Utc)
             return dateTime;
 
-        var val = dateTime.Value;
-        return new DateTime(val.Year, val.Month, val.Day, val.Hour, val.Minute, val.Second, val.Millisecond, DateTimeKind.Local).ToUniversalTime();
+        return dateTime.Value.WithKind(DateTimeKind.Local).ToUniversalTime();
     }
 
     private static AggregateException CreateValidationExceptions(ValidationProblemDetails validationProblemDetails)

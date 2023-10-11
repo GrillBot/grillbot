@@ -78,7 +78,7 @@ jobs:
           tags: ghcr.io/grillbot/grillbot:latest
           build-args: |
             github_actions_token=${{ secrets.GITHUB_TOKEN }}
-  DeployToProduction:
+  Deployment_Production:
     runs-on: ubuntu-latest
     environment: "Production"
     needs: CreateDockerImage

@@ -4,8 +4,6 @@ namespace GrillBot.App.Jobs.Abstractions;
 
 public abstract class CleanerJobBase : Job
 {
-    protected static readonly string Indent = new(' ', 5);
-
     protected CleanerJobBase(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }

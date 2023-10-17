@@ -39,11 +39,10 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
         logRoot.Add(TransformGuilds(data.Select(o => o.Guild)));
 
         var users = data
-            .Select(o => o.FromUser)
-            .Concat(data.Select(o => o.ToUser))
-            .Where(o => o != null)
-            .DistinctBy(o => $"{o!.UserId}/{o.GuildId}")
-            .Select(o => o!);
+            .Select(o => o.FromUser!)
+            .Concat(data.Select(o => o.ToUser!))
+            .Where(o => o is not null)
+            .DistinctBy(o => $"{o!.UserId}/{o.GuildId}");
         logRoot.Add(TransformGuildUsers(users));
 
         foreach (var item in data)
@@ -64,14 +63,16 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
             repository.Remove(item);
         }
 
-        await SaveDataAsync(logRoot);
+        var zipName = await SaveDataAsync(logRoot);
         await repository.CommitAsync();
 
         var xmlSize = Encoding.UTF8.GetBytes(logRoot.ToString()).Length.Bytes().ToString();
-        context.Result = $"Items: {data.Count}, XmlSize: {xmlSize}";
+        var zipSize = new FileInfo(zipName).Length.Bytes().ToString();
+
+        context.Result = BuildReport(xmlSize, zipSize, data);
     }
 
-    private async Task SaveDataAsync(XElement xml)
+    private async Task<string> SaveDataAsync(XElement xml)
     {
         var storage = FileStorageFactory.Create("Unverify");
         var backupFilename = $"UnverifyLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
@@ -89,5 +90,26 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
         archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
 
         File.Delete(fileinfo.FullName);
+        return zipFilename;
+    }
+
+    private static string BuildReport(string xmlSize, string zipSize, List<Database.Entity.UnverifyLog> data)
+    {
+        var builder = new StringBuilder()
+            .AppendFormat("Items: {0}, XmlSize: {1}, ZipSize: {0}", xmlSize, zipSize)
+            .AppendLine()
+            .AppendLine();
+
+        builder.AppendLine("Archived types: (");
+        foreach (var type in data.GroupBy(o => o.Operation.ToString()).OrderBy(o => o.Key))
+            builder.AppendFormat("{0}{1}: {2}", Indent, type.Key, type.Count()).AppendLine();
+        builder.AppendLine(")");
+
+        builder.AppendLine("Archived months: (");
+        foreach (var month in data.OrderBy(o => o.CreatedAt).GroupBy(o => $"{o.CreatedAt.Month}-{o.CreatedAt.Year}"))
+            builder.AppendFormat("{0}{1}: {2}", Indent, month.Key, month.Count()).AppendLine();
+        builder.Append(')');
+
+        return builder.ToString();
     }
 }

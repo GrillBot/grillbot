@@ -12,6 +12,8 @@ namespace GrillBot.App.Infrastructure.Jobs;
 
 public abstract class Job : IJob
 {
+    protected static readonly string Indent = new(' ', 5);
+
     private IServiceProvider ServiceProvider { get; }
 
     protected IDiscordClient DiscordClient { get; }

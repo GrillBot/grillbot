@@ -152,15 +152,14 @@ public class AuditLogClearingJob : ArchivationJobBase
             .AppendLine()
             .AppendLine();
 
-        var indent = new string(' ', 5);
         builder.AppendLine("Archived types: (");
         foreach (var type in result.PerType)
-            builder.AppendFormat("{0}{1}: {2}", indent, type.Key, type.Value).AppendLine();
+            builder.AppendFormat("{0}{1}: {2}", Indent, type.Key, type.Value).AppendLine();
         builder.AppendLine(")");
 
         builder.AppendLine("Archived months: (");
         foreach (var month in result.PerMonths)
-            builder.AppendFormat("{0}{1}: {2}", indent, month.Key, month.Value).AppendLine();
+            builder.AppendFormat("{0}{1}: {2}", Indent, month.Key, month.Value).AppendLine();
         builder.Append(')');
 
         return builder.ToString();

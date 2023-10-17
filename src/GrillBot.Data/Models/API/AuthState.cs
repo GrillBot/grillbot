@@ -28,6 +28,6 @@ public class AuthState
         var bytes = Convert.FromBase64String(encodedData);
         var json = Encoding.UTF8.GetString(bytes);
 
-        return JsonConvert.DeserializeObject<AuthState>(json);
+        return JsonConvert.DeserializeObject<AuthState>(json)!;
     }
 }

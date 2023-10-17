@@ -3,8 +3,8 @@
 public class AutoReplyItem
 {
     public long Id { get; set; }
-    public string Template { get; set; }
-    public string Reply { get; set; }
+    public string Template { get; set; } = null!;
+    public string Reply { get; set; } = null!;
     public long Flags { get; set; }
 }
 

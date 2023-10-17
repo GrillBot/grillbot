@@ -15,7 +15,7 @@ public class ProgressBar
 
     private int Total { get; }
     private int Current { get; set; }
-    private string AdditionalContent { get; set; }
+    private string? AdditionalContent { get; set; }
 
     public double Percentage => Math.Round(Current / (double)Total, 1);
 
@@ -24,7 +24,7 @@ public class ProgressBar
         Total = total;
     }
 
-    public void SetValue(int value, string additionalContent)
+    public void SetValue(int value, string? additionalContent)
     {
         Current = value;
         AdditionalContent = additionalContent;
@@ -44,9 +44,11 @@ public class ProgressBar
             builder.Append(new string(EmptyBarItem, MaxBarLength));
         }
 
-        return builder
-            .Append($" ({Math.Round(Percentage * 100)} %) {AdditionalContent}")
-            .ToString();
+        builder.AppendFormat(" ({0} %)", Math.Round(Percentage * 100));
+        if (!string.IsNullOrEmpty(AdditionalContent))
+            builder.Append(' ').Append(AdditionalContent);
+
+        return builder.ToString();
     }
 
     public bool ValueChanged(int lastPercentage) => (int)Math.Round(Percentage * 100) != lastPercentage;

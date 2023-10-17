@@ -11,9 +11,9 @@ public class UnverifyLogSet
     public List<ulong> RolesToRemove { get; set; } = new();
     public List<ChannelOverride> ChannelsToKeep { get; set; } = new();
     public List<ChannelOverride> ChannelsToRemove { get; set; } = new();
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
     public bool IsSelfUnverify { get; set; }
-    public string Language { get; set; }
+    public string? Language { get; set; }
     public bool KeepMutedRole { get; set; }
 
     public static UnverifyLogSet FromProfile(UnverifyUserProfile profile)

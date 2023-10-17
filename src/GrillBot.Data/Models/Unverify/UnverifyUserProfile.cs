@@ -15,7 +15,7 @@ public class UnverifyUserProfile
     public List<IRole> RolesToKeep { get; set; }
     public List<ChannelOverride> ChannelsToKeep { get; set; }
     public List<ChannelOverride> ChannelsToRemove { get; set; }
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
     public bool IsSelfUnverify { get; set; }
     public string Language { get; set; }
     public bool KeepMutedRole { get; set; }
@@ -34,10 +34,10 @@ public class UnverifyUserProfile
         ChannelsToRemove = new List<ChannelOverride>();
     }
 
-    public Task ReturnRolesAsync(RequestOptions options = null)
+    public Task ReturnRolesAsync(RequestOptions? options = null)
         => Destination.AddRolesAsync(RolesToRemove, options);
 
-    public async Task ReturnChannelsAsync(IGuild guild, RequestOptions options = null)
+    public async Task ReturnChannelsAsync(IGuild guild, RequestOptions? options = null)
     {
         foreach (var channelToRemove in ChannelsToRemove)
         {
@@ -48,10 +48,10 @@ public class UnverifyUserProfile
         }
     }
 
-    public Task RemoveRolesAsync(RequestOptions options = null)
+    public Task RemoveRolesAsync(RequestOptions? options = null)
         => Destination.RemoveRolesAsync(RolesToRemove, options);
 
-    public async Task RemoveChannelsAsync(IGuild guild, RequestOptions options = null)
+    public async Task RemoveChannelsAsync(IGuild guild, RequestOptions? options = null)
     {
         foreach (var channelToRemove in ChannelsToRemove)
         {

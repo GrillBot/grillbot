@@ -29,12 +29,14 @@ public class ChannelInitSynchronizationHandler : IReadyEvent
 
         foreach (var guild in guilds)
         {
-            var guildChannels = channels.FindAll(o => o.GuildId == guild.Id.ToString());
+            var guildChannels = channels
+                .Where(o => o.GuildId == guild.Id.ToString())
+                .ToDictionary(o => o.ChannelId, o => o);
 
             foreach (var channel in await guild.GetChannelsAsync())
             {
-                var dbChannel = guildChannels.Find(o => o.ChannelId == channel.Id.ToString());
-                dbChannel?.Update(channel);
+                if (guildChannels.TryGetValue(channel.Id.ToString(), out var dbChannel))
+                    dbChannel.Update(channel);
             }
         }
 

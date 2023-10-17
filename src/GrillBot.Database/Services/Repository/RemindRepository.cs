@@ -34,6 +34,8 @@ public class RemindRepository : SubRepositoryBase<GrillBotContext>
         using (CreateCounter())
         {
             return await Context.Reminders
+                .Include(o => o.FromUser)
+                .Include(o => o.ToUser)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
     }

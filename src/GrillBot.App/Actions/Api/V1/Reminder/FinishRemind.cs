@@ -5,6 +5,7 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
+using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Actions.Api.V1.Reminder;
 
@@ -19,6 +20,7 @@ public class FinishRemind : ApiAction
     public bool IsGone { get; private set; }
     public bool IsAuthorized { get; private set; }
     public string? ErrorMessage { get; private set; }
+    public RemindMessage? Remind { get; private set; }
 
     private bool IsCancel => ApiContext.GetUserId() != DiscordClient.CurrentUser.Id;
 
@@ -38,60 +40,70 @@ public class FinishRemind : ApiAction
         IsGone = false;
         IsAuthorized = false;
         ErrorMessage = null;
+        Remind = null;
     }
 
     public async Task ProcessAsync(long id, bool notify, bool isService)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-        var remind = await repository.Remind.FindRemindByIdAsync(id);
 
-        if (remind == null)
+        Remind = await repository.Remind.FindRemindByIdAsync(id);
+        if (Remind == null)
             throw new NotFoundException(Texts["RemindModule/CancelRemind/NotFound", ApiContext.Language]);
 
-        CheckAndSetState(remind);
+        CheckAndSetState();
         if (IsGone) return;
 
-        CheckAndSetAuthorization(remind, isService);
+        CheckAndSetAuthorization(isService);
         if (!IsAuthorized) return;
 
-        await ProcessRemindAsync(remind, notify);
-        await CreateLogItemAsync(remind, notify);
+        await ProcessRemindAsync(notify);
+        await CreateLogItemAsync(notify);
         await repository.CommitAsync();
     }
 
-    private void CheckAndSetState(Database.Entity.RemindMessage message)
+    private void CheckAndSetState()
     {
-        IsGone = !string.IsNullOrEmpty(message.RemindMessageId);
+        if (Remind is null)
+            return;
+
+        IsGone = !string.IsNullOrEmpty(Remind.RemindMessageId);
 
         if (!IsGone) return;
-        ErrorMessage = message.RemindMessageId == RemindHelper.NotSentRemind
+        ErrorMessage = Remind.RemindMessageId == RemindHelper.NotSentRemind
             ? Texts["RemindModule/CancelRemind/AlreadyCancelled", ApiContext.Language]
             : Texts["RemindModule/CancelRemind/AlreadyNotified", ApiContext.Language];
     }
 
-    private void CheckAndSetAuthorization(Database.Entity.RemindMessage message, bool isService)
+    private void CheckAndSetAuthorization(bool isService)
     {
+        if (Remind is null)
+            return;
+
         var @operator = ApiContext.LoggedUser!;
 
         // Only user who created remind, receiver, current bot (in the scheduled job) or authorized user in the web administration can cancel/process notify.
-        IsAuthorized = isService || message.FromUserId == @operator.Id.ToString() || message.ToUserId == @operator.Id.ToString() || @operator.Id == DiscordClient.CurrentUser.Id;
+        IsAuthorized = isService || Remind.FromUserId == @operator.Id.ToString() || Remind.ToUserId == @operator.Id.ToString() || @operator.Id == DiscordClient.CurrentUser.Id;
 
         if (!IsAuthorized)
             ErrorMessage = Texts["RemindModule/CancelRemind/InvalidOperator", ApiContext.Language];
     }
 
-    private async Task ProcessRemindAsync(Database.Entity.RemindMessage remind, bool notify)
+    private async Task ProcessRemindAsync(bool notify)
     {
+        if (Remind is null)
+            return;
+
         if (notify)
-            remind.RemindMessageId = await RemindHelper.ProcessRemindAsync(remind, IsCancel);
+            Remind.RemindMessageId = await RemindHelper.ProcessRemindAsync(Remind, IsCancel);
         else
-            remind.RemindMessageId = RemindHelper.NotSentRemind;
+            Remind.RemindMessageId = RemindHelper.NotSentRemind;
     }
 
-    private async Task CreateLogItemAsync(Database.Entity.RemindMessage remind, bool notify)
+    private async Task CreateLogItemAsync(bool notify)
     {
         // Is not required create log item while processing from scheduled jobs.
-        if (!IsCancel) return;
+        if (!IsCancel || Remind is null) return;
 
         var logRequest = new LogRequest
         {
@@ -99,7 +111,7 @@ public class FinishRemind : ApiAction
             CreatedAt = DateTime.UtcNow,
             LogMessage = new LogMessageRequest
             {
-                Message = $"Bylo stornováno upozornění s ID {remind.Id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(),
+                Message = $"Bylo stornováno upozornění s ID {Remind.Id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(),
                 Severity = LogSeverity.Info,
                 Source = $"Remind.{nameof(FinishRemind)}",
                 SourceAppName = "GrillBot"

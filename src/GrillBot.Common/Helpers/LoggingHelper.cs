@@ -3,6 +3,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,8 @@ public static class LoggingHelper
             () => ex is TaskCanceledException && ex.InnerException is null,
             () => ex is HttpException { HttpCode: HttpStatusCode.ServiceUnavailable },
             () => ex is TimeoutException && (ex.Message.Contains("defer") || ex.Message.Contains("Cannot respond to an interaction after 3 seconds!")),
-            () => source == "RemoveUnverify" && ex is DbUpdateConcurrencyException
+            () => source == "RemoveUnverify" && ex is DbUpdateConcurrencyException,
+            () => ex is HttpException { DiscordCode: DiscordErrorCode.UnknownInteraction }
         };
 
         return Array.Exists(conditions, o => o());

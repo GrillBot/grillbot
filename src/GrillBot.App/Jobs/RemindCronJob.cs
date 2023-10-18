@@ -21,10 +21,12 @@ public class RemindCronJob : Job
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        var reminders = await GetIdsForProcessAsync();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
+        var id = await repository.Remind.GetFirstIdForProcessAsync();
         var result = new Dictionary<long, string>();
-        foreach (var id in reminders)
+
+        while (id != 0)
         {
             try
             {
@@ -37,21 +39,19 @@ public class RemindCronJob : Job
                 result.Add(id, CreateReportMessage(ex));
                 await LoggingManager.ErrorAsync(nameof(RemindCronJob), $"An error occured while processing remind #{id}", ex);
             }
+            finally
+            {
+                id = await repository.Remind.GetFirstIdForProcessAsync();
+            }
         }
 
         if (result.Count > 0)
         {
-            var resultBuilder = new StringBuilder($"Processed reminders ({reminders.Count}):").AppendLine()
+            var resultBuilder = new StringBuilder($"Processed reminders ({result.Count}):").AppendLine()
                 .AppendJoin("\n", result.Select(o => $"{o.Key}: {o.Value}"));
 
             context.Result = resultBuilder.ToString();
         }
-    }
-
-    private async Task<List<long>> GetIdsForProcessAsync()
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.Remind.GetRemindIdsForProcessAsync();
     }
 
     private string CreateReportMessage(Exception? exception = null)

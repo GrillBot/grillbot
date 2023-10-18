@@ -22,15 +22,17 @@ public class RemindHelper
 
     public async Task<string> ProcessRemindAsync(Database.Entity.RemindMessage remind, bool force)
     {
-        var embed = await CreateRemindEmbedAsync(remind, force);
+        var embed = CreateRemindEmbed(remind, force);
 
-        var destination = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
-        if (destination == null) return NotSentRemind;
+        var targetUser = await DiscordClient.FindUserAsync(remind.ToUserId.ToUlong());
+        if (targetUser is null)
+            return NotSentRemind;
 
         try
         {
             var postponeComponents = CreatePostponeComponents(force);
-            var msg = await destination.SendMessageAsync(embed: embed.Build(), components: postponeComponents);
+            var msg = await targetUser.SendMessageAsync(embed: embed.Build(), components: postponeComponents);
+
             return msg.Id.ToString();
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
@@ -58,7 +60,7 @@ public class RemindHelper
         return ComponentsHelper.CreateWrappedComponents(components);
     }
 
-    private async Task<EmbedBuilder> CreateRemindEmbedAsync(Database.Entity.RemindMessage remind, bool force = false)
+    private EmbedBuilder CreateRemindEmbed(Database.Entity.RemindMessage remind, bool force = false)
     {
         const string localeBase = "RemindModule/NotifyMessage/";
 
@@ -70,19 +72,13 @@ public class RemindHelper
             .WithTitle(Texts[force ? localeBase + "ForceTitle" : localeBase + "Title", locale])
             .AddField(Texts[localeBase + "Fields/Id", locale], remind.Id, true);
 
-        if (remind.FromUserId != remind.ToUserId)
-        {
-            var fromUser = await DiscordClient.FindUserAsync(remind.FromUserId.ToUlong());
-
-            if (fromUser != null)
-                embed.AddField(Texts[localeBase + "Fields/From", locale], fromUser.GetFullName(), true);
-        }
+        if (remind.FromUserId != remind.ToUserId && remind.FromUser is not null)
+            embed.AddField(Texts[localeBase + "Fields/From", locale], remind.FromUser.GetDisplayName(), true);
 
         if (remind.Postpone > 0)
             embed.AddField(Texts[localeBase + "Fields/Attention", locale], Texts[localeBase + "Postponed", locale].FormatWith(remind.Postpone));
 
-        embed
-            .AddField(Texts[localeBase + "Fields/Message", locale], remind.Message);
+        embed.AddField(Texts[localeBase + "Fields/Message", locale], remind.Message);
 
         if (!force)
             embed.AddField(Texts[localeBase + "Fields/Options", locale], Texts[localeBase + "Options", locale]);

@@ -18,14 +18,16 @@ public class RemindRepository : SubRepositoryBase<GrillBotContext>
     {
     }
 
-    public async Task<List<long>> GetRemindIdsForProcessAsync()
+    public async Task<long> GetFirstIdForProcessAsync()
     {
         using (CreateCounter())
         {
-            return await Context.Reminders.AsNoTracking()
+            var query = Context.Reminders.AsNoTracking()
                 .Where(o => o.RemindMessageId == null && o.At <= DateTime.Now)
-                .Select(o => o.Id)
-                .ToListAsync();
+                .OrderBy(o => o.At)
+                .Select(o => o.Id);
+
+            return await query.FirstOrDefaultAsync();
         }
     }
 

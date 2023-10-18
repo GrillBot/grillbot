@@ -75,8 +75,8 @@ public class DataController : Infrastructure.ControllerBase
     [HttpGet("emotes")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<EmoteItem>>> GetSupportedEmotes()
-        => Ok(await ProcessActionAsync<GetSupportedEmotes, List<EmoteItem>>(action => action.ProcessAsync()));
+    public async Task<ActionResult<List<GuildEmoteItem>>> GetSupportedEmotes()
+        => Ok(await ProcessActionAsync<GetSupportedEmotes, List<GuildEmoteItem>>(action => action.ProcessAsync()));
 
     /// <summary>
     /// Get list of methods available from public api.

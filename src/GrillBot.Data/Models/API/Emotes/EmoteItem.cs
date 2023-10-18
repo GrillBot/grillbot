@@ -9,14 +9,3 @@ public class EmoteItem
     public string? ImageUrl { get; set; }
     public string FullId { get; set; } = null!;
 }
-
-public class EmoteItemMappingProfile : AutoMapper.Profile
-{
-    public EmoteItemMappingProfile()
-    {
-        CreateMap<Emote, EmoteItem>()
-            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
-            .ForMember(dst => dst.ImageUrl, opt => opt.MapFrom(src => src.Url))
-            .ForMember(dst => dst.FullId, opt => opt.MapFrom(src => src.ToString()));
-    }
-}

@@ -62,51 +62,60 @@ public class GetLogs : ApiAction
             case UnverifyOperation.Autoremove:
             case UnverifyOperation.Recover:
             case UnverifyOperation.Remove:
-            {
-                var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogRemove>(entity.Data)!;
-                result.RemoveData = new UnverifyLogRemove
                 {
-                    ReturnedChannelIds = jsonData.ReturnedOverwrites.ConvertAll(o => o.ChannelId.ToString()),
-                    ReturnedRoles = jsonData.ReturnedRoles.ConvertAll(o => Mapper.Map<Role>(guild.GetRole(o))),
-                    FromWeb = jsonData.FromWeb,
-                    Force = jsonData.Force,
-                    Language = jsonData.Language
-                };
-            }
+                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogRemove>(entity.Data)!;
+                    result.RemoveData = new UnverifyLogRemove
+                    {
+                        ReturnedChannelIds = jsonData.ReturnedOverwrites.ConvertAll(o => o.ChannelId.ToString()),
+                        ReturnedRoles = MapRoles(guild, jsonData.ReturnedRoles),
+                        FromWeb = jsonData.FromWeb,
+                        Force = jsonData.Force,
+                        Language = jsonData.Language
+                    };
+                }
                 break;
             case UnverifyOperation.Selfunverify:
             case UnverifyOperation.Unverify:
-            {
-                var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(entity.Data)!;
-                result.SetData = new UnverifyLogSet
                 {
-                    ChannelIdsToKeep = jsonData.ChannelsToKeep.ConvertAll(o => o.ChannelId.ToString()),
-                    ChannelIdsToRemove = jsonData.ChannelsToRemove.ConvertAll(o => o.ChannelId.ToString()),
-                    End = jsonData.End,
-                    IsSelfUnverify = jsonData.IsSelfUnverify,
-                    Reason = jsonData.Reason,
-                    RolesToKeep = jsonData.RolesToKeep.ConvertAll(o => Mapper.Map<Role>(guild.GetRole(o))),
-                    RolesToRemove = jsonData.RolesToRemove.ConvertAll(o => Mapper.Map<Role>(guild.GetRole(o))),
-                    Start = jsonData.Start,
-                    Language = jsonData.Language
-                };
-            }
+                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(entity.Data)!;
+                    result.SetData = new UnverifyLogSet
+                    {
+                        ChannelIdsToKeep = jsonData.ChannelsToKeep.ConvertAll(o => o.ChannelId.ToString()),
+                        ChannelIdsToRemove = jsonData.ChannelsToRemove.ConvertAll(o => o.ChannelId.ToString()),
+                        End = jsonData.End,
+                        IsSelfUnverify = jsonData.IsSelfUnverify,
+                        Reason = jsonData.Reason,
+                        RolesToKeep = MapRoles(guild, jsonData.RolesToKeep),
+                        RolesToRemove = MapRoles(guild, jsonData.RolesToRemove),
+                        Start = jsonData.Start,
+                        Language = jsonData.Language
+                    };
+                }
                 break;
             case UnverifyOperation.Update:
-            {
-                var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogUpdate>(entity.Data)!;
-                result.UpdateData = new UnverifyLogUpdate
                 {
-                    End = jsonData.End,
-                    Start = jsonData.Start,
-                    Reason = jsonData.Reason
-                };
-            }
+                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogUpdate>(entity.Data)!;
+                    result.UpdateData = new UnverifyLogUpdate
+                    {
+                        End = jsonData.End,
+                        Start = jsonData.Start,
+                        Reason = jsonData.Reason
+                    };
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException($"Invalid operation type ({entity.Operation})", nameof(entity.Operation));
         }
 
         return result;
+    }
+
+    private List<Role> MapRoles(IGuild guild, List<ulong> roleIds)
+    {
+        return roleIds
+            .Select(id => guild.GetRole(id))
+            .Where(role => role is not null)
+            .Select(role => Mapper.Map<Role>(role))
+            .ToList();
     }
 }

@@ -11,7 +11,7 @@ public class UnverifyLogSet
     public List<Role> RolesToRemove { get; set; }
     public List<string> ChannelIdsToKeep { get; set; }
     public List<string> ChannelIdsToRemove { get; set; }
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
     public bool IsSelfUnverify { get; set; }
     public string Language { get; set; }
 }

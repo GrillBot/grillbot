@@ -43,8 +43,8 @@ public class StatisticsController : Infrastructure.ControllerBase
     /// <response code="200">Returns statistics about interaction commannds</response>
     [HttpGet("interactions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<AuditLog.StatisticItem>>> GetInteractionsStatusAsync()
-        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, List<AuditLog.StatisticItem>>(client => client.GetInteractionStatisticsListAsync()));
+    public async Task<ActionResult<AuditLog.InteractionStatistics>> GetInteractionsStatusAsync()
+        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, AuditLog.InteractionStatistics>(client => client.GetInteractionStatisticsAsync()));
 
     /// <summary>
     /// Get statistics about unverify logs by type.
@@ -99,7 +99,7 @@ public class StatisticsController : Infrastructure.ControllerBase
         => Ok(ProcessAction<GetOperationStats, OperationStats>(action => action.Process()));
 
     /// <summary>
-    /// Get statistics of commands cross grouped with users. 
+    /// Get statistics of commands cross grouped with users.
     /// </summary>
     [HttpGet("interactions/users")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -107,7 +107,7 @@ public class StatisticsController : Infrastructure.ControllerBase
         => Ok(await ProcessActionAsync<GetUserCommandStatistics, List<UserActionCountItem>>(action => action.ProcessAsync()));
 
     /// <summary>
-    /// Get statistics of api requests cross grouped with users. 
+    /// Get statistics of api requests cross grouped with users.
     /// </summary>
     [HttpGet("api/users")]
     [ProducesResponseType(StatusCodes.Status200OK)]

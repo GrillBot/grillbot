@@ -10,12 +10,12 @@ public class OAuth2LoginToken
     /// <summary>
     /// Error message if login failed.
     /// </summary>
-    public string ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Access token if login was success.
     /// </summary>
-    public string AccessToken { get; set; }
+    public string? AccessToken { get; set; }
 
     /// <summary>
     /// Datetime in UTC when login expires.

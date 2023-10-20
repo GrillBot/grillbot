@@ -50,19 +50,15 @@ public class UpdateUnverify : ApiAction
         var toUser = guild == null ? null : await guild.GetUserAsync(userId);
         var fromUser = guild == null ? null : await guild.GetUserAsync(ApiContext.GetUserId());
 
-        ValidateData(guild, toUser);
-        return (guild, fromUser, toUser);
-    }
-
-    private void ValidateData(IGuild guild, IGuildUser toUser)
-    {
         if (guild == null)
             throw new NotFoundException(Texts["Unverify/GuildNotFound", ApiContext.Language]);
         if (toUser == null)
             throw new NotFoundException(Texts["Unverify/DestUserNotFound", ApiContext.Language]);
+
+        return (guild, fromUser!, toUser);
     }
 
-    private void EnsureValidUser(Database.Entity.GuildUser user, DateTime endAt)
+    private void EnsureValidUser(Database.Entity.GuildUser? user, DateTime endAt)
     {
         if (user?.Unverify == null)
             throw new NotFoundException(Texts["Unverify/Update/UnverifyNotFound", ApiContext.Language]);
@@ -70,7 +66,7 @@ public class UpdateUnverify : ApiAction
             throw new ValidationException(Texts["Unverify/Update/NotEnoughTime", ApiContext.Language]).ToBadRequestValidation(endAt, nameof(endAt));
     }
 
-    private async Task SendNotificationAsync(IGuildUser toUser, DateTime newEnd, string reason, Database.Entity.GuildUser userEntity)
+    private async Task SendNotificationAsync(IGuildUser toUser, DateTime newEnd, string? reason, Database.Entity.GuildUser userEntity)
     {
         try
         {

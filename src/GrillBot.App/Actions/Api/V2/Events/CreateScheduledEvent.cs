@@ -43,7 +43,7 @@ public class CreateScheduledEvent : ApiAction
         return guild ?? throw new NotFoundException(Texts["GuildScheduledEvents/GuildNotFound", ApiContext.Language]);
     }
 
-    private static Image? CreateImage(byte[] image)
+    private static Image? CreateImage(byte[]? image)
         => image == null || image.Length == 0 ? null : new Image(new MemoryStream(image));
 
     private void ValidateInput(ScheduledEventParams parameters)

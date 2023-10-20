@@ -8,7 +8,7 @@ namespace GrillBot.App.Managers;
 
 public class AutoReplyManager
 {
-    private HashSet<ulong> DisabledChannels { get; set; }
+    private HashSet<ulong> DisabledChannels { get; set; } = new();
     private List<AutoReplyItem> Messages { get; } = new();
     private SemaphoreSlim Semaphore { get; } = new(1);
 
@@ -57,7 +57,7 @@ public class AutoReplyManager
         }
     }
 
-    public async Task<AutoReplyItem> FindAsync(string content)
+    public async Task<AutoReplyItem?> FindAsync(string content)
     {
         await Semaphore.WaitAsync();
 

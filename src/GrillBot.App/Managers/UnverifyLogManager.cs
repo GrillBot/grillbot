@@ -56,7 +56,7 @@ public class UnverifyLogManager
         return SaveAsync(UnverifyOperation.Remove, data, from, guild, to);
     }
 
-    public Task LogUpdateAsync(DateTime start, DateTime end, IGuild guild, IGuildUser from, IGuildUser to, string reason)
+    public Task LogUpdateAsync(DateTime start, DateTime end, IGuild guild, IGuildUser from, IGuildUser to, string? reason)
     {
         var data = new UnverifyLogUpdate
         {

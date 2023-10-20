@@ -33,18 +33,18 @@ public class UpdateScheduledEvent : ApiAction
 
     private async Task<IGuildScheduledEvent> FindAndCheckEventAsync(ulong guildId, ulong eventId)
     {
-        var guild = await DiscordClient.GetGuildAsync(guildId);
-        if (guild == null) throw new NotFoundException(Texts["GuildScheduledEvents/GuildNotFound", ApiContext.Language]);
+        var guild = await DiscordClient.GetGuildAsync(guildId)
+            ?? throw new NotFoundException(Texts["GuildScheduledEvents/GuildNotFound", ApiContext.Language]);
 
-        var guildEvent = await guild.GetEventAsync(eventId);
-        if (guildEvent == null) throw new NotFoundException(Texts["GuildScheduledEvents/EventNotFound", ApiContext.Language]);
+        var guildEvent = await guild.GetEventAsync(eventId)
+            ?? throw new NotFoundException(Texts["GuildScheduledEvents/EventNotFound", ApiContext.Language]);
 
         if (guildEvent.Creator.Id != DiscordClient.CurrentUser.Id)
             throw new ForbiddenAccessException(Texts["GuildScheduledEvents/ForbiddenAccess", ApiContext.Language]);
         return guildEvent;
     }
 
-    private static Image? CreateImage(byte[] image)
+    private static Image? CreateImage(byte[]? image)
         => image == null || image.Length == 0 ? null : new Image(new MemoryStream(image));
 
     private static void SetModificationParameters(GuildScheduledEventsProperties properties, ScheduledEventParams parameters, Image? image, IGuildScheduledEvent currentEvent)

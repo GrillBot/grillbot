@@ -105,7 +105,8 @@ public class GetGuildDetail : ApiAction
             Pagination = new PaginatedParams
             {
                 Page = 0,
-                PageSize = 1
+                PageSize = 1,
+                OnlyCount = true
             }
         };
 

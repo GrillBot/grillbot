@@ -48,17 +48,17 @@ public class ChannelsMappingProfile : AutoMapper.Profile
             .ForMember(dst => dst.LastMessageFrom, opt =>
             {
                 opt.PreCondition(src => src.Users.Count > 0);
-                opt.MapFrom(src => src.Users.OrderByDescending(o => o.LastMessageAt).Select(o => o.User.User).FirstOrDefault());
+                opt.MapFrom(src => src.Users.OrderByDescending(o => o.LastMessageAt).Select(o => o.User!.User).FirstOrDefault());
             })
             .ForMember(dst => dst.MostActiveUser, opt =>
             {
                 opt.PreCondition(src => src.Users.Count > 0);
-                opt.MapFrom(src => src.Users.OrderByDescending(o => o.Count).Select(o => o.User.User).FirstOrDefault());
+                opt.MapFrom(src => src.Users.OrderByDescending(o => o.Count).Select(o => o.User!.User).FirstOrDefault());
             });
 
         CreateMap<Database.Entity.GuildUserChannel, ChannelUserStatItem>()
-            .ForMember(dst => dst.Nickname, opt => opt.MapFrom(src => src.User.Nickname))
-            .ForMember(dst => dst.Username, opt => opt.MapFrom(src => src.User.User.Username));
+            .ForMember(dst => dst.Nickname, opt => opt.MapFrom(src => src.User!.Nickname))
+            .ForMember(dst => dst.Username, opt => opt.MapFrom(src => src.User!.User!.Username));
 
         CreateMap<Database.Entity.GuildUserChannel, UserGuildChannel>();
     }

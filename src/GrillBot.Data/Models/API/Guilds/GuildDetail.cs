@@ -20,12 +20,12 @@ public class GuildDetail : Guild
     /// <summary>
     /// Icon URL
     /// </summary>
-    public string IconUrl { get; set; }
+    public string? IconUrl { get; set; }
 
     /// <summary>
     /// Owner of guild
     /// </summary>
-    public User Owner { get; set; }
+    public User Owner { get; set; } = null!;
 
     /// <summary>
     /// Premium level
@@ -35,34 +35,34 @@ public class GuildDetail : Guild
     /// <summary>
     /// Vanity invite url if exists.
     /// </summary>
-    public string VanityUrl { get; set; }
+    public string? VanityUrl { get; set; }
 
     /// <summary>
     /// Muted role used to unverify.
     /// </summary>
-    public Role MutedRole { get; set; }
+    public Role? MutedRole { get; set; }
 
     /// <summary>
     /// Premium user role.
     /// </summary>
-    public Role BoosterRole { get; set; }
+    public Role? BoosterRole { get; set; }
 
     /// <summary>
     /// Admin channel.
     /// </summary>
-    public Channel AdminChannel { get; set; }
+    public Channel? AdminChannel { get; set; }
 
     /// <summary>
     /// Channel for emote suggestions.
     /// </summary>
-    public Channel EmoteSuggestionChannel { get; set; }
+    public Channel? EmoteSuggestionChannel { get; set; }
 
     /// <summary>
     /// Channel for public votes.
     /// </summary>
-    public Channel VoteChannel { get; set; }
+    public Channel? VoteChannel { get; set; }
 
-    public Channel BotRoomChannel { get; set; }
+    public Channel? BotRoomChannel { get; set; }
 
     /// <summary>
     /// Maximum count of members.
@@ -92,7 +92,7 @@ public class GuildDetail : Guild
     public DateTime? EmoteSuggestionsFrom { get; set; }
     public DateTime? EmoteSuggestionsTo { get; set; }
 
-    public Dictionary<UserStatus, int> UserStatusReport { get; set; }
-    public Dictionary<ClientType, int> ClientTypeReport { get; set; }
-    public GuildDatabaseReport DatabaseReport { get; set; }
+    public Dictionary<UserStatus, int> UserStatusReport { get; set; } = new();
+    public Dictionary<ClientType, int> ClientTypeReport { get; set; } = new();
+    public GuildDatabaseReport DatabaseReport { get; set; } = null!;
 }

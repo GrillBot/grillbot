@@ -10,11 +10,11 @@ public class EmoteSuggestion
     public long Id { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? VoteEndsAt { get; set; }
-    public byte[] ImageData { get; set; }
-    public Guild Guild { get; set; }
-    public GuildUser FromUser { get; set; }
-    public string EmoteName { get; set; }
-    public string Description { get; set; }
+    public byte[] ImageData { get; set; } = null!;
+    public Guild Guild { get; set; } = null!;
+    public GuildUser FromUser { get; set; } = null!;
+    public string EmoteName { get; set; } = null!;
+    public string? Description { get; set; }
     public bool? ApprovedForVote { get; set; }
     public bool VoteFinished { get; set; }
     public bool CommunityApproved { get; set; }

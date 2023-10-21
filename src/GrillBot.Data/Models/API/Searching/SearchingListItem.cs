@@ -14,22 +14,22 @@ public class SearchingListItem
     /// <summary>
     /// Who searching
     /// </summary>
-    public User User { get; set; }
+    public User User { get; set; } = null!;
 
     /// <summary>
     /// Server where was created search.
     /// </summary>
-    public Guild Guild { get; set; }
+    public Guild Guild { get; set; } = null!;
 
     /// <summary>
     /// Channel where was created search.
     /// </summary>
-    public Channel Channel { get; set; }
+    public Channel Channel { get; set; } = null!;
 
     /// <summary>
     /// Message content
     /// </summary>
-    public string Message { get; set; }
+    public string Message { get; set; } = null!;
 }
 
 public class SearchingMappingProfile : AutoMapper.Profile

@@ -7,7 +7,7 @@ public class Invite : InviteBase
     /// <summary>
     /// User that created the invite.
     /// </summary>
-    public User Creator { get; set; }
+    public User? Creator { get; set; }
 
     /// <summary>
     /// Use counter of invite.

@@ -14,7 +14,7 @@ public class DiagnosticsInfo
     /// <summary>
     /// Instance type (Release, Development, ...)
     /// </summary>
-    public string InstanceType { get; set; }
+    public string? InstanceType { get; set; }
 
     /// <summary>
     /// Datetime of start.
@@ -51,14 +51,15 @@ public class DiagnosticsInfo
     /// </summary>
     public DateTime CurrentDateTime { get; set; }
 
-    public Dictionary<string, int> ActiveOperations { get; set; }
+    public Dictionary<string, int> ActiveOperations { get; set; } = new();
 
     public DiagnosticsInfo()
     {
         var process = Process.GetCurrentProcess();
+        var now = DateTime.Now;
 
         StartAt = process.StartTime;
-        Uptime = DateTime.Now - process.StartTime;
+        Uptime = now - process.StartTime;
         CpuTime = process.TotalProcessorTime;
         UsedMemory = process.WorkingSet64;
         CurrentDateTime = DateTime.Now;

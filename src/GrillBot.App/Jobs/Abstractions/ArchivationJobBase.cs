@@ -1,12 +1,20 @@
-﻿using System.Xml.Linq;
+﻿using System.IO.Compression;
+using System.Xml.Linq;
+using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Jobs;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Jobs.Abstractions;
 
 public abstract class ArchivationJobBase : Job
 {
+    protected BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
+    protected GrillBotDatabaseBuilder DatabaseBuilder { get; }
+
     protected ArchivationJobBase(IServiceProvider serviceProvider) : base(serviceProvider)
     {
+        BlobManagerFactoryHelper = serviceProvider.GetRequiredService<BlobManagerFactoryHelper>();
+        DatabaseBuilder = serviceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
     }
 
     protected static IEnumerable<XAttribute> CreateMetadata(int count)
@@ -55,5 +63,14 @@ public abstract class ArchivationJobBase : Job
             element.Add(new XAttribute("Flags", user.Flags));
 
         return element;
+    }
+
+    protected static async Task AddXmlToZipAsync(ZipArchive archive, XElement xml, string xmlName)
+    {
+        var entry = archive.CreateEntry(xmlName);
+        entry.LastWriteTime = DateTimeOffset.Now;
+
+        await using var entryStream = entry.Open();
+        await xml.SaveAsync(entryStream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, CancellationToken.None);
     }
 }

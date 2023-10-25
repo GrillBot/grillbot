@@ -14,16 +14,11 @@ namespace GrillBot.App.Jobs;
 [DisallowConcurrentExecution]
 public class AuditLogClearingJob : ArchivationJobBase
 {
-    private GrillBotDatabaseBuilder DbFactory { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
-    private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
-    public AuditLogClearingJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider, IAuditLogServiceClient auditLogServiceClient, BlobManagerFactoryHelper blobManagerFactoryHelper)
-        : base(serviceProvider)
+    public AuditLogClearingJob(IServiceProvider serviceProvider, IAuditLogServiceClient auditLogServiceClient) : base(serviceProvider)
     {
-        DbFactory = dbFactory;
         AuditLogServiceClient = auditLogServiceClient;
-        BlobManagerFactoryHelper = blobManagerFactoryHelper;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
@@ -34,7 +29,7 @@ public class AuditLogClearingJob : ArchivationJobBase
 
         var xmlData = XElement.Parse(archivationResult.Xml);
 
-        await using var repository = DbFactory.CreateRepository();
+        await using var repository = DatabaseBuilder.CreateRepository();
 
         await ProcessGuildsAsync(repository, archivationResult.GuildIds, xmlData);
         await ProcessChannelsAsync(repository, archivationResult.ChannelIds, xmlData);
@@ -104,15 +99,6 @@ public class AuditLogClearingJob : ArchivationJobBase
         }
 
         return archiveSize;
-    }
-
-    private static async Task AddXmlToZipAsync(ZipArchive archive, XElement xml, string xmlName)
-    {
-        var entry = archive.CreateEntry(xmlName);
-        entry.LastWriteTime = DateTimeOffset.Now;
-
-        await using var entryStream = entry.Open();
-        await xml.SaveAsync(entryStream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, CancellationToken.None);
     }
 
     private async Task AddFilesToArchiveAsync(IEnumerable<string> files, ZipArchive archive)

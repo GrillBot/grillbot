@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Xml.Linq;
+using GrillBot.App.Helpers;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
 using Quartz;
@@ -9,15 +10,10 @@ namespace GrillBot.App.Jobs;
 [DisallowConcurrentExecution]
 public class UnverifyLogArchivationJob : ArchivationJobBase
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private FileStorageFactory FileStorageFactory { get; }
     private IConfiguration Configuration { get; }
 
-    public UnverifyLogArchivationJob(IServiceProvider serviceProvider, GrillBotDatabaseBuilder databaseBuilder, FileStorageFactory fileStorageFactory,
-        IConfiguration configuration) : base(serviceProvider)
+    public UnverifyLogArchivationJob(IServiceProvider serviceProvider, IConfiguration configuration) : base(serviceProvider)
     {
-        DatabaseBuilder = databaseBuilder;
-        FileStorageFactory = fileStorageFactory;
         Configuration = configuration;
     }
 
@@ -63,34 +59,43 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
             repository.Remove(item);
         }
 
-        var zipName = await SaveDataAsync(logRoot);
+        var archiveSize = await SaveDataAsync(logRoot);
         await repository.CommitAsync();
 
         var xmlSize = Encoding.UTF8.GetBytes(logRoot.ToString()).Length.Bytes().ToString();
-        var zipSize = new FileInfo(zipName).Length.Bytes().ToString();
+        var zipSize = archiveSize.Bytes().ToString();
 
         context.Result = BuildReport(xmlSize, zipSize, data);
     }
 
-    private async Task<string> SaveDataAsync(XElement xml)
+    private async Task<long> SaveDataAsync(XElement xml)
     {
-        var storage = FileStorageFactory.Create("Unverify");
-        var backupFilename = $"UnverifyLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
-        var fileinfo = await storage.GetFileInfoAsync(backupFilename);
+        var xmlBaseName = $"UnverifyLog_{DateTime.Now:yyyyMMdd_HHmmss}";
+        var temporaryPath = Path.GetTempPath();
+        var zipName = $"{xmlBaseName}.zip";
+        var zipPath = Path.Combine(temporaryPath, zipName);
+        long archiveSize;
 
-        await using (var stream = fileinfo.OpenWrite())
+        try
         {
-            await xml.SaveAsync(stream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, CancellationToken.None);
+            using (var zipArchive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            {
+                await AddXmlToZipAsync(zipArchive, xml, $"{xmlBaseName}.xml");
+            }
+
+            using var reader = File.OpenRead(zipPath);
+            var archiveManager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.UnverifyLogArchives);
+            await archiveManager.UploadAsync(zipName, reader);
+        }
+        finally
+        {
+            archiveSize = new FileInfo(zipPath).Length;
+
+            if (File.Exists(zipPath))
+                File.Delete(zipPath);
         }
 
-        var zipFilename = Path.ChangeExtension(fileinfo.FullName, ".zip");
-        if (File.Exists(zipFilename)) File.Delete(zipFilename);
-
-        using var archive = ZipFile.Open(zipFilename, ZipArchiveMode.Create);
-        archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
-
-        File.Delete(fileinfo.FullName);
-        return zipFilename;
+        return archiveSize;
     }
 
     private static string BuildReport(string xmlSize, string zipSize, List<Database.Entity.UnverifyLog> data)

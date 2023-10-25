@@ -16,18 +16,16 @@ public class GetServiceInfo : ApiAction
 {
     private IGraphicsClient GraphicsClient { get; }
     private IRubbergodServiceClient RubbergodServiceClient { get; }
-    private IFileServiceClient FileServiceClient { get; }
     private LoggingManager LoggingManager { get; }
     private IPointsServiceClient PointsServiceClient { get; }
     private IImageProcessingClient ImageProcessingClient { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public GetServiceInfo(ApiRequestContext apiContext, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, IFileServiceClient fileServiceClient,
-        LoggingManager loggingManager, IPointsServiceClient pointsServiceClient, IImageProcessingClient imageProcessingClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public GetServiceInfo(ApiRequestContext apiContext, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, LoggingManager loggingManager, IPointsServiceClient pointsServiceClient,
+        IImageProcessingClient imageProcessingClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         GraphicsClient = graphicsClient;
         RubbergodServiceClient = rubbergodServiceClient;
-        FileServiceClient = fileServiceClient;
         LoggingManager = loggingManager;
         PointsServiceClient = pointsServiceClient;
         ImageProcessingClient = imageProcessingClient;
@@ -53,7 +51,6 @@ public class GetServiceInfo : ApiAction
         return id switch
         {
             "rubbergod" => RubbergodServiceClient,
-            "file" => FileServiceClient,
             "graphics" => GraphicsClient,
             "points" => PointsServiceClient,
             "image-processing" => ImageProcessingClient,
@@ -70,7 +67,6 @@ public class GetServiceInfo : ApiAction
             {
                 IRubbergodServiceClient => await RubbergodServiceClient.GetDiagAsync(),
                 IGraphicsClient => await GetGraphicsServiceInfo(),
-                IFileServiceClient => await FileServiceClient.GetDiagAsync(),
                 IPointsServiceClient => await PointsServiceClient.GetDiagAsync(),
                 IImageProcessingClient => await ImageProcessingClient.GetDiagAsync(),
                 IAuditLogServiceClient => await AuditLogServiceClient.GetDiagAsync(),

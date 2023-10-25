@@ -2,7 +2,6 @@
 using GrillBot.Common.Models;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
-using GrillBot.Core.Services.FileService;
 using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;
@@ -15,7 +14,6 @@ public class GetServicesList : ApiAction
 {
     private IGraphicsClient GraphicsClient { get; }
     private IRubbergodServiceClient RubbergodServiceClient { get; }
-    private IFileServiceClient FileServiceClient { get; }
     private IPointsServiceClient PointsServiceClient { get; }
     private IImageProcessingClient ImageProcessingClient { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
@@ -23,12 +21,11 @@ public class GetServicesList : ApiAction
 
     private List<Exception> Errors { get; } = new();
 
-    public GetServicesList(ApiRequestContext apiContext, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, IFileServiceClient fileServiceClient,
-        IPointsServiceClient pointsServiceClient, IImageProcessingClient imageProcessingClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public GetServicesList(ApiRequestContext apiContext, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, IPointsServiceClient pointsServiceClient,
+        IImageProcessingClient imageProcessingClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         GraphicsClient = graphicsClient;
         RubbergodServiceClient = rubbergodServiceClient;
-        FileServiceClient = fileServiceClient;
         ImageProcessingClient = imageProcessingClient;
         PointsServiceClient = pointsServiceClient;
         AuditLogServiceClient = auditLogServiceClient;
@@ -41,7 +38,6 @@ public class GetServicesList : ApiAction
 
         await AddServiceStatusAsync(services, "graphics", GraphicsClient);
         await AddServiceStatusAsync(services, "rubbergod", RubbergodServiceClient);
-        await AddServiceStatusAsync(services, "file", FileServiceClient);
         await AddServiceStatusAsync(services, "points", PointsServiceClient);
         await AddServiceStatusAsync(services, "image-processing", ImageProcessingClient);
         await AddServiceStatusAsync(services, "audit-log", AuditLogServiceClient);

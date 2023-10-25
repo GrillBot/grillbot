@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
 using AutoMapper;
+using GrillBot.App.Helpers;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.FileStorage;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
@@ -12,6 +14,7 @@ using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Preview;
 using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Azure;
 using File = GrillBot.Data.Models.API.AuditLog.File;
 using SearchModels = GrillBot.Core.Services.AuditLog.Models.Response.Search;
 
@@ -21,22 +24,25 @@ public class GetAuditLogList : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
-    private IFileServiceClient FileServiceClient { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
     private IDiscordClient DiscordClient { get; }
+    private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
     private Dictionary<string, Database.Entity.User> CachedUsers { get; } = new();
     private Dictionary<string, Database.Entity.Guild> CachedGuilds { get; } = new();
     private Dictionary<string, Dictionary<string, Database.Entity.GuildChannel>> CachedChannels { get; } = new(); // Dictionary<GuildId, Dictionary<ChannelId, Channel>>
 
-    public GetAuditLogList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IFileServiceClient fileServiceClient, IAuditLogServiceClient auditLogServiceClient,
-        IDiscordClient discordClient) : base(apiContext)
+    private BlobManager BlobManager { get; set; } = null!;
+    private BlobManager LegacyBlobManager { get; set; } = null!;
+
+    public GetAuditLogList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IAuditLogServiceClient auditLogServiceClient, IDiscordClient discordClient,
+        BlobManagerFactoryHelper blobManagerFactoryHelper) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
-        FileServiceClient = fileServiceClient;
         AuditLogServiceClient = auditLogServiceClient;
         DiscordClient = discordClient;
+        BlobManagerFactoryHelper = blobManagerFactoryHelper;
     }
 
     public async Task<PaginatedResponse<LogListItem>> ProcessAsync(SearchRequest request)
@@ -46,6 +52,12 @@ public class GetAuditLogList : ApiAction
         var response = await AuditLogServiceClient.SearchItemsAsync(request);
         if (response.ValidationErrors is not null)
             throw CreateValidationExceptions(response.ValidationErrors);
+
+        if (response.Response!.Data.Exists(o => o.Files.Count > 0))
+        {
+            BlobManager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
+            LegacyBlobManager = await BlobManagerFactoryHelper.CreateAsync("production");
+        }
 
         await using var repository = DatabaseBuilder.CreateRepository();
         return await PaginatedResponse<LogListItem>.CopyAndMapAsync(response.Response!, async entity => await MapListItemAsync(repository, entity));
@@ -89,11 +101,9 @@ public class GetAuditLogList : ApiAction
             Type = item.Type,
             CreatedAt = item.CreatedAt.ToLocalTime(),
             IsDetailAvailable = item.IsDetailAvailable,
-            Id = item.Id
+            Id = item.Id,
+            Files = item.Files.ConvertAll(o => ConvertFile(o, item))
         };
-
-        foreach (var file in item.Files)
-            result.Files.Add(await ConvertFileAsync(file));
 
         if (!string.IsNullOrEmpty(item.GuildId))
         {
@@ -252,14 +262,17 @@ public class GetAuditLogList : ApiAction
         return null;
     }
 
-    private async Task<File> ConvertFileAsync(SearchModels.File file)
+    private File ConvertFile(SearchModels.File file, SearchModels.LogListItem item)
     {
-        var link = await FileServiceClient.GenerateLinkAsync(file.Filename);
+        // TODO Hack until all old files has been deleted.
+        var migrationDate = new DateTime(2023, 10, 25, 12, 00, 00, DateTimeKind.Utc);
+        var usedManager = item.CreatedAt >= migrationDate ? BlobManager : LegacyBlobManager;
+        var link = usedManager.GenerateSasLink(file.Filename, 1);
 
         return new File
         {
             Filename = file.Filename,
-            Link = link!,
+            Link = link ?? "about:blank",
             Size = file.Size
         };
     }

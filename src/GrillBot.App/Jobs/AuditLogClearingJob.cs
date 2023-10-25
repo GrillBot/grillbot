@@ -1,11 +1,10 @@
 ﻿using System.IO.Compression;
 using System.Xml.Linq;
+using GrillBot.App.Helpers;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
-using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Models.Response;
-using GrillBot.Core.Services.FileService;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 using Quartz;
@@ -17,16 +16,16 @@ public class AuditLogClearingJob : ArchivationJobBase
 {
     private GrillBotDatabaseBuilder DbFactory { get; }
     private FileStorageFactory FileStorage { get; }
-    private IFileServiceClient FileServiceClient { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
-    public AuditLogClearingJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider, FileStorageFactory fileStorage, IFileServiceClient fileServiceClient,
-        IAuditLogServiceClient auditLogServiceClient) : base(serviceProvider)
+    public AuditLogClearingJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider, FileStorageFactory fileStorage, IAuditLogServiceClient auditLogServiceClient,
+        BlobManagerFactoryHelper blobManagerFactoryHelper) : base(serviceProvider)
     {
         DbFactory = dbFactory;
         FileStorage = fileStorage;
-        FileServiceClient = fileServiceClient;
         AuditLogServiceClient = auditLogServiceClient;
+        BlobManagerFactoryHelper = blobManagerFactoryHelper;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
@@ -101,10 +100,24 @@ public class AuditLogClearingJob : ArchivationJobBase
 
     private async Task AddFilesToArchiveAsync(IEnumerable<string> files, ZipArchive archive)
     {
+        if (!files.Any())
+            return;
+
+        var manager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
+        var legacyManager = await BlobManagerFactoryHelper.CreateAsync("production");
+
         foreach (var file in files)
         {
-            var fileContent = await FileServiceClient.DownloadFileAsync(file);
-            if (fileContent is null) continue;
+            var useLegacy = false;
+            var fileContent = await manager.DownloadAsync(file);
+
+            if (fileContent is null)
+            {
+                fileContent = await legacyManager.DownloadAsync(file);
+                useLegacy = true;
+
+                if (fileContent is null) continue;
+            }
 
             var entry = archive.CreateEntry(file);
             entry.LastWriteTime = DateTimeOffset.UtcNow;
@@ -113,7 +126,10 @@ public class AuditLogClearingJob : ArchivationJobBase
             await using var archiveStream = entry.Open();
             await ms.CopyToAsync(archiveStream);
 
-            await FileServiceClient.DeleteFileAsync(file);
+            if (useLegacy)
+                await legacyManager.DeleteAsync(file);
+            else
+                await manager.DeleteAsync(file);
         }
     }
 

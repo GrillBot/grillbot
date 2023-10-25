@@ -22,7 +22,6 @@ using GrillBot.Common.FileStorage;
 using GrillBot.Common.Services;
 using GrillBot.Core;
 using Microsoft.AspNetCore.HttpOverrides;
-
 namespace GrillBot.App;
 
 public class Startup
@@ -79,6 +78,7 @@ public class Startup
             .AddDatabase(connectionString!)
             .AddMemoryCache()
             .AddActions()
+            .AddSingleton<BlobManagerFactory>()
             .AddSingleton<FileStorageFactory>()
             .AddControllers(c =>
             {

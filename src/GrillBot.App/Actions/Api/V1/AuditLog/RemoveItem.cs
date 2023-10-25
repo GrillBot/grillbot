@@ -1,22 +1,23 @@
-﻿using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.App.Helpers;
+using GrillBot.Common.FileStorage;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.FileService;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 
 public class RemoveItem : ApiAction
 {
     private ITextsManager Texts { get; }
-    private IFileServiceClient FileServiceClient { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
-    public RemoveItem(ApiRequestContext apiContext, ITextsManager texts, IFileServiceClient fileServiceClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public RemoveItem(ApiRequestContext apiContext, ITextsManager texts, IAuditLogServiceClient auditLogServiceClient, BlobManagerFactoryHelper blobManagerFactoryHelper) : base(apiContext)
     {
         Texts = texts;
-        FileServiceClient = fileServiceClient;
         AuditLogServiceClient = auditLogServiceClient;
+        BlobManagerFactoryHelper = blobManagerFactoryHelper;
     }
 
     public async Task ProcessAsync(Guid id)
@@ -25,7 +26,16 @@ public class RemoveItem : ApiAction
         if (!response.Exists)
             throw new NotFoundException(Texts["AuditLog/RemoveItem/NotFound", ApiContext.Language]);
 
-        foreach (var file in response.FilesToDelete)
-            await FileServiceClient.DeleteFileAsync(file);
+        if (response.FilesToDelete.Count == 0)
+            return;
+
+        var manager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
+        var legacyManager = await BlobManagerFactoryHelper.CreateAsync("production");
+
+        foreach (var filename in response.FilesToDelete)
+        {
+            await manager.DeleteAsync(filename);
+            await legacyManager.DeleteAsync(filename);
+        }
     }
 }

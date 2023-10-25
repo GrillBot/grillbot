@@ -3,11 +3,11 @@ using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
-using GrillBot.Core.Services.FileService;
 using GrillBot.Core.Extensions;
-using Microsoft.AspNetCore.StaticFiles;
+using GrillBot.Common.FileStorage;
+using Azure.Storage.Blobs.Models;
+using Azure;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
@@ -15,14 +15,14 @@ public class AuditMessageDeletedHandler : AuditLogServiceHandler, IMessageDelete
 {
     private IMessageCacheManager MessageCache { get; }
     private DownloadHelper DownloadHelper { get; }
-    private IFileServiceClient FileServiceClient { get; }
+    private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
-    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, DownloadHelper downloadHelper, IFileServiceClient fileServiceClient, IAuditLogServiceClient auditLogServiceClient) :
+    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, DownloadHelper downloadHelper, IAuditLogServiceClient auditLogServiceClient, BlobManagerFactoryHelper blobManagerFactoryHelper) :
         base(auditLogServiceClient)
     {
         MessageCache = messageCache;
         DownloadHelper = downloadHelper;
-        FileServiceClient = fileServiceClient;
+        BlobManagerFactoryHelper = blobManagerFactoryHelper;
     }
 
     public async Task ProcessAsync(Cacheable<IMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel)
@@ -52,11 +52,12 @@ public class AuditMessageDeletedHandler : AuditLogServiceHandler, IMessageDelete
         if (message.Attachments.Count == 0)
             return files;
 
-        var contentTypeProvider = new FileExtensionContentTypeProvider();
+        var manager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
+
         foreach (var attachment in message.Attachments)
         {
             var content = await DownloadHelper.DownloadAsync(attachment);
-            if (content == null) continue;
+            if (content is null) continue;
 
             var extension = Path.GetExtension(attachment.Filename);
             var filenameWithoutExtension = Path.GetFileNameWithoutExtension(attachment.Filename).Cut(100, true);
@@ -67,10 +68,16 @@ public class AuditMessageDeletedHandler : AuditLogServiceHandler, IMessageDelete
                 Size = attachment.Size
             };
 
-            var contentType = contentTypeProvider.TryGetContentType(file.Filename, out var type) ? type : "application/octet-stream";
-            await FileServiceClient.UploadFileAsync(file.Filename, content, contentType);
-
             files.Add(file);
+
+            try
+            {
+                await manager.UploadAsync(file.Filename, content);
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
+            {
+                // Can ignore.
+            }
         }
 
         return files;

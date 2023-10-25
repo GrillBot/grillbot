@@ -56,7 +56,7 @@ public class GetAuditLogList : ApiAction
         if (response.Response!.Data.Exists(o => o.Files.Count > 0))
         {
             BlobManager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
-            LegacyBlobManager = await BlobManagerFactoryHelper.CreateAsync("production");
+            LegacyBlobManager = await BlobManagerFactoryHelper.CreateLegacyAsync();
         }
 
         await using var repository = DatabaseBuilder.CreateRepository();

@@ -20,4 +20,7 @@ public class BlobManagerFactoryHelper
 
     public async Task<BlobManager> CreateAsync(string containerName)
         => await Factory.CreateAsync($"{containerName}-{CreateShortcut()}");
+
+    public async Task<BlobManager> CreateLegacyAsync()
+        => await Factory.CreateAsync("production");
 }

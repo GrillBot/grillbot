@@ -30,7 +30,7 @@ public class RemoveItem : ApiAction
             return;
 
         var manager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
-        var legacyManager = await BlobManagerFactoryHelper.CreateAsync("production");
+        var legacyManager = await BlobManagerFactoryHelper.CreateLegacyAsync();
 
         foreach (var filename in response.FilesToDelete)
         {

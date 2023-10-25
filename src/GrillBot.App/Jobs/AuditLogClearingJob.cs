@@ -104,7 +104,7 @@ public class AuditLogClearingJob : ArchivationJobBase
             return;
 
         var manager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
-        var legacyManager = await BlobManagerFactoryHelper.CreateAsync("production");
+        var legacyManager = await BlobManagerFactoryHelper.CreateLegacyAsync();
 
         foreach (var file in files)
         {

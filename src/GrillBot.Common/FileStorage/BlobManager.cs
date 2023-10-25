@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using GrillBot.Core.Managers.Performance;
@@ -59,8 +60,22 @@ public class BlobManager
         }
     }
 
+    public async Task<bool> ExistsAsync(string filename)
+    {
+        using (CreateCounter("Exists"))
+        {
+            var blobClient = Client.GetBlobClient(filename);
+            var exists = await blobClient.ExistsAsync();
+
+            return exists?.Value ?? false;
+        }
+    }
+
     public async Task<byte[]?> DownloadAsync(string filename)
     {
+        if (!await ExistsAsync(filename))
+            return null;
+
         using (CreateCounter("Download"))
         {
             var blobClient = Client.GetBlobClient(filename);

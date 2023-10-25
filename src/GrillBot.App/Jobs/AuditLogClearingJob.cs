@@ -15,15 +15,13 @@ namespace GrillBot.App.Jobs;
 public class AuditLogClearingJob : ArchivationJobBase
 {
     private GrillBotDatabaseBuilder DbFactory { get; }
-    private FileStorageFactory FileStorage { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
     private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
-    public AuditLogClearingJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider, FileStorageFactory fileStorage, IAuditLogServiceClient auditLogServiceClient,
-        BlobManagerFactoryHelper blobManagerFactoryHelper) : base(serviceProvider)
+    public AuditLogClearingJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider, IAuditLogServiceClient auditLogServiceClient, BlobManagerFactoryHelper blobManagerFactoryHelper)
+        : base(serviceProvider)
     {
         DbFactory = dbFactory;
-        FileStorage = fileStorage;
         AuditLogServiceClient = auditLogServiceClient;
         BlobManagerFactoryHelper = blobManagerFactoryHelper;
     }
@@ -42,12 +40,12 @@ public class AuditLogClearingJob : ArchivationJobBase
         await ProcessChannelsAsync(repository, archivationResult.ChannelIds, xmlData);
         await ProcessUsersAsync(repository, archivationResult.UserIds, xmlData);
 
-        var zipName = await StoreDataAsync(xmlData, archivationResult.Files);
+        var zipSize = await StoreDataAsync(xmlData, archivationResult.Files);
         var xmlSize = Encoding.UTF8.GetBytes(xmlData.ToString()).Length.Bytes().ToString();
-        var zipSize = new FileInfo(zipName).Length.Bytes().ToString();
+        var formattedZipSize = zipSize.Bytes().ToString();
 
         await AuditLogServiceClient.BulkDeleteAsync(archivationResult.Ids);
-        context.Result = BuildReport(archivationResult, xmlSize, zipSize);
+        context.Result = BuildReport(archivationResult, xmlSize, formattedZipSize);
     }
 
     private static IEnumerable<XElement> TransformChannels(IEnumerable<GuildChannel?> channels)
@@ -77,25 +75,44 @@ public class AuditLogClearingJob : ArchivationJobBase
             });
     }
 
-    private async Task<string> StoreDataAsync(XElement xml, IEnumerable<string> files)
+    private async Task<long> StoreDataAsync(XElement xml, IEnumerable<string> files)
     {
-        var storage = FileStorage.Create("Audit");
-        var backupFilename = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
-        var fileinfo = await storage.GetFileInfoAsync(backupFilename);
+        var xmlBaseName = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}";
+        var temporaryPath = Path.GetTempPath();
+        var zipName = $"{xmlBaseName}.zip";
+        var zipPath = Path.Combine(temporaryPath, zipName);
+        long archiveSize;
 
-        await using (var stream = fileinfo.OpenWrite())
+        try
         {
-            await xml.SaveAsync(stream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, CancellationToken.None);
+            using (var zipArchive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            {
+                await AddXmlToZipAsync(zipArchive, xml, $"{xmlBaseName}.xml");
+                await AddFilesToArchiveAsync(files, zipArchive);
+            }
+
+            using var reader = File.OpenRead(zipPath);
+            var archiveManager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogArchives);
+            await archiveManager.UploadAsync(zipName, reader);
+        }
+        finally
+        {
+            archiveSize = new FileInfo(zipPath).Length;
+
+            if (File.Exists(zipPath))
+                File.Delete(zipPath);
         }
 
-        var zipFilename = Path.ChangeExtension(fileinfo.FullName, ".zip");
-        if (File.Exists(zipFilename)) File.Delete(zipFilename);
-        using var archive = ZipFile.Open(zipFilename, ZipArchiveMode.Create);
-        archive.CreateEntryFromFile(fileinfo.FullName, backupFilename, CompressionLevel.Optimal);
-        await AddFilesToArchiveAsync(files, archive);
+        return archiveSize;
+    }
 
-        File.Delete(fileinfo.FullName);
-        return zipFilename;
+    private static async Task AddXmlToZipAsync(ZipArchive archive, XElement xml, string xmlName)
+    {
+        var entry = archive.CreateEntry(xmlName);
+        entry.LastWriteTime = DateTimeOffset.Now;
+
+        await using var entryStream = entry.Open();
+        await xml.SaveAsync(entryStream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, CancellationToken.None);
     }
 
     private async Task AddFilesToArchiveAsync(IEnumerable<string> files, ZipArchive archive)
@@ -116,7 +133,8 @@ public class AuditLogClearingJob : ArchivationJobBase
                 fileContent = await legacyManager.DownloadAsync(file);
                 useLegacy = true;
 
-                if (fileContent is null) continue;
+                if (fileContent is null)
+                    continue;
             }
 
             var entry = archive.CreateEntry(file);

@@ -9,12 +9,10 @@ using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.Search;
-using GrillBot.Core.Services.FileService;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Preview;
 using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Azure;
 using File = GrillBot.Data.Models.API.AuditLog.File;
 using SearchModels = GrillBot.Core.Services.AuditLog.Models.Response.Search;
 

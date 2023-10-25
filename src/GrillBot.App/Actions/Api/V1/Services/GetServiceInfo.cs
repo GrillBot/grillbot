@@ -3,7 +3,6 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Diagnostics.Models;
-using GrillBot.Core.Services.FileService;
 using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;

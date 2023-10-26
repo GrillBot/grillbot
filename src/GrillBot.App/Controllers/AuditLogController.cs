@@ -30,14 +30,11 @@ public class AuditLogController : Infrastructure.ControllerBase
     /// <response code="200">Success.</response>
     /// <response code="404">Item not found.</response>
     [HttpDelete("{id:guid}")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult> RemoveItemAsync(Guid id)
-    {
-        await ProcessActionAsync<RemoveItem>(action => action.ProcessAsync(id));
-        return Ok();
-    }
+    public async Task<IActionResult> RemoveItemAsync(Guid id)
+        => await ProcessAsync<RemoveItem>(id);
 
     /// <summary>
     /// Get paginated list of audit logs.
@@ -45,13 +42,13 @@ public class AuditLogController : Infrastructure.ControllerBase
     /// <response code="200">Returns paginated list of audit log items.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("list")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<LogListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<PaginatedResponse<LogListItem>>> SearchAuditLogsAsync([FromBody] SearchRequest request)
+    public async Task<IActionResult> SearchAuditLogsAsync([FromBody] SearchRequest request)
     {
         ApiAction.Init(this, request);
-        return Ok(await ProcessActionAsync<GetAuditLogList, PaginatedResponse<LogListItem>>(action => action.ProcessAsync(request)));
+        return await ProcessAsync<GetAuditLogList>(request);
     }
 
     /// <summary>
@@ -62,22 +59,21 @@ public class AuditLogController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    public async Task<ActionResult> HandleClientAppMessageAsync([FromBody] ClientLogItemRequest request)
+    public async Task<IActionResult> HandleClientAppMessageAsync([FromBody] ClientLogItemRequest request)
     {
         ApiAction.Init(this, request);
-
-        await ProcessActionAsync<CreateLogItem>(action => action.ProcessAsync(request));
-        return Ok();
+        return await ProcessAsync<CreateLogItem>(request);
     }
 
     /// <summary>
     /// Get detailed information of log item.
     /// </summary>
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Detail), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<Detail?>> DetailAsync(Guid id)
-        => Ok(await ProcessActionAsync<GetAuditLogDetail, Detail?>(action => action.ProcessAsync(id)));
+    public async Task<IActionResult> DetailAsync(Guid id)
+        => await ProcessAsync<GetAuditLogDetail>(id);
 
     /// <summary>
     /// Create text based log item.

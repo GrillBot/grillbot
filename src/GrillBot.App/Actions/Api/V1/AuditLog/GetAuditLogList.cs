@@ -5,6 +5,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
@@ -43,9 +44,12 @@ public class GetAuditLogList : ApiAction
         BlobManagerFactoryHelper = blobManagerFactoryHelper;
     }
 
-    public async Task<PaginatedResponse<LogListItem>> ProcessAsync(SearchRequest request)
+    public override async Task<ApiResult> ProcessAsync()
     {
-        FixDateTimes(request);
+        var request = (SearchRequest)Parameters[0]!;
+
+        request.CreatedFrom = FixDateTime(request.CreatedFrom);
+        request.CreatedTo = FixDateTime(request.CreatedTo);
 
         var response = await AuditLogServiceClient.SearchItemsAsync(request);
         if (response.ValidationErrors is not null)
@@ -58,13 +62,12 @@ public class GetAuditLogList : ApiAction
         }
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        return await PaginatedResponse<LogListItem>.CopyAndMapAsync(response.Response!, async entity => await MapListItemAsync(repository, entity));
-    }
+        var result = await PaginatedResponse<LogListItem>.CopyAndMapAsync(
+            response.Response!,
+            async entity => await MapListItemAsync(repository, entity)
+        );
 
-    private static void FixDateTimes(SearchRequest request)
-    {
-        request.CreatedFrom = FixDateTime(request.CreatedFrom);
-        request.CreatedTo = FixDateTime(request.CreatedTo);
+        return ApiResult.Ok(result);
     }
 
     private static DateTime? FixDateTime(DateTime? dateTime)

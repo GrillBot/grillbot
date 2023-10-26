@@ -15,6 +15,7 @@ using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Core.Services.RubbergodService.Models.Karma;
 using GrillBot.Core.Models.Pagination;
 using Microsoft.Extensions.DependencyInjection;
+using GrillBot.App.Actions.Api;
 
 namespace GrillBot.App.Controllers;
 
@@ -112,12 +113,12 @@ public class UsersController : Infrastructure.ControllerBase
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
     [HttpPost("karma")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<KarmaListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
+    public async Task<IActionResult> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<GetRubbergodUserKarma, PaginatedResponse<KarmaListItem>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetRubbergodUserKarma>(parameters);
     }
 
     /// <summary>
@@ -133,12 +134,10 @@ public class UsersController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> StoreKarmaAsync([FromBody] List<KarmaItem> items)
+    public async Task<IActionResult> StoreKarmaAsync([FromBody] List<KarmaItem> items)
     {
         ApiAction.Init(this, items.ToArray());
-
-        await ProcessBridgeAsync<IRubbergodServiceClient>(client => client.StoreKarmaAsync(items));
-        return Ok();
+        return await ProcessAsync<ServiceBridgeAction<IRubbergodServiceClient>>(items);
     }
 
     /// <summary>
@@ -148,7 +147,7 @@ public class UsersController : Infrastructure.ControllerBase
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
     [HttpGet("birthday/today")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<MessageResponse>> GetTodayBirthdayInfoAsync()
-        => Ok(await ProcessActionAsync<GetTodayBirthdayInfo, MessageResponse>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTodayBirthdayInfoAsync()
+        => await ProcessAsync<GetTodayBirthdayInfo>();
 }

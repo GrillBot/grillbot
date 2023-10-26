@@ -3,6 +3,7 @@ using GrillBot.App.Actions.Api.V2;
 using GrillBot.App.Actions.Commands.Birthday;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
+using GrillBot.Data.Models.API;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -19,8 +20,9 @@ public class BirthdayModule : InteractionsModuleBase
     {
         using var command = GetActionAsCommand<GetTodayBirthdayInfo>();
         var result = await command.Command.ProcessAsync();
+        var mesasge = ((MessageResponse)result.Data!).Message;
 
-        await SetResponseAsync(result.Message);
+        await SetResponseAsync(mesasge);
     }
 
     [SlashCommand("add", "Adding your date of birth.")]

@@ -89,11 +89,9 @@ public class AuditLogController : Infrastructure.ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
-    public async Task<ActionResult> CreateMessageLogItemAsync(LogMessageRequest request)
+    public async Task<IActionResult> CreateMessageLogItemAsync(LogMessageRequest request)
     {
         ApiAction.Init(this, request);
-
-        await ProcessActionAsync<CreateAuditLogMessageAction>(action => action.ProcessAsync(request));
-        return Ok();
+        return await ProcessAsync<CreateAuditLogMessageAction>(request);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Guilds.GuildEvents;
 
 namespace GrillBot.App.Actions.Api.V2.Events;
@@ -16,14 +17,19 @@ public class UpdateScheduledEvent : ApiAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(ulong guildId, ulong eventId, ScheduledEventParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var guildId = (ulong)Parameters[0]!;
+        var eventId = (ulong)Parameters[1]!;
+        var parameters = (ScheduledEventParams)Parameters[2]!;
+
         var guildEvent = await FindAndCheckEventAsync(guildId, eventId);
         var image = CreateImage(parameters.Image);
 
         try
         {
             await guildEvent.ModifyAsync(prop => SetModificationParameters(prop, parameters, image, guildEvent));
+            return ApiResult.Ok();
         }
         finally
         {

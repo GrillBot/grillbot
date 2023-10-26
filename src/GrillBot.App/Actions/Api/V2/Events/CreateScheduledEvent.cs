@@ -2,6 +2,7 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Guilds.GuildEvents;
 
 namespace GrillBot.App.Actions.Api.V2.Events;
@@ -17,8 +18,11 @@ public class CreateScheduledEvent : ApiAction
         Texts = texts;
     }
 
-    public async Task<ulong> ProcessAsync(ulong guildId, ScheduledEventParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var guildId = (ulong)Parameters[0]!;
+        var parameters = (ScheduledEventParams)Parameters[1]!;
+
         ValidateInput(parameters);
         var guild = await FindGuildAsync(guildId);
         var endTime = new DateTimeOffset(parameters.EndAt);
@@ -29,7 +33,7 @@ public class CreateScheduledEvent : ApiAction
         {
             var scheduledEvent = await guild.CreateEventAsync(parameters.Name, startTime, GuildScheduledEventType.External, GuildScheduledEventPrivacyLevel.Private, parameters.Description, endTime,
                 null, parameters.Location, image);
-            return scheduledEvent.Id;
+            return ApiResult.Ok(scheduledEvent.Id);
         }
         finally
         {

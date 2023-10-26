@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
 
-public abstract class ApiAction
+public abstract class ApiAction : Core.Infrastructure.Actions.ApiActionBase
 {
     protected ApiRequestContext ApiContext { get; }
 
@@ -18,13 +18,13 @@ public abstract class ApiAction
         ApiContext = apiContext;
     }
 
-    public static void Init(Controller controller, IDictionaryObject apiObject)
+    public static void Init(ControllerBase controller, IDictionaryObject apiObject)
     {
         var apiRequestContext = controller.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
         apiRequestContext.LogRequest.AddParameters(apiObject);
     }
 
-    public static void Init(Controller controller, IDictionaryObject[] apiObjects)
+    public static void Init(ControllerBase controller, IDictionaryObject[] apiObjects)
     {
         var apiRequestContext = controller.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
         for (var i = 0; i < apiObjects.Length; i++)

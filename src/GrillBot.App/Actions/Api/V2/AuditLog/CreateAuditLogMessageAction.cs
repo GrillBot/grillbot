@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
@@ -14,8 +15,9 @@ public class CreateAuditLogMessageAction : ApiAction
         Client = client;
     }
 
-    public async Task ProcessAsync(Data.Models.API.AuditLog.Public.LogMessageRequest request)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var request = (Data.Models.API.AuditLog.Public.LogMessageRequest)Parameters[0]!;
         var logRequest = new LogRequest
         {
             Type = request.Type.ToLower() switch
@@ -45,5 +47,6 @@ public class CreateAuditLogMessageAction : ApiAction
         };
 
         await Client.CreateItemsAsync(new List<LogRequest> { logRequest });
+        return ApiResult.Ok();
     }
 }

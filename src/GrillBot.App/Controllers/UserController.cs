@@ -137,7 +137,9 @@ public class UsersController : Infrastructure.ControllerBase
     public async Task<IActionResult> StoreKarmaAsync([FromBody] List<KarmaItem> items)
     {
         ApiAction.Init(this, items.ToArray());
-        return await ProcessAsync<ServiceBridgeAction<IRubbergodServiceClient>>(items);
+
+        var executor = (IRubbergodServiceClient client) => client.StoreKarmaAsync(items);
+        return await ProcessAsync<ServiceBridgeAction<IRubbergodServiceClient>>(executor);
     }
 
     /// <summary>

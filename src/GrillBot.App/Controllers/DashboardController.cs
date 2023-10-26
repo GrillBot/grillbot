@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using GrillBot.App.Actions.Api;
 
 namespace GrillBot.App.Controllers;
 
@@ -21,42 +22,54 @@ public class DashboardController : Infrastructure.ControllerBase
     }
 
     [HttpGet("api/{apiGroup}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<DashboardInfoRow>>> GetApiDashboardAsync(string apiGroup)
-        => await ProcessBridgeAsync<IAuditLogServiceClient, List<DashboardInfoRow>>(client => client.GetApiDashboardAsync(apiGroup));
+    [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetApiDashboardAsync(string apiGroup)
+    {
+        var executor = (IAuditLogServiceClient client) => client.GetApiDashboardAsync(apiGroup);
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     [HttpGet("interactions")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<DashboardInfoRow>>> GetInteractionsDashboardAsync()
-        => await ProcessBridgeAsync<IAuditLogServiceClient, List<DashboardInfoRow>>(client => client.GetInteractionsDashboardAsync());
+    [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInteractionsDashboardAsync()
+    {
+        var executor = (IAuditLogServiceClient client) => client.GetInteractionsDashboardAsync();
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     [HttpGet("jobs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<DashboardInfoRow>>> GetJobsDashboardAsync()
-        => await ProcessBridgeAsync<IAuditLogServiceClient, List<DashboardInfoRow>>(client => client.GetJobsDashboardAsync());
+    [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetJobsDashboardAsync()
+    {
+        var executor = (IAuditLogServiceClient client) => client.GetJobsDashboardAsync();
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     [HttpGet("todayAvgTimes")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<TodayAvgTimes>> GetTodayAvgTimesAsync()
-        => await ProcessBridgeAsync<IAuditLogServiceClient, TodayAvgTimes>(client => client.GetTodayAvgTimes());
+    [ProducesResponseType(typeof(TodayAvgTimes), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTodayAvgTimesAsync()
+    {
+        var executor = (IAuditLogServiceClient client) => client.GetTodayAvgTimes();
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     [HttpGet("common")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<DashboardInfo> GetCommonInfo()
-        => ProcessAction<GetCommonInfo, DashboardInfo>(action => action.Process());
+    [ProducesResponseType(typeof(DashboardInfo), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCommonInfoAsync()
+        => await ProcessAsync<GetCommonInfo>();
 
     [HttpGet("services")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<DashboardService>>> GetServicesListAsync()
-        => await ProcessActionAsync<GetServicesList, List<DashboardService>>(action => action.ProcessAsync());
+    [ProducesResponseType(typeof(List<DashboardService>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetServicesListAsync()
+        => await ProcessAsync<GetServicesList>();
 
     [HttpGet("operations/active")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<Dictionary<string, int>> GetActiveOperations()
-        => ProcessAction<GetActiveOperations, Dictionary<string, int>>(action => action.Process());
+    [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetActiveOperationsAsync()
+        => await ProcessAsync<GetActiveOperations>();
 
     [HttpGet("operations")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<List<CounterStats>> GetOperationStats()
-        => ProcessAction<GetOperationStats, List<CounterStats>>(action => action.Process());
+    [ProducesResponseType(typeof(List<CounterStats>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetOperationStatsAsync()
+        => await ProcessAsync<GetOperationStats>();
 }

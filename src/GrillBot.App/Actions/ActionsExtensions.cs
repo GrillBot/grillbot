@@ -1,4 +1,5 @@
-﻿using GrillBot.Core.Services.RubbergodService;
+﻿using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.RubbergodService;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
@@ -16,7 +17,8 @@ public static class ActionsExtensions
     private static IServiceCollection AddServiceBridge(this IServiceCollection services)
     {
         return services
-            .AddScoped<Api.ServiceBridgeAction<IRubbergodServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<IRubbergodServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)

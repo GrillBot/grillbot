@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Invites;
 
@@ -16,11 +17,15 @@ public class GetInviteList : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<GuildInvite>> ProcessAsync(GetInviteListParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (GetInviteListParams)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Invite.GetInviteListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<GuildInvite>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<GuildInvite>(entity)));
+        var result = await PaginatedResponse<GuildInvite>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<GuildInvite>(entity)));
+
+        return ApiResult.Ok(result);
     }
 }

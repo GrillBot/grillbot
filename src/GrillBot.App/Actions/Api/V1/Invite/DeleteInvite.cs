@@ -1,6 +1,7 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Invite;
 
@@ -15,18 +16,23 @@ public class DeleteInvite : ApiAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(ulong guildId, string code)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var guildId = (ulong)Parameters[0]!;
+        var code = (string)Parameters[1]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var invite = await repository.Invite.FindInviteByCodeAsync(guildId, code);
-        if (invite == null)
-            throw new NotFoundException(Texts["Invite/NotFound", ApiContext.Language].FormatWith(code));
+        var invite = await repository.Invite.FindInviteByCodeAsync(guildId, code)
+            ?? throw new NotFoundException(Texts["Invite/NotFound", ApiContext.Language].FormatWith(code));
 
         var users = await repository.GuildUser.FindUsersWithInviteCode(guildId, code);
-        foreach (var user in users) user.UsedInviteCode = null;
+        foreach (var user in users)
+            user.UsedInviteCode = null;
 
         repository.Remove(invite);
         await repository.CommitAsync();
+
+        return ApiResult.Ok();
     }
 }

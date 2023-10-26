@@ -5,6 +5,7 @@ using System.Security.Claims;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Enums;
 using Microsoft.IdentityModel.Tokens;
@@ -29,13 +30,26 @@ public class CreateToken : ApiAction
         Configuration = configuration.GetRequiredSection("Auth:OAuth2");
     }
 
-    public async Task<OAuth2LoginToken> ProcessAsync(string sessionId, bool isPublic)
+    public override async Task<ApiResult> ProcessAsync()
     {
-        var userId = await GetUserIdAsync(sessionId);
-        return await ProcessAsync(userId, isPublic);
+        var isPublic = (bool)Parameters[1]!;
+
+        if (Parameters[0] is string sessionId)
+        {
+            var userId = await GetUserIdAsync(sessionId);
+            var token = await ProcessAsync(userId, isPublic);
+            return ApiResult.Ok(token);
+        }
+        else if (Parameters[0] is ulong userId)
+        {
+            var token = await ProcessAsync(userId, isPublic);
+            return ApiResult.Ok(token);
+        }
+
+        return ApiResult.BadRequest();
     }
 
-    public async Task<OAuth2LoginToken> ProcessAsync(ulong? userId, bool isPublic)
+    private async Task<OAuth2LoginToken> ProcessAsync(ulong? userId, bool isPublic)
     {
         var user = await FindUserAsync(userId);
 

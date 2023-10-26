@@ -1,6 +1,9 @@
 ﻿using System.Net.Http;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Actions.Api.V1.Auth;
 
@@ -15,8 +18,11 @@ public class ProcessCallback : ApiAction
         HttpClient = httpClientFactory.CreateClient();
     }
 
-    public async Task<string> ProcessAsync(string code, string encodedState)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var code = (string)Parameters[0]!;
+        var encodedState = (string)Parameters[1]!;
+
         var state = AuthState.Decode(encodedState);
         var accessToken = await RetrieveAccessTokenAsync(code);
         var returnUrl = GetReturnUrl(state);
@@ -25,7 +31,7 @@ public class ProcessCallback : ApiAction
         if (!string.IsNullOrEmpty(accessToken))
             uriBuilder.Query = string.Join("&", $"sessionId={accessToken}", $"isPublic={state.IsPublic}");
 
-        return uriBuilder.ToString();
+        return new ApiResult(StatusCodes.Status302Found, new RedirectResult(uriBuilder.ToString()));
     }
 
     private async Task<string?> RetrieveAccessTokenAsync(string code)
@@ -63,5 +69,10 @@ public class ProcessCallback : ApiAction
     }
 
     private string GetReturnUrl(AuthState state)
-        => !string.IsNullOrEmpty(state.ReturnUrl) ? state.ReturnUrl : Configuration[state.IsPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"]!;
+    {
+        if (!string.IsNullOrEmpty(state.ReturnUrl))
+            return state.ReturnUrl;
+        else
+            return Configuration[state.IsPublic ? "ClientRedirectUrl" : "AdminRedirectUrl"]!;
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 
@@ -13,8 +14,9 @@ public class GetRedirectLink : ApiAction
         Configuration = configuration.GetRequiredSection("Auth:OAuth2");
     }
 
-    public OAuth2GetLink Process(AuthState state)
+    public override Task<ApiResult> ProcessAsync()
     {
+        var state = (AuthState)Parameters[0]!;
         var builder = new UriBuilder("https://discord.com/api/oauth2/authorize")
         {
             Query = string.Join(
@@ -27,6 +29,6 @@ public class GetRedirectLink : ApiAction
             )
         };
 
-        return new OAuth2GetLink(builder.ToString());
+        return Task.FromResult(ApiResult.Ok(new OAuth2GetLink(builder.ToString())));
     }
 }

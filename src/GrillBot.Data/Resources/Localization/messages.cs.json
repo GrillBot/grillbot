@@ -1,666 +1,667 @@
 ﻿{
-  "BirthdayModule": {
-    "Add": {
-      "Success": "Datum narození bylo úspěšně uloženo."
-    },
-    "Remove": {
-      "Success": "Datum narození bylo úspěšně odebráno."
-    },
-    "Have": {
-      "Yes": "Ano. Máš uložené narozeniny.",
-      "No": "Ne. Nemáš uložené narozeniny."
-    },
-    "Info": {
-      "NoOneHave": "Dnes nemá nikdo narozeniny. {0}",
-      "Parts": {
-        "WithYears": "**{0} ({1} let)**",
-        "WithoutYears": "**{0}**"
-      },
-      "Template": {
-        "SingleForm": "Dnes má narozeniny {0} {1}",
-        "MultipleForm": "Dnes mají narozeniny {0} a {1} {2}"
-      }
-    }
-  },
-  "BotModule": {
-    "BotInfo": {
-      "CreatedAt": "Vytvořen",
-      "Uptime": "Uptime",
-      "Repository": "Repozitář",
-      "Documentation": "Dokumentace",
-      "Swagger": "Swagger",
-      "PrivateAdmin": "Administrace (Vyšší role)",
-      "PublicAdmin": "Administrace (Pro každého)",
-      "NavigationPage": "Rozcestník"
-    }
-  },
-  "ChannelModule": {
-    "ChannelInfo": {
-      "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
-      "CreatedAt": "Vytvořen",
-      "MemberCount": "Počet členů",
-      "MemberCountValue": {
-        "One": "{0:N0} člen",
-        "TwoToFour": "{0:N0} členové",
-        "FiveAndMore": "{0:N0} členů"
-      },
-      "NewsChannelTitle": "Informace o kanálu s novinkami",
-      "VoiceChannelTitle": "Informace o hlasovém kanálu",
-      "ThreadChannelTitle": "Informace o vláknu",
-      "StageChannelTitle": "Informace o jevišti",
-      "TextChannelTitle": "Informace o textovém kanálu",
-      "ForumChannelTitle": "Informace o fóru",
-      "CategoryChannelTitle": "Informace o kategorii",
-      "OtherChannelTitle:": "Informace o neznámém typu kanálu ({0})",
-      "PermsCountValue": {
-        "One": "{0:N0} oprávnění",
-        "TwoToFour": "{0:N0} oprávnění",
-        "FiveAndMore": "{0:N0} oprávnění"
-      },
-      "PermsCount": "Uživatelské: {0}\nRole: {1}",
-      "PermsCountTitle": "Počet oprávnění",
-      "Channel": "Kanál",
-      "TagsCount": "Počet tagů",
-      "TagsCountValue": {
-        "One": "{0:N0} tag",
-        "TwoToFour": "{0:N0} tagy",
-        "FiveAndMore": "{0:N0} tagů"
-      },
-      "ThreadCount": "Počet vláken",
-      "PublicThreadCountValue": {
-        "One": "{0:N0} veřejné vlákno",
-        "TwoToFour": "{0:N0} veřejná vlákna",
-        "FiveAndMore": "{0:N0} veřejných vláken"
-      },
-      "PrivateThreadCountValue": {
-        "One": "{0:N0} soukromé vlákno",
-        "TwoToFour": "{0:N0} soukromá vlákna",
-        "FiveAndMore": "{0:N0} soukromých vláken"
-      },
-      "MessageCount": "Počet zpráv",
-      "MessageCountValue": {
-        "One": "{0:N0} zpráva",
-        "TwoToFour": "{0:N0} zprávy",
-        "FiveAndMore": "{0:N0} zpráv"
-      },
-      "FirstMessage": "První zpráva",
-      "LastMessage": "Poslední zpráva",
-      "Flags": {
-        "CommandsDisabled": "Deaktivovány všechny příkazy",
-        "AutoReplyDeactivated": "Deaktivovány automatické odpovědi",
-        "StatsHidden": "Skryté statistiky",
-        "EphemeralCommands": "Skryté příkazy",
-        "PointsDeactivated": "Body deaktivovány"
-      },
-      "Configuration": "Konfigurace",
-      "TopTen": "TOP 10 uživatelů"
-    },
-    "GetChannelboard": {
-      "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
-      "NoActivity": "Doteď nebyla zaznamenána žádná aktivita v kanálech.",
-      "Counts": {
-        "One": "{0:N0} zpráva",
-        "TwoToFour": "{0:N0} zprávy",
-        "FiveAndMore": "{0:N0} zpráv"
-      },
-      "Row": "**{0}.** #{1} ({2})",
-      "Title": "Statistika aktivity v kanálech"
-    },
-    "PostMessage": {
-      "GuildNotFound": "Nepodařilo se najít server.",
-      "ChannelNotFound": "Nepodařilo se najít kanál na serveru {0}.",
-      "NoContent": "Nebyl zadán žádný platný vstup k odeslání.",
-      "Success": "Zpráva byla odeslána."
-    },
-    "ChannelDetail": {
-      "ChannelNotFound": "Požadovaný kanál nebyl nalezen."
-    },
-    "ChannelSimpleList": {
-      "NoMutualGuild": "Požadovaný server nesdílíš s botem."
-    },
-    "Clean": {
-      "ResultMessage": "Bylo úspěšně smazáno zpráv: **{0}**\nZ toho připnutých: **{1}**",
-      "UnsupportedChannel": "Mazat zprávy lze pouze z textových kanálů."
-    }
-  },
-  "DuckModule": {
-    "GetDuckInfo": {
-      "CannotGetState": "Nepodařilo se zjistit stav kachny. Zkus to prosím později, nebo se podívej do kanálu {0}",
-      "DuckName": "U kachničky",
-      "Closed": "Kachna je zavřená.",
-      "NextOpenNotPlanned": "Další otvíračka není naplánovaná.",
-      "NextOpenAt": "Další otvíračka bude {0}.",
-      "Opened": "Kachna je otevřená!",
-      "Open": "Otevřeno",
-      "TimeToClose": " Otvíračka končí {0}.",
-      "Closing": "Zavíráme",
-      "ChillzoneTo": "Kachna je otevřená v režimu chillzóna až do {0}!",
-      "Note": "Poznámka"
-    }
-  },
-  "GuildModule": {
-    "GetInfo": {
-      "CategoryCount": "Počet kategorií",
-      "TextChannelCount": "Počet textových kanálů",
-      "ThreadsCount": "Počet vláken",
-      "VoiceChannelCount": "Počet hlasových kanálů",
-      "RoleCount": "Počet rolí",
-      "EmoteCount": "Počet emotů (běžných/animovaných)",
-      "BanCount": "Počet banů",
-      "CreatedAt": "Vytvořen",
-      "Owner": "Vlastník",
-      "MemberCount": "Počet členů",
-      "PremiumTier": "Úroveň serveru",
-      "BoosterCount": "Počet boosterů",
-      "Improvements": "Vylepšení",
-      "DetailsTitle": "Podrobnosti",
-      "DetailsText": "Podrobné informace o serveru najdeš ve webové administraci (https://private.grillbot.eu/)",
-      "Features": {
-        "AnimatedIcon": "Animovaná ikona",
-        "Banner": "Banner",
-        "Commerce": "eKomerce",
-        "Community": "Komunitní režim",
-        "Discoverable": "Veřejně viditelný",
-        "InviteSplash": "Pozadí u pozvánky",
-        "MemberVerificationGateEnabled": "Verifikace při připojení",
-        "News": "Novinky",
-        "Partnered": "Partnerský program",
-        "PreviewEnabled": "Náhled serveru před připojením",
-        "VanityUrl": "Unikátní URL pozvánky",
-        "Verified": "Ověřený server",
-        "VIPRegions": "VIP hlasová oblast",
-        "WelcomeScreenEnabled": "Uvítací obrazovka",
-        "MonetizationEnabled": "Monetizace",
-        "MoreStickers": "Nálepky",
-        "PrivateThreads": "Soukromá vlákna",
-        "RoleIcons": "Ikony rolí",
-        "SevenDayThreadArchive": "Archivace vláken po týdnu",
-        "ThreeDayThreadArchive": "Archivace vláken po 3 dnech",
-        "TicketedEventsEnabled": "Události",
-        "AnimatedBanner": "Animovaný banner",
-        "TextInVoiceEnabled": "Text v hlasových kanálech",
-        "ThreadsEnabled": "Vlákna",
-        "ChannelBanner": "Banner kanálů",
-        "Hub": "Školní server",
-        "MoreEmoji": "Více emotů",
-        "RoleSubscriptionsAvailableForPurchase": "Placené role",
-        "MemberProfiles": "Alternativní profily uživatelů",
-        "NewThreadPermissions": "",
-        "ThreadsEnabledTesting": "",
-        "AutoModeration": "AutoMod",
-        "DiscoverableDisabled": "",
-        "EnabledDiscoverableBefore": "",
-        "Featureable": "",
-        "ForceRelay": "",
-        "HasDirectoryEntry": "",
-        "InternalEmployeeOnly": "Pouze pro zaměstnance Discordu",
-        "LinkedToHub": "Propojení se školním serverem",
-        "PremiumTier3Override": "",
-        "RelayEnabled": "",
-        "RoleSubscriptionsEnabled": "Povoleny placené role",
-        "ThreadsDefaultAutoArchiveDuration": "",
-        "DeveloperSupportServer": "Server podpory",
-        "InvitesDisabled": "",
-        "RaidAlertsDisabled": "Upozornění na raid vypnuto",
-        "ClydeEnabled": "Clyde AI",
-        "GuildWebPageVanityUrl": "Web page vanity URL"
-      }
-    },
-    "GuildDetail": {
-      "NotFound": "Požadovaný server se nepodařilo najít."
-    },
-    "UpdateGuild": {
-      "AdminChannelNotFound": "Nepodařilo se dohledat administrátorský kanál",
-      "MuteRoleNotFound": "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.",
-      "EmoteSuggestionChannelNotFound": "Nepodařilo se dohledat kanál pro návrhy emotů.",
-      "VoteChannelNotFound": "Nepodařilo se dohledat kanál pro veřejná hlasování.",
-      "BotRoomChannelNotFound": "Nepodařilo se dohledat kanál pro boty."
-    }
-  },
-  "MathModule": {
-    "SolveExpression": {
-      "Expression": "Výraz",
-      "ComputeFailed": "Výpočet se nezdařil",
-      "Report": "Hlášení",
-      "Result": "Výsledek",
-      "Timeout": "Vypršel časový limit pro zpracování výrazu"
-    }
-  },
-  "MemeModule": {
-    "Hi": {
-      "Template": "Ahoj {0} {1}"
-    }
-  },
-  "RemindModule": {
-    "Create": {
-      "Success": "Připomenutí bylo vytvořeno.",
-      "CopyMessage": "Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {0}",
-      "Validation": {
-        "MustInFuture": "Datum a čas upozornění musí být v budoucnosti.",
-        "MinimalTimeTemplate": "Datum a čas upozornění musí být později než {0}",
-        "MinimalTime": {
-          "One": "{0:N0} minuta",
-          "TwoToFour": "{0:N0} minuty",
-          "FiveAndMore": "{0:N0} minut"
+    "BirthdayModule": {
+        "Add": {
+            "Success": "Datum narození bylo úspěšně uloženo."
         },
-        "MessageRequired": "Text upozornění je povinný.",
-        "MaxLengthExceeded": "Zpráva může být dlouhá maximálně 1024 znaků."
-      }
+        "Remove": {
+            "Success": "Datum narození bylo úspěšně odebráno."
+        },
+        "Have": {
+            "Yes": "Ano. Máš uložené narozeniny.",
+            "No": "Ne. Nemáš uložené narozeniny."
+        },
+        "Info": {
+            "NoOneHave": "Dnes nemá nikdo narozeniny. {0}",
+            "Parts": {
+                "WithYears": "**{0} ({1} let)**",
+                "WithoutYears": "**{0}**"
+            },
+            "Template": {
+                "SingleForm": "Dnes má narozeniny {0} {1}",
+                "MultipleForm": "Dnes mají narozeniny {0} a {1} {2}"
+            }
+        }
     },
-    "CancelRemind": {
-      "Cancelled": "Upozornění bylo úspěšně zrušeno.",
-      "CancelledWithNotify": "Upozornění bylo úspěšně zrušeno a cílový uživatel byl upozorněn.",
-      "NotFound": "Požadované upozornění nebylo nalezeno.",
-      "AlreadyCancelled": "Nelze zrušit již zrušené upozornění.",
-      "AlreadyNotified": "Nelze zrušit již proběhlé upozornění.",
-      "InvalidOperator": "Upozornění může zrušit pouze ten, komu je určeno, nebo kdo jej založil."
+    "BotModule": {
+        "BotInfo": {
+            "CreatedAt": "Vytvořen",
+            "Uptime": "Uptime",
+            "Repository": "Repozitář",
+            "Documentation": "Dokumentace",
+            "Swagger": "Swagger",
+            "PrivateAdmin": "Administrace (Vyšší role)",
+            "PublicAdmin": "Administrace (Pro každého)",
+            "NavigationPage": "Rozcestník"
+        }
     },
-    "Suggestions": {
-      "Incoming": "Příchozí #{0} ({1}) od uživatele {2}",
-      "Outgoing": "Odchozí #{0} ({2}) pro uživatele {2}"
+    "ChannelModule": {
+        "ChannelInfo": {
+            "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
+            "CreatedAt": "Vytvořen",
+            "MemberCount": "Počet členů",
+            "MemberCountValue": {
+                "One": "{0:N0} člen",
+                "TwoToFour": "{0:N0} členové",
+                "FiveAndMore": "{0:N0} členů"
+            },
+            "NewsChannelTitle": "Informace o kanálu s novinkami",
+            "VoiceChannelTitle": "Informace o hlasovém kanálu",
+            "ThreadChannelTitle": "Informace o vláknu",
+            "StageChannelTitle": "Informace o jevišti",
+            "TextChannelTitle": "Informace o textovém kanálu",
+            "ForumChannelTitle": "Informace o fóru",
+            "CategoryChannelTitle": "Informace o kategorii",
+            "OtherChannelTitle:": "Informace o neznámém typu kanálu ({0})",
+            "PermsCountValue": {
+                "One": "{0:N0} oprávnění",
+                "TwoToFour": "{0:N0} oprávnění",
+                "FiveAndMore": "{0:N0} oprávnění"
+            },
+            "PermsCount": "Uživatelské: {0}\nRole: {1}",
+            "PermsCountTitle": "Počet oprávnění",
+            "Channel": "Kanál",
+            "TagsCount": "Počet tagů",
+            "TagsCountValue": {
+                "One": "{0:N0} tag",
+                "TwoToFour": "{0:N0} tagy",
+                "FiveAndMore": "{0:N0} tagů"
+            },
+            "ThreadCount": "Počet vláken",
+            "PublicThreadCountValue": {
+                "One": "{0:N0} veřejné vlákno",
+                "TwoToFour": "{0:N0} veřejná vlákna",
+                "FiveAndMore": "{0:N0} veřejných vláken"
+            },
+            "PrivateThreadCountValue": {
+                "One": "{0:N0} soukromé vlákno",
+                "TwoToFour": "{0:N0} soukromá vlákna",
+                "FiveAndMore": "{0:N0} soukromých vláken"
+            },
+            "MessageCount": "Počet zpráv",
+            "MessageCountValue": {
+                "One": "{0:N0} zpráva",
+                "TwoToFour": "{0:N0} zprávy",
+                "FiveAndMore": "{0:N0} zpráv"
+            },
+            "FirstMessage": "První zpráva",
+            "LastMessage": "Poslední zpráva",
+            "Flags": {
+                "CommandsDisabled": "Deaktivovány všechny příkazy",
+                "AutoReplyDeactivated": "Deaktivovány automatické odpovědi",
+                "StatsHidden": "Skryté statistiky",
+                "EphemeralCommands": "Skryté příkazy",
+                "PointsDeactivated": "Body deaktivovány"
+            },
+            "Configuration": "Konfigurace",
+            "TopTen": "TOP 10 uživatelů"
+        },
+        "GetChannelboard": {
+            "NoAccess": "Informace o kanálu ti nemohu dát, protože tam nemáš přístup.",
+            "NoActivity": "Doteď nebyla zaznamenána žádná aktivita v kanálech.",
+            "Counts": {
+                "One": "{0:N0} zpráva",
+                "TwoToFour": "{0:N0} zprávy",
+                "FiveAndMore": "{0:N0} zpráv"
+            },
+            "Row": "**{0}.** #{1} ({2})",
+            "Title": "Statistika aktivity v kanálech"
+        },
+        "PostMessage": {
+            "GuildNotFound": "Nepodařilo se najít server.",
+            "ChannelNotFound": "Nepodařilo se najít kanál na serveru {0}.",
+            "NoContent": "Nebyl zadán žádný platný vstup k odeslání.",
+            "Success": "Zpráva byla odeslána."
+        },
+        "ChannelDetail": {
+            "ChannelNotFound": "Požadovaný kanál nebyl nalezen."
+        },
+        "ChannelSimpleList": {
+            "NoMutualGuild": "Požadovaný server nesdílíš s botem."
+        },
+        "Clean": {
+            "ResultMessage": "Bylo úspěšně smazáno zpráv: **{0}**\nZ toho připnutých: **{1}**",
+            "UnsupportedChannel": "Mazat zprávy lze pouze z textových kanálů."
+        }
     },
-    "NotifyMessage": {
-      "ForceTitle": "Máš předčasně nové upozornění",
-      "Title": "Máš nové upozornění",
-      "Fields": {
-        "Id": "ID",
-        "From": "Od",
-        "Attention": "POZOR",
-        "Message": "Zpráva",
-        "Options": "Možnosti"
-      },
-      "Postponed": "Toto upozornění bylo odloženo už {0}x",
-      "Options": "Pokud si přeješ toto upozornění posunout, tak klikni na příslušné tlačítko podle počtu hodin."
+    "DuckModule": {
+        "GetDuckInfo": {
+            "CannotGetState": "Nepodařilo se zjistit stav kachny. Zkus to prosím později, nebo se podívej do kanálu {0}",
+            "DuckName": "U kachničky",
+            "Closed": "Kachna je zavřená.",
+            "NextOpenNotPlanned": "Další otvíračka není naplánovaná.",
+            "NextOpenAt": "Další otvíračka bude {0}.",
+            "Opened": "Kachna je otevřená!",
+            "Open": "Otevřeno",
+            "TimeToClose": " Otvíračka končí {0}.",
+            "Closing": "Zavíráme",
+            "ChillzoneTo": "Kachna je otevřená v režimu chillzóna až do {0}!",
+            "Note": "Poznámka"
+        }
     },
-    "Copy": {
-      "RemindNotFound": "Upozornění nebylo nalezeno.",
-      "SelfCopy": "Toto upozornění jsi založil, nemůžeš dostat to stejné.",
-      "WasCancelled": "Toto upozornění bylo zrušeno.",
-      "WasSent": "Toto upozornění již bylo odesláno.",
-      "CopyExists": "Toto upozornění jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další."
+    "GuildModule": {
+        "GetInfo": {
+            "CategoryCount": "Počet kategorií",
+            "TextChannelCount": "Počet textových kanálů",
+            "ThreadsCount": "Počet vláken",
+            "VoiceChannelCount": "Počet hlasových kanálů",
+            "RoleCount": "Počet rolí",
+            "EmoteCount": "Počet emotů (běžných/animovaných)",
+            "BanCount": "Počet banů",
+            "CreatedAt": "Vytvořen",
+            "Owner": "Vlastník",
+            "MemberCount": "Počet členů",
+            "PremiumTier": "Úroveň serveru",
+            "BoosterCount": "Počet boosterů",
+            "Improvements": "Vylepšení",
+            "DetailsTitle": "Podrobnosti",
+            "DetailsText": "Podrobné informace o serveru najdeš ve webové administraci (https://private.grillbot.eu/)",
+            "Features": {
+                "AnimatedIcon": "Animovaná ikona",
+                "Banner": "Banner",
+                "Commerce": "eKomerce",
+                "Community": "Komunitní režim",
+                "Discoverable": "Veřejně viditelný",
+                "InviteSplash": "Pozadí u pozvánky",
+                "MemberVerificationGateEnabled": "Verifikace při připojení",
+                "News": "Novinky",
+                "Partnered": "Partnerský program",
+                "PreviewEnabled": "Náhled serveru před připojením",
+                "VanityUrl": "Unikátní URL pozvánky",
+                "Verified": "Ověřený server",
+                "VIPRegions": "VIP hlasová oblast",
+                "WelcomeScreenEnabled": "Uvítací obrazovka",
+                "MonetizationEnabled": "Monetizace",
+                "MoreStickers": "Nálepky",
+                "PrivateThreads": "Soukromá vlákna",
+                "RoleIcons": "Ikony rolí",
+                "SevenDayThreadArchive": "Archivace vláken po týdnu",
+                "ThreeDayThreadArchive": "Archivace vláken po 3 dnech",
+                "TicketedEventsEnabled": "Události",
+                "AnimatedBanner": "Animovaný banner",
+                "TextInVoiceEnabled": "Text v hlasových kanálech",
+                "ThreadsEnabled": "Vlákna",
+                "ChannelBanner": "Banner kanálů",
+                "Hub": "Školní server",
+                "MoreEmoji": "Více emotů",
+                "RoleSubscriptionsAvailableForPurchase": "Placené role",
+                "MemberProfiles": "Alternativní profily uživatelů",
+                "NewThreadPermissions": "",
+                "ThreadsEnabledTesting": "",
+                "AutoModeration": "AutoMod",
+                "DiscoverableDisabled": "",
+                "EnabledDiscoverableBefore": "",
+                "Featureable": "",
+                "ForceRelay": "",
+                "HasDirectoryEntry": "",
+                "InternalEmployeeOnly": "Pouze pro zaměstnance Discordu",
+                "LinkedToHub": "Propojení se školním serverem",
+                "PremiumTier3Override": "",
+                "RelayEnabled": "",
+                "RoleSubscriptionsEnabled": "Povoleny placené role",
+                "ThreadsDefaultAutoArchiveDuration": "",
+                "DeveloperSupportServer": "Server podpory",
+                "InvitesDisabled": "",
+                "RaidAlertsDisabled": "Upozornění na raid vypnuto",
+                "ClydeEnabled": "Clyde AI",
+                "GuildWebPageVanityUrl": "Web page vanity URL"
+            }
+        },
+        "GuildDetail": {
+            "NotFound": "Požadovaný server se nepodařilo najít."
+        },
+        "UpdateGuild": {
+            "AdminChannelNotFound": "Nepodařilo se dohledat administrátorský kanál",
+            "MuteRoleNotFound": "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.",
+            "EmoteSuggestionChannelNotFound": "Nepodařilo se dohledat kanál pro návrhy emotů.",
+            "VoteChannelNotFound": "Nepodařilo se dohledat kanál pro veřejná hlasování.",
+            "BotRoomChannelNotFound": "Nepodařilo se dohledat kanál pro boty."
+        }
     },
-    "List": {
-      "Embed": {
-        "Title": "Seznam čekajících upozornění pro {0}",
-        "NoItems": "Pro uživatele {0} nečekají žádné upozornění.",
-        "RowTitle": "#{0} - Od {1} v {2} (za {3})"
-      }
-    }
-  },
-  "SearchingModule": {
-    "CreateSearch": {
-      "Success": "Hledání bylo úspěšně uloženo."
+    "MathModule": {
+        "SolveExpression": {
+            "Expression": "Výraz",
+            "ComputeFailed": "Výpočet se nezdařil",
+            "Report": "Hlášení",
+            "Result": "Výsledek",
+            "Timeout": "Vypršel časový limit pro zpracování výrazu"
+        }
     },
-    "RemoveSearch": {
-      "Success": "Hledání bylo úspěšně smazáno.",
-      "InsufficientPermissions": "Hledání nebylo vámi založené a ani nemáte vyšší oprávnění k mazání hledání."
+    "MemeModule": {
+        "Hi": {
+            "Template": "Ahoj {0} {1}"
+        }
     },
-    "List": {
-      "Embed": {
-        "Title": "Hledání v kanálu #{0}",
-        "NoItems": "V kanálu {0} zatím nikdo nic nehledá.",
-        "NoItemsWithQuery": "V kanálu {0} zatím nikdo nic nehledá. Zkus jiný vyhledávací podřetězec."
-      }
-    }
-  },
-  "SuggestionModule": {
-    "SessionExpired": "Platnost formuláře vypršela. Podej prosím návrh znovu.",
-    "PrivateMessageSuggestionComplete": "Tvůj návrh na přidání emote byl úspěšně zpracován.",
-    "VoteChannelNotDefined": "Nelze spustit hlasování o nových emotech, protože není definován kanál pro hlasování.",
-    "VoteChannelNotFound": "Nelze spustit hlasování o nových emotech, protože nebyl nalezen kanál pro hlasování.",
-    "NoForVote": "Neexistuje žádný schválený/zamítnutý návrh ke zpracování.",
-    "NoApprovedForVote": "Není žádný schválený návrh ke zpracování.",
-    "SuggestEmote": {
-      "NoEmoteAndAttachment": "Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.",
-      "EmoteExistsInGuild": "Nelze podat návrh na emote, který je již na tomto serveru.",
-      "ModalTitle": "Podání návrhu na nový emote",
-      "ModalEmoteName": "Název emote",
-      "ModalEmoteDescription": "Popis emote",
-      "ModalEmoteDescriptionPlaceholder": "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?"
-    },
-    "SuggestionEmbed": {
-      "Title": "Nový návrh na emote.",
-      "EmoteNameTitle": "Název",
-      "EmoteDescriptionTitle": "Popis",
-      "VoteFinished": "Hlasování skončilo {0}",
-      "VoteRunning": "Hlasování běží, skončí {0}",
-      "VoteFinishedTitle": "Dokončeno hlasování o novém emote",
-      "CommunityApproved": "Komunitou schválen",
-      "Boolean": {
-        "True": "Ano",
-        "False": "Ne"
-      },
-      "ApproveForVote": {
-        "True": "Schválen k hlasování",
-        "False": "Zamítnut k hlasování"
-      }
-    },
-    "ProcessEmoteSuggestions": {
-      "Success": "Hlasování pro schválené emoty bylo spuštěno"
-    },
-    "ApprovalButtons": {
-      "Approve": "Schválit",
-      "Decline": "Zamítnout"
-    },
-    "EmoteSuggestionChannelNotSet": {
-      "IsFinish": "Není nastaven kanál pro návrhy ({0}).",
-      "IsNotFinish": "Tvůj návrh nelze nyní zpracovat, protože není určen kanál pro návrhy."
-    },
-    "EmoteSuggestionChannelNotFound": {
-      "IsFinish": "Nepodařilo se najít kanál pro návrhy ({0}).",
-      "NotFinish": "Tvůj návrh emote nelze nyní kvůli technickým důvodům zpracovat."
-    }
-  },
-  "Unverify": {
-    "Validation": {
-      "KeepableCountExceeded": "Nelze si ponechat více než {0} rolí a kanálů.",
-      "GuildOwner": "Nelze provést odebrání přístupu, protože uživatel **{0}** je vlastník tohoto serveru.",
-      "Administrator": "Nelze provést odebrání přístupu, protože uživatel **{0}** má administrátorská oprávnění.",
-      "MultipleUnverify": "Nelze provést odebrání přístupu, protože uživatel **{0}** již má odebraný přístup do **{1}**.",
-      "MustBeInFuture": "Konec unverify musí být v budoucnosti.",
-      "MinimalTime": "Minimální čas pro unverify je {0}",
-      "HigherRoles": "Nelze provést odebírání přístupu, protože uživatel **{0}** má vyšší role. **({1})**",
-      "UnverifyWithoutReason": "Nelze bezdůvodně odebrat přístup. Přečti si nápovědu a pak to zkus znovu.",
-      "UndefinedKeepable": "{0} není ponechatelné."
-    },
-    "Update": {
-      "UnverifyNotFound": "Aktualizaci času nelze pro hledaného uživatele provést. Unverify nenalezeno.",
-      "NotEnoughTime": "Aktualizace data a času již není možná. Vypršel čas nebo zbývá méně než půl minuty."
-    },
-    "Message": {
-      "UnverifyToChannelWithReason": "Dočasné odebrání přístupu pro uživatele **{0}** bylo dokončeno. Přístup bude navrácen **{1}**. Důvod: {2}",
-      "UnverifyToChannelWithoutReason": "Dočasné odebrání přístupu pro uživatele **{0}** bylo dokončeno. Přístup bude navrácen **{1}**.",
-      "PrivateUnverifyWithReason": "Byla ti dočasně odebrána všechna práva na serveru **{0}**. Přístup ti bude navrácen **{1}**. Důvod: {2}",
-      "PrivateUnverifyWithoutReason": "Byla ti dočasně odebrána všechna práva na serveru **{0}**. Přístup ti bude navrácen **{1}**",
-      "PrivateUpdate": "Byl ti aktualizován čas pro odebrání práv na serveru **{0}**. Přístup ti bude navrácen **{1}**.",
-      "PrivateUpdateWithReason": "Byl ti aktualizován čas pro odebrání práv na serveru **{0}**. Přístup ti bude navrácen **{1}**. Důvod: *{2}*",
-      "UpdateToChannel": "Reset konce odebrání přístupu pro uživatele **{0}** byl aktualizován.\nPřístup bude navrácen **{1}**",
-      "UpdateToChannelWithReason": "Reset konce odebrání přístupu pro uživatele **{0}** byl aktualizován.\nPřístup bude navrácen **{1}**\nDůvod: *{2}*",
-      "PrivateManuallyRemovedUnverify": "Byl ti předčasně vrácen přístup na serveru **{0}**.",
-      "ManuallyRemoveToChannel": "Předčasné vrácení přístupu pro uživatele **{0}** bylo dokončeno.",
-      "ManuallyRemoveFailed": "Předčasné vrácení přístupu pro uživatele **{0}** selhalo. ({1})",
-      "RemoveAccessUnverifyNotFound": "Předčasné vrácení přístupu pro uživatele **{0}** nelze provést. Unverify nebylo nalezeno.",
-      "UnverifyFailedToChannel": "Dočasné odebrání přístupu pro uživatele **{0}** se nezdařilo. Uživatel byl obnoven do původního stavu."
-    },
-    "GuildNotFound": "Server na kterém by se mělo nacházet unverify nebyl nalezen.",
-    "DestUserNotFound": "Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen.",
-    "Recover": {
-      "LogItemNotFound": "Záznam o provedeném odebrání přístupu nebyl nalezen.",
-      "ValidUnverify": "Nelze provést obnovení přístupu uživateli, protože má aktuálně platné unverify.",
-      "GuildNotFound": "Nelze najít server, na kterém bylo uděleno unverify.",
-      "MemberNotFound": "Nelze vyhledat uživatele na serveru {0}"
-    },
-    "ListEmbed": {
-      "NoUnverify": "Zatím neprobíhá žádné unverify.",
-      "Title": "Dočasné odebrání přístupu",
-      "Fields": {
-        "StartAt": "Začátek",
-        "EndAt": "Konec",
-        "EndFor": "Konec za",
-        "Selfunverify": "Selfunverify",
-        "Reason": "Důvod",
-        "RetainedRoles": "Ponechané role",
-        "RemovedRoles": "Odebrané role",
-        "RetainedChannels": "Ponechané kanály",
-        "RemovedChannels": "Odebrané kanály"
-      },
-      "Boolean": {
-        "True": "Ano",
-        "False": "Ne"
-      }
-    },
-    "SelfUnverify": {
-      "GenericError": "Provedení selfunverify se nezdařilo.",
-      "Keepables": {
-        "Exists": "Ponechatelná role nebo kanál {0}/{1} již existuje.",
-        "GroupNotExists": "Skupina ponechatelných rolí nebo kanálů {0} neexistuje.",
-        "NotExists": "Ponechatelná role nebo kanál {0}/{1} neexistuje.",
+    "RemindModule": {
+        "Create": {
+            "Success": "Připomenutí bylo vytvořeno.",
+            "CopyMessage": "Pokud si někdo přeje dostat toto upozornění také, tak ať klikne na tlačítko {0}",
+            "Validation": {
+                "MustInFuture": "Datum a čas upozornění musí být v budoucnosti.",
+                "MinimalTimeTemplate": "Datum a čas upozornění musí být později než {0}",
+                "MinimalTime": {
+                    "One": "{0:N0} minuta",
+                    "TwoToFour": "{0:N0} minuty",
+                    "FiveAndMore": "{0:N0} minut"
+                },
+                "MessageRequired": "Text upozornění je povinný.",
+                "MaxLengthExceeded": "Zpráva může být dlouhá maximálně 1024 znaků."
+            }
+        },
+        "CancelRemind": {
+            "Cancelled": "Upozornění bylo úspěšně zrušeno.",
+            "CancelledWithNotify": "Upozornění bylo úspěšně zrušeno a cílový uživatel byl upozorněn.",
+            "NotFound": "Požadované upozornění nebylo nalezeno.",
+            "AlreadyCancelled": "Nelze zrušit již zrušené upozornění.",
+            "AlreadyNotified": "Nelze zrušit již proběhlé upozornění.",
+            "InvalidOperator": "Upozornění může zrušit pouze ten, komu je určeno, nebo kdo jej založil."
+        },
+        "Suggestions": {
+            "Incoming": "Příchozí #{0} ({1}) od uživatele {2}",
+            "Outgoing": "Odchozí #{0} ({2}) pro uživatele {2}"
+        },
+        "NotifyMessage": {
+            "ForceTitle": "Máš předčasně nové upozornění",
+            "Title": "Máš nové upozornění",
+            "Fields": {
+                "Id": "ID",
+                "From": "Od",
+                "Attention": "POZOR",
+                "Message": "Zpráva",
+                "Options": "Možnosti"
+            },
+            "Postponed": "Toto upozornění bylo odloženo už {0}x",
+            "Options": "Pokud si přeješ toto upozornění posunout, tak klikni na příslušné tlačítko podle počtu hodin."
+        },
+        "Copy": {
+            "RemindNotFound": "Upozornění nebylo nalezeno.",
+            "SelfCopy": "Toto upozornění jsi založil, nemůžeš dostat to stejné.",
+            "WasCancelled": "Toto upozornění bylo zrušeno.",
+            "WasSent": "Toto upozornění již bylo odesláno.",
+            "CopyExists": "Toto upozornění jsi již jednou z tlačítka vytvořil. Nemůžeš vytvořit další."
+        },
         "List": {
-          "NoKeepables": "Nebyly nalezeny žádné ponechatelné přístupy.",
-          "Title": "Ponechatelné role a kanály",
-          "Other": "Ostatní"
+            "Embed": {
+                "Title": "Seznam čekajících upozornění pro {0}",
+                "NoItems": "Pro uživatele {0} nečekají žádné upozornění.",
+                "RowTitle": "#{0} - Od {1} v {2} (za {3})"
+            }
         }
-      }
-    }
-  },
-  "AuditLog": {
-    "RemoveItem": {
-      "NotFound": "Požadovaný záznam v logu nebyl nalezen."
     },
-    "List": {
-      "TypesCombination": "Nelze filtrovat a vyloučit stejné typy současně.",
-      "IdNotNumber": "ID[{0}] není číslo."
-    },
-    "GetFileContent": {
-      "NotFound": "Požadovaný soubor nebyl nalezen."
-    },
-    "CreateLogItem": {
-      "Required": "Vyberte jeden typ logu.",
-      "MultipleTypes": "Bylo vybráno více typů logu. Vyberte pouze jeden."
-    }
-  },
-  "Auth": {
-    "CreateToken": {
-      "UserNotFound": "Proveden pokus s neplatným tokenem, nebo uživatel neexistuje. Opakujte přihlášení.",
-      "PublicAdminBlocked": "Uživatel {0} má zablokovaný přístup do osobní administrace.",
-      "PrivateAdminDisabled": "Uživatel {0} nemá oprávnění pro přístup do administrace."
-    }
-  },
-  "AutoReply": {
-    "NotFound": "Požadovaná automatická odpověď s ID {0} nebyla nalezena."
-  },
-  "User": {
-    "NotFound": "Uživatel s tímto identifikátorem nebyl nalezen.",
-    "UserStatus": {
-      "Online": "Online",
-      "Offline": "Offline",
-      "DoNotDisturb": "Nerušit",
-      "Idle": "Neaktivní"
-    },
-    "InfoEmbed": {
-      "Title": "Informace o uživateli",
-      "Fields": {
-        "State": "Stav",
-        "Roles": "Role",
-        "CreatedAt": "Vytvořen",
-        "ActiveDevices": "Aktivní zařízení",
-        "JoinedAt": "Připojen (pořadí)",
-        "PremiumSince": "Boost od",
-        "Points": "Body",
-        "Reactions": "Reakce (udělené / získané)",
-        "MessageCount": "Počet zpráv",
-        "UnverifyCount": "Počet unverify",
-        "SelfUnverifyCount": "Počet selfunverify",
-        "UnverifyInfo": "Informace o unverify",
-        "UsedInvite": "Použitá pozvánka",
-        "MostActiveChannel": "Nejaktivnější kanál",
-        "LastMessageIn": "Poslední zpráva",
-        "WebAdminDetails": "Podrobnosti na webu",
-        "Badges": "Odznaky"
-      },
-      "NoRoles": "*Uživatel nemá žádné role.*",
-      "UnverifyRow": "Uděleno {0}unverify do {1}. {2}",
-      "ReasonRow": "Důvod: {0}",
-      "UsedVanityInviteRow": "**{0}**\n{1}",
-      "UsedInviteRow": "**{0}**\nZaložil: **{1}** (**{2}**)",
-      "VanityInvite": "Univerzální pozvánka",
-      "WebAdminDetails": "Nepodařilo se sem vložit všechny informace které měly, ostatní informace jsou dostupné ve webové administraci."
-    },
-    "AccessList": {
-      "Title": "Seznam přístupů pro uživatele {0}",
-      "NoAccess": "Uživatel nemá přístup do žádného kanálu.",
-      "WithoutCategory": "Bez kategorie"
-    }
-  },
-  "Emojization": {
-    "NoContent": "Nebyl zadán žádný obsah k převodu.",
-    "DuplicateChar": "Nalezena duplicita ({0}).",
-    "Done": "Hotovo",
-    "EmptyResult": "Nepodařilo se provést převod. Zpráva obsahuje pouze neplatné znaky."
-  },
-  "Points": {
-    "Service": {
-      "Increment": {
-        "UserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
-        "NotAcceptable": "Nepodařilo se vytvořit transakci nových bodů. Zkontrolujte, zda uživatel není bot, má povolené body a že již neexistuje stejná transakce."
-      },
-      "Transfer": {
-        "SourceUserNotFound": "Nelze převést body, protože uživatel od kterého se přenáší body nebyl nalezen.",
-        "DestUserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
-        "SameAccounts": "Nelze převést body mezi stejnými účty.",
-        "UserIsBot": "Nelze převést body, protože uživatel není běžný uživatel.",
-        "InsufficientAmount": "Uživatel nemá požadované množství bodů k přenosu.",
-        "GuildNotFound": "Požadovaný server nebyl nalezen."
-      }
-    },
-    "Board": {
-      "NoActivity": "Ještě nebyly zachyceny žádné události ukazující aktivitu na serveru.",
-      "Title": "Statistika aktivity dle bodů",
-      "Row": "**{0:N0}.** {1} ({2})",
-      "Counts": {
-        "One": "{0:N0} bod",
-        "TwoToFour": "{0:N0} body",
-        "FiveAndMore": "{0:N0} bodů"
-      }
-    },
-    "Chart": {
-      "Title": {
-        "Guild": {
-          "Messages": "Body celého serveru ze zpráv za poslední rok",
-          "Reactions": "Body celého serveru z reakcí za poslední rok",
-          "Summary": "Celkové body serveru za poslední rok"
+    "SearchingModule": {
+        "CreateSearch": {
+            "Success": "Hledání bylo úspěšně uloženo."
         },
-        "User": {
-          "Messages": "Body uživatelů ze zpráv za poslední rok",
-          "Reactions": "Body uživatelů z reakcí za poslední rok",
-          "Summary": "Celkové body uživatelů za poslední rok"
+        "RemoveSearch": {
+            "Success": "Hledání bylo úspěšně smazáno.",
+            "InsufficientPermissions": "Hledání nebylo vámi založené a ani nemáte vyšší oprávnění k mazání hledání."
+        },
+        "List": {
+            "Embed": {
+                "Title": "Hledání v kanálu #{0}",
+                "NoItems": "V kanálu {0} zatím nikdo nic nehledá.",
+                "NoItemsWithQuery": "V kanálu {0} zatím nikdo nic nehledá. Zkus jiný vyhledávací podřetězec."
+            }
         }
-      }
     },
-    "Image": {
-      "UserNotFound": "Uživatel nebyl nalezen na serveru.",
-      "NoActivity": "Uživatel {0} ještě neprojevil na serveru žádnou aktivitu.",
-      "IsBot": "Boti nesbírají žádné boty, tudíž nelze žádné body zobrazit."
-    }
-  },
-  "Pins": {
-    "UnpinCount": "Zprávy byly úspěšně odepnuty.\nCelkem odepnutých zpráv: **{0}**"
-  },
-  "Permissions": {
-    "Useless": {
-      "CheckSummary": "Nalezeno zbytečných oprávnění: **{0}**\nPočet kanálů: **{1}**\nPočet uživatelů: **{2}**"
+    "SuggestionModule": {
+        "SessionExpired": "Platnost formuláře vypršela. Podej prosím návrh znovu.",
+        "PrivateMessageSuggestionComplete": "Tvůj návrh na přidání emote byl úspěšně zpracován.",
+        "VoteChannelNotDefined": "Nelze spustit hlasování o nových emotech, protože není definován kanál pro hlasování.",
+        "VoteChannelNotFound": "Nelze spustit hlasování o nových emotech, protože nebyl nalezen kanál pro hlasování.",
+        "NoForVote": "Neexistuje žádný schválený/zamítnutý návrh ke zpracování.",
+        "NoApprovedForVote": "Není žádný schválený návrh ke zpracování.",
+        "SuggestEmote": {
+            "NoEmoteAndAttachment": "Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.",
+            "EmoteExistsInGuild": "Nelze podat návrh na emote, který je již na tomto serveru.",
+            "ModalTitle": "Podání návrhu na nový emote",
+            "ModalEmoteName": "Název emote",
+            "ModalEmoteDescription": "Popis emote",
+            "ModalEmoteDescriptionPlaceholder": "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?",
+            "UnsupportedImageFormat": "Nepodporovaný typ obrázku. Je možné nahrávat pouze přílohy s koncovkou PNG."
+        },
+        "SuggestionEmbed": {
+            "Title": "Nový návrh na emote.",
+            "EmoteNameTitle": "Název",
+            "EmoteDescriptionTitle": "Popis",
+            "VoteFinished": "Hlasování skončilo {0}",
+            "VoteRunning": "Hlasování běží, skončí {0}",
+            "VoteFinishedTitle": "Dokončeno hlasování o novém emote",
+            "CommunityApproved": "Komunitou schválen",
+            "Boolean": {
+                "True": "Ano",
+                "False": "Ne"
+            },
+            "ApproveForVote": {
+                "True": "Schválen k hlasování",
+                "False": "Zamítnut k hlasování"
+            }
+        },
+        "ProcessEmoteSuggestions": {
+            "Success": "Hlasování pro schválené emoty bylo spuštěno"
+        },
+        "ApprovalButtons": {
+            "Approve": "Schválit",
+            "Decline": "Zamítnout"
+        },
+        "EmoteSuggestionChannelNotSet": {
+            "IsFinish": "Není nastaven kanál pro návrhy ({0}).",
+            "IsNotFinish": "Tvůj návrh nelze nyní zpracovat, protože není určen kanál pro návrhy."
+        },
+        "EmoteSuggestionChannelNotFound": {
+            "IsFinish": "Nepodařilo se najít kanál pro návrhy ({0}).",
+            "NotFinish": "Tvůj návrh emote nelze nyní kvůli technickým důvodům zpracovat."
+        }
     },
-    "Preconditions": {
-      "DmNotAllowed": "Použití příkazů v soukromé konverzaci není povoleno.",
-      "UserCommandsDisabled": "Byly ti zakázány všechny příkazy.",
-      "ChannelDisabled": "V tomto kanálu není možné provádět příkazy."
-    }
-  },
-  "MessageClearSubModule": {
-    "ClearEmoteFromReactions": {
-      "Success": "Reakce pro emote {0} byly úspěšně smazány."
-    }
-  },
-  "Roles": {
-    "MemberCounts": {
-      "One": "{0:N0} člen",
-      "TwoToFour": "{0:N0} členové",
-      "FiveAndMore": "{0:N0} členů"
+    "Unverify": {
+        "Validation": {
+            "KeepableCountExceeded": "Nelze si ponechat více než {0} rolí a kanálů.",
+            "GuildOwner": "Nelze provést odebrání přístupu, protože uživatel **{0}** je vlastník tohoto serveru.",
+            "Administrator": "Nelze provést odebrání přístupu, protože uživatel **{0}** má administrátorská oprávnění.",
+            "MultipleUnverify": "Nelze provést odebrání přístupu, protože uživatel **{0}** již má odebraný přístup do **{1}**.",
+            "MustBeInFuture": "Konec unverify musí být v budoucnosti.",
+            "MinimalTime": "Minimální čas pro unverify je {0}",
+            "HigherRoles": "Nelze provést odebírání přístupu, protože uživatel **{0}** má vyšší role. **({1})**",
+            "UnverifyWithoutReason": "Nelze bezdůvodně odebrat přístup. Přečti si nápovědu a pak to zkus znovu.",
+            "UndefinedKeepable": "{0} není ponechatelné."
+        },
+        "Update": {
+            "UnverifyNotFound": "Aktualizaci času nelze pro hledaného uživatele provést. Unverify nenalezeno.",
+            "NotEnoughTime": "Aktualizace data a času již není možná. Vypršel čas nebo zbývá méně než půl minuty."
+        },
+        "Message": {
+            "UnverifyToChannelWithReason": "Dočasné odebrání přístupu pro uživatele **{0}** bylo dokončeno. Přístup bude navrácen **{1}**. Důvod: {2}",
+            "UnverifyToChannelWithoutReason": "Dočasné odebrání přístupu pro uživatele **{0}** bylo dokončeno. Přístup bude navrácen **{1}**.",
+            "PrivateUnverifyWithReason": "Byla ti dočasně odebrána všechna práva na serveru **{0}**. Přístup ti bude navrácen **{1}**. Důvod: {2}",
+            "PrivateUnverifyWithoutReason": "Byla ti dočasně odebrána všechna práva na serveru **{0}**. Přístup ti bude navrácen **{1}**",
+            "PrivateUpdate": "Byl ti aktualizován čas pro odebrání práv na serveru **{0}**. Přístup ti bude navrácen **{1}**.",
+            "PrivateUpdateWithReason": "Byl ti aktualizován čas pro odebrání práv na serveru **{0}**. Přístup ti bude navrácen **{1}**. Důvod: *{2}*",
+            "UpdateToChannel": "Reset konce odebrání přístupu pro uživatele **{0}** byl aktualizován.\nPřístup bude navrácen **{1}**",
+            "UpdateToChannelWithReason": "Reset konce odebrání přístupu pro uživatele **{0}** byl aktualizován.\nPřístup bude navrácen **{1}**\nDůvod: *{2}*",
+            "PrivateManuallyRemovedUnverify": "Byl ti předčasně vrácen přístup na serveru **{0}**.",
+            "ManuallyRemoveToChannel": "Předčasné vrácení přístupu pro uživatele **{0}** bylo dokončeno.",
+            "ManuallyRemoveFailed": "Předčasné vrácení přístupu pro uživatele **{0}** selhalo. ({1})",
+            "RemoveAccessUnverifyNotFound": "Předčasné vrácení přístupu pro uživatele **{0}** nelze provést. Unverify nebylo nalezeno.",
+            "UnverifyFailedToChannel": "Dočasné odebrání přístupu pro uživatele **{0}** se nezdařilo. Uživatel byl obnoven do původního stavu."
+        },
+        "GuildNotFound": "Server na kterém by se mělo nacházet unverify nebyl nalezen.",
+        "DestUserNotFound": "Uživatel, kterému mělo být přiřazeno unverify nebyl nalezen.",
+        "Recover": {
+            "LogItemNotFound": "Záznam o provedeném odebrání přístupu nebyl nalezen.",
+            "ValidUnverify": "Nelze provést obnovení přístupu uživateli, protože má aktuálně platné unverify.",
+            "GuildNotFound": "Nelze najít server, na kterém bylo uděleno unverify.",
+            "MemberNotFound": "Nelze vyhledat uživatele na serveru {0}"
+        },
+        "ListEmbed": {
+            "NoUnverify": "Zatím neprobíhá žádné unverify.",
+            "Title": "Dočasné odebrání přístupu",
+            "Fields": {
+                "StartAt": "Začátek",
+                "EndAt": "Konec",
+                "EndFor": "Konec za",
+                "Selfunverify": "Selfunverify",
+                "Reason": "Důvod",
+                "RetainedRoles": "Ponechané role",
+                "RemovedRoles": "Odebrané role",
+                "RetainedChannels": "Ponechané kanály",
+                "RemovedChannels": "Odebrané kanály"
+            },
+            "Boolean": {
+                "True": "Ano",
+                "False": "Ne"
+            }
+        },
+        "SelfUnverify": {
+            "GenericError": "Provedení selfunverify se nezdařilo.",
+            "Keepables": {
+                "Exists": "Ponechatelná role nebo kanál {0}/{1} již existuje.",
+                "GroupNotExists": "Skupina ponechatelných rolí nebo kanálů {0} neexistuje.",
+                "NotExists": "Ponechatelná role nebo kanál {0}/{1} neexistuje.",
+                "List": {
+                    "NoKeepables": "Nebyly nalezeny žádné ponechatelné přístupy.",
+                    "Title": "Ponechatelné role a kanály",
+                    "Other": "Ostatní"
+                }
+            }
+        }
     },
-    "RoleSummaryLine": "{0}, vytvořeno {1}, {2}, {3}, {4}",
-    "Mentionable": "tagovatelná",
-    "Managed": "spravuje Discord",
-    "PremiumSubscriberRole": "booster",
-    "GuildSummary": "Počet rolí: {0}\nPočet uživatelů s rolí: {1}\nPočet uživatelů bez role: {2}",
-    "ListTitle": "Seznam rolí",
-    "DetailTitle": "Detail role @{0}",
-    "DetailFields": {
-      "CreatedAt": "Vytvořeno",
-      "Everyone": "Everyone",
-      "Hoisted": "Separovaná",
-      "Managed": "Spravuje Discord",
-      "Mentionable": "Tagovatelná",
-      "MemberCount": "Počet členů",
-      "BoosterRole": "Booster role",
-      "BotUser": "Náleží botovi",
-      "Permissions": "Oprávnění"
+    "AuditLog": {
+        "RemoveItem": {
+            "NotFound": "Požadovaný záznam v logu nebyl nalezen."
+        },
+        "List": {
+            "TypesCombination": "Nelze filtrovat a vyloučit stejné typy současně.",
+            "IdNotNumber": "ID[{0}] není číslo."
+        },
+        "GetFileContent": {
+            "NotFound": "Požadovaný soubor nebyl nalezen."
+        },
+        "CreateLogItem": {
+            "Required": "Vyberte jeden typ logu.",
+            "MultipleTypes": "Bylo vybráno více typů logu. Vyberte pouze jeden."
+        }
     },
-    "Boolean": {
-      "True": "Ano",
-      "False": "Ne"
-    }
-  },
-  "GuildScheduledEvents": {
-    "GuildNotFound": "Nepodařilo se najít server.",
-    "EventNotFound": "Nepodařilo se najít událost.",
-    "Required": {
-      "Name": "Název je povinný.",
-      "StartAt": "Je nutné zadat počátek události.",
-      "EndAt": "Je nutné zadat konec události.",
-      "Location": "Místo události je povinné."
+    "Auth": {
+        "CreateToken": {
+            "UserNotFound": "Proveden pokus s neplatným tokenem, nebo uživatel neexistuje. Opakujte přihlášení.",
+            "PublicAdminBlocked": "Uživatel {0} má zablokovaný přístup do osobní administrace.",
+            "PrivateAdminDisabled": "Uživatel {0} nemá oprávnění pro přístup do administrace."
+        }
     },
-    "ForbiddenAccess": "Tato událost nebyla vytvořena prostřednictvím bota.",
-    "CannotCancelEventEnded": "Nelze zrušit již ukončenou událost."
-  },
-  "CooldownEnabled": "Voláš tento příkaz často. Chvíli počkej. Příkaz můžeš znovu zavolat za {0}.",
-  "ClickOnCommand": "Před odesláním lomítkového příkazu je nezbytné kliknout na automatický doplňovač",
-  "TypeConverters": {
-    "BooleanInvalidValue": "Zadaná hodnota není platná hodnota typu boolean. Povolené hodnoty jsou pouze true/false.",
-    "DateTimeInvalidFormat": "Zadaná hodnota není platné datum a čas.",
-    "EmoteInvalidFormat": "Zadaný emote se nepodařilo najít a současně to není unicode emoji.",
-    "Message": {
-      "InvalidUri": "Zadaná zpráva není ani identifikátor ani odkaz.",
-      "InvalidDiscordUriFormat": "Zadaný odkaz není ve správném formátu odkazující na Discord zprávu.",
-      "DmUnsupported": "Použití odkazů na soukromou konverzaci není podporován. Pokud chceš použít soukromou konverzaci, pak zavolej příkaz v soukromé konverzaci s identifikátorem zprávy.",
-      "InvalidGuildIdentifier": "Nesprávný formát identifikátoru serveru.",
-      "GuildNotFound": "Identifikátor serveru v odkazu odkazuje na server, kde se bot nenachází.",
-      "ChannelIdInvalidFormat": "Nesprávný formát identifikátoru kanálu.",
-      "ChannelNotFound": "Identifikátor kanálu v odkazu odkazuje na neexistující kanál.",
-      "InvalidMessageIdFormat": "Nesprávný formát identifikátoru zprávy.",
-      "UnknownMessage": "Identifikátor zprávy v odkazu odkazuje na neexistující zprávu."
+    "AutoReply": {
+        "NotFound": "Požadovaná automatická odpověď s ID {0} nebyla nalezena."
     },
-    "UserNotFound": "Zadaný uživatel `{0}` nebyl nalezen."
-  },
-  "PublicApiClients": {
-    "NotFound": "Požadovaný klient nebyl nalezen."
-  },
-  "Jobs": {
-    "NotFound": "Nepodařilo se nalézt naplánovanou úlohu {0}."
-  },
-  "Invite": {
-    "NotFound": "Nepodařilo se najít pozvánku s kódem {0}"
-  },
-  "Emote": {
-    "List": {
-      "Title": "Statistika používání emotů",
-      "NoStatsOfUser": "Pro uživatele `{0}` ještě nebyla zaznamenáno žádné použití emotu.",
-      "NoStats": "Ještě nebylo zaznamenáno žádné použití emotu.",
-      "FieldData": "Počet použití: **{0}**\nPoužilo uživatelů: **{1}**\nPrvní použití: **{2}**\nPoslední použití: **{3}**"
+    "User": {
+        "NotFound": "Uživatel s tímto identifikátorem nebyl nalezen.",
+        "UserStatus": {
+            "Online": "Online",
+            "Offline": "Offline",
+            "DoNotDisturb": "Nerušit",
+            "Idle": "Neaktivní"
+        },
+        "InfoEmbed": {
+            "Title": "Informace o uživateli",
+            "Fields": {
+                "State": "Stav",
+                "Roles": "Role",
+                "CreatedAt": "Vytvořen",
+                "ActiveDevices": "Aktivní zařízení",
+                "JoinedAt": "Připojen (pořadí)",
+                "PremiumSince": "Boost od",
+                "Points": "Body",
+                "Reactions": "Reakce (udělené / získané)",
+                "MessageCount": "Počet zpráv",
+                "UnverifyCount": "Počet unverify",
+                "SelfUnverifyCount": "Počet selfunverify",
+                "UnverifyInfo": "Informace o unverify",
+                "UsedInvite": "Použitá pozvánka",
+                "MostActiveChannel": "Nejaktivnější kanál",
+                "LastMessageIn": "Poslední zpráva",
+                "WebAdminDetails": "Podrobnosti na webu",
+                "Badges": "Odznaky"
+            },
+            "NoRoles": "*Uživatel nemá žádné role.*",
+            "UnverifyRow": "Uděleno {0}unverify do {1}. {2}",
+            "ReasonRow": "Důvod: {0}",
+            "UsedVanityInviteRow": "**{0}**\n{1}",
+            "UsedInviteRow": "**{0}**\nZaložil: **{1}** (**{2}**)",
+            "VanityInvite": "Univerzální pozvánka",
+            "WebAdminDetails": "Nepodařilo se sem vložit všechny informace které měly, ostatní informace jsou dostupné ve webové administraci."
+        },
+        "AccessList": {
+            "Title": "Seznam přístupů pro uživatele {0}",
+            "NoAccess": "Uživatel nemá přístup do žádného kanálu.",
+            "WithoutCategory": "Bez kategorie"
+        }
     },
-    "Info": {
-      "NotSupported": "Unicode emoji nejsou v tomto příkazu podporovány.",
-      "NoActivity": "U tohoto emote ještě nebyla zaznamenána žádná aktivita.",
-      "Row": "**{0}.** {1} ({2})",
-      "UnknownUser": "Neznámý uživatel",
-      "Embed": {
-        "Title": "Informace o emote",
-        "Fields": {
-          "Name": "Název",
-          "Animated": "Animován",
-          "FirstOccurence": "První výskyt",
-          "LastOccurence": "Poslední výskyt",
-          "FromLastUse": "Od posledního použití",
-          "UseCount": "Počet použití",
-          "UsedUsers": "Počet uživatelů",
-          "Guild": "Server",
-          "TopTen": "TOP 10",
-          "Link": "Odkaz"
+    "Emojization": {
+        "NoContent": "Nebyl zadán žádný obsah k převodu.",
+        "DuplicateChar": "Nalezena duplicita ({0}).",
+        "Done": "Hotovo",
+        "EmptyResult": "Nepodařilo se provést převod. Zpráva obsahuje pouze neplatné znaky."
+    },
+    "Points": {
+        "Service": {
+            "Increment": {
+                "UserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
+                "NotAcceptable": "Nepodařilo se vytvořit transakci nových bodů. Zkontrolujte, zda uživatel není bot, má povolené body a že již neexistuje stejná transakce."
+            },
+            "Transfer": {
+                "SourceUserNotFound": "Nelze převést body, protože uživatel od kterého se přenáší body nebyl nalezen.",
+                "DestUserNotFound": "Nelze převést body, protože uživatel který má obdržet body nebyl nalezen.",
+                "SameAccounts": "Nelze převést body mezi stejnými účty.",
+                "UserIsBot": "Nelze převést body, protože uživatel není běžný uživatel.",
+                "InsufficientAmount": "Uživatel nemá požadované množství bodů k přenosu.",
+                "GuildNotFound": "Požadovaný server nebyl nalezen."
+            }
+        },
+        "Board": {
+            "NoActivity": "Ještě nebyly zachyceny žádné události ukazující aktivitu na serveru.",
+            "Title": "Statistika aktivity dle bodů",
+            "Row": "**{0:N0}.** {1} ({2})",
+            "Counts": {
+                "One": "{0:N0} bod",
+                "TwoToFour": "{0:N0} body",
+                "FiveAndMore": "{0:N0} bodů"
+            }
+        },
+        "Chart": {
+            "Title": {
+                "Guild": {
+                    "Messages": "Body celého serveru ze zpráv za poslední rok",
+                    "Reactions": "Body celého serveru z reakcí za poslední rok",
+                    "Summary": "Celkové body serveru za poslední rok"
+                },
+                "User": {
+                    "Messages": "Body uživatelů ze zpráv za poslední rok",
+                    "Reactions": "Body uživatelů z reakcí za poslední rok",
+                    "Summary": "Celkové body uživatelů za poslední rok"
+                }
+            }
+        },
+        "Image": {
+            "UserNotFound": "Uživatel nebyl nalezen na serveru.",
+            "NoActivity": "Uživatel {0} ještě neprojevil na serveru žádnou aktivitu.",
+            "IsBot": "Boti nesbírají žádné boty, tudíž nelze žádné body zobrazit."
+        }
+    },
+    "Pins": {
+        "UnpinCount": "Zprávy byly úspěšně odepnuty.\nCelkem odepnutých zpráv: **{0}**"
+    },
+    "Permissions": {
+        "Useless": {
+            "CheckSummary": "Nalezeno zbytečných oprávnění: **{0}**\nPočet kanálů: **{1}**\nPočet uživatelů: **{2}**"
+        },
+        "Preconditions": {
+            "DmNotAllowed": "Použití příkazů v soukromé konverzaci není povoleno.",
+            "UserCommandsDisabled": "Byly ti zakázány všechny příkazy.",
+            "ChannelDisabled": "V tomto kanálu není možné provádět příkazy."
+        }
+    },
+    "MessageClearSubModule": {
+        "ClearEmoteFromReactions": {
+            "Success": "Reakce pro emote {0} byly úspěšně smazány."
+        }
+    },
+    "Roles": {
+        "MemberCounts": {
+            "One": "{0:N0} člen",
+            "TwoToFour": "{0:N0} členové",
+            "FiveAndMore": "{0:N0} členů"
+        },
+        "RoleSummaryLine": "{0}, vytvořeno {1}, {2}, {3}, {4}",
+        "Mentionable": "tagovatelná",
+        "Managed": "spravuje Discord",
+        "PremiumSubscriberRole": "booster",
+        "GuildSummary": "Počet rolí: {0}\nPočet uživatelů s rolí: {1}\nPočet uživatelů bez role: {2}",
+        "ListTitle": "Seznam rolí",
+        "DetailTitle": "Detail role @{0}",
+        "DetailFields": {
+            "CreatedAt": "Vytvořeno",
+            "Everyone": "Everyone",
+            "Hoisted": "Separovaná",
+            "Managed": "Spravuje Discord",
+            "Mentionable": "Tagovatelná",
+            "MemberCount": "Počet členů",
+            "BoosterRole": "Booster role",
+            "BotUser": "Náleží botovi",
+            "Permissions": "Oprávnění"
         },
         "Boolean": {
-          "True": "Ano",
-          "False": "Ne"
+            "True": "Ano",
+            "False": "Ne"
         }
-      }
+    },
+    "GuildScheduledEvents": {
+        "GuildNotFound": "Nepodařilo se najít server.",
+        "EventNotFound": "Nepodařilo se najít událost.",
+        "Required": {
+            "Name": "Název je povinný.",
+            "StartAt": "Je nutné zadat počátek události.",
+            "EndAt": "Je nutné zadat konec události.",
+            "Location": "Místo události je povinné."
+        },
+        "ForbiddenAccess": "Tato událost nebyla vytvořena prostřednictvím bota.",
+        "CannotCancelEventEnded": "Nelze zrušit již ukončenou událost."
+    },
+    "CooldownEnabled": "Voláš tento příkaz často. Chvíli počkej. Příkaz můžeš znovu zavolat za {0}.",
+    "ClickOnCommand": "Před odesláním lomítkového příkazu je nezbytné kliknout na automatický doplňovač",
+    "TypeConverters": {
+        "BooleanInvalidValue": "Zadaná hodnota není platná hodnota typu boolean. Povolené hodnoty jsou pouze true/false.",
+        "DateTimeInvalidFormat": "Zadaná hodnota není platné datum a čas.",
+        "EmoteInvalidFormat": "Zadaný emote se nepodařilo najít a současně to není unicode emoji.",
+        "Message": {
+            "InvalidUri": "Zadaná zpráva není ani identifikátor ani odkaz.",
+            "InvalidDiscordUriFormat": "Zadaný odkaz není ve správném formátu odkazující na Discord zprávu.",
+            "DmUnsupported": "Použití odkazů na soukromou konverzaci není podporován. Pokud chceš použít soukromou konverzaci, pak zavolej příkaz v soukromé konverzaci s identifikátorem zprávy.",
+            "InvalidGuildIdentifier": "Nesprávný formát identifikátoru serveru.",
+            "GuildNotFound": "Identifikátor serveru v odkazu odkazuje na server, kde se bot nenachází.",
+            "ChannelIdInvalidFormat": "Nesprávný formát identifikátoru kanálu.",
+            "ChannelNotFound": "Identifikátor kanálu v odkazu odkazuje na neexistující kanál.",
+            "InvalidMessageIdFormat": "Nesprávný formát identifikátoru zprávy.",
+            "UnknownMessage": "Identifikátor zprávy v odkazu odkazuje na neexistující zprávu."
+        },
+        "UserNotFound": "Zadaný uživatel `{0}` nebyl nalezen."
+    },
+    "PublicApiClients": {
+        "NotFound": "Požadovaný klient nebyl nalezen."
+    },
+    "Jobs": {
+        "NotFound": "Nepodařilo se nalézt naplánovanou úlohu {0}."
+    },
+    "Invite": {
+        "NotFound": "Nepodařilo se najít pozvánku s kódem {0}"
+    },
+    "Emote": {
+        "List": {
+            "Title": "Statistika používání emotů",
+            "NoStatsOfUser": "Pro uživatele `{0}` ještě nebyla zaznamenáno žádné použití emotu.",
+            "NoStats": "Ještě nebylo zaznamenáno žádné použití emotu.",
+            "FieldData": "Počet použití: **{0}**\nPoužilo uživatelů: **{1}**\nPrvní použití: **{2}**\nPoslední použití: **{3}**"
+        },
+        "Info": {
+            "NotSupported": "Unicode emoji nejsou v tomto příkazu podporovány.",
+            "NoActivity": "U tohoto emote ještě nebyla zaznamenána žádná aktivita.",
+            "Row": "**{0}.** {1} ({2})",
+            "UnknownUser": "Neznámý uživatel",
+            "Embed": {
+                "Title": "Informace o emote",
+                "Fields": {
+                    "Name": "Název",
+                    "Animated": "Animován",
+                    "FirstOccurence": "První výskyt",
+                    "LastOccurence": "Poslední výskyt",
+                    "FromLastUse": "Od posledního použití",
+                    "UseCount": "Počet použití",
+                    "UsedUsers": "Počet uživatelů",
+                    "Guild": "Server",
+                    "TopTen": "TOP 10",
+                    "Link": "Odkaz"
+                },
+                "Boolean": {
+                    "True": "Ano",
+                    "False": "Ne"
+                }
+            }
+        }
     }
-  }
 }

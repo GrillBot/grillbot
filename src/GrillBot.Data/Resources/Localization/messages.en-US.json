@@ -1,666 +1,667 @@
 ﻿{
-  "BirthdayModule": {
-    "Add": {
-      "Success": "Date of birth has been saved successfully."
-    },
-    "Remove": {
-      "Success": "Date of birth successfully removed."
-    },
-    "Have": {
-      "Yes": "Yes. You have your birthday saved.",
-      "No": "No. You don't have your a birthday saved."
-    },
-    "Info": {
-      "NoOneHave": "Nobody has a birthday today. {0}",
-      "Parts": {
-        "WithYears": "**{0} ({1} years)**",
-        "WithoutYears": "**{0}**"
-      },
-      "Template": {
-        "SingleForm": "Today is the birthday of {0} {1}",
-        "MultipleForm": "Today is the birthday of {0} and {1} {2}"
-      }
-    }
-  },
-  "BotModule": {
-    "BotInfo": {
-      "CreatedAt": "Created",
-      "Uptime": "Uptime",
-      "Repository": "Repository",
-      "Documentation": "Documentation",
-      "Swagger": "Swagger",
-      "PrivateAdmin": "Administration (Only admins)",
-      "PublicAdmin": "Administration (For everyone)",
-      "NavigationPage": "Navigation page"
-    }
-  },
-  "ChannelModule": {
-    "ChannelInfo": {
-      "NoAccess": "I can't give you channel info because you don't have access to it.",
-      "CreatedAt": "Created",
-      "MemberCount": "Member count",
-      "MemberCountValue": {
-        "One": "{0:N0} member",
-        "TwoToFour": "{0:N0} members",
-        "FiveAndMore": "{0:N0} members"
-      },
-      "NewsChannelTitle": "News feed information",
-      "VoiceChannelTitle": "Voice channel information",
-      "ThreadChannelTitle": "Thread information",
-      "StageChannelTitle": "Stage information",
-      "TextChannelTitle": "Text channel information",
-      "ForumChannelTitle": "Forum information",
-      "CategoryChannelTitle": "Category information",
-      "OtherChannelTitle:": "Unknown channel type information ({0})",
-      "PermsCountValue": {
-        "One": "{0:N0} permission",
-        "TwoToFour": "{0:N0} permissions",
-        "FiveAndMore": "{0:N0} permissions"
-      },
-      "PermsCount": "User: {0}\nRole: {1}",
-      "PermsCountTitle": "Permissions count",
-      "Channel": "Channel",
-      "TagsCount": "Count of tags",
-      "TagsCountValue": {
-        "One": "{0:N0} tag",
-        "TwoToFour": "{0:N0} tags",
-        "FiveAndMore": "{0:N0} tags"
-      },
-      "ThreadCount": "Count of threads",
-      "PublicThreadCountValue": {
-        "One": "{0:N0} public thread",
-        "TwoToFour": "{0:N0} public threads",
-        "FiveAndMore": "{0:N0} public threads"
-      },
-      "PrivateThreadCountValue": {
-        "One": "{0:N0} private thread",
-        "TwoToFour": "{0:N0} private threads",
-        "FiveAndMore": "{0:N0} private threads"
-      },
-      "MessageCount": "Count of messages",
-      "MessageCountValue": {
-        "One": "{0:N0} message",
-        "TwoToFour": "{0:N0} messages",
-        "FiveAndMore": "{0:N0} messages"
-      },
-      "FirstMessage": "First message",
-      "LastMessage": "Last message",
-      "Flags": {
-        "CommandsDisabled": "All commands disabled",
-        "AutoReplyDeactivated": "Automatic replies disabled",
-        "StatsHidden": "Hidden statistics",
-        "EphemeralCommands": "Ephemeral commands",
-        "PointsDeactivated": "Points deactivated"
-      },
-      "Configuration": "Configuration",
-      "TopTen": "TOP 10 users"
-    },
-    "GetChannelboard": {
-      "NoAccess": "You don't have access to any channels.",
-      "NoActivity": "No channel activity has been recorded so far.",
-      "Counts": {
-        "One": "{0:N0} message",
-        "TwoToFour": "{0:N0} messages",
-        "FiveAndMore": "{0:N0} messages"
-      },
-      "Row": "**{0}.** #{1} ({2})",
-      "Title": "Channel activity statistics"
-    },
-    "PostMessage": {
-      "GuildNotFound": "Failed to find server.",
-      "ChannelNotFound": "Could not find channel on server {0}.",
-      "NoContent": "No valid input was entered to submit.",
-      "Success": "The message was sent."
-    },
-    "ChannelDetail": {
-      "ChannelNotFound": "The requested channel was not found."
-    },
-    "ChannelSimpleList": {
-      "NoMutualGuild": "You do not share the requested server with the bot."
-    },
-    "Clean": {
-      "ResultMessage": "Successfully deleted messages: **{0}**\nOf those pinned: **{1}**",
-      "UnsupportedChannel": "Cannot delete messages from non text channels."
-    }
-  },
-  "DuckModule": {
-    "GetDuckInfo": {
-      "CannotGetState": "The status of the duck could not be determined. Please try again later or watch channel {0}",
-      "DuckName": "U kachničky",
-      "Closed": "Kachna is closed.",
-      "NextOpenNotPlanned": "The next opener is not scheduled.",
-      "NextOpenAt": "Opening hours start {0}.",
-      "Opened": "Kachna is open!",
-      "Open": "OPEN",
-      "TimeToClose": " Opening hours ends {0}.",
-      "Closing": "We are closing",
-      "ChillzoneTo": "The duck is open in chillzone mode until {0}!",
-      "Note": "Note"
-    }
-  },
-  "GuildModule": {
-    "GetInfo": {
-      "CategoryCount": "Count of categories",
-      "TextChannelCount": "Count of text channels",
-      "ThreadsCount": "Count of threads",
-      "VoiceChannelCount": "Count of voice channels",
-      "RoleCount": "Count of roles",
-      "EmoteCount": "Count of emotes (regular/animated)",
-      "BanCount": "Count of bans",
-      "CreatedAt": "Created",
-      "Owner": "Owner",
-      "MemberCount": "Count of members",
-      "PremiumTier": "Guild level",
-      "BoosterCount": "Count of boosters",
-      "Improvements": "Improvements",
-      "DetailsTitle": "Details",
-      "DetailsText": "You can find detailed information about the server in the web administration (https://private.grillbot.eu/)",
-      "Features": {
-        "AnimatedIcon": "Animated icon",
-        "Banner": "Banner",
-        "Commerce": "eCommerce",
-        "Community": "Community mode",
-        "Discoverable": "Publicly visible",
-        "InviteSplash": "Background for invitations",
-        "MemberVerificationGateEnabled": "Verification on connection",
-        "News": "News",
-        "Partnered": "Partner program",
-        "PreviewEnabled": "Preview the server before connecting",
-        "VanityUrl": "Vanity URL",
-        "Verified": "Verified server",
-        "VIPRegions": "VIP voice region",
-        "WelcomeScreenEnabled": "Welcome screen",
-        "MonetizationEnabled": "Monetization",
-        "MoreStickers": "Stickers",
-        "PrivateThreads": "Private threads",
-        "RoleIcons": "Role icons",
-        "SevenDayThreadArchive": "Archiving threads after a week",
-        "ThreeDayThreadArchive": "Thread archiving after 3 days",
-        "TicketedEventsEnabled": "Events",
-        "AnimatedBanner": "Animated banner",
-        "TextInVoiceEnabled": "Text in voice channels",
-        "ThreadsEnabled": "Threads",
-        "ChannelBanner": "Channel banner",
-        "Hub": "School server",
-        "MoreEmoji": "More emotes",
-        "RoleSubscriptionsAvailableForPurchase": "Paid roles",
-        "MemberProfiles": "Alternative user profiles",
-        "NewThreadPermissions": "",
-        "ThreadsEnabledTesting": "",
-        "AutoModeration": "AutoMod",
-        "DiscoverableDisabled": "",
-        "EnabledDiscoverableBefore": "",
-        "Featureable": "",
-        "ForceRelay": "",
-        "HasDirectoryEntry": "",
-        "InternalEmployeeOnly": "Only for Discord staff",
-        "LinkedToHub": "Linked with school server",
-        "PremiumTier3Override": "",
-        "RelayEnabled": "",
-        "RoleSubscriptionsEnabled": "Paid roles enabled",
-        "ThreadsDefaultAutoArchiveDuration": "",
-        "DeveloperSupportServer": "Support server",
-        "InvitesDisabled": "",
-        "RaidAlertsDisabled": "Raid alerts disabled",
-        "ClydeEnabled": "Clyde AI",
-        "GuildWebPageVanityUrl": "Web page vanity URL"
-      }
-    },
-    "GuildDetail": {
-      "NotFound": "The requested server could not be found."
-    },
-    "UpdateGuild": {
-      "AdminChannelNotFound": "Failed to locate admin channel.",
-      "MuteRoleNotFound": "Failed to find the role that represents silencing the user on unverify.",
-      "EmoteSuggestionChannelNotFound": "Failed to find channel for emote suggestions.",
-      "VoteChannelNotFound": "Could not find public polling channel.",
-      "BotRoomChannelNotFound": "Could not find channel for bots."
-    }
-  },
-  "MathModule": {
-    "SolveExpression": {
-      "Expression": "Expression",
-      "ComputeFailed": "Calculation failed",
-      "Report": "Report",
-      "Result": "Result",
-      "Timeout": "Expression timed out"
-    }
-  },
-  "MemeModule": {
-    "Hi": {
-      "Template": "Hi {0} {1}"
-    }
-  },
-  "RemindModule": {
-    "Create": {
-      "Success": "A reminder has been created.",
-      "CopyMessage": "If anyone wishes to receive this notification as well, please click the {0} button.",
-      "Validation": {
-        "MustInFuture": "The reminder date and time must be in the future.",
-        "MinimalTimeTemplate": "The reminder date and time must be later than {0}.",
-        "MinimalTime": {
-          "One": "{0:N0} minute",
-          "TwoToFour": "{0:N0} minutes",
-          "FiveAndMore": "{0:N0} minutes"
+    "BirthdayModule": {
+        "Add": {
+            "Success": "Date of birth has been saved successfully."
         },
-        "MessageRequired": "The reminder text is required.",
-        "MaxLengthExceeded": "The reminder text can have only 1024 characters."
-      }
+        "Remove": {
+            "Success": "Date of birth successfully removed."
+        },
+        "Have": {
+            "Yes": "Yes. You have your birthday saved.",
+            "No": "No. You don't have your a birthday saved."
+        },
+        "Info": {
+            "NoOneHave": "Nobody has a birthday today. {0}",
+            "Parts": {
+                "WithYears": "**{0} ({1} years)**",
+                "WithoutYears": "**{0}**"
+            },
+            "Template": {
+                "SingleForm": "Today is the birthday of {0} {1}",
+                "MultipleForm": "Today is the birthday of {0} and {1} {2}"
+            }
+        }
     },
-    "CancelRemind": {
-      "Cancelled": "The reminder was successfully canceled.",
-      "CancelledWithNotify": "The reminder was successfully canceled and the target user was notified.",
-      "NotFound": "The requested reminder was not found.",
-      "AlreadyCancelled": "You cannot cancel an already canceled reminder.",
-      "AlreadyNotified": "You cannot cancel a remind that has already been sent.",
-      "InvalidOperator": "A reminder can only be canceled by the person to whom it is addressed or who created it."
+    "BotModule": {
+        "BotInfo": {
+            "CreatedAt": "Created",
+            "Uptime": "Uptime",
+            "Repository": "Repository",
+            "Documentation": "Documentation",
+            "Swagger": "Swagger",
+            "PrivateAdmin": "Administration (Only admins)",
+            "PublicAdmin": "Administration (For everyone)",
+            "NavigationPage": "Navigation page"
+        }
     },
-    "Suggestions": {
-      "Incoming": "Incoming #{0} ({1}) from user {2}",
-      "Outgoing": "Outgoing #{0} ({2}) to user {2}"
+    "ChannelModule": {
+        "ChannelInfo": {
+            "NoAccess": "I can't give you channel info because you don't have access to it.",
+            "CreatedAt": "Created",
+            "MemberCount": "Member count",
+            "MemberCountValue": {
+                "One": "{0:N0} member",
+                "TwoToFour": "{0:N0} members",
+                "FiveAndMore": "{0:N0} members"
+            },
+            "NewsChannelTitle": "News feed information",
+            "VoiceChannelTitle": "Voice channel information",
+            "ThreadChannelTitle": "Thread information",
+            "StageChannelTitle": "Stage information",
+            "TextChannelTitle": "Text channel information",
+            "ForumChannelTitle": "Forum information",
+            "CategoryChannelTitle": "Category information",
+            "OtherChannelTitle:": "Unknown channel type information ({0})",
+            "PermsCountValue": {
+                "One": "{0:N0} permission",
+                "TwoToFour": "{0:N0} permissions",
+                "FiveAndMore": "{0:N0} permissions"
+            },
+            "PermsCount": "User: {0}\nRole: {1}",
+            "PermsCountTitle": "Permissions count",
+            "Channel": "Channel",
+            "TagsCount": "Count of tags",
+            "TagsCountValue": {
+                "One": "{0:N0} tag",
+                "TwoToFour": "{0:N0} tags",
+                "FiveAndMore": "{0:N0} tags"
+            },
+            "ThreadCount": "Count of threads",
+            "PublicThreadCountValue": {
+                "One": "{0:N0} public thread",
+                "TwoToFour": "{0:N0} public threads",
+                "FiveAndMore": "{0:N0} public threads"
+            },
+            "PrivateThreadCountValue": {
+                "One": "{0:N0} private thread",
+                "TwoToFour": "{0:N0} private threads",
+                "FiveAndMore": "{0:N0} private threads"
+            },
+            "MessageCount": "Count of messages",
+            "MessageCountValue": {
+                "One": "{0:N0} message",
+                "TwoToFour": "{0:N0} messages",
+                "FiveAndMore": "{0:N0} messages"
+            },
+            "FirstMessage": "First message",
+            "LastMessage": "Last message",
+            "Flags": {
+                "CommandsDisabled": "All commands disabled",
+                "AutoReplyDeactivated": "Automatic replies disabled",
+                "StatsHidden": "Hidden statistics",
+                "EphemeralCommands": "Ephemeral commands",
+                "PointsDeactivated": "Points deactivated"
+            },
+            "Configuration": "Configuration",
+            "TopTen": "TOP 10 users"
+        },
+        "GetChannelboard": {
+            "NoAccess": "You don't have access to any channels.",
+            "NoActivity": "No channel activity has been recorded so far.",
+            "Counts": {
+                "One": "{0:N0} message",
+                "TwoToFour": "{0:N0} messages",
+                "FiveAndMore": "{0:N0} messages"
+            },
+            "Row": "**{0}.** #{1} ({2})",
+            "Title": "Channel activity statistics"
+        },
+        "PostMessage": {
+            "GuildNotFound": "Failed to find server.",
+            "ChannelNotFound": "Could not find channel on server {0}.",
+            "NoContent": "No valid input was entered to submit.",
+            "Success": "The message was sent."
+        },
+        "ChannelDetail": {
+            "ChannelNotFound": "The requested channel was not found."
+        },
+        "ChannelSimpleList": {
+            "NoMutualGuild": "You do not share the requested server with the bot."
+        },
+        "Clean": {
+            "ResultMessage": "Successfully deleted messages: **{0}**\nOf those pinned: **{1}**",
+            "UnsupportedChannel": "Cannot delete messages from non text channels."
+        }
     },
-    "NotifyMessage": {
-      "ForceTitle": "You received a new reminder prematurely",
-      "Title": "You have a new reminder",
-      "Fields": {
-        "Id": "ID",
-        "From": "From",
-        "Attention": "ATTENTION",
-        "Message": "Message",
-        "Options": "Options"
-      },
-      "Postponed": "This reminder has already been snoozed {0}x",
-      "Options": "If you wish to postpone this reminder, click on the appropriate button according to the count of hours."
+    "DuckModule": {
+        "GetDuckInfo": {
+            "CannotGetState": "The status of the duck could not be determined. Please try again later or watch channel {0}",
+            "DuckName": "U kachničky",
+            "Closed": "Kachna is closed.",
+            "NextOpenNotPlanned": "The next opener is not scheduled.",
+            "NextOpenAt": "Opening hours start {0}.",
+            "Opened": "Kachna is open!",
+            "Open": "OPEN",
+            "TimeToClose": " Opening hours ends {0}.",
+            "Closing": "We are closing",
+            "ChillzoneTo": "The duck is open in chillzone mode until {0}!",
+            "Note": "Note"
+        }
     },
-    "Copy": {
-      "RemindNotFound": "Unable to find original reminder.",
-      "SelfCopy": "You created this notification, you cannot receive the same.",
-      "WasCancelled": "This reminder has been cancelled.",
-      "WasSent": "This reminder has already been sent.",
-      "CopyExists": "You have already created this notification once from the button. You cannot create another one."
+    "GuildModule": {
+        "GetInfo": {
+            "CategoryCount": "Count of categories",
+            "TextChannelCount": "Count of text channels",
+            "ThreadsCount": "Count of threads",
+            "VoiceChannelCount": "Count of voice channels",
+            "RoleCount": "Count of roles",
+            "EmoteCount": "Count of emotes (regular/animated)",
+            "BanCount": "Count of bans",
+            "CreatedAt": "Created",
+            "Owner": "Owner",
+            "MemberCount": "Count of members",
+            "PremiumTier": "Guild level",
+            "BoosterCount": "Count of boosters",
+            "Improvements": "Improvements",
+            "DetailsTitle": "Details",
+            "DetailsText": "You can find detailed information about the server in the web administration (https://private.grillbot.eu/)",
+            "Features": {
+                "AnimatedIcon": "Animated icon",
+                "Banner": "Banner",
+                "Commerce": "eCommerce",
+                "Community": "Community mode",
+                "Discoverable": "Publicly visible",
+                "InviteSplash": "Background for invitations",
+                "MemberVerificationGateEnabled": "Verification on connection",
+                "News": "News",
+                "Partnered": "Partner program",
+                "PreviewEnabled": "Preview the server before connecting",
+                "VanityUrl": "Vanity URL",
+                "Verified": "Verified server",
+                "VIPRegions": "VIP voice region",
+                "WelcomeScreenEnabled": "Welcome screen",
+                "MonetizationEnabled": "Monetization",
+                "MoreStickers": "Stickers",
+                "PrivateThreads": "Private threads",
+                "RoleIcons": "Role icons",
+                "SevenDayThreadArchive": "Archiving threads after a week",
+                "ThreeDayThreadArchive": "Thread archiving after 3 days",
+                "TicketedEventsEnabled": "Events",
+                "AnimatedBanner": "Animated banner",
+                "TextInVoiceEnabled": "Text in voice channels",
+                "ThreadsEnabled": "Threads",
+                "ChannelBanner": "Channel banner",
+                "Hub": "School server",
+                "MoreEmoji": "More emotes",
+                "RoleSubscriptionsAvailableForPurchase": "Paid roles",
+                "MemberProfiles": "Alternative user profiles",
+                "NewThreadPermissions": "",
+                "ThreadsEnabledTesting": "",
+                "AutoModeration": "AutoMod",
+                "DiscoverableDisabled": "",
+                "EnabledDiscoverableBefore": "",
+                "Featureable": "",
+                "ForceRelay": "",
+                "HasDirectoryEntry": "",
+                "InternalEmployeeOnly": "Only for Discord staff",
+                "LinkedToHub": "Linked with school server",
+                "PremiumTier3Override": "",
+                "RelayEnabled": "",
+                "RoleSubscriptionsEnabled": "Paid roles enabled",
+                "ThreadsDefaultAutoArchiveDuration": "",
+                "DeveloperSupportServer": "Support server",
+                "InvitesDisabled": "",
+                "RaidAlertsDisabled": "Raid alerts disabled",
+                "ClydeEnabled": "Clyde AI",
+                "GuildWebPageVanityUrl": "Web page vanity URL"
+            }
+        },
+        "GuildDetail": {
+            "NotFound": "The requested server could not be found."
+        },
+        "UpdateGuild": {
+            "AdminChannelNotFound": "Failed to locate admin channel.",
+            "MuteRoleNotFound": "Failed to find the role that represents silencing the user on unverify.",
+            "EmoteSuggestionChannelNotFound": "Failed to find channel for emote suggestions.",
+            "VoteChannelNotFound": "Could not find public polling channel.",
+            "BotRoomChannelNotFound": "Could not find channel for bots."
+        }
     },
-    "List": {
-      "Embed": {
-        "Title": "List of pending reminders for user {0}",
-        "NoItems": "There are no reminders pending for user {0}.",
-        "RowTitle": "#{0} - From {1} at {2} (in {3})"
-      }
-    }
-  },
-  "SearchingModule": {
-    "CreateSearch": {
-      "Success": "The search was successfully saved."
+    "MathModule": {
+        "SolveExpression": {
+            "Expression": "Expression",
+            "ComputeFailed": "Calculation failed",
+            "Report": "Report",
+            "Result": "Result",
+            "Timeout": "Expression timed out"
+        }
     },
-    "RemoveSearch": {
-      "Success": "The search was successfully deleted.",
-      "InsufficientPermissions": "You did not create this search and you also do not have elevated permissions to delete a search."
+    "MemeModule": {
+        "Hi": {
+            "Template": "Hi {0} {1}"
+        }
     },
-    "List": {
-      "Embed": {
-        "Title": "Searching in the channel #{0}",
-        "NoItems": "No one searching in the channel {0} yet.",
-        "NoItemsWithQuery": "No one searching in the channel {0} yet. Try to use another search query."
-      }
-    }
-  },
-  "SuggestionModule": {
-    "SessionExpired": "Form expired. Please create your proposal again.",
-    "PrivateMessageSuggestionComplete": "Your suggestion to add an emote has been successfully processed.",
-    "VoteChannelNotDefined": "Voting about new emotes cannot be started. Channel for voting is not defined.",
-    "VoteChannelNotFound": "Voting about new emotes cannot be started. Channel for voting wasn't found.",
-    "NoForVote": "Not exists any approved/declined proposal for processing.",
-    "NoApprovedForVote": "Not exists any approved proposal for processing.",
-    "SuggestEmote": {
-      "NoEmoteAndAttachment": "Can't suggest a new emote when no emote is delivered. The emote can be delivered in the form of another emote or image.",
-      "EmoteExistsInGuild": "Cannot submit an emote that is already on this server.",
-      "ModalTitle": "Submitting a proposal for a new emote",
-      "ModalEmoteName": "The name of the emote",
-      "ModalEmoteDescription": "Description of the emote",
-      "ModalEmoteDescriptionPlaceholder": "Anything to add? What does the emote describe? Why should we have him here?"
-    },
-    "SuggestionEmbed": {
-      "Title": "New proposal for emote.",
-      "EmoteNameTitle": "Emote name",
-      "EmoteDescriptionTitle": "Description",
-      "VoteFinished": "Vote finished",
-      "VoteRunning": "Vote running, ends at {0}",
-      "VoteFinishedTitle": "Finished voting about new emote",
-      "CommunityApproved": "Community approved",
-      "Boolean": {
-        "True": "Yes",
-        "False": "No"
-      },
-      "ApproveForVote": {
-        "True": "Approved for voting",
-        "False": "Declined for voting"
-      }
-    },
-    "ProcessEmoteSuggestions": {
-      "Success": "Voting for approved emotes has started."
-    },
-    "ApprovalButtons": {
-      "Approve": "Approve",
-      "Decline": "Decline"
-    },
-    "EmoteSuggestionChannelNotSet": {
-      "IsFinish": "Channel for suggestions ({0}) is not set.",
-      "IsNotFinish": "Your proposal cannot be processed at this time because the proposal channel is not set up."
-    },
-    "EmoteSuggestionChannelNotFound": {
-      "IsFinish": "Channel for suggestions ({0}) is not set.",
-      "NotFinish": "Your proposal cannot be processed at this time due to technical reasons."
-    }
-  },
-  "Unverify": {
-    "Validation": {
-      "KeepableCountExceeded": "Cannot keep more than {0} roles and channels.",
-      "GuildOwner": "Unable to remove access because user **{0}** is the owner of this server.",
-      "Administrator": "Unable to remove access because user **{0}** has administrative privileges.",
-      "MultipleUnverify": "Unable to revoke access because user **{0}** has already revoked access to **{1}**.",
-      "MustBeInFuture": "The end of unverify must be in the future.",
-      "MinimalTime": "Minimum time for unverify is {0}",
-      "HigherRoles": "Unable to remove access because user **{0}** has higher roles. **({1})**",
-      "UnverifyWithoutReason": "Access cannot be revoked without reason. Read the help and then try again.",
-      "UndefinedKeepable": "{0} is not retainable."
-    },
-    "Update": {
-      "UnverifyNotFound": "Unable to update the time for the searched user. Unverify not found.",
-      "NotEnoughTime": "Updating the date and time is no longer possible. Time is up or less than half a minute remains."
-    },
-    "Message": {
-      "UnverifyToChannelWithReason": "Temporarily removing access for user **{0}** has been completed. Access will be restored **{1}**. Reason: {2}",
-      "UnverifyToChannelWithoutReason": "Temporarily removing access for user **{0}** has been completed. Access will be restored **{1}**.",
-      "PrivateUnverifyWithReason": "All rights on server **{0}** have been temporarily revoked. Access will be returned to you **{1}**. Reason: {2}",
-      "PrivateUnverifyWithoutReason": "All rights on server **{0}** have been temporarily revoked. Your access will be restored **{1}**",
-      "PrivateUpdate": "The time to revoke your rights on server **{0}** has been updated. Access will be returned to you **{1}**.",
-      "PrivateUpdateWithReason": "The time to revoke your rights on server **{0}** has been updated. Access will be returned to you **{1}**. Reason: *{2}*",
-      "UpdateToChannel": "End of access removal reset for user **{0}** has been updated.\nAccess will be restored to **{1}**",
-      "UpdateToChannelWithReason": "End of access removal reset for user **{0}** has been updated.\nAccess will be restored to **{1}**\nReason: *{2}*",
-      "PrivateManuallyRemovedUnverify": "Access to server **{0}** has been returned to you prematurely.",
-      "ManuallyRemoveToChannel": "Early rollback of access for user **{0}** has completed.",
-      "ManuallyRemoveFailed": "Early rollback of access for user **{0}** failed. ({1})",
-      "RemoveAccessUnverifyNotFound": "Unable to restore access early for user **{0}**. Unverify not found.",
-      "UnverifyFailedToChannel": "Failed to temporarily remove access for user **{0}**. The user has been restored to their original state."
-    },
-    "GuildNotFound": "The server on which unverify should be located was not found.",
-    "DestUserNotFound": "The user to whom unverify should have been assigned was not found.",
-    "Recover": {
-      "LogItemNotFound": "A record of access removal was not found.",
-      "ValidUnverify": "Unable to restore access to the user because he currently has unverify in effect.",
-      "GuildNotFound": "Unable to find the server on which unverify was applied.",
-      "MemberNotFound": "Unable to locate user on guild {0}."
-    },
-    "ListEmbed": {
-      "NoUnverify": "There is no unverify yet.",
-      "Title": "Temporary access removal",
-      "Fields": {
-        "StartAt": "Start at",
-        "EndAt": "End at",
-        "EndFor": "End for",
-        "Selfunverify": "Selfunverify",
-        "Reason": "Reason",
-        "RetainedRoles": "Retained roles",
-        "RemovedRoles": "Removed role",
-        "RetainedChannels": "Retained channels",
-        "RemovedChannels": "Removed channels"
-      },
-      "Boolean": {
-        "True": "Yes",
-        "False": "No"
-      }
-    },
-    "SelfUnverify": {
-      "GenericError": "Selfunverify failed.",
-      "Keepables": {
-        "Exists": "Keepable role or channel {0}/{1} already exists.",
-        "GroupNotExists": "The retainable role or channel group {0} does not exist.",
-        "NotExists": "Keepable role or channel {0}/{1} does not exist.",
+    "RemindModule": {
+        "Create": {
+            "Success": "A reminder has been created.",
+            "CopyMessage": "If anyone wishes to receive this notification as well, please click the {0} button.",
+            "Validation": {
+                "MustInFuture": "The reminder date and time must be in the future.",
+                "MinimalTimeTemplate": "The reminder date and time must be later than {0}.",
+                "MinimalTime": {
+                    "One": "{0:N0} minute",
+                    "TwoToFour": "{0:N0} minutes",
+                    "FiveAndMore": "{0:N0} minutes"
+                },
+                "MessageRequired": "The reminder text is required.",
+                "MaxLengthExceeded": "The reminder text can have only 1024 characters."
+            }
+        },
+        "CancelRemind": {
+            "Cancelled": "The reminder was successfully canceled.",
+            "CancelledWithNotify": "The reminder was successfully canceled and the target user was notified.",
+            "NotFound": "The requested reminder was not found.",
+            "AlreadyCancelled": "You cannot cancel an already canceled reminder.",
+            "AlreadyNotified": "You cannot cancel a remind that has already been sent.",
+            "InvalidOperator": "A reminder can only be canceled by the person to whom it is addressed or who created it."
+        },
+        "Suggestions": {
+            "Incoming": "Incoming #{0} ({1}) from user {2}",
+            "Outgoing": "Outgoing #{0} ({2}) to user {2}"
+        },
+        "NotifyMessage": {
+            "ForceTitle": "You received a new reminder prematurely",
+            "Title": "You have a new reminder",
+            "Fields": {
+                "Id": "ID",
+                "From": "From",
+                "Attention": "ATTENTION",
+                "Message": "Message",
+                "Options": "Options"
+            },
+            "Postponed": "This reminder has already been snoozed {0}x",
+            "Options": "If you wish to postpone this reminder, click on the appropriate button according to the count of hours."
+        },
+        "Copy": {
+            "RemindNotFound": "Unable to find original reminder.",
+            "SelfCopy": "You created this notification, you cannot receive the same.",
+            "WasCancelled": "This reminder has been cancelled.",
+            "WasSent": "This reminder has already been sent.",
+            "CopyExists": "You have already created this notification once from the button. You cannot create another one."
+        },
         "List": {
-          "NoKeepables": "No keepable accesses were found.",
-          "Title": "Keepable roles and channels",
-          "Other": "Other"
+            "Embed": {
+                "Title": "List of pending reminders for user {0}",
+                "NoItems": "There are no reminders pending for user {0}.",
+                "RowTitle": "#{0} - From {1} at {2} (in {3})"
+            }
         }
-      }
-    }
-  },
-  "AuditLog": {
-    "RemoveItem": {
-      "NotFound": "The requested log entry was not found."
     },
-    "List": {
-      "TypesCombination": "You cannot filter and exclude the same types at the same time.",
-      "IdNotNumber": "ID[{0}] is not number."
-    },
-    "GetFileContent": {
-      "NotFound": "The requested file was not found."
-    },
-    "CreateLogItem": {
-      "Required": "Select one record type.",
-      "MultipleTypes": "Multiple record types have been selected. Select only one."
-    }
-  },
-  "Auth": {
-    "CreateToken": {
-      "UserNotFound": "An attempt was made with an invalid token, or the user does not exist. Please login again.",
-      "PublicAdminBlocked": "User {0} has blocked access to public administration.",
-      "PrivateAdminDisabled": "User {0} does not have permission to access private administration."
-    }
-  },
-  "AutoReply": {
-    "NotFound": "The requested auto-reply with ID {0} was not found."
-  },
-  "User": {
-    "NotFound": "No user with this identifier was found.",
-    "UserStatus": {
-      "Online": "Online",
-      "Offline": "Offline",
-      "DoNotDisturb": "Do not disturb",
-      "Idle": "Inactive"
-    },
-    "InfoEmbed": {
-      "Title": "User information",
-      "Fields": {
-        "State": "Status",
-        "Roles": "Roles",
-        "CreatedAt": "Created at",
-        "ActiveDevices": "Active devices",
-        "JoinedAt": "Joined at (order)",
-        "PremiumSince": "Boost since",
-        "Points": "Points",
-        "Reactions": "Reactions (given / obtained)",
-        "MessageCount": "Count of messages",
-        "UnverifyCount": "Count of unverifies",
-        "SelfUnverifyCount": "Count of self-unverifies",
-        "UnverifyInfo": "Unverify info",
-        "UsedInvite": "Used invite",
-        "MostActiveChannel": "Most active channel",
-        "LastMessageIn": "Last message in",
-        "WebAdminDetails": "Details",
-        "Badges": "Badges"
-      },
-      "NoRoles": "*The user has no roles.*",
-      "UnverifyRow": "User has {0}unverify to {1}. {2}",
-      "ReasonRow": "Reason: {0}",
-      "UsedVanityInviteRow": "**{0}**\n{1}",
-      "UsedInviteRow": "**{0}**\nCreated by: **{1}** (**{2}**)",
-      "VanityInvite": "Universal invite",
-      "WebAdminDetails": "It was not possible to insert all the information, the rest is available in the web administration."
-    },
-    "AccessList": {
-      "Title": "Access list of user {0}",
-      "NoAccess": "User does not have access to any channel.",
-      "WithoutCategory": "Without category"
-    }
-  },
-  "Emojization": {
-    "NoContent": "No content to convert was specified.",
-    "DuplicateChar": "Found duplicate ({0}).",
-    "Done": "Done",
-    "EmptyResult": "Conversion failed. The message contains only invalid characters."
-  },
-  "Points": {
-    "Service": {
-      "Increment": {
-        "UserNotFound": "Unable to transfer points because the user to receive the points was not found.",
-        "NotAcceptable": "Creating of new transaction failed. Zkontrolujte, zda uživatel není robot, má povolené body a transakce neexistuje."
-      },
-      "Transfer": {
-        "SourceUserNotFound": "Unable to transfer points because the user to transfer points from was not found.",
-        "DestUserNotFound": "Unable to transfer points because the user to receive the points was not found.",
-        "SameAccounts": "Points cannot be transferred between the same accounts.",
-        "UserIsBot": "Unable to transfer points because user is a bot.",
-        "InsufficientAmount": "The user does not have the required amount of points to transfer.",
-        "GuildNotFound": "Requested guild wasn't found."
-      }
-    },
-    "Board": {
-      "NoActivity": "No events showing activity on the server have been captured yet.",
-      "Title": "Activity statistics by points",
-      "Row": "**{0:N0}.** {1} ({2})",
-      "Counts": {
-        "One": "{0:N0} point",
-        "TwoToFour": "{0:N0} points",
-        "FiveAndMore": "{0:N0} points"
-      }
-    },
-    "Chart": {
-      "Title": {
-        "Guild": {
-          "Messages": "Points of guild from messages for the last year.",
-          "Reactions": "Points of guild from reactions for the last year.",
-          "Summary": "Total points of guild for the last year."
+    "SearchingModule": {
+        "CreateSearch": {
+            "Success": "The search was successfully saved."
         },
-        "User": {
-          "Messages": "Points of users from messages for the last year.",
-          "Reactions": "Points of users from reactions for the last year.",
-          "Summary": "Total points of users for the last year."
+        "RemoveSearch": {
+            "Success": "The search was successfully deleted.",
+            "InsufficientPermissions": "You did not create this search and you also do not have elevated permissions to delete a search."
+        },
+        "List": {
+            "Embed": {
+                "Title": "Searching in the channel #{0}",
+                "NoItems": "No one searching in the channel {0} yet.",
+                "NoItemsWithQuery": "No one searching in the channel {0} yet. Try to use another search query."
+            }
         }
-      }
     },
-    "Image": {
-      "UserNotFound": "User wasn't found in the guild.",
-      "NoActivity": "User {0} showed no activity yet.",
-      "IsBot": "The bots don't gather any points, therefore these points cannot be displayed."
-    }
-  },
-  "Pins": {
-    "UnpinCount": "Messages successfully unpinned.\nTotal unpinned messages: **{0}**"
-  },
-  "Permissions": {
-    "Useless": {
-      "CheckSummary": "Unnecessary permissions found: **{0}**\nCount of channels: **{1}**\nCount of users: **{2}**"
+    "SuggestionModule": {
+        "SessionExpired": "Form expired. Please create your proposal again.",
+        "PrivateMessageSuggestionComplete": "Your suggestion to add an emote has been successfully processed.",
+        "VoteChannelNotDefined": "Voting about new emotes cannot be started. Channel for voting is not defined.",
+        "VoteChannelNotFound": "Voting about new emotes cannot be started. Channel for voting wasn't found.",
+        "NoForVote": "Not exists any approved/declined proposal for processing.",
+        "NoApprovedForVote": "Not exists any approved proposal for processing.",
+        "SuggestEmote": {
+            "NoEmoteAndAttachment": "Can't suggest a new emote when no emote is delivered. The emote can be delivered in the form of another emote or image.",
+            "EmoteExistsInGuild": "Cannot submit an emote that is already on this server.",
+            "ModalTitle": "Submitting a proposal for a new emote",
+            "ModalEmoteName": "The name of the emote",
+            "ModalEmoteDescription": "Description of the emote",
+            "ModalEmoteDescriptionPlaceholder": "Anything to add? What does the emote describe? Why should we have him here?",
+            "UnsupportedImageFormat": "Unsupported image extension. Only images with the PNG extension are supported."
+        },
+        "SuggestionEmbed": {
+            "Title": "New proposal for emote.",
+            "EmoteNameTitle": "Emote name",
+            "EmoteDescriptionTitle": "Description",
+            "VoteFinished": "Vote finished",
+            "VoteRunning": "Vote running, ends at {0}",
+            "VoteFinishedTitle": "Finished voting about new emote",
+            "CommunityApproved": "Community approved",
+            "Boolean": {
+                "True": "Yes",
+                "False": "No"
+            },
+            "ApproveForVote": {
+                "True": "Approved for voting",
+                "False": "Declined for voting"
+            }
+        },
+        "ProcessEmoteSuggestions": {
+            "Success": "Voting for approved emotes has started."
+        },
+        "ApprovalButtons": {
+            "Approve": "Approve",
+            "Decline": "Decline"
+        },
+        "EmoteSuggestionChannelNotSet": {
+            "IsFinish": "Channel for suggestions ({0}) is not set.",
+            "IsNotFinish": "Your proposal cannot be processed at this time because the proposal channel is not set up."
+        },
+        "EmoteSuggestionChannelNotFound": {
+            "IsFinish": "Channel for suggestions ({0}) is not set.",
+            "NotFinish": "Your proposal cannot be processed at this time due to technical reasons."
+        }
     },
-    "Preconditions": {
-      "DmNotAllowed": "Commands in a private conversations are not allowed.",
-      "UserCommandsDisabled": "You have been banned from all commands.",
-      "ChannelDisabled": "In this channel you are not able to use commands."
-    }
-  },
-  "MessageClearSubModule": {
-    "ClearEmoteFromReactions": {
-      "Success": "Reactions for emote {0} have been successfully deleted."
-    }
-  },
-  "Roles": {
-    "MemberCounts": {
-      "One": "{0:N0} member",
-      "TwoToFour": "{0:N0} members",
-      "FiveAndMore": "{0:N0} members"
+    "Unverify": {
+        "Validation": {
+            "KeepableCountExceeded": "Cannot keep more than {0} roles and channels.",
+            "GuildOwner": "Unable to remove access because user **{0}** is the owner of this server.",
+            "Administrator": "Unable to remove access because user **{0}** has administrative privileges.",
+            "MultipleUnverify": "Unable to revoke access because user **{0}** has already revoked access to **{1}**.",
+            "MustBeInFuture": "The end of unverify must be in the future.",
+            "MinimalTime": "Minimum time for unverify is {0}",
+            "HigherRoles": "Unable to remove access because user **{0}** has higher roles. **({1})**",
+            "UnverifyWithoutReason": "Access cannot be revoked without reason. Read the help and then try again.",
+            "UndefinedKeepable": "{0} is not retainable."
+        },
+        "Update": {
+            "UnverifyNotFound": "Unable to update the time for the searched user. Unverify not found.",
+            "NotEnoughTime": "Updating the date and time is no longer possible. Time is up or less than half a minute remains."
+        },
+        "Message": {
+            "UnverifyToChannelWithReason": "Temporarily removing access for user **{0}** has been completed. Access will be restored **{1}**. Reason: {2}",
+            "UnverifyToChannelWithoutReason": "Temporarily removing access for user **{0}** has been completed. Access will be restored **{1}**.",
+            "PrivateUnverifyWithReason": "All rights on server **{0}** have been temporarily revoked. Access will be returned to you **{1}**. Reason: {2}",
+            "PrivateUnverifyWithoutReason": "All rights on server **{0}** have been temporarily revoked. Your access will be restored **{1}**",
+            "PrivateUpdate": "The time to revoke your rights on server **{0}** has been updated. Access will be returned to you **{1}**.",
+            "PrivateUpdateWithReason": "The time to revoke your rights on server **{0}** has been updated. Access will be returned to you **{1}**. Reason: *{2}*",
+            "UpdateToChannel": "End of access removal reset for user **{0}** has been updated.\nAccess will be restored to **{1}**",
+            "UpdateToChannelWithReason": "End of access removal reset for user **{0}** has been updated.\nAccess will be restored to **{1}**\nReason: *{2}*",
+            "PrivateManuallyRemovedUnverify": "Access to server **{0}** has been returned to you prematurely.",
+            "ManuallyRemoveToChannel": "Early rollback of access for user **{0}** has completed.",
+            "ManuallyRemoveFailed": "Early rollback of access for user **{0}** failed. ({1})",
+            "RemoveAccessUnverifyNotFound": "Unable to restore access early for user **{0}**. Unverify not found.",
+            "UnverifyFailedToChannel": "Failed to temporarily remove access for user **{0}**. The user has been restored to their original state."
+        },
+        "GuildNotFound": "The server on which unverify should be located was not found.",
+        "DestUserNotFound": "The user to whom unverify should have been assigned was not found.",
+        "Recover": {
+            "LogItemNotFound": "A record of access removal was not found.",
+            "ValidUnverify": "Unable to restore access to the user because he currently has unverify in effect.",
+            "GuildNotFound": "Unable to find the server on which unverify was applied.",
+            "MemberNotFound": "Unable to locate user on guild {0}."
+        },
+        "ListEmbed": {
+            "NoUnverify": "There is no unverify yet.",
+            "Title": "Temporary access removal",
+            "Fields": {
+                "StartAt": "Start at",
+                "EndAt": "End at",
+                "EndFor": "End for",
+                "Selfunverify": "Selfunverify",
+                "Reason": "Reason",
+                "RetainedRoles": "Retained roles",
+                "RemovedRoles": "Removed role",
+                "RetainedChannels": "Retained channels",
+                "RemovedChannels": "Removed channels"
+            },
+            "Boolean": {
+                "True": "Yes",
+                "False": "No"
+            }
+        },
+        "SelfUnverify": {
+            "GenericError": "Selfunverify failed.",
+            "Keepables": {
+                "Exists": "Keepable role or channel {0}/{1} already exists.",
+                "GroupNotExists": "The retainable role or channel group {0} does not exist.",
+                "NotExists": "Keepable role or channel {0}/{1} does not exist.",
+                "List": {
+                    "NoKeepables": "No keepable accesses were found.",
+                    "Title": "Keepable roles and channels",
+                    "Other": "Other"
+                }
+            }
+        }
     },
-    "RoleSummaryLine": "{0}, created at {1}, {2}, {3}, {4}",
-    "Mentionable": "mentionable",
-    "Managed": "managed by Discord",
-    "PremiumSubscriberRole": "booster",
-    "GuildSummary": "Count of roles: {0}\nCount of users with role: {1}\nCount of users without a role: {2}",
-    "ListTitle": "List of roles",
-    "DetailTitle": "Detail of role @{0}",
-    "DetailFields": {
-      "CreatedAt": "Created at",
-      "Everyone": "Everyone",
-      "Hoisted": "Separated",
-      "Managed": "Managed by Discord",
-      "Mentionable": "Mentionable",
-      "MemberCount": "Count of members",
-      "BoosterRole": "Booster role",
-      "BotUser": "It belongs to the bot",
-      "Permissions": "Permissions"
+    "AuditLog": {
+        "RemoveItem": {
+            "NotFound": "The requested log entry was not found."
+        },
+        "List": {
+            "TypesCombination": "You cannot filter and exclude the same types at the same time.",
+            "IdNotNumber": "ID[{0}] is not number."
+        },
+        "GetFileContent": {
+            "NotFound": "The requested file was not found."
+        },
+        "CreateLogItem": {
+            "Required": "Select one record type.",
+            "MultipleTypes": "Multiple record types have been selected. Select only one."
+        }
     },
-    "Boolean": {
-      "True": "Yes",
-      "False": "No"
-    }
-  },
-  "GuildScheduledEvents": {
-    "GuildNotFound": "Unable to find guild.",
-    "EventNotFound": "Unable to find event.",
-    "Required": {
-      "Name": "Name is required.",
-      "StartAt": "It is necessary to set start time of the event.",
-      "EndAt": "It is necessary to set end time of the event.",
-      "Location": "Event location is required."
+    "Auth": {
+        "CreateToken": {
+            "UserNotFound": "An attempt was made with an invalid token, or the user does not exist. Please login again.",
+            "PublicAdminBlocked": "User {0} has blocked access to public administration.",
+            "PrivateAdminDisabled": "User {0} does not have permission to access private administration."
+        }
     },
-    "ForbiddenAccess": "This event wasn't created via bot.",
-    "CannotCancelEventEnded": "Cannot cancel cancelled event."
-  },
-  "CooldownEnabled": "You're executing this command too often. Wait a moment. You can execute this command again after {0}",
-  "ClickOnCommand": "Before sending slash command you need to click on autocomplete",
-  "TypeConverters": {
-    "BooleanInvalidValue": "Provided string is not valid boolean value. Allowed values are only true or false.",
-    "DateTimeInvalidFormat": "Provided string is not valid datetime.",
-    "EmoteInvalidFormat": "Provided emoji could not be found.",
-    "Message": {
-      "InvalidUri": "Provided message identification is not identifier or link.",
-      "InvalidDiscordUriFormat": "The link provided does not have a valid Discord message linking format.",
-      "DmUnsupported": "Using links to private conversation is not supported. If you want use private conversation, call command in the private conversation with message identifier.",
-      "InvalidGuildIdentifier": "Provided guild identifier has no valid format.",
-      "GuildNotFound": "The guild with the specified identifier was not found.",
-      "ChannelIdInvalidFormat": "Provided channel identifier has no valid format.",
-      "ChannelNotFound": "The channel with the specified identifier was not found.",
-      "InvalidMessageIdFormat": "Provided message identifier has no valid format.",
-      "UnknownMessage": "The message with the specified identifier was not found."
+    "AutoReply": {
+        "NotFound": "The requested auto-reply with ID {0} was not found."
     },
-    "UserNotFound": "Provided user  `{0}` wasn't found."
-  },
-  "PublicApiClients": {
-    "NotFound": "Requested client wasn't found."
-  },
-  "Jobs": {
-    "NotFound": "Unable to find job {0}."
-  },
-  "Invite": {
-    "NotFound": "Unable to find invite with code {0}."
-  },
-  "Emote": {
-    "List": {
-      "Title": "Usage statistics of emotes",
-      "NoStatsOfUser": "No emote usage has been recorded for user `{0}` yet.",
-      "NoStats": "No emote usage has been recorded.",
-      "FieldData": "Count of usage: **{0}**\nCount of users: **{1}**\nFirst use: **{2}**\nLast use: **{3}**"
+    "User": {
+        "NotFound": "No user with this identifier was found.",
+        "UserStatus": {
+            "Online": "Online",
+            "Offline": "Offline",
+            "DoNotDisturb": "Do not disturb",
+            "Idle": "Inactive"
+        },
+        "InfoEmbed": {
+            "Title": "User information",
+            "Fields": {
+                "State": "Status",
+                "Roles": "Roles",
+                "CreatedAt": "Created at",
+                "ActiveDevices": "Active devices",
+                "JoinedAt": "Joined at (order)",
+                "PremiumSince": "Boost since",
+                "Points": "Points",
+                "Reactions": "Reactions (given / obtained)",
+                "MessageCount": "Count of messages",
+                "UnverifyCount": "Count of unverifies",
+                "SelfUnverifyCount": "Count of self-unverifies",
+                "UnverifyInfo": "Unverify info",
+                "UsedInvite": "Used invite",
+                "MostActiveChannel": "Most active channel",
+                "LastMessageIn": "Last message in",
+                "WebAdminDetails": "Details",
+                "Badges": "Badges"
+            },
+            "NoRoles": "*The user has no roles.*",
+            "UnverifyRow": "User has {0}unverify to {1}. {2}",
+            "ReasonRow": "Reason: {0}",
+            "UsedVanityInviteRow": "**{0}**\n{1}",
+            "UsedInviteRow": "**{0}**\nCreated by: **{1}** (**{2}**)",
+            "VanityInvite": "Universal invite",
+            "WebAdminDetails": "It was not possible to insert all the information, the rest is available in the web administration."
+        },
+        "AccessList": {
+            "Title": "Access list of user {0}",
+            "NoAccess": "User does not have access to any channel.",
+            "WithoutCategory": "Without category"
+        }
     },
-    "Info": {
-      "NotSupported": "Unicode emojis not supported in this command.",
-      "NoActivity": "No activity has been detected for this emoji yet.",
-      "Row": "**{0}.** {1} ({2})",
-      "UnknownUser": "Unknown user",
-      "Embed": {
-        "Title": "Emote information",
-        "Fields": {
-          "Name": "Name",
-          "Animated": "Animated",
-          "FirstOccurence": "First occurence",
-          "LastOccurence": "Last occurence",
-          "FromLastUse": "Duration from last use",
-          "UseCount": "Usage count",
-          "UsedUsers": "Users count",
-          "Guild": "Server",
-          "TopTen": "TOP 10",
-          "Link": "Link"
+    "Emojization": {
+        "NoContent": "No content to convert was specified.",
+        "DuplicateChar": "Found duplicate ({0}).",
+        "Done": "Done",
+        "EmptyResult": "Conversion failed. The message contains only invalid characters."
+    },
+    "Points": {
+        "Service": {
+            "Increment": {
+                "UserNotFound": "Unable to transfer points because the user to receive the points was not found.",
+                "NotAcceptable": "Creating of new transaction failed. Zkontrolujte, zda uživatel není robot, má povolené body a transakce neexistuje."
+            },
+            "Transfer": {
+                "SourceUserNotFound": "Unable to transfer points because the user to transfer points from was not found.",
+                "DestUserNotFound": "Unable to transfer points because the user to receive the points was not found.",
+                "SameAccounts": "Points cannot be transferred between the same accounts.",
+                "UserIsBot": "Unable to transfer points because user is a bot.",
+                "InsufficientAmount": "The user does not have the required amount of points to transfer.",
+                "GuildNotFound": "Requested guild wasn't found."
+            }
+        },
+        "Board": {
+            "NoActivity": "No events showing activity on the server have been captured yet.",
+            "Title": "Activity statistics by points",
+            "Row": "**{0:N0}.** {1} ({2})",
+            "Counts": {
+                "One": "{0:N0} point",
+                "TwoToFour": "{0:N0} points",
+                "FiveAndMore": "{0:N0} points"
+            }
+        },
+        "Chart": {
+            "Title": {
+                "Guild": {
+                    "Messages": "Points of guild from messages for the last year.",
+                    "Reactions": "Points of guild from reactions for the last year.",
+                    "Summary": "Total points of guild for the last year."
+                },
+                "User": {
+                    "Messages": "Points of users from messages for the last year.",
+                    "Reactions": "Points of users from reactions for the last year.",
+                    "Summary": "Total points of users for the last year."
+                }
+            }
+        },
+        "Image": {
+            "UserNotFound": "User wasn't found in the guild.",
+            "NoActivity": "User {0} showed no activity yet.",
+            "IsBot": "The bots don't gather any points, therefore these points cannot be displayed."
+        }
+    },
+    "Pins": {
+        "UnpinCount": "Messages successfully unpinned.\nTotal unpinned messages: **{0}**"
+    },
+    "Permissions": {
+        "Useless": {
+            "CheckSummary": "Unnecessary permissions found: **{0}**\nCount of channels: **{1}**\nCount of users: **{2}**"
+        },
+        "Preconditions": {
+            "DmNotAllowed": "Commands in a private conversations are not allowed.",
+            "UserCommandsDisabled": "You have been banned from all commands.",
+            "ChannelDisabled": "In this channel you are not able to use commands."
+        }
+    },
+    "MessageClearSubModule": {
+        "ClearEmoteFromReactions": {
+            "Success": "Reactions for emote {0} have been successfully deleted."
+        }
+    },
+    "Roles": {
+        "MemberCounts": {
+            "One": "{0:N0} member",
+            "TwoToFour": "{0:N0} members",
+            "FiveAndMore": "{0:N0} members"
+        },
+        "RoleSummaryLine": "{0}, created at {1}, {2}, {3}, {4}",
+        "Mentionable": "mentionable",
+        "Managed": "managed by Discord",
+        "PremiumSubscriberRole": "booster",
+        "GuildSummary": "Count of roles: {0}\nCount of users with role: {1}\nCount of users without a role: {2}",
+        "ListTitle": "List of roles",
+        "DetailTitle": "Detail of role @{0}",
+        "DetailFields": {
+            "CreatedAt": "Created at",
+            "Everyone": "Everyone",
+            "Hoisted": "Separated",
+            "Managed": "Managed by Discord",
+            "Mentionable": "Mentionable",
+            "MemberCount": "Count of members",
+            "BoosterRole": "Booster role",
+            "BotUser": "It belongs to the bot",
+            "Permissions": "Permissions"
         },
         "Boolean": {
-          "True": "Yes",
-          "False": "No"
+            "True": "Yes",
+            "False": "No"
         }
-      }
+    },
+    "GuildScheduledEvents": {
+        "GuildNotFound": "Unable to find guild.",
+        "EventNotFound": "Unable to find event.",
+        "Required": {
+            "Name": "Name is required.",
+            "StartAt": "It is necessary to set start time of the event.",
+            "EndAt": "It is necessary to set end time of the event.",
+            "Location": "Event location is required."
+        },
+        "ForbiddenAccess": "This event wasn't created via bot.",
+        "CannotCancelEventEnded": "Cannot cancel cancelled event."
+    },
+    "CooldownEnabled": "You're executing this command too often. Wait a moment. You can execute this command again after {0}",
+    "ClickOnCommand": "Before sending slash command you need to click on autocomplete",
+    "TypeConverters": {
+        "BooleanInvalidValue": "Provided string is not valid boolean value. Allowed values are only true or false.",
+        "DateTimeInvalidFormat": "Provided string is not valid datetime.",
+        "EmoteInvalidFormat": "Provided emoji could not be found.",
+        "Message": {
+            "InvalidUri": "Provided message identification is not identifier or link.",
+            "InvalidDiscordUriFormat": "The link provided does not have a valid Discord message linking format.",
+            "DmUnsupported": "Using links to private conversation is not supported. If you want use private conversation, call command in the private conversation with message identifier.",
+            "InvalidGuildIdentifier": "Provided guild identifier has no valid format.",
+            "GuildNotFound": "The guild with the specified identifier was not found.",
+            "ChannelIdInvalidFormat": "Provided channel identifier has no valid format.",
+            "ChannelNotFound": "The channel with the specified identifier was not found.",
+            "InvalidMessageIdFormat": "Provided message identifier has no valid format.",
+            "UnknownMessage": "The message with the specified identifier was not found."
+        },
+        "UserNotFound": "Provided user  `{0}` wasn't found."
+    },
+    "PublicApiClients": {
+        "NotFound": "Requested client wasn't found."
+    },
+    "Jobs": {
+        "NotFound": "Unable to find job {0}."
+    },
+    "Invite": {
+        "NotFound": "Unable to find invite with code {0}."
+    },
+    "Emote": {
+        "List": {
+            "Title": "Usage statistics of emotes",
+            "NoStatsOfUser": "No emote usage has been recorded for user `{0}` yet.",
+            "NoStats": "No emote usage has been recorded.",
+            "FieldData": "Count of usage: **{0}**\nCount of users: **{1}**\nFirst use: **{2}**\nLast use: **{3}**"
+        },
+        "Info": {
+            "NotSupported": "Unicode emojis not supported in this command.",
+            "NoActivity": "No activity has been detected for this emoji yet.",
+            "Row": "**{0}.** {1} ({2})",
+            "UnknownUser": "Unknown user",
+            "Embed": {
+                "Title": "Emote information",
+                "Fields": {
+                    "Name": "Name",
+                    "Animated": "Animated",
+                    "FirstOccurence": "First occurence",
+                    "LastOccurence": "Last occurence",
+                    "FromLastUse": "Duration from last use",
+                    "UseCount": "Usage count",
+                    "UsedUsers": "Users count",
+                    "Guild": "Server",
+                    "TopTen": "TOP 10",
+                    "Link": "Link"
+                },
+                "Boolean": {
+                    "True": "Yes",
+                    "False": "No"
+                }
+            }
+        }
     }
-  }
 }

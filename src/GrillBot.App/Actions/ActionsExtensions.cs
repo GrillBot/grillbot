@@ -1,4 +1,5 @@
 ﻿using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RubbergodService;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,7 +19,8 @@ public static class ActionsExtensions
     {
         return services
             .AddScoped<Api.ServiceBridgeAction<IRubbergodServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IPointsServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)
@@ -62,7 +64,7 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Channel.SimpleList.GetChannelSimpleListWithPins>()
             .AddScoped<Api.V1.Channel.GetPins>()
             .AddScoped<Api.V1.Channel.GetPinsWithAttachments>();
-        
+
         // Dashboard
         services
             .AddScoped<Api.V1.Dashboard.GetActiveOperations>()

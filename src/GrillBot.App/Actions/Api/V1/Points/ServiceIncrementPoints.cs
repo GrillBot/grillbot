@@ -6,6 +6,7 @@ using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -28,10 +29,15 @@ public class ServiceIncrementPoints : ApiAction
         PointsServiceClient = pointsServiceClient;
     }
 
-    public async Task ProcessAsync(ulong guildId, ulong userId, int amount)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var guildId = (ulong)Parameters[0]!;
+        var userId = (ulong)Parameters[1]!;
+        var amount = (int)Parameters[2]!;
+
         await InitAsync(guildId, userId);
-        if (Guild is null || User is null) return;
+        if (Guild is null || User is null)
+            return ApiResult.Ok();
 
         var request = new AdminTransactionRequest
         {
@@ -50,6 +56,7 @@ public class ServiceIncrementPoints : ApiAction
         var exception = ConvertValidationErrorsToException(validationErrors);
         if (exception is not null)
             throw exception;
+        return ApiResult.Ok();
     }
 
     private async Task InitAsync(ulong guildId, ulong userId)
@@ -70,6 +77,6 @@ public class ServiceIncrementPoints : ApiAction
             return new ValidationException(Texts["Points/Service/Increment/NotAcceptable", ApiContext.Language]);
 
         var error = details.Errors.First();
-        return new ValidationException(error.Value.First()).ToBadRequestValidation(null, error.Key);
+        return new ValidationException(error.Value[0]).ToBadRequestValidation(null, error.Key);
     }
 }

@@ -6,6 +6,7 @@ using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -27,8 +28,13 @@ public class ServiceTransferPoints : ApiAction
         PointsServiceClient = pointsServiceClient;
     }
 
-    public async Task ProcessAsync(ulong guildId, ulong fromUserId, ulong toUserId, int amount)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var guildId = (ulong)Parameters[0]!;
+        var fromUserId = (ulong)Parameters[1]!;
+        var toUserId = (ulong)Parameters[2]!;
+        var amount = (int)Parameters[3]!;
+
         var (from, to) = await GetAndCheckUsersAsync(guildId, fromUserId, toUserId);
 
         var request = new TransferPointsRequest
@@ -49,6 +55,7 @@ public class ServiceTransferPoints : ApiAction
         var exception = ConvertValidationErrorsToException(validationErrors);
         if (exception is not null)
             throw exception;
+        return ApiResult.Ok();
     }
 
     private async Task<(IGuildUser from, IGuildUser to)> GetAndCheckUsersAsync(ulong guildId, ulong fromUserId, ulong toUserId)
@@ -71,11 +78,8 @@ public class ServiceTransferPoints : ApiAction
 
     private async Task<IGuildUser> CheckUserAsync(ulong userId, bool isSource)
     {
-        var user = await Guild.GetUserAsync(userId);
-
-        if (user is null)
-            throw new NotFoundException(Texts[$"Points/Service/Transfer/{(isSource ? "SourceUserNotFound" : "DestUserNotFound")}", ApiContext.Language]);
-        return user;
+        return await Guild.GetUserAsync(userId)
+            ?? throw new NotFoundException(Texts[$"Points/Service/Transfer/{(isSource ? "SourceUserNotFound" : "DestUserNotFound")}", ApiContext.Language]);
     }
 
     private Exception? ConvertValidationErrorsToException(ValidationProblemDetails? details)
@@ -85,11 +89,11 @@ public class ServiceTransferPoints : ApiAction
 
         var error = details.Errors.First();
 
-        if (error.Key.ToLower() == "Amount" && error.Value.First() == "NotEnoughPoints")
+        if (error.Key.ToLower() == "amount" && error.Value[0] == "NotEnoughPoints")
             return new ValidationException(Texts["Points/Service/Transfer/InsufficientAmount", ApiContext.Language]);
-        if (error.Value.First() == "User is bot.")
+        if (error.Value[0] == "User is bot.")
             new ValidationException(Texts["Points/Service/Transfer/UserIsBot", ApiContext.Language]).ToBadRequestValidation(null, error.Key);
 
-        return new ValidationException(error.Value.First()).ToBadRequestValidation(null, error.Key);
+        return new ValidationException(error.Value[0]).ToBadRequestValidation(null, error.Key);
     }
 }

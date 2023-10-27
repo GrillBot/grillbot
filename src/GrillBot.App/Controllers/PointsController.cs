@@ -30,9 +30,9 @@ public class PointsController : Infrastructure.ControllerBase
     /// <response code="200">Returns full points board.</response>
     [HttpGet("board")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<UserPointsItem>>> GetPointsLeaderboardAsync()
-        => Ok(await ProcessActionAsync<GetPointsLeaderboard, List<UserPointsItem>>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(List<UserPointsItem>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPointsLeaderboardAsync()
+        => await ProcessAsync<GetPointsLeaderboard>();
 
     /// <summary>
     /// Get paginated list of transactions.
@@ -41,12 +41,12 @@ public class PointsController : Infrastructure.ControllerBase
     /// <response code="400">Validation failed.</response>
     [HttpPost("transactions/list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<PointsTransaction>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<PointsTransaction>>> GetTransactionListAsync([FromBody] AdminListRequest request)
+    public async Task<IActionResult> GetTransactionListAsync([FromBody] AdminListRequest request)
     {
         ApiAction.Init(this, request);
-        return Ok(await ProcessActionAsync<GetTransactionList, PaginatedResponse<PointsTransaction>>(action => action.ProcessAsync(request)));
+        return await ProcessAsync<GetTransactionList>(request);
     }
 
     /// <summary>
@@ -56,21 +56,21 @@ public class PointsController : Infrastructure.ControllerBase
     /// <response code="400">Validation failed.</response>
     [HttpPost("graph/data")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<PointsChartItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<PointsChartItem>>> GetGraphDataAsync([FromBody] AdminListRequest parameters)
+    public async Task<IActionResult> GetGraphDataAsync([FromBody] AdminListRequest parameters)
     {
         ApiAction.Init(this, parameters);
 
-        return Ok(await ProcessActionAsync<ApiBridgeAction, List<PointsChartItem>>(
-            bridge => bridge.ExecuteAsync<IPointsServiceClient, List<PointsChartItem>>(async client =>
-            {
-                var result = await client.GetChartDataAsync(parameters);
-                result.ValidationErrors?.AggregateAndThrow();
+        var executor = async (IPointsServiceClient client) =>
+        {
+            var result = await client.GetChartDataAsync(parameters);
+            result.ValidationErrors.AggregateAndThrow();
 
-                return result.Response!;
-            })
-        ));
+            return result.Response;
+        };
+
+        return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
     }
 
     /// <summary>
@@ -79,9 +79,9 @@ public class PointsController : Infrastructure.ControllerBase
     /// <response code="200">Returns points state of user. Grouped per guilds.</response>
     [HttpGet("{userId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<UserPointsItem>>> ComputeUserPointsAsync(ulong userId)
-        => Ok(await ProcessActionAsync<ComputeUserPoints, List<UserPointsItem>>(action => action.ProcessAsync(userId)));
+    [ProducesResponseType(typeof(List<UserPointsItem>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ComputeUserPointsAsync(ulong userId)
+        => await ProcessAsync<ComputeUserPoints>(userId);
 
     /// <summary>
     /// Compute current points status of user.
@@ -89,9 +89,9 @@ public class PointsController : Infrastructure.ControllerBase
     /// <response code="200">Returns points state of user. Grouped per guilds.</response>
     [HttpGet("me")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<UserPointsItem>>> ComputeLoggedUserPointsAsync()
-        => Ok(await ProcessActionAsync<ComputeUserPoints, List<UserPointsItem>>(action => action.ProcessAsync(null)));
+    [ProducesResponseType(typeof(List<UserPointsItem>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ComputeLoggedUserPointsAsync()
+        => await ProcessAsync<ComputeUserPoints>();
 
     /// <summary>
     /// Creation of a service transaction by users with bonus points.
@@ -99,11 +99,8 @@ public class PointsController : Infrastructure.ControllerBase
     [HttpPut("service/increment/{guildId}/{toUserId}/{amount:int}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> ServiceIncrementPointsAsync(ulong guildId, ulong toUserId, int amount)
-    {
-        await ProcessActionAsync<ServiceIncrementPoints>(action => action.ProcessAsync(guildId, toUserId, amount));
-        return Ok();
-    }
+    public async Task<IActionResult> ServiceIncrementPointsAsync(ulong guildId, ulong toUserId, int amount)
+        => await ProcessAsync<ServiceIncrementPoints>(guildId, toUserId, amount);
 
     /// <summary>
     /// Service transfer of points between accounts.
@@ -111,11 +108,8 @@ public class PointsController : Infrastructure.ControllerBase
     [HttpPut("service/transfer/{guildId}/{fromUserId}/{toUserId}/{amount:int}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> ServiceTransferPointsAsync(ulong guildId, ulong fromUserId, ulong toUserId, int amount)
-    {
-        await ProcessActionAsync<ServiceTransferPoints>(action => action.ProcessAsync(guildId, fromUserId, toUserId, amount));
-        return Ok();
-    }
+    public async Task<IActionResult> ServiceTransferPointsAsync(ulong guildId, ulong fromUserId, ulong toUserId, int amount)
+        => await ProcessAsync<ServiceTransferPoints>(guildId, fromUserId, toUserId, amount);
 
     /// <summary>
     /// Remove transaction.
@@ -124,17 +118,17 @@ public class PointsController : Infrastructure.ControllerBase
     [HttpDelete("{guildId}/{messageId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> DeleteTransactionAsync(string guildId, string messageId, string? reactionId)
+    public async Task<IActionResult> DeleteTransactionAsync(string guildId, string messageId, string? reactionId)
     {
-        await ProcessActionAsync<ApiBridgeAction>(bridge => bridge.ExecuteAsync<IPointsServiceClient>(async client =>
+        var executor = async (IPointsServiceClient client) =>
         {
             if (!string.IsNullOrEmpty(reactionId))
                 await client.DeleteTransactionAsync(guildId, messageId, reactionId);
             else
                 await client.DeleteTransactionAsync(guildId, messageId);
-        }));
+        };
 
-        return Ok();
+        return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
     }
 
     /// <summary>
@@ -143,12 +137,12 @@ public class PointsController : Infrastructure.ControllerBase
     /// <response code="200">Returns paginated list of users from points service.</response>
     /// <response code="400">Validation failed.</response>
     [HttpPost("users/list")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<Data.Models.API.Points.UserListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<PaginatedResponse<Data.Models.API.Points.UserListItem>>> GetUserListAsync(UserListRequest request)
+    public async Task<IActionResult> GetUserListAsync(UserListRequest request)
     {
         ApiAction.Init(this, request);
-        return await ProcessActionAsync<GetUserList, PaginatedResponse<Data.Models.API.Points.UserListItem>>(action => action.ProcessAsync(request));
+        return await ProcessAsync<GetUserList>(request);
     }
 }

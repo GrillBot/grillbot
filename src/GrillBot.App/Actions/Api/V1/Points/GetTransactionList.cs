@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
@@ -22,8 +23,10 @@ public class GetTransactionList : ApiAction
         PointsServiceClient = pointsServiceClient;
     }
 
-    public async Task<PaginatedResponse<PointsTransaction>> ProcessAsync(AdminListRequest request)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var request = (AdminListRequest)Parameters[0]!;
+
         var transactions = await PointsServiceClient.GetTransactionListAsync(request);
         transactions.ValidationErrors.AggregateAndThrow();
 
@@ -31,7 +34,8 @@ public class GetTransactionList : ApiAction
         var userCache = new Dictionary<string, Data.Models.API.Users.User>();
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        return await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions.Response!, async entity =>
+
+        var result = await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions.Response!, async entity =>
         {
             if (!guildCache.TryGetValue(entity.GuildId, out var guild))
             {
@@ -70,5 +74,7 @@ public class GetTransactionList : ApiAction
                 User = user
             };
         });
+
+        return ApiResult.Ok(result);
     }
 }

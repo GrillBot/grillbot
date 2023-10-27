@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Reminder;
 
@@ -14,6 +15,14 @@ public class GetReminderList : ApiAction
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var parameters = (GetReminderListParams)Parameters[0]!;
+        var result = await ProcessAsync(parameters);
+
+        return ApiResult.Ok(result);
     }
 
     public async Task<PaginatedResponse<RemindMessage>> ProcessAsync(GetReminderListParams parameters)

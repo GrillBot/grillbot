@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.App.Managers;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.AutoReply;
 
 namespace GrillBot.App.Actions.Api.V1.AutoReply;
@@ -18,8 +19,9 @@ public class CreateAutoReplyItem : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<AutoReplyItem> ProcessAsync(AutoReplyItemParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (AutoReplyItemParams)Parameters[0]!;
         var entity = new Database.Entity.AutoReplyItem
         {
             Flags = parameters.Flags,
@@ -33,6 +35,7 @@ public class CreateAutoReplyItem : ApiAction
         await repository.CommitAsync();
         await AutoReplyManager.InitAsync();
 
-        return Mapper.Map<AutoReplyItem>(entity);
+        var result = Mapper.Map<AutoReplyItem>(entity);
+        return ApiResult.Ok(result);
     }
 }

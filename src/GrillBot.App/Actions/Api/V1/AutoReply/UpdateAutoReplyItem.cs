@@ -3,6 +3,7 @@ using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.AutoReply;
 
 namespace GrillBot.App.Actions.Api.V1.AutoReply;
@@ -22,13 +23,15 @@ public class UpdateAutoReplyItem : ApiAction
         AutoReplyManager = autoReplyManager;
     }
 
-    public async Task<AutoReplyItem> ProcessAsync(long id, AutoReplyItemParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var id = (long)Parameters[0]!;
+        var parameters = (AutoReplyItemParams)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var entity = await repository.AutoReply.FindReplyByIdAsync(id);
-        if (entity == null)
-            throw new NotFoundException(Texts["AutoReply/NotFound", ApiContext.Language].FormatWith(id));
+        var entity = await repository.AutoReply.FindReplyByIdAsync(id)
+            ?? throw new NotFoundException(Texts["AutoReply/NotFound", ApiContext.Language].FormatWith(id));
 
         entity.Template = parameters.Template;
         entity.Flags = parameters.Flags;
@@ -37,6 +40,7 @@ public class UpdateAutoReplyItem : ApiAction
         await repository.CommitAsync();
         await AutoReplyManager.InitAsync();
 
-        return Mapper.Map<AutoReplyItem>(entity);
+        var result = Mapper.Map<AutoReplyItem>(entity);
+        return ApiResult.Ok(result);
     }
 }

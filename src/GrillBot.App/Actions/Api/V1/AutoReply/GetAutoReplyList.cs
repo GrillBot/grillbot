@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.AutoReply;
 
 namespace GrillBot.App.Actions.Api.V1.AutoReply;
@@ -15,11 +16,13 @@ public class GetAutoReplyList : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<List<AutoReplyItem>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var items = await repository.AutoReply.GetAllAsync(false);
-        return Mapper.Map<List<AutoReplyItem>>(items);
+        var result = Mapper.Map<List<AutoReplyItem>>(items);
+
+        return ApiResult.Ok(result);
     }
 }

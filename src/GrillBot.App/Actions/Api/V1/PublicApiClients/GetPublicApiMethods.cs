@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Actions.Api.V1.PublicApiClients;
@@ -10,11 +11,13 @@ public class GetPublicApiMethods : ApiAction
     {
     }
 
-    public List<string> Process()
+    public override Task<ApiResult> ProcessAsync()
     {
-        return GetMethods()
+        var result = GetMethods()
             .Select(o => $"{o.DeclaringType!.Name}.{o.Name}")
             .ToList();
+
+        return Task.FromResult(ApiResult.Ok(result));
     }
 
     private IEnumerable<MethodInfo> GetMethods()

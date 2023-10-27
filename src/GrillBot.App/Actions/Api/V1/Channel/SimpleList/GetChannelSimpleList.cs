@@ -2,6 +2,7 @@
 using AutoMapper;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Channel.SimpleList;
 
@@ -17,8 +18,11 @@ public class GetChannelSimpleList : SimpleListBase
         Texts = texts;
     }
 
-    public async Task<Dictionary<string, string>> ProcessAsync(ulong? guildId, bool noThreads)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var noThreads = (bool)Parameters[0]!;
+        var guildId = (ulong?)Parameters[1];
+
         var guilds = await GetGuildsAsync(guildId);
         ValidateParameters(guildId, guilds);
 

@@ -4,6 +4,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
@@ -34,23 +35,28 @@ public class UpdateChannel : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task ProcessAsync(ulong id, UpdateChannelParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var id = (ulong)Parameters[0]!;
+        var parameters = (UpdateChannelParams)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var channel = await repository.Channel.FindChannelByIdAsync(id);
-        if (channel == null)
-            throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
+        var channel = await repository.Channel.FindChannelByIdAsync(id)
+            ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
         var before = channel.Clone();
         channel.Flags = parameters.Flags;
 
         var success = await repository.CommitAsync() > 0;
-        if (!success) return;
+        if (!success)
+            return ApiResult.Ok();
 
         await WriteToAuditLogAsync(id, before, channel);
         await TryReloadAutoReplyAsync(before, channel);
         await TrySyncPointsService(before, channel);
+
+        return ApiResult.Ok();
     }
 
     private async Task TryReloadAutoReplyAsync(Database.Entity.GuildChannel before, Database.Entity.GuildChannel after)

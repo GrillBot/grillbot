@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Channels;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
@@ -18,7 +19,7 @@ public class GetChannelboard : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<List<ChannelboardItem>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
         var result = new List<ChannelboardItem>();
@@ -26,7 +27,8 @@ public class GetChannelboard : ApiAction
         foreach (var guild in mutualGuilds)
             result.AddRange(await GetChannelboardAsync(guild));
 
-        return result.OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt).ToList();
+        result = result.OrderByDescending(o => o.Count).ThenByDescending(o => o.LastMessageAt).ToList();
+        return ApiResult.Ok(result);
     }
 
     private async Task<List<ChannelboardItem>> GetChannelboardAsync(IGuild guild)
@@ -44,12 +46,12 @@ public class GetChannelboard : ApiAction
         var channels = await repository.Channel.GetVisibleChannelsAsync(guild.Id, statistics.Keys.ToList(), true, true);
         foreach (var channel in channels)
         {
-            var stats = statistics[channel.ChannelId];
+            var (count, firstMessageAt, lastMessageAt) = statistics[channel.ChannelId];
             var channelboardItem = Mapper.Map<ChannelboardItem>(channel);
 
-            channelboardItem.Count = stats.count;
-            channelboardItem.LastMessageAt = stats.lastMessageAt;
-            channelboardItem.FirstMessageAt = stats.firstMessageAt;
+            channelboardItem.Count = count;
+            channelboardItem.LastMessageAt = lastMessageAt;
+            channelboardItem.FirstMessageAt = firstMessageAt;
             result.Add(channelboardItem);
         }
 

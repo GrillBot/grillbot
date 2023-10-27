@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Channel.SimpleList;
 
@@ -45,12 +46,14 @@ public abstract class SimpleListBase : ApiAction
         return (noThreads ? channels.Where(o => o is not IThreadChannel) : channels).ToList();
     }
 
-    protected static Dictionary<string, string> CreateResult(IEnumerable<Data.Models.API.Channels.Channel> channels)
+    protected static ApiResult CreateResult(IEnumerable<Data.Models.API.Channels.Channel> channels)
     {
-        return channels
+        var data = channels
             .DistinctBy(o => o.Id)
             .OrderBy(o => o.Name)
             .ToDictionary(o => o.Id, o => $"{o.Name} {(o.Type is ChannelType.PublicThread or ChannelType.PrivateThread or ChannelType.NewsThread ? "(Thread)" : "")}".Trim());
+
+        return ApiResult.Ok(data);
     }
 
     protected List<Data.Models.API.Channels.Channel> Map(IEnumerable<IGuildChannel> channels)

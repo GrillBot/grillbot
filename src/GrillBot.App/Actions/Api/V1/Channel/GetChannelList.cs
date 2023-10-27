@@ -2,6 +2,7 @@
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Channels;
 
@@ -23,12 +24,15 @@ public class GetChannelList : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<GuildChannelListItem>> ProcessAsync(GetChannelListParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (GetChannelListParams)Parameters[0]!;
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var channels = await repository.Channel.GetChannelListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<GuildChannelListItem>.CopyAndMapAsync(channels, MapAsync);
+        var result = await PaginatedResponse<GuildChannelListItem>.CopyAndMapAsync(channels, MapAsync);
+
+        return ApiResult.Ok(result);
     }
 
     private async Task<GuildChannelListItem> MapAsync(Database.Entity.GuildChannel entity)

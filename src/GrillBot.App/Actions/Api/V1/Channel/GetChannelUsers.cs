@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Channels;
 
@@ -16,8 +17,11 @@ public class GetChannelUsers : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<ChannelUserStatItem>> ProcessAsync(ulong channelId, PaginatedParams pagination)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var channelId = (ulong)Parameters[0]!;
+        var pagination = (PaginatedParams)Parameters[1]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Channel.GetUserChannelListAsync(channelId, pagination);
@@ -26,6 +30,6 @@ public class GetChannelUsers : ApiAction
 
         for (var i = 0; i < result.Data.Count; i++)
             result.Data[i].Position = pagination.Skip() + i + 1;
-        return result;
+        return ApiResult.Ok(result);
     }
 }

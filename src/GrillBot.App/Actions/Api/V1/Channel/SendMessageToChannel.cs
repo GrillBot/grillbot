@@ -3,6 +3,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Channels;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
@@ -18,6 +19,16 @@ public class SendMessageToChannel : ApiAction
         Texts = texts;
         DiscordClient = discordClient;
         MessageCache = messageCache;
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var guildId = (ulong)Parameters[0]!;
+        var channelId = (ulong)Parameters[1]!;
+        var parameters = (SendMessageToChannelParams)Parameters[0]!;
+
+        await ProcessAsync(guildId, channelId, parameters);
+        return ApiResult.Ok();
     }
 
     public async Task ProcessAsync(ulong guildId, ulong channelId, SendMessageToChannelParams parameters)

@@ -5,6 +5,8 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.IO;
+using GrillBot.Core.Infrastructure.Actions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 
@@ -24,28 +26,31 @@ public class GetPinsWithAttachments : ApiAction
         DownloadHelper = downloadHelper;
     }
 
-    public async Task<byte[]> ProcessAsync(ulong channelId)
+    public override async Task<ApiResult> ProcessAsync()
     {
-        var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId);
-        if (guild is null)
-            throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
+        var channelId = (ulong)Parameters[0]!;
+
+        var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId)
+            ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
         var markdownContent = await RubbergodService.GetPinsAsync(guild.Id, channelId, true);
 
         TemporaryFile? archiveFile = null;
-        ZipArchive? archive = null;
 
         try
         {
+            ZipArchive? archive;
             (archiveFile, archive) = await CreateTemporaryZipAsync(markdownContent);
             await AppendAttachmentsAsync(guild, channelId, archive);
             archive.Dispose();
 
-            return await File.ReadAllBytesAsync(archiveFile.Path);
+            var result = await File.ReadAllBytesAsync(archiveFile.Path);
+            var apiResult = new FileContentResult(result, "application/zip");
+
+            return ApiResult.Ok(apiResult);
         }
         finally
         {
-            archive?.Dispose();
             archiveFile?.Dispose();
         }
     }
@@ -70,8 +75,8 @@ public class GetPinsWithAttachments : ApiAction
                 var filename = attachment["name"]!.Value<string>()!;
                 var attachmentEntry = archive.CreateEntry(filename);
 
-                await using (var attachmentEntryStream = attachmentEntry.Open())
-                    await attachmentEntryStream.WriteAsync(content);
+                await using var attachmentEntryStream = attachmentEntry.Open();
+                await attachmentEntryStream.WriteAsync(content);
             }
         }
     }

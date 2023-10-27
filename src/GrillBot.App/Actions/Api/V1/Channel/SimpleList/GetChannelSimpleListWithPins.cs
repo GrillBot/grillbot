@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Channel.SimpleList;
 
@@ -15,7 +16,7 @@ public class GetChannelSimpleListWithPins : SimpleListBase
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<Dictionary<string, string>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         var guilds = await GetGuildsAsync();
         var availableChannels = await GetAvailableChannelsAsync(guilds, false);

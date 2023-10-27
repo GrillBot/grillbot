@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Guild;
 
@@ -12,15 +13,18 @@ public class GetRoles : ApiAction
         DiscordClient = discordClient;
     }
 
-    public async Task<Dictionary<string, string>> ProcessAsync(ulong? guildId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var guildId = (ulong?)Parameters[0];
+
         var guilds = await GetGuildsAsync(guildId);
 
-        return guilds
+        var result = guilds
             .Select(o => o.Roles.Where(x => x.Id != o.EveryoneRole.Id))
             .SelectMany(o => o)
             .OrderBy(o => o.Name)
             .ToDictionary(o => o.Id.ToString(), o => o.Name);
+        return ApiResult.Ok(result);
     }
 
     private async Task<List<IGuild>> GetGuildsAsync(ulong? guildId)

@@ -2,6 +2,7 @@
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Guilds;
 
 namespace GrillBot.App.Actions.Api.V1.Guild;
@@ -21,8 +22,11 @@ public class UpdateGuild : ApiAction
         Texts = texts;
     }
 
-    public async Task<GuildDetail> ProcessAsync(ulong id, UpdateGuildParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var id = (ulong)Parameters[0]!;
+        var parameters = (UpdateGuildParams)Parameters[0]!;
+
         var guild = await DiscordClient.GetGuildAsync(id);
         if (guild == null)
             throw new NotFoundException(Texts["GuildModule/GuildDetail/NotFound", ApiContext.Language]);
@@ -59,7 +63,9 @@ public class UpdateGuild : ApiAction
         dbGuild.EmoteSuggestionsTo = parameters.EmoteSuggestionsValidity?.To;
 
         await repository.CommitAsync();
-        return await GetGuildDetail.ProcessAsync(id);
+
+        GetGuildDetail.Init(HttpContext, new object[] { id });
+        return await GetGuildDetail.ProcessAsync();
     }
 
     private void ThrowValidationException(string errorMessageId, object value, params string[] memberNames)

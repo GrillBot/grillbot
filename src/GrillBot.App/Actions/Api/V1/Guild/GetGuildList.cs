@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Guilds;
 
@@ -19,8 +20,10 @@ public class GetGuildList : ApiAction
         DiscordClient = discordClient;
     }
 
-    public async Task<PaginatedResponse<Data.Models.API.Guilds.Guild>> ProcessAsync(GetGuildListParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (GetGuildListParams)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Guild.GetGuildListAsync(parameters, parameters.Pagination);
@@ -35,6 +38,6 @@ public class GetGuildList : ApiAction
             result.Data[i] = Mapper.Map(guild, result.Data[i]);
         }
 
-        return result;
+        return ApiResult.Ok(result);
     }
 }

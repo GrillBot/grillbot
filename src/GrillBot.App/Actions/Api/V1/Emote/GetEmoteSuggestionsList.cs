@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Suggestions;
 
@@ -16,11 +17,15 @@ public class GetEmoteSuggestionsList : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<EmoteSuggestion>> ProcessAsync(GetSuggestionsListParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (GetSuggestionsListParams)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.EmoteSuggestion.GetSuggestionListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<EmoteSuggestion>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<EmoteSuggestion>(entity)));
+        var result = await PaginatedResponse<EmoteSuggestion>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<EmoteSuggestion>(entity)));
+
+        return ApiResult.Ok(result);
     }
 }

@@ -25,11 +25,11 @@ public class EmoteSuggestionController : Infrastructure.ControllerBase
     /// <response code="200">Return paginated list of emote suggestions</response>
     /// <response code="400">Validation of parameters failed</response>
     [HttpPost("list")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<EmoteSuggestion>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteSuggestion>>> GetSuggestionListAsync([FromBody] GetSuggestionsListParams parameters)
+    public async Task<IActionResult> GetSuggestionListAsync([FromBody] GetSuggestionsListParams parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<GetEmoteSuggestionsList, PaginatedResponse<EmoteSuggestion>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetEmoteSuggestionsList>(parameters);
     }
 }

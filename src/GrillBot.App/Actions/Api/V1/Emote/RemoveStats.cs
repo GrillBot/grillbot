@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
@@ -16,8 +17,10 @@ public class RemoveStats : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task<int> ProcessAsync(string emoteId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var emoteId = (string)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var emotes = await repository.Emote.FindStatisticsByEmoteIdAsync(emoteId);
@@ -25,7 +28,9 @@ public class RemoveStats : ApiAction
 
         await WriteToAuditlogAsync(emoteId, emotes.Count);
         repository.RemoveCollection(emotes);
-        return await repository.CommitAsync();
+        var result = await repository.CommitAsync();
+
+        return ApiResult.Ok(result);
     }
 
     private async Task WriteToAuditlogAsync(string emoteId, int emotesCount)

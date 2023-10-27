@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Emotes;
 
@@ -16,8 +17,11 @@ public class GetStatsOfEmotes : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<GuildEmoteStatItem>> ProcessAsync(EmotesListParams parameters, bool unsupported)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (EmotesListParams)Parameters[0]!;
+        var unsupported = (bool)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Emote.GetEmoteStatisticsDataAsync(parameters, unsupported);
@@ -32,7 +36,7 @@ public class GetStatsOfEmotes : ApiAction
         if (unsupported)
             result.Data.ForEach(o => o.Emote.ImageUrl = null);
 
-        return result;
+        return ApiResult.Ok(result);
     }
 
     private GuildEmoteStatItem MapItem(Database.Models.Emotes.EmoteStatItem item, List<Database.Entity.Guild> guilds)

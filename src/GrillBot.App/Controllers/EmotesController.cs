@@ -26,12 +26,12 @@ public class EmotesController : Infrastructure.ControllerBase
     /// <response code="200">Return paginated list with statistics of emotes.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("stats/list/{unsupported}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<GuildEmoteStatItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<GuildEmoteStatItem>>> GetStatsOfEmotesAsync([FromBody] EmotesListParams @params, bool unsupported)
+    public async Task<IActionResult> GetStatsOfEmotesAsync([FromBody] EmotesListParams @params, bool unsupported)
     {
         ApiAction.Init(this, @params);
-        return Ok(await ProcessActionAsync<GetStatsOfEmotes, PaginatedResponse<GuildEmoteStatItem>>(action => action.ProcessAsync(@params, unsupported)));
+        return await ProcessAsync<GetStatsOfEmotes>(@params, unsupported);
     }
 
     /// <summary>
@@ -40,12 +40,12 @@ public class EmotesController : Infrastructure.ControllerBase
     /// <response code="200">Returns count of changed rows in the database.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("stats/merge")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<int>> MergeStatsToAnotherAsync([FromBody] MergeEmoteStatsParams @params)
+    public async Task<IActionResult> MergeStatsToAnotherAsync([FromBody] MergeEmoteStatsParams @params)
     {
         ApiAction.Init(this, @params);
-        return Ok(await ProcessActionAsync<MergeStats, int>(action => action.ProcessAsync(@params)));
+        return await ProcessAsync<MergeStats>(@params);
     }
 
     /// <summary>
@@ -54,12 +54,12 @@ public class EmotesController : Infrastructure.ControllerBase
     /// <response code="200">Returns count of changed rows in the database.</response>
     /// <response code="400">Validation of EmoteId failed.</response>
     [HttpDelete("stats")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<int>> RemoveStatisticsAsync(
+    public async Task<IActionResult> RemoveStatisticsAsync(
         [Required(ErrorMessage = "Pro smazání je vyžadováno EmoteId.")] [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
         string emoteId
-    ) => Ok(await ProcessActionAsync<RemoveStats, int>(action => action.ProcessAsync(emoteId)));
+    ) => await ProcessAsync<RemoveStats>(emoteId);
 
     /// <summary>
     /// Get a paginated list of users who use a specific emote.
@@ -67,10 +67,10 @@ public class EmotesController : Infrastructure.ControllerBase
     /// <response code="200">Returns paginated list of users.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("list/users")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<EmoteStatsUserListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<EmoteStatsUserListItem>>> GetUserStatisticsOfEmoteAsync([FromBody] EmoteStatsUserListParams parameters)
-        => Ok(await ProcessActionAsync<GetUserStatisticsOfEmote, PaginatedResponse<EmoteStatsUserListItem>>(action => action.ProcessAsync(parameters)));
+    public async Task<IActionResult> GetUserStatisticsOfEmoteAsync([FromBody] EmoteStatsUserListParams parameters)
+        => await ProcessAsync<GetUserStatisticsOfEmote>(parameters);
 
     /// <summary>
     /// Get statistics of one emote.
@@ -79,10 +79,10 @@ public class EmotesController : Infrastructure.ControllerBase
     /// <response code="400">Validation failed.</response>
     /// <response code="404">Emote not found.</response>
     [HttpGet("stats")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(EmoteStatItem), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<EmoteStatItem>> GetStatOfEmoteAsync(
+    public async Task<IActionResult> GetStatOfEmoteAsync(
         [Required(ErrorMessage = "Je vyžadování EmoteId.")] [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
         string emoteId
-    ) => Ok(await ProcessActionAsync<GetStatOfEmote, EmoteStatItem>(action => action.ProcessAsync(emoteId)));
+    ) => await ProcessAsync<GetStatOfEmote>(emoteId);
 }

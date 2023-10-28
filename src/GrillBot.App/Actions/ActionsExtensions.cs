@@ -1,6 +1,7 @@
 ﻿using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RubbergodService;
+using GrillBot.Database.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
@@ -162,7 +163,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.User.GetAvailableUsers>()
             .AddScoped<Api.V1.User.GetUserDetail>()
             .AddScoped<Api.V1.User.GetUserList>()
-            .AddScoped<Api.V1.User.UpdateUser>();
+            .AddScoped<Api.V1.User.UpdateUser>()
+            .AddScoped<Api.V1.User.Hearthbeat>();
 
         // V2
         services

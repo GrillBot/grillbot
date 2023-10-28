@@ -10,6 +10,7 @@ using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums.Internal;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -31,23 +32,23 @@ public class GetUserDetail : ApiAction
         PointsServiceClient = pointsServiceClient;
     }
 
-    public async Task<UserDetail> ProcessSelfAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
-        var userId = ApiContext.GetUserId();
+        var userId = (ulong?)Parameters.ElementAtOrDefault(0);
+        userId ??= ApiContext.GetUserId();
 
-        var result = await ProcessAsync(userId);
+        var result = await ProcessAsync(userId.Value);
         if (ApiContext.IsPublic())
             result.RemoveSecretData();
-        return result;
+        return ApiResult.Ok(result);
     }
 
     public async Task<UserDetail> ProcessAsync(ulong id)
     {
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var entity = await repository.User.FindUserByIdAsync(id, UserIncludeOptions.All, true);
-        if (entity == null)
-            throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
+        var entity = await repository.User.FindUserByIdAsync(id, UserIncludeOptions.All, true)
+            ?? throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
 
         var result = new UserDetail
         {
@@ -121,7 +122,7 @@ public class GetUserDetail : ApiAction
     {
         if (ApiContext.IsPublic())
             return;
-        
+
         var visibleChannels = await guild.GetAvailableChannelsAsync(user);
 
         detail.VisibleChannels = visibleChannels

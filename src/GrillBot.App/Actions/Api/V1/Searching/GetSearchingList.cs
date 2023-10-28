@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Searching;
 
@@ -17,6 +18,14 @@ public class GetSearchingList : ApiAction
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var parameters = (GetSearchingListParams)Parameters[0]!;
+        var result = await ProcessAsync(parameters);
+
+        return ApiResult.Ok(result);
     }
 
     public async Task<PaginatedResponse<SearchingListItem>> ProcessAsync(GetSearchingListParams parameters)

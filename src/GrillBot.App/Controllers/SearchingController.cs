@@ -5,8 +5,8 @@ using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Searching;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
@@ -26,12 +26,12 @@ public class SearchingController : Infrastructure.ControllerBase
     /// <response code="400">Validation failed</response>
     [HttpPost("list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, User")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<SearchingListItem>>> GetSearchListAsync([FromBody] GetSearchingListParams parameters)
+    [ProducesResponseType(typeof(PaginatedResponse<SearchingListItem>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetSearchListAsync([FromBody] GetSearchingListParams parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<GetSearchingList, PaginatedResponse<SearchingListItem>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetSearchingList>(parameters);
     }
 
     /// <summary>
@@ -40,14 +40,13 @@ public class SearchingController : Infrastructure.ControllerBase
     /// <response code="200">Success</response>
     [HttpDelete]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RemoveSearchesAsync([FromQuery(Name = "id")] long[] ids)
     {
         var idsLogData = new DictionaryObject<string, long>();
         idsLogData.FromCollection(ids.Select((id, index) => new KeyValuePair<string, long>($"[{index}]", id)));
         ApiAction.Init(this, idsLogData);
 
-        await ProcessActionAsync<RemoveSearches>(action => action.ProcessAsync(ids));
-        return Ok();
+        return await ProcessAsync<RemoveSearches>(ids);
     }
 }

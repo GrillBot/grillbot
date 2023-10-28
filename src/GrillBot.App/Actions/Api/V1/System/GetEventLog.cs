@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.System;
 
@@ -12,5 +13,9 @@ public class GetEventLog : ApiAction
         EventLogManager = eventLogManager;
     }
 
-    public string[] Process() => EventLogManager.GetEventLog();
+    public override Task<ApiResult> ProcessAsync()
+    {
+        var result = EventLogManager.GetEventLog();
+        return Task.FromResult(ApiResult.Ok(result));
+    }
 }

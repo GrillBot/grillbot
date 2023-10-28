@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Managers;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.System;
 
@@ -12,5 +13,9 @@ public class ChangeBotStatus : ApiAction
         InitManager = initManager;
     }
 
-    public void Process(bool isActive) => InitManager.Set(isActive);
+    public override Task<ApiResult> ProcessAsync()
+    {
+        InitManager.Set((bool)Parameters[0]!);
+        return Task.FromResult(ApiResult.Ok());
+    }
 }

@@ -16,7 +16,4 @@ public abstract class ControllerBase : Core.Infrastructure.Actions.ControllerBas
 
     protected TData ProcessAction<TAction, TData>(Func<TAction, TData> syncExecution) where TAction : notnull
         => syncExecution(ServiceProvider.GetRequiredService<TAction>());
-
-    protected void ProcessAction<TAction>(Action<TAction> syncExecution) where TAction : notnull
-        => syncExecution(ServiceProvider.GetRequiredService<TAction>());
 }

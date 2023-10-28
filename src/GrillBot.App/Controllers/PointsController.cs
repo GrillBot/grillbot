@@ -18,7 +18,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/user/points")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class PointsController : Infrastructure.ControllerBase
+public class PointsController : Core.Infrastructure.Actions.ControllerBase
 {
     public PointsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

@@ -13,7 +13,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/autoreply")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class AutoReplyController : Infrastructure.ControllerBase
+public class AutoReplyController : Core.Infrastructure.Actions.ControllerBase
 {
     public AutoReplyController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

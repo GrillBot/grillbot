@@ -12,7 +12,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/jobs")]
 [ApiExplorerSettings(GroupName = "v1")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-public class ScheduledJobsController : Infrastructure.ControllerBase
+public class ScheduledJobsController : Core.Infrastructure.Actions.ControllerBase
 {
     public ScheduledJobsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

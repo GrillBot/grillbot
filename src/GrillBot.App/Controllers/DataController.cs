@@ -14,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/data")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class DataController : Infrastructure.ControllerBase
+public class DataController : Core.Infrastructure.Actions.ControllerBase
 {
     public DataController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -25,9 +25,9 @@ public class DataController : Infrastructure.ControllerBase
     /// </summary>
     [HttpGet("guilds")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetAvailableGuildsAsync()
-        => Ok(await ProcessActionAsync<GetAvailableGuilds, Dictionary<string, string>>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAvailableGuildsAsync()
+        => await ProcessAsync<GetAvailableGuilds>();
 
     /// <summary>
     /// Get non paginated list of channels.
@@ -36,9 +36,9 @@ public class DataController : Infrastructure.ControllerBase
     /// <param name="ignoreThreads">Flag that removes threads from list.</param>
     [HttpGet("channels")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
-        => Ok(await ProcessActionAsync<GetChannelSimpleList, Dictionary<string, string>>(action => action.ProcessAsync(guildId, ignoreThreads)));
+    [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
+        => await ProcessAsync<GetChannelSimpleList>(guildId, ignoreThreads);
 
     /// <summary>
     /// Get non paginated list of channels that contains some pin.
@@ -46,18 +46,18 @@ public class DataController : Infrastructure.ControllerBase
     /// <response code="200">Returns simple list of channels that contains some pin.</response>
     [HttpGet("channels/pins")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetChannelsWithPinsAsync()
-        => Ok(await ProcessActionAsync<GetChannelSimpleListWithPins, Dictionary<string, string>>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetChannelsWithPinsAsync()
+        => await ProcessAsync<GetChannelSimpleListWithPins>();
 
     /// <summary>
     /// Get roles
     /// </summary>
     [HttpGet("roles")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetRolesAsync(ulong? guildId)
-        => Ok(await ProcessActionAsync<GetRoles, Dictionary<string, string>>(action => action.ProcessAsync(guildId)));
+    [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRolesAsync(ulong? guildId)
+        => await ProcessAsync<GetRoles>(guildId);
 
     /// <summary>
     /// Gets non-paginated list of users.
@@ -65,18 +65,18 @@ public class DataController : Infrastructure.ControllerBase
     /// <response code="200">Success</response>
     [HttpGet("users")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult<Dictionary<string, string>>> GetAvailableUsersAsync(bool? bots = null, ulong? guildId = null)
-        => Ok(await ProcessActionAsync<GetAvailableUsers, Dictionary<string, string>>(action => action.ProcessAsync(bots, guildId)));
+    [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAvailableUsersAsync(bool? bots = null, ulong? guildId = null)
+        => await ProcessAsync<GetAvailableUsers>(bots, guildId);
 
     /// <summary>
     /// Get currently supported emotes.
     /// </summary>
     [HttpGet("emotes")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<GuildEmoteItem>>> GetSupportedEmotes()
-        => Ok(await ProcessActionAsync<GetSupportedEmotes, List<GuildEmoteItem>>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(List<GuildEmoteItem>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSupportedEmotesAsync()
+        => await ProcessAsync<GetSupportedEmotes>();
 
     /// <summary>
     /// Get list of methods available from public api.
@@ -84,7 +84,7 @@ public class DataController : Infrastructure.ControllerBase
     /// <response code="200">Returns list of methods available from public api.</response>
     [HttpGet("publicApi/methods")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<List<string>> GetPublicApiMethods()
-        => Ok(ProcessAction<GetPublicApiMethods, List<string>>(action => action.Process()));
+    [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPublicApiMethodsAsync()
+        => await ProcessAsync<GetPublicApiMethods>();
 }

@@ -24,7 +24,8 @@ public class RemoveStats : ApiAction
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var emotes = await repository.Emote.FindStatisticsByEmoteIdAsync(emoteId);
-        if (emotes.Count == 0) return 0;
+        if (emotes.Count == 0)
+            return ApiResult.Ok(0);
 
         await WriteToAuditlogAsync(emoteId, emotes.Count);
         repository.RemoveCollection(emotes);

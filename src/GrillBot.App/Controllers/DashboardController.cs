@@ -15,7 +15,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/dashboard")]
 [ApiExplorerSettings(GroupName = "v1")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-public class DashboardController : Infrastructure.ControllerBase
+public class DashboardController : Core.Infrastructure.Actions.ControllerBase
 {
     public DashboardController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

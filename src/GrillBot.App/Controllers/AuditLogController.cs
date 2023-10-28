@@ -18,7 +18,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/auditlog")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class AuditLogController : Infrastructure.ControllerBase
+public class AuditLogController : Core.Infrastructure.Actions.ControllerBase
 {
     public AuditLogController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

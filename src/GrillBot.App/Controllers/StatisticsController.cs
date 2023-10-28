@@ -14,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/stats")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class StatisticsController : Infrastructure.ControllerBase
+public class StatisticsController : Core.Infrastructure.Actions.ControllerBase
 {
     public StatisticsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

@@ -22,7 +22,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/user")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class UsersController : Infrastructure.ControllerBase
+public class UsersController : Core.Infrastructure.Actions.ControllerBase
 {
     public UsersController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

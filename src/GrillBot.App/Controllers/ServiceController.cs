@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ControllerBase = GrillBot.App.Infrastructure.ControllerBase;
 
 namespace GrillBot.App.Controllers;
 
@@ -15,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/service")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class ServiceController : ControllerBase
+public class ServiceController : Core.Infrastructure.Actions.ControllerBase
 {
     public ServiceController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

@@ -31,7 +31,8 @@ public class MergeStats : ApiAction
         await ValidateMergeAsync(repository, parameters);
 
         var sourceStats = await repository.Emote.FindStatisticsByEmoteIdAsync(parameters.SourceEmoteId);
-        if (sourceStats.Count == 0) return 0;
+        if (sourceStats.Count == 0)
+            return ApiResult.Ok(0);
 
         var destinationStats = await repository.Emote.FindStatisticsByEmoteIdAsync(parameters.DestinationEmoteId);
         foreach (var item in sourceStats)

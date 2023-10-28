@@ -14,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/emotes")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class EmotesController : Infrastructure.ControllerBase
+public class EmotesController : Core.Infrastructure.Actions.ControllerBase
 {
     public EmotesController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

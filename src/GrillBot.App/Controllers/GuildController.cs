@@ -16,7 +16,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/guild")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class GuildController : Infrastructure.ControllerBase
+public class GuildController : Core.Infrastructure.Actions.ControllerBase
 {
     public GuildController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

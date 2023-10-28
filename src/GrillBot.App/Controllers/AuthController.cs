@@ -11,7 +11,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/auth")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class AuthController : Infrastructure.ControllerBase
+public class AuthController : Core.Infrastructure.Actions.ControllerBase
 {
     public AuthController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

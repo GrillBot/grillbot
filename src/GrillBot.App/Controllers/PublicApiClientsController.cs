@@ -14,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/publicApiClients")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class PublicApiClientsController : Infrastructure.ControllerBase
+public class PublicApiClientsController : Core.Infrastructure.Actions.ControllerBase
 {
     public PublicApiClientsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

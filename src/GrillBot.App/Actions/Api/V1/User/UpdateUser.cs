@@ -36,10 +36,8 @@ public class UpdateUser : ApiAction
         var parameters = (UpdateUserParams)Parameters[1]!;
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var user = await repository.User.FindUserByIdAsync(id);
-
-        if (user == null)
-            throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
+        var user = await repository.User.FindUserByIdAsync(id)
+            ?? throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
 
         var before = user.Clone();
         user.SelfUnverifyMinimalTime = parameters.SelfUnverifyMinimalTime;

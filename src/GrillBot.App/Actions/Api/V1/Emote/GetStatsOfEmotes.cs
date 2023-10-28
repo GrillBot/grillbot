@@ -21,7 +21,13 @@ public class GetStatsOfEmotes : ApiAction
     {
         var parameters = (EmotesListParams)Parameters[0]!;
         var unsupported = (bool)Parameters[0]!;
+        var result = await ProcessAsync(parameters, unsupported);
 
+        return ApiResult.Ok(result);
+    }
+
+    public async Task<PaginatedResponse<GuildEmoteStatItem>> ProcessAsync(EmotesListParams parameters, bool unsupported)
+    {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Emote.GetEmoteStatisticsDataAsync(parameters, unsupported);
@@ -36,7 +42,7 @@ public class GetStatsOfEmotes : ApiAction
         if (unsupported)
             result.Data.ForEach(o => o.Emote.ImageUrl = null);
 
-        return ApiResult.Ok(result);
+        return result;
     }
 
     private GuildEmoteStatItem MapItem(Database.Models.Emotes.EmoteStatItem item, List<Database.Entity.Guild> guilds)

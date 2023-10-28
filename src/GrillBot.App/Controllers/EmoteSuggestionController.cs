@@ -13,7 +13,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/emotes/suggestion")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class EmoteSuggestionController : Infrastructure.ControllerBase
+public class EmoteSuggestionController : Core.Infrastructure.Actions.ControllerBase
 {
     public EmoteSuggestionController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

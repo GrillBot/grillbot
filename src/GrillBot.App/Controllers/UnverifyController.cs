@@ -13,7 +13,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/unverify")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class UnverifyController : Infrastructure.ControllerBase
+public class UnverifyController : Core.Infrastructure.Actions.ControllerBase
 {
     public UnverifyController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

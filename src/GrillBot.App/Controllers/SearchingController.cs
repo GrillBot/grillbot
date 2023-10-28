@@ -13,7 +13,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/search")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class SearchingController : Infrastructure.ControllerBase
+public class SearchingController : Core.Infrastructure.Actions.ControllerBase
 {
     public SearchingController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

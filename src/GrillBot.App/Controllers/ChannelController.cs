@@ -13,7 +13,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/channel")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class ChannelController : Infrastructure.ControllerBase
+public class ChannelController : Core.Infrastructure.Actions.ControllerBase
 {
     public ChannelController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

@@ -15,13 +15,17 @@ public class GetKeepablesList : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var group = (string?)Parameters[0];
+        var result = await ProcessAsync(group);
 
+        return ApiResult.Ok(result);
+    }
+
+    public async Task<Dictionary<string, List<string>>> ProcessAsync(string? group)
+    {
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var items = await repository.SelfUnverify.GetKeepablesAsync(group);
-        var result = items.GroupBy(o => o.GroupName.ToUpper())
+        return items.GroupBy(o => o.GroupName.ToUpper())
             .ToDictionary(o => o.Key, o => o.Select(x => x.Name.ToUpper()).ToList());
-
-        return ApiResult.Ok(result);
     }
 }

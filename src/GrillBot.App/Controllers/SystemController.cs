@@ -10,7 +10,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/system")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class SystemController : Infrastructure.ControllerBase
+public class SystemController : Core.Infrastructure.Actions.ControllerBase
 {
     public SystemController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

@@ -14,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/invite")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class InviteController : Infrastructure.ControllerBase
+public class InviteController : Core.Infrastructure.Actions.ControllerBase
 {
     public InviteController(IServiceProvider serviceProvider) : base(serviceProvider)
     {

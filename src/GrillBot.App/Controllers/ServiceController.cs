@@ -31,7 +31,7 @@ public class ServiceController : ControllerBase
         => await ProcessAsync<Actions.Api.V1.Services.GetServiceInfo>(id);
 
     /// <summary>
-    /// Get additional status info of AuditLogService. 
+    /// Get additional status info of AuditLogService.
     /// </summary>
     /// <response code="200">Returns additional status info.</response>
     [HttpGet("auditLog/status")]

@@ -1,6 +1,4 @@
-﻿using GrillBot.App.Actions.Api;
-using GrillBot.Core.Services.Common;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure;
 
@@ -21,7 +19,4 @@ public abstract class ControllerBase : Core.Infrastructure.Actions.ControllerBas
 
     protected void ProcessAction<TAction>(Action<TAction> syncExecution) where TAction : notnull
         => syncExecution(ServiceProvider.GetRequiredService<TAction>());
-
-    protected Task<TResult> ProcessBridgeAsync<TService, TResult>(Func<TService, Task<TResult>> asyncExecutor) where TService : IClient
-        => ProcessActionAsync<ApiBridgeAction, TResult>(bridge => bridge.ExecuteAsync(asyncExecutor));
 }

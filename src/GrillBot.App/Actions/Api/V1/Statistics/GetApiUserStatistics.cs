@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Data.Models.API.Statistics;
 
@@ -15,8 +16,9 @@ public class GetApiUserStatistics : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task<List<UserActionCountItem>> ProcessAsync(string criteria)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var criteria = (string)Parameters[0]!;
         var statistics = await AuditLogServiceClient.GetUserApiStatisticsAsync(criteria);
         var userIds = statistics
             .Select(o => ulong.TryParse(o.UserId, out _) ? o.UserId : "")
@@ -28,11 +30,13 @@ public class GetApiUserStatistics : ApiAction
         var users = await repository.User.GetUsersByIdsAsync(userIds);
         var usernames = users.ToDictionary(o => o.Id, o => o.Username);
 
-        return statistics.Select(o => new UserActionCountItem
+        var result = statistics.Select(o => new UserActionCountItem
         {
             Username = usernames.TryGetValue(o.UserId, out var username) ? username : o.UserId,
             Count = o.Count,
             Action = o.Action
         }).OrderBy(o => o.Username).ThenBy(o => o.Action).ToList();
+
+        return ApiResult.Ok(result);
     }
 }

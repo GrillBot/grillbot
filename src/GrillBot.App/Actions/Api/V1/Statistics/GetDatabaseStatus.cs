@@ -1,5 +1,6 @@
 ﻿using GrillBot.Cache.Services;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Statistics;
 
 namespace GrillBot.App.Actions.Api.V1.Statistics;
@@ -15,7 +16,7 @@ public class GetDatabaseStatus : ApiAction
         CacheBuilder = cacheBuilder;
     }
 
-    public async Task<DatabaseStatistics> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         var result = new DatabaseStatistics();
 
@@ -27,6 +28,6 @@ public class GetDatabaseStatus : ApiAction
         result.Cache = await cache.StatisticsRepository.GetTableStatisticsAsync();
         result.Cache = result.Cache.OrderByDescending(o => o.Value).ToDictionary(o => o.Key, o => o.Value);
 
-        return result;
+        return ApiResult.Ok(result);
     }
 }

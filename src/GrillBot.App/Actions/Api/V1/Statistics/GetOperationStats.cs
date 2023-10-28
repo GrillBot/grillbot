@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Data.Models.API.Statistics;
 
@@ -13,15 +14,16 @@ public class GetOperationStats : ApiAction
         CounterManager = counterManager;
     }
 
-    public OperationStats Process()
+    public override Task<ApiResult> ProcessAsync()
     {
         var statistics = CounterManager.GetStatistics();
-
-        return new OperationStats
+        var result = new OperationStats
         {
             CountChartData = statistics.ToDictionary(o => o.Section, o => o.Count),
             TimeChartData = statistics.ToDictionary(o => o.Section, o => o.AverageTime),
             Statistics = OperationCounterConverter.ComputeTree(statistics)
         };
+
+        return Task.FromResult(ApiResult.Ok(result));
     }
 }

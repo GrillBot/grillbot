@@ -25,10 +25,6 @@ public static class ActionsExtensions
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)
     {
-        // Common
-        services
-            .AddScoped<Api.ApiBridgeAction>();
-
         // V1
         // AuditLog
         services

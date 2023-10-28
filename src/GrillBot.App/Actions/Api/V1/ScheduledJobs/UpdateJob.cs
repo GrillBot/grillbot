@@ -2,6 +2,7 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 using Quartz;
 using Quartz.Impl.Matchers;
 
@@ -20,20 +21,26 @@ public class UpdateJob : ApiAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(string name, bool enabled)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var name = (string)Parameters[0]!;
+        var enabled = (bool)Parameters[1]!;
+
         await ValidateJobAsync(name);
 
         var data = await DataCacheManager.GetValueAsync("DisabledJobs");
         if (string.IsNullOrEmpty(data)) data = "[]";
 
         var disabledJobs = JsonConvert.DeserializeObject<List<string>>(data)!;
-        if (enabled) disabledJobs.Remove(name);
-        else disabledJobs.Add(name);
+        if (enabled)
+            disabledJobs.Remove(name);
+        else
+            disabledJobs.Add(name);
 
         var newData = JsonConvert.SerializeObject(disabledJobs, Formatting.None);
         if (data != newData)
             await DataCacheManager.SetValueAsync("DisabledJobs", newData, DateTime.MaxValue);
+        return ApiResult.Ok();
     }
 
     private async Task ValidateJobAsync(string name)

@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 
@@ -11,12 +12,16 @@ public class GetKeepablesList : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<Dictionary<string, List<string>>> ProcessAsync(string? group)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var group = (string?)Parameters[0];
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var items = await repository.SelfUnverify.GetKeepablesAsync(group);
-        return items.GroupBy(o => o.GroupName.ToUpper())
+        var result = items.GroupBy(o => o.GroupName.ToUpper())
             .ToDictionary(o => o.Key, o => o.Select(x => x.Name.ToUpper()).ToList());
+
+        return ApiResult.Ok(result);
     }
 }

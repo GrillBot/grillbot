@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Selfunverify;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
@@ -12,9 +13,13 @@ public class KeepableExists : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<bool> ProcessAsync(KeepableParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (KeepableParams)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.SelfUnverify.KeepableExistsAsync(parameters.Group, parameters.Name);
+
+        var result = await repository.SelfUnverify.KeepableExistsAsync(parameters.Group, parameters.Name);
+        return ApiResult.Ok(result);
     }
 }

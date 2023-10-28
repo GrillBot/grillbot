@@ -5,7 +5,9 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models;
+using GrillBot.Data.Models.API;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
@@ -48,6 +50,16 @@ public class RemoveUnverify : ApiAction
             // There is not reason why throw exception if removal process is from job.  
             await ForceRemoveAsync(guildId, userId);
         }
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var guildId = (ulong)Parameters[0]!;
+        var userId = (ulong)Parameters[1]!;
+        var force = (bool)Parameters[2]!;
+
+        var result = await ProcessAsync(guildId, userId, force);
+        return ApiResult.Ok(new MessageResponse(result));
     }
 
     public async Task<string> ProcessAsync(ulong guildId, ulong userId, bool force = false)

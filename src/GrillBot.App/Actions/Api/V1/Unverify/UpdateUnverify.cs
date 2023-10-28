@@ -4,6 +4,8 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
@@ -24,6 +26,16 @@ public class UpdateUnverify : ApiAction
         DatabaseBuilder = databaseBuilder;
         UnverifyLogManager = unverifyLogManager;
         MessageManager = messageManager;
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var guildId = (ulong)Parameters[0]!;
+        var userId = (ulong)Parameters[1]!;
+        var parameters = (UpdateUnverifyParams)Parameters[2]!;
+
+        var result = await ProcessAsync(guildId, userId, parameters);
+        return ApiResult.Ok(new MessageResponse(result));
     }
 
     public async Task<string> ProcessAsync(ulong guildId, ulong userId, UpdateUnverifyParams parameters)

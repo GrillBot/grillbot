@@ -2,6 +2,7 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
@@ -23,15 +24,17 @@ public class GetLogs : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<PaginatedResponse<UnverifyLogItem>> ProcessAsync(UnverifyLogParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (UnverifyLogParams)Parameters[0]!;
         var mutualGuilds = await GetMutualGuildsAsync();
         UpdatePublicAccess(parameters, mutualGuilds);
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Unverify.GetLogsAsync(parameters, parameters.Pagination, mutualGuilds);
-        return await PaginatedResponse<UnverifyLogItem>.CopyAndMapAsync(data, MapItemAsync);
+        var result = await PaginatedResponse<UnverifyLogItem>.CopyAndMapAsync(data, MapItemAsync);
+        return ApiResult.Ok(result);
     }
 
     private async Task<List<string>> GetMutualGuildsAsync()

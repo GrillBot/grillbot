@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Emotes;
 
@@ -14,6 +15,15 @@ public class GetStatsOfEmotes : ApiAction
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var parameters = (EmotesListParams)Parameters[0]!;
+        var unsupported = (bool)Parameters[1]!;
+        var result = await ProcessAsync(parameters, unsupported);
+
+        return ApiResult.Ok(result);
     }
 
     public async Task<PaginatedResponse<GuildEmoteStatItem>> ProcessAsync(EmotesListParams parameters, bool unsupported)

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Emotes;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
@@ -16,15 +17,17 @@ public class GetStatOfEmote : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<EmoteStatItem> ProcessAsync(string emoteId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var emoteId = (string)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var emote = Discord.Emote.Parse(emoteId);
-        var statistics = await repository.Emote.GetStatisticsOfEmoteAsync(emote);
-        if (statistics is null)
-            throw new NotFoundException();
+        var statistics = await repository.Emote.GetStatisticsOfEmoteAsync(emote)
+            ?? throw new NotFoundException();
 
-        return Mapper.Map<EmoteStatItem>(statistics);
+        var result = Mapper.Map<EmoteStatItem>(statistics);
+        return ApiResult.Ok(result);
     }
 }

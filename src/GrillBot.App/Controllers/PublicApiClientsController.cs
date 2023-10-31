@@ -14,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/publicApiClients")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class PublicApiClientsController : Infrastructure.ControllerBase
+public class PublicApiClientsController : Core.Infrastructure.Actions.ControllerBase
 {
     public PublicApiClientsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -25,9 +25,9 @@ public class PublicApiClientsController : Infrastructure.ControllerBase
     /// </summary>
     /// <response code="200">Returns list of clients</response>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<ApiClient>>> GetClientsListAsync()
-        => Ok(await ProcessActionAsync<GetClientsList, List<ApiClient>>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(List<ApiClient>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetClientsListAsync()
+        => await ProcessAsync<GetClientsList>();
 
     /// <summary>
     /// Create new client.
@@ -37,12 +37,10 @@ public class PublicApiClientsController : Infrastructure.ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> CreateClientAsync([FromBody] ApiClientParams parameters)
+    public async Task<IActionResult> CreateClientAsync([FromBody] ApiClientParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        await ProcessActionAsync<CreateClient>(action => action.ProcessAsync(parameters));
-        return Ok();
+        return await ProcessAsync<CreateClient>(parameters);
     }
 
     /// <summary>
@@ -53,11 +51,8 @@ public class PublicApiClientsController : Infrastructure.ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteClientAsync(string id)
-    {
-        await ProcessActionAsync<DeleteClient>(action => action.ProcessAsync(id));
-        return Ok();
-    }
+    public async Task<IActionResult> DeleteClientAsync(string id)
+        => await ProcessAsync<DeleteClient>(id);
 
     /// <summary>
     /// Update existing client.
@@ -69,12 +64,10 @@ public class PublicApiClientsController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> UpdateClientAsync(string id, [FromBody] ApiClientParams parameters)
+    public async Task<IActionResult> UpdateClientAsync(string id, [FromBody] ApiClientParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        await ProcessActionAsync<UpdateClient>(action => action.ProcessAsync(id, parameters));
-        return Ok();
+        return await ProcessAsync<UpdateClient>(id, parameters);
     }
 
     /// <summary>
@@ -83,8 +76,8 @@ public class PublicApiClientsController : Infrastructure.ControllerBase
     /// <response code="200">Returns client data</response>
     /// <response code="404">Client not found</response>
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiClient), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiClient>> GetClientAsync(string id)
-        => await ProcessActionAsync<GetClient, ApiClient>(action => action.ProcessAsync(id));
+    public async Task<IActionResult> GetClientAsync(string id)
+        => await ProcessAsync<GetClient>(id);
 }

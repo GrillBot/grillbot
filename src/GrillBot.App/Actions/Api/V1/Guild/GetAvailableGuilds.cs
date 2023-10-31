@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Guilds;
 
 namespace GrillBot.App.Actions.Api.V1.Guild;
@@ -15,10 +16,10 @@ public class GetAvailableGuilds : ApiAction
         DiscordClient = discordClient;
     }
 
-    public async Task<Dictionary<string, string>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         if (ApiContext.IsPublic())
-            return await GetMutualGuildsAsync();
+            return ApiResult.Ok(await GetMutualGuildsAsync());
 
         var filter = new GetGuildListParams
         {
@@ -28,7 +29,7 @@ public class GetAvailableGuilds : ApiAction
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Guild.GetGuildListAsync(filter, filter.Pagination);
-        return data.Data.ToDictionary(o => o.Id, o => o.Name);
+        return ApiResult.Ok(data.Data.ToDictionary(o => o.Id, o => o.Name));
     }
 
     private async Task<Dictionary<string, string>> GetMutualGuildsAsync()

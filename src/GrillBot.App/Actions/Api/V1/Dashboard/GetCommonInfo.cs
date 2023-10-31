@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Managers;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -18,13 +19,14 @@ public class GetCommonInfo : ApiAction
         WebHost = webHost;
     }
 
-    public Data.Models.API.System.DashboardInfo Process()
+    public override Task<ApiResult> ProcessAsync()
     {
         var process = global::System.Diagnostics.Process.GetCurrentProcess();
+        var now = DateTime.Now;
 
-        return new Data.Models.API.System.DashboardInfo
+        var result = new Data.Models.API.System.DashboardInfo
         {
-            Uptime = Convert.ToInt64((DateTime.Now - process.StartTime).TotalMilliseconds),
+            Uptime = Convert.ToInt64((now - process.StartTime).TotalMilliseconds),
             ConnectionState = DiscordClient.ConnectionState,
             UsedMemory = process.WorkingSet64,
             IsActive = InitManager.Get(),
@@ -33,5 +35,7 @@ public class GetCommonInfo : ApiAction
             StartAt = process.StartTime,
             IsDevelopment = WebHost.IsDevelopment()
         };
+
+        return Task.FromResult(ApiResult.Ok(result));
     }
 }

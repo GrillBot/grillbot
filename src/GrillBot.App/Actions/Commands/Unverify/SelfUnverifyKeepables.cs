@@ -41,7 +41,7 @@ public class SelfUnverifyKeepables : CommandAction
                 if (fieldGroupBuilder.Length + item.Length >= EmbedFieldBuilder.MaxFieldValueLength)
                 {
                     fieldGroupResult = fieldGroupBuilder.ToString().Trim();
-                    embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[..^1] : fieldGroupResult);
+                    embed.AddField(keys, fieldGroupResult.EndsWith(',') ? fieldGroupResult[..^1] : fieldGroupResult);
                     fieldGroupBuilder.Clear();
                 }
                 else
@@ -54,7 +54,7 @@ public class SelfUnverifyKeepables : CommandAction
                 continue;
 
             fieldGroupResult = fieldGroupBuilder.ToString().Trim();
-            embed.AddField(keys, fieldGroupResult.EndsWith(",") ? fieldGroupResult[..^1] : fieldGroupResult);
+            embed.AddField(keys, fieldGroupResult.EndsWith(',') ? fieldGroupResult[..^1] : fieldGroupResult);
             fieldGroupBuilder.Clear();
         }
 

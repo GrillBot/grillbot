@@ -13,7 +13,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/selfunverify/keep")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class SelfUnverifyController : Infrastructure.ControllerBase
+public class SelfUnverifyController : Core.Infrastructure.Actions.ControllerBase
 {
     public SelfUnverifyController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -24,9 +24,9 @@ public class SelfUnverifyController : Infrastructure.ControllerBase
     /// </summary>
     /// <response code="200">Success</response>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, List<string>>>> GetKeepablesListAsync()
-        => Ok(await ProcessActionAsync<GetKeepablesList, Dictionary<string, List<string>>>(action => action.ProcessAsync(null)));
+    [ProducesResponseType(typeof(Dictionary<string, List<string>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetKeepablesListAsync()
+        => await ProcessAsync<GetKeepablesList>((string?)null);
 
     /// <summary>
     /// Add new keepable role or channel.
@@ -36,12 +36,10 @@ public class SelfUnverifyController : Infrastructure.ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> AddKeepableAsync([FromBody] List<KeepableParams> parameters)
+    public async Task<IActionResult> AddKeepableAsync([FromBody] List<KeepableParams> parameters)
     {
         ApiAction.Init(this, parameters.OfType<IDictionaryObject>().ToArray());
-
-        await ProcessActionAsync<AddKeepables>(action => action.ProcessAsync(parameters));
-        return Ok();
+        return await ProcessAsync<AddKeepables>(parameters);
     }
 
     /// <summary>
@@ -49,9 +47,10 @@ public class SelfUnverifyController : Infrastructure.ControllerBase
     /// </summary>
     /// <response code="200">Success</response>
     [HttpGet("exist")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<bool>> KeepableExistsAsync([FromQuery] KeepableParams parameters)
-        => Ok(await ProcessActionAsync<KeepableExists, bool>(action => action.ProcessAsync(parameters)));
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> KeepableExistsAsync([FromQuery] KeepableParams parameters)
+        => await ProcessAsync<KeepableExists>(parameters);
 
     /// <summary>
     /// Remove keepable item or group.
@@ -61,9 +60,6 @@ public class SelfUnverifyController : Infrastructure.ControllerBase
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> KeepableRemoveAsync(string group, string? name = null)
-    {
-        await ProcessActionAsync<RemoveKeepables>(action => action.ProcessAsync(group, name));
-        return Ok();
-    }
+    public async Task<IActionResult> KeepableRemoveAsync(string group, string? name = null)
+        => await ProcessAsync<RemoveKeepables>(group, name);
 }

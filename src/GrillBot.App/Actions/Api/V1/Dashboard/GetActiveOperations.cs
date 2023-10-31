@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.App.Actions.Api.V1.Dashboard;
@@ -12,6 +13,9 @@ public class GetActiveOperations : ApiAction
         CounterManager = counterManager;
     }
 
-    public Dictionary<string, int> Process()
-        => CounterManager.GetActiveCounters();
+    public override Task<ApiResult> ProcessAsync()
+    {
+        var result = CounterManager.GetActiveCounters();
+        return Task.FromResult(ApiResult.Ok(result));
+    }
 }

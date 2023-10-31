@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Users;
 
@@ -16,14 +17,17 @@ public class GetUserList : ApiAction
         DiscordClient = discordClient;
     }
 
-    public async Task<PaginatedResponse<UserListItem>> ProcessAsync(GetUserListParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (GetUserListParams)Parameters[0]!;
         parameters.FixStatus();
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.User.GetUsersListAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<UserListItem>.CopyAndMapAsync(data, MapItemAsync);
+        var result = await PaginatedResponse<UserListItem>.CopyAndMapAsync(data, MapItemAsync);
+
+        return ApiResult.Ok(result);
     }
 
     private async Task<UserListItem> MapItemAsync(Database.Entity.User entity)

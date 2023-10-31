@@ -1,4 +1,5 @@
-﻿using GrillBot.Core.Services.AuditLog;
+﻿using GrillBot.App.Actions.Api;
+using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Models.Response.Info;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Data.Models.API.Services;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ControllerBase = GrillBot.App.Infrastructure.ControllerBase;
 
 namespace GrillBot.App.Controllers;
 
@@ -14,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/service")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class ServiceController : ControllerBase
+public class ServiceController : Core.Infrastructure.Actions.ControllerBase
 {
     public ServiceController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -25,25 +25,31 @@ public class ServiceController : ControllerBase
     /// </summary>
     /// <response code="200">Returns service info.</response>
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<ServiceInfo>> GetServiceInfoAsync(string id)
-        => Ok(await ProcessActionAsync<Actions.Api.V1.Services.GetServiceInfo, ServiceInfo>(action => action.ProcessAsync(id)));
+    [ProducesResponseType(typeof(ServiceInfo), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetServiceInfoAsync(string id)
+        => await ProcessAsync<Actions.Api.V1.Services.GetServiceInfo>(id);
 
     /// <summary>
-    /// Get additional status info of AuditLogService. 
+    /// Get additional status info of AuditLogService.
     /// </summary>
     /// <response code="200">Returns additional status info.</response>
     [HttpGet("auditLog/status")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<StatusInfo>> GetAuditLogStatusInfoAsync()
-        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, StatusInfo>(client => client.GetStatusInfoAsync()));
+    [ProducesResponseType(typeof(StatusInfo), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAuditLogStatusInfoAsync()
+    {
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetStatusInfoAsync());
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     /// <summary>
     /// Get additional status info of PointsService.
     /// </summary>
     /// <response code="200">Returns additional status info.</response>
     [HttpGet("points/status")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Core.Services.PointsService.Models.StatusInfo>> GetPointsServiceSatusInfoAsync()
-        => Ok(await ProcessBridgeAsync<IPointsServiceClient, Core.Services.PointsService.Models.StatusInfo>(client => client.GetStatusInfoAsync()));
+    [ProducesResponseType(typeof(Core.Services.PointsService.Models.StatusInfo), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPointsServiceSatusInfoAsync()
+    {
+        var executor = new Func<IPointsServiceClient, Task<object>>(async (IPointsServiceClient client) => await client.GetStatusInfoAsync());
+        return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
+    }
 }

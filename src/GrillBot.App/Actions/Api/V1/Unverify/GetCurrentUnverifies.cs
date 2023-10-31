@@ -3,6 +3,7 @@ using GrillBot.App.Managers;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Unverify;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
@@ -20,7 +21,7 @@ public class GetCurrentUnverifies : ApiAction
         DiscordClient = discordClient;
     }
 
-    public async Task<List<UnverifyUserProfile>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         var data = await GetAllUnverifiesAsync(
             ApiContext.IsPublic() ? ApiContext.GetUserId() : null
@@ -35,7 +36,7 @@ public class GetCurrentUnverifies : ApiAction
             result.Add(profile);
         }
 
-        return result;
+        return ApiResult.Ok(result);
     }
 
     private async Task<List<(Data.Models.Unverify.UnverifyUserProfile profile, IGuild guild)>> GetAllUnverifiesAsync(ulong? userId = null)

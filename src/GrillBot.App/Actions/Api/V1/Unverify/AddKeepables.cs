@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Selfunverify;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
@@ -17,8 +18,9 @@ public class AddKeepables : ApiAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(List<KeepableParams> parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (List<KeepableParams>)Parameters[0]!;
         await using var repository = DatabaseBuilder.CreateRepository();
         await ValidateParameters(parameters, repository);
 
@@ -30,6 +32,7 @@ public class AddKeepables : ApiAction
 
         await repository.AddCollectionAsync(entities);
         await repository.CommitAsync();
+        return ApiResult.Ok();
     }
 
     private async Task ValidateParameters(List<KeepableParams> parameters, GrillBotRepository repository)

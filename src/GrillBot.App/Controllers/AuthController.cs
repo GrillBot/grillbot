@@ -11,7 +11,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/auth")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class AuthController : Infrastructure.ControllerBase
+public class AuthController : Core.Infrastructure.Actions.ControllerBase
 {
     public AuthController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -23,9 +23,9 @@ public class AuthController : Infrastructure.ControllerBase
     /// <response code="200">Success</response>
     [HttpGet("link")]
     [AllowAnonymous]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public ActionResult<OAuth2GetLink> GetRedirectLink([FromQuery] AuthState state)
-        => Ok(ProcessAction<GetRedirectLink, OAuth2GetLink>(action => action.Process(state)));
+    [ProducesResponseType(typeof(OAuth2GetLink), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRedirectLinkAsync([FromQuery] AuthState state)
+        => await ProcessAsync<GetRedirectLink>(state);
 
     /// <summary>
     /// OAuth2 redirect callback.
@@ -36,10 +36,10 @@ public class AuthController : Infrastructure.ControllerBase
     /// <response code="400">Validation failed</response>
     [HttpGet("callback")]
     [AllowAnonymous]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult> OnOAuth2CallbackAsync([FromQuery, Required] string code, [Required, FromQuery] string state)
-        => Redirect(await ProcessActionAsync<ProcessCallback, string>(action => action.ProcessAsync(code, state)));
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> OnOAuth2CallbackAsync([FromQuery, Required] string code, [Required, FromQuery] string state)
+        => await ProcessAsync<ProcessCallback>(code, state);
 
     /// <summary>
     /// Create auth token from session.
@@ -50,10 +50,10 @@ public class AuthController : Infrastructure.ControllerBase
     /// <response code="400">Validation failed</response>
     [HttpGet("token")]
     [AllowAnonymous]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<OAuth2LoginToken>> CreateLoginTokenAsync([FromQuery, Required] string sessionId, [FromQuery, Required] bool isPublic)
-        => Ok(await ProcessActionAsync<CreateToken, OAuth2LoginToken>(action => action.ProcessAsync(sessionId, isPublic)));
+    [ProducesResponseType(typeof(OAuth2LoginToken), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateLoginTokenAsync([FromQuery, Required] string sessionId, [FromQuery, Required] bool isPublic)
+        => await ProcessAsync<CreateToken>(sessionId, isPublic);
 
     /// <summary>
     /// Create auth token from user ID. Only for development purposes.
@@ -64,9 +64,9 @@ public class AuthController : Infrastructure.ControllerBase
     /// <response code="400">Validation failed or user not found.</response>
     [HttpGet("token/{userId}")]
     [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OAuth2LoginToken), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [OnlyDevelopment]
-    public async Task<ActionResult<OAuth2LoginToken>> CreateLoginTokenFromIdAsync(ulong userId, [FromQuery] bool isPublic = false)
-        => Ok(await ProcessActionAsync<CreateToken, OAuth2LoginToken>(action => action.ProcessAsync(userId, isPublic)));
+    public async Task<IActionResult> CreateLoginTokenFromIdAsync(ulong userId, [FromQuery] bool isPublic = false)
+        => await ProcessAsync<CreateToken>(userId, isPublic);
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models.Users;
@@ -25,8 +26,9 @@ public class GetUserList : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<Data.Models.API.Points.UserListItem>> ProcessAsync(UserListRequest request)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var request = (UserListRequest)Parameters[0]!;
         var userList = await PointsServiceClient.GetUserListAsync(request);
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -40,7 +42,9 @@ public class GetUserList : ApiAction
         foreach (var guild in guilds)
             CachedGuilds.Add(guild.Id, Mapper.Map<Data.Models.API.Guilds.Guild>(guild));
 
-        return await PaginatedResponse<Data.Models.API.Points.UserListItem>.CopyAndMapAsync(userList, entity => MapItemAsync(entity, repository));
+        var result = await PaginatedResponse<Data.Models.API.Points.UserListItem>.CopyAndMapAsync(userList, entity => MapItemAsync(entity, repository));
+
+        return ApiResult.Ok(result);
     }
 
     private async Task<Data.Models.API.Points.UserListItem> MapItemAsync(UserListItem item, GrillBotRepository repository)

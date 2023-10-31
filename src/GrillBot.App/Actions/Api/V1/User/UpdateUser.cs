@@ -8,6 +8,7 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -29,13 +30,14 @@ public class UpdateUser : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task ProcessAsync(ulong id, UpdateUserParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var user = await repository.User.FindUserByIdAsync(id);
+        var id = (ulong)Parameters[0]!;
+        var parameters = (UpdateUserParams)Parameters[1]!;
 
-        if (user == null)
-            throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var user = await repository.User.FindUserByIdAsync(id)
+            ?? throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
 
         var before = user.Clone();
         user.SelfUnverifyMinimalTime = parameters.SelfUnverifyMinimalTime;
@@ -44,6 +46,7 @@ public class UpdateUser : ApiAction
         await repository.CommitAsync();
         await WriteToAuditLogAsync(before, user);
         await TrySyncPointsService(before, user);
+        return ApiResult.Ok();
     }
 
     private async Task TrySyncPointsService(Database.Entity.User before, Database.Entity.User after)

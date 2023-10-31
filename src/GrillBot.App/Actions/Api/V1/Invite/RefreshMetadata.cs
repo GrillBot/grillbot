@@ -1,6 +1,7 @@
 ﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
@@ -18,6 +19,14 @@ public class RefreshMetadata : ApiAction
         DiscordClient = discordClient;
         InviteManager = inviteManager;
         AuditLogServiceClient = auditLogServiceClient;
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var isReload = (bool)Parameters[0]!;
+        var result = await ProcessAsync(isReload);
+
+        return ApiResult.Ok(result);
     }
 
     public async Task<Dictionary<string, int>> ProcessAsync(bool isReload)

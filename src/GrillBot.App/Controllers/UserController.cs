@@ -15,13 +15,14 @@ using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Core.Services.RubbergodService.Models.Karma;
 using GrillBot.Core.Models.Pagination;
 using Microsoft.Extensions.DependencyInjection;
+using GrillBot.App.Actions.Api;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/user")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class UsersController : Infrastructure.ControllerBase
+public class UsersController : Core.Infrastructure.Actions.ControllerBase
 {
     public UsersController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -34,14 +35,12 @@ public class UsersController : Infrastructure.ControllerBase
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<UserListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<UserListItem>>> GetUsersListAsync([FromBody] GetUserListParams parameters)
+    public async Task<IActionResult> GetUsersListAsync([FromBody] GetUserListParams parameters)
     {
         ApiAction.Init(this, parameters);
-        parameters.FixStatus();
-
-        return Ok(await ProcessActionAsync<GetUserList, PaginatedResponse<UserListItem>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetUserList>(parameters);
     }
 
     /// <summary>
@@ -51,10 +50,10 @@ public class UsersController : Infrastructure.ControllerBase
     /// <response code="404">User not found in database.</response>
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDetail), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserDetail>> GetUserDetailAsync(ulong id)
-        => Ok(await ProcessActionAsync<GetUserDetail, UserDetail>(action => action.ProcessAsync(id)));
+    public async Task<IActionResult> GetUserDetailAsync(ulong id)
+        => await ProcessAsync<GetUserDetail>(id);
 
     /// <summary>
     /// Get data about currently logged user.
@@ -64,10 +63,10 @@ public class UsersController : Infrastructure.ControllerBase
     /// <remarks>Only for users with User permissions.</remarks>
     [HttpGet("me")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult<UserDetail>> GetCurrentUserDetailAsync()
-        => Ok(await ProcessActionAsync<GetUserDetail, UserDetail>(action => action.ProcessSelfAsync()));
+    [ProducesResponseType(typeof(UserDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetCurrentUserDetailAsync()
+        => await ProcessAsync<GetUserDetail>();
 
     /// <summary>
     /// Update user.
@@ -77,15 +76,13 @@ public class UsersController : Infrastructure.ControllerBase
     /// <response code="404">User not found.</response>
     [HttpPut("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    public async Task<ActionResult> UpdateUserAsync(ulong id, [FromBody] UpdateUserParams parameters)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateUserAsync(ulong id, [FromBody] UpdateUserParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        await ProcessActionAsync<UpdateUser>(action => action.ProcessAsync(id, parameters));
-        return Ok();
+        return await ProcessAsync<UpdateUser>(id, parameters);
     }
 
     /// <summary>
@@ -96,13 +93,9 @@ public class UsersController : Infrastructure.ControllerBase
     /// </remarks>
     [HttpDelete("hearthbeat")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Admin")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    public async Task<ActionResult> HearthbeatOffAsync()
-    {
-        var apiContext = ServiceProvider.GetRequiredService<ApiRequestContext>();
-        await ProcessActionAsync<UserManager>(manager => manager.SetHearthbeatAsync(false, apiContext));
-        return Ok();
-    }
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> HearthbeatOffAsync()
+        => await ProcessAsync<Hearthbeat>(false);
 
     /// <summary>
     /// Get rubbergod karma leaderboard.
@@ -112,12 +105,12 @@ public class UsersController : Infrastructure.ControllerBase
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
     [HttpPost("karma")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<KarmaListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<PaginatedResponse<UserKarma>>> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
+    public async Task<IActionResult> GetRubbergodUserKarmaAsync([FromBody] KarmaListParams parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<GetRubbergodUserKarma, PaginatedResponse<KarmaListItem>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetRubbergodUserKarma>(parameters);
     }
 
     /// <summary>
@@ -133,12 +126,12 @@ public class UsersController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> StoreKarmaAsync([FromBody] List<KarmaItem> items)
+    public async Task<IActionResult> StoreKarmaAsync([FromBody] List<KarmaItem> items)
     {
         ApiAction.Init(this, items.ToArray());
 
-        await ProcessBridgeAsync<IRubbergodServiceClient>(client => client.StoreKarmaAsync(items));
-        return Ok();
+        var executor = new Func<IRubbergodServiceClient, Task>(async (IRubbergodServiceClient client) => await client.StoreKarmaAsync(items));
+        return await ProcessAsync<ServiceBridgeAction<IRubbergodServiceClient>>(executor);
     }
 
     /// <summary>
@@ -148,7 +141,7 @@ public class UsersController : Infrastructure.ControllerBase
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
     [HttpGet("birthday/today")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<MessageResponse>> GetTodayBirthdayInfoAsync()
-        => Ok(await ProcessActionAsync<GetTodayBirthdayInfo, MessageResponse>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTodayBirthdayInfoAsync()
+        => await ProcessAsync<GetTodayBirthdayInfo>();
 }

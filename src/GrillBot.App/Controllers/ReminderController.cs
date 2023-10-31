@@ -7,14 +7,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Controllers;
 
 [ApiController]
 [Route("api/remind")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class ReminderController : Infrastructure.ControllerBase
+public class ReminderController : Core.Infrastructure.Actions.ControllerBase
 {
     public ReminderController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -27,12 +26,12 @@ public class ReminderController : Infrastructure.ControllerBase
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<RemindMessage>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<RemindMessage>>> GetRemindMessagesListAsync([FromBody] GetReminderListParams parameters)
+    public async Task<IActionResult> GetRemindMessagesListAsync([FromBody] GetReminderListParams parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<GetReminderList, PaginatedResponse<RemindMessage>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetReminderList>(parameters);
     }
 
     /// <summary>
@@ -45,19 +44,9 @@ public class ReminderController : Infrastructure.ControllerBase
     /// <response code="410">Remind was notified or cancelled.</response>
     [HttpDelete("{id:long}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.Gone)]
-    public async Task<ActionResult> CancelRemindAsync(long id, [FromQuery] bool notify = false)
-    {
-        var (isGone, errorMessage) = await ProcessActionAsync<FinishRemind, (bool, string?)>(async action =>
-        {
-            await action.ProcessAsync(id, notify, true);
-            return (action.IsGone, action.ErrorMessage);
-        });
-
-        if (isGone)
-            return StatusCode((int)HttpStatusCode.Gone, new MessageResponse(errorMessage!));
-        return Ok();
-    }
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status410Gone)]
+    public async Task<IActionResult> CancelRemindAsync(long id, [FromQuery] bool notify = false)
+        => await ProcessAsync<FinishRemind>(id, notify, true);
 }

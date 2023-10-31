@@ -16,7 +16,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/guild")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class GuildController : Infrastructure.ControllerBase
+public class GuildController : Core.Infrastructure.Actions.ControllerBase
 {
     public GuildController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -28,14 +28,13 @@ public class GuildController : Infrastructure.ControllerBase
     /// <response code="200">Return paginated list of guilds in DB.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("list")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(PaginatedResponse<Guild>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<PaginatedResponse<Guild>>> GetGuildListAsync([FromBody] GetGuildListParams parameters)
+    public async Task<IActionResult> GetGuildListAsync([FromBody] GetGuildListParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        return Ok(await ProcessActionAsync<GetGuildList, PaginatedResponse<Guild>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetGuildList>(parameters);
     }
 
     /// <summary>
@@ -43,11 +42,11 @@ public class GuildController : Infrastructure.ControllerBase
     /// </summary>
     /// <param name="id">Guild ID</param>
     [HttpGet("{id}")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(GuildDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<GuildDetail>> GetGuildDetailAsync(ulong id)
-        => Ok(await ProcessActionAsync<GetGuildDetail, GuildDetail>(action => action.ProcessAsync(id)));
+    public async Task<IActionResult> GetGuildDetailAsync(ulong id)
+        => await ProcessAsync<GetGuildDetail>(id);
 
     /// <summary>
     /// Update guild
@@ -56,14 +55,14 @@ public class GuildController : Infrastructure.ControllerBase
     /// <response code="400">Validation of parameters failed.</response>
     /// <response code="404">Guild not found.</response>
     [HttpPut("{id}")]
-    [ProducesResponseType((int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(GuildDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<ActionResult<GuildDetail>> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams parameters)
+    public async Task<IActionResult> UpdateGuildAsync(ulong id, [FromBody] UpdateGuildParams parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<UpdateGuild, GuildDetail>(action => action.ProcessAsync(id, parameters)));
+        return await ProcessAsync<UpdateGuild>(id, parameters);
     }
 
     /// <summary>
@@ -77,13 +76,13 @@ public class GuildController : Infrastructure.ControllerBase
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
     [HttpPost("{guildId}/event")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ulong), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ulong>> CreateScheduledEventAsync(ulong guildId, [FromBody] ScheduledEventParams parameters)
+    public async Task<IActionResult> CreateScheduledEventAsync(ulong guildId, [FromBody] ScheduledEventParams parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<CreateScheduledEvent, ulong>(action => action.ProcessAsync(guildId, parameters)));
+        return await ProcessAsync<CreateScheduledEvent>(guildId, parameters);
     }
 
     /// <summary>
@@ -103,12 +102,10 @@ public class GuildController : Infrastructure.ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> UpdateScheduledEventAsync(ulong guildId, ulong eventId, [FromBody] ScheduledEventParams parameters)
+    public async Task<IActionResult> UpdateScheduledEventAsync(ulong guildId, ulong eventId, [FromBody] ScheduledEventParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        await ProcessActionAsync<UpdateScheduledEvent>(action => action.ProcessAsync(guildId, eventId, parameters));
-        return Ok();
+        return await ProcessAsync<UpdateScheduledEvent>(guildId, eventId, parameters);
     }
 
     /// <summary>
@@ -127,9 +124,6 @@ public class GuildController : Infrastructure.ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> CancelScheduledEventAsync(ulong guildId, ulong eventId)
-    {
-        await ProcessActionAsync<CancelScheduledEvent>(action => action.ProcessAsync(guildId, eventId));
-        return Ok();
-    }
+    public async Task<IActionResult> CancelScheduledEventAsync(ulong guildId, ulong eventId)
+        => await ProcessAsync<CancelScheduledEvent>(guildId, eventId);
 }

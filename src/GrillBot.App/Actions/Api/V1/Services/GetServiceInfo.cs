@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Diagnostics.Models;
@@ -8,31 +9,24 @@ using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Data.Models.API.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Api.V1.Services;
 
 public class GetServiceInfo : ApiAction
 {
-    private IGraphicsClient GraphicsClient { get; }
-    private IRubbergodServiceClient RubbergodServiceClient { get; }
     private LoggingManager LoggingManager { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
-    private IImageProcessingClient ImageProcessingClient { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private IServiceProvider ServiceProvider { get; }
 
-    public GetServiceInfo(ApiRequestContext apiContext, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, LoggingManager loggingManager, IPointsServiceClient pointsServiceClient,
-        IImageProcessingClient imageProcessingClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public GetServiceInfo(ApiRequestContext apiContext, LoggingManager loggingManager, IServiceProvider serviceProvider) : base(apiContext)
     {
-        GraphicsClient = graphicsClient;
-        RubbergodServiceClient = rubbergodServiceClient;
         LoggingManager = loggingManager;
-        PointsServiceClient = pointsServiceClient;
-        ImageProcessingClient = imageProcessingClient;
-        AuditLogServiceClient = auditLogServiceClient;
+        ServiceProvider = serviceProvider;
     }
 
-    public async Task<ServiceInfo> ProcessAsync(string id)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var id = (string)Parameters[0]!;
         var client = PickClient(id);
 
         var info = new ServiceInfo
@@ -42,18 +36,18 @@ public class GetServiceInfo : ApiAction
         };
 
         await SetDiagnosticsInfo(info, client);
-        return info;
+        return ApiResult.Ok(info);
     }
 
     private IClient PickClient(string id)
     {
         return id switch
         {
-            "rubbergod" => RubbergodServiceClient,
-            "graphics" => GraphicsClient,
-            "points" => PointsServiceClient,
-            "image-processing" => ImageProcessingClient,
-            "audit-log" => AuditLogServiceClient,
+            "rubbergod" => ServiceProvider.GetRequiredService<IRubbergodServiceClient>(),
+            "graphics" => ServiceProvider.GetRequiredService<IGraphicsClient>(),
+            "points" => ServiceProvider.GetRequiredService<IPointsServiceClient>(),
+            "image-processing" => ServiceProvider.GetRequiredService<IImageProcessingClient>(),
+            "audit-log" => ServiceProvider.GetRequiredService<IAuditLogServiceClient>(),
             _ => throw new NotSupportedException($"Unsupported service {id}")
         };
     }
@@ -64,11 +58,11 @@ public class GetServiceInfo : ApiAction
         {
             info.DiagnosticInfo = client switch
             {
-                IRubbergodServiceClient => await RubbergodServiceClient.GetDiagAsync(),
-                IGraphicsClient => await GetGraphicsServiceInfo(),
-                IPointsServiceClient => await PointsServiceClient.GetDiagAsync(),
-                IImageProcessingClient => await ImageProcessingClient.GetDiagAsync(),
-                IAuditLogServiceClient => await AuditLogServiceClient.GetDiagAsync(),
+                IRubbergodServiceClient rubbergodServiceClient => await rubbergodServiceClient.GetDiagAsync(),
+                IGraphicsClient graphicsClient => await GetGraphicsServiceInfo(graphicsClient),
+                IPointsServiceClient pointsServiceClient => await pointsServiceClient.GetDiagAsync(),
+                IImageProcessingClient imageProcessingClient => await imageProcessingClient.GetDiagAsync(),
+                IAuditLogServiceClient auditLogServiceClient => await auditLogServiceClient.GetDiagAsync(),
                 _ => null
             };
         }
@@ -79,10 +73,10 @@ public class GetServiceInfo : ApiAction
         }
     }
 
-    private async Task<DiagnosticInfo> GetGraphicsServiceInfo()
+    private static async Task<DiagnosticInfo> GetGraphicsServiceInfo(IGraphicsClient graphicsClient)
     {
-        var stats = await GraphicsClient.GetStatisticsAsync();
-        var metrics = await GraphicsClient.GetMetricsAsync();
+        var stats = await graphicsClient.GetStatisticsAsync();
+        var metrics = await graphicsClient.GetMetricsAsync();
 
         return new DiagnosticInfo
         {

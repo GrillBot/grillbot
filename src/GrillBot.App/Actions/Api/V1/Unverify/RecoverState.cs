@@ -4,6 +4,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
@@ -25,8 +26,10 @@ public class RecoverState : ApiAction
         LogManager = logManager;
     }
 
-    public async Task ProcessAsync(long logId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var logId = (long)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
         var logItem = await repository.Unverify.FindUnverifyLogByIdAsync(logId);
 
@@ -36,11 +39,11 @@ public class RecoverState : ApiAction
         if (logItem.ToUser!.Unverify != null)
             throw new ValidationException(Texts["Unverify/Recover/ValidUnverify", ApiContext.Language]).ToBadRequestValidation(logId, nameof(logItem.ToUser.Unverify));
 
-        var guild = await DiscordClient.GetGuildAsync(logItem.GuildId.ToUlong());
-        if (guild == null) throw new NotFoundException(Texts["Unverify/Recover/GuildNotFound", ApiContext.Language]);
+        var guild = await DiscordClient.GetGuildAsync(logItem.GuildId.ToUlong())
+            ?? throw new NotFoundException(Texts["Unverify/Recover/GuildNotFound", ApiContext.Language]);
 
-        var user = await guild.GetUserAsync(logItem.ToUserId.ToUlong());
-        if (user == null) throw new NotFoundException(Texts["Unverify/Recover/MemberNotFound", ApiContext.Language].FormatWith(guild.Name));
+        var user = await guild.GetUserAsync(logItem.ToUserId.ToUlong())
+            ?? throw new NotFoundException(Texts["Unverify/Recover/MemberNotFound", ApiContext.Language].FormatWith(guild.Name));
 
         var mutedRole = !string.IsNullOrEmpty(logItem.Guild!.MuteRoleId) ? guild.GetRole(logItem.Guild.MuteRoleId.ToUlong()) : null;
         var data = JsonConvert.DeserializeObject<UnverifyLogSet>(logItem.Data)!;
@@ -72,5 +75,7 @@ public class RecoverState : ApiAction
 
         if (mutedRole != null && !data.KeepMutedRole)
             await user.RemoveRoleAsync(mutedRole);
+
+        return ApiResult.Ok();
     }
 }

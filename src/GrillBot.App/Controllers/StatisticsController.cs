@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Actions.Api.V1.Statistics;
+﻿using GrillBot.App.Actions.Api;
+using GrillBot.App.Actions.Api.V1.Statistics;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Data.Models.API.Statistics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/stats")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class StatisticsController : Infrastructure.ControllerBase
+public class StatisticsController : Core.Infrastructure.Actions.ControllerBase
 {
     public StatisticsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -24,93 +25,105 @@ public class StatisticsController : Infrastructure.ControllerBase
     /// </summary>
     /// <response code="200">Returns statistics about database and cache.</response>
     [HttpGet("db")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<DatabaseStatistics>> GetDbStatusAsync()
-        => Ok(await ProcessActionAsync<GetDatabaseStatus, DatabaseStatistics>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(DatabaseStatistics), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDbStatusAsync()
+        => await ProcessAsync<GetDatabaseStatus>();
 
     /// <summary>
     /// Get statistics about audit logs.
     /// </summary>
     /// <response code="200">Returns statistics about audit log (by type, by date, files by count, files by size)</response>
     [HttpGet("audit-log")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<AuditLog.AuditLogStatistics>> GetAuditLogStatisticsAsync()
-        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, AuditLog.AuditLogStatistics>(client => client.GetAuditLogStatisticsAsync()));
+    [ProducesResponseType(typeof(AuditLog.AuditLogStatistics), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAuditLogStatisticsAsync()
+    {
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetAuditLogStatisticsAsync());
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     /// <summary>
     /// Gets statistics about interactions.
     /// </summary>
     /// <response code="200">Returns statistics about interaction commannds</response>
     [HttpGet("interactions")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<AuditLog.InteractionStatistics>> GetInteractionsStatusAsync()
-        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, AuditLog.InteractionStatistics>(client => client.GetInteractionStatisticsAsync()));
+    [ProducesResponseType(typeof(AuditLog.InteractionStatistics), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInteractionsStatusAsync()
+    {
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetInteractionStatisticsAsync());
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     /// <summary>
     /// Get statistics about unverify logs by type.
     /// </summary>
     /// <response code="200">Returns dictionary of unverify logs statistics per type. (Type, Count)</response>
     [HttpGet("unverify-logs/type")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByOperationAsync()
-        => Ok(await ProcessActionAsync<GetUnverifyStatistics, Dictionary<string, int>>(action => action.ProcessByOperationAsync()));
+    [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUnverifyLogsStatisticsByOperationAsync()
+        => await ProcessAsync<GetUnverifyStatistics>("ByOperation");
 
     /// <summary>
     /// Get statistics about unverify logs by date and year.
     /// </summary>
     /// <response code="200">Returns dictionary of unverify logs statistics per date (Year-Month, Count)</response>
     [HttpGet("unverify-logs/date")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> GetUnverifyLogsStatisticsByDateAsync()
-        => Ok(await ProcessActionAsync<GetUnverifyStatistics, Dictionary<string, int>>(action => action.ProcessByDateAsync()));
+    [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUnverifyLogsStatisticsByDateAsync()
+        => await ProcessAsync<GetUnverifyStatistics>("ByDate");
 
     /// <summary>
     /// Get statistics about API.
     /// </summary>
     /// <returns></returns>
     [HttpGet("api")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<AuditLog.ApiStatistics>> GetApiStatisticsAsync()
-        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, AuditLog.ApiStatistics>(client => client.GetApiStatisticsAsync()));
+    [ProducesResponseType(typeof(AuditLog.ApiStatistics), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetApiStatisticsAsync()
+    {
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetApiStatisticsAsync());
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     /// <summary>
     /// Get Discord event statistics.
     /// </summary>
     /// <response code="200">Returns dictionary of Discord event statistics (EventName, Count).</response>
     [HttpGet("events")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<Dictionary<string, ulong>> GetEventLogStatistics()
-        => Ok(ProcessAction<GetEventStatistics, Dictionary<string, ulong>>(action => action.Process()));
+    [ProducesResponseType(typeof(Dictionary<string, ulong>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetEventLogStatisticsAsync()
+        => await ProcessAsync<GetEventStatistics>();
 
     /// <summary>
     /// Get average execution times.
     /// </summary>
     [HttpGet("avg-times")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<AuditLog.AvgExecutionTimes>> GetAvgTimesAsync()
-        => Ok(await ProcessBridgeAsync<IAuditLogServiceClient, AuditLog.AvgExecutionTimes>(client => client.GetAvgTimesAsync()));
+    [ProducesResponseType(typeof(AuditLog.AvgExecutionTimes), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAvgTimesAsync()
+    {
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetAvgTimesAsync());
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     /// <summary>
     /// Get full statistics of operations.
     /// </summary>
     [HttpGet("operations")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<OperationStats> GetOperationStatistics()
-        => Ok(ProcessAction<GetOperationStats, OperationStats>(action => action.Process()));
+    [ProducesResponseType(typeof(OperationStats), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetOperationStatisticsAsync()
+        => await ProcessAsync<GetOperationStats>();
 
     /// <summary>
     /// Get statistics of commands cross grouped with users.
     /// </summary>
     [HttpGet("interactions/users")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<UserActionCountItem>>> GetUserCommandStatisticsAsync()
-        => Ok(await ProcessActionAsync<GetUserCommandStatistics, List<UserActionCountItem>>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(List<UserActionCountItem>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUserCommandStatisticsAsync()
+        => await ProcessAsync<GetUserCommandStatistics>();
 
     /// <summary>
     /// Get statistics of api requests cross grouped with users.
     /// </summary>
     [HttpGet("api/users")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<UserActionCountItem>>> GetUserApiStatisticsAsync([Required] string criteria)
-        => Ok(await ProcessActionAsync<GetApiUserStatistics, List<UserActionCountItem>>(action => action.ProcessAsync(criteria)));
+    [ProducesResponseType(typeof(List<UserActionCountItem>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUserApiStatisticsAsync([Required] string criteria)
+        => await ProcessAsync<GetApiUserStatistics>(criteria);
 }

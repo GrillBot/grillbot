@@ -5,6 +5,7 @@ using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Core.Services.PointsService.Enums;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -24,7 +25,7 @@ public class GetPointsLeaderboard : ApiAction
         PointsServiceClient = pointsServiceClient;
     }
 
-    public async Task<List<UserPointsItem>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         var result = new List<UserPointsItem>();
         await using var repository = DatabaseBuilder.CreateRepository();
@@ -59,8 +60,9 @@ public class GetPointsLeaderboard : ApiAction
             }
         }
 
-        return result
+        result = result
             .OrderByDescending(o => o.PointsYearBack)
             .ToList();
+        return ApiResult.Ok(result);
     }
 }

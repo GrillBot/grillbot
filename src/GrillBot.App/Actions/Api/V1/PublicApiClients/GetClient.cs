@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Actions.Api.V1.PublicApiClients;
@@ -7,17 +8,21 @@ namespace GrillBot.App.Actions.Api.V1.PublicApiClients;
 public class GetClient : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    
+
     public GetClient(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<ApiClient> ProcessAsync(string clientId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var clientId = (string)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var client = await repository.ApiClientRepository.FindClientById(clientId);
-        return client ?? throw new NotFoundException();
+        var client = await repository.ApiClientRepository.FindClientById(clientId)
+            ?? throw new NotFoundException();
+
+        return ApiResult.Ok(client);
     }
 }

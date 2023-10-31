@@ -13,7 +13,7 @@ namespace GrillBot.App.Controllers;
 [ApiController]
 [Route("api/channel")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class ChannelController : Infrastructure.ControllerBase
+public class ChannelController : Core.Infrastructure.Actions.ControllerBase
 {
     public ChannelController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -26,13 +26,12 @@ public class ChannelController : Infrastructure.ControllerBase
     /// <response code="400">Validation failed</response>
     [HttpPost("{id}/userStats")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<ChannelUserStatItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<ChannelUserStatItem>>> GetChannelUsersAsync(ulong id, [FromBody] PaginatedParams pagination)
+    public async Task<IActionResult> GetChannelUsersAsync(ulong id, [FromBody] PaginatedParams pagination)
     {
         ApiAction.Init(this, pagination);
-
-        return Ok(await ProcessActionAsync<GetChannelUsers, PaginatedResponse<ChannelUserStatItem>>(action => action.ProcessAsync(id, pagination)));
+        return await ProcessAsync<GetChannelUsers>(id, pagination);
     }
 
     /// <summary>
@@ -49,12 +48,10 @@ public class ChannelController : Infrastructure.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> SendMessageToChannelAsync(ulong guildId, ulong channelId, [FromBody] SendMessageToChannelParams parameters)
+    public async Task<IActionResult> SendMessageToChannelAsync(ulong guildId, ulong channelId, [FromBody] SendMessageToChannelParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        await ProcessActionAsync<SendMessageToChannel>(action => action.ProcessAsync(guildId, channelId, parameters));
-        return Ok();
+        return await ProcessAsync<SendMessageToChannel>(guildId, channelId, parameters);
     }
 
     /// <summary>
@@ -62,13 +59,12 @@ public class ChannelController : Infrastructure.ControllerBase
     /// </summary>
     [HttpPost("list")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<GuildChannelListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<GuildChannelListItem>>> GetChannelsListAsync([FromBody] GetChannelListParams parameters)
+    public async Task<IActionResult> GetChannelsListAsync([FromBody] GetChannelListParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        return Ok(await ProcessActionAsync<GetChannelList, PaginatedResponse<GuildChannelListItem>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetChannelList>(parameters);
     }
 
     /// <summary>
@@ -77,11 +73,8 @@ public class ChannelController : Infrastructure.ControllerBase
     [HttpDelete("{guildId}/{channelId}/cache")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> ClearChannelCacheAsync(ulong guildId, ulong channelId)
-    {
-        await ProcessActionAsync<ClearMessageCache>(action => action.ProcessAsync(guildId, channelId));
-        return Ok();
-    }
+    public async Task<IActionResult> ClearChannelCacheAsync(ulong guildId, ulong channelId)
+        => await ProcessAsync<ClearMessageCache>(guildId, channelId);
 
     /// <summary>
     /// Get detail of channel.
@@ -91,10 +84,10 @@ public class ChannelController : Infrastructure.ControllerBase
     /// <response code="404">Channel not found.</response>
     [HttpGet("{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ChannelDetail), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ChannelDetail>> GetChannelDetailAsync(ulong id)
-        => Ok(await ProcessActionAsync<GetChannelDetail, ChannelDetail>(action => action.ProcessAsync(id)));
+    public async Task<IActionResult> GetChannelDetailAsync(ulong id)
+        => await ProcessAsync<GetChannelDetail>(id);
 
     /// <summary>
     /// Update channel
@@ -109,12 +102,10 @@ public class ChannelController : Infrastructure.ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> UpdateChannelAsync(ulong id, [FromBody] UpdateChannelParams parameters)
+    public async Task<IActionResult> UpdateChannelAsync(ulong id, [FromBody] UpdateChannelParams parameters)
     {
         ApiAction.Init(this, parameters);
-
-        await ProcessActionAsync<UpdateChannel>(action => action.ProcessAsync(id, parameters));
-        return Ok();
+        return await ProcessAsync<UpdateChannel>(id, parameters);
     }
 
     /// <summary>
@@ -123,9 +114,9 @@ public class ChannelController : Infrastructure.ControllerBase
     /// <response code="200">Success</response>
     [HttpGet("board")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<ChannelboardItem>>> GetChannelboardAsync()
-        => Ok(await ProcessActionAsync<GetChannelboard, List<ChannelboardItem>>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(List<ChannelboardItem>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetChannelboardAsync()
+        => await ProcessAsync<GetChannelboard>();
 
     /// <summary>
     /// Get all pins from channel.
@@ -134,15 +125,10 @@ public class ChannelController : Infrastructure.ControllerBase
     /// <response code="404">Guild wasn't found.</response>
     [HttpGet("{channelId}/pins")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<string>> GetChannelPinsAsync(ulong channelId, bool markdown)
-    {
-        return Content(
-            await ProcessActionAsync<GetPins, string>(action => action.ProcessAsync(channelId, markdown)),
-            markdown ? "text/markdown" : "application/json"
-        );
-    }
+    public async Task<IActionResult> GetChannelPinsAsync(ulong channelId, bool markdown)
+        => await ProcessAsync<GetPins>(channelId, markdown);
 
     /// <summary>
     /// Get all pins with attachments as zip archive.
@@ -154,5 +140,5 @@ public class ChannelController : Infrastructure.ControllerBase
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetChannelPinsWithAttachmentsAsync(ulong channelId)
-        => File(await ProcessActionAsync<GetPinsWithAttachments, byte[]>(action => action.ProcessAsync(channelId)), "application/zip");
+        => await ProcessAsync<GetPinsWithAttachments>(channelId);
 }

@@ -2,6 +2,7 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V2.Events;
 
@@ -16,17 +17,21 @@ public class CancelScheduledEvent : ApiAction
         Texts = texts;
     }
 
-    public async Task ProcessAsync(ulong guildId, ulong eventId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var guildId = (ulong)Parameters[0]!;
+        var eventId = (ulong)Parameters[1]!;
+
         var @event = await FindAndCheckEventAsync(guildId, eventId);
         await @event.EndAsync();
+
+        return ApiResult.Ok();
     }
 
     private async Task<IGuildScheduledEvent> FindAndCheckEventAsync(ulong guildId, ulong eventId)
     {
-        var guild = await DiscordClient.GetGuildAsync(guildId);
-        if (guild == null) throw new NotFoundException(Texts["GuildScheduledEvents/GuildNotFound", ApiContext.Language]);
-
+        var guild = await DiscordClient.GetGuildAsync(guildId)
+            ?? throw new NotFoundException(Texts["GuildScheduledEvents/GuildNotFound", ApiContext.Language]);
         var guildEvent = await guild.GetEventAsync(eventId);
         ValidateCancelation(guildEvent);
 

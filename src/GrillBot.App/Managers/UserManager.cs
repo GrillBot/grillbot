@@ -18,9 +18,8 @@ public class UserManager
         var isPublic = context.IsPublic();
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var user = await repository.User.FindUserAsync(context.LoggedUser!);
-        if (user == null)
-            throw new NotFoundException();
+        var user = await repository.User.FindUserAsync(context.LoggedUser!)
+            ?? throw new NotFoundException();
 
         if (isActive)
             user.Flags |= (int)(isPublic ? UserFlags.PublicAdminOnline : UserFlags.WebAdminOnline);

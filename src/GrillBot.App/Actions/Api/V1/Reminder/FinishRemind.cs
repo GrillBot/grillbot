@@ -2,10 +2,13 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
+using GrillBot.Data.Models.API;
 using GrillBot.Database.Entity;
+using Microsoft.AspNetCore.Http;
 
 namespace GrillBot.App.Actions.Api.V1.Reminder;
 
@@ -41,6 +44,16 @@ public class FinishRemind : ApiAction
         IsAuthorized = false;
         ErrorMessage = null;
         Remind = null;
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var id = (long)Parameters[0]!;
+        var notify = (bool)Parameters[1]!;
+        var isService = (bool)Parameters[2]!;
+
+        await ProcessAsync(id, notify, isService);
+        return IsGone ? new ApiResult(StatusCodes.Status410Gone, new MessageResponse(ErrorMessage!)) : ApiResult.Ok();
     }
 
     public async Task ProcessAsync(long id, bool notify, bool isService)

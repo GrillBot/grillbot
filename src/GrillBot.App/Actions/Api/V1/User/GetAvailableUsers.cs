@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -14,17 +15,20 @@ public class GetAvailableUsers : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<Dictionary<string, string>> ProcessAsync(bool? bots, ulong? guildId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var bots = (bool?)Parameters[0]!;
+        var guildId = (ulong?)Parameters[1]!;
         var mutualGuilds = await GetMutualGuildsAsync();
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.User.GetFullListOfUsers(bots, mutualGuilds, guildId);
-        return data
+        var result = data
             .Select(o => new { o.Id, DisplayName = o.GetDisplayName() })
             .OrderBy(o => o.DisplayName)
             .ToDictionary(o => o.Id, o => o.DisplayName);
+        return ApiResult.Ok(result);
     }
 
     private async Task<List<string>?> GetMutualGuildsAsync()

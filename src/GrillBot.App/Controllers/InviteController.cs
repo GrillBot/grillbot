@@ -14,7 +14,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/invite")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class InviteController : Infrastructure.ControllerBase
+public class InviteController : Core.Infrastructure.Actions.ControllerBase
 {
     public InviteController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -26,12 +26,12 @@ public class InviteController : Infrastructure.ControllerBase
     /// <response code="200">Returns paginated list of created and used invites.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [HttpPost("list")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<GuildInvite>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedResponse<GuildInvite>>> GetInviteListAsync([FromBody] GetInviteListParams parameters)
+    public async Task<IActionResult> GetInviteListAsync([FromBody] GetInviteListParams parameters)
     {
         ApiAction.Init(this, parameters);
-        return Ok(await ProcessActionAsync<GetInviteList, PaginatedResponse<GuildInvite>>(action => action.ProcessAsync(parameters)));
+        return await ProcessAsync<GetInviteList>(parameters);
     }
 
     /// <summary>
@@ -39,18 +39,18 @@ public class InviteController : Infrastructure.ControllerBase
     /// </summary>
     /// <response code="200">Returns report per server.</response>
     [HttpPost("metadata/refresh")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Dictionary<string, int>>> RefreshMetadataCacheAsync()
-        => Ok(await ProcessActionAsync<RefreshMetadata, Dictionary<string, int>>(action => action.ProcessAsync(true)));
+    [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RefreshMetadataCacheAsync()
+        => await ProcessAsync<RefreshMetadata>(true);
 
     /// <summary>
     /// Get count of items in metadata cache.
     /// </summary>
     /// <response code="200">Returns count of current items in cache.</response>
     [HttpGet("metadata/count")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<int>> GetCurrentMetadataCountAsync()
-        => Ok(await ProcessActionAsync<GetMetadataCount, int>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCurrentMetadataCountAsync()
+        => await ProcessAsync<GetMetadataCount>();
 
     /// <summary>
     /// Delete invite.
@@ -60,9 +60,6 @@ public class InviteController : Infrastructure.ControllerBase
     [HttpDelete("{guildId}/{code}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteInviteAsync(ulong guildId, string code)
-    {
-        await ProcessActionAsync<DeleteInvite>(action => action.ProcessAsync(guildId, code));
-        return Ok();
-    }
+    public async Task<IActionResult> DeleteInviteAsync(ulong guildId, string code)
+        => await ProcessAsync<DeleteInvite>(guildId, code);
 }

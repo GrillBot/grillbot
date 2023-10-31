@@ -40,11 +40,18 @@ public class InitSuggestion : CommandAction
         Emote = emoteData as Emote;
         Attachment = attachment;
 
-        if (Emote == null && Attachment == null)
+        if (Emote is null && Attachment is null)
             throw new ValidationException(GetText("NoEmoteAndAttachment"));
 
-        if (Emote != null && Context.Guild.Emotes.Any(o => o.Id == Emote.Id))
+        if (Emote is not null && Context.Guild.Emotes.Any(o => o.Id == Emote.Id))
             throw new ValidationException(GetText("EmoteExistsInGuild"));
+
+        if (Attachment is not null)
+        {
+            var extension = Path.GetExtension(Attachment.Filename).ToLower();
+            if (extension != ".png")
+                throw new ValidationException(GetText("UnsupportedImageFormat"));
+        }
     }
 
     private async Task<(string filename, byte[] content)> GetDataAsync()

@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Graphics;
@@ -32,7 +33,7 @@ public class GetServicesList : ApiAction
         LoggingManager = logging;
     }
 
-    public async Task<List<DashboardService>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         var services = new List<DashboardService>();
 
@@ -43,11 +44,12 @@ public class GetServicesList : ApiAction
         await AddServiceStatusAsync(services, "audit-log", AuditLogServiceClient);
 
         if (Errors.Count == 0)
-            return services;
+            return ApiResult.Ok(services);
 
         var aggregateException = new AggregateException(Errors);
         await LoggingManager.ErrorAsync("API-Dashboard", aggregateException.Message, aggregateException);
-        return services;
+
+        return ApiResult.Ok(services);
     }
 
     private async Task AddServiceStatusAsync(ICollection<DashboardService> services, string id, IClient client)

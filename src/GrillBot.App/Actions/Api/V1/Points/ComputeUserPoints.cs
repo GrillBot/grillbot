@@ -7,6 +7,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums.Internal;
 using GrillBot.Database.Services.Repository;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -26,8 +27,9 @@ public class ComputeUserPoints : ApiAction
         PointsServiceClient = pointsServiceClient;
     }
 
-    public async Task<List<UserPointsItem>> ProcessAsync(ulong? userId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var userId = Parameters.OfType<ulong?>().FirstOrDefault();
         userId ??= ApiContext.GetUserId();
 
         var result = new List<UserPointsItem>();
@@ -39,7 +41,7 @@ public class ComputeUserPoints : ApiAction
             result.Add(await TransformStatusAsync(repository, guildId, userId.Value, status));
         }
 
-        return result;
+        return ApiResult.Ok(result);
     }
 
     private async Task<UserPointsItem> TransformStatusAsync(GrillBotRepository repository, ulong guildId, ulong userId, PointsStatus status)

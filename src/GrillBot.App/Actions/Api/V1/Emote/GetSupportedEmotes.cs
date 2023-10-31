@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Emotes;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
@@ -15,7 +16,7 @@ public class GetSupportedEmotes : ApiAction
         DiscordClient = discordClient;
     }
 
-    public async Task<List<GuildEmoteItem>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         var guilds = await DiscordClient.GetGuildsAsync();
         var result = new List<GuildEmoteItem>();
@@ -32,8 +33,9 @@ public class GetSupportedEmotes : ApiAction
             result.AddRange(mappedEmotes);
         }
 
-        return result
+        result = result
             .OrderBy(o => o.Name)
             .ToList();
+        return ApiResult.Ok(result);
     }
 }

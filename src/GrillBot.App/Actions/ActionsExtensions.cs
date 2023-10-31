@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.RubbergodService;
+using GrillBot.Database.Migrations;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
 
@@ -7,16 +11,21 @@ public static class ActionsExtensions
     public static IServiceCollection AddActions(this IServiceCollection services)
     {
         return services
+            .AddServiceBridge()
             .AddApiActions()
             .AddCommandsActions();
     }
 
+    private static IServiceCollection AddServiceBridge(this IServiceCollection services)
+    {
+        return services
+            .AddScoped<Api.ServiceBridgeAction<IRubbergodServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IPointsServiceClient>>();
+    }
+
     private static IServiceCollection AddApiActions(this IServiceCollection services)
     {
-        // Common
-        services
-            .AddScoped<Api.ApiBridgeAction>();
-
         // V1
         // AuditLog
         services
@@ -52,7 +61,7 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Channel.SimpleList.GetChannelSimpleListWithPins>()
             .AddScoped<Api.V1.Channel.GetPins>()
             .AddScoped<Api.V1.Channel.GetPinsWithAttachments>();
-        
+
         // Dashboard
         services
             .AddScoped<Api.V1.Dashboard.GetActiveOperations>()
@@ -154,7 +163,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.User.GetAvailableUsers>()
             .AddScoped<Api.V1.User.GetUserDetail>()
             .AddScoped<Api.V1.User.GetUserList>()
-            .AddScoped<Api.V1.User.UpdateUser>();
+            .AddScoped<Api.V1.User.UpdateUser>()
+            .AddScoped<Api.V1.User.Hearthbeat>();
 
         // V2
         services

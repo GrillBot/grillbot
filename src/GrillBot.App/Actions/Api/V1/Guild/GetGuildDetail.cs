@@ -5,6 +5,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
@@ -37,8 +38,10 @@ public class GetGuildDetail : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task<GuildDetail> ProcessAsync(ulong id)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var id = (ulong)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var dbGuild = await repository.Guild.FindGuildByIdAsync(id, true);
@@ -47,7 +50,8 @@ public class GetGuildDetail : ApiAction
 
         var detail = Mapper.Map<GuildDetail>(dbGuild);
         var discordGuild = await DiscordClient.GetGuildAsync(id);
-        if (discordGuild == null) return detail;
+        if (discordGuild == null) 
+            return ApiResult.Ok(detail);
 
         detail.DatabaseReport = await CreateDatabaseReportAsync(id);
         detail = Mapper.Map(discordGuild, detail);
@@ -80,7 +84,7 @@ public class GetGuildDetail : ApiAction
             .GroupBy(o => o)
             .ToDictionary(o => o.Key, o => o.Count());
 
-        return detail;
+        return ApiResult.Ok(detail);
     }
 
     private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId)

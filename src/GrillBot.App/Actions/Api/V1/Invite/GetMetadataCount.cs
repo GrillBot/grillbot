@@ -1,5 +1,6 @@
 ﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Invite;
 
@@ -12,6 +13,9 @@ public class GetMetadataCount : ApiAction
         InviteManager = inviteManager;
     }
 
-    public async Task<int> ProcessAsync()
-        => await InviteManager.GetMetadataCountAsync();
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        var result = await InviteManager.GetMetadataCountAsync();
+        return ApiResult.Ok(result);
+    }
 }

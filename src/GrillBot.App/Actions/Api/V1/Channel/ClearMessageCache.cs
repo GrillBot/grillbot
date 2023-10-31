@@ -1,5 +1,6 @@
 ﻿using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
@@ -19,13 +20,18 @@ public class ClearMessageCache : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task ProcessAsync(ulong guildId, ulong channelId)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var guildId = (ulong)Parameters[0]!;
+        var channelId = (ulong)Parameters[1]!;
+
         var guild = await DiscordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);
-        if (guild == null) return;
+        if (guild == null)
+            return ApiResult.Ok();
 
         var channel = await guild.GetChannelAsync(channelId);
-        if (channel == null) return;
+        if (channel == null)
+            return ApiResult.Ok();
 
         var count = await MessageCache.ClearAllMessagesFromChannelAsync(channel);
         var logRequest = new LogRequest
@@ -45,5 +51,6 @@ public class ClearMessageCache : ApiAction
         };
 
         await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        return ApiResult.Ok();
     }
 }

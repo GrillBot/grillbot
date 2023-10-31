@@ -4,6 +4,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Enums.Internal;
@@ -28,12 +29,14 @@ public class GetChannelDetail : ApiAction
         MessageCache = messageCache;
     }
 
-    public async Task<ChannelDetail> ProcessAsync(ulong id)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var id = (ulong)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, ChannelsIncludeUsersMode.IncludeExceptInactive, true, true);
-        if (channel == null) throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
+        var channel = await repository.Channel.FindChannelByIdAsync(id, null, true, ChannelsIncludeUsersMode.IncludeExceptInactive, true, true)
+            ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
         var result = Mapper.Map<ChannelDetail>(channel);
         if (channel.IsText())
@@ -43,15 +46,17 @@ public class GetChannelDetail : ApiAction
         }
 
         if (channel.HasFlag(ChannelFlag.Deleted))
-            return result;
+            return ApiResult.Ok(result);
 
         var guild = await DiscordClient.GetGuildAsync(channel.GuildId.ToUlong(), CacheMode.CacheOnly);
         var guildChannel = guild == null ? null : await guild.GetChannelAsync(id);
-        if (guildChannel == null) return result;
+        if (guildChannel == null)
+            return ApiResult.Ok(result);
 
         result = Mapper.Map(guildChannel, result);
         if (channel.IsText() || channel.IsThread() || channel.IsVoice())
             result.CachedMessagesCount = await MessageCache.GetCachedMessagesCount(guildChannel);
-        return result;
+
+        return ApiResult.Ok(result);
     }
 }

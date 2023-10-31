@@ -2,6 +2,7 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.AutoReply;
 
@@ -18,16 +19,19 @@ public class RemoveAutoReplyItem : ApiAction
         AutoReplyManager = autoReplyManager;
     }
 
-    public async Task ProcessAsync(long id)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var id = (long)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var entity = await repository.AutoReply.FindReplyByIdAsync(id);
-        if (entity == null)
-            throw new NotFoundException(Texts["AutoReply/NotFound", ApiContext.Language]);
+        var entity = await repository.AutoReply.FindReplyByIdAsync(id)
+            ?? throw new NotFoundException(Texts["AutoReply/NotFound", ApiContext.Language]);
 
         repository.Remove(entity);
         await repository.CommitAsync();
         await AutoReplyManager.InitAsync();
+
+        return ApiResult.Ok();
     }
 }

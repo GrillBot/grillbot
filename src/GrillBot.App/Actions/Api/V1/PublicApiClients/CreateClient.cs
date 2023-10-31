@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.ApiClients;
 using GrillBot.Database.Entity;
 
@@ -13,8 +14,10 @@ public class CreateClient : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task ProcessAsync(ApiClientParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (ApiClientParams)Parameters[0]!;
+
         var entity = new ApiClient
         {
             Id = Guid.NewGuid().ToString(),
@@ -27,5 +30,6 @@ public class CreateClient : ApiAction
 
         await repository.AddAsync(entity);
         await repository.CommitAsync();
+        return ApiResult.Ok();
     }
 }

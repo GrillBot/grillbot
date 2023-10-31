@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Emotes;
 
@@ -16,14 +17,18 @@ public class GetUserStatisticsOfEmote : ApiAction
         Mapper = mapper;
     }
 
-    public async Task<PaginatedResponse<EmoteStatsUserListItem>> ProcessAsync(EmoteStatsUserListParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (EmoteStatsUserListParams)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var statistics = await repository.Emote.GetUserStatisticsOfEmoteAsync(parameters, parameters.Pagination);
-        return await PaginatedResponse<EmoteStatsUserListItem>.CopyAndMapAsync(
+        var result = await PaginatedResponse<EmoteStatsUserListItem>.CopyAndMapAsync(
             statistics,
             entity => Task.FromResult(Mapper.Map<EmoteStatsUserListItem>(entity))
         );
+
+        return ApiResult.Ok(result);
     }
 }

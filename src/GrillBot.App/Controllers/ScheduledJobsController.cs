@@ -12,7 +12,7 @@ namespace GrillBot.App.Controllers;
 [Route("api/jobs")]
 [ApiExplorerSettings(GroupName = "v1")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-public class ScheduledJobsController : Infrastructure.ControllerBase
+public class ScheduledJobsController : Core.Infrastructure.Actions.ControllerBase
 {
     public ScheduledJobsController(IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -23,9 +23,9 @@ public class ScheduledJobsController : Infrastructure.ControllerBase
     /// </summary>
     /// <response code="200">Returns list of scheduled jobs</response>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<ScheduledJob>>> GetScheduledJobsAsync()
-        => Ok(await ProcessActionAsync<GetScheduledJobs, List<ScheduledJob>>(action => action.ProcessAsync()));
+    [ProducesResponseType(typeof(List<ScheduledJob>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetScheduledJobsAsync()
+        => await ProcessAsync<GetScheduledJobs>();
 
     /// <summary>
     /// Trigger a scheduled job.
@@ -33,11 +33,8 @@ public class ScheduledJobsController : Infrastructure.ControllerBase
     /// <response code="200"></response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> RunScheduledJobAsync(string jobName)
-    {
-        await ProcessActionAsync<RunScheduledJob>(action => action.ProcessAsync(jobName));
-        return Ok();
-    }
+    public async Task<IActionResult> RunScheduledJobAsync(string jobName)
+        => await ProcessAsync<RunScheduledJob>(jobName);
 
     /// <summary>
     /// Update an existing job.
@@ -47,9 +44,6 @@ public class ScheduledJobsController : Infrastructure.ControllerBase
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> UpdateJobAsync(string jobName, bool enabled)
-    {
-        await ProcessActionAsync<UpdateJob>(action => action.ProcessAsync(jobName, enabled));
-        return Ok();
-    }
+    public async Task<IActionResult> UpdateJobAsync(string jobName, bool enabled)
+        => await ProcessAsync<UpdateJob>(jobName, enabled);
 }

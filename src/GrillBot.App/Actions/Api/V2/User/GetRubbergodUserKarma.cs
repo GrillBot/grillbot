@@ -4,6 +4,7 @@ using GrillBot.Core.Services.RubbergodService.Models.Karma;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V2.User;
 
@@ -18,12 +19,14 @@ public class GetRubbergodUserKarma : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<PaginatedResponse<KarmaListItem>> ProcessAsync(KarmaListParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (KarmaListParams)Parameters[0]!;
         var page = await RubbergodServiceClient.GetKarmaPageAsync(parameters.Pagination);
         var users = await ReadUsersAsync(page.Data.ConvertAll(o => o.UserId));
+        var result = await PaginatedResponse<KarmaListItem>.CopyAndMapAsync(page, entity => Task.FromResult(Map(entity, users)));
 
-        return await PaginatedResponse<KarmaListItem>.CopyAndMapAsync(page, entity => Task.FromResult(Map(entity, users)));
+        return ApiResult.Ok(result);
     }
 
     private async Task<Dictionary<string, Database.Entity.User>> ReadUsersAsync(List<string> userIds)

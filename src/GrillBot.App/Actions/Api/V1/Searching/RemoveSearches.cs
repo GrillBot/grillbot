@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.Searching;
 
@@ -11,14 +12,17 @@ public class RemoveSearches : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task ProcessAsync(IEnumerable<long> ids)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var ids = (long[])Parameters[0]!;
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var searches = await repository.Searching.FindSearchesByIdsAsync(ids);
-        if (searches.Count == 0) return;
+        if (searches.Count == 0)
+            return ApiResult.Ok();
 
         repository.RemoveCollection(searches);
         await repository.CommitAsync();
+        return ApiResult.Ok();
     }
 }

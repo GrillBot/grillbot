@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Models;
-using GrillBot.Database.Entity;
+using GrillBot.Core.Infrastructure.Actions;
 
 namespace GrillBot.App.Actions.Api.V1.PublicApiClients;
 
@@ -12,9 +12,11 @@ public class GetClientsList : ApiAction
         DatabaseBuilder = databaseBuilder;
     }
 
-    public async Task<List<ApiClient>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.ApiClientRepository.GetClientsAsync();
+        var result = await repository.ApiClientRepository.GetClientsAsync();
+
+        return ApiResult.Ok(result);
     }
 }

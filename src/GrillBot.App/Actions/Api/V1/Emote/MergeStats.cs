@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Discord;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
@@ -22,13 +23,16 @@ public class MergeStats : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task<int> ProcessAsync(MergeEmoteStatsParams parameters)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var parameters = (MergeEmoteStatsParams)Parameters[0]!;
+
         await using var repository = DatabaseBuilder.CreateRepository();
         await ValidateMergeAsync(repository, parameters);
 
         var sourceStats = await repository.Emote.FindStatisticsByEmoteIdAsync(parameters.SourceEmoteId);
-        if (sourceStats.Count == 0) return 0;
+        if (sourceStats.Count == 0)
+            return ApiResult.Ok(0);
 
         var destinationStats = await repository.Emote.FindStatisticsByEmoteIdAsync(parameters.DestinationEmoteId);
         foreach (var item in sourceStats)
@@ -58,7 +62,9 @@ public class MergeStats : ApiAction
         }
 
         await WriteToAuditLogAsync(parameters, sourceStats.Count, destinationStats.Count);
-        return await repository.CommitAsync();
+        var result = await repository.CommitAsync();
+
+        return ApiResult.Ok(result);
     }
 
     private static async Task ValidateMergeAsync(GrillBotRepository repository, MergeEmoteStatsParams @params)

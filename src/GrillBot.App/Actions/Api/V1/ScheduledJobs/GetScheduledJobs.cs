@@ -1,5 +1,6 @@
 ﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Models.Response.Info;
 using GrillBot.Data.Models.API.Jobs;
@@ -21,7 +22,7 @@ public class GetScheduledJobs : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task<List<ScheduledJob>> ProcessAsync()
+    public override async Task<ApiResult> ProcessAsync()
     {
         var jobInfos = await AuditLogServiceClient.GetJobsInfoAsync();
         var scheduler = await SchedulerFactory.GetScheduler();
@@ -36,7 +37,7 @@ public class GetScheduledJobs : ApiAction
             result.Add(await GetJobAsync(jobKey, jobInfo, runningJobs, scheduler, disabledJobs));
         }
 
-        return result;
+        return ApiResult.Ok(result);
     }
 
     private static async Task<ScheduledJob> GetJobAsync(JobKey key, JobInfo jobInfo, IEnumerable<IJobExecutionContext> runningJobs, IScheduler scheduler, ICollection<string> disabledJobs)

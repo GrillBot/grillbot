@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Actions.Api.V2;
 using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.Data.Models.API;
 using Quartz;
 
 namespace GrillBot.App.Jobs;
@@ -45,8 +46,9 @@ public class BirthdayCronJob : Job
         }
 
         var result = await GetTodayBirthdayInfo.ProcessAsync();
-        context.Result = result.Message;
+        var message = ((MessageResponse)result.Data!).Message;
 
-        await channel.SendMessageAsync(result.Message);
+        context.Result = message;
+        await channel.SendMessageAsync(message);
     }
 }

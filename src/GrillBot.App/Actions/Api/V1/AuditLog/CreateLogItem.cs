@@ -1,5 +1,7 @@
-﻿using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Extensions;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
@@ -18,8 +20,9 @@ public class CreateLogItem : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
     }
 
-    public async Task ProcessAsync(ClientLogItemRequest request)
+    public override async Task<ApiResult> ProcessAsync()
     {
+        var request = (ClientLogItemRequest)Parameters[0]!;
         ValidateParameters(request);
 
         var logRequest = new LogRequest
@@ -50,6 +53,7 @@ public class CreateLogItem : ApiAction
         }
 
         await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        return ApiResult.Ok();
     }
 
     private void ValidateParameters(ClientLogItemRequest request)
@@ -57,13 +61,13 @@ public class CreateLogItem : ApiAction
         var flags = new[] { request.IsInfo, request.IsWarning, request.IsError };
         var names = new[] { nameof(request.IsInfo), nameof(request.IsWarning), nameof(request.IsError) };
 
-        ValidationResult? result = null;
+        string? errorMessage = null;
         if (!Array.Exists(flags, o => o))
-            result = new ValidationResult(Texts["AuditLog/CreateLogItem/Required", ApiContext.Language], names);
+            errorMessage = Texts["AuditLog/CreateLogItem/Required", ApiContext.Language];
         else if (flags.Count(o => o) > 1)
-            result = new ValidationResult(Texts["AuditLog/CreateLogItem/MultipleTypes", ApiContext.Language], names);
+            errorMessage = Texts["AuditLog/CreateLogItem/MultipleTypes", ApiContext.Language];
 
-        if (result is not null)
-            throw new ValidationException(result, null, request);
+        if (!string.IsNullOrEmpty(errorMessage))
+            throw new ValidationException(errorMessage).ToBadRequestValidation(request, names);
     }
 }

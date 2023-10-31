@@ -20,7 +20,7 @@ public class GetStatsOfEmotes : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (EmotesListParams)Parameters[0]!;
-        var unsupported = (bool)Parameters[0]!;
+        var unsupported = (bool)Parameters[1]!;
         var result = await ProcessAsync(parameters, unsupported);
 
         return ApiResult.Ok(result);

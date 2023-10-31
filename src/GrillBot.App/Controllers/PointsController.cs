@@ -62,13 +62,13 @@ public class PointsController : Core.Infrastructure.Actions.ControllerBase
     {
         ApiAction.Init(this, parameters);
 
-        var executor = async (IPointsServiceClient client) =>
+        var executor = new Func<IPointsServiceClient, Task<object>>(async (IPointsServiceClient client) =>
         {
             var result = await client.GetChartDataAsync(parameters);
             result.ValidationErrors.AggregateAndThrow();
 
-            return result.Response;
-        };
+            return result.Response!;
+        });
 
         return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
     }
@@ -120,13 +120,13 @@ public class PointsController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteTransactionAsync(string guildId, string messageId, string? reactionId)
     {
-        var executor = async (IPointsServiceClient client) =>
+        var executor = new Func<IPointsServiceClient, Task>(async (IPointsServiceClient client) =>
         {
             if (!string.IsNullOrEmpty(reactionId))
                 await client.DeleteTransactionAsync(guildId, messageId, reactionId);
             else
                 await client.DeleteTransactionAsync(guildId, messageId);
-        };
+        });
 
         return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
     }

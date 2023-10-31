@@ -36,7 +36,7 @@ public class GetChannelSimpleList : SimpleListBase
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var databaseChannels = await repository.Channel.GetAllChannelsAsync(guildIds, noThreads, true);
-        databaseChannels = databaseChannels.FindAll(o => mappedChannels.All(x => x.Id != o.ChannelId));
+        databaseChannels = databaseChannels.FindAll(o => mappedChannels.TrueForAll(x => x.Id != o.ChannelId));
         mappedChannels.AddRange(Mapper.Map<List<Data.Models.API.Channels.Channel>>(databaseChannels));
 
         return CreateResult(mappedChannels);

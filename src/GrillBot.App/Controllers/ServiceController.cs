@@ -37,7 +37,7 @@ public class ServiceController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(StatusInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAuditLogStatusInfoAsync()
     {
-        var executor = (IAuditLogServiceClient client) => client.GetStatusInfoAsync();
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetStatusInfoAsync());
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -49,7 +49,7 @@ public class ServiceController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(Core.Services.PointsService.Models.StatusInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPointsServiceSatusInfoAsync()
     {
-        var executor = (IPointsServiceClient client) => client.GetStatusInfoAsync();
+        var executor = new Func<IPointsServiceClient, Task<object>>(async (IPointsServiceClient client) => await client.GetStatusInfoAsync());
         return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
     }
 }

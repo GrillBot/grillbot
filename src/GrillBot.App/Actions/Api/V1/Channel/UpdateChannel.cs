@@ -38,7 +38,7 @@ public class UpdateChannel : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var id = (ulong)Parameters[0]!;
-        var parameters = (UpdateChannelParams)Parameters[0]!;
+        var parameters = (UpdateChannelParams)Parameters[1]!;
 
         await using var repository = DatabaseBuilder.CreateRepository();
 

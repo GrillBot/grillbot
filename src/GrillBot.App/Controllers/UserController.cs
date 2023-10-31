@@ -130,7 +130,7 @@ public class UsersController : Core.Infrastructure.Actions.ControllerBase
     {
         ApiAction.Init(this, items.ToArray());
 
-        var executor = (IRubbergodServiceClient client) => client.StoreKarmaAsync(items);
+        var executor = new Func<IRubbergodServiceClient, Task>(async (IRubbergodServiceClient client) => await client.StoreKarmaAsync(items));
         return await ProcessAsync<ServiceBridgeAction<IRubbergodServiceClient>>(executor);
     }
 

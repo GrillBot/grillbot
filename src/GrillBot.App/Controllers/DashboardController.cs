@@ -25,7 +25,7 @@ public class DashboardController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetApiDashboardAsync(string apiGroup)
     {
-        var executor = (IAuditLogServiceClient client) => client.GetApiDashboardAsync(apiGroup);
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetApiDashboardAsync(apiGroup));
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -33,7 +33,7 @@ public class DashboardController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInteractionsDashboardAsync()
     {
-        var executor = (IAuditLogServiceClient client) => client.GetInteractionsDashboardAsync();
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetInteractionsDashboardAsync());
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -41,7 +41,7 @@ public class DashboardController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetJobsDashboardAsync()
     {
-        var executor = (IAuditLogServiceClient client) => client.GetJobsDashboardAsync();
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetJobsDashboardAsync());
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -49,7 +49,7 @@ public class DashboardController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(TodayAvgTimes), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTodayAvgTimesAsync()
     {
-        var executor = (IAuditLogServiceClient client) => client.GetTodayAvgTimes();
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetTodayAvgTimes());
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 

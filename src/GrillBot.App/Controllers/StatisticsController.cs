@@ -37,7 +37,7 @@ public class StatisticsController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(AuditLog.AuditLogStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAuditLogStatisticsAsync()
     {
-        var executor = (IAuditLogServiceClient client) => client.GetAuditLogStatisticsAsync();
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetAuditLogStatisticsAsync());
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -49,7 +49,7 @@ public class StatisticsController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(AuditLog.InteractionStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInteractionsStatusAsync()
     {
-        var executor = (IAuditLogServiceClient client) => client.GetInteractionStatisticsAsync();
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetInteractionStatisticsAsync());
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -79,7 +79,7 @@ public class StatisticsController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(AuditLog.ApiStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetApiStatisticsAsync()
     {
-        var executor = (IAuditLogServiceClient client) => client.GetApiStatisticsAsync();
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetApiStatisticsAsync());
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -99,7 +99,7 @@ public class StatisticsController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(AuditLog.AvgExecutionTimes), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAvgTimesAsync()
     {
-        var executor = (IAuditLogServiceClient client) => client.GetAvgTimesAsync();
+        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetAvgTimesAsync());
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 

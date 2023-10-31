@@ -38,7 +38,7 @@ public class DataController : Core.Infrastructure.Actions.ControllerBase
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,User")]
     [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetChannelsAsync(ulong? guildId, bool ignoreThreads = false)
-        => await ProcessAsync<GetChannelSimpleList>(guildId, ignoreThreads);
+        => await ProcessAsync<GetChannelSimpleList>(ignoreThreads, guildId);
 
     /// <summary>
     /// Get non paginated list of channels that contains some pin.

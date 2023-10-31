@@ -25,7 +25,7 @@ public class UpdateGuild : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var id = (ulong)Parameters[0]!;
-        var parameters = (UpdateGuildParams)Parameters[0]!;
+        var parameters = (UpdateGuildParams)Parameters[1]!;
 
         var guild = await DiscordClient.GetGuildAsync(id);
         if (guild == null)

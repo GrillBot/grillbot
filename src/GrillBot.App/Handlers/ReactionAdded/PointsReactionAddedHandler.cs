@@ -46,7 +46,8 @@ public class PointsReactionAddedHandler : IReactionAddedEvent
             ReactionInfo = new ReactionInfo
             {
                 UserId = reaction.UserId.ToString(),
-                Emote = reaction.Emote.ToString()!
+                Emote = reaction.Emote.ToString()!,
+                IsBurst = reaction.IsBurst
             }
         };
 

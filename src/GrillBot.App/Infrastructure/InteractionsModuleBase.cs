@@ -84,7 +84,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     }
 
     protected async Task<IUserMessage> SetResponseAsync(string? content = null, Embed? embed = null, Embed[]? embeds = null, MessageComponent? components = null, MessageFlags? flags = null,
-        IEnumerable<FileAttachment>? attachments = null, RequestOptions? requestOptions = null, bool secret = false, bool suppressFollowUp = false)
+        IEnumerable<FileAttachment>? attachments = null, RequestOptions? requestOptions = null, bool secret = false, bool suppressFollowUp = false, AllowedMentions? allowedMentions = null)
     {
         using (CounterManager.Create("Discord.API.Interactions"))
         {
@@ -94,17 +94,17 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             if (!Context.Interaction.HasResponded)
             {
                 if (attachmentsList.Count > 0)
-                    await RespondWithFilesAsync(attachments, content, embeds, false, secret, null, components, embed, requestOptions);
+                    await RespondWithFilesAsync(attachments, content, embeds, false, secret, allowedMentions, components, embed, requestOptions);
                 else
-                    await RespondAsync(content, embeds, false, secret, null, requestOptions, components, embed);
+                    await RespondAsync(content, embeds, false, secret, allowedMentions, requestOptions, components, embed);
                 return await Context.Interaction.GetOriginalResponseAsync();
             }
 
             if (Context.Interaction.IsValidToken && !suppressFollowUp)
             {
                 if (attachmentsList.Count > 0)
-                    return await FollowupWithFilesAsync(attachmentsList, content, embeds, false, secret, null, components, embed, requestOptions);
-                return await FollowupAsync(content, embeds, false, secret, null, requestOptions, components, embed);
+                    return await FollowupWithFilesAsync(attachmentsList, content, embeds, false, secret, allowedMentions, components, embed, requestOptions);
+                return await FollowupAsync(content, embeds, false, secret, allowedMentions, requestOptions, components, embed);
             }
 
             if (secret)
@@ -118,6 +118,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
                 msg.Content = content;
                 msg.Embeds = embeds;
                 msg.Embed = embed;
+                msg.AllowedMentions = allowedMentions;
             }, requestOptions);
         }
     }

@@ -49,6 +49,6 @@ public class BirthdayCronJob : Job
         var message = ((MessageResponse)result.Data!).Message;
 
         context.Result = message;
-        await channel.SendMessageAsync(message);
+        await channel.SendMessageAsync(message, allowedMentions: AllowedMentions.None);
     }
 }

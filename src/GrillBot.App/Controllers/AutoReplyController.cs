@@ -38,7 +38,7 @@ public class AutoReplyController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(AutoReplyItem), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetItemAsync(long id)
-        => await ProcessAsync<GetAutoReplyList>(id);
+        => await ProcessAsync<GetAutoReplyItem>(id);
 
     /// <summary>
     /// Create new reply item.

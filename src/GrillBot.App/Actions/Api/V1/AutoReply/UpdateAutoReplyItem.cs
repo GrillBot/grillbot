@@ -26,7 +26,7 @@ public class UpdateAutoReplyItem : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var id = (long)Parameters[0]!;
-        var parameters = (AutoReplyItemParams)Parameters[0]!;
+        var parameters = (AutoReplyItemParams)Parameters[1]!;
 
         await using var repository = DatabaseBuilder.CreateRepository();
 

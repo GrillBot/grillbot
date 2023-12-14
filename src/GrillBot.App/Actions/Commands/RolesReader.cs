@@ -123,7 +123,9 @@ public class RolesReader : CommandAction
             }
         }
 
-        var perms = role.Permissions.Administrator ? new List<string> { "Administrator" } : role.Permissions.ToList().ConvertAll(o => o.ToString());
+        var perms = role.Permissions.Administrator ?
+            new List<string> { "Administrator" } :
+            role.Permissions.ToList().Select(o => o.ToString()).Where(o => !ulong.TryParse(o, CultureInfo.InvariantCulture, out _)).ToList();
         if (perms.Count > 0)
             result.Add(CreateField("Permissions", string.Join(", ", perms), false));
 

@@ -23,7 +23,9 @@ public class ProcessCallback : ApiAction
         var code = (string)Parameters[0]!;
         var encodedState = (string)Parameters[1]!;
 
-        var state = AuthState.Decode(encodedState);
+        if (!AuthState.TryDecode(encodedState, out var state))
+            throw new ValidationException("Unable to decode provided auth state.");
+
         var accessToken = await RetrieveAccessTokenAsync(code);
         var returnUrl = GetReturnUrl(state);
         var uriBuilder = new UriBuilder(returnUrl);

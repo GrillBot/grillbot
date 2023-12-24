@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace GrillBot.Data.Models.API;
@@ -20,14 +21,23 @@ public class AuthState
         return Convert.ToBase64String(bytes);
     }
 
-    public static AuthState Decode(string encodedData)
+    public static bool TryDecode(string encodedData, [MaybeNullWhen(false)] out AuthState state)
     {
+        state = null;
         if (string.IsNullOrEmpty(encodedData))
-            throw new ArgumentException("No data provided for state decoding.");
+            return false;
 
-        var bytes = Convert.FromBase64String(encodedData);
-        var json = Encoding.UTF8.GetString(bytes);
+        try
+        {
+            var bytes = Convert.FromBase64String(encodedData);
+            var json = Encoding.UTF8.GetString(bytes);
 
-        return JsonConvert.DeserializeObject<AuthState>(json)!;
+            state = JsonConvert.DeserializeObject<AuthState>(json)!;
+            return true;
+        }
+        catch (JsonReaderException)
+        {
+            return false;
+        }
     }
 }

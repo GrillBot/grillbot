@@ -62,7 +62,7 @@ public class ExceptionFilter : IAsyncExceptionFilter
             ApiRequestContext.LogRequest.Result = "500 (InternalServerError)";
 
         await WriteToAuditLogAsync();
-        
+
         var path = $"{ApiRequestContext.LogRequest.Method} {ApiRequestContext.LogRequest.Path}";
         var controllerInfo = $"{ApiRequestContext.LogRequest.ControllerName}.{ApiRequestContext.LogRequest.ActionName}";
         var exception = new ApiException(context.Exception.Message, context.Exception, ApiRequestContext.LoggedUser, path, controllerInfo);

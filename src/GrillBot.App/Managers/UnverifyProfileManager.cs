@@ -35,18 +35,18 @@ public class UnverifyProfileManager
     public static UnverifyUserProfile Reconstruct(Database.Entity.Unverify unverify, IGuildUser toUser, IGuild guild)
     {
         var logData = JsonConvert.DeserializeObject<UnverifyLogSet>(unverify.UnverifyLog!.Data);
-        if (logData == null)
-            throw new ArgumentException("Missing log data for unverify reconstruction.");
 
-        return new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify, logData.Language ?? "cs")
-        {
-            ChannelsToKeep = logData.ChannelsToKeep,
-            ChannelsToRemove = logData.ChannelsToRemove,
-            Reason = logData.Reason,
-            RolesToKeep = logData.RolesToKeep.Select(guild.GetRole).Where(o => o != null).ToList(),
-            RolesToRemove = logData.RolesToRemove.Select(guild.GetRole).Where(o => o != null).ToList(),
-            KeepMutedRole = logData.KeepMutedRole
-        };
+        return logData is null
+            ? throw new ArgumentException("Missing log data for unverify reconstruction.")
+            : new UnverifyUserProfile(toUser, unverify.StartAt, unverify.EndAt, logData.IsSelfUnverify, logData.Language ?? "cs")
+            {
+                ChannelsToKeep = logData.ChannelsToKeep,
+                ChannelsToRemove = logData.ChannelsToRemove,
+                Reason = logData.Reason,
+                RolesToKeep = logData.RolesToKeep.Select(guild.GetRole).Where(o => o != null).ToList(),
+                RolesToRemove = logData.RolesToRemove.Select(guild.GetRole).Where(o => o != null).ToList(),
+                KeepMutedRole = logData.KeepMutedRole
+            };
     }
 
     private string ParseReason(string? data, string locale)
@@ -73,7 +73,7 @@ public class UnverifyProfileManager
             if (rolesToKeep.Count > 0)
             {
                 profile.RolesToKeep.AddRange(rolesToKeep);
-                profile.RolesToRemove.RemoveAll(o => rolesToKeep.Any(x => x.Id == o.Id));
+                profile.RolesToRemove.RemoveAll(o => rolesToKeep.Exists(x => x.Id == o.Id));
             }
         }
 
@@ -82,10 +82,10 @@ public class UnverifyProfileManager
         if (unavailable.Count > 0)
         {
             profile.RolesToKeep.AddRange(unavailable);
-            profile.RolesToRemove.RemoveAll(o => unavailable.Any(x => x.Id == o.Id));
+            profile.RolesToRemove.RemoveAll(o => unavailable.Exists(x => x.Id == o.Id));
 
             // Keep muting role while access returning.
-            profile.KeepMutedRole = mutedRole != null && unavailable.Any(x => x.Id == mutedRole.Id);
+            profile.KeepMutedRole = mutedRole != null && unavailable.Exists(x => x.Id == mutedRole.Id);
         }
 
         foreach (var toKeep in keep)
@@ -131,7 +131,7 @@ public class UnverifyProfileManager
                 var guildChannel = await guild.GetChannelAsync(overwrite.ChannelId);
 
                 if (guildChannel == null) continue;
-                if (!string.Equals(guildChannel.Name, toKeep)) continue;
+                if (!string.Equals(guildChannel.Name, toKeep, StringComparison.InvariantCultureIgnoreCase)) continue;
 
                 profile.ChannelsToKeep.Add(overwrite);
                 profile.ChannelsToRemove.RemoveAll(o => o.ChannelId == overwrite.ChannelId);

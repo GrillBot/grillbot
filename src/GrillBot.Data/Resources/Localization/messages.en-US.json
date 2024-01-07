@@ -13,8 +13,8 @@
         "Info": {
             "NoOneHave": "Nobody has a birthday today. {0}",
             "Parts": {
-                "WithYears": "**{0} ({1} years)**",
-                "WithoutYears": "**{0}**"
+                "WithYears": "**{0} ({1}) ({2} years)**",
+                "WithoutYears": "**{0} ({1})**"
             },
             "Template": {
                 "SingleForm": "Today is the birthday of {0} {1}",

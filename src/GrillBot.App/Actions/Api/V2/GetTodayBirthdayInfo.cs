@@ -59,8 +59,8 @@ public class GetTodayBirthdayInfo : ApiAction
         var formatted = users
             .Select(o =>
                 o.age == null
-                    ? Texts["BirthdayModule/Info/Parts/WithoutYears", ApiContext.Language].FormatWith(o.user.Mention)
-                    : Texts["BirthdayModule/Info/Parts/WithYears", ApiContext.Language].FormatWith(o.user.Mention, o.age.Value)
+                    ? Texts["BirthdayModule/Info/Parts/WithoutYears", ApiContext.Language].FormatWith(o.user.Mention, o.user.GetDisplayName())
+                    : Texts["BirthdayModule/Info/Parts/WithYears", ApiContext.Language].FormatWith(o.user.Mention, o.user.GetDisplayName(), o.age.Value)
             ).ToList();
 
         var result = Texts[$"BirthdayModule/Info/Template/{(users.Count > 1 ? "MultipleForm" : "SingleForm")}", ApiContext.Language];

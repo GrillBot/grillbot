@@ -13,8 +13,8 @@
         "Info": {
             "NoOneHave": "Dnes nemá nikdo narozeniny. {0}",
             "Parts": {
-                "WithYears": "**{0} ({1} let)**",
-                "WithoutYears": "**{0}**"
+                "WithYears": "**{0} ({1}) ({2} let)**",
+                "WithoutYears": "**{0} ({1})**"
             },
             "Template": {
                 "SingleForm": "Dnes má narozeniny {0} {1}",

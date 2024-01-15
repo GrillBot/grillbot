@@ -84,8 +84,5 @@ public class CleanChannelMessages : CommandAction
     }
 
     private static bool IsExpectedApiError(HttpException ex)
-    {
-        return ex.HttpCode == HttpStatusCode.InternalServerError || ex.HttpCode == HttpStatusCode.ServiceUnavailable || ex.DiscordCode == DiscordErrorCode.UnknownChannel ||
-               ex.DiscordCode == DiscordErrorCode.UnknownMessage;
-    }
+        => ex.IsExpectedOutageError() || ex.DiscordCode == DiscordErrorCode.UnknownChannel || ex.DiscordCode == DiscordErrorCode.UnknownMessage;
 }

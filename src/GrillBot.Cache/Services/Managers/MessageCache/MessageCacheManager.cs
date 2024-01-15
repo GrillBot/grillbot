@@ -211,10 +211,7 @@ public class MessageCacheManager : IMessageCacheManager
     /// Expected is InternalServerError, ServiceUnavailable, UnknownChannel and UnknownMessage. 
     /// </summary>
     private static bool IsApiExpectedError(HttpException ex)
-    {
-        return ex.HttpCode == HttpStatusCode.InternalServerError || ex.HttpCode == HttpStatusCode.ServiceUnavailable || ex.DiscordCode == DiscordErrorCode.UnknownChannel ||
-               ex.DiscordCode == DiscordErrorCode.UnknownMessage;
-    }
+        => ex.IsExpectedOutageError() || ex.DiscordCode == DiscordErrorCode.UnknownChannel || ex.DiscordCode == DiscordErrorCode.UnknownMessage;
 
     private async Task ProcessDownloadedMessages(List<IMessage> messages, bool forceDelete)
     {

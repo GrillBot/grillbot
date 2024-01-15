@@ -3,9 +3,10 @@ using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Managers.Performance;
+using Discord.Net;
+using GrillBot.Common.Extensions.Discord;
 
 namespace GrillBot.App.Handlers.ChannelUpdated;
 
@@ -52,7 +53,14 @@ public class AuditOverwritesChangedHandler : AuditLogServiceHandler, IChannelUpd
         IReadOnlyCollection<IAuditLogEntry> auditLogs;
         using (CounterManager.Create("Discord.API.AuditLog"))
         {
-            auditLogs = await channel.Guild.GetAuditLogsAsync(actionType: actionType);
+            try
+            {
+                auditLogs = await channel.Guild.GetAuditLogsAsync(actionType: actionType);
+            }
+            catch (HttpException ex) when (ex.IsExpectedOutageError())
+            {
+                auditLogs = new List<IAuditLogEntry>().AsReadOnly();
+            }
         }
 
         return auditLogs

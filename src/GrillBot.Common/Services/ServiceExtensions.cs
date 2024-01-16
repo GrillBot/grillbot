@@ -13,6 +13,6 @@ public static class ServiceExtensions
         services.AddExternalServices(configuration);
 
         services.AddService<IKachnaOnlineClient, KachnaOnlineClient>(configuration, "KachnaOnline");
-        services.AddService<IMathClient, MathClient>(configuration, "Math");
+        services.AddService<IMathClient, MathClient>(configuration, "MathJS");
     }
 }

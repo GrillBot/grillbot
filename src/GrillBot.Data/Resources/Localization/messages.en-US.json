@@ -491,6 +491,12 @@
             "Title": "Access list of user {0}",
             "NoAccess": "User does not have access to any channel.",
             "WithoutCategory": "Without category"
+        },
+        "NonCompliantMeasurements": {
+            "UnknownUser": "Unknown user ({0})",
+            "Unverify": "Unverify",
+            "Timeout": "Timeout",
+            "MemberWarning": "Warning"
         }
     },
     "Emojization": {

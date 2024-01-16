@@ -66,6 +66,7 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Dashboard.GetActiveOperations>()
             .AddScoped<Api.V1.Dashboard.GetCommonInfo>()
+            .AddScoped<Api.V1.Dashboard.GetNonCompliantUserMeasuresDashboard>()
             .AddScoped<Api.V1.Dashboard.GetOperationStats>()
             .AddScoped<Api.V1.Dashboard.GetServicesList>();
 

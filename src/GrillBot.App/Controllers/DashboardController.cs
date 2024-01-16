@@ -53,6 +53,11 @@ public class DashboardController : Core.Infrastructure.Actions.ControllerBase
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
+    [HttpGet("nonCompliantMeasures")]
+    [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNonCompliantUserMeasuresDashboardAsync()
+        => await ProcessAsync<GetNonCompliantUserMeasuresDashboard>();
+
     [HttpGet("common")]
     [ProducesResponseType(typeof(DashboardInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCommonInfoAsync()

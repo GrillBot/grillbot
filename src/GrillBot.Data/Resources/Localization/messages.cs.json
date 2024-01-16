@@ -491,6 +491,12 @@
             "Title": "Seznam přístupů pro uživatele {0}",
             "NoAccess": "Uživatel nemá přístup do žádného kanálu.",
             "WithoutCategory": "Bez kategorie"
+        },
+        "NonCompliantMeasurements": {
+            "UnknownUser": "Neznámý uživatel ({0})",
+            "Unverify": "Unverify",
+            "Timeout": "Dočasné umlčení",
+            "MemberWarning": "Varování"
         }
     },
     "Emojization": {

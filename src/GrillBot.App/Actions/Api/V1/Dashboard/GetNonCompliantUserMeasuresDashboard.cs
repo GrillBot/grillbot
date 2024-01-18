@@ -94,7 +94,7 @@ public class GetNonCompliantUserMeasuresDashboard : ApiAction
             .ToList();
 
         foreach (var item in result)
-            item.Result = item.Result.Split('/')[1].Trim();
+            item.Result = item.Result.Split('/', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[1].Trim();
 
         return result;
     }

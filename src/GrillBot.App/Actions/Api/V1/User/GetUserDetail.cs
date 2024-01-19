@@ -102,21 +102,21 @@ public class GetUserDetail : ApiAction
 
     private async Task UpdateGuildDetailAsync(GrillBotRepository repository, ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
+        await SetUserMeasuresAsync(repository, detail, entity);
+        detail.HavePointsTransaction = await PointsServiceClient.ExistsAnyTransactionAsync(entity.GuildId, entity.UserId);
+
         var guild = await DiscordClient.GetGuildAsync(detail.Guild.Id.ToUlong());
-        if (guild == null) return;
+        if (guild is null) return;
 
         detail.IsGuildKnown = true;
 
         var guildUser = await guild.GetUserAsync(entity.UserId.ToUlong());
-        if (guildUser == null) return;
+        if (guildUser is null) return;
 
         detail.IsUserInGuild = true;
         SetUnverify(detail, entity.Unverify, guildUser, guild);
         await SetVisibleChannelsAsync(detail, guildUser, guild);
         detail.Roles = Mapper.Map<List<ApiModels.Role>>(guildUser.GetRoles().OrderByDescending(o => o.Position).ToList());
-        detail.HavePointsTransaction = await PointsServiceClient.ExistsAnyTransactionAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString());
-
-        await SetUserMeasuresAsync(repository, detail, entity);
     }
 
     private void SetUnverify(ApiModels.Users.GuildUserDetail detail, Entity.Unverify? unverify, IGuildUser user, IGuild guild)

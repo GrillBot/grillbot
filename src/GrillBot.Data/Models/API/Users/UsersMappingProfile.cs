@@ -46,6 +46,7 @@ public class UsersMappingProfile : AutoMapper.Profile
         CreateMap<Database.Entity.GuildUser, GuildUserDetail>()
             .ForMember(dst => dst.Emotes, opt => opt.MapFrom(src => src.EmoteStatistics))
             .ForMember(dst => dst.Unverify, opt => opt.Ignore())
-            .ForMember(dst => dst.NicknameHistory, opt => opt.MapFrom(src => src.Nicknames.Where(o => o.NicknameValue != src.Nickname).Select(o => o.NicknameValue).ToList()));
+            .ForMember(dst => dst.NicknameHistory, opt => opt.MapFrom(src => src.Nicknames.Where(o => o.NicknameValue != src.Nickname).Select(o => o.NicknameValue).ToList()))
+            .ForMember(dst => dst.UserMeasures, opt => opt.Ignore());
     }
 }

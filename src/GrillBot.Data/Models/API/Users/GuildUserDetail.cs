@@ -22,4 +22,5 @@ public class GuildUserDetail
     public List<Channel> VisibleChannels { get; set; } = new();
     public List<Role> Roles { get; set; } = new();
     public bool HavePointsTransaction { get; set; }
+    public List<UserMeasuresItem> UserMeasures { get; set; } = new();
 }

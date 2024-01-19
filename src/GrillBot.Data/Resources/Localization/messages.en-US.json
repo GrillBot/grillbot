@@ -492,7 +492,7 @@
             "NoAccess": "User does not have access to any channel.",
             "WithoutCategory": "Without category"
         },
-        "NonCompliantMeasurements": {
+        "UserMeasures": {
             "UnknownUser": "Unknown user ({0})",
             "Unverify": "Unverify",
             "Timeout": "Timeout",

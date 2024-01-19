@@ -492,7 +492,7 @@
             "NoAccess": "Uživatel nemá přístup do žádného kanálu.",
             "WithoutCategory": "Bez kategorie"
         },
-        "NonCompliantMeasurements": {
+        "UserMeasures": {
             "UnknownUser": "Neznámý uživatel ({0})",
             "Unverify": "Unverify",
             "Timeout": "Dočasné umlčení",

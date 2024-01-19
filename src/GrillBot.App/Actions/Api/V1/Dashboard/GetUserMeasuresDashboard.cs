@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Managers.Localization;
+﻿using Discord;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
@@ -10,13 +11,13 @@ using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Actions.Api.V1.Dashboard;
 
-public class GetNonCompliantUserMeasuresDashboard : ApiAction
+public class GetUserMeasuresDashboard : ApiAction
 {
     private IAuditLogServiceClient AuditLogServiceClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
 
-    public GetNonCompliantUserMeasuresDashboard(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient, GrillBotDatabaseBuilder databaseBuilder,
+    public GetUserMeasuresDashboard(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient, GrillBotDatabaseBuilder databaseBuilder,
         ITextsManager texts) : base(apiContext)
     {
         AuditLogServiceClient = auditLogServiceClient;
@@ -71,7 +72,7 @@ public class GetNonCompliantUserMeasuresDashboard : ApiAction
         {
             var user = users.Find(o => o.Id == item.Name);
 
-            item.Name = user is null ? string.Format(GetText("UnknownUser"), item.Name) : user.GetDisplayName();
+            item.Name = FormatUser(user, item.Name);
             item.Result = $"{item.Result}/{GetText("MemberWarning")}";
 
             result.Add(item);
@@ -83,7 +84,7 @@ public class GetNonCompliantUserMeasuresDashboard : ApiAction
 
             result.Add(new DashboardInfoRow
             {
-                Name = user is null ? string.Format(GetText("UnknownUser"), item.ToUserId) : user.GetDisplayName(),
+                Name = FormatUser(user, item.ToUserId),
                 Result = $"{item.CreatedAt:o}/{GetText("Unverify")}"
             });
         }
@@ -100,5 +101,12 @@ public class GetNonCompliantUserMeasuresDashboard : ApiAction
     }
 
     private string GetText(string id)
-        => Texts[$"User/NonCompliantMeasurements/{id}", ApiContext.Language];
+        => Texts[$"User/UserMeasures/{id}", ApiContext.Language];
+
+    private string FormatUser(Database.Entity.User? user, string defaultValue)
+    {
+        return user is null ?
+            string.Format(GetText("UnknownUser"), defaultValue) :
+            $"User({user.Id}/{user.GetDisplayName()})";
+    }
 }

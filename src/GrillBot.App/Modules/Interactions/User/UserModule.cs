@@ -47,4 +47,13 @@ public class UserModule : InteractionsModuleBase
         var result = await command.Command.ProcessAsync(user);
         await SetResponseAsync(embed: result);
     }
+
+    [SlashCommand("warning", "Create user measures warning for user.")]
+    public async Task CreateWarningAsync(IGuildUser user, [Discord.Interactions.MaxLength(DiscordConfig.MaxMessageSize)] string message)
+    {
+        using var command = GetActionAsCommand<Actions.Api.V1.UserMeasures.CreateUserMeasuresWarning>();
+        await command.Command.ProcessAsync(user, message);
+
+        await SetResponseAsync(GetText(nameof(CreateWarningAsync), "Success"));
+    }
 }

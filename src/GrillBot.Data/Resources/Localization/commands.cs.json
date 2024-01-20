@@ -1,615 +1,627 @@
 ﻿{
-  "$schema": "https://gist.github.com/Cenngo/d46a881de24823302f66c3c7e2f7b254",
-  "selfunverify": {
-    "name": "selfunverify",
-    "description": "Dočasné odebrání přístupu sobě sama na serveru.",
-    "end": {
-      "name": "konec",
-      "description": "Datum a čas konce, nebo doba trvání odebrání přístupu."
-    },
-    "keepables": {
-      "name": "pristupy",
-      "description": "Seznam ponechatelných přístupů. Oddělujte čárkou, mezerou nebo středníkem."
-    }
-  },
-  "me": {
-    "name": "me",
-    "description": "Informace o mně"
-  },
-  "user": {
-    "name": "user",
-    "description": "Správa uživatelů",
-    "access": {
-      "name": "access",
-      "description": "Zobrazení seznamu oprávnění uživatele.",
-      "user": {
-        "name": "uzivatel",
-        "description": "Identifikace uživatele"
-      },
-      "secret": {
-        "name": "tajne",
-        "description": "Zobrazit výsledek soukromě?",
-        "Yes": {
-          "name": "Ano"
-        },
-        "No": {
-          "name": "Ne"
-        }
-      }
-    },
-    "info": {
-      "name": "info",
-      "description": "Informace o uživateli",
-      "user": {
-        "name": "uzivatel",
-        "description": "Uživatel o kterém chceme zjistit informace"
-      }
-    }
-  },
-  "birthdays": {
-    "name": "narozeniny",
-    "description": "Narozeniny",
-    "today": {
-      "name": "dnes",
-      "description": "Zjištění, kdo má dnes narozeniny."
-    },
-    "add": {
-      "name": "pridat",
-      "description": "Přidání tvého data narození.",
-      "when": {
-        "name": "kdy",
-        "description": "Datum, kdy máš narozeniny. (Formát: yyyy-mm-dd, pokud nechceš rok, tak zadej jako rok 0001)."
-      }
-    },
-    "remove": {
-      "name": "smazat",
-      "description": "Smazání data narození."
-    },
-    "have": {
-      "name": "mam",
-      "description": "Dotaz, jestli mám uložené narozeniny?"
-    }
-  },
-  "bot": {
-    "name": "bot",
-    "description": "Správa bota",
-    "info": {
-      "name": "info",
-      "description": "Informace o botovi"
-    },
+    "$schema": "https://gist.github.com/Cenngo/d46a881de24823302f66c3c7e2f7b254",
     "selfunverify": {
-      "name": "selfunverify",
-      "description": "Konfigurace selfunverify.",
-      "list-keepables": {
-        "name": "list-keepables",
-        "description": "Seznam ponechatelných přístupů při selfunverify"
-      }
-    }
-  },
-  "channel": {
-    "name": "channel",
-    "description": "Informace o kanálech",
-    "info": {
-      "name": "info",
-      "description": "Informace o kanálu",
-      "channel": {
-        "name": "kanal"
-      },
-      "excludeThreads": {
-        "name": "vynechat-vlakna",
-        "description": "Vynechat vlákna ze statistik?",
-        "Hide threads": {
-          "name": "Vynechat vlákna"
+        "name": "selfunverify",
+        "description": "Dočasné odebrání přístupu sobě sama na serveru.",
+        "end": {
+            "name": "konec",
+            "description": "Datum a čas konce, nebo doba trvání odebrání přístupu."
         },
-        "Show threads": {
-          "name": "Zobrazit výláka"
+        "keepables": {
+            "name": "pristupy",
+            "description": "Seznam ponechatelných přístupů. Oddělujte čárkou, mezerou nebo středníkem."
         }
-      }
     },
-    "board": {
-      "name": "board",
-      "description": "Statistika nejaktivnějších kanálů na serveru."
-    }
-  },
-  "duck": {
-    "name": "kachna",
-    "description": "Zjistí aktuální stav klubu U Kachničky."
-  },
-  "emote": {
-    "name": "emote",
-    "description": "Správa emotů",
-    "get": {
-      "name": "get",
-      "description": "Informace o emote",
-      "emote": {
-        "name": "emote",
-        "description": "Identifikace emote (ID/Název/Celý emote)"
-      }
+    "me": {
+        "name": "me",
+        "description": "Informace o mně"
     },
-    "list": {
-      "name": "list",
-      "description": "Seznam statistik emotů",
-      "order": {
-        "name": "seradit",
-        "description": "Seřadit podle",
-        "Number of uses": {
-          "name": "Počtu použití"
-        },
-        "Date and time of last use": {
-          "name": "Data a času posledního použití"
-        }
-      },
-      "sort": {
-        "name": "smer",
-        "description": "Vzestupně/Sestupně",
-        "ascending": {
-          "name": "Vzestupně"
-        },
-        "descending": {
-          "name": "Sestupně"
-        }
-      },
-      "user": {
-        "name": "uzivatel",
-        "description": "Zobrazit statistiku pouze jednoho uživatele"
-      },
-      "animated": {
-        "name": "animovane",
-        "description": "Chci v seznamu zobrazit i animované emoty?",
-        "Show animated emotes": {
-          "name": "Zobrazit animované emoty"
-        },
-        "Hide animated emotes": {
-          "name": "Nezobrazovat animované emoty"
-        }
-      }
-    }
-  },
-  "guild": {
-    "name": "guild",
-    "description": "Management serveru",
-    "info": {
-      "name": "info",
-      "description": "Informace o serveru"
-    }
-  },
-  "solve": {
-    "name": "solve",
-    "description": "Spočítá matematický výraz.",
-    "expression": {
-      "name": "vyraz",
-      "description": "Matematický výraz k výpočtu."
-    }
-  },
-  "kasparek": {
-    "name": "kasparek",
-    "description": "Zeptá se tvojí mámy, jakého máš kašpárka."
-  },
-  "hi": {
-    "name": "hi",
-    "description": "Pozdravit uživatele",
-    "base": {
-      "name": "base",
-      "description": "Řekni botovi, v jaké soustavě tě má pozdravit.",
-      "Binary": {
-        "name": "Binární"
-      },
-      "Octal": {
-        "name": "Osmičková"
-      },
-      "Hexadecimal": {
-        "name": "Šestnáctková"
-      }
-    }
-  },
-  "peepolove": {
-    "name": "peepolove",
-    "description": "Vygeneruje obrázek, kde peepo objímá uživatele.",
     "user": {
-      "name": "uzivatel",
-      "description": "Uživatel, který bude na obrázku. Pokud ho nezadáte, budete tam vy."
-    }
-  },
-  "peepoangry": {
-    "name": "peepoangry",
-    "description": "Vygeneruje obrázek, kde na tebe bude zírat naštvaný peepo.",
-    "user": {
-      "name": "uzivatel",
-      "description": "Uživatel, který bude na obrázku. Pokud ho nezadáte, budete tam vy."
-    }
-  },
-  "emojize": {
-    "name": "emojize",
-    "description": "Vytvoření zprávy z emoji na základě textu.",
-    "message": {
-      "name": "zprava",
-      "description": "Zpráva k převodu. Může obsahovat emoty."
-    }
-  },
-  "rectjize": {
-    "name": "reactjize",
-    "description": "Převod textu do emoji a nastavení jako reakce.",
-    "message": {
-      "name": "zprava",
-      "description": "Zpráva k převodu. Může obsahovat emoty. Nesmí obsahovat duplicitní emoty/znaky."
-    },
-    "reference": {
-      "name": "reference",
-      "description": "Odkaz na zprávu, na kterou se mají dát reakce."
-    }
-  },
-  "mock": {
-    "name": "mock",
-    "description": "Mockuje zadanou zprávu",
-    "message": {
-      "name": "message",
-      "description": "Zpráva k mockování"
-    }
-  },
-  "permissions": {
-    "name": "permissions",
-    "description": "Správa oprávnění do kanálů.",
-    "remove": {
-      "name": "remove",
-      "description": "Mazání oprávnění v kanálech.",
-      "all": {
-        "name": "all",
-        "description": "Odebere všechna uživatelská oprávnění z kanálu.",
-        "channel": {
-          "name": "kanal",
-          "description": "Kanál ve kterém se mají smazat oprávnění."
+        "name": "user",
+        "description": "Správa uživatelů",
+        "access": {
+            "name": "access",
+            "description": "Zobrazení seznamu oprávnění uživatele.",
+            "user": {
+                "name": "uzivatel",
+                "description": "Identifikace uživatele"
+            },
+            "secret": {
+                "name": "tajne",
+                "description": "Zobrazit výsledek soukromě?",
+                "Yes": {
+                    "name": "Ano"
+                },
+                "No": {
+                    "name": "Ne"
+                }
+            }
         },
-        "excludedUsers": {
-          "name": "excludedUsers",
-          "description": "Seznam uživatelů, kteří se mají z procesu vynechat."
+        "info": {
+            "name": "info",
+            "description": "Informace o uživateli",
+            "user": {
+                "name": "uzivatel",
+                "description": "Uživatel o kterém chceme zjistit informace"
+            }
+        },
+        "warning": {
+            "name": "warning",
+            "description": "Zápis o varování uživatele",
+            "user": {
+                "name": "uzivatel",
+                "description": "Uživatel, který byl varován."
+            },
+            "message": {
+                "name": "zprava",
+                "description": "Text varování"
+            }
         }
-      }
     },
-    "set": {
-      "name": "set",
-      "description": "Nastavení oprávnění",
-      "category": {
-        "name": "category",
-        "description": "Doplnění oprávnění role pro všechny kanály v kategorii.",
-        "category": {
-          "name": "category",
-          "description": "Kategorie"
+    "birthdays": {
+        "name": "narozeniny",
+        "description": "Narozeniny",
+        "today": {
+            "name": "dnes",
+            "description": "Zjištění, kdo má dnes narozeniny."
         },
-        "role": {
-          "name": "role",
-          "description": "Role"
+        "add": {
+            "name": "pridat",
+            "description": "Přidání tvého data narození.",
+            "when": {
+                "name": "kdy",
+                "description": "Datum, kdy máš narozeniny. (Formát: yyyy-mm-dd, pokud nechceš rok, tak zadej jako rok 0001)."
+            }
         },
-        "view-channel": {
-          "name": "view",
-          "description": "Oprávnění pro zobrazení kanálu",
-          "Allow": {
-            "name": "Povolit"
-          },
-          "Deny": {
-            "name": "Zakázat"
-          }
+        "remove": {
+            "name": "smazat",
+            "description": "Smazání data narození."
+        },
+        "have": {
+            "name": "mam",
+            "description": "Dotaz, jestli mám uložené narozeniny?"
         }
-      }
-    }
-  },
-  "pin": {
-    "name": "pin",
-    "description": "Správa pinů",
-    "purge": {
-      "name": "purge",
-      "description": "Odepne posledních N zpráv z pinů.",
-      "count": {
-        "name": "pocet",
-        "description": "Počet zpráv k odepnutí."
-      },
-      "channel": {
-        "name": "kanal",
-        "description": "Kanál, kde se mají zprávy smazat. Pokud kanál nebude zadán, tak se použije, kde byl příkaz použit."
-      }
-    }
-  },
-  "remind": {
-    "name": "remind",
-    "description": "Připomenutí k určitému datu",
-    "create": {
-      "name": "create",
-      "description": "Vytvoření připomenutí k určitému datu.",
-      "who": {
-        "name": "komu",
-        "description": "Označení uživatele, který si přeje dostat upozornění"
-      },
-      "when": {
-        "name": "kdy",
-        "description": "Datum a čas události. Musí být v budoucnosti. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
-      },
-      "message": {
-        "name": "zprava",
-        "description": "Zpráva, která se zašle uživateli."
-      },
-      "secret": {
-        "name": "tajne",
-        "description": "O vytvoření připomenutí by neměl nikdo vědět.",
-        "Yes": {
-          "name": "Ano"
+    },
+    "bot": {
+        "name": "bot",
+        "description": "Správa bota",
+        "info": {
+            "name": "info",
+            "description": "Informace o botovi"
         },
-        "No": {
-          "name": "Ne"
+        "selfunverify": {
+            "name": "selfunverify",
+            "description": "Konfigurace selfunverify.",
+            "list-keepables": {
+                "name": "list-keepables",
+                "description": "Seznam ponechatelných přístupů při selfunverify"
+            }
         }
-      }
     },
-    "cancel": {
-      "name": "cancel",
-      "description": "Předčasné zrušení připomenutí.",
-      "ident": {
-        "name": "identifikace",
-        "description": "Identifikace připomenutí"
-      },
-      "notify": {
-        "name": "upozornit",
-        "description": "Zda se má cílový uživatel předčasně upozornit.",
-        "Yes": {
-          "name": "Ano"
+    "channel": {
+        "name": "channel",
+        "description": "Informace o kanálech",
+        "info": {
+            "name": "info",
+            "description": "Informace o kanálu",
+            "channel": {
+                "name": "kanal"
+            },
+            "excludeThreads": {
+                "name": "vynechat-vlakna",
+                "description": "Vynechat vlákna ze statistik?",
+                "Hide threads": {
+                    "name": "Vynechat vlákna"
+                },
+                "Show threads": {
+                    "name": "Zobrazit výláka"
+                }
+            }
         },
-        "No": {
-          "name": "Ne"
+        "board": {
+            "name": "board",
+            "description": "Statistika nejaktivnějších kanálů na serveru."
         }
-      }
     },
-    "list": {
-      "name": "list",
-      "description": "Seznam aktuálně čekajících připomenutí."
-    }
-  },
-  "search": {
-    "name": "hledam",
-    "description": "Hledání",
-    "list": {
-      "name": "list",
-      "description": "Aktuální hledání.",
-      "channel": {
-        "name": "kanal",
-        "description": "Kanál, ve kterém chcete něco najít."
-      },
-      "substring": {
-        "name": "podretezec",
-        "description": "Vyhledávací podřetězec"
-      }
+    "duck": {
+        "name": "kachna",
+        "description": "Zjistí aktuální stav klubu U Kachničky."
     },
-    "create": {
-      "name": "nove",
-      "description": "Vytvoření nového hledání.",
-      "message": {
-        "name": "zprava",
-        "description": "Zpráva"
-      }
-    },
-    "remove": {
-      "name": "smazat",
-      "description": "Smaže hledání",
-      "ident": {
-        "name": "identifikace",
-        "description": "Identifikace hledání"
-      }
-    }
-  },
-  "suggestion": {
-    "name": "suggestion",
-    "description": "Podání návrhu",
     "emote": {
-      "name": "emote",
-      "description": "Podání návrhu na přidání nového emote.",
-      "emote": {
         "name": "emote",
-        "description": "Možnost navrhnout emote na základě existujícího emote (z jiného serveru)."
-      },
-      "attachment": {
-        "name": "attachment",
-        "description": "Možnost navrhnout emote na základě obrázku."
-      }
-    }
-  },
-  "process_emote_suggestions": {
-    "name": "process_emote_suggestions",
-    "description": "Zpracování schválených návrhů na emoty."
-  },
-  "points": {
-    "name": "body",
-    "description": "Body",
-    "where": {
-      "name": "kde",
-      "description": "Zjistí aktuální stav bodů uživatele.",
-      "user": {
-        "name": "uzivatel",
-        "description": "Uživatel, pro kterého si přejete zjistit stav bodů. Pokud ho nezadáte, zobrazí se vaše.."
-      }
+        "description": "Správa emotů",
+        "get": {
+            "name": "get",
+            "description": "Informace o emote",
+            "emote": {
+                "name": "emote",
+                "description": "Identifikace emote (ID/Název/Celý emote)"
+            }
+        },
+        "list": {
+            "name": "list",
+            "description": "Seznam statistik emotů",
+            "order": {
+                "name": "seradit",
+                "description": "Seřadit podle",
+                "Number of uses": {
+                    "name": "Počtu použití"
+                },
+                "Date and time of last use": {
+                    "name": "Data a času posledního použití"
+                }
+            },
+            "sort": {
+                "name": "smer",
+                "description": "Vzestupně/Sestupně",
+                "ascending": {
+                    "name": "Vzestupně"
+                },
+                "descending": {
+                    "name": "Sestupně"
+                }
+            },
+            "user": {
+                "name": "uzivatel",
+                "description": "Zobrazit statistiku pouze jednoho uživatele"
+            },
+            "animated": {
+                "name": "animovane",
+                "description": "Chci v seznamu zobrazit i animované emoty?",
+                "Show animated emotes": {
+                    "name": "Zobrazit animované emoty"
+                },
+                "Hide animated emotes": {
+                    "name": "Nezobrazovat animované emoty"
+                }
+            }
+        }
     },
-    "chart": {
-      "name": "chart",
-      "description": "Graf historie bodů.",
-      "type": {
-        "name": "typ",
-        "description": "Typ grafu",
-        "UserChart": {
-          "name": "Graf historie bodů jednotlivých uživatelů."
-        },
-        "GuildChart": {
-          "name": "Graf historie bodů za celý server."
+    "guild": {
+        "name": "guild",
+        "description": "Management serveru",
+        "info": {
+            "name": "info",
+            "description": "Informace o serveru"
         }
-      },
-      "filter": {
-        "name": "filter",
-        "description": "Zobrazované grafy",
-        "Messages": {
-          "name": "Zobrazit pouze graf za zprávy."
-        },
-        "Reactions": {
-          "name": "Zobrazit pouze graf za reakce."
-        },
-        "Summary": {
-          "name": "Zobrazit kombinovaný graf."
-        },
-        "All": {
-          "name": "Zobrazit všechny grafy."
-        }
-      },
-      "users": {
-        "name": "users",
-        "description": "Vybraní uživatelé. Používá se pouze v kombinaci grafů za jednotlivé uživatele."
-      }
     },
-    "board": {
-      "name": "board",
-      "description": "Leaderboard TOP 10 nejaktivnějších uživatelů.",
-      "over-all-time": {
-        "name": "za-celou-dobu",
-        "description": "Zobrazit TOP 10 statistiku včetně neaktivních bodů.",
-        "True": {
-          "name": "Ano"
-        },
-        "False": {
-          "name": "Ne"
+    "solve": {
+        "name": "solve",
+        "description": "Spočítá matematický výraz.",
+        "expression": {
+            "name": "vyraz",
+            "description": "Matematický výraz k výpočtu."
         }
-      }
-    }
-  },
-  "message": {
-    "name": "message",
-    "description": "Správa zpráv",
-    "clear": {
-      "name": "clear",
-      "description": "Mazání obsahu zpráv",
-      "react": {
-        "name": "react",
-        "description": "Smazání emotu z reakcí na zprávě."
-      }
-    }
-  },
-  "role": {
-    "name": "role",
-    "description": "Správa rolí",
-    "list": {
-      "name": "list",
-      "description": "Seznam rolí na serveru",
-      "sort-by": {
-        "name": "razeni",
-        "description": "Jakým způsobem mají role seřadit?",
-        "Members": {
-          "name": "Členové",
-          "description": "Podle počtu členů"
-        },
-        "Position": {
-          "name": "Pozice",
-          "description": "Podle pozice v hierarchii"
-        }
-      }
     },
-    "get": {
-      "name": "get",
-      "description": "Detailní informace o roli",
-      "role": {
+    "kasparek": {
+        "name": "kasparek",
+        "description": "Zeptá se tvojí mámy, jakého máš kašpárka."
+    },
+    "hi": {
+        "name": "hi",
+        "description": "Pozdravit uživatele",
+        "base": {
+            "name": "base",
+            "description": "Řekni botovi, v jaké soustavě tě má pozdravit.",
+            "Binary": {
+                "name": "Binární"
+            },
+            "Octal": {
+                "name": "Osmičková"
+            },
+            "Hexadecimal": {
+                "name": "Šestnáctková"
+            }
+        }
+    },
+    "peepolove": {
+        "name": "peepolove",
+        "description": "Vygeneruje obrázek, kde peepo objímá uživatele.",
+        "user": {
+            "name": "uzivatel",
+            "description": "Uživatel, který bude na obrázku. Pokud ho nezadáte, budete tam vy."
+        }
+    },
+    "peepoangry": {
+        "name": "peepoangry",
+        "description": "Vygeneruje obrázek, kde na tebe bude zírat naštvaný peepo.",
+        "user": {
+            "name": "uzivatel",
+            "description": "Uživatel, který bude na obrázku. Pokud ho nezadáte, budete tam vy."
+        }
+    },
+    "emojize": {
+        "name": "emojize",
+        "description": "Vytvoření zprávy z emoji na základě textu.",
+        "message": {
+            "name": "zprava",
+            "description": "Zpráva k převodu. Může obsahovat emoty."
+        }
+    },
+    "rectjize": {
+        "name": "reactjize",
+        "description": "Převod textu do emoji a nastavení jako reakce.",
+        "message": {
+            "name": "zprava",
+            "description": "Zpráva k převodu. Může obsahovat emoty. Nesmí obsahovat duplicitní emoty/znaky."
+        },
+        "reference": {
+            "name": "reference",
+            "description": "Odkaz na zprávu, na kterou se mají dát reakce."
+        }
+    },
+    "mock": {
+        "name": "mock",
+        "description": "Mockuje zadanou zprávu",
+        "message": {
+            "name": "message",
+            "description": "Zpráva k mockování"
+        }
+    },
+    "permissions": {
+        "name": "permissions",
+        "description": "Správa oprávnění do kanálů.",
+        "remove": {
+            "name": "remove",
+            "description": "Mazání oprávnění v kanálech.",
+            "all": {
+                "name": "all",
+                "description": "Odebere všechna uživatelská oprávnění z kanálu.",
+                "channel": {
+                    "name": "kanal",
+                    "description": "Kanál ve kterém se mají smazat oprávnění."
+                },
+                "excludedUsers": {
+                    "name": "excludedUsers",
+                    "description": "Seznam uživatelů, kteří se mají z procesu vynechat."
+                }
+            }
+        },
+        "set": {
+            "name": "set",
+            "description": "Nastavení oprávnění",
+            "category": {
+                "name": "category",
+                "description": "Doplnění oprávnění role pro všechny kanály v kategorii.",
+                "category": {
+                    "name": "category",
+                    "description": "Kategorie"
+                },
+                "role": {
+                    "name": "role",
+                    "description": "Role"
+                },
+                "view-channel": {
+                    "name": "view",
+                    "description": "Oprávnění pro zobrazení kanálu",
+                    "Allow": {
+                        "name": "Povolit"
+                    },
+                    "Deny": {
+                        "name": "Zakázat"
+                    }
+                }
+            }
+        }
+    },
+    "pin": {
+        "name": "pin",
+        "description": "Správa pinů",
+        "purge": {
+            "name": "purge",
+            "description": "Odepne posledních N zpráv z pinů.",
+            "count": {
+                "name": "pocet",
+                "description": "Počet zpráv k odepnutí."
+            },
+            "channel": {
+                "name": "kanal",
+                "description": "Kanál, kde se mají zprávy smazat. Pokud kanál nebude zadán, tak se použije, kde byl příkaz použit."
+            }
+        }
+    },
+    "remind": {
+        "name": "remind",
+        "description": "Připomenutí k určitému datu",
+        "create": {
+            "name": "create",
+            "description": "Vytvoření připomenutí k určitému datu.",
+            "who": {
+                "name": "komu",
+                "description": "Označení uživatele, který si přeje dostat upozornění"
+            },
+            "when": {
+                "name": "kdy",
+                "description": "Datum a čas události. Musí být v budoucnosti. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
+            },
+            "message": {
+                "name": "zprava",
+                "description": "Zpráva, která se zašle uživateli."
+            },
+            "secret": {
+                "name": "tajne",
+                "description": "O vytvoření připomenutí by neměl nikdo vědět.",
+                "Yes": {
+                    "name": "Ano"
+                },
+                "No": {
+                    "name": "Ne"
+                }
+            }
+        },
+        "cancel": {
+            "name": "cancel",
+            "description": "Předčasné zrušení připomenutí.",
+            "ident": {
+                "name": "identifikace",
+                "description": "Identifikace připomenutí"
+            },
+            "notify": {
+                "name": "upozornit",
+                "description": "Zda se má cílový uživatel předčasně upozornit.",
+                "Yes": {
+                    "name": "Ano"
+                },
+                "No": {
+                    "name": "Ne"
+                }
+            }
+        },
+        "list": {
+            "name": "list",
+            "description": "Seznam aktuálně čekajících připomenutí."
+        }
+    },
+    "search": {
+        "name": "hledam",
+        "description": "Hledání",
+        "list": {
+            "name": "list",
+            "description": "Aktuální hledání.",
+            "channel": {
+                "name": "kanal",
+                "description": "Kanál, ve kterém chcete něco najít."
+            },
+            "substring": {
+                "name": "podretezec",
+                "description": "Vyhledávací podřetězec"
+            }
+        },
+        "create": {
+            "name": "nove",
+            "description": "Vytvoření nového hledání.",
+            "message": {
+                "name": "zprava",
+                "description": "Zpráva"
+            }
+        },
+        "remove": {
+            "name": "smazat",
+            "description": "Smaže hledání",
+            "ident": {
+                "name": "identifikace",
+                "description": "Identifikace hledání"
+            }
+        }
+    },
+    "suggestion": {
+        "name": "suggestion",
+        "description": "Podání návrhu",
+        "emote": {
+            "name": "emote",
+            "description": "Podání návrhu na přidání nového emote.",
+            "emote": {
+                "name": "emote",
+                "description": "Možnost navrhnout emote na základě existujícího emote (z jiného serveru)."
+            },
+            "attachment": {
+                "name": "attachment",
+                "description": "Možnost navrhnout emote na základě obrázku."
+            }
+        }
+    },
+    "process_emote_suggestions": {
+        "name": "process_emote_suggestions",
+        "description": "Zpracování schválených návrhů na emoty."
+    },
+    "points": {
+        "name": "body",
+        "description": "Body",
+        "where": {
+            "name": "kde",
+            "description": "Zjistí aktuální stav bodů uživatele.",
+            "user": {
+                "name": "uzivatel",
+                "description": "Uživatel, pro kterého si přejete zjistit stav bodů. Pokud ho nezadáte, zobrazí se vaše.."
+            }
+        },
+        "chart": {
+            "name": "chart",
+            "description": "Graf historie bodů.",
+            "type": {
+                "name": "typ",
+                "description": "Typ grafu",
+                "UserChart": {
+                    "name": "Graf historie bodů jednotlivých uživatelů."
+                },
+                "GuildChart": {
+                    "name": "Graf historie bodů za celý server."
+                }
+            },
+            "filter": {
+                "name": "filter",
+                "description": "Zobrazované grafy",
+                "Messages": {
+                    "name": "Zobrazit pouze graf za zprávy."
+                },
+                "Reactions": {
+                    "name": "Zobrazit pouze graf za reakce."
+                },
+                "Summary": {
+                    "name": "Zobrazit kombinovaný graf."
+                },
+                "All": {
+                    "name": "Zobrazit všechny grafy."
+                }
+            },
+            "users": {
+                "name": "users",
+                "description": "Vybraní uživatelé. Používá se pouze v kombinaci grafů za jednotlivé uživatele."
+            }
+        },
+        "board": {
+            "name": "board",
+            "description": "Leaderboard TOP 10 nejaktivnějších uživatelů.",
+            "over-all-time": {
+                "name": "za-celou-dobu",
+                "description": "Zobrazit TOP 10 statistiku včetně neaktivních bodů.",
+                "True": {
+                    "name": "Ano"
+                },
+                "False": {
+                    "name": "Ne"
+                }
+            }
+        }
+    },
+    "message": {
+        "name": "message",
+        "description": "Správa zpráv",
+        "clear": {
+            "name": "clear",
+            "description": "Mazání obsahu zpráv",
+            "react": {
+                "name": "react",
+                "description": "Smazání emotu z reakcí na zprávě."
+            }
+        }
+    },
+    "role": {
         "name": "role",
-        "description": "Požadovaná role"
-      }
+        "description": "Správa rolí",
+        "list": {
+            "name": "list",
+            "description": "Seznam rolí na serveru",
+            "sort-by": {
+                "name": "razeni",
+                "description": "Jakým způsobem mají role seřadit?",
+                "Members": {
+                    "name": "Členové",
+                    "description": "Podle počtu členů"
+                },
+                "Position": {
+                    "name": "Pozice",
+                    "description": "Podle pozice v hierarchii"
+                }
+            }
+        },
+        "get": {
+            "name": "get",
+            "description": "Detailní informace o roli",
+            "role": {
+                "name": "role",
+                "description": "Požadovaná role"
+            }
+        }
+    },
+    "admin": {
+        "name": "admin",
+        "description": "Administrační příkazy",
+        "clean_messages": {
+            "name": "clean_messages",
+            "description": "Smaže z kanálu zprávy do konkrétního ID (nezahrnuje špecifikovanou zprávu) nebo posledních N",
+            "criterium": {
+                "name": "kritérium",
+                "description": "Počet zpráv, ID zprávy nebo odkaz na zprávu v kanálu."
+            },
+            "channel": {
+                "name": "kanal",
+                "description": "Kanál, kde se mají zprávy smazat. Pokud kanál nebude zadán, tak se použije, kde byl příkaz použit."
+            }
+        },
+        "send": {
+            "name": "send",
+            "description": "Odeslání zprávy do kanálu jako bot.",
+            "channel": {
+                "name": "kanal",
+                "description": "Kanál, do kterého se má poslat zpráva."
+            },
+            "content": {
+                "name": "obsah",
+                "description": "Textový obsah zprávy."
+            },
+            "reference": {
+                "name": "reference",
+                "description": "Odkaz na zprávu, na kterou má odkazovat tato zpráva."
+            },
+            "attachment": {
+                "name": "priloha",
+                "description": "Příloha"
+            }
+        }
+    },
+    "unverify": {
+        "name": "unverify",
+        "description": "Dočasné odebrání přístupu na server.",
+        "list": {
+            "name": "list",
+            "description": "Seznam uživatelů kteří mají odebraný přístup."
+        },
+        "update": {
+            "name": "update",
+            "description": "Aktualizace konce odebrání přístupu.",
+            "user": {
+                "name": "uzivatel",
+                "description": "Cílový uživatel"
+            },
+            "new-end": {
+                "name": "novy-konec",
+                "description": "Datum a čas nového konce. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
+            },
+            "reason": {
+                "name": "duvod",
+                "description": "Volitelný důvod, proč byla doba uživateli aktualizována."
+            }
+        },
+        "remove": {
+            "name": "remove",
+            "description": "Předčasné vrácení přístupu uživateli.",
+            "user": {
+                "name": "uzivatel",
+                "description": "Uživatel, kterému má být vrácen přístup."
+            }
+        },
+        "set": {
+            "name": "set",
+            "description": "Odebrání přístupu uživateli.",
+            "end": {
+                "name": "konec",
+                "description": "Datum a čas konce odebrání přístupu. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
+            },
+            "reason": {
+                "name": "duvod",
+                "description": "Důvod odebrání přístupu."
+            },
+            "users": {
+                "name": "uzivatele",
+                "description": "Seznam uživatelů"
+            }
+        },
+        "fun": {
+            "name": "fun",
+            "description": "Falešné odebrání přístupu uživateli.",
+            "end": {
+                "name": "konec",
+                "description": "Datum a čas konce odebrání přístupu. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
+            },
+            "reason": {
+                "name": "duvod",
+                "description": "Důvod odebrání přístupu."
+            },
+            "users": {
+                "name": "uzivatele",
+                "description": "Seznam uživatelů"
+            }
+        }
     }
-  },
-  "admin": {
-    "name": "admin",
-    "description": "Administrační příkazy",
-    "clean_messages": {
-      "name": "clean_messages",
-      "description": "Smaže z kanálu zprávy do konkrétního ID (nezahrnuje špecifikovanou zprávu) nebo posledních N",
-      "criterium": {
-        "name": "kritérium",
-        "description": "Počet zpráv, ID zprávy nebo odkaz na zprávu v kanálu."
-      },
-      "channel": {
-        "name": "kanal",
-        "description": "Kanál, kde se mají zprávy smazat. Pokud kanál nebude zadán, tak se použije, kde byl příkaz použit."
-      }
-    },
-    "send": {
-      "name": "send",
-      "description": "Odeslání zprávy do kanálu jako bot.",
-      "channel": {
-        "name": "kanal",
-        "description": "Kanál, do kterého se má poslat zpráva."
-      },
-      "content": {
-        "name": "obsah",
-        "description": "Textový obsah zprávy."
-      },
-      "reference": {
-        "name": "reference",
-        "description": "Odkaz na zprávu, na kterou má odkazovat tato zpráva."
-      },
-      "attachment": {
-        "name": "priloha",
-        "description": "Příloha"
-      }
-    }
-  },
-  "unverify": {
-    "name": "unverify",
-    "description": "Dočasné odebrání přístupu na server.",
-    "list": {
-      "name": "list",
-      "description": "Seznam uživatelů kteří mají odebraný přístup."
-    },
-    "update": {
-      "name": "update",
-      "description": "Aktualizace konce odebrání přístupu.",
-      "user": {
-        "name": "uzivatel",
-        "description": "Cílový uživatel"
-      },
-      "new-end": {
-        "name": "novy-konec",
-        "description": "Datum a čas nového konce. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
-      },
-      "reason": {
-        "name": "duvod",
-        "description": "Volitelný důvod, proč byla doba uživateli aktualizována."
-      }
-    },
-    "remove": {
-      "name": "remove",
-      "description": "Předčasné vrácení přístupu uživateli.",
-      "user": {
-        "name": "uzivatel",
-        "description": "Uživatel, kterému má být vrácen přístup."
-      }
-    },
-    "set": {
-      "name": "set",
-      "description": "Odebrání přístupu uživateli.",
-      "end": {
-        "name": "konec",
-        "description": "Datum a čas konce odebrání přístupu. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
-      },
-      "reason": {
-        "name": "duvod",
-        "description": "Důvod odebrání přístupu."
-      },
-      "users": {
-        "name": "uzivatele",
-        "description": "Seznam uživatelů"
-      }
-    },
-    "fun": {
-      "name": "fun",
-      "description": "Falešné odebrání přístupu uživateli.",
-      "end": {
-        "name": "konec",
-        "description": "Datum a čas konce odebrání přístupu. (1h/1d/1w/... nebo 2023-02-16T00:00:00)"
-      },
-      "reason": {
-        "name": "duvod",
-        "description": "Důvod odebrání přístupu."
-      },
-      "users": {
-        "name": "uzivatele",
-        "description": "Seznam uživatelů"
-      }
-    }
-  }
 }

@@ -18,8 +18,24 @@ public class CreateUserMeasuresWarning : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        var parameters = (CreateUserMeasuresWarningParams)Parameters[0]!;
+        await ProcessAsync((CreateUserMeasuresWarningParams)Parameters[0]!);
+        return ApiResult.Ok();
+    }
 
+    public async Task ProcessAsync(IGuildUser user, string message)
+    {
+        var parameters = new CreateUserMeasuresWarningParams
+        {
+            GuildId = user.GuildId.ToString(),
+            Message = message,
+            UserId = user.Id.ToString()
+        };
+
+        await ProcessAsync(parameters);
+    }
+
+    private async Task ProcessAsync(CreateUserMeasuresWarningParams parameters)
+    {
         var logRequest = new LogRequest
         {
             CreatedAt = DateTime.UtcNow,
@@ -34,6 +50,5 @@ public class CreateUserMeasuresWarning : ApiAction
         };
 
         await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
-        return ApiResult.Ok();
     }
 }

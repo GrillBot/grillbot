@@ -669,5 +669,10 @@
                 }
             }
         }
+    },
+    "UserModule": {
+        "CreateWarning": {
+            "Success": "The warning was successfully written."
+        }
     }
 }

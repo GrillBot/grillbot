@@ -669,5 +669,10 @@
                 }
             }
         }
+    },
+    "UserModule": {
+        "CreateWarning": {
+            "Success": "Varování bylo úspěšně zapsáno."
+        }
     }
 }

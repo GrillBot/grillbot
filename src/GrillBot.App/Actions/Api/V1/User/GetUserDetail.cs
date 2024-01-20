@@ -159,7 +159,7 @@ public class GetUserDetail : ApiAction
             var moderator = moderators.Find(o => o.Id == item.UserId);
             var preview = (MemberWarningPreview)item.Preview!;
 
-            detail.UserMeasures.Add(new ApiModels.Users.UserMeasuresItem
+            detail.UserMeasures.Add(new ApiModels.UserMeasures.UserMeasuresItem
             {
                 CreatedAt = item.CreatedAt.ToLocalTime(),
                 Moderator = Mapper.Map<ApiModels.Users.User>(moderator),
@@ -173,7 +173,7 @@ public class GetUserDetail : ApiAction
             var moderator = moderators.Find(o => o.Id == item.FromUserId);
             var logData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(item.Data)!;
 
-            detail.UserMeasures.Add(new ApiModels.Users.UserMeasuresItem
+            detail.UserMeasures.Add(new ApiModels.UserMeasures.UserMeasuresItem
             {
                 CreatedAt = logData.Start,
                 Moderator = Mapper.Map<ApiModels.Users.User>(moderator),

@@ -1,7 +1,8 @@
 ﻿using GrillBot.Data.Enums;
+using GrillBot.Data.Models.API.Users;
 using System;
 
-namespace GrillBot.Data.Models.API.Users;
+namespace GrillBot.Data.Models.API.UserMeasures;
 
 public class UserMeasuresItem
 {

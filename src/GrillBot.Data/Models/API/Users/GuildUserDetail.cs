@@ -2,6 +2,7 @@
 using GrillBot.Data.Models.API.Guilds;
 using System.Collections.Generic;
 using GrillBot.Data.Models.API.Unverify;
+using GrillBot.Data.Models.API.UserMeasures;
 
 namespace GrillBot.Data.Models.API.Users;
 

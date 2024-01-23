@@ -208,7 +208,7 @@ public class MessageCacheManager : IMessageCacheManager
 
     /// <summary>
     /// Checks if error created from discord api is expected.
-    /// Expected is InternalServerError, ServiceUnavailable, UnknownChannel and UnknownMessage. 
+    /// Expected is InternalServerError, ServiceUnavailable, UnknownChannel and UnknownMessage.
     /// </summary>
     private static bool IsApiExpectedError(HttpException ex)
         => ex.IsExpectedOutageError() || ex.DiscordCode == DiscordErrorCode.UnknownChannel || ex.DiscordCode == DiscordErrorCode.UnknownMessage;

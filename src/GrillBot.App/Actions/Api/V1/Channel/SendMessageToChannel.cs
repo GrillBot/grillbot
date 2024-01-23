@@ -25,7 +25,7 @@ public class SendMessageToChannel : ApiAction
     {
         var guildId = (ulong)Parameters[0]!;
         var channelId = (ulong)Parameters[1]!;
-        var parameters = (SendMessageToChannelParams)Parameters[0]!;
+        var parameters = (SendMessageToChannelParams)Parameters[2]!;
 
         await ProcessAsync(guildId, channelId, parameters);
         return ApiResult.Ok();
@@ -47,15 +47,11 @@ public class SendMessageToChannel : ApiAction
 
     private async Task<ITextChannel> FindChannelAsync(ulong guildId, ulong channelId)
     {
-        var guild = await DiscordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);
-        if (guild == null)
-            throw new NotFoundException(Texts["ChannelModule/PostMessage/GuildNotFound", ApiContext.Language]);
+        var guild = await DiscordClient.GetGuildAsync(guildId, CacheMode.CacheOnly)
+            ?? throw new NotFoundException(Texts["ChannelModule/PostMessage/GuildNotFound", ApiContext.Language]);
 
         var channel = await guild.GetTextChannelAsync(channelId);
-        if (channel == null)
-            throw new NotFoundException(Texts["ChannelModule/PostMessage/ChannelNotFound", ApiContext.Language].FormatWith(guild.Name));
-
-        return channel;
+        return (ITextChannel?)channel ?? throw new NotFoundException(Texts["ChannelModule/PostMessage/ChannelNotFound", ApiContext.Language].FormatWith(guild.Name));
     }
 
     private static MessageReference? CreateReference(string? reference, ulong guildId, ulong channelId)

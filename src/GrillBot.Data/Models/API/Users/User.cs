@@ -11,7 +11,7 @@ public class User
     /// Username.
     /// </summary>
     public string Username { get; set; } = null!;
-    
+
     public string? GlobalAlias { get; set; }
 
     /// <summary>

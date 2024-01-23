@@ -40,17 +40,20 @@ public class GetUserMeasuresList : ApiAction
         var memberWarnings = await ReadMemberWarningsAsync(parameters);
         var unverifyLogs = await ReadUnverifyLogsAsync(repository, parameters);
         var allItems = await MergeAndMapAsync(repository, memberWarnings, unverifyLogs);
-        var result = PaginatedResponse<UserMeasuresListItem>.Create(allItems, parameters.Pagination);
+        var result = PaginatedResponse<UserMeasuresListItem>.Create(FilterItems(allItems, parameters), parameters.Pagination);
 
         return ApiResult.Ok(result);
     }
 
     private async Task<List<LogListItem>> ReadMemberWarningsAsync(UserMeasuresParams parameters)
     {
+        var createdFrom = parameters.CreatedFrom is not null ? parameters.CreatedFrom.Value.WithKind(DateTimeKind.Local).ToUniversalTime() : (DateTime?)null;
+        var createdto = parameters.CreatedTo is not null ? parameters.CreatedTo.Value.WithKind(DateTimeKind.Local).ToUniversalTime() : (DateTime?)null;
+
         var searchRequest = new AuditLogModels.Request.Search.SearchRequest
         {
-            CreatedFrom = parameters.CreatedFrom,
-            CreatedTo = parameters.CreatedTo,
+            CreatedFrom = createdFrom,
+            CreatedTo = createdto,
             GuildId = parameters.GuildId,
             Pagination =
             {
@@ -123,8 +126,7 @@ public class GetUserMeasuresList : ApiAction
         return result.Data;
     }
 
-    private async Task<List<UserMeasuresListItem>> MergeAndMapAsync(GrillBotRepository repository, List<AuditLogModels.Response.Search.LogListItem> memberWarnings,
-        List<UnverifyLog> unverifyLogs)
+    private async Task<List<UserMeasuresListItem>> MergeAndMapAsync(GrillBotRepository repository, List<LogListItem> memberWarnings, List<UnverifyLog> unverifyLogs)
     {
         var result = new List<UserMeasuresListItem>();
 
@@ -160,7 +162,6 @@ public class GetUserMeasuresList : ApiAction
         }
 
         return result.OrderByDescending(o => o.CreatedAt).ToList();
-
     }
 
     private async Task<ApiModels.Guilds.Guild> ReadGuildAsync(GrillBotRepository repository, string guildId)
@@ -185,5 +186,12 @@ public class GetUserMeasuresList : ApiAction
         CachedUsers.Add(userId, user);
 
         return user;
+    }
+
+    private static List<UserMeasuresListItem> FilterItems(List<UserMeasuresListItem> items, UserMeasuresParams parameters)
+    {
+        return parameters.Type is not null ?
+            items.FindAll(o => o.Type == parameters.Type.Value) :
+            items;
     }
 }

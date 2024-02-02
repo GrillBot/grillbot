@@ -35,6 +35,8 @@ public class UserInitSynchronizationHandler : IReadyEvent
             foreach (var user in users.Where(o => o.GuildId == guild.Id.ToString()))
             {
                 user.User!.Status = UserStatus.Offline;
+                user.IsInGuild = false;
+
                 if (!members.TryGetValue(user.UserId.ToUlong(), out var guildUser))
                     continue;
 

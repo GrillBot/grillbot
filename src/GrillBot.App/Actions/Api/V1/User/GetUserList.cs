@@ -1,4 +1,6 @@
-﻿using GrillBot.Common.Models;
+﻿using GrillBot.Common.Extensions;
+using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
@@ -10,17 +12,22 @@ public class GetUserList : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
+    private ITextsManager Texts { get; }
 
-    public GetUserList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient) : base(apiContext)
+    public GetUserList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient,
+        ITextsManager texts) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
+        Texts = texts;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (GetUserListParams)Parameters[0]!;
-        parameters.FixStatus();
+
+        FixStatus(parameters);
+        ValidateParameters(parameters);
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -54,5 +61,24 @@ public class GetUserList : ApiAction
         }
 
         return result;
+    }
+
+    public void FixStatus(GetUserListParams parameters)
+    {
+        parameters.Status = parameters.Status switch
+        {
+            UserStatus.Invisible => UserStatus.Offline,
+            UserStatus.AFK => UserStatus.Idle,
+            _ => parameters.Status
+        };
+    }
+
+    private void ValidateParameters(GetUserListParams parameters)
+    {
+        if (parameters.HideLeftUsers && string.IsNullOrEmpty(parameters.GuildId))
+        {
+            throw new ValidationException(Texts["User/Validation/CannotHideMissingGuildId", ApiContext.Language])
+                .ToBadRequestValidation(parameters.HideLeftUsers, nameof(parameters.HideLeftUsers), nameof(parameters.GuildId));
+        }
     }
 }

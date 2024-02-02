@@ -497,6 +497,9 @@
             "Unverify": "Unverify",
             "Timeout": "Timeout",
             "MemberWarning": "Warning"
+        },
+        "Validation": {
+            "CannotHideMissingGuildId": "Cannot hide users who are not on the server. First, fill in the server filter."
         }
     },
     "Emojization": {

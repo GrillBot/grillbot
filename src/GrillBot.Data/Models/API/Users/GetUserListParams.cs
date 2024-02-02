@@ -25,6 +25,11 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
     public string? GuildId { get; set; }
 
     /// <summary>
+    /// Hide non-guild users. Works only if <see cref="GuildId" /> is filled. Otherwise validation error will show.
+    /// </summary>
+    public bool HideLeftUsers { get; set; }
+
+    /// <summary>
     /// Selected flags from UserFlags enum.
     /// </summary>
     public long? Flags { get; set; }
@@ -62,9 +67,14 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
         }
 
         if (!string.IsNullOrEmpty(GuildId))
-            query = query.Where(o => o.Guilds.Any(x => x.GuildId == GuildId));
+        {
+            if (!HideLeftUsers)
+                query = query.Where(o => o.Guilds.Any(x => x.GuildId == GuildId));
+            else
+                query = query.Where(o => o.Guilds.Any(x => GuildId == x.GuildId && x.IsInGuild));
+        }
 
-        if (Flags != null)
+        if (Flags != null && Flags > 0)
             query = query.Where(o => (o.Flags & Flags) == Flags);
 
         if (HaveBirthday)
@@ -88,16 +98,6 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
         };
     }
 
-    public void FixStatus()
-    {
-        Status = Status switch
-        {
-            UserStatus.Invisible => UserStatus.Offline,
-            UserStatus.AFK => UserStatus.Idle,
-            _ => Status
-        };
-    }
-
     public Dictionary<string, string?> ToDictionary()
     {
         var result = new Dictionary<string, string?>
@@ -107,6 +107,7 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
             { nameof(Flags), (Flags ?? 0).ToString() },
             { nameof(HaveBirthday), HaveBirthday.ToString() },
             { nameof(UsedInviteCode), UsedInviteCode },
+            { nameof(HideLeftUsers), HideLeftUsers.ToString() }
         };
 
         if (Status != null)

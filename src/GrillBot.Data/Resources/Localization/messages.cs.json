@@ -497,6 +497,9 @@
             "Unverify": "Unverify",
             "Timeout": "Dočasné umlčení",
             "MemberWarning": "Varování"
+        },
+        "Validation": {
+            "CannotHideMissingGuildId": "Nelze skrýt uživatele, kteří nejsou na serveru. Nejprve vyplň filtr serveru."
         }
     },
     "Emojization": {

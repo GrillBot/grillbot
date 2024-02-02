@@ -45,6 +45,8 @@ public class GuildUser
     [MinLength(2)]
     public string? Nickname { get; set; }
 
+    public bool IsInGuild { get; set; }
+
     public ISet<GuildUserChannel> Channels { get; set; }
     public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
     public ISet<Nickname> Nicknames { get; set; }
@@ -76,6 +78,7 @@ public class GuildUser
     public void Update(IGuildUser user)
     {
         Nickname = user.IsUser() ? user.Nickname : user.Nickname?.Cut(32, true);
+        IsInGuild = true;
         User?.Update(user);
     }
 }

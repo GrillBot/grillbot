@@ -9,6 +9,8 @@ using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events;
 using GrillBot.Common.Managers.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.WebSockets;
+using System.Net.Sockets;
 
 namespace GrillBot.App.Services.Discord;
 
@@ -65,8 +67,18 @@ public class DiscordService : IHostedService
 
     private async Task OnLogAsync(LogMessage message)
     {
-        if (message.Source != "Gateway" || message.Exception == null || Environment.IsDevelopment()) return;
-        if (message.Exception is GatewayReconnectException && message.Exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase))
+        if (message.Source != "Gateway" || message.Exception == null || Environment.IsDevelopment())
+            return;
+
+        /*
+         * Shutdown bot while network errors.
+         * 1) Server missed last heartbeat - Caused due to slow network connection.
+         * 2) Bot is not able keep stable websocket connection (Broken pipe) - Caused due to network outages (probably).
+         */
+        var canShutdown = (message.Exception is GatewayReconnectException && message.Exception.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase)) ||
+            (message.Exception is WebSocketException && message.Exception.InnerException is IOException && message.Exception.InnerException.InnerException is SocketException ex && (ex.NativeErrorCode == 32 || ex.ErrorCode == 32));
+
+        if (canShutdown)
         {
             await Task.Delay(3000);
             Process.GetCurrentProcess().Kill();

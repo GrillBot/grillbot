@@ -201,7 +201,7 @@ public class Startup
         app.UseAuthentication();
 
         app.UseOpenApi();
-        app.UseSwaggerUi3(settings =>
+        app.UseSwaggerUi(settings =>
         {
             settings.TransformToExternalPath = (route, request) =>
             {

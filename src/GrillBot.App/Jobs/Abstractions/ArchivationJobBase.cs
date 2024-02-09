@@ -17,60 +17,70 @@ public abstract class ArchivationJobBase : Job
         DatabaseBuilder = serviceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
     }
 
-    protected static IEnumerable<XAttribute> CreateMetadata(int count)
+    protected static JArray TransformGuilds(IEnumerable<Database.Entity.Guild?> guilds)
     {
-        yield return new XAttribute("CreatedAt", DateTime.Now.ToString("o"));
-        yield return new XAttribute("Count", count);
-    }
-
-    protected static IEnumerable<XElement> TransformGuilds(IEnumerable<Database.Entity.Guild?> guilds)
-    {
-        return guilds
+        var guildObjects = guilds
             .Where(o => o != null)
             .DistinctBy(o => o!.Id)
-            .Select(o => new XElement("Guild", new XAttribute("Id", o!.Id), new XAttribute("Name", o.Name)));
+            .Select(o => new JObject
+            {
+                ["Id"] = o!.Id,
+                ["Name"] = o.Name
+            });
+
+        return new JArray(guildObjects);
     }
 
-    protected static IEnumerable<XElement> TransformUsers(IEnumerable<Database.Entity.User?> users)
-        => users.Where(o => o is not null).DistinctBy(o => o!.Id).Select(u => TransformUser(u!));
-
-    protected static IEnumerable<XElement> TransformGuildUsers(IEnumerable<Database.Entity.GuildUser> guildUsers)
+    protected static JArray TransformUsers(IEnumerable<Database.Entity.User?> users)
     {
-        return guildUsers.DistinctBy(o => $"{o.UserId}/{o.GuildId}").Select(u =>
+        var userObjects = users
+            .Where(o => o is not null)
+            .DistinctBy(o => o!.Id)
+            .Select(u => TransformUser(u!));
+
+        return new JArray(userObjects);
+    }
+
+    protected static JArray TransformGuildUsers(IEnumerable<Database.Entity.GuildUser> guildUsers)
+    {
+        var userObjects = guildUsers.DistinctBy(o => $"{o.UserId}/{o.GuildId}").Select(u =>
         {
             var user = TransformUser(u.User!);
-            user.Name = "GuildUser";
-
-            user.Add(new XAttribute("GuildId", u.GuildId));
-            user.Attribute("FullName")!.Value = u.DisplayName ?? "";
+            user["GuildId"] = u.GuildId;
+            user["FullName"] = u.DisplayName ?? "";
 
             if (!string.IsNullOrEmpty(u.UsedInviteCode))
-                user.Add(new XAttribute("UsedInviteCode", u.UsedInviteCode));
+                user["UsedInviteCode"] = u.UsedInviteCode;
 
             return user;
         });
+
+        return new JArray(userObjects);
     }
 
-    private static XElement TransformUser(Database.Entity.User user)
+    private static JObject TransformUser(Database.Entity.User user)
     {
-        var element = new XElement(
-            "User",
-            new XAttribute("Id", user.Id),
-            new XAttribute("FullName", user.Username)
-        );
+        var json = new JObject
+        {
+            ["Id"] = user.Id,
+            ["FullName"] = user.Username
+        };
 
         if (user.Flags > 0)
-            element.Add(new XAttribute("Flags", user.Flags));
+            json["Flags"] = user.Flags;
 
-        return element;
+        return json;
     }
 
-    protected static async Task AddXmlToZipAsync(ZipArchive archive, XElement xml, string xmlName)
+    protected static async Task AddJsonToZipAsync(ZipArchive archive, JObject json, string jsonName)
     {
-        var entry = archive.CreateEntry(xmlName);
+        var entry = archive.CreateEntry(jsonName);
         entry.LastWriteTime = DateTimeOffset.Now;
 
         await using var entryStream = entry.Open();
-        await xml.SaveAsync(entryStream, SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting, CancellationToken.None);
+        await using var streamWriter = new StreamWriter(entryStream);
+
+        await streamWriter.WriteAsync(json.ToString(Formatting.None));
+        await streamWriter.FlushAsync();
     }
 }

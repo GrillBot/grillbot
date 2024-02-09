@@ -27,54 +27,54 @@ public class AuditLogClearingJob : ArchivationJobBase
         if (archivationResult is null)
             return;
 
-        var xmlData = XElement.Parse(archivationResult.Xml);
+        var jsonData = JObject.Parse(archivationResult.Content);
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        await ProcessGuildsAsync(repository, archivationResult.GuildIds, xmlData);
-        await ProcessChannelsAsync(repository, archivationResult.ChannelIds, xmlData);
-        await ProcessUsersAsync(repository, archivationResult.UserIds, xmlData);
+        await ProcessGuildsAsync(repository, archivationResult.GuildIds, jsonData);
+        await ProcessChannelsAsync(repository, archivationResult.ChannelIds, jsonData);
+        await ProcessUsersAsync(repository, archivationResult.UserIds, jsonData);
 
-        var zipSize = await StoreDataAsync(xmlData, archivationResult.Files);
-        var xmlSize = Encoding.UTF8.GetBytes(xmlData.ToString()).Length.Bytes().ToString();
+        var zipSize = await StoreDataAsync(jsonData, archivationResult.Files);
+        var xmlSize = Encoding.UTF8.GetBytes(jsonData.ToString(Formatting.None)).Length.Bytes().ToString();
         var formattedZipSize = zipSize.Bytes().ToString();
 
         await AuditLogServiceClient.BulkDeleteAsync(archivationResult.Ids);
         context.Result = BuildReport(archivationResult, xmlSize, formattedZipSize);
     }
 
-    private static IEnumerable<XElement> TransformChannels(IEnumerable<GuildChannel?> channels)
+    private static IEnumerable<JObject> TransformChannels(IEnumerable<GuildChannel?> channels)
     {
         return channels
             .Where(o => o is not null)
             .DistinctBy(o => $"{o!.ChannelId}/{o.GuildId}").Select(ch =>
             {
-                var channel = new XElement("Channel");
-                channel.Add(
-                    new XAttribute("Id", ch!.ChannelId),
-                    new XAttribute("Name", ch.Name),
-                    new XAttribute("Type", ch.ChannelType.ToString()),
-                    new XAttribute("GuildId", ch.GuildId)
-                );
+                var channel = new JObject
+                {
+                    ["Id"] = ch!.ChannelId,
+                    ["Name"] = ch.Name,
+                    ["Type"] = ch.ChannelType.ToString(),
+                    ["GuildId"] = ch.GuildId
+                };
 
                 if (ch.UserPermissionsCount > 0)
-                    channel.Add(new XAttribute("UserPermissionsCount", ch.UserPermissionsCount));
+                    channel["UserPermissionsCount"] = ch.UserPermissionsCount;
                 if (ch.RolePermissionsCount > 0)
-                    channel.Add(new XAttribute("RolePermissionsCount", ch.RolePermissionsCount));
+                    channel["RolePermissionsCount"] = ch.RolePermissionsCount;
                 if (ch.Flags > 0)
-                    channel.Add(new XAttribute("Flags", ch.Flags));
+                    channel["Flags"] = ch.Flags;
                 if (!string.IsNullOrEmpty(ch.ParentChannelId))
-                    channel.Add(new XAttribute("ParentChannelId", ch.ParentChannelId));
+                    channel["ParentChannelId"] = ch.ParentChannelId;
 
                 return channel;
             });
     }
 
-    private async Task<long> StoreDataAsync(XElement xml, IEnumerable<string> files)
+    private async Task<long> StoreDataAsync(JObject json, IEnumerable<string> files)
     {
-        var xmlBaseName = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}";
+        var jsonBaseName = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}";
         var temporaryPath = Path.GetTempPath();
-        var zipName = $"{xmlBaseName}.zip";
+        var zipName = $"{jsonBaseName}.zip";
         var zipPath = Path.Combine(temporaryPath, zipName);
         long archiveSize;
 
@@ -82,11 +82,11 @@ public class AuditLogClearingJob : ArchivationJobBase
         {
             using (var zipArchive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                await AddXmlToZipAsync(zipArchive, xml, $"{xmlBaseName}.xml");
+                await AddJsonToZipAsync(zipArchive, json, $"{jsonBaseName}.json");
                 await AddFilesToArchiveAsync(files, zipArchive);
             }
 
-            using var reader = File.OpenRead(zipPath);
+            await using var reader = File.OpenRead(zipPath);
             var archiveManager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogArchives);
             await archiveManager.UploadAsync(zipName, reader);
         }
@@ -126,7 +126,7 @@ public class AuditLogClearingJob : ArchivationJobBase
             var entry = archive.CreateEntry(file);
             entry.LastWriteTime = DateTimeOffset.UtcNow;
 
-            using var ms = new MemoryStream(fileContent);
+            await using var ms = new MemoryStream(fileContent);
             await using var archiveStream = entry.Open();
             await ms.CopyToAsync(archiveStream);
 
@@ -137,38 +137,38 @@ public class AuditLogClearingJob : ArchivationJobBase
         }
     }
 
-    private static async Task ProcessGuildsAsync(GrillBotRepository repository, List<string> guildIds, XContainer xmlData)
+    private static async Task ProcessGuildsAsync(GrillBotRepository repository, List<string> guildIds, JObject json)
     {
         var guilds = new List<Guild>();
         foreach (var guildChunk in guildIds.Chunk(100))
             guilds.AddRange(await repository.Guild.GetGuildsByIdsAsync(guildChunk.ToList()));
-        xmlData.Add(TransformGuilds(guilds));
+        json["Guilds"] = new JArray(TransformGuilds(guilds));
     }
 
-    private static async Task ProcessChannelsAsync(GrillBotRepository repository, List<string> channelIds, XContainer xmlData)
+    private static async Task ProcessChannelsAsync(GrillBotRepository repository, List<string> channelIds, JObject json)
     {
         var channels = new List<GuildChannel?>();
         foreach (var channelChunk in channelIds.Chunk(100))
             channels.AddRange(await repository.Channel.GetChannelsByIdsAsync(channelChunk.ToList()));
 
-        xmlData.Add(TransformChannels(channels));
+        json["Channels"] = new JArray(TransformChannels(channels));
     }
 
-    private static async Task ProcessUsersAsync(GrillBotRepository repository, List<string> userIds, XContainer xmlData)
+    private static async Task ProcessUsersAsync(GrillBotRepository repository, List<string> userIds, JObject json)
     {
         var users = new List<User?>();
         foreach (var userChunk in userIds.Chunk(100))
             users.AddRange(await repository.User.GetUsersByIdsAsync(userChunk.ToList()));
 
-        xmlData.Add(TransformUsers(users));
+        json["Users"] = new JArray(TransformUsers(users));
     }
 
-    private static string BuildReport(ArchivationResult result, string xmlSize, string zipSize)
+    private static string BuildReport(ArchivationResult result, string jsonSize, string zipSize)
     {
         var totalFilesSize = result.TotalFilesSize.Bytes().ToString();
 
         var builder = new StringBuilder()
-            .AppendFormat("Items: {0}, Files: {1} ({2}), XmlSize: {3}, ZipSize: {4}", result.ItemsCount, result.Files.Count, totalFilesSize, xmlSize, zipSize)
+            .AppendFormat("Items: {0}, Files: {1} ({2}), JsonSize: {3}, ZipSize: {4}", result.ItemsCount, result.Files.Count, totalFilesSize, jsonSize, zipSize)
             .AppendLine()
             .AppendLine();
 

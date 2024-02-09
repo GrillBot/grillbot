@@ -1,5 +1,4 @@
 ﻿using System.IO.Compression;
-using System.Xml.Linq;
 using GrillBot.App.Helpers;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
@@ -29,50 +28,54 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
             return;
 
         var data = await repository.Unverify.GetLogsForArchivationAsync(expirationMilestone);
-        var logRoot = new XElement("UnverifyLog");
-
-        logRoot.Add(CreateMetadata(data.Count));
-        logRoot.Add(TransformGuilds(data.Select(o => o.Guild)));
+        var logRoot = new JObject
+        {
+            ["CreatedAt"] = DateTime.Now.ToString("o"),
+            ["Count"] = data.Count,
+            ["Guilds"] = TransformGuilds(data.Select(o => o.Guild))
+        };
 
         var users = data
             .Select(o => o.FromUser!)
             .Concat(data.Select(o => o.ToUser!))
             .Where(o => o is not null)
             .DistinctBy(o => $"{o!.UserId}/{o.GuildId}");
-        logRoot.Add(TransformGuildUsers(users));
+        logRoot.Add("Users", TransformGuildUsers(users));
 
+        var items = new JArray();
         foreach (var item in data)
         {
-            var element = new XElement("Item");
+            var jsonElement = new JObject
+            {
+                ["Id"] = item.Id,
+                ["Operation"] = item.Operation.ToString(),
+                ["GuildId"] = item.GuildId,
+                ["FromUserId"] = item.FromUserId,
+                ["ToUserId"] = item.ToUserId,
+                ["CreatedAt"] = item.CreatedAt.ToString("o"),
+                ["Data"] = item.Data
+            };
 
-            element.Add(
-                new XAttribute("Id", item.Id),
-                new XAttribute("Operation", item.Operation.ToString()),
-                new XAttribute("GuildId", item.GuildId),
-                new XAttribute("FromUserId", item.FromUserId),
-                new XAttribute("ToUserId", item.ToUserId),
-                new XAttribute("CreatedAt", item.CreatedAt.ToString("o")),
-                new XElement("Data", item.Data)
-            );
-
-            logRoot.Add(element);
+            items.Add(jsonElement);
             repository.Remove(item);
         }
+
+        logRoot.Add("Items", items);
 
         var archiveSize = await SaveDataAsync(logRoot);
         await repository.CommitAsync();
 
-        var xmlSize = Encoding.UTF8.GetBytes(logRoot.ToString()).Length.Bytes().ToString();
+        var xmlSize = Encoding.UTF8.GetBytes(logRoot.ToString(Formatting.None)).Length.Bytes().ToString();
         var zipSize = archiveSize.Bytes().ToString();
 
         context.Result = BuildReport(xmlSize, zipSize, data);
     }
 
-    private async Task<long> SaveDataAsync(XElement xml)
+    private async Task<long> SaveDataAsync(JObject json)
     {
-        var xmlBaseName = $"UnverifyLog_{DateTime.Now:yyyyMMdd_HHmmss}";
+        var jsonBaseName = $"UnverifyLog_{DateTime.Now:yyyyMMdd_HHmmss}";
         var temporaryPath = Path.GetTempPath();
-        var zipName = $"{xmlBaseName}.zip";
+        var zipName = $"{jsonBaseName}.zip";
         var zipPath = Path.Combine(temporaryPath, zipName);
         long archiveSize;
 
@@ -80,10 +83,10 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
         {
             using (var zipArchive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                await AddXmlToZipAsync(zipArchive, xml, $"{xmlBaseName}.xml");
+                await AddJsonToZipAsync(zipArchive, json, $"{jsonBaseName}.json");
             }
 
-            using var reader = File.OpenRead(zipPath);
+            await using var reader = File.OpenRead(zipPath);
             var archiveManager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.UnverifyLogArchives);
             await archiveManager.UploadAsync(zipName, reader);
         }
@@ -98,10 +101,10 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
         return archiveSize;
     }
 
-    private static string BuildReport(string xmlSize, string zipSize, List<Database.Entity.UnverifyLog> data)
+    private static string BuildReport(string jsonSize, string zipSize, List<Database.Entity.UnverifyLog> data)
     {
         var builder = new StringBuilder()
-            .AppendFormat("Items: {0}, XmlSize: {1}, ZipSize: {0}", xmlSize, zipSize)
+            .AppendFormat("Items: {0}, JsonSize: {1}, ZipSize: {0}", jsonSize, zipSize)
             .AppendLine()
             .AppendLine();
 

@@ -8,14 +8,12 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Database.Enums.Internal;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.AuditLog.Models.Response.Search;
-using GrillBot.Core.Services.AuditLog.Models.Request.Search;
-using GrillBot.Core.Services.AuditLog.Enums;
-using System.Text.Json;
 using GrillBot.Database.Services.Repository;
 using ApiModels = GrillBot.Data.Models.API;
 using Entity = GrillBot.Database.Entity;
+using GrillBot.Core.Services.UserMeasures;
+using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
+using GrillBot.Data.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -26,17 +24,17 @@ public class GetUserDetail : ApiAction
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
     private IPointsServiceClient PointsServiceClient { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private IUserMeasuresServiceClient UserMeasuresService { get; }
 
     public GetUserDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
-        IPointsServiceClient pointsServiceClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+        IPointsServiceClient pointsServiceClient, IUserMeasuresServiceClient userMeasuresService) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = discordClient;
         Texts = texts;
         PointsServiceClient = pointsServiceClient;
-        AuditLogServiceClient = auditLogServiceClient;
+        UserMeasuresService = userMeasuresService;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -143,99 +141,43 @@ public class GetUserDetail : ApiAction
 
     private async Task SetUserMeasuresAsync(GrillBotRepository repository, ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
-        var memberWarnings = await ReadMemberWarningsAsync(entity);
-        var unverifyLogs = await ReadUnverifyLogsAsync(repository, entity);
-
-        var moderatorIds = memberWarnings
-            .Select(o => o.UserId!)
-            .Concat(unverifyLogs.Select(o => o.FromUserId!))
-            .Where(o => !string.IsNullOrEmpty(o))
-            .Distinct()
-            .ToList();
-        var moderators = await repository.User.GetUsersByIdsAsync(moderatorIds);
-
-        foreach (var item in memberWarnings)
-        {
-            var moderator = moderators.Find(o => o.Id == item.UserId);
-            var preview = (MemberWarningPreview)item.Preview!;
-
-            detail.UserMeasures.Add(new ApiModels.UserMeasures.UserMeasuresItem
-            {
-                CreatedAt = item.CreatedAt.ToLocalTime(),
-                Moderator = Mapper.Map<ApiModels.Users.User>(moderator),
-                Reason = preview.Reason,
-                Type = Data.Enums.UserMeasuresType.Warning,
-            });
-        }
-
-        foreach (var item in unverifyLogs)
-        {
-            var moderator = moderators.Find(o => o.Id == item.FromUserId);
-            var logData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(item.Data)!;
-
-            detail.UserMeasures.Add(new ApiModels.UserMeasures.UserMeasuresItem
-            {
-                CreatedAt = logData.Start,
-                Moderator = Mapper.Map<ApiModels.Users.User>(moderator),
-                Reason = logData.Reason!,
-                Type = Data.Enums.UserMeasuresType.Unverify,
-                ValidTo = logData.End
-            });
-        }
-
-        detail.UserMeasures = detail.UserMeasures.OrderByDescending(o => o.CreatedAt).ToList();
-    }
-
-    private async Task<List<LogListItem>> ReadMemberWarningsAsync(Entity.GuildUser entity)
-    {
-        var searchRequest = new SearchRequest
+        var parameters = new MeasuresListParams
         {
             GuildId = entity.GuildId,
+            UserId = entity.UserId,
             Pagination =
             {
                 Page = 0,
                 PageSize = int.MaxValue
-            },
-            ShowTypes = new List<LogType> { LogType.MemberWarning },
-            AdvancedSearch = new AdvancedSearchRequest
-            {
-                MemberWarning = new UserIdSearchRequest
-                {
-                    UserId = entity.UserId
-                }
             }
         };
 
-        var searchResult = await AuditLogServiceClient.SearchItemsAsync(searchRequest);
-        searchResult.ValidationErrors.AggregateAndThrow();
+        var measuresResult = await UserMeasuresService.GetMeasuresListAsync(parameters);
+        measuresResult.ValidationErrors.AggregateAndThrow();
 
-        var serializationOptions = new JsonSerializerOptions
+        var measures = measuresResult.Response!.Data;
+
+        var moderatorIds = measures.Select(o => o.ModeratorId).Distinct().ToList();
+        var moderators = await repository.User.GetUsersByIdsAsync(moderatorIds);
+
+        foreach (var measure in measures)
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DictionaryKeyPolicy = JsonNamingPolicy.CamelCase
-        };
+            var moderator = moderators.Find(o => o.Id == measure.ModeratorId);
 
-        foreach (var item in searchResult.Response!.Data.Where(o => o.Preview is JsonElement))
-            item.Preview = ((JsonElement)item.Preview!).Deserialize<MemberWarningPreview>(serializationOptions);
-
-        return searchResult.Response!.Data;
-    }
-
-    private static async Task<List<Entity.UnverifyLog>> ReadUnverifyLogsAsync(GrillBotRepository repository, Entity.GuildUser entity)
-    {
-        var logRequest = new ApiModels.Unverify.UnverifyLogParams
-        {
-            GuildId = entity.GuildId,
-            Operation = Database.Enums.UnverifyOperation.Unverify,
-            Pagination =
+            detail.UserMeasures.Add(new ApiModels.UserMeasures.UserMeasuresItem
             {
-                Page = 0,
-                PageSize = int.MaxValue
-            },
-            ToUserId = entity.UserId
-        };
-
-        var result = await repository.Unverify.GetLogsAsync(logRequest, logRequest.Pagination, new List<string>());
-        return result.Data;
+                CreatedAt = measure.CreatedAtUtc.ToLocalTime(),
+                Moderator = Mapper.Map<ApiModels.Users.User>(moderator),
+                ValidTo = measure.ValidTo?.ToLocalTime(),
+                Type = measure.Type switch
+                {
+                    "Warning" => UserMeasuresType.Warning,
+                    "Timeout" => UserMeasuresType.Timeout,
+                    "Unverify" => UserMeasuresType.Unverify,
+                    _ => 0
+                },
+                Reason = measure.Reason
+            });
+        }
     }
 }

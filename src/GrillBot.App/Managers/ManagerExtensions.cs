@@ -15,7 +15,8 @@ public static class ManagerExtensions
             .AddScoped<UnverifyProfileManager>()
             .AddScoped<UnverifyMessageManager>()
             .AddScoped<UnverifyCheckManager>()
-            .AddSingleton<PinManager>();
+            .AddSingleton<PinManager>()
+            .AddScoped<UnverifyRabbitMQManager>();
 
         return services;
     }

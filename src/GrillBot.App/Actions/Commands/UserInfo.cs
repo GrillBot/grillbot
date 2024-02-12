@@ -179,7 +179,8 @@ public class UserInfo : CommandAction
     private async Task SetUnverifyInfoAsync(EmbedBuilder builder, IGuildUser user, GrillBotRepository repository)
     {
         if (OverLimit) return;
-        var (unverifyCount, selfunverifyCount) = await repository.Unverify.GetUserStatsAsync(user);
+
+        var (unverifyCount, selfunverifyCount) = await repository.Unverify.GetUserStatsAsync(user.GuildId.ToString(), user.Id.ToString());
         if (unverifyCount > 0) AddField(builder, "UnverifyCount", unverifyCount.ToString(), true);
         if (selfunverifyCount > 0) AddField(builder, "SelfUnverifyCount", selfunverifyCount.ToString(), true);
 

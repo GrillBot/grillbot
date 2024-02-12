@@ -19,12 +19,12 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
     }
 
-    public async Task<(int unverify, int selfunverify)> GetUserStatsAsync(IGuildUser user)
+    public async Task<(int unverify, int selfunverify)> GetUserStatsAsync(string guildId, string userId)
     {
         using (CreateCounter())
         {
             var data = await Context.UnverifyLogs.AsNoTracking()
-                .Where(o => o.ToUserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString() && (o.Operation == UnverifyOperation.Unverify || o.Operation == UnverifyOperation.Selfunverify))
+                .Where(o => o.ToUserId == userId && o.GuildId == guildId && (o.Operation == UnverifyOperation.Unverify || o.Operation == UnverifyOperation.Selfunverify))
                 .GroupBy(o => o.Operation)
                 .Select(o => new { o.Key, Count = o.Count() })
                 .ToDictionaryAsync(o => o.Key, o => o.Count);

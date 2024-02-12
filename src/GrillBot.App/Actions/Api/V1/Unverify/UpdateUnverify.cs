@@ -17,15 +17,17 @@ public class UpdateUnverify : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private UnverifyLogManager UnverifyLogManager { get; }
     private UnverifyMessageManager MessageManager { get; }
+    private UnverifyRabbitMQManager UnverifyRabbitMQ { get; }
 
     public UpdateUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyLogManager unverifyLogManager,
-        UnverifyMessageManager messageManager) : base(apiContext)
+        UnverifyMessageManager messageManager, UnverifyRabbitMQManager unverifyRabbitMQ) : base(apiContext)
     {
         DiscordClient = discordClient;
         Texts = texts;
         DatabaseBuilder = databaseBuilder;
         UnverifyLogManager = unverifyLogManager;
         MessageManager = messageManager;
+        UnverifyRabbitMQ = unverifyRabbitMQ;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -47,6 +49,7 @@ public class UpdateUnverify : ApiAction
         var user = await repository.GuildUser.FindGuildUserAsync(toUser, includeAll: true);
         EnsureValidUser(user, parameters.EndAt);
         await UnverifyLogManager.LogUpdateAsync(DateTime.Now, parameters.EndAt, guild, fromUser, toUser, parameters.Reason);
+        await UnverifyRabbitMQ.SendModifyAsync(user!.Unverify!.SetOperationId, parameters.EndAt);
 
         user!.Unverify!.EndAt = parameters.EndAt;
         user.Unverify.StartAt = DateTime.Now;

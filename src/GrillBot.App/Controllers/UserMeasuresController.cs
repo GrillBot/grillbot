@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api.V1.UserMeasures;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +27,7 @@ public class UserMeasuresController : Core.Infrastructure.Actions.ControllerBase
     [HttpPost("list")]
     [ProducesResponseType(typeof(PaginatedResponse<UserMeasuresListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetUserMeasuresListAsync([FromBody] UserMeasuresParams parameters)
+    public async Task<IActionResult> GetUserMeasuresListAsync([FromBody] MeasuresListParams parameters)
     {
         ApiAction.Init(this, parameters);
         return await ProcessAsync<GetUserMeasuresList>(parameters);

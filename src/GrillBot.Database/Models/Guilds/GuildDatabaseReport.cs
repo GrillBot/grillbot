@@ -13,4 +13,5 @@ public class GuildDatabaseReport
     public int EmoteStats { get; set; }
     public int EmoteSuggestions { get; set; }
     public int PointTransactions { get; set; }
+    public int UserMeasures { get; set; }
 }

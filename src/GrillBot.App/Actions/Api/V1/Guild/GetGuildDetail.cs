@@ -10,6 +10,7 @@ using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
+using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models.Guilds;
@@ -25,9 +26,10 @@ public class GetGuildDetail : ApiAction
     private ITextsManager Texts { get; }
     private IPointsServiceClient PointsServiceClient { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private IUserMeasuresServiceClient UserMeasuresService { get; }
 
     public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, GrillBotCacheBuilder cacheBuilder,
-        ITextsManager texts, IPointsServiceClient pointsServiceClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+        ITextsManager texts, IPointsServiceClient pointsServiceClient, IAuditLogServiceClient auditLogServiceClient, IUserMeasuresServiceClient userMeasuresService) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
@@ -36,6 +38,7 @@ public class GetGuildDetail : ApiAction
         Texts = texts;
         PointsServiceClient = pointsServiceClient;
         AuditLogServiceClient = auditLogServiceClient;
+        UserMeasuresService = userMeasuresService;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -44,13 +47,12 @@ public class GetGuildDetail : ApiAction
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
-        var dbGuild = await repository.Guild.FindGuildByIdAsync(id, true);
-        if (dbGuild == null)
-            throw new NotFoundException(Texts["GuildModule/GuildDetail/NotFound", ApiContext.Language]);
+        var dbGuild = await repository.Guild.FindGuildByIdAsync(id, true)
+            ?? throw new NotFoundException(Texts["GuildModule/GuildDetail/NotFound", ApiContext.Language]);
 
         var detail = Mapper.Map<GuildDetail>(dbGuild);
         var discordGuild = await DiscordClient.GetGuildAsync(id);
-        if (discordGuild == null) 
+        if (discordGuild == null)
             return ApiResult.Ok(detail);
 
         detail.DatabaseReport = await CreateDatabaseReportAsync(id);
@@ -92,12 +94,14 @@ public class GetGuildDetail : ApiAction
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var report = await repository.Guild.GetDatabaseReportDataAsync(guildId);
-        report.AuditLogs = await AuditLogServiceClient.GetItemsCountOfGuildAsync(guildId);
 
         await using var cache = CacheBuilder.CreateRepository();
         report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
 
+        report.AuditLogs = await AuditLogServiceClient.GetItemsCountOfGuildAsync(guildId);
         report.PointTransactions = await GetPointsTransactionsCountAsync(guildId);
+        report.UserMeasures = await UserMeasuresService.GetItemsCountOfGuildAsync(guildId.ToString());
+
         return report;
     }
 

@@ -1,19 +1,18 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
+using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.Services.UserMeasures.Models.Events;
 using GrillBot.Data.Models.API.UserMeasures;
 
 namespace GrillBot.App.Actions.Api.V1.UserMeasures;
 
 public class CreateUserMeasuresWarning : ApiAction
 {
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private IRabbitMQPublisher RabbitMQ { get; }
 
-    public CreateUserMeasuresWarning(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public CreateUserMeasuresWarning(ApiRequestContext apiContext, IRabbitMQPublisher rabbitMQ) : base(apiContext)
     {
-        AuditLogServiceClient = auditLogServiceClient;
+        RabbitMQ = rabbitMQ;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -36,19 +35,15 @@ public class CreateUserMeasuresWarning : ApiAction
 
     private async Task ProcessAsync(CreateUserMeasuresWarningParams parameters)
     {
-        var logRequest = new LogRequest
+        var payload = new MemberWarningPayload
         {
+            Reason = parameters.Message,
             CreatedAt = DateTime.UtcNow,
             GuildId = parameters.GuildId,
-            MemberWarning = new MemberWarningRequest
-            {
-                Reason = parameters.Message,
-                TargetId = parameters.UserId
-            },
-            Type = LogType.MemberWarning,
-            UserId = ApiContext.GetUserId().ToString()
+            ModeratorId = ApiContext.GetUserId().ToString(),
+            TargetUserId = parameters.UserId
         };
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await RabbitMQ.PublishAsync(MemberWarningPayload.QueueName, payload);
     }
 }

@@ -22,7 +22,7 @@ public class GetPublicApiMethods : ApiAction
 
     private IEnumerable<MethodInfo> GetMethods()
     {
-        var controllerType = typeof(Controller);
+        var controllerType = typeof(Core.Infrastructure.Actions.ControllerBase);
         var assembly = GetType().Assembly;
 
         var controllers = assembly.GetTypes()

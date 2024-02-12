@@ -496,7 +496,7 @@
             "UnknownUser": "Unknown user ({0})",
             "Unverify": "Unverify",
             "Timeout": "Timeout",
-            "MemberWarning": "Warning"
+            "Warning": "Warning"
         },
         "Validation": {
             "CannotHideMissingGuildId": "Cannot hide users who are not on the server. First, fill in the server filter."

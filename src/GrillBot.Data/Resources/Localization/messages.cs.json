@@ -496,7 +496,7 @@
             "UnknownUser": "Neznámý uživatel ({0})",
             "Unverify": "Unverify",
             "Timeout": "Dočasné umlčení",
-            "MemberWarning": "Varování"
+            "Warning": "Varování"
         },
         "Validation": {
             "CannotHideMissingGuildId": "Nelze skrýt uživatele, kteří nejsou na serveru. Nejprve vyplň filtr serveru."

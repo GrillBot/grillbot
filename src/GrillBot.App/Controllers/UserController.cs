@@ -141,4 +141,18 @@ public class UsersController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTodayBirthdayInfoAsync()
         => await ProcessAsync<GetTodayBirthdayInfo>();
+
+    /// <summary>
+    /// Get information about guild user.
+    /// </summary>
+    /// <param name="guildId">Guild ID</param>
+    /// <param name="userId">User ID</param>
+    /// <response code="200">Returns info about guild user.</response>
+    [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
+    [HttpGet("info/{guildId}/{userId}")]
+    [ProducesResponseType(typeof(GuildUserInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetGuildUserInfoAsync(string guildId, string userId)
+        => await ProcessAsync<GetGuildUserInfo>(guildId, userId);
 }

@@ -22,6 +22,7 @@ using GrillBot.Common.FileStorage;
 using GrillBot.Common.Services;
 using GrillBot.Core;
 using Microsoft.AspNetCore.HttpOverrides;
+using GrillBot.Core.RabbitMQ;
 namespace GrillBot.App;
 
 public class Startup
@@ -80,6 +81,7 @@ public class Startup
             .AddActions()
             .AddSingleton<BlobManagerFactory>()
             .AddSingleton<FileStorageFactory>()
+            .AddRabbitMQ()
             .AddControllers(c =>
             {
                 c.Filters.Add<ExceptionFilter>();
@@ -145,6 +147,7 @@ public class Startup
             q.AddTriggeredJob<PointsJob>(Configuration, "Points:JobInterval");
             q.AddTriggeredJob<CacheCleanerJob>(Configuration, "CacheCleanerInterval");
             q.AddTriggeredJob<UnverifyLogArchivationJob>(Configuration, "Unverify:LogArchivePeriod");
+            q.AddTriggeredJob<UserMeasuresMigrationJob>(Configuration, "Unverify:LogArchivePeriod");
         });
 
         services.AddQuartzHostedService();

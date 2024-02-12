@@ -8,6 +8,7 @@ using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RubbergodService;
+using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -48,6 +49,7 @@ public class GetServiceInfo : ApiAction
             "points" => ServiceProvider.GetRequiredService<IPointsServiceClient>(),
             "image-processing" => ServiceProvider.GetRequiredService<IImageProcessingClient>(),
             "audit-log" => ServiceProvider.GetRequiredService<IAuditLogServiceClient>(),
+            "user-measures" => ServiceProvider.GetRequiredService<IUserMeasuresServiceClient>(),
             _ => throw new NotSupportedException($"Unsupported service {id}")
         };
     }
@@ -63,6 +65,7 @@ public class GetServiceInfo : ApiAction
                 IPointsServiceClient pointsServiceClient => await pointsServiceClient.GetDiagAsync(),
                 IImageProcessingClient imageProcessingClient => await imageProcessingClient.GetDiagAsync(),
                 IAuditLogServiceClient auditLogServiceClient => await auditLogServiceClient.GetDiagAsync(),
+                IUserMeasuresServiceClient userMeasuresService => await userMeasuresService.GetDiagAsync(),
                 _ => null
             };
         }

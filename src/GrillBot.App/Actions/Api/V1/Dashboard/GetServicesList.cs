@@ -7,41 +7,35 @@ using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RubbergodService;
+using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Api.V1.Dashboard;
 
 public class GetServicesList : ApiAction
 {
-    private IGraphicsClient GraphicsClient { get; }
-    private IRubbergodServiceClient RubbergodServiceClient { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
-    private IImageProcessingClient ImageProcessingClient { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
     private LoggingManager LoggingManager { get; }
+    private IServiceProvider ServiceProvider { get; }
 
     private List<Exception> Errors { get; } = new();
 
-    public GetServicesList(ApiRequestContext apiContext, LoggingManager logging, IGraphicsClient graphicsClient, IRubbergodServiceClient rubbergodServiceClient, IPointsServiceClient pointsServiceClient,
-        IImageProcessingClient imageProcessingClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public GetServicesList(ApiRequestContext apiContext, LoggingManager logging, IServiceProvider serviceProvider) : base(apiContext)
     {
-        GraphicsClient = graphicsClient;
-        RubbergodServiceClient = rubbergodServiceClient;
-        ImageProcessingClient = imageProcessingClient;
-        PointsServiceClient = pointsServiceClient;
-        AuditLogServiceClient = auditLogServiceClient;
         LoggingManager = logging;
+        ServiceProvider = serviceProvider;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
         var services = new List<DashboardService>();
 
-        await AddServiceStatusAsync(services, "graphics", GraphicsClient);
-        await AddServiceStatusAsync(services, "rubbergod", RubbergodServiceClient);
-        await AddServiceStatusAsync(services, "points", PointsServiceClient);
-        await AddServiceStatusAsync(services, "image-processing", ImageProcessingClient);
-        await AddServiceStatusAsync(services, "audit-log", AuditLogServiceClient);
+        await AddServiceStatusAsync<IGraphicsClient>(services, "graphics");
+        await AddServiceStatusAsync<IRubbergodServiceClient>(services, "rubbergod");
+        await AddServiceStatusAsync<IPointsServiceClient>(services, "points");
+        await AddServiceStatusAsync<IImageProcessingClient>(services, "image-processing");
+        await AddServiceStatusAsync<IAuditLogServiceClient>(services, "audit-log");
+        await AddServiceStatusAsync<IUserMeasuresServiceClient>(services, "user-measures");
 
         if (Errors.Count == 0)
             return ApiResult.Ok(services);
@@ -52,10 +46,11 @@ public class GetServicesList : ApiAction
         return ApiResult.Ok(services);
     }
 
-    private async Task AddServiceStatusAsync(ICollection<DashboardService> services, string id, IClient client)
+    private async Task AddServiceStatusAsync<TServiceClient>(ICollection<DashboardService> services, string id) where TServiceClient : IClient
     {
         try
         {
+            var client = ServiceProvider.GetRequiredService<TServiceClient>();
             services.Add(new DashboardService(id, client.ServiceName, await client.IsAvailableAsync()));
         }
         catch (Exception ex)

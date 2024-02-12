@@ -21,12 +21,13 @@ public class RemoveUnverify : ApiAction
     private UnverifyLogManager UnverifyLogManager { get; }
     private LoggingManager LoggingManager { get; }
     private UnverifyHelper UnverifyHelper { get; }
+    private UnverifyRabbitMQManager UnverifyRabbitMQ { get; }
 
     private bool IsAutoRemove { get; set; }
     private bool IsForceRemove { get; set; }
 
     public RemoveUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyMessageManager messageManager,
-        UnverifyLogManager unverifyLogManager, LoggingManager loggingManager, UnverifyHelper unverifyHelper) : base(apiContext)
+        UnverifyLogManager unverifyLogManager, LoggingManager loggingManager, UnverifyHelper unverifyHelper, UnverifyRabbitMQManager unverifyRabbitMQ) : base(apiContext)
     {
         DiscordClient = discordClient;
         Texts = texts;
@@ -35,6 +36,7 @@ public class RemoveUnverify : ApiAction
         UnverifyLogManager = unverifyLogManager;
         LoggingManager = loggingManager;
         UnverifyHelper = unverifyHelper;
+        UnverifyRabbitMQ = unverifyRabbitMQ;
     }
 
     public async Task ProcessAutoRemoveAsync(ulong guildId, ulong userId)
@@ -117,7 +119,7 @@ public class RemoveUnverify : ApiAction
             return MessageManager.CreateRemoveAccessUnverifyNotFound(toUser, ApiContext.Language);
 
         var profile = UnverifyProfileManager.Reconstruct(unverify, toUser, guild);
-        await WriteToLogAsync(profile.RolesToRemove, profile.ChannelsToRemove, fromUser, toUser, guild, profile.Language);
+        await WriteToLogAsync(profile.RolesToRemove, profile.ChannelsToRemove, fromUser, toUser, guild, profile.Language, unverify.SetOperationId);
 
         if (!IsForceRemove)
         {
@@ -155,7 +157,8 @@ public class RemoveUnverify : ApiAction
         return MessageManager.CreateRemoveAccessManuallyToChannel(toUser, ApiContext.Language);
     }
 
-    private async Task WriteToLogAsync(List<IRole> roles, List<ChannelOverride> channels, IGuildUser fromUser, IGuildUser toUser, IGuild guild, string userLanguage)
+    private async Task WriteToLogAsync(List<IRole> roles, List<ChannelOverride> channels, IGuildUser fromUser, IGuildUser toUser, IGuild guild, string userLanguage,
+        long logSetId)
     {
         if (IsAutoRemove)
         {
@@ -164,9 +167,14 @@ public class RemoveUnverify : ApiAction
         else
         {
             if (IsForceRemove)
+            {
                 await UnverifyLogManager.LogRemoveAsync(new List<IRole>(), new List<ChannelOverride>(), guild, fromUser, toUser, IsApiRequest, true, userLanguage);
+            }
             else
+            {
                 await UnverifyLogManager.LogRemoveAsync(roles, channels, guild, fromUser, toUser, IsApiRequest, IsForceRemove, userLanguage);
+                await UnverifyRabbitMQ.SendModifyAsync(logSetId, DateTime.UtcNow);
+            }
         }
     }
 }

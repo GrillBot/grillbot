@@ -17,12 +17,13 @@ public class SetUnverify : CommandAction
     private UnverifyLogManager LogManager { get; }
     private LoggingManager LoggingManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private UnverifyRabbitMQManager UnverifyRabbitMQ { get; }
 
     private IRole? MutedRole { get; set; }
     private IGuildUser? ExecutingUser { get; set; }
 
     public SetUnverify(UnverifyHelper unverifyHelper, UnverifyCheckManager checkManager, UnverifyProfileManager profileManager, UnverifyMessageManager messageManager, UnverifyLogManager logManager,
-        LoggingManager loggingManager, GrillBotDatabaseBuilder databaseBuilder)
+        LoggingManager loggingManager, GrillBotDatabaseBuilder databaseBuilder, UnverifyRabbitMQManager unverifyRabbitMQ)
     {
         UnverifyHelper = unverifyHelper;
         CheckManager = checkManager;
@@ -31,6 +32,7 @@ public class SetUnverify : CommandAction
         LogManager = logManager;
         LoggingManager = loggingManager;
         DatabaseBuilder = databaseBuilder;
+        UnverifyRabbitMQ = unverifyRabbitMQ;
     }
 
     public async Task<List<string>> ProcessAsync(List<IGuildUser> users, DateTime end, string reason, bool testRun)
@@ -79,9 +81,15 @@ public class SetUnverify : CommandAction
         ExecutingUser ??= await GetExecutingUserAsync();
     }
 
-    private Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, bool selfunverify)
+    private async Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, bool selfunverify)
     {
-        return selfunverify ? LogManager.LogSelfunverifyAsync(profile, Context.Guild) : LogManager.LogUnverifyAsync(profile, Context.Guild, ExecutingUser!);
+        if (selfunverify)
+            return await LogManager.LogSelfunverifyAsync(profile, Context.Guild);
+
+        var unverifyLog = await LogManager.LogUnverifyAsync(profile, Context.Guild, ExecutingUser!);
+        await UnverifyRabbitMQ.SendUnverifyAsync(profile, unverifyLog);
+
+        return unverifyLog;
     }
 
     private async Task ProcessAsync(UnverifyUserProfile profile, UnverifyLog logItem)
@@ -109,7 +117,7 @@ public class SetUnverify : CommandAction
     {
         try
         {
-            var message = MessageManager.CreateUpdatePmMessage(Context.Guild, profile.End, profile.Reason, Locale);
+            var message = MessageManager.CreateUnverifyPmMessage(profile, Context.Guild, Locale);
             await profile.Destination.SendMessageAsync(message);
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)

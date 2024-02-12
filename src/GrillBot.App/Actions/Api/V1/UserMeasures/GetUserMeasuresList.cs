@@ -1,167 +1,64 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.UserMeasures;
-using AuditLogService = GrillBot.Core.Services.AuditLog;
-using AuditLogModels = GrillBot.Core.Services.AuditLog.Models;
 using GrillBot.Core.Extensions;
-using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
-using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Core.Models.Pagination;
 using ApiModels = GrillBot.Data.Models.API;
 using AutoMapper;
-using System.Text.Json;
-using GrillBot.Core.Services.AuditLog.Models.Response.Search;
+using GrillBot.Core.Services.UserMeasures;
+using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
+using GrillBot.Data.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.UserMeasures;
 
 public class GetUserMeasuresList : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AuditLogService.IAuditLogServiceClient AuditLogServiceClient { get; }
     private IMapper Mapper { get; }
+    private IUserMeasuresServiceClient UserMeasuresService { get; }
 
     private Dictionary<string, ApiModels.Users.User> CachedUsers { get; } = new();
     private Dictionary<string, ApiModels.Guilds.Guild> CachedGuilds { get; } = new();
 
-    public GetUserMeasuresList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper,
-        AuditLogService.IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public GetUserMeasuresList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IUserMeasuresServiceClient userMeasuresService) : base(apiContext)
     {
-        AuditLogServiceClient = auditLogServiceClient;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
+        UserMeasuresService = userMeasuresService;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var parameters = (MeasuresListParams)Parameters[0]!;
 
-        var parameters = (UserMeasuresParams)Parameters[0]!;
-        var memberWarnings = await ReadMemberWarningsAsync(parameters);
-        var unverifyLogs = await ReadUnverifyLogsAsync(repository, parameters);
-        var allItems = await MergeAndMapAsync(repository, memberWarnings, unverifyLogs);
-        var result = PaginatedResponse<UserMeasuresListItem>.Create(FilterItems(allItems, parameters), parameters.Pagination);
+        var measures = await UserMeasuresService.GetMeasuresListAsync(parameters);
+        measures.ValidationErrors.AggregateAndThrow();
 
+        var result = await MapItemsAsync(measures.Response!);
         return ApiResult.Ok(result);
     }
 
-    private async Task<List<LogListItem>> ReadMemberWarningsAsync(UserMeasuresParams parameters)
+    private async Task<PaginatedResponse<UserMeasuresListItem>> MapItemsAsync(PaginatedResponse<MeasuresItem> response)
     {
-        var createdFrom = parameters.CreatedFrom is not null ? parameters.CreatedFrom.Value.WithKind(DateTimeKind.Local).ToUniversalTime() : (DateTime?)null;
-        var createdto = parameters.CreatedTo is not null ? parameters.CreatedTo.Value.WithKind(DateTimeKind.Local).ToUniversalTime() : (DateTime?)null;
+        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var searchRequest = new AuditLogModels.Request.Search.SearchRequest
+        return await PaginatedResponse<UserMeasuresListItem>.CopyAndMapAsync(response, async entity => new UserMeasuresListItem
         {
-            CreatedFrom = createdFrom,
-            CreatedTo = createdto,
-            GuildId = parameters.GuildId,
-            Pagination =
+            CreatedAt = entity.CreatedAtUtc.ToLocalTime(),
+            Guild = await ReadGuildAsync(repository, entity.GuildId),
+            Moderator = await ReadUserAsync(repository, entity.ModeratorId),
+            Reason = entity.Reason,
+            Type = entity.Type switch
             {
-                Page = 0,
-                PageSize = int.MaxValue
+                "Warning" => UserMeasuresType.Warning,
+                "Timeout" => UserMeasuresType.Timeout,
+                "Unverify" => UserMeasuresType.Unverify,
+                _ => 0
             },
-            ShowTypes = new List<AuditLogService.Enums.LogType> { AuditLogService.Enums.LogType.MemberWarning },
-            Sort =
-            {
-                Descending = true,
-                OrderBy = "CreatedAt"
-            }
-        };
-
-        if (!string.IsNullOrEmpty(parameters.ModeratorId))
-            searchRequest.UserIds = new List<string> { parameters.ModeratorId! };
-
-        if (!string.IsNullOrEmpty(parameters.UserId))
-        {
-            searchRequest.AdvancedSearch = new AuditLogModels.Request.Search.AdvancedSearchRequest
-            {
-                MemberWarning = new AuditLogModels.Request.Search.UserIdSearchRequest
-                {
-                    UserId = parameters.UserId
-                }
-            };
-        }
-
-        var searchResult = await AuditLogServiceClient.SearchItemsAsync(searchRequest);
-        searchResult.ValidationErrors.AggregateAndThrow();
-
-        var serializationOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DictionaryKeyPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        foreach (var item in searchResult.Response!.Data.Where(o => o.Preview is JsonElement))
-            item.Preview = ((JsonElement)item.Preview!).Deserialize<MemberWarningPreview>(serializationOptions);
-
-        return searchResult.Response!.Data;
-    }
-
-    private static async Task<List<UnverifyLog>> ReadUnverifyLogsAsync(GrillBotRepository repository, UserMeasuresParams parameters)
-    {
-        var logParams = new UnverifyLogParams
-        {
-            FromUserId = parameters.ModeratorId,
-            GuildId = parameters.GuildId,
-            Operation = Database.Enums.UnverifyOperation.Unverify,
-            Pagination =
-            {
-                Page = 0,
-                PageSize = int.MaxValue
-            },
-            Sort =
-            {
-                Descending = true,
-                OrderBy = "CreatedAt"
-            },
-            ToUserId = parameters.UserId,
-            Created = new Database.Models.RangeParams<DateTime?>
-            {
-                From = parameters.CreatedFrom,
-                To = parameters.CreatedTo
-            }
-        };
-
-        var result = await repository.Unverify.GetLogsAsync(logParams, logParams.Pagination, new List<string>());
-        return result.Data;
-    }
-
-    private async Task<List<UserMeasuresListItem>> MergeAndMapAsync(GrillBotRepository repository, List<LogListItem> memberWarnings, List<UnverifyLog> unverifyLogs)
-    {
-        var result = new List<UserMeasuresListItem>();
-
-        foreach (var warning in memberWarnings)
-        {
-            var preview = (MemberWarningPreview)warning.Preview!;
-
-            result.Add(new UserMeasuresListItem
-            {
-                CreatedAt = warning.CreatedAt.ToLocalTime(),
-                Guild = await ReadGuildAsync(repository, warning.GuildId!),
-                Moderator = await ReadUserAsync(repository, warning.UserId!),
-                Reason = preview.Reason,
-                Type = Data.Enums.UserMeasuresType.Warning,
-                User = await ReadUserAsync(repository, preview.TargetId)
-            });
-        }
-
-        foreach (var item in unverifyLogs)
-        {
-            var logData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(item.Data)!;
-
-            result.Add(new UserMeasuresListItem
-            {
-                CreatedAt = logData.Start,
-                Guild = await ReadGuildAsync(repository, item.GuildId),
-                Moderator = await ReadUserAsync(repository, item.FromUserId),
-                Reason = logData.Reason!,
-                Type = Data.Enums.UserMeasuresType.Unverify,
-                User = await ReadUserAsync(repository, item.ToUserId),
-                ValidTo = logData.End
-            });
-        }
-
-        return result.OrderByDescending(o => o.CreatedAt).ToList();
+            User = await ReadUserAsync(repository, entity.UserId),
+            ValidTo = entity.ValidTo
+        });
     }
 
     private async Task<ApiModels.Guilds.Guild> ReadGuildAsync(GrillBotRepository repository, string guildId)
@@ -186,12 +83,5 @@ public class GetUserMeasuresList : ApiAction
         CachedUsers.Add(userId, user);
 
         return user;
-    }
-
-    private static List<UserMeasuresListItem> FilterItems(List<UserMeasuresListItem> items, UserMeasuresParams parameters)
-    {
-        return parameters.Type is not null ?
-            items.FindAll(o => o.Type == parameters.Type.Value) :
-            items;
     }
 }

@@ -32,6 +32,11 @@ public class GetUserMeasuresList : ApiAction
     {
         var parameters = (MeasuresListParams)Parameters[0]!;
 
+        if (parameters.CreatedFrom.HasValue)
+            parameters.CreatedFrom = parameters.CreatedFrom.Value.WithKind(DateTimeKind.Local).ToUniversalTime();
+        if (parameters.CreatedTo.HasValue)
+            parameters.CreatedTo = parameters.CreatedTo.Value.WithKind(DateTimeKind.Local).ToUniversalTime();
+
         var measures = await UserMeasuresService.GetMeasuresListAsync(parameters);
         measures.ValidationErrors.AggregateAndThrow();
 

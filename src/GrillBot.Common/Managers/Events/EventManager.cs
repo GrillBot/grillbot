@@ -59,7 +59,7 @@ public class EventManager
         DiscordClient.JoinedGuild += guild => ProcessEventAsync<IJoinedGuildEvent>(@event => @event.ProcessAsync(guild), EventLogManager.JoinedGuild(guild));
         DiscordClient.GuildAvailable += guild => ProcessEventAsync<IGuildAvailableEvent>(@event => @event.ProcessAsync(guild), EventLogManager.GuildAvailable(guild));
         DiscordClient.ChannelCreated += channel => ProcessEventAsync<IChannelCreatedEvent>(@event => @event.ProcessAsync(channel), EventLogManager.ChannelCreated(channel));
-        DiscordClient.RoleDeleted += role => ProcessEventAsync<IRoleDeleted>(@event => @event.ProcessAsync(role), EventLogManager.RoleDeleted(role));
+        DiscordClient.RoleDeleted += role => ProcessEventAsync<IRoleDeletedEvent>(@event => @event.ProcessAsync(role), EventLogManager.RoleDeleted(role));
 
         InteractionService.SlashCommandExecuted += (command, context, result) =>
             ProcessEventAsync<IInteractionCommandExecutedEvent>(@event => @event.ProcessAsync(command, context, result), EventLogManager.InteractionExecuted(command, context, result));

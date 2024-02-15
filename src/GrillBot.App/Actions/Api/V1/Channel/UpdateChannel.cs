@@ -74,7 +74,7 @@ public class UpdateChannel : ApiAction
         var channel = await guild.GetChannelAsync(after.ChannelId.ToUlong());
         if (channel is null) return;
 
-        await PointsHelper.SyncDataWithServiceAsync(guild, Enumerable.Empty<IUser>(), new[] { channel });
+        await PointsHelper.PushSynchronizationAsync(channel);
     }
 
     private async Task WriteToAuditLogAsync(ulong channelId, Database.Entity.GuildChannel before, Database.Entity.GuildChannel after)

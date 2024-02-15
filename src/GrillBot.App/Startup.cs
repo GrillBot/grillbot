@@ -147,7 +147,6 @@ public class Startup
             q.AddTriggeredJob<PointsJob>(Configuration, "Points:JobInterval");
             q.AddTriggeredJob<CacheCleanerJob>(Configuration, "CacheCleanerInterval");
             q.AddTriggeredJob<UnverifyLogArchivationJob>(Configuration, "Unverify:LogArchivePeriod");
-            q.AddTriggeredJob<UserMeasuresMigrationJob>(Configuration, "Unverify:LogArchivePeriod");
         });
 
         services.AddQuartzHostedService();

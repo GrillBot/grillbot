@@ -18,6 +18,8 @@ public static class ActionsExtensions
 
     private static IServiceCollection AddServiceBridge(this IServiceCollection services)
     {
+        services.AddScoped<RabbitMQPublisherAction>();
+
         return services
             .AddScoped<Api.ServiceBridgeAction<IRubbergodServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>()

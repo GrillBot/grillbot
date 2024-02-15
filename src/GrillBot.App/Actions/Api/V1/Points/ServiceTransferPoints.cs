@@ -37,6 +37,8 @@ public class ServiceTransferPoints : ApiAction
 
         var (from, to) = await GetAndCheckUsersAsync(guildId, fromUserId, toUserId);
 
+        await PointsHelper.PushSynchronizationAsync(Guild, from, to);
+
         var request = new TransferPointsRequest
         {
             GuildId = guildId.ToString(),
@@ -45,16 +47,22 @@ public class ServiceTransferPoints : ApiAction
             ToUserId = toUserId.ToString()
         };
 
-        var validationErrors = await PointsServiceClient.TransferPointsAsync(request);
-        if (PointsHelper.CanSyncData(validationErrors))
+        while (true)
         {
-            await PointsHelper.SyncDataWithServiceAsync(Guild, new[] { from, to }, Enumerable.Empty<IGuildChannel>());
-            validationErrors = await PointsServiceClient.TransferPointsAsync(request);
+            var validationErrors = await PointsServiceClient.TransferPointsAsync(request);
+
+            if (PointsHelper.IsMissingData(validationErrors))
+            {
+                await Task.Delay(1000);
+                continue;
+            }
+
+            var exception = ConvertValidationErrorsToException(validationErrors);
+            if (exception is not null)
+                throw exception;
+            break;
         }
 
-        var exception = ConvertValidationErrorsToException(validationErrors);
-        if (exception is not null)
-            throw exception;
         return ApiResult.Ok();
     }
 
@@ -67,7 +75,7 @@ public class ServiceTransferPoints : ApiAction
         }
 
         Guild = await DiscordClient.GetGuildAsync(guildId);
-        if (Guild == null)
+        if (Guild is null)
             throw new NotFoundException(Texts["Points/Service/Transfer/GuildNotFound", ApiContext.Language]);
 
         return (
@@ -89,7 +97,7 @@ public class ServiceTransferPoints : ApiAction
 
         var error = details.Errors.First();
 
-        if (error.Key.ToLower() == "amount" && error.Value[0] == "NotEnoughPoints")
+        if (string.Equals(error.Key, "amount", StringComparison.OrdinalIgnoreCase) && error.Value[0] == "NotEnoughPoints")
             return new ValidationException(Texts["Points/Service/Transfer/InsufficientAmount", ApiContext.Language]);
         if (error.Value[0] == "User is bot.")
             new ValidationException(Texts["Points/Service/Transfer/UserIsBot", ApiContext.Language]).ToBadRequestValidation(null, error.Key);

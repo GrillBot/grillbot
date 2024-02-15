@@ -5,7 +5,7 @@ using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Handlers.RoleDeleted;
 
-public class GuildConfigurationRoleDeletedHandler : AuditLogServiceHandler, IRoleDeleted
+public class GuildConfigurationRoleDeletedHandler : AuditLogServiceHandler, IRoleDeletedEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 

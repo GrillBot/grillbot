@@ -134,7 +134,7 @@ public class GetUserDetail : ApiAction
 
         detail.VisibleChannels = visibleChannels
             .Where(o => o is not ICategoryChannel)
-            .Select(o => Mapper.Map<Data.Models.API.Channels.Channel>(o))
+            .Select(o => Mapper.Map<ApiModels.Channels.Channel>(o))
             .OrderBy(o => o.Name)
             .ToList();
     }

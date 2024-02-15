@@ -288,15 +288,6 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<bool> HaveChannelFlagsAsync(IGuildChannel channel, ChannelFlag flag)
-    {
-        using (CreateCounter())
-        {
-            return await Context.Channels.AsNoTracking()
-                .AnyAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString() && (o.Flags & (long)flag) != 0);
-        }
-    }
-
     public async Task<List<GuildChannel>> GetChannelsWithPinsAsync(List<IGuild> guilds)
     {
         using (CreateCounter())

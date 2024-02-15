@@ -5,6 +5,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
+using GrillBot.Core.Services.PointsService.Models.Events;
 using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Data.Models.API.Points;
 using GrillBot.Data.Models.API.Users;
@@ -120,15 +121,14 @@ public class PointsController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteTransactionAsync(string guildId, string messageId, string? reactionId)
     {
-        var executor = new Func<IPointsServiceClient, Task>(async (IPointsServiceClient client) =>
+        var payload = new DeleteTransactionsPayload
         {
-            if (!string.IsNullOrEmpty(reactionId))
-                await client.DeleteTransactionAsync(guildId, messageId, reactionId);
-            else
-                await client.DeleteTransactionAsync(guildId, messageId);
-        });
+            GuildId = guildId,
+            MessageId = messageId,
+            ReactionId = reactionId
+        };
 
-        return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
+        return await ProcessAsync<RabbitMQPublisherAction>(DeleteTransactionsPayload.QueueName, payload);
     }
 
     /// <summary>

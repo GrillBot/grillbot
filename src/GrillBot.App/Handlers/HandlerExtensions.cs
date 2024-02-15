@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Handlers.Logging;
 using GrillBot.App.Handlers.RoleDeleted;
+using GrillBot.App.Handlers.ServiceOrchestration;
 using GrillBot.App.Handlers.Synchronization.Database;
 using GrillBot.App.Handlers.Synchronization.Services;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -12,6 +13,7 @@ public static class HandlerExtensions
     public static IServiceCollection AddHandlers(this IServiceCollection services)
     {
         RegisterSynchronization(services);
+        RegisterOrchestration(services);
 
         services
             .AddSingleton<InteractionHandler>();
@@ -51,13 +53,11 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()
-            .AddScoped<IMessageDeletedEvent, MessageDeleted.PointsMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.ChannelMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.EmoteMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.EmoteSuggestionsMessageDeletedHandler>();
 
         services
-            .AddScoped<IMessageReceivedEvent, MessageReceived.PointsMessageReceivedHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelMessageReceivedHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.UnsucessCommandHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.AutoReplyHandler>()
@@ -69,11 +69,9 @@ public static class HandlerExtensions
             .AddScoped<IMessageUpdatedEvent, MessageUpdated.AuditMessageUpdatedHandler>();
 
         services
-            .AddScoped<IReactionAddedEvent, ReactionAdded.PointsReactionAddedHandler>()
             .AddScoped<IReactionAddedEvent, ReactionAdded.EmoteStatsReactionAddedHandler>();
 
         services
-            .AddScoped<IReactionRemovedEvent, ReactionRemoved.PointsReactionRemovedHandler>()
             .AddScoped<IReactionRemovedEvent, ReactionRemoved.EmoteStatsReactionRemovedHandler>();
 
         services
@@ -86,8 +84,8 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.EmoteInitSynchronizationHandler>();
 
         services
-            .AddScoped<IRoleDeleted, AuditRoleDeletedHandler>()
-            .AddScoped<IRoleDeleted, RoleDeleted.GuildConfigurationRoleDeletedHandler>();
+            .AddScoped<IRoleDeletedEvent, AuditRoleDeletedHandler>()
+            .AddScoped<IRoleDeletedEvent, RoleDeleted.GuildConfigurationRoleDeletedHandler>();
 
         services
             .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();
@@ -122,7 +120,7 @@ public static class HandlerExtensions
             .AddScoped<IGuildAvailableEvent, GuildSynchronizationHandler>()
             .AddScoped<IGuildUpdatedEvent, GuildSynchronizationHandler>()
             .AddScoped<IJoinedGuildEvent, GuildSynchronizationHandler>();
-        
+
         // Messages
         services
             .AddScoped<IMessageUpdatedEvent, MessageSynchronizationHandler>();
@@ -140,15 +138,23 @@ public static class HandlerExtensions
 
         // Services
 
-        // PointsService
-        services
-            .AddScoped<IChannelDestroyedEvent, PointsServiceSynchronizationHandler>()
-            .AddScoped<IThreadDeletedEvent, PointsServiceSynchronizationHandler>();
-
         // RubbergodService
         services
             .AddScoped<IMessageUpdatedEvent, RubbergodServiceSynchronizationHandler>()
             .AddScoped<IThreadDeletedEvent, RubbergodServiceSynchronizationHandler>()
             .AddScoped<IChannelDestroyedEvent, RubbergodServiceSynchronizationHandler>();
+    }
+
+    private static void RegisterOrchestration(IServiceCollection services)
+    {
+        RegisterServiceOrchestration<PointsOrchestrationHandler>(services);
+    }
+
+    private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class
+    {
+        var handlerType = typeof(TOrchestrationHandler);
+
+        foreach (var @interface in handlerType.GetInterfaces().Where(o => o.Name.EndsWith("Event")))
+            services.AddScoped(@interface, handlerType);
     }
 }

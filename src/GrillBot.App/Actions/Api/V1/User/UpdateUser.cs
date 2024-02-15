@@ -58,9 +58,8 @@ public class UpdateUser : ApiAction
         foreach (var guild in guilds)
         {
             var user = await guild.GetUserAsync(after.Id.ToUlong());
-            if (user is null) continue;
-
-            await PointsHelper.SyncDataWithServiceAsync(guild, new[] { user }, Enumerable.Empty<IGuildChannel>());
+            if (user is not null)
+                await PointsHelper.PushSynchronizationAsync(guild, user);
         }
     }
 

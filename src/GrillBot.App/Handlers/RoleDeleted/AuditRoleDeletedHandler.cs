@@ -5,7 +5,7 @@ using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Handlers.RoleDeleted;
 
-public class AuditRoleDeletedHandler : AuditLogServiceHandler, IRoleDeleted
+public class AuditRoleDeletedHandler : AuditLogServiceHandler, IRoleDeletedEvent
 {
     public AuditRoleDeletedHandler(IAuditLogServiceClient client) : base(client)
     {

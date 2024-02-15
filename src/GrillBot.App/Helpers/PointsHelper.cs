@@ -1,9 +1,11 @@
 ﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.PointsService.Models;
+using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.Services.PointsService.Models.Events;
 using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 using ChannelInfo = GrillBot.Core.Services.PointsService.Models.ChannelInfo;
 
 namespace GrillBot.App.Helpers;
@@ -11,22 +13,69 @@ namespace GrillBot.App.Helpers;
 public class PointsHelper
 {
     private IDiscordClient DiscordClient { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IRabbitMQPublisher RabbitPublisher { get; }
 
-    public PointsHelper(IDiscordClient discordClient, IPointsServiceClient pointsServiceClient, GrillBotDatabaseBuilder databaseBuilder)
+    public PointsHelper(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IRabbitMQPublisher rabbitPublisher)
     {
         DiscordClient = discordClient;
-        PointsServiceClient = pointsServiceClient;
         DatabaseBuilder = databaseBuilder;
+        RabbitPublisher = rabbitPublisher;
     }
 
-    public bool CanIncrementPoints(IMessage? message)
-        => message != null && message.Author.IsUser() && !message.IsCommand(DiscordClient.CurrentUser);
-
-    public async Task SyncDataWithServiceAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)
+    public async Task<bool> CanIncrementPointsAsync(IMessage message, IUser? reactionUser = null)
     {
-        var request = new SynchronizationRequest
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var user = reactionUser ?? message.Author;
+        if (!await IsValidForIncrementAsync(repository, user)) // IsBot, DisabledPoints
+            return false;
+
+        if (!await IsValidForIncrementAsync(repository, message.Channel)) // IsDeleted, DisabledPoints
+            return false;
+
+        if (message.IsCommand(DiscordClient.CurrentUser)) // CommandCheck
+            return false;
+
+        if (message.Author.Id == reactionUser?.Id) // SelfReaction
+            return false;
+
+        return true;
+    }
+
+    private static async Task<bool> IsValidForIncrementAsync(GrillBotRepository repository, IUser user)
+    {
+        if (!user.IsUser())
+            return false;
+
+        var entity = await repository.User.FindUserAsync(user, true);
+        return entity?.HaveFlags(UserFlags.PointsDisabled) == false;
+    }
+
+    private static async Task<bool> IsValidForIncrementAsync(GrillBotRepository repository, IChannel channel)
+    {
+        if (channel is not ITextChannel textChannel)
+            return false;
+
+        var entity = await repository.Channel.FindChannelByIdAsync(textChannel.Id, textChannel.GuildId, true);
+        return entity?.HasFlag(ChannelFlag.PointsDeactivated) == false;
+    }
+
+    public async Task<bool> IsUserAcceptableAsync(IUser user)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+
+        var userEntity = await repository.User.FindUserAsync(user, true);
+        return userEntity?.HaveFlags(UserFlags.NotUser) == false && !userEntity.HaveFlags(UserFlags.PointsDisabled);
+    }
+
+    public Task PushSynchronizationAsync(IGuild guild, params IUser[] users) => PushSynchronizationAsync(guild, users, Enumerable.Empty<IGuildChannel>());
+    public Task PushSynchronizationAsync(IGuildChannel channel) => PushSynchronizationAsync(channel.Guild, channel);
+    public Task PushSynchronizationAsync(IGuild guild, params IGuildChannel[] channels) => PushSynchronizationAsync(guild, Enumerable.Empty<IUser>(), channels);
+
+    public async Task PushSynchronizationAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)
+    {
+        var payload = new SynchronizationPayload
         {
             GuildId = guild.Id.ToString()
         };
@@ -35,32 +84,52 @@ public class PointsHelper
 
         foreach (var user in users)
         {
-            request.Users.Add(new UserInfo
+            var entity = await repository.User.FindUserAsync(user, true);
+            if (entity is null) continue;
+
+            payload.Users.Add(new UserInfo
             {
-                PointsDisabled = await repository.User.HaveDisabledPointsAsync(user),
+                PointsDisabled = entity.HaveFlags(UserFlags.PointsDisabled),
                 Id = user.Id.ToString(),
                 IsUser = user.IsUser()
             });
         }
 
-        foreach (var channel in channels)
+        foreach (var channelId in channels.Select(o => o.Id))
         {
-            request.Channels.Add(new ChannelInfo
+            var entity = await repository.Channel.FindChannelByIdAsync(channelId, guild.Id, true, includeDeleted: true);
+            if (entity is null) continue;
+
+            payload.Channels.Add(new ChannelInfo
             {
-                Id = channel.Id.ToString(),
-                PointsDisabled = await repository.Channel.HaveChannelFlagsAsync(channel, ChannelFlag.PointsDeactivated),
-                IsDeleted = await repository.Channel.HaveChannelFlagsAsync(channel, ChannelFlag.Deleted)
+                Id = channelId.ToString(),
+                PointsDisabled = entity.HasFlag(ChannelFlag.PointsDeactivated),
+                IsDeleted = entity.HasFlag(ChannelFlag.Deleted)
             });
         }
 
-        await PointsServiceClient.ProcessSynchronizationAsync(request);
+        await PushPayloadAsync(payload);
     }
 
-    public static bool CanSyncData(ValidationProblemDetails? details)
+    public static bool IsMissingData(ValidationProblemDetails? details)
     {
         if (details is null) return false;
 
         var errors = details.Errors.SelectMany(o => o.Value).Distinct().ToList();
         return errors.Contains("UnknownChannel") || errors.Contains("UnknownUser");
+    }
+
+    public async Task PushPayloadAsync<TPayload>(TPayload payload)
+    {
+        // TODO Implement to GrillBot.Core packages
+        var queueName = Array.Find(
+            typeof(TPayload).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy),
+            f => f.Name == "QueueName" && f.IsLiteral && !f.IsInitOnly
+        )?.GetRawConstantValue() as string;
+
+        if (string.IsNullOrEmpty(queueName))
+            throw new InvalidOperationException("Unable to publish data to the queue without queue name");
+
+        await RabbitPublisher.PublishAsync(queueName, payload);
     }
 }

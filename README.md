@@ -4,10 +4,12 @@ GrillBot is Discord bot for fun and management VUT FIT discord server.
 
 ## Requirements
 
-- [PostgreSQL](https://www.postgresql.org/) server (minimal recommended version is 13)
+- [PostgreSQL](https://www.postgresql.org/) server (minimal recommended version is 13) [Docker image](https://hub.docker.com/_/postgres)
+- [RabbitMQ](https://rabbitmq.com/) (minimal recommended version is 2) [Docker image](https://hub.docker.com/_/rabbitmq)
 - [.NET 7.0](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) (with ASP.NET Core 7)
+- Registered Microsoft Azure account with purchased Storage account or Storage account emulator.
 
-If you're running bot on Linux distributions, you have to install these packages: `tzdata`, `ttf-mscorefonts-installer`, `fontconfig`, `libc6-dev`, `libgdiplus` and `libx11-dev`.
+If you're running bot on Linux distributions, you have to install these packages: `tzdata` and `libc6-dev`.
 
 Only debian based distros are tested. Funcionality cannot be guaranteed for other distributions.
 
@@ -30,20 +32,21 @@ Mandatory environment variables:
 
 - `ConnectionStrings:Default` - Connection string to database.
 - `ConnectionStrings:Cache` - Connection string to cache database.
+- `ConnectionStrings:StorageAccount` - Connection string to Azure Storage Account or Storage Account emulator.
 - `Discord:Token` - Discord authentication token.
-- `OAuth2:ClientId`, `OAuth2:ClientSecret` - Client ID and secret for login to administrations.
+- `Auth:OAuth2:ClientId`, `Auth:OAuth2:ClientSecret` - Client ID and secret for login to administrations.
+- `RabbitMQ:Hostname`, `RabbitMQ:Username`, `RabbitMQ:Password` - Credentials for your RabbitMQ instance.
 
-*Without these settings the bot will not run.*
+_Without these settings the bot will not run._
 
 Recommended environment variables:
 
 - `Discord:Logging:GuildId`, `Discord:Logging:ChannelId` - Guild and channel specification for notifications on errors to channel.
 - `Birthday:Notifications:GuildId`, `Birthday:Notifications:ChannelId` - Guild and channel specification for notifications of birthdays.
-- `Services:Graphics:Api` - Base URL to the [graphics](https://github.com/GrillBot/GrillBot.Services/tree/master/src/Graphics) microservice.
-- `Services:RubbergodService:Api` - Base URL to the [rubbergod](https://github.com/GrillBot/GrillBot.Services/tree/master/src/RubbergodService) microservice.
-- `Services:FileService:Api` - Base URL to the [file](https://github.com/GrillBot/GrillBot.Services/tree/master/src/FileService) microservice.
 
-*If you're using Docker instance, bind `/GrillBotData` directory as volume.*
+_If you're using Docker instance, bind `/GrillBotData` directory as volume._
+
+_If you're not have access to the GrillBot development environment, ask [Hobit](https://hobiiitt.carrd.co/) for access or deploy your instances of [microservices](https://github.com/grillbot/grillbot.services), RabbitMQ and Postgres._
 
 ## Docker
 

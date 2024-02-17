@@ -2,6 +2,7 @@
 
 namespace GrillBot.App.Infrastructure.Jobs;
 
+[Serializable]
 public class JobException : Exception
 {
     public IUser? LoggedUser { get; set; }

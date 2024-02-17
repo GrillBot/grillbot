@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure.Jobs;
+﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Extensions;
@@ -28,10 +29,11 @@ public class DiscordExceptionHandler : ILoggingHandler
 
     public async Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception? exception = null)
     {
-        if (exception == null || !Configuration.GetValue<bool>("Enabled")) return false;
+        if (exception is null || !Configuration.GetValue<bool>("Enabled")) return false;
         if (severity != LogSeverity.Critical && severity != LogSeverity.Error && severity != LogSeverity.Warning) return false;
 
-        var isWarning = LoggingHelper.IsWarning(source, exception);
+        var ex = exception is InteractionException ? exception.InnerException! : exception;
+        var isWarning = LoggingHelper.IsWarning(source, ex);
         if (LogChannel != null) return !isWarning;
 
         var guild = await DiscordClient.GetGuildAsync(Configuration.GetValue<ulong>("GuildId"));
@@ -80,39 +82,59 @@ public class DiscordExceptionHandler : ILoggingHandler
         switch (exception)
         {
             case ApiException apiException:
-            {
-                embed.WithTitle("Při zpracování požadavku na API došlo k chybě")
-                    .AddField("Adresa", apiException.Path)
-                    .AddField("Controller", apiException.ControllerInfo);
-
-                if (apiException.LoggedUser != null)
-                    embed.AddField("Přihlášený uživatel", apiException.LoggedUser.GetFullName());
-
-                var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
-                embed.AddField("Obsah chyby", msg.Cut(EmbedFieldBuilder.MaxFieldValueLength));
-                break;
-            }
-            default:
-            {
-                var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
-                var title = source == "App Commands" ? "Při provádění integrovaného příkazu došlo k chybě." : "Došlo k neočekávané chybě.";
-
-                if (exception is JobException jobException)
                 {
-                    if (jobException.LoggedUser is not null)
-                        embed.AddField("Spustil", jobException.LoggedUser.GetFullName(), true);
+                    embed.WithTitle("Při zpracování požadavku na API došlo k chybě");
+                    embed.AddField("Adresa", apiException.Path);
+                    embed.AddField("Controller", apiException.ControllerInfo);
 
-                    title = "Při běhu naplánované úlohy došlo k chybě.";
-                    exception = exception.InnerException!;
-                    msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
+                    if (apiException.LoggedUser != null)
+                        embed.AddField("Přihlášený uživatel", apiException.LoggedUser.GetFullName());
+
+                    var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
+                    embed.AddField("Obsah chyby", msg.Cut(EmbedFieldBuilder.MaxFieldValueLength));
+                    break;
                 }
+            case InteractionException interactionException:
+                {
+                    var cmd = interactionException.CommandInfo;
+                    var context = interactionException.InteractionContext;
 
-                embed.WithTitle(title)
-                    .AddField("Zdroj", source, true)
-                    .AddField("Typ", exception.GetType().Name, true)
-                    .AddField("Obsah chyby", msg.Trim().Cut(EmbedFieldBuilder.MaxFieldValueLength));
-                break;
-            }
+                    embed.WithTitle("Při provádění příkazu došlo k chybě.");
+
+                    if (context.Guild is not null)
+                        embed.AddField("Server", context.Guild.Name, true);
+
+                    embed.AddField("Kanál", context.Channel.Name, true);
+                    embed.AddField("Uživatel", context.User.GetFullName());
+                    embed.AddField("Příkaz", $"{cmd.Name} ({cmd.Module}/{cmd.MethodName})");
+
+                    exception = interactionException.InnerException!;
+                    var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
+                    embed.AddField("Obsah chyby", msg.Trim().Cut(EmbedFieldBuilder.MaxFieldValueLength));
+
+                    break;
+                }
+            default:
+                {
+                    var msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
+                    var title = "Došlo k neočekávané chybě.";
+
+                    if (exception is JobException jobException)
+                    {
+                        if (jobException.LoggedUser is not null)
+                            embed.AddField("Spustil", jobException.LoggedUser.GetFullName(), true);
+
+                        title = "Při běhu naplánované úlohy došlo k chybě.";
+                        exception = exception.InnerException!;
+                        msg = (!string.IsNullOrEmpty(message) ? message + "\n" : "") + exception.Message;
+                    }
+
+                    embed.WithTitle(title)
+                        .AddField("Zdroj", source, true)
+                        .AddField("Typ", exception.GetType().Name, true)
+                        .AddField("Obsah chyby", msg.Trim().Cut(EmbedFieldBuilder.MaxFieldValueLength));
+                    break;
+                }
         }
 
         var withoutErrorsImage = await CreateWithoutErrorsImage(exception);
@@ -126,7 +148,8 @@ public class DiscordExceptionHandler : ILoggingHandler
     {
         try
         {
-            var user = exception.GetUser(DiscordClient);
+            var user = exception is JobException jobException ? jobException.LoggedUser : exception.GetUser();
+            user ??= DiscordClient.CurrentUser;
 
             using var scope = ServiceProvider.CreateScope();
             var renderer = scope.ServiceProvider.GetRequiredService<WithoutAccidentRenderer>();

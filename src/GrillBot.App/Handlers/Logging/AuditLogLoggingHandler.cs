@@ -1,10 +1,10 @@
-﻿using GrillBot.App.Infrastructure.Jobs;
+﻿using Discord.Interactions;
+using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models;
 using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -45,6 +45,10 @@ public class AuditLogLoggingHandler : ILoggingHandler
                 exception = jobException.InnerException;
                 user = jobException.LoggedUser;
                 break;
+            case InteractionException interactionException:
+                exception = interactionException.InnerException;
+                user = interactionException.InteractionContext.User;
+                break;
         }
 
         var isWarning = exception != null && LoggingHelper.IsWarning(source, exception);
@@ -56,7 +60,7 @@ public class AuditLogLoggingHandler : ILoggingHandler
     {
         var severity = isWarning ? LogSeverity.Warning : LogSeverity.Error;
         var logMessage = new LogMessage(severity, source, message, exception)
-            .ToString(padSource: 50, prependTimestamp: false);
+            .ToString(prependTimestamp: false, padSource: 50);
 
         return new LogRequest
         {

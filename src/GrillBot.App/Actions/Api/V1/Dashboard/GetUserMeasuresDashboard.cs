@@ -1,5 +1,7 @@
-﻿using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.App.Managers.DataResolve;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog.Models.Response.Info.Dashboard;
 using GrillBot.Core.Services.UserMeasures;
@@ -9,51 +11,54 @@ namespace GrillBot.App.Actions.Api.V1.Dashboard;
 
 public class GetUserMeasuresDashboard : ApiAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
     private IUserMeasuresServiceClient UserMeasuresService { get; }
 
-    public GetUserMeasuresDashboard(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts,
-        IUserMeasuresServiceClient userMeasuresService) : base(apiContext)
+    private readonly DataResolveManager _dataResolveManager;
+
+    public GetUserMeasuresDashboard(ApiRequestContext apiContext, ITextsManager texts, IUserMeasuresServiceClient userMeasuresService, DataResolveManager dataResolveManager) : base(apiContext)
     {
-        DatabaseBuilder = databaseBuilder;
         Texts = texts;
         UserMeasuresService = userMeasuresService;
+        _dataResolveManager = dataResolveManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
         var data = await UserMeasuresService.GetDashboardDataAsync();
-        var result = await MapAsync(data);
+        var result = await MapAsync(data).ToListAsync();
 
         return ApiResult.Ok(result);
     }
 
-    private async Task<List<DashboardInfoRow>> MapAsync(List<DashboardRow> rows)
+    private async IAsyncEnumerable<DashboardInfoRow> MapAsync(List<DashboardRow> rows)
     {
-        var userIds = rows.Select(o => o.UserId).Distinct().ToList();
-        var users = await GetUsersAsync(userIds);
-
-        return rows.ConvertAll(o => new DashboardInfoRow
+        foreach (var row in rows)
         {
-            Name = FormatUser(users.Find(u => u.Id == o.UserId), o.UserId),
-            Result = GetText(o.Type)
-        });
-    }
+            var user = await _dataResolveManager.GetUserAsync(row.UserId.ToUlong());
 
-    private async Task<List<Database.Entity.User>> GetUsersAsync(List<string> userIds)
-    {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.User.GetUsersByIdsAsync(userIds);
+            yield return new DashboardInfoRow
+            {
+                Result = GetText(row.Type),
+                Name = FormatUser(user, row.UserId)
+            };
+        }
     }
 
     private string GetText(string id)
         => Texts[$"User/UserMeasures/{id}", ApiContext.Language];
 
-    private string FormatUser(Database.Entity.User? user, string defaultValue)
+    private string FormatUser(Data.Models.API.Users.User? user, string defaultValue)
     {
-        return user is null ?
-            string.Format(GetText("UnknownUser"), defaultValue) :
-            $"User({user.Id}/{user.GetDisplayName()})";
+        if (user is null)
+            return string.Format(GetText("UnknownUser"), defaultValue);
+
+        var entity = new Database.Entity.User
+        {
+            Username = user.Username,
+            GlobalAlias = user.GlobalAlias,
+        };
+
+        return $"User({user.Id}/{entity.GetDisplayName()})";
     }
 }

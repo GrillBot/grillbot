@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Models;
+﻿using GrillBot.App.Managers.DataResolve;
+using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Data.Models.API.Statistics;
@@ -7,31 +8,40 @@ namespace GrillBot.App.Actions.Api.V1.Statistics;
 
 public class GetUserCommandStatistics : ApiAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private readonly DataResolveManager _dataResolveManager;
 
-    public GetUserCommandStatistics(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public GetUserCommandStatistics(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient, DataResolveManager dataResolveManager) : base(apiContext)
     {
-        DatabaseBuilder = databaseBuilder;
         AuditLogServiceClient = auditLogServiceClient;
+        _dataResolveManager = dataResolveManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
         var statistics = await AuditLogServiceClient.GetUserCommandStatisticsAsync();
-        var userIds = statistics.Select(o => o.UserId).Distinct().ToList();
+        var result = new List<UserActionCountItem>();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var users = await repository.User.GetUsersByIdsAsync(userIds);
-        var usernames = users.ToDictionary(o => o.Id, o => o.Username);
-
-        var result = statistics.Select(o => new UserActionCountItem
+        foreach (var item in statistics)
         {
-            Username = usernames.TryGetValue(o.UserId, out var username) ? username : o.UserId,
-            Action = o.Action,
-            Count = o.Count
-        }).OrderBy(o => o.Username).ThenBy(o => o.Action).ToList();
+            result.Add(new UserActionCountItem
+            {
+                Action = item.Action,
+                Count = item.Count,
+                Username = await ResolveUsernameAsync(item.UserId)
+            });
+        }
 
+        result = result.OrderBy(o => o.Username).ThenBy(o => o.Action).ToList();
         return ApiResult.Ok(result);
+    }
+
+    private async Task<string> ResolveUsernameAsync(string userId)
+    {
+        if (!ulong.TryParse(userId, CultureInfo.InvariantCulture, out var id))
+            return userId;
+
+        var user = await _dataResolveManager.GetUserAsync(id);
+        return string.IsNullOrEmpty(user?.Username) ? userId : user.Username;
     }
 }

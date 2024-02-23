@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using AutoMapper;
 using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
@@ -13,14 +12,12 @@ namespace GrillBot.App.Actions.Api.V1.AuditLog;
 public class GetAuditLogDetail : ApiAction
 {
     private IAuditLogServiceClient AuditLogServiceClient { get; }
-    private IMapper Mapper { get; }
 
     private readonly DataResolveManager _dataResolve;
 
-    public GetAuditLogDetail(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient, IMapper mapper, DataResolveManager dataResolve) : base(apiContext)
+    public GetAuditLogDetail(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient, DataResolveManager dataResolve) : base(apiContext)
     {
         AuditLogServiceClient = auditLogServiceClient;
-        Mapper = mapper;
         _dataResolve = dataResolve;
     }
 
@@ -57,7 +54,7 @@ public class GetAuditLogDetail : ApiAction
 
                     if (overwriteUpdated.TargetType is PermissionTarget.Role)
                         detailData.Role = await _dataResolve.GetRoleAsync(overwriteUpdated.TargetId.ToUlong());
-                    if (overwriteUpdated.TargetType is PermissionTarget.User)
+                    else if (overwriteUpdated.TargetType is PermissionTarget.User)
                         detailData.User = await _dataResolve.GetUserAsync(overwriteUpdated.TargetId.ToUlong());
 
                     detail.Data = detailData;
@@ -66,11 +63,10 @@ public class GetAuditLogDetail : ApiAction
             case LogType.MemberUpdated:
                 {
                     var memberUpdated = jsonElement.Deserialize<MemberUpdatedDetail>(options)!;
-                    var user = await _dataResolve.GetUserAsync(memberUpdated.UserId.ToUlong());
 
                     detail.Data = new Data.Models.API.AuditLog.Detail.MemberUpdatedDetail
                     {
-                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                        User = (await _dataResolve.GetUserAsync(memberUpdated.UserId.ToUlong()))!,
                         Flags = memberUpdated.Flags,
                         Nickname = memberUpdated.Nickname,
                         IsDeaf = memberUpdated.IsDeaf,
@@ -85,11 +81,10 @@ public class GetAuditLogDetail : ApiAction
             case LogType.MessageDeleted:
                 {
                     var messageDeleted = jsonElement.Deserialize<MessageDeletedDetail>(options)!;
-                    var author = await _dataResolve.GetUserAsync(messageDeleted.AuthorId.ToUlong());
 
                     detail.Data = new Data.Models.API.AuditLog.Detail.MessageDeletedDetail
                     {
-                        Author = Mapper.Map<Data.Models.API.Users.User>(author),
+                        Author = (await _dataResolve.GetUserAsync(messageDeleted.AuthorId.ToUlong()))!,
                         Content = messageDeleted.Content,
                         Embeds = messageDeleted.Embeds,
                         MessageCreatedAt = messageDeleted.MessageCreatedAt.ToLocalTime()

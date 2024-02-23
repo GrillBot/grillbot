@@ -9,6 +9,7 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.PointsService.Enums;
 using GrillBot.Database.Services.Repository;
+using GrillBot.App.Managers.DataResolve;
 
 namespace GrillBot.App.Actions.Commands.Points;
 
@@ -19,15 +20,15 @@ public class PointsLeaderboard : CommandAction
     private ITextsManager Texts { get; }
     private FormatHelper FormatHelper { get; }
     private IPointsServiceClient PointsServiceClient { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private readonly DataResolveManager _dataResolveManager;
 
     public PointsLeaderboard(ITextsManager texts, FormatHelper formatHelper, IPointsServiceClient pointsServiceClient,
-        GrillBotDatabaseBuilder databaseBuilder)
+        DataResolveManager dataResolveManager)
     {
         Texts = texts;
         FormatHelper = formatHelper;
         PointsServiceClient = pointsServiceClient;
-        DatabaseBuilder = databaseBuilder;
+        _dataResolveManager = dataResolveManager;
     }
 
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page, bool overAllTime)
@@ -86,12 +87,10 @@ public class PointsLeaderboard : CommandAction
     {
         var result = new List<string>();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-
         for (var i = 0; i < board.Count; i++)
         {
             var item = board[i];
-            var username = await ResolveUsernameAsync(item.UserId.ToUlong(), guild, repository);
+            var username = await ResolveUsernameAsync(item.UserId.ToUlong(), guild);
 
             result.Add(FormatRow(i, item, skip, username, overAllTime));
         }
@@ -99,14 +98,23 @@ public class PointsLeaderboard : CommandAction
         return result;
     }
 
-    private static async Task<string> ResolveUsernameAsync(ulong userId, IGuild guild, GrillBotRepository repository)
+    private async Task<string> ResolveUsernameAsync(ulong userId, IGuild guild)
     {
-        var guildUser = await guild.GetUserAsync(userId);
-        if (guildUser is not null)
-            return guildUser.GetDisplayName();
+        var guildUser = await _dataResolveManager.GetGuildUserAsync(guild.Id, userId);
+        if (guildUser is null)
+            return $"UnknownUser {userId}";
 
-        var dbUser = await repository.User.FindUserByIdAsync(userId, disableTracking: true);
-        return dbUser?.GetDisplayName() ?? $"UnknownUser {userId}";
+        var entity = new Database.Entity.GuildUser
+        {
+            Nickname = guildUser.Nickname,
+            User = new Database.Entity.User
+            {
+                Username = guildUser.Username,
+                GlobalAlias = guildUser.GlobalAlias
+            }
+        };
+
+        return entity.DisplayName!;
     }
 
     private string FormatRow(int index, PointsStatus item, int skip, string username, bool overAllTime)

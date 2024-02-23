@@ -23,6 +23,11 @@ public class UsersMappingProfile : AutoMapper.Profile
             .ForMember(o => o.GlobalAlias, opt => opt.MapFrom(src => src.User!.GlobalAlias))
             .ForMember(o => o.IsBot, opt => opt.MapFrom(src => src.User!.HaveFlags(UserFlags.NotUser)));
 
+        CreateMap<IGuildUser, GuildUser>()
+            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetUserAvatarUrl(128)))
+            .ForMember(dst => dst.GlobalAlias, opt => opt.MapFrom(src => src.GlobalName))
+            .ForMember(dst => dst.UsedInvite, opt => opt.Ignore());
+
         CreateMap<Database.Models.Points.PointBoardItem, UserPointsItem>()
             .ForMember(o => o.Guild, opt => opt.MapFrom(src => src.GuildUser.Guild))
             .ForMember(o => o.User, opt => opt.MapFrom(src => src.GuildUser.User))

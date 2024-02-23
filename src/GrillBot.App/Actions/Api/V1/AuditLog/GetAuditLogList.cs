@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
-using AutoMapper;
 using GrillBot.App.Helpers;
-using GrillBot.Common.Extensions.Discord;
+using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
@@ -12,7 +11,6 @@ using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.Search;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Preview;
-using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
 using File = GrillBot.Data.Models.API.AuditLog.File;
 using SearchModels = GrillBot.Core.Services.AuditLog.Models.Response.Search;
@@ -21,27 +19,20 @@ namespace GrillBot.App.Actions.Api.V1.AuditLog;
 
 public class GetAuditLogList : ApiAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
-    private IDiscordClient DiscordClient { get; }
     private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
-    private Dictionary<string, Database.Entity.User> CachedUsers { get; } = new();
-    private Dictionary<string, Database.Entity.Guild> CachedGuilds { get; } = new();
-    private Dictionary<string, Dictionary<string, Database.Entity.GuildChannel>> CachedChannels { get; } = new(); // Dictionary<GuildId, Dictionary<ChannelId, Channel>>
+    private readonly DataResolveManager _dataResolveManager;
 
     private BlobManager BlobManager { get; set; } = null!;
     private BlobManager LegacyBlobManager { get; set; } = null!;
 
-    public GetAuditLogList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IAuditLogServiceClient auditLogServiceClient, IDiscordClient discordClient,
-        BlobManagerFactoryHelper blobManagerFactoryHelper) : base(apiContext)
+    public GetAuditLogList(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient, BlobManagerFactoryHelper blobManagerFactoryHelper,
+        DataResolveManager dataResolveManager) : base(apiContext)
     {
-        DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
         AuditLogServiceClient = auditLogServiceClient;
-        DiscordClient = discordClient;
         BlobManagerFactoryHelper = blobManagerFactoryHelper;
+        _dataResolveManager = dataResolveManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -61,11 +52,7 @@ public class GetAuditLogList : ApiAction
             LegacyBlobManager = await BlobManagerFactoryHelper.CreateLegacyAsync();
         }
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var result = await PaginatedResponse<LogListItem>.CopyAndMapAsync(
-            response.Response!,
-            async entity => await MapListItemAsync(repository, entity)
-        );
+        var result = await PaginatedResponse<LogListItem>.CopyAndMapAsync(response.Response!, MapListItemAsync);
 
         return ApiResult.Ok(result);
     }
@@ -95,7 +82,7 @@ public class GetAuditLogList : ApiAction
         return new AggregateException(exceptions.ToArray());
     }
 
-    private async Task<LogListItem> MapListItemAsync(GrillBotRepository repository, SearchModels.LogListItem item)
+    private async Task<LogListItem> MapListItemAsync(SearchModels.LogListItem item)
     {
         var result = new LogListItem
         {
@@ -108,32 +95,20 @@ public class GetAuditLogList : ApiAction
 
         if (!string.IsNullOrEmpty(item.GuildId))
         {
-            var guild = await ResolveGuildAsync(repository, item.GuildId);
-            if (guild is not null)
-            {
-                result.Guild = Mapper.Map<Data.Models.API.Guilds.Guild>(guild);
+            result.Guild = await _dataResolveManager.GetGuildAsync(item.GuildId.ToUlong());
 
-                if (!string.IsNullOrEmpty(item.ChannelId))
-                {
-                    var channel = await ResolveChannelAsync(repository, item.GuildId, item.ChannelId);
-                    if (channel is not null)
-                        result.Channel = Mapper.Map<Data.Models.API.Channels.Channel>(channel);
-                }
-            }
+            if (result.Guild is not null && !string.IsNullOrEmpty(item.ChannelId))
+                result.Channel = await _dataResolveManager.GetChannelAsync(item.GuildId.ToUlong(), item.ChannelId.ToUlong());
         }
 
         if (!string.IsNullOrEmpty(item.UserId))
-        {
-            var user = await ResolveUserAsync(repository, item.UserId);
-            if (user is not null)
-                result.User = Mapper.Map<Data.Models.API.Users.User>(user);
-        }
+            result.User = await _dataResolveManager.GetUserAsync(item.UserId.ToUlong());
 
-        result.Preview = await MapPreviewAsync(repository, item);
+        result.Preview = await MapPreviewAsync(item);
         return result;
     }
 
-    private async Task<object?> MapPreviewAsync(GrillBotRepository repository, SearchModels.LogListItem item)
+    private async Task<object?> MapPreviewAsync(SearchModels.LogListItem item)
     {
         if (item.Preview is not JsonElement jsonElement)
             return null;
@@ -143,6 +118,7 @@ public class GetAuditLogList : ApiAction
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DictionaryKeyPolicy = JsonNamingPolicy.CamelCase
         };
+
         switch (item.Type)
         {
             case LogType.Info or LogType.Warning or LogType.Error:
@@ -156,47 +132,47 @@ public class GetAuditLogList : ApiAction
             case LogType.OverwriteCreated or LogType.OverwriteDeleted:
                 {
                     var preview = jsonElement.Deserialize<SearchModels.OverwritePreview>(options)!;
-                    var role = preview.TargetType == PermissionTarget.Role ? await DiscordClient.FindRoleAsync(preview.TargetId.ToUlong()) : null;
-                    var user = preview.TargetType == PermissionTarget.User ? await ResolveUserAsync(repository, preview.TargetId) : null;
-
-                    return new OverwritePreview
+                    var previewData = new OverwritePreview
                     {
-                        Role = Mapper.Map<Data.Models.API.Role>(role),
-                        User = Mapper.Map<Data.Models.API.Users.User>(user),
                         Allow = preview.Allow,
                         Deny = preview.Deny
                     };
+
+                    if (preview.TargetType is PermissionTarget.Role)
+                        previewData.Role = await _dataResolveManager.GetRoleAsync(preview.TargetId.ToUlong());
+                    else if (preview.TargetType is PermissionTarget.User)
+                        previewData.User = await _dataResolveManager.GetUserAsync(preview.TargetId.ToUlong());
+
+                    return previewData;
                 }
             case LogType.OverwriteUpdated:
                 {
                     var preview = jsonElement.Deserialize<SearchModels.OverwriteUpdatedPreview>(options)!;
-                    var role = preview.TargetType == PermissionTarget.Role ? await DiscordClient.FindRoleAsync(preview.TargetId.ToUlong()) : null;
-                    var user = preview.TargetType == PermissionTarget.User ? await ResolveUserAsync(repository, preview.TargetId) : null;
+                    var previewData = new OverwriteUpdatedPreview();
 
-                    return new OverwriteUpdatedPreview
-                    {
-                        Role = Mapper.Map<Data.Models.API.Role>(role),
-                        User = Mapper.Map<Data.Models.API.Users.User>(user),
-                    };
+                    if (preview.TargetType is PermissionTarget.Role)
+                        previewData.Role = await _dataResolveManager.GetRoleAsync(preview.TargetId.ToUlong());
+                    else if (preview.TargetType is PermissionTarget.User)
+                        previewData.User = await _dataResolveManager.GetUserAsync(preview.TargetId.ToUlong());
+
+                    return previewData;
                 }
             case LogType.Unban:
                 {
                     var preview = jsonElement.Deserialize<SearchModels.UnbanPreview>(options)!;
-                    var user = await ResolveUserAsync(repository, preview.UserId);
 
                     return new UnbanPreview
                     {
-                        User = Mapper.Map<Data.Models.API.Users.User>(user)
+                        User = (await _dataResolveManager.GetUserAsync(preview.UserId.ToUlong()))!
                     };
                 }
             case LogType.MemberUpdated:
                 {
                     var preview = jsonElement.Deserialize<SearchModels.MemberUpdatedPreview>(options)!;
-                    var user = await ResolveUserAsync(repository, preview.UserId);
 
                     return new MemberUpdatedPreview
                     {
-                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                        User = (await _dataResolveManager.GetUserAsync(preview.UserId.ToUlong()))!,
                         SelfUnverifyMinimalTimeChange = preview.SelfUnverifyMinimalTimeChange,
                         FlagsChanged = preview.FlagsChanged,
                         NicknameChanged = preview.NicknameChanged,
@@ -206,12 +182,11 @@ public class GetAuditLogList : ApiAction
             case LogType.MemberRoleUpdated:
                 {
                     var preview = jsonElement.Deserialize<SearchModels.MemberRoleUpdatedPreview>(options)!;
-                    var user = await ResolveUserAsync(repository, preview.UserId);
 
                     return new MemberRoleUpdatedPreview
                     {
                         ModifiedRoles = preview.ModifiedRoles,
-                        User = Mapper.Map<Data.Models.API.Users.User>(user)
+                        User = (await _dataResolveManager.GetUserAsync(preview.UserId.ToUlong()))!
                     };
                 }
             case LogType.GuildUpdated:
@@ -219,11 +194,10 @@ public class GetAuditLogList : ApiAction
             case LogType.UserLeft:
                 {
                     var preview = jsonElement.Deserialize<SearchModels.UserLeftPreview>(options)!;
-                    var user = await ResolveUserAsync(repository, preview.UserId);
 
                     return new UserLeftPreview
                     {
-                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                        User = (await _dataResolveManager.GetUserAsync(preview.UserId.ToUlong()))!,
                         BanReason = preview.BanReason,
                         IsBan = preview.IsBan,
                         MemberCount = preview.MemberCount
@@ -236,11 +210,10 @@ public class GetAuditLogList : ApiAction
             case LogType.MessageDeleted:
                 {
                     var preview = jsonElement.Deserialize<SearchModels.MessageDeletedPreview>(options)!;
-                    var user = await ResolveUserAsync(repository, preview.AuthorId);
 
                     return new MessageDeletedPreview
                     {
-                        User = Mapper.Map<Data.Models.API.Users.User>(user),
+                        User = (await _dataResolveManager.GetUserAsync(preview.AuthorId.ToUlong()))!,
                         Content = preview.Content,
                         Embeds = preview.Embeds,
                         MessageCreatedAt = preview.MessageCreatedAt.ToLocalTime()
@@ -276,47 +249,5 @@ public class GetAuditLogList : ApiAction
             Link = link ?? "about:blank",
             Size = file.Size
         };
-    }
-
-    private async Task<Database.Entity.User?> ResolveUserAsync(GrillBotRepository repository, string userId)
-    {
-        if (CachedUsers.TryGetValue(userId, out var user))
-            return user;
-
-        user = await repository.User.FindUserByIdAsync(userId.ToUlong(), disableTracking: true);
-        if (user is null)
-            return null;
-
-        CachedUsers.Add(user.Id, user);
-        return user;
-    }
-
-    private async Task<Database.Entity.Guild?> ResolveGuildAsync(GrillBotRepository repository, string guildId)
-    {
-        if (CachedGuilds.TryGetValue(guildId, out var guild))
-            return guild;
-
-        guild = await repository.Guild.FindGuildByIdAsync(guildId.ToUlong(), true);
-        if (guild is null)
-            return null;
-
-        CachedGuilds.Add(guild.Id, guild);
-        return guild;
-    }
-
-    private async Task<Database.Entity.GuildChannel?> ResolveChannelAsync(GrillBotRepository repository, string guildId, string channelId)
-    {
-        if (CachedChannels.TryGetValue(guildId, out var guildChannels) && guildChannels.TryGetValue(channelId, out var guildChannel))
-            return guildChannel;
-
-        guildChannel = await repository.Channel.FindChannelByIdAsync(channelId.ToUlong(), guildId.ToUlong(), true, includeDeleted: true);
-        if (guildChannel is null)
-            return null;
-
-        if (!CachedChannels.ContainsKey(guildId))
-            CachedChannels.Add(guildId, new Dictionary<string, Database.Entity.GuildChannel>());
-
-        CachedChannels[guildId].Add(channelId, guildChannel);
-        return guildChannel;
     }
 }

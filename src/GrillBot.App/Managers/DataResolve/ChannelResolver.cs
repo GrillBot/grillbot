@@ -18,7 +18,7 @@ public class ChannelResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildChann
                 var guild = await _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);
                 return guild is null ? null : await guild.GetChannelAsync(channelId, CacheMode.CacheOnly);
             },
-            repo => repo.Channel.FindChannelByIdAsync(channelId, guildId, true)
+            repo => repo.Channel.FindChannelByIdAsync(channelId, guildId, true, includeDeleted: true)
         );
     }
 }

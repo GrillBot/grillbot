@@ -1,11 +1,11 @@
-﻿using AutoMapper;
-using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Core.Services.PointsService.Enums;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.App.Managers.DataResolve;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -13,16 +13,17 @@ public class GetPointsLeaderboard : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
     private IPointsServiceClient PointsServiceClient { get; }
 
-    public GetPointsLeaderboard(ApiRequestContext apiContext, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper,
-        IPointsServiceClient pointsServiceClient) : base(apiContext)
+    private readonly DataResolveManager _dataResolveManager;
+
+    public GetPointsLeaderboard(ApiRequestContext apiContext, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IPointsServiceClient pointsServiceClient,
+        DataResolveManager dataResolveManager) : base(apiContext)
     {
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
         PointsServiceClient = pointsServiceClient;
+        _dataResolveManager = dataResolveManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -33,25 +34,26 @@ public class GetPointsLeaderboard : ApiAction
         const LeaderboardColumnFlag leaderboardColumns = LeaderboardColumnFlag.YearBack | LeaderboardColumnFlag.MonthBack | LeaderboardColumnFlag.Today | LeaderboardColumnFlag.Total;
         const LeaderboardSortOptions leaderboardSort = LeaderboardSortOptions.ByTotalDescending;
 
-        foreach (var guild in await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId()))
+        var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
+        foreach (var guildId in mutualGuilds.Select(o => o.Id))
         {
-            var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guild.Id.ToString(), 0, 0, leaderboardColumns, leaderboardSort);
+            var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guildId.ToString(), 0, 0, leaderboardColumns, leaderboardSort);
             leaderboard.ValidationErrors.AggregateAndThrow();
 
-            var guildData = Mapper.Map<Data.Models.API.Guilds.Guild>(await repository.Guild.FindGuildAsync(guild, true));
-            var nicknames = await repository.GuildUser.GetUserNicknamesAsync(guild.Id);
-            var usersList = await repository.User.GetUsersByIdsAsync(leaderboard.Response!.Select(o => o.UserId).Distinct().ToList());
-            var users = usersList.ToDictionary(o => o.Id, o => o);
+            var guildData = (await _dataResolveManager.GetGuildAsync(guildId))!;
+            var nicknames = await repository.GuildUser.GetUserNicknamesAsync(guildId);
 
             foreach (var item in leaderboard.Response!)
             {
-                if (!users.TryGetValue(item.UserId, out var user)) continue;
+                var user = await _dataResolveManager.GetUserAsync(item.UserId.ToUlong());
+                if (user is null)
+                    continue;
 
                 result.Add(new UserPointsItem
                 {
                     Guild = guildData,
                     Nickname = nicknames.TryGetValue(item.UserId, out var nickname) ? nickname : null,
-                    User = Mapper.Map<Data.Models.API.Users.User>(user),
+                    User = user,
                     PointsToday = item.Today,
                     TotalPoints = item.Total,
                     PointsMonthBack = item.MonthBack,

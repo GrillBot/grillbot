@@ -16,7 +16,8 @@ public static class ManagerExtensions
             .AddScoped<UnverifyMessageManager>()
             .AddScoped<UnverifyCheckManager>()
             .AddSingleton<PinManager>()
-            .AddScoped<UnverifyRabbitMQManager>();
+            .AddScoped<UnverifyRabbitMQManager>()
+            .AddScoped<DataResolve.DataResolveManager>();
 
         return services;
     }

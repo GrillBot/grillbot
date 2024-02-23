@@ -8,12 +8,12 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Database.Enums.Internal;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Database.Services.Repository;
 using ApiModels = GrillBot.Data.Models.API;
 using Entity = GrillBot.Database.Entity;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Enums;
+using GrillBot.App.Managers.DataResolve;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -25,9 +25,10 @@ public class GetUserDetail : ApiAction
     private ITextsManager Texts { get; }
     private IPointsServiceClient PointsServiceClient { get; }
     private IUserMeasuresServiceClient UserMeasuresService { get; }
+    private readonly DataResolveManager _dataResolveManager;
 
     public GetUserDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
-        IPointsServiceClient pointsServiceClient, IUserMeasuresServiceClient userMeasuresService) : base(apiContext)
+        IPointsServiceClient pointsServiceClient, IUserMeasuresServiceClient userMeasuresService, DataResolveManager dataResolveManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
@@ -35,6 +36,7 @@ public class GetUserDetail : ApiAction
         Texts = texts;
         PointsServiceClient = pointsServiceClient;
         UserMeasuresService = userMeasuresService;
+        _dataResolveManager = dataResolveManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -71,7 +73,7 @@ public class GetUserDetail : ApiAction
 
         await AddDiscordDataAsync(result);
         foreach (var guild in entity.Guilds)
-            result.Guilds.Add(await CreateGuildDetailAsync(repository, guild));
+            result.Guilds.Add(await CreateGuildDetailAsync(guild));
 
         result.Guilds = result.Guilds.OrderByDescending(o => o.IsUserInGuild).ThenBy(o => o.Guild.Name).ToList();
         return result;
@@ -86,7 +88,7 @@ public class GetUserDetail : ApiAction
         result.IsKnown = true;
     }
 
-    private async Task<ApiModels.Users.GuildUserDetail> CreateGuildDetailAsync(GrillBotRepository repository, Entity.GuildUser guildUserEntity)
+    private async Task<ApiModels.Users.GuildUserDetail> CreateGuildDetailAsync(Entity.GuildUser guildUserEntity)
     {
         var result = Mapper.Map<ApiModels.Users.GuildUserDetail>(guildUserEntity);
 
@@ -94,13 +96,13 @@ public class GetUserDetail : ApiAction
         result.Channels = result.Channels.OrderByDescending(o => o.Count).ThenBy(o => o.Channel.Name).ToList();
         result.Emotes = result.Emotes.OrderByDescending(o => o.UseCount).ThenByDescending(o => o.LastOccurence).ThenBy(o => o.Emote.Name).ToList();
 
-        await UpdateGuildDetailAsync(repository, result, guildUserEntity);
+        await UpdateGuildDetailAsync(result, guildUserEntity);
         return result;
     }
 
-    private async Task UpdateGuildDetailAsync(GrillBotRepository repository, ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
+    private async Task UpdateGuildDetailAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
-        await SetUserMeasuresAsync(repository, detail, entity);
+        await SetUserMeasuresAsync(detail, entity);
         detail.HavePointsTransaction = await PointsServiceClient.ExistsAnyTransactionAsync(entity.GuildId, entity.UserId);
 
         var guild = await DiscordClient.GetGuildAsync(detail.Guild.Id.ToUlong());
@@ -139,7 +141,7 @@ public class GetUserDetail : ApiAction
             .ToList();
     }
 
-    private async Task SetUserMeasuresAsync(GrillBotRepository repository, ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
+    private async Task SetUserMeasuresAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
         var parameters = new MeasuresListParams
         {
@@ -155,19 +157,14 @@ public class GetUserDetail : ApiAction
         var measuresResult = await UserMeasuresService.GetMeasuresListAsync(parameters);
         measuresResult.ValidationErrors.AggregateAndThrow();
 
-        var measures = measuresResult.Response!.Data;
-
-        var moderatorIds = measures.Select(o => o.ModeratorId).Distinct().ToList();
-        var moderators = await repository.User.GetUsersByIdsAsync(moderatorIds);
-
-        foreach (var measure in measures)
+        foreach (var measure in measuresResult.Response!.Data)
         {
-            var moderator = moderators.Find(o => o.Id == measure.ModeratorId);
+            var moderator = await _dataResolveManager.GetUserAsync(measure.ModeratorId.ToUlong());
 
             detail.UserMeasures.Add(new ApiModels.UserMeasures.UserMeasuresItem
             {
                 CreatedAt = measure.CreatedAtUtc.ToLocalTime(),
-                Moderator = Mapper.Map<ApiModels.Users.User>(moderator),
+                Moderator = moderator!,
                 ValidTo = measure.ValidTo?.ToLocalTime(),
                 Type = measure.Type switch
                 {

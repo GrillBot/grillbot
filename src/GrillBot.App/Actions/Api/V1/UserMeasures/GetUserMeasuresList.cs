@@ -2,30 +2,23 @@
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.UserMeasures;
 using GrillBot.Core.Extensions;
-using GrillBot.Database.Services.Repository;
 using GrillBot.Core.Models.Pagination;
-using ApiModels = GrillBot.Data.Models.API;
-using AutoMapper;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Enums;
+using GrillBot.App.Managers.DataResolve;
 
 namespace GrillBot.App.Actions.Api.V1.UserMeasures;
 
 public class GetUserMeasuresList : ApiAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
     private IUserMeasuresServiceClient UserMeasuresService { get; }
+    private readonly DataResolveManager _dataResolveManager;
 
-    private Dictionary<string, ApiModels.Users.User> CachedUsers { get; } = new();
-    private Dictionary<string, ApiModels.Guilds.Guild> CachedGuilds { get; } = new();
-
-    public GetUserMeasuresList(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IUserMeasuresServiceClient userMeasuresService) : base(apiContext)
+    public GetUserMeasuresList(ApiRequestContext apiContext, IUserMeasuresServiceClient userMeasuresService, DataResolveManager dataResolveManager) : base(apiContext)
     {
-        DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
         UserMeasuresService = userMeasuresService;
+        _dataResolveManager = dataResolveManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -40,19 +33,21 @@ public class GetUserMeasuresList : ApiAction
         var measures = await UserMeasuresService.GetMeasuresListAsync(parameters);
         measures.ValidationErrors.AggregateAndThrow();
 
-        var result = await MapItemsAsync(measures.Response!);
+        var result = await PaginatedResponse<UserMeasuresListItem>.CopyAndMapAsync(measures.Response!, MapAsync);
         return ApiResult.Ok(result);
     }
 
-    private async Task<PaginatedResponse<UserMeasuresListItem>> MapItemsAsync(PaginatedResponse<MeasuresItem> response)
+    private async Task<UserMeasuresListItem> MapAsync(MeasuresItem entity)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var guild = await _dataResolveManager.GetGuildAsync(entity.GuildId.ToUlong());
+        var moderator = await _dataResolveManager.GetUserAsync(entity.ModeratorId.ToUlong());
+        var user = await _dataResolveManager.GetUserAsync(entity.UserId.ToUlong());
 
-        return await PaginatedResponse<UserMeasuresListItem>.CopyAndMapAsync(response, async entity => new UserMeasuresListItem
+        return new UserMeasuresListItem
         {
             CreatedAt = entity.CreatedAtUtc.ToLocalTime(),
-            Guild = await ReadGuildAsync(repository, entity.GuildId),
-            Moderator = await ReadUserAsync(repository, entity.ModeratorId),
+            Guild = guild!,
+            Moderator = moderator!,
             Reason = entity.Reason,
             Type = entity.Type switch
             {
@@ -61,32 +56,8 @@ public class GetUserMeasuresList : ApiAction
                 "Unverify" => UserMeasuresType.Unverify,
                 _ => 0
             },
-            User = await ReadUserAsync(repository, entity.UserId),
+            User = user!,
             ValidTo = entity.ValidTo
-        });
-    }
-
-    private async Task<ApiModels.Guilds.Guild> ReadGuildAsync(GrillBotRepository repository, string guildId)
-    {
-        if (CachedGuilds.TryGetValue(guildId, out var guild))
-            return guild;
-
-        var entity = await repository.Guild.FindGuildByIdAsync(guildId.ToUlong(), true);
-        guild = Mapper.Map<ApiModels.Guilds.Guild>(entity);
-        CachedGuilds.Add(guildId, guild);
-
-        return guild;
-    }
-
-    private async Task<ApiModels.Users.User> ReadUserAsync(GrillBotRepository repository, string userId)
-    {
-        if (CachedUsers.TryGetValue(userId, out var user))
-            return user;
-
-        var entity = await repository.User.FindUserByIdAsync(userId.ToUlong(), disableTracking: true);
-        user = Mapper.Map<ApiModels.Users.User>(entity);
-        CachedUsers.Add(userId, user);
-
-        return user;
+        };
     }
 }

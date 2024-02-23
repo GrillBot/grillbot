@@ -8,7 +8,7 @@ public class GuildUser : User
     /// <summary>
     /// Used invite
     /// </summary>
-    public Invites.Invite UsedInvite { get; set; }
+    public Invites.Invite? UsedInvite { get; set; }
 
     /// <summary>
     /// Points count
@@ -28,5 +28,5 @@ public class GuildUser : User
     /// <summary>
     /// Nickname.
     /// </summary>
-    public string Nickname { get; set; }
+    public string? Nickname { get; set; }
 }

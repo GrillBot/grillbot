@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using AutoMapper;
-using GrillBot.Common.Extensions.Discord;
+using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
@@ -13,17 +13,15 @@ namespace GrillBot.App.Actions.Api.V1.AuditLog;
 public class GetAuditLogDetail : ApiAction
 {
     private IAuditLogServiceClient AuditLogServiceClient { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IDiscordClient DiscordClient { get; }
     private IMapper Mapper { get; }
 
-    public GetAuditLogDetail(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient,
-        IMapper mapper) : base(apiContext)
+    private readonly DataResolveManager _dataResolve;
+
+    public GetAuditLogDetail(ApiRequestContext apiContext, IAuditLogServiceClient auditLogServiceClient, IMapper mapper, DataResolveManager dataResolve) : base(apiContext)
     {
         AuditLogServiceClient = auditLogServiceClient;
-        DatabaseBuilder = databaseBuilder;
-        DiscordClient = discordClient;
         Mapper = mapper;
+        _dataResolve = dataResolve;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -39,8 +37,6 @@ public class GetAuditLogDetail : ApiAction
             DictionaryKeyPolicy = JsonNamingPolicy.CamelCase
         };
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-
         switch (detail.Type)
         {
             case LogType.Info or LogType.Warning or LogType.Error:
@@ -52,22 +48,25 @@ public class GetAuditLogDetail : ApiAction
             case LogType.OverwriteUpdated:
                 {
                     var overwriteUpdated = jsonElement.Deserialize<OverwriteUpdatedDetail>(options)!;
-                    var role = overwriteUpdated.TargetType == PermissionTarget.Role ? await DiscordClient.FindRoleAsync(overwriteUpdated.TargetId.ToUlong()) : null;
-                    var user = overwriteUpdated.TargetType == PermissionTarget.User ? await repository.User.FindUserByIdAsync(overwriteUpdated.TargetId.ToUlong()) : null;
 
-                    detail.Data = new Data.Models.API.AuditLog.Detail.OverwriteUpdatedDetail
+                    var detailData = new Data.Models.API.AuditLog.Detail.OverwriteUpdatedDetail
                     {
-                        User = Mapper.Map<Data.Models.API.Users.User>(user),
-                        Role = Mapper.Map<Data.Models.API.Role>(role),
                         Allow = overwriteUpdated.Allow,
                         Deny = overwriteUpdated.Deny
                     };
+
+                    if (overwriteUpdated.TargetType is PermissionTarget.Role)
+                        detailData.Role = await _dataResolve.GetRoleAsync(overwriteUpdated.TargetId.ToUlong());
+                    if (overwriteUpdated.TargetType is PermissionTarget.User)
+                        detailData.User = await _dataResolve.GetUserAsync(overwriteUpdated.TargetId.ToUlong());
+
+                    detail.Data = detailData;
                     break;
                 }
             case LogType.MemberUpdated:
                 {
                     var memberUpdated = jsonElement.Deserialize<MemberUpdatedDetail>(options)!;
-                    var user = await repository.User.FindUserByIdAsync(memberUpdated.UserId.ToUlong());
+                    var user = await _dataResolve.GetUserAsync(memberUpdated.UserId.ToUlong());
 
                     detail.Data = new Data.Models.API.AuditLog.Detail.MemberUpdatedDetail
                     {
@@ -86,7 +85,7 @@ public class GetAuditLogDetail : ApiAction
             case LogType.MessageDeleted:
                 {
                     var messageDeleted = jsonElement.Deserialize<MessageDeletedDetail>(options)!;
-                    var author = await repository.User.FindUserByIdAsync(messageDeleted.AuthorId.ToUlong());
+                    var author = await _dataResolve.GetUserAsync(messageDeleted.AuthorId.ToUlong());
 
                     detail.Data = new Data.Models.API.AuditLog.Detail.MessageDeletedDetail
                     {
@@ -106,17 +105,20 @@ public class GetAuditLogDetail : ApiAction
             case LogType.JobCompleted:
                 {
                     var jobCompleted = jsonElement.Deserialize<JobExecutionDetail>(options)!;
-                    var startUser = string.IsNullOrEmpty(jobCompleted.StartUserId) ? null : await repository.User.FindUserByIdAsync(jobCompleted.StartUserId.ToUlong());
 
-                    detail.Data = new Data.Models.API.AuditLog.Detail.JobExecutionDetail
+                    var detailData = new Data.Models.API.AuditLog.Detail.JobExecutionDetail
                     {
                         Result = jobCompleted.Result,
                         EndAt = jobCompleted.EndAt.ToLocalTime(),
                         JobName = jobCompleted.JobName,
                         StartAt = jobCompleted.StartAt.ToLocalTime(),
-                        StartUser = startUser is null ? null : Mapper.Map<Data.Models.API.Users.User>(startUser),
                         WasError = jobCompleted.WasError
                     };
+
+                    if (!string.IsNullOrEmpty(jobCompleted.StartUserId))
+                        detailData.StartUser = await _dataResolve.GetUserAsync(jobCompleted.StartUserId.ToUlong());
+
+                    detail.Data = detailData;
                     break;
                 }
             case LogType.Api:

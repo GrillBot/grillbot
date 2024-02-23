@@ -2,9 +2,9 @@
 
 namespace GrillBot.App.Managers.DataResolve;
 
-public class ChannelDataResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildChannel, Database.Entity.GuildChannel, Data.Models.API.Channels.Channel>
+public class ChannelResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildChannel, Database.Entity.GuildChannel, Data.Models.API.Channels.Channel>
 {
-    public ChannelDataResolver(IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
+    public ChannelResolver(IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
         : base(discordClient, mapper, databaseBuilder)
     {
     }

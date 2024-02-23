@@ -11,7 +11,8 @@ public class UsersMappingProfile : AutoMapper.Profile
     public UsersMappingProfile()
     {
         CreateMap<IUser, User>()
-            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetUserAvatarUrl(128)));
+            .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetUserAvatarUrl(128)))
+            .ForMember(dst => dst.GlobalAlias, opt => opt.MapFrom(src => src.GlobalName));
 
         CreateMap<Database.Entity.User, User>()
             .ForMember(dst => dst.IsBot, opt => opt.MapFrom(src => src.HaveFlags(UserFlags.NotUser)));

@@ -15,7 +15,7 @@ public class GuildUserResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildUse
             Tuple.Create(guildId, userId),
             async () =>
             {
-                var guild = await DiscordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);
+                var guild = await _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);
                 return guild is null ? null : await guild.GetUserAsync(userId, CacheMode.CacheOnly);
             },
             repo => repo.GuildUser.FindGuildUserByIdAsync(guildId, userId, true)

@@ -13,7 +13,7 @@ public class RoleResolver : BaseDataResolver<ulong, IRole, object, Data.Models.A
     {
         return GetMappedEntityAsync(
             roleId,
-            async () => (await DiscordClient.GetGuildsAsync(CacheMode.CacheOnly)).Select(o => o.GetRole(roleId)).FirstOrDefault(o => o is not null),
+            async () => (await _discordClient.GetGuildsAsync(CacheMode.CacheOnly)).Select(o => o.GetRole(roleId)).FirstOrDefault(o => o is not null),
             _ => Task.FromResult<object?>(null)
         );
     }

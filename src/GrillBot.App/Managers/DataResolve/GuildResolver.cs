@@ -13,7 +13,7 @@ public class GuildResolver : BaseDataResolver<ulong, IGuild, Database.Entity.Gui
     {
         return GetMappedEntityAsync(
             guildId,
-            () => DiscordClient.GetGuildAsync(guildId, CacheMode.CacheOnly),
+            () => _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly),
             repo => repo.Guild.FindGuildByIdAsync(guildId, true)
         );
     }

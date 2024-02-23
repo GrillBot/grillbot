@@ -9,20 +9,20 @@ public abstract class BaseDataResolver<TKey, TDiscordEntity, TDatabaseEntity, TM
     private readonly Dictionary<TKey, TMappedValue> _cachedData = new();
     private bool disposedValue;
 
-    protected IDiscordClient DiscordClient { get; }
-    protected GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
+    protected readonly IDiscordClient _discordClient;
+    protected readonly GrillBotDatabaseBuilder _databaseBuilder;
+    private readonly IMapper _mapper;
 
     protected BaseDataResolver(IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
     {
-        DiscordClient = discordClient;
-        Mapper = mapper;
-        DatabaseBuilder = databaseBuilder;
+        _discordClient = discordClient;
+        _mapper = mapper;
+        _databaseBuilder = databaseBuilder;
     }
 
     private TMappedValue MapAndStore(TKey key, TDiscordEntity entity)
     {
-        var mapped = Mapper.Map<TMappedValue>(entity);
+        var mapped = _mapper.Map<TMappedValue>(entity);
         _cachedData[key] = mapped;
 
         return mapped;
@@ -30,7 +30,7 @@ public abstract class BaseDataResolver<TKey, TDiscordEntity, TDatabaseEntity, TM
 
     private TMappedValue MapAndStore(TKey key, TDatabaseEntity entity)
     {
-        var mapped = Mapper.Map<TMappedValue>(entity);
+        var mapped = _mapper.Map<TMappedValue>(entity);
         _cachedData[key] = mapped;
 
         return mapped;
@@ -49,7 +49,7 @@ public abstract class BaseDataResolver<TKey, TDiscordEntity, TDatabaseEntity, TM
         if (discordEntity is not null)
             return MapAndStore(key, discordEntity);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        await using var repository = _databaseBuilder.CreateRepository();
 
         var databaseEntity = await readDatabaseEntity(repository);
         return databaseEntity is null ? default : MapAndStore(key, databaseEntity);

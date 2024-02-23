@@ -13,7 +13,7 @@ public class UserResolver : BaseDataResolver<ulong, IUser, Database.Entity.User,
     {
         return GetMappedEntityAsync(
             userId,
-            () => DiscordClient.GetUserAsync(userId, CacheMode.CacheOnly),
+            () => _discordClient.GetUserAsync(userId, CacheMode.CacheOnly),
             repo => repo.User.FindUserByIdAsync(userId, disableTracking: true)
         );
     }

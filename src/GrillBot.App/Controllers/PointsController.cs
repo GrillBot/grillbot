@@ -121,13 +121,7 @@ public class PointsController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteTransactionAsync(string guildId, string messageId, string? reactionId)
     {
-        var payload = new DeleteTransactionsPayload
-        {
-            GuildId = guildId,
-            MessageId = messageId,
-            ReactionId = reactionId
-        };
-
+        var payload = new DeleteTransactionsPayload(guildId, messageId, reactionId);
         return await ProcessAsync<RabbitMQPublisherAction>(DeleteTransactionsPayload.QueueName, payload);
     }
 

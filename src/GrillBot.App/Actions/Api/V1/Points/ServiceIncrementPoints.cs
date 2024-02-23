@@ -40,14 +40,9 @@ public class ServiceIncrementPoints : ApiAction
 
         await PointsHelper.PushSynchronizationAsync(Guild, User);
 
-        var payload = new CreateTransactionAdminPayload
-        {
-            Amount = amount,
-            GuildId = guildId.ToString(),
-            UserId = userId.ToString()
-        };
-
+        var payload = new CreateTransactionAdminPayload(guildId.ToString(), userId.ToString(), amount);
         await RabbitMQ.PublishAsync(CreateTransactionAdminPayload.QueueName, payload);
+
         return ApiResult.Ok();
     }
 

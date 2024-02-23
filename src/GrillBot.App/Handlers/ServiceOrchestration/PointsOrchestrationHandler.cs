@@ -41,20 +41,15 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
         var channel = (IGuildChannel)message.Channel;
         await PointsHelper.PushSynchronizationAsync(channel.Guild, new[] { message.Author }, new[] { channel });
 
-        var payload = new CreateTransactionPayload
+        var messageInfo = new MessageInfo
         {
-            ChannelId = message.Channel.Id.ToString(),
-            CreatedAtUtc = message.CreatedAt.UtcDateTime,
-            GuildId = channel.GuildId.ToString(),
-            Message = new MessageInfo
-            {
-                AuthorId = message.Author.Id.ToString(),
-                Id = message.Id.ToString(),
-                ContentLength = message.Content.Length,
-                MessageType = message.Type
-            }
+            AuthorId = message.Author.Id.ToString(),
+            Id = message.Id.ToString(),
+            ContentLength = message.Content.Length,
+            MessageType = message.Type
         };
 
+        var payload = new CreateTransactionPayload(channel.GuildId.ToString(), message.CreatedAt.UtcDateTime, channel.Id.ToString(), messageInfo);
         await PointsHelper.PushPayloadAsync(payload);
     }
 
@@ -64,12 +59,7 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
         if (!cachedChannel.HasValue || cachedChannel.Value is not IGuildChannel guildChannel)
             return;
 
-        var payload = new DeleteTransactionsPayload
-        {
-            GuildId = guildChannel.GuildId.ToString(),
-            MessageId = cachedMessage.Id.ToString()
-        };
-
+        var payload = new DeleteTransactionsPayload(guildChannel.GuildId.ToString(), cachedMessage.Id.ToString());
         await PointsHelper.PushPayloadAsync(payload);
     }
 
@@ -90,26 +80,22 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
 
         await PointsHelper.PushSynchronizationAsync(textChannel.Guild, new[] { message.Author, reactionUser }, new[] { textChannel });
 
-        var payload = new CreateTransactionPayload
+        var messageInfo = new MessageInfo
         {
-            ChannelId = textChannel.Id.ToString(),
-            CreatedAtUtc = DateTime.UtcNow,
-            GuildId = textChannel.GuildId.ToString(),
-            Message = new MessageInfo
-            {
-                AuthorId = message.Author.Id.ToString(),
-                Id = message.Id.ToString(),
-                ContentLength = message.Content.Length,
-                MessageType = message.Type
-            },
-            Reaction = new ReactionInfo
-            {
-                Emote = reaction.Emote.ToString()!,
-                IsBurst = reaction.IsBurst,
-                UserId = reaction.UserId.ToString()
-            }
+            AuthorId = message.Author.Id.ToString(),
+            Id = message.Id.ToString(),
+            ContentLength = message.Content.Length,
+            MessageType = message.Type
         };
 
+        var reactionInfo = new ReactionInfo
+        {
+            Emote = reaction.Emote.ToString()!,
+            IsBurst = reaction.IsBurst,
+            UserId = reaction.UserId.ToString()
+        };
+
+        var payload = new CreateTransactionPayload(textChannel.GuildId.ToString(), DateTime.UtcNow, textChannel.Id.ToString(), messageInfo, reactionInfo);
         await PointsHelper.PushPayloadAsync(payload);
     }
 
@@ -119,18 +105,14 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
         if (!cachedChannel.HasValue || cachedChannel.Value is not ITextChannel textChannel) return;
         if (reaction.Emote is not Emote || !textChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote))) return;
 
-        var payload = new DeleteTransactionsPayload
+        var reactionId = new ReactionInfo
         {
-            GuildId = textChannel.GuildId.ToString(),
-            MessageId = cachedMessage.Id.ToString(),
-            ReactionId = new ReactionInfo
-            {
-                Emote = reaction.Emote.ToString()!,
-                IsBurst = reaction.IsBurst,
-                UserId = reaction.UserId.ToString()
-            }.GetReactionId()
-        };
+            Emote = reaction.Emote.ToString()!,
+            IsBurst = reaction.IsBurst,
+            UserId = reaction.UserId.ToString()
+        }.GetReactionId();
 
+        var payload = new DeleteTransactionsPayload(textChannel.GuildId.ToString(), cachedMessage.Id.ToString(), reactionId);
         await PointsHelper.PushPayloadAsync(payload);
     }
 }

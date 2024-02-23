@@ -16,27 +16,21 @@ public class UnverifyRabbitMQManager
 
     public Task SendModifyAsync(long logSetId, DateTime newEnd)
     {
-        var payload = new UnverifyModifyPayload
-        {
-            LogSetId = logSetId,
-            NewEnd = newEnd
-        };
-
+        var payload = new UnverifyModifyPayload(logSetId, newEnd);
         return RabbitMQ.PublishAsync(UnverifyModifyPayload.QueueName, payload);
     }
 
     public async Task SendUnverifyAsync(UnverifyUserProfile profile, UnverifyLog unverifyLog)
     {
-        var payload = new UnverifyPayload
-        {
-            CreatedAt = profile.Start.ToUniversalTime(),
-            EndAt = profile.End.ToUniversalTime(),
-            GuildId = unverifyLog.GuildId,
-            LogSetId = unverifyLog.Id,
-            ModeratorId = unverifyLog.FromUserId,
-            Reason = profile.Reason!,
-            TargetUserId = unverifyLog.ToUserId
-        };
+        var payload = new UnverifyPayload(
+            profile.Start.ToUniversalTime(),
+            profile.Reason!,
+            unverifyLog.GuildId,
+            unverifyLog.FromUserId,
+            unverifyLog.ToUserId,
+            profile.End.ToUniversalTime(),
+            unverifyLog.Id
+        );
 
         await RabbitMQ.PublishAsync(UnverifyPayload.QueueName, payload);
     }

@@ -75,10 +75,8 @@ public class PointsHelper
 
     public async Task PushSynchronizationAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)
     {
-        var payload = new SynchronizationPayload
-        {
-            GuildId = guild.Id.ToString()
-        };
+        var channelInfos = new List<ChannelInfo>();
+        var userInfos = new List<UserInfo>();
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -87,7 +85,7 @@ public class PointsHelper
             var entity = await repository.User.FindUserAsync(user, true);
             if (entity is null) continue;
 
-            payload.Users.Add(new UserInfo
+            userInfos.Add(new UserInfo
             {
                 PointsDisabled = entity.HaveFlags(UserFlags.PointsDisabled),
                 Id = user.Id.ToString(),
@@ -100,7 +98,7 @@ public class PointsHelper
             var entity = await repository.Channel.FindChannelByIdAsync(channelId, guild.Id, true, includeDeleted: true);
             if (entity is null) continue;
 
-            payload.Channels.Add(new ChannelInfo
+            channelInfos.Add(new ChannelInfo
             {
                 Id = channelId.ToString(),
                 PointsDisabled = entity.HasFlag(ChannelFlag.PointsDeactivated),
@@ -108,6 +106,7 @@ public class PointsHelper
             });
         }
 
+        var payload = new SynchronizationPayload(guild.Id.ToString(), channelInfos, userInfos);
         await PushPayloadAsync(payload);
     }
 

@@ -35,14 +35,8 @@ public class CreateUserMeasuresWarning : ApiAction
 
     private async Task ProcessAsync(CreateUserMeasuresWarningParams parameters)
     {
-        var payload = new MemberWarningPayload
-        {
-            Reason = parameters.Message,
-            CreatedAt = DateTime.UtcNow,
-            GuildId = parameters.GuildId,
-            ModeratorId = ApiContext.GetUserId().ToString(),
-            TargetUserId = parameters.UserId
-        };
+        var moderatorId = ApiContext.GetUserId().ToString();
+        var payload = new MemberWarningPayload(DateTime.UtcNow, parameters.Message, parameters.GuildId, moderatorId, parameters.UserId);
 
         await RabbitMQ.PublishAsync(MemberWarningPayload.QueueName, payload);
     }

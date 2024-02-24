@@ -7,7 +7,6 @@ public static class ServiceExtensions
     public static IServiceCollection AddHelpers(this IServiceCollection services)
     {
         services
-            .AddScoped<PointsHelper>()
             .AddScoped<DownloadHelper>()
             .AddScoped<ChannelHelper>()
             .AddScoped<UnverifyHelper>()

@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Services.PointsService;
@@ -7,6 +6,7 @@ using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.App.Managers.Points;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -14,18 +14,19 @@ public class ServiceTransferPoints : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
-    private PointsHelper PointsHelper { get; }
     private IPointsServiceClient PointsServiceClient { get; }
 
     private IGuild Guild { get; set; } = null!;
 
-    public ServiceTransferPoints(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, PointsHelper pointsHelper, IPointsServiceClient pointsServiceClient) :
+    private readonly PointsManager _pointsManager;
+
+    public ServiceTransferPoints(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, IPointsServiceClient pointsServiceClient, PointsManager pointsManager) :
         base(apiContext)
     {
         DiscordClient = discordClient;
-        PointsHelper = pointsHelper;
         Texts = texts;
         PointsServiceClient = pointsServiceClient;
+        _pointsManager = pointsManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -37,7 +38,7 @@ public class ServiceTransferPoints : ApiAction
 
         var (from, to) = await GetAndCheckUsersAsync(guildId, fromUserId, toUserId);
 
-        await PointsHelper.PushSynchronizationAsync(Guild, from, to);
+        await _pointsManager.PushSynchronizationAsync(Guild, from, to);
 
         var request = new TransferPointsRequest
         {
@@ -51,7 +52,7 @@ public class ServiceTransferPoints : ApiAction
         {
             var validationErrors = await PointsServiceClient.TransferPointsAsync(request);
 
-            if (PointsHelper.IsMissingData(validationErrors))
+            if (PointsValidationManager.IsMissingData(validationErrors))
             {
                 await Task.Delay(1000);
                 continue;

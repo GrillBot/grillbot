@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Helpers;
+﻿using GrillBot.App.Managers.Points;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -9,37 +9,38 @@ namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeletedEvent, IMessageReceivedEvent, IMessageDeletedEvent, IReactionAddedEvent, IReactionRemovedEvent
 {
-    private PointsHelper PointsHelper { get; }
     private IMessageCacheManager MessageCache { get; }
 
-    public PointsOrchestrationHandler(PointsHelper pointsHelper, IMessageCacheManager messageCache)
+    private readonly PointsManager _pointsManager;
+
+    public PointsOrchestrationHandler(IMessageCacheManager messageCache, PointsManager pointsManager)
     {
-        PointsHelper = pointsHelper;
         MessageCache = messageCache;
+        _pointsManager = pointsManager;
     }
 
     // ChannelDestroyed
     public async Task ProcessAsync(IChannel channel)
     {
         if (channel is not IThreadChannel && channel is IGuildChannel guildChannel)
-            await PointsHelper.PushSynchronizationAsync(guildChannel);
+            await _pointsManager.PushSynchronizationAsync(guildChannel);
     }
 
     // ThreadDeleted
     public async Task ProcessAsync(IThreadChannel? cachedThread, ulong threadId)
     {
         if (cachedThread is not null)
-            await PointsHelper.PushSynchronizationAsync(cachedThread);
+            await _pointsManager.PushSynchronizationAsync(cachedThread);
     }
 
     // MessageReceived
     public async Task ProcessAsync(IMessage message)
     {
-        if (!await PointsHelper.CanIncrementPointsAsync(message))
+        if (!await _pointsManager.CanIncrementPointsAsync(message))
             return;
 
         var channel = (IGuildChannel)message.Channel;
-        await PointsHelper.PushSynchronizationAsync(channel.Guild, new[] { message.Author }, new[] { channel });
+        await _pointsManager.PushSynchronizationAsync(channel.Guild, new[] { message.Author }, new[] { channel });
 
         var messageInfo = new MessageInfo
         {
@@ -50,7 +51,7 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
         };
 
         var payload = new CreateTransactionPayload(channel.GuildId.ToString(), message.CreatedAt.UtcDateTime, channel.Id.ToString(), messageInfo);
-        await PointsHelper.PushPayloadAsync(payload);
+        await _pointsManager.PushPayloadAsync(payload);
     }
 
     // MessageDeleted
@@ -60,7 +61,7 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
             return;
 
         var payload = new DeleteTransactionsPayload(guildChannel.GuildId.ToString(), cachedMessage.Id.ToString());
-        await PointsHelper.PushPayloadAsync(payload);
+        await _pointsManager.PushPayloadAsync(payload);
     }
 
     // ReactionAdded
@@ -75,10 +76,10 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
         var message = cachedMessage.HasValue ? cachedMessage.Value : await MessageCache.GetAsync(cachedMessage.Id, textChannel);
         if (message is null) return;
 
-        if (!await PointsHelper.CanIncrementPointsAsync(message, reactionUser))
+        if (!await _pointsManager.CanIncrementPointsAsync(message, reactionUser))
             return;
 
-        await PointsHelper.PushSynchronizationAsync(textChannel.Guild, new[] { message.Author, reactionUser }, new[] { textChannel });
+        await _pointsManager.PushSynchronizationAsync(textChannel.Guild, new[] { message.Author, reactionUser }, new[] { textChannel });
 
         var messageInfo = new MessageInfo
         {
@@ -96,7 +97,7 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
         };
 
         var payload = new CreateTransactionPayload(textChannel.GuildId.ToString(), DateTime.UtcNow, textChannel.Id.ToString(), messageInfo, reactionInfo);
-        await PointsHelper.PushPayloadAsync(payload);
+        await _pointsManager.PushPayloadAsync(payload);
     }
 
     // ReactionRemoved
@@ -113,6 +114,6 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
         }.GetReactionId();
 
         var payload = new DeleteTransactionsPayload(textChannel.GuildId.ToString(), cachedMessage.Id.ToString(), reactionId);
-        await PointsHelper.PushPayloadAsync(payload);
+        await _pointsManager.PushPayloadAsync(payload);
     }
 }

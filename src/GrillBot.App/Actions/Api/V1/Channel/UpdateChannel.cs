@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.App.Managers;
+using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
@@ -19,20 +20,21 @@ public class UpdateChannel : ApiAction
     private AutoReplyManager AutoReplyManager { get; }
     private ITextsManager Texts { get; }
     private ChannelHelper ChannelHelper { get; }
-    private PointsHelper PointsHelper { get; }
     private IDiscordClient DiscordClient { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
 
+    private readonly PointsManager _pointsManager;
+
     public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, AutoReplyManager autoReplyManager, ChannelHelper channelHelper,
-        PointsHelper pointsHelper, IDiscordClient discordClient, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+        IDiscordClient discordClient, IAuditLogServiceClient auditLogServiceClient, PointsManager pointsManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
         AutoReplyManager = autoReplyManager;
         ChannelHelper = channelHelper;
-        PointsHelper = pointsHelper;
         DiscordClient = discordClient;
         AuditLogServiceClient = auditLogServiceClient;
+        _pointsManager = pointsManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -72,9 +74,9 @@ public class UpdateChannel : ApiAction
 
         var guild = await DiscordClient.GetGuildAsync(after.GuildId.ToUlong());
         var channel = await guild.GetChannelAsync(after.ChannelId.ToUlong());
-        if (channel is null) return;
 
-        await PointsHelper.PushSynchronizationAsync(channel);
+        if (channel is not null)
+            await _pointsManager.PushSynchronizationAsync(channel);
     }
 
     private async Task WriteToAuditLogAsync(ulong channelId, Database.Entity.GuildChannel before, Database.Entity.GuildChannel after)

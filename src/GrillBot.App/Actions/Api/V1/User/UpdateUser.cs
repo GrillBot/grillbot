@@ -1,5 +1,4 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
@@ -9,6 +8,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.App.Managers.Points;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -16,18 +16,19 @@ public class UpdateUser : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
-    private PointsHelper PointsHelper { get; }
     private IDiscordClient DiscordClient { get; }
     private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, PointsHelper pointsHelper, IDiscordClient discordClient,
-        IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    private readonly PointsManager _pointsManager;
+
+    public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IDiscordClient discordClient, IAuditLogServiceClient auditLogServiceClient,
+        PointsManager pointsManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
-        PointsHelper = pointsHelper;
         DiscordClient = discordClient;
         AuditLogServiceClient = auditLogServiceClient;
+        _pointsManager = pointsManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -59,7 +60,7 @@ public class UpdateUser : ApiAction
         {
             var user = await guild.GetUserAsync(after.Id.ToUlong());
             if (user is not null)
-                await PointsHelper.PushSynchronizationAsync(guild, user);
+                await _pointsManager.PushSynchronizationAsync(guild, user);
         }
     }
 

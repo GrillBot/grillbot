@@ -1,10 +1,9 @@
-﻿using GrillBot.App.Helpers;
+﻿using GrillBot.App.Managers.Points;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.PointsService.Models.Events;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
@@ -13,19 +12,17 @@ public class ServiceIncrementPoints : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
-    private PointsHelper PointsHelper { get; }
-    private IRabbitMQPublisher RabbitMQ { get; }
 
     private IGuild? Guild { get; set; }
     private IUser? User { get; set; }
 
-    public ServiceIncrementPoints(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, PointsHelper pointsHelper, IRabbitMQPublisher rabbitMQ) :
-        base(apiContext)
+    private readonly PointsManager _pointsManager;
+
+    public ServiceIncrementPoints(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, PointsManager pointsManager) : base(apiContext)
     {
         DiscordClient = discordClient;
         Texts = texts;
-        PointsHelper = pointsHelper;
-        RabbitMQ = rabbitMQ;
+        _pointsManager = pointsManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -38,10 +35,10 @@ public class ServiceIncrementPoints : ApiAction
         if (Guild is null || User is null)
             return ApiResult.Ok();
 
-        await PointsHelper.PushSynchronizationAsync(Guild, User);
+        await _pointsManager.PushSynchronizationAsync(Guild, User);
 
         var payload = new CreateTransactionAdminPayload(guildId.ToString(), userId.ToString(), amount);
-        await RabbitMQ.PublishAsync(CreateTransactionAdminPayload.QueueName, payload);
+        await _pointsManager.PushPayloadAsync(payload);
 
         return ApiResult.Ok();
     }
@@ -53,7 +50,7 @@ public class ServiceIncrementPoints : ApiAction
 
         if (User is null)
             throw new NotFoundException(Texts["Points/Service/Increment/UserNotFound", ApiContext.Language]);
-        if (!await PointsHelper.IsUserAcceptableAsync(User))
+        if (!await _pointsManager.IsUserAcceptableAsync(User))
             throw new ValidationException(Texts["Points/Service/Increment/NotAcceptable", ApiContext.Language]).ToBadRequestValidation(userId, nameof(userId));
     }
 }

@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Extensions.RabbitMQ;
+﻿using GrillBot.Core.RabbitMQ;
 using GrillBot.Core.RabbitMQ.Publisher;
 
 namespace GrillBot.App.Managers.Points;
@@ -35,7 +35,8 @@ public class PointsManager
 
     #region Push
 
-    public Task PushPayloadAsync<TPayload>(TPayload payload) => _rabbitPublisher.PushAsync(payload);
+    public Task PushPayloadAsync<TPayload>(TPayload payload) where TPayload : IPayload
+        => _rabbitPublisher.PublishAsync(payload);
 
     #endregion
 }

@@ -120,10 +120,7 @@ public class PointsController : Core.Infrastructure.Actions.ControllerBase
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteTransactionAsync(string guildId, string messageId, string? reactionId)
-    {
-        var payload = new DeleteTransactionsPayload(guildId, messageId, reactionId);
-        return await ProcessAsync<RabbitMQPublisherAction>(DeleteTransactionsPayload.QueueName, payload);
-    }
+        => await ProcessAsync<RabbitMQPublisherAction>(new DeleteTransactionsPayload(guildId, messageId, reactionId));
 
     /// <summary>
     /// Gets paginated list of users.

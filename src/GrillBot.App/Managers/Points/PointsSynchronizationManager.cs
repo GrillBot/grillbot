@@ -1,5 +1,4 @@
 ﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Extensions.RabbitMQ;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Database.Enums;
 using PointsModels = GrillBot.Core.Services.PointsService.Models;
@@ -51,6 +50,6 @@ public class PointsSynchronizationManager
         }
 
         var payload = new PointsModels.Events.SynchronizationPayload(guild.Id.ToString(), channelInfos, userInfos);
-        await _rabbitPublisher.PushAsync(payload);
+        await _rabbitPublisher.PublishAsync(payload);
     }
 }

@@ -38,6 +38,6 @@ public class CreateUserMeasuresWarning : ApiAction
         var moderatorId = ApiContext.GetUserId().ToString();
         var payload = new MemberWarningPayload(DateTime.UtcNow, parameters.Message, parameters.GuildId, moderatorId, parameters.UserId);
 
-        await RabbitMQ.PublishAsync(MemberWarningPayload.QueueName, payload);
+        await RabbitMQ.PublishAsync(payload);
     }
 }

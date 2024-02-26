@@ -1,10 +1,10 @@
-﻿using GrillBot.Cache.Services.Managers;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Actions.Api.V1.Invite;
 
@@ -12,13 +12,14 @@ public class RefreshMetadata : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private InviteManager InviteManager { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public RefreshMetadata(ApiRequestContext apiContext, IDiscordClient discordClient, InviteManager inviteManager, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public RefreshMetadata(ApiRequestContext apiContext, IDiscordClient discordClient, InviteManager inviteManager, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
         DiscordClient = discordClient;
         InviteManager = inviteManager;
-        AuditLogServiceClient = auditLogServiceClient;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -52,22 +53,19 @@ public class RefreshMetadata : ApiAction
         if (invites.Count == 0)
             return 0;
 
-        var logRequest = new LogRequest
+        var userId = ApiContext.GetUserId().ToString();
+        var logRequest = new LogRequest(LogType.Info, DateTime.UtcNow, guild.Id.ToString(), userId)
         {
-            Type = LogType.Info,
-            CreatedAt = DateTime.UtcNow,
-            GuildId = guild.Id.ToString(),
             LogMessage = new LogMessageRequest
             {
                 Message = $"Invites for guild \"{guild.Name}\" was {(isReload ? "reloaded" : "loaded")}. Loaded invites: {invites.Count}",
                 Severity = LogSeverity.Info,
-                SourceAppName = "GrillBot",
-                Source = $"Invite.{nameof(RefreshMetadata)}"
-            },
-            UserId = ApiContext.GetUserId().ToString()
+                Source = $"Invite.{nameof(RefreshMetadata)}",
+                SourceAppName = "GrillBot"
+            }
         };
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
 
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
         await InviteManager.UpdateMetadataAsync(guild, invites);
         return invites.Count;
     }

@@ -1,20 +1,21 @@
-﻿using GrillBot.Common.Models;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
 
 public class RemoveStats : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public RemoveStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public RemoveStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
-        AuditLogServiceClient = auditLogServiceClient;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -36,20 +37,18 @@ public class RemoveStats : ApiAction
 
     private async Task WriteToAuditlogAsync(string emoteId, int emotesCount)
     {
-        var logRequest = new LogRequest
+        var userId = ApiContext.GetUserId().ToString();
+        var logRequest = new LogRequest(LogType.Info, DateTime.UtcNow, null, userId)
         {
-            Type = LogType.Info,
-            CreatedAt = DateTime.UtcNow,
             LogMessage = new LogMessageRequest
             {
                 Message = $"Statistiky emotu {emoteId} byly smazány. Smazáno záznamů: {emotesCount}",
                 Severity = LogSeverity.Info,
-                SourceAppName = "GrillBot",
-                Source = $"Emote.{nameof(RemoveStats)}"
-            },
-            UserId = ApiContext.GetUserId().ToString()
+                Source = $"Emote.{nameof(RemoveStats)}",
+                SourceAppName = "GrillBot"
+            }
         };
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 }

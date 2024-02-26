@@ -1,17 +1,20 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Services.AuditLog;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Handlers.RoleDeleted;
 
-public class GuildConfigurationRoleDeletedHandler : AuditLogServiceHandler, IRoleDeletedEvent
+public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public GuildConfigurationRoleDeletedHandler(IAuditLogServiceClient client, GrillBotDatabaseBuilder databaseBuilder) : base(client)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public GuildConfigurationRoleDeletedHandler(GrillBotDatabaseBuilder databaseBuilder, IRabbitMQPublisher rabbitPublisher)
     {
         DatabaseBuilder = databaseBuilder;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public async Task ProcessAsync(IRole role)
@@ -43,15 +46,17 @@ public class GuildConfigurationRoleDeletedHandler : AuditLogServiceHandler, IRol
 
     private async Task WriteToAuditLogAsync(IGuild guild, List<string> log)
     {
-        var request = CreateRequest(LogType.Info, guild);
-        request.LogMessage = new LogMessageRequest
+        var logRequest = new LogRequest(LogType.Info, DateTime.UtcNow, guild.Id.ToString())
         {
-            Message = string.Join(Environment.NewLine, log),
-            Severity = LogSeverity.Info,
-            Source = $"Events.RoleDeleted.{nameof(GuildConfigurationRoleDeletedHandler)}",
-            SourceAppName = "GrillBot"
+            LogMessage = new LogMessageRequest
+            {
+                Message = string.Join(Environment.NewLine, log),
+                Severity = LogSeverity.Info,
+                Source = $"Events.RoleDeleted.{nameof(GuildConfigurationRoleDeletedHandler)}",
+                SourceAppName = "GrillBot"
+            }
         };
 
-        await SendRequestAsync(request);
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 }

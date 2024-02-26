@@ -1,10 +1,10 @@
-﻿using GrillBot.Common.Extensions;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Data.Models.API.AuditLog;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
@@ -12,12 +12,12 @@ namespace GrillBot.App.Actions.Api.V1.AuditLog;
 public class CreateLogItem : ApiAction
 {
     private ITextsManager Texts { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private IRabbitMQPublisher RabbitPublisher { get; }
 
-    public CreateLogItem(ApiRequestContext apiContext, ITextsManager texts, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public CreateLogItem(ApiRequestContext apiContext, ITextsManager texts, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
         Texts = texts;
-        AuditLogServiceClient = auditLogServiceClient;
+        RabbitPublisher = rabbitPublisher;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -27,6 +27,7 @@ public class CreateLogItem : ApiAction
 
         var logRequest = new LogRequest
         {
+            CreatedAtUtc = DateTime.UtcNow,
             UserId = ApiContext.GetUserId().ToString(),
             LogMessage = new LogMessageRequest
             {
@@ -52,7 +53,7 @@ public class CreateLogItem : ApiAction
             logRequest.LogMessage.Severity = LogSeverity.Warning;
         }
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await RabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
         return ApiResult.Ok();
     }
 

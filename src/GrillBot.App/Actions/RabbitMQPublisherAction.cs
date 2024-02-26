@@ -16,7 +16,10 @@ public class RabbitMQPublisherAction : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        await Publisher.PublishAsync((IPayload)Parameters[0]!);
+        var queueName = ((IPayload)Parameters[0]!).QueueName;
+        var payload = Parameters[0]!;
+
+        await Publisher.PublishAsync(queueName, payload);
         return ApiResult.Ok();
     }
 }

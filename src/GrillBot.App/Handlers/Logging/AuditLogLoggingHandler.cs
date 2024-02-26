@@ -1,11 +1,11 @@
-﻿using Discord.Interactions;
+﻿using AuditLogService.Models.Events.Create;
+using Discord.Interactions;
 using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers.Logging;
@@ -53,35 +53,30 @@ public class AuditLogLoggingHandler : ILoggingHandler
 
         var isWarning = exception != null && LoggingHelper.IsWarning(source, exception);
         var logRequest = CreateLogRequest(isWarning, source, message, exception, user);
-        await SendLogRequestAsync(logRequest);
+        var payload = new CreateItemsPayload(new() { logRequest });
+
+        using var scope = ServiceProvider.CreateScope();
+        var rabbitPublisher = scope.ServiceProvider.GetRequiredService<IRabbitMQPublisher>();
+
+        await rabbitPublisher.PublishAsync(payload);
     }
 
     private static LogRequest CreateLogRequest(bool isWarning, string source, string message, Exception? exception, IUser? user)
     {
         var severity = isWarning ? LogSeverity.Warning : LogSeverity.Error;
+        var type = isWarning ? LogType.Warning : LogType.Error;
         var logMessage = new LogMessage(severity, source, message, exception)
-            .ToString(prependTimestamp: false, padSource: 50);
+            .ToString(prependTimestamp: false, padSource: 20);
 
-        return new LogRequest
+        return new LogRequest(type, DateTime.UtcNow, null, user?.Id.ToString())
         {
-            Type = isWarning ? LogType.Warning : LogType.Error,
             LogMessage = new LogMessageRequest
             {
                 Message = logMessage,
                 Severity = severity,
                 SourceAppName = "GrillBot",
                 Source = source
-            },
-            CreatedAt = DateTime.UtcNow,
-            UserId = user?.Id.ToString()
+            }
         };
-    }
-
-    private async Task SendLogRequestAsync(LogRequest request)
-    {
-        using var scope = ServiceProvider.CreateScope();
-
-        var client = scope.ServiceProvider.GetRequiredService<IAuditLogServiceClient>();
-        await client.CreateItemsAsync(new List<LogRequest> { request });
     }
 }

@@ -1,18 +1,21 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Services.AuditLog;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using System.Reflection;
 
 namespace GrillBot.App.Handlers.ChannelDestroyed;
 
-public class GuildConfigurationChannelDestroyedHandler : AuditLogServiceHandler, IChannelDestroyedEvent
+public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public GuildConfigurationChannelDestroyedHandler(IAuditLogServiceClient client, GrillBotDatabaseBuilder databaseBuilder) : base(client)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public GuildConfigurationChannelDestroyedHandler(GrillBotDatabaseBuilder databaseBuilder, IRabbitMQPublisher rabbitPublisher)
     {
         DatabaseBuilder = databaseBuilder;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public async Task ProcessAsync(IChannel channel)
@@ -41,16 +44,18 @@ public class GuildConfigurationChannelDestroyedHandler : AuditLogServiceHandler,
 
     private async Task WriteToAuditLogAsync(IGuild guild, List<string> log)
     {
-        var request = CreateRequest(LogType.Info, guild);
-        request.LogMessage = new LogMessageRequest
+        var logRequest = new LogRequest(LogType.Info, DateTime.UtcNow, guild.Id.ToString())
         {
-            Message = string.Join(Environment.NewLine, log),
-            Severity = LogSeverity.Info,
-            Source = $"Events.ChannelDestroyed.{nameof(GuildConfigurationChannelDestroyedHandler)}",
-            SourceAppName = "GrillBot"
+            LogMessage = new LogMessageRequest
+            {
+                Message = string.Join(Environment.NewLine, log),
+                Severity = LogSeverity.Info,
+                Source = $"Events.ChannelDestroyed.{nameof(GuildConfigurationChannelDestroyedHandler)}",
+                SourceAppName = "GrillBot"
+            }
         };
 
-        await SendRequestAsync(request);
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 
     private static void ResetProperty(ulong expectedId, Database.Entity.Guild guild, string propertyName, List<string> log)

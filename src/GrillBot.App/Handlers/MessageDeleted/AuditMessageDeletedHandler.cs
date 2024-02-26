@@ -1,28 +1,30 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
-using GrillBot.Core.Extensions;
-using GrillBot.Common.FileStorage;
-using Azure.Storage.Blobs.Models;
+﻿using AuditLogService.Models.Events.Create;
 using Azure;
+using Azure.Storage.Blobs.Models;
+using GrillBot.App.Helpers;
+using GrillBot.Cache.Services.Managers.MessageCache;
+using GrillBot.Common.FileStorage;
+using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.Services.AuditLog.Enums;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
-public class AuditMessageDeletedHandler : AuditLogServiceHandler, IMessageDeletedEvent
+public class AuditMessageDeletedHandler : IMessageDeletedEvent
 {
     private IMessageCacheManager MessageCache { get; }
     private DownloadHelper DownloadHelper { get; }
     private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
-    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, DownloadHelper downloadHelper, IAuditLogServiceClient auditLogServiceClient, BlobManagerFactoryHelper blobManagerFactoryHelper) :
-        base(auditLogServiceClient)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, DownloadHelper downloadHelper, BlobManagerFactoryHelper blobManagerFactoryHelper, IRabbitMQPublisher rabbitPublisher)
     {
         MessageCache = messageCache;
         DownloadHelper = downloadHelper;
         BlobManagerFactoryHelper = blobManagerFactoryHelper;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public async Task ProcessAsync(Cacheable<IMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel)
@@ -33,17 +35,23 @@ public class AuditMessageDeletedHandler : AuditLogServiceHandler, IMessageDelete
         message ??= await MessageCache.GetAsync(cachedMessage.Id, null, true) as IUserMessage;
         if (message == null) return;
 
-        var request = CreateRequest(LogType.MessageDeleted, textChannel.Guild, textChannel);
-        request.Files = await GetAndStoreAttachmentsAsync(message);
-        request.MessageDeleted = new MessageDeletedRequest
+        var guildId = textChannel.Guild.Id.ToString();
+        var channelId = textChannel.Id.ToString();
+
+        var request = new LogRequest(LogType.MessageDeleted, DateTime.UtcNow, guildId, null, channelId)
         {
-            Content = message.Content,
-            Embeds = ConvertEmbeds(message).ToList(),
-            AuthorId = message.Author.Id.ToString(),
-            MessageCreatedAt = message.CreatedAt.UtcDateTime
+            Files = await GetAndStoreAttachmentsAsync(message),
+            MessageDeleted = new MessageDeletedRequest
+            {
+                Content = message.Content,
+                Embeds = ConvertEmbeds(message).ToList(),
+                AuthorId = message.Author.Id.ToString(),
+                MessageCreatedAt = message.CreatedAt.UtcDateTime
+            }
         };
 
-        await SendRequestAsync(request);
+        var payload = new CreateItemsPayload(new() { request });
+        await _rabbitPublisher.PublishAsync(payload);
     }
 
     private async Task<List<FileRequest>> GetAndStoreAttachmentsAsync(IMessage message)

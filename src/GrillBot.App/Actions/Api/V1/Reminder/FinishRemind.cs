@@ -1,11 +1,11 @@
-﻿using GrillBot.App.Helpers;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Data.Models.API;
 using GrillBot.Database.Entity;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +18,8 @@ public class FinishRemind : ApiAction
     private ITextsManager Texts { get; }
     private RemindHelper RemindHelper { get; }
     private IDiscordClient DiscordClient { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
+
+    private readonly IRabbitMQPublisher _rabbitPublisher;
 
     public bool IsGone { get; private set; }
     public bool IsAuthorized { get; private set; }
@@ -28,12 +29,12 @@ public class FinishRemind : ApiAction
     private bool IsCancel => ApiContext.GetUserId() != DiscordClient.CurrentUser.Id;
 
     public FinishRemind(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient, ITextsManager texts,
-        IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+        IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
         DiscordClient = discordClient;
-        AuditLogServiceClient = auditLogServiceClient;
+        _rabbitPublisher = rabbitPublisher;
 
         RemindHelper = new RemindHelper(discordClient, texts);
     }
@@ -71,7 +72,7 @@ public class FinishRemind : ApiAction
         if (!IsAuthorized) return;
 
         await ProcessRemindAsync(notify);
-        await CreateLogItemAsync(notify);
+        await WriteToAuditLogAsync(notify);
         await repository.CommitAsync();
     }
 
@@ -113,25 +114,23 @@ public class FinishRemind : ApiAction
             Remind.RemindMessageId = RemindHelper.NotSentRemind;
     }
 
-    private async Task CreateLogItemAsync(bool notify)
+    private async Task WriteToAuditLogAsync(bool notify)
     {
         // Is not required create log item while processing from scheduled jobs.
         if (!IsCancel || Remind is null) return;
 
-        var logRequest = new LogRequest
+        var userId = ApiContext.GetUserId().ToString();
+        var logRequest = new LogRequest(LogType.Info, DateTime.UtcNow, null, userId)
         {
-            Type = LogType.Info,
-            CreatedAt = DateTime.UtcNow,
             LogMessage = new LogMessageRequest
             {
                 Message = $"Bylo stornováno upozornění s ID {Remind.Id}. {(notify ? "Při rušení bylo odesláno upozornění uživateli." : "")}".Trim(),
                 Severity = LogSeverity.Info,
                 Source = $"Remind.{nameof(FinishRemind)}",
                 SourceAppName = "GrillBot"
-            },
-            UserId = ApiContext.GetUserId().ToString(),
+            }
         };
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 }

@@ -1,15 +1,15 @@
 ﻿using GrillBot.Common.Exceptions;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
-using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Exceptions;
 using GrillBot.Data.Models.API;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using GrillBot.Core.RabbitMQ.Publisher;
+using AuditLogService.Models.Events.Create;
+using GrillBot.Core.Services.AuditLog.Enums;
 
 namespace GrillBot.App.Infrastructure.RequestProcessing;
 
@@ -17,13 +17,14 @@ public class ExceptionFilter : IAsyncExceptionFilter
 {
     private ApiRequestContext ApiRequestContext { get; }
     private LoggingManager LoggingManager { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public ExceptionFilter(ApiRequestContext apiRequestContext, LoggingManager loggingManager, IAuditLogServiceClient auditLogServiceClient)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public ExceptionFilter(ApiRequestContext apiRequestContext, LoggingManager loggingManager, IRabbitMQPublisher rabbitPublisher)
     {
         ApiRequestContext = apiRequestContext;
         LoggingManager = loggingManager;
-        AuditLogServiceClient = auditLogServiceClient;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public async Task OnExceptionAsync(ExceptionContext context)
@@ -84,10 +85,10 @@ public class ExceptionFilter : IAsyncExceptionFilter
     private void SetValidationErrors(ExceptionContext context, IEnumerable<ValidationException> exceptions)
     {
         var modelState = new ModelStateDictionary();
-        foreach (var exception in exceptions)
+        foreach (var validationResult in exceptions.Select(o => o.ValidationResult))
         {
-            foreach (var memberName in exception.ValidationResult.MemberNames)
-                modelState.AddModelError(memberName, exception.ValidationResult.ErrorMessage ?? "");
+            foreach (var memberName in validationResult.MemberNames)
+                modelState.AddModelError(memberName, validationResult.ErrorMessage ?? "");
         }
 
         context.ExceptionHandled = true;
@@ -109,17 +110,17 @@ public class ExceptionFilter : IAsyncExceptionFilter
         ApiRequestContext.LogRequest.Result = "403 (Forbidden)";
     }
 
-    private async Task WriteToAuditLogAsync()
+    private Task WriteToAuditLogAsync()
     {
-        var userId = ApiRequestContext.GetUserId();
-        var logRequest = new LogRequest
+        var userId = ApiRequestContext.GetUserId().ToString();
+        if (userId == "0") userId = null;
+
+        var logRequest = new LogRequest(LogType.Api, DateTime.UtcNow, null, userId)
         {
-            Type = LogType.Api,
-            UserId = userId > 0 ? userId.ToString() : null,
-            CreatedAt = DateTime.UtcNow,
             ApiRequest = ApiRequestContext.LogRequest
         };
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        var payload = new CreateItemsPayload(new() { logRequest });
+        return _rabbitPublisher.PublishAsync(payload);
     }
 }

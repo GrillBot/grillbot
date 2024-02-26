@@ -1,15 +1,17 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Services.AuditLog;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Handlers.ThreadUpdated;
 
-public class ForumThreadTagsUpdated : AuditLogServiceHandler, IThreadUpdatedEvent
+public class ForumThreadTagsUpdated : IThreadUpdatedEvent
 {
-    public ForumThreadTagsUpdated(IAuditLogServiceClient auditLogServiceClient) : base(auditLogServiceClient)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public ForumThreadTagsUpdated(IRabbitMQPublisher rabbitPublisher)
     {
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public async Task ProcessAsync(IThreadChannel? before, ulong threadId, IThreadChannel after)
@@ -19,18 +21,22 @@ public class ForumThreadTagsUpdated : AuditLogServiceHandler, IThreadUpdatedEven
         var forum = await TryFindForumAsync(after);
         if (forum is null) return;
 
-        var request = CreateRequest(LogType.ThreadUpdated, forum.Guild, after);
-        request.ThreadUpdated = new DiffRequest<ThreadInfoRequest>
+        var guildId = forum.Guild.Id.ToString();
+        var channelId = after.Id.ToString();
+        var request = new LogRequest(LogType.ThreadUpdated, DateTime.UtcNow, guildId, null, channelId)
         {
-            After = CreateThreadInfoRequest(after, forum),
-            Before = CreateThreadInfoRequest(before!, forum)
+            ThreadUpdated = new DiffRequest<ThreadInfoRequest>
+            {
+                After = CreateThreadInfoRequest(after, forum),
+                Before = CreateThreadInfoRequest(before!, forum)
+            }
         };
 
-        await SendRequestAsync(request);
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { request }));
     }
 
     private static bool CanProcess(IThreadChannel? before, IThreadChannel after)
-        => before is not null && !before.AppliedTags.OrderBy(o => o).SequenceEqual(after.AppliedTags.OrderBy(o => o));
+        => before?.AppliedTags.OrderBy(o => o).SequenceEqual(after.AppliedTags.OrderBy(o => o)) == false;
 
     private static async Task<IForumChannel?> TryFindForumAsync(INestedChannel thread)
     {
@@ -48,8 +54,7 @@ public class ForumThreadTagsUpdated : AuditLogServiceHandler, IThreadUpdatedEven
             IsArchived = thread.IsArchived,
             IsLocked = thread.IsLocked,
             SlowMode = thread.SlowModeInterval,
-            ThreadName = thread.Name,
-            ParentChannelId = thread.CategoryId!.ToString()!
+            ThreadName = thread.Name
         };
     }
 }

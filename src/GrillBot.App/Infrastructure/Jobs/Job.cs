@@ -3,10 +3,10 @@ using Quartz;
 using System.Reflection;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers.Logging;
-using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using Microsoft.Extensions.DependencyInjection;
+using AuditLogService.Models.Events.Create;
+using GrillBot.Core.RabbitMQ.Publisher;
 
 namespace GrillBot.App.Infrastructure.Jobs;
 
@@ -19,11 +19,10 @@ public abstract class Job : IJob
     protected IDiscordClient DiscordClient { get; }
     protected InitManager InitManager { get; }
     protected LoggingManager LoggingManager { get; }
+    protected IRabbitMQPublisher RabbitPublisher { get; }
 
     private string JobName => GetType().Name;
-
-    private bool RequireInitialization
-        => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
+    private bool RequireInitialization => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
 
     protected Job(IServiceProvider serviceProvider)
     {
@@ -31,6 +30,7 @@ public abstract class Job : IJob
         InitManager = serviceProvider.GetRequiredService<InitManager>();
         LoggingManager = serviceProvider.GetRequiredService<LoggingManager>();
         ServiceProvider = serviceProvider;
+        RabbitPublisher = serviceProvider.GetRequiredService<IRabbitMQPublisher>();
     }
 
     protected abstract Task RunAsync(IJobExecutionContext context);
@@ -70,21 +70,19 @@ public abstract class Job : IJob
         }
     }
 
-    private async Task WriteToAuditLogAsync(JobExecutionRequest logRequest)
+    private Task WriteToAuditLogAsync(JobExecutionRequest logRequest)
     {
         if (string.IsNullOrEmpty(logRequest.Result))
-            return;
+            return Task.CompletedTask;
 
-        var request = new LogRequest
+        var userId = DiscordClient.CurrentUser.Id.ToString();
+        var request = new LogRequest(LogType.JobCompleted, DateTime.UtcNow, null, userId)
         {
-            Type = LogType.JobCompleted,
-            CreatedAt = DateTime.UtcNow,
-            JobExecution = logRequest,
-            UserId = DiscordClient.CurrentUser.Id.ToString()
+            JobExecution = logRequest
         };
 
-        var auditLogServiceClient = ServiceProvider.GetRequiredService<IAuditLogServiceClient>();
-        await auditLogServiceClient.CreateItemsAsync(new List<LogRequest> { request });
+        var payload = new CreateItemsPayload(new() { request });
+        return RabbitPublisher.PublishAsync(payload);
     }
 
     private async Task<bool> CanRunAsync()

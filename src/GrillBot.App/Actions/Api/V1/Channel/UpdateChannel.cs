@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Helpers;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.App.Helpers;
 using GrillBot.App.Managers;
 using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
@@ -6,9 +7,8 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
 
@@ -21,20 +21,20 @@ public class UpdateChannel : ApiAction
     private ITextsManager Texts { get; }
     private ChannelHelper ChannelHelper { get; }
     private IDiscordClient DiscordClient { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
     private readonly PointsManager _pointsManager;
+    private readonly IRabbitMQPublisher _rabbitPublisher;
 
     public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, AutoReplyManager autoReplyManager, ChannelHelper channelHelper,
-        IDiscordClient discordClient, IAuditLogServiceClient auditLogServiceClient, PointsManager pointsManager) : base(apiContext)
+        IDiscordClient discordClient, PointsManager pointsManager, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
         AutoReplyManager = autoReplyManager;
         ChannelHelper = channelHelper;
         DiscordClient = discordClient;
-        AuditLogServiceClient = auditLogServiceClient;
         _pointsManager = pointsManager;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -85,20 +85,16 @@ public class UpdateChannel : ApiAction
             return;
 
         var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId);
-        var logRequest = new LogRequest
+        var userId = ApiContext.GetUserId().ToString();
+        var logRequest = new LogRequest(LogType.ChannelUpdated, DateTime.UtcNow, guild?.Id.ToString(), userId, channelId.ToString())
         {
-            ChannelId = channelId.ToString(),
             ChannelUpdated = new DiffRequest<ChannelInfoRequest>
             {
-                After = new ChannelInfoRequest { Flags = after.Flags },
-                Before = new ChannelInfoRequest { Flags = before.Flags }
-            },
-            GuildId = guild?.Id.ToString(),
-            Type = LogType.ChannelUpdated,
-            CreatedAt = DateTime.UtcNow,
-            UserId = ApiContext.GetUserId().ToString()
+                After = new ChannelInfoRequest { Flags = (int)after.Flags },
+                Before = new ChannelInfoRequest { Flags = (int)before.Flags }
+            }
         };
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 }

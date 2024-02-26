@@ -1,14 +1,14 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.Points;
+using GrillBot.Core.RabbitMQ.Publisher;
+using AuditLogService.Models.Events.Create;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -17,18 +17,18 @@ public class UpdateUser : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ITextsManager Texts { get; }
     private IDiscordClient DiscordClient { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
     private readonly PointsManager _pointsManager;
+    private readonly IRabbitMQPublisher _rabbitPublisher;
 
-    public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IDiscordClient discordClient, IAuditLogServiceClient auditLogServiceClient,
-        PointsManager pointsManager) : base(apiContext)
+    public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IDiscordClient discordClient, PointsManager pointsManager,
+        IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
         DiscordClient = discordClient;
-        AuditLogServiceClient = auditLogServiceClient;
         _pointsManager = pointsManager;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -66,9 +66,9 @@ public class UpdateUser : ApiAction
 
     private async Task WriteToAuditLogAsync(Database.Entity.User before, Database.Entity.User after)
     {
-        var logRequest = new LogRequest
+        var userId = ApiContext.GetUserId().ToString();
+        var logRequest = new LogRequest(LogType.MemberUpdated, DateTime.UtcNow, null, userId)
         {
-            Type = LogType.MemberUpdated,
             MemberUpdated = new MemberUpdatedRequest
             {
                 Flags = new DiffRequest<int?>
@@ -82,11 +82,9 @@ public class UpdateUser : ApiAction
                     Before = after.SelfUnverifyMinimalTime?.ToString("c")
                 },
                 UserId = after.Id
-            },
-            UserId = ApiContext.GetUserId().ToString(),
-            CreatedAt = DateTime.UtcNow
+            }
         };
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 }

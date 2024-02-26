@@ -1,10 +1,10 @@
-﻿using GrillBot.Common.Extensions;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Discord;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Services.Repository;
 
@@ -14,13 +14,14 @@ public class MergeStats : ApiAction
 {
     private IEmoteManager EmoteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
 
-    public MergeStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IEmoteManager emoteManager, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public MergeStats(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IEmoteManager emoteManager, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         EmoteManager = emoteManager;
-        AuditLogServiceClient = auditLogServiceClient;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -78,20 +79,19 @@ public class MergeStats : ApiAction
 
     private async Task WriteToAuditLogAsync(MergeEmoteStatsParams parameters, int sourceStatsCount, int destinationStatsCount)
     {
-        var logRequest = new LogRequest
+        var userId = ApiContext.GetUserId().ToString();
+        var message = $"Provedeno sloučení emotů {parameters.SourceEmoteId} do {parameters.DestinationEmoteId}. Sloučeno záznamů: {sourceStatsCount}/{destinationStatsCount}";
+        var logRequest = new LogRequest(LogType.Info, DateTime.UtcNow, null, userId)
         {
-            UserId = ApiContext.GetUserId().ToString(),
-            Type = LogType.Info,
-            CreatedAt = DateTime.UtcNow,
             LogMessage = new LogMessageRequest
             {
-                Message = $"Provedeno sloučení emotů {parameters.SourceEmoteId} do {parameters.DestinationEmoteId}. Sloučeno záznamů: {sourceStatsCount}/{destinationStatsCount}",
+                Message = message,
                 Severity = LogSeverity.Info,
-                SourceAppName = "GrillBot",
-                Source = $"Emote.{nameof(MergeStats)}"
+                Source = $"Emote.{nameof(MergeStats)}",
+                SourceAppName = "GrillBot"
             }
         };
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 }

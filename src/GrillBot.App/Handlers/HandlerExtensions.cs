@@ -1,9 +1,7 @@
-﻿using GrillBot.App.Handlers.Logging;
-using GrillBot.App.Handlers.RoleDeleted;
-using GrillBot.App.Handlers.ServiceOrchestration;
-using GrillBot.App.Handlers.Synchronization.Database;
+﻿using GrillBot.App.Handlers.Synchronization.Database;
 using GrillBot.App.Handlers.Synchronization.Services;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.RabbitMQ;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers;
@@ -16,28 +14,17 @@ public static class HandlerExtensions
         RegisterOrchestration(services);
 
         services
+            .AddRabbitConsumerHandler<RabbitMQ.FileDeleteEventHandler>();
+
+        services
             .AddSingleton<InteractionHandler>();
 
         services
-            .AddScoped<IChannelCreatedEvent, ChannelCreated.AuditChannelCreatedHandler>();
-
-        services
-            .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.AuditChannelDestroyedHandler>()
             .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.GuildConfigurationChannelDestroyedHandler>();
 
         services
-            .AddScoped<IChannelUpdatedEvent, ChannelUpdated.AuditChannelUpdatedHandler>()
-            .AddScoped<IChannelUpdatedEvent, ChannelUpdated.AuditOverwritesChangedHandler>();
-
-        services
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.ServerBoosterHandler>()
-            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserUpdatedHandler>()
-            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.AuditUserRoleUpdatedHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.UserNicknameUpdatedHandler>();
-
-        services
-            .AddScoped<IGuildUpdatedEvent, GuildUpdated.AuditGuildUpdatedHandler>()
-            .AddScoped<IGuildUpdatedEvent, GuildUpdated.AuditEmotesGuildUpdatedHandler>();
 
         services
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.InteractionFailedCommandHandler>()
@@ -49,7 +36,7 @@ public static class HandlerExtensions
             .AddScoped<IInviteCreatedEvent, InviteCreated.InviteToCacheHandler>();
 
         services
-            .AddScoped<WithoutAccidentRenderer>();
+            .AddScoped<Logging.WithoutAccidentRenderer>();
 
         services
             .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()
@@ -64,9 +51,6 @@ public static class HandlerExtensions
             .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteMessageReceivedHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteChainHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelPinMessageReceivedHandler>();
-
-        services
-            .AddScoped<IMessageUpdatedEvent, MessageUpdated.AuditMessageUpdatedHandler>();
 
         services
             .AddScoped<IReactionAddedEvent, ReactionAdded.EmoteStatsReactionAddedHandler>();
@@ -84,25 +68,16 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.EmoteInitSynchronizationHandler>();
 
         services
-            .AddScoped<IRoleDeletedEvent, AuditRoleDeletedHandler>()
             .AddScoped<IRoleDeletedEvent, RoleDeleted.GuildConfigurationRoleDeletedHandler>();
-
-        services
-            .AddScoped<IThreadDeletedEvent, ThreadDeleted.AuditThreadDeletedHandler>();
 
         services
             .AddScoped<IThreadUpdatedEvent, ThreadUpdated.ForumThreadTagsUpdated>();
 
         services
-            .AddScoped<IUserJoinedEvent, UserJoined.InviteUserJoinedHandler>()
-            .AddScoped<IUserJoinedEvent, UserJoined.AuditUserJoinedHandler>();
+            .AddScoped<IUserJoinedEvent, UserJoined.InviteUserJoinedHandler>();
 
         services
-            .AddScoped<IUserLeftEvent, UserLeft.UnverifyUserLeftHandler>()
-            .AddScoped<IUserLeftEvent, UserLeft.AuditUserLeftHandler>();
-
-        services
-            .AddScoped<IUserUnbannedEvent, UserUnbanned.AuditUserUnbannedHandler>();
+            .AddScoped<IUserLeftEvent, UserLeft.UnverifyUserLeftHandler>();
 
         return services;
     }
@@ -147,7 +122,8 @@ public static class HandlerExtensions
 
     private static void RegisterOrchestration(IServiceCollection services)
     {
-        RegisterServiceOrchestration<PointsOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.PointsOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.AuditOrchestrationHandler>(services);
     }
 
     private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class

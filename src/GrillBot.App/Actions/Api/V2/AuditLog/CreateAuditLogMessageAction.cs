@@ -1,52 +1,52 @@
-﻿using GrillBot.Common.Models;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Actions.Api.V2.AuditLog;
 
 public class CreateAuditLogMessageAction : ApiAction
 {
-    private IAuditLogServiceClient Client { get; }
+    private readonly IRabbitMQPublisher _rabbitPublisher;
 
-    public CreateAuditLogMessageAction(ApiRequestContext apiContext, IAuditLogServiceClient client) : base(apiContext)
+    public CreateAuditLogMessageAction(ApiRequestContext apiContext, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
-        Client = client;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
         var request = (Data.Models.API.AuditLog.Public.LogMessageRequest)Parameters[0]!;
-        var logRequest = new LogRequest
+
+        var logType = request.Type.ToLower() switch
         {
-            Type = request.Type.ToLower() switch
-            {
-                "warning" => LogType.Warning,
-                "info" => LogType.Info,
-                "error" => LogType.Error,
-                _ => throw new NotSupportedException()
-            },
-            ChannelId = request.ChannelId,
-            CreatedAt = DateTime.UtcNow,
-            GuildId = request.GuildId,
+            "warning" => LogType.Warning,
+            "info" => LogType.Info,
+            "error" => LogType.Error,
+            _ => throw new NotSupportedException()
+        };
+
+        var logSeverity = request.Type.ToLower() switch
+        {
+            "warning" => LogSeverity.Warning,
+            "info" => LogSeverity.Info,
+            "error" => LogSeverity.Error,
+            _ => throw new NotSupportedException()
+        };
+
+        var logRequest = new LogRequest(logType, DateTime.UtcNow, request.GuildId, request.UserId, request.ChannelId)
+        {
             LogMessage = new LogMessageRequest
             {
                 Message = request.Message,
-                Severity = request.Type.ToLower() switch
-                {
-                    "warning" => LogSeverity.Warning,
-                    "info" => LogSeverity.Info,
-                    "error" => LogSeverity.Error,
-                    _ => throw new NotSupportedException()
-                },
+                Severity = logSeverity,
                 Source = request.MessageSource,
                 SourceAppName = ApiContext.GetUsername()!
-            },
-            UserId = request.UserId
+            }
         };
 
-        await Client.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
         return ApiResult.Ok();
     }
 }

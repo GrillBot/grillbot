@@ -4,23 +4,26 @@ using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Extensions;
+using AuditLogService.Models.Events.Create;
+using GrillBot.Core.RabbitMQ.Publisher;
 
 namespace GrillBot.App.Handlers.UserJoined;
 
-public class InviteUserJoinedHandler : AuditLogServiceHandler, IUserJoinedEvent
+public class InviteUserJoinedHandler : IUserJoinedEvent
 {
     private IDiscordClient DiscordClient { get; }
     private InviteManager InviteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public InviteUserJoinedHandler(IDiscordClient discordClient, InviteManager inviteManager, GrillBotDatabaseBuilder databaseBuilder, IAuditLogServiceClient auditLogServiceClient) :
-        base(auditLogServiceClient)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public InviteUserJoinedHandler(IDiscordClient discordClient, InviteManager inviteManager, GrillBotDatabaseBuilder databaseBuilder, IRabbitMQPublisher rabbitPublisher)
     {
         DiscordClient = discordClient;
         InviteManager = inviteManager;
         DatabaseBuilder = databaseBuilder;
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public async Task ProcessAsync(IGuildUser user)
@@ -96,15 +99,19 @@ public class InviteUserJoinedHandler : AuditLogServiceHandler, IUserJoinedEvent
 
     private async Task WriteUnknownInviteToLogAsync(IGuildUser user)
     {
-        var request = CreateRequest(LogType.Warning, user.Guild, null, user);
-        request.LogMessage = new LogMessageRequest
+        var guildId = user.Guild.Id.ToString();
+        var userId = user.Id.ToString();
+        var logRequest = new LogRequest(LogType.Warning, DateTime.UtcNow, guildId, userId)
         {
-            Message = $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
-            Severity = LogSeverity.Warning,
-            Source = nameof(InviteUserJoinedHandler),
-            SourceAppName = "GrillBot"
+            LogMessage = new LogMessageRequest
+            {
+                Message = $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
+                Severity = LogSeverity.Warning,
+                Source = nameof(InviteUserJoinedHandler),
+                SourceAppName = "GrillBot"
+            }
         };
 
-        await SendRequestAsync(request);
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 }

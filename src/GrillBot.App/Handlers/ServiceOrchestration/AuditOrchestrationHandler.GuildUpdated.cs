@@ -1,34 +1,43 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Services.AuditLog;
+﻿using AuditLogService.Models.Events.Create;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
-namespace GrillBot.App.Handlers.GuildUpdated;
+namespace GrillBot.App.Handlers.ServiceOrchestration;
 
-public class AuditGuildUpdatedHandler : AuditLogServiceHandler, IGuildUpdatedEvent
+public partial class AuditOrchestrationHandler
 {
-    private DownloadHelper DownloadHelper { get; }
-
-    public AuditGuildUpdatedHandler(IAuditLogServiceClient client, DownloadHelper downloadHelper) : base(client)
+    private static void ProcessRemovedEmotes(IGuild before, IGuild after, CreateItemsPayload payload)
     {
-        DownloadHelper = downloadHelper;
+        var removedEmotes = before.Emotes.Where(e => !after.Emotes.Contains(e)).ToList();
+        if (removedEmotes.Count == 0) return;
+
+        var guildId = after.Id.ToString();
+
+        foreach (var emote in removedEmotes)
+        {
+            payload.Items.Add(new LogRequest(LogType.EmoteDeleted, DateTime.UtcNow, guildId)
+            {
+                DeletedEmote = new DeletedEmoteRequest { EmoteId = emote.ToString() }
+            });
+        }
     }
 
-    public async Task ProcessAsync(IGuild before, IGuild after)
+    private async Task ProcessGuildChangesAsync(IGuild before, IGuild after, CreateItemsPayload payload)
     {
-        if (!CanProcess(before, after)) return;
+        if (!IsGuildChanged(before, after)) return;
 
         var infoBefore = await CreateInfoRequestAsync(before);
         var infoAfter = await CreateInfoRequestAsync(after);
-        var request = CreateRequest(LogType.GuildUpdated, after);
-        request.GuildUpdated = new DiffRequest<GuildInfoRequest>()
+        var guildId = after.Id.ToString();
+        var logRequest = new LogRequest(LogType.GuildUpdated, DateTime.UtcNow, guildId)
         {
-            After = infoAfter,
-            Before = infoBefore
+            GuildUpdated = new DiffRequest<GuildInfoRequest>
+            {
+                After = infoAfter,
+                Before = infoBefore
+            }
         };
 
-        await SendRequestAsync(request);
+        payload.Items.Add(logRequest);
     }
 
     private async Task<GuildInfoRequest> CreateInfoRequestAsync(IGuild guild)
@@ -55,11 +64,11 @@ public class AuditGuildUpdatedHandler : AuditLogServiceHandler, IGuildUpdatedEve
             AfkTimeout = guild.AFKTimeout,
             AfkChannelId = guild.AFKChannelId?.ToString(),
             VanityUrl = guild.VanityURLCode,
-            IconData = await DownloadHelper.DownloadFileAsync(guild.IconUrl)
+            IconData = await _downloadHelper.DownloadFileAsync(guild.IconUrl)
         };
     }
 
-    private static bool CanProcess(IGuild before, IGuild after)
+    private static bool IsGuildChanged(IGuild before, IGuild after)
     {
         return
             before.Name != after.Name ||

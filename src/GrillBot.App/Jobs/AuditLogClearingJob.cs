@@ -1,5 +1,5 @@
 ﻿using System.IO.Compression;
-using System.Xml.Linq;
+using AuditLogService.Models.Events;
 using GrillBot.App.Helpers;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
@@ -23,7 +23,7 @@ public class AuditLogClearingJob : ArchivationJobBase
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        var archivationResult = await AuditLogServiceClient.ProcessArchivationAsync();
+        var archivationResult = await AuditLogServiceClient.CreateArchivationDataAsync();
         if (archivationResult is null)
             return;
 
@@ -39,7 +39,9 @@ public class AuditLogClearingJob : ArchivationJobBase
         var xmlSize = Encoding.UTF8.GetBytes(jsonData.ToString(Formatting.None)).Length.Bytes().ToString();
         var formattedZipSize = zipSize.Bytes().ToString();
 
-        await AuditLogServiceClient.BulkDeleteAsync(archivationResult.Ids);
+        var bulkDeletePayload = new BulkDeletePayload(archivationResult.Ids);
+        await RabbitPublisher.PublishAsync(bulkDeletePayload);
+
         context.Result = BuildReport(archivationResult, xmlSize, formattedZipSize);
     }
 
@@ -111,17 +113,10 @@ public class AuditLogClearingJob : ArchivationJobBase
 
         foreach (var file in files)
         {
-            var useLegacy = false;
             var fileContent = await manager.DownloadAsync(file);
-
+            fileContent ??= await legacyManager.DownloadAsync(file);
             if (fileContent is null)
-            {
-                fileContent = await legacyManager.DownloadAsync(file);
-                useLegacy = true;
-
-                if (fileContent is null)
-                    continue;
-            }
+                continue;
 
             var entry = archive.CreateEntry(file);
             entry.LastWriteTime = DateTimeOffset.UtcNow;
@@ -129,11 +124,6 @@ public class AuditLogClearingJob : ArchivationJobBase
             await using var ms = new MemoryStream(fileContent);
             await using var archiveStream = entry.Open();
             await ms.CopyToAsync(archiveStream);
-
-            if (useLegacy)
-                await legacyManager.DeleteAsync(file);
-            else
-                await manager.DeleteAsync(file);
         }
     }
 

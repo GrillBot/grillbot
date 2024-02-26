@@ -27,16 +27,18 @@ public class AuditLogManager
     public DateTime GetNextMemberRoleEvent(ulong guildId)
     {
         lock (_locker)
-        {
             return NextMemberRoleEvents.TryGetValue(guildId, out var dateTime) ? dateTime : DateTime.MinValue;
-        }
     }
 
     public DateTime GetNextOverwriteEvent(ulong channelId)
     {
         lock (_locker)
-        {
             return NextOverwriteEvents.TryGetValue(channelId, out var dateTime) ? dateTime : DateTime.MinValue;
-        }
     }
+
+    public bool CanProcessNextMemberRoleEvent(ulong guildId)
+        => DateTime.Now >= GetNextMemberRoleEvent(guildId);
+
+    public bool CanProcessNextOverwriteEvent(ulong channelId)
+        => DateTime.Now >= GetNextOverwriteEvent(channelId);
 }

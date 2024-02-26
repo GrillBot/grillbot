@@ -1,9 +1,9 @@
-﻿using GrillBot.Cache.Services.Managers.MessageCache;
+﻿using AuditLogService.Models.Events.Create;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 
@@ -11,13 +11,13 @@ public class ClearMessageCache : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private IMessageCacheManager MessageCache { get; }
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private IRabbitMQPublisher RabbitPublisher { get; }
 
-    public ClearMessageCache(ApiRequestContext apiContext, IDiscordClient discordClient, IMessageCacheManager messageCache, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public ClearMessageCache(ApiRequestContext apiContext, IDiscordClient discordClient, IMessageCacheManager messageCache, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
     {
         DiscordClient = discordClient;
         MessageCache = messageCache;
-        AuditLogServiceClient = auditLogServiceClient;
+        RabbitPublisher = rabbitPublisher;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -34,23 +34,19 @@ public class ClearMessageCache : ApiAction
             return ApiResult.Ok();
 
         var count = await MessageCache.ClearAllMessagesFromChannelAsync(channel);
-        var logRequest = new LogRequest
+        var userId = ApiContext.GetUserId().ToString();
+        var logRequest = new LogRequest(LogType.Info, DateTime.UtcNow, guildId.ToString(), userId, channelId.ToString())
         {
-            Type = LogType.Info,
-            ChannelId = channel.Id.ToString(),
-            CreatedAt = DateTime.UtcNow,
-            GuildId = guild.Id.ToString(),
             LogMessage = new LogMessageRequest
             {
                 Message = $"Byla ručně smazána cache zpráv kanálu. Smazaných zpráv: {count}",
                 Severity = LogSeverity.Info,
-                SourceAppName = "GrillBot",
-                Source = nameof(ClearMessageCache)
-            },
-            UserId = ApiContext.GetUserId().ToString()
+                Source = nameof(ClearMessageCache),
+                SourceAppName = "GrillBot"
+            }
         };
 
-        await AuditLogServiceClient.CreateItemsAsync(new List<LogRequest> { logRequest });
+        await RabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
         return ApiResult.Ok();
     }
 }

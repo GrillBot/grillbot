@@ -1,28 +1,37 @@
-﻿using Discord.Interactions;
+﻿using AuditLogService.Models.Events.Create;
+using Discord.Interactions;
 using GrillBot.App.Services.Discord;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Request.CreateItems;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.Services.AuditLog.Enums;
 
 namespace GrillBot.App.Handlers.InteractionCommandExecuted;
 
-public class AuditInteractionCommandHandler : AuditLogServiceHandler, IInteractionCommandExecutedEvent
+public class AuditInteractionCommandHandler : IInteractionCommandExecutedEvent
 {
-    public AuditInteractionCommandHandler(IAuditLogServiceClient client) : base(client)
+    private readonly IRabbitMQPublisher _rabbitPublisher;
+
+    public AuditInteractionCommandHandler(IRabbitMQPublisher rabbitPublisher)
     {
+        _rabbitPublisher = rabbitPublisher;
     }
 
     public async Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (!Init(result, context, out var duration)) return;
 
-        var request = CreateRequest(LogType.InteractionCommand, context.Guild, context.Channel, context.User);
-        request.InteractionCommand = CreateCommandRequest(commandInfo, context, result, duration);
+        var guildId = context.Guild.Id.ToString();
+        var channelId = context.Channel.Id.ToString();
+        var userId = context.User.Id.ToString();
 
-        await SendRequestAsync(request);
+        var logRequest = new LogRequest(LogType.InteractionCommand, DateTime.UtcNow, guildId, userId, channelId)
+        {
+            InteractionCommand = CreateCommandRequest(commandInfo, context, result, duration)
+        };
+
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
     }
 
     private static bool Init(IResult result, IInteractionContext context, out int duration)
@@ -59,27 +68,27 @@ public class AuditInteractionCommandHandler : AuditLogServiceHandler, IInteracti
                     .ToList();
                 break;
             case SocketMessageCommand messageCommand:
-            {
-                request.IsValidToken = messageCommand.IsValidToken;
-
-                var message = messageCommand.Data.Message;
-                request.Parameters = new List<InteractionCommandParameterRequest>
                 {
-                    CreateParameterRequest("Message", messageCommand.Data.Name, $"Message({message.Author.Username}, {message.CreatedAt.LocalDateTime.ToCzechFormat()}, {message.Content})")
-                };
-                break;
-            }
+                    request.IsValidToken = messageCommand.IsValidToken;
+
+                    var message = messageCommand.Data.Message;
+                    request.Parameters = new List<InteractionCommandParameterRequest>
+                    {
+                        CreateParameterRequest("Message", messageCommand.Data.Name, $"Message({message.Author.Username}, {message.CreatedAt.LocalDateTime.ToCzechFormat()}, {message.Content})")
+                    };
+                    break;
+                }
             case SocketUserCommand userCommand:
-            {
-                request.IsValidToken = userCommand.IsValidToken;
-
-                var user = userCommand.Data.Member;
-                request.Parameters = new List<InteractionCommandParameterRequest>
                 {
-                    CreateParameterRequest("User", userCommand.Data.Name, $"User({user.Username}, {user.Id})")
-                };
-                break;
-            }
+                    request.IsValidToken = userCommand.IsValidToken;
+
+                    var user = userCommand.Data.Member;
+                    request.Parameters = new List<InteractionCommandParameterRequest>
+                    {
+                        CreateParameterRequest("User", userCommand.Data.Name, $"User({user.Username}, {user.Id})")
+                    };
+                    break;
+                }
             case SocketMessageComponent messageComponent:
                 request.IsValidToken = messageComponent.IsValidToken;
 
@@ -110,19 +119,13 @@ public class AuditInteractionCommandHandler : AuditLogServiceHandler, IInteracti
         return request;
     }
 
-    private static InteractionCommandParameterRequest CreateParameterRequest(IApplicationCommandInteractionDataOption option)
-    {
-        var value = ConvertValue(option.Type, option.Value);
-        return CreateParameterRequest(option.Type.ToString(), option.Name, value);
-    }
-
     private static string ConvertValue(ApplicationCommandOptionType type, object value)
     {
         switch (type)
         {
             case ApplicationCommandOptionType.Attachment:
                 var attachment = (IAttachment)value;
-                return $"Attachment({attachment.Filename}, {attachment.Size.Bytes().ToString()})";
+                return $"Attachment({attachment.Filename}, {attachment.Size.Bytes()})";
             case ApplicationCommandOptionType.Boolean or ApplicationCommandOptionType.Integer or ApplicationCommandOptionType.Number or ApplicationCommandOptionType.String:
                 return value.ToString() ?? "";
             case ApplicationCommandOptionType.Channel:
@@ -139,6 +142,11 @@ public class AuditInteractionCommandHandler : AuditLogServiceHandler, IInteracti
         }
     }
 
+    private static InteractionCommandParameterRequest CreateParameterRequest(IApplicationCommandInteractionDataOption option)
+    {
+        var value = ConvertValue(option.Type, option.Value);
+        return CreateParameterRequest(option.Type.ToString(), option.Name, value);
+    }
     private static InteractionCommandParameterRequest CreateParameterRequest(string type, string name, string value)
     {
         return new InteractionCommandParameterRequest

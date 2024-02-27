@@ -65,14 +65,14 @@ public partial class AuditOrchestrationHandler : IGuildMemberUpdatedEvent, IGuil
         await PushPayloadAsync(payload);
     }
 
-    // MessageEdited
+    // MessageUpdated
     public async Task ProcessAsync(Cacheable<IMessage, ulong> before, IMessage after, IMessageChannel channel)
     {
         var oldMessage = before.HasValue ? before.Value : null;
         oldMessage ??= await _messageCache.GetAsync(before.Id, null);
 
         if (channel is not ITextChannel textChannel) return;
-        if (oldMessage?.Author.IsUser() != true) return;
+        if (oldMessage?.Author.IsUser() != true || after.Author.Id == 0) return;
         if (oldMessage.Content == after.Content) return;
         if (oldMessage.Type is MessageType.ApplicationCommand or MessageType.ContextMenuCommand) return;
 

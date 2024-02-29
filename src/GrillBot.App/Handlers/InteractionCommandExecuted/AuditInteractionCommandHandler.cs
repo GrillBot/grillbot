@@ -22,7 +22,7 @@ public class AuditInteractionCommandHandler : IInteractionCommandExecutedEvent
     {
         if (!Init(result, context, out var duration)) return;
 
-        var guildId = context.Guild.Id.ToString();
+        var guildId = context.Guild?.Id.ToString();
         var channelId = context.Channel.Id.ToString();
         var userId = context.User.Id.ToString();
 

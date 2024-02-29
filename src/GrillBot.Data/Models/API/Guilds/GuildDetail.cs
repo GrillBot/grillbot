@@ -95,4 +95,5 @@ public class GuildDetail : Guild
     public Dictionary<UserStatus, int> UserStatusReport { get; set; } = new();
     public Dictionary<ClientType, int> ClientTypeReport { get; set; } = new();
     public GuildDatabaseReport DatabaseReport { get; set; } = null!;
+    public Role? AssociationRole { get; set; }
 }

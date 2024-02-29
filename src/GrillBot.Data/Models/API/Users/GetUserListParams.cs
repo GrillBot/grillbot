@@ -75,7 +75,7 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
         }
 
         if (Flags != null && Flags > 0)
-            query = query.Where(o => (o.Flags & Flags) == Flags);
+            query = query.Where(o => (o.Flags & Flags) != 0);
 
         if (HaveBirthday)
             query = query.Where(o => o.Birthday != null);

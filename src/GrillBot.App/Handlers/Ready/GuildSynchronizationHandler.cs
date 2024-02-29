@@ -36,6 +36,8 @@ public class GuildSynchronizationHandler : IReadyEvent
                 dbGuild.VoteChannelId = null;
             if (CanResetRoleId(dbGuild.MuteRoleId, guild))
                 dbGuild.MuteRoleId = null;
+            if (CanResetRoleId(dbGuild.AssociationRoleId, guild))
+                dbGuild.AssociationRoleId = null;
         }
 
         await repository.CommitAsync();

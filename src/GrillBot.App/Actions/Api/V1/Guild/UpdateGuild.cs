@@ -26,10 +26,8 @@ public class UpdateGuild : ApiAction
     {
         var id = (ulong)Parameters[0]!;
         var parameters = (UpdateGuildParams)Parameters[1]!;
-
-        var guild = await DiscordClient.GetGuildAsync(id);
-        if (guild == null)
-            throw new NotFoundException(Texts["GuildModule/GuildDetail/NotFound", ApiContext.Language]);
+        var guild = await DiscordClient.GetGuildAsync(id)
+            ?? throw new NotFoundException(Texts["GuildModule/GuildDetail/NotFound", ApiContext.Language]);
 
         await using var repository = DatabaseBuilder.CreateRepository();
 
@@ -58,6 +56,11 @@ public class UpdateGuild : ApiAction
             ThrowValidationException("BotRoomChannelNotFound", parameters.BotRoomChannelId, nameof(parameters.BotRoomChannelId));
         else
             dbGuild.BotRoomChannelId = parameters.BotRoomChannelId;
+
+        if (!string.IsNullOrEmpty(parameters.AssociationRoleId) && guild.GetRole(parameters.AssociationRoleId.ToUlong()) == null)
+            ThrowValidationException("AssociationRoleNotFound", parameters.AssociationRoleId, nameof(parameters.AssociationRoleId));
+        else
+            dbGuild.AssociationRoleId = parameters.AssociationRoleId;
 
         dbGuild.EmoteSuggestionsFrom = parameters.EmoteSuggestionsValidity?.From;
         dbGuild.EmoteSuggestionsTo = parameters.EmoteSuggestionsValidity?.To;

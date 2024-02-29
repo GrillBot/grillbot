@@ -42,6 +42,9 @@ public class Guild
     [StringLength(30)]
     public string? BotRoomChannelId { get; set; }
 
+    [StringLength(30)]
+    public string? AssociationRoleId { get; set; }
+
     public ISet<GuildUser> Users { get; set; }
     public ISet<Invite> Invites { get; set; }
     public ISet<GuildChannel> Channels { get; set; }

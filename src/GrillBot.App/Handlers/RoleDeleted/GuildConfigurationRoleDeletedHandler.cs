@@ -2,6 +2,8 @@
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Database.Enums;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Handlers.RoleDeleted;
 
@@ -27,6 +29,7 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
 
         var log = new List<string>();
         ModifyMutedRoleId(role, guild, log);
+        ModifyAssociationRoleId(role, guild, log);
 
         if (log.Count == 0)
             return;
@@ -42,6 +45,15 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
 
         log.Add($"Removed MutedRoleId value. OldValue: {guild.MuteRoleId}");
         guild.MuteRoleId = null;
+    }
+
+    private static void ModifyAssociationRoleId(IRole role, Database.Entity.Guild guild, List<string> log)
+    {
+        if (string.IsNullOrEmpty(guild.AssociationRoleId) || guild.AssociationRoleId != role.Id.ToString())
+            return;
+
+        log.Add($"Removed AssociationRoleId value and cleared user flags. OldValue: {guild.AssociationRoleId}");
+        guild.AssociationRoleId = null;
     }
 
     private async Task WriteToAuditLogAsync(IGuild guild, List<string> log)

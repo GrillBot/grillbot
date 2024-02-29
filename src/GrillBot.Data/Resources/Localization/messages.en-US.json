@@ -214,7 +214,8 @@
             "MuteRoleNotFound": "Failed to find the role that represents silencing the user on unverify.",
             "EmoteSuggestionChannelNotFound": "Failed to find channel for emote suggestions.",
             "VoteChannelNotFound": "Could not find public polling channel.",
-            "BotRoomChannelNotFound": "Could not find channel for bots."
+            "BotRoomChannelNotFound": "Could not find channel for bots.",
+            "AssociationRoleNotFound": "Could not found association role."
         }
     },
     "MathModule": {

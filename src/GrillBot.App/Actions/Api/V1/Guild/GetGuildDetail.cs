@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GrillBot.App.Managers.DataResolve;
 using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
@@ -11,7 +12,6 @@ using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Services.UserMeasures;
-using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models.Guilds;
 
@@ -28,8 +28,11 @@ public class GetGuildDetail : ApiAction
     private IAuditLogServiceClient AuditLogServiceClient { get; }
     private IUserMeasuresServiceClient UserMeasuresService { get; }
 
+    private readonly DataResolveManager _dataResolve;
+
     public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, GrillBotCacheBuilder cacheBuilder,
-        ITextsManager texts, IPointsServiceClient pointsServiceClient, IAuditLogServiceClient auditLogServiceClient, IUserMeasuresServiceClient userMeasuresService) : base(apiContext)
+        ITextsManager texts, IPointsServiceClient pointsServiceClient, IAuditLogServiceClient auditLogServiceClient, IUserMeasuresServiceClient userMeasuresService,
+        DataResolveManager dataResolve) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
@@ -39,6 +42,7 @@ public class GetGuildDetail : ApiAction
         PointsServiceClient = pointsServiceClient;
         AuditLogServiceClient = auditLogServiceClient;
         UserMeasuresService = userMeasuresService;
+        _dataResolve = dataResolve;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -58,22 +62,25 @@ public class GetGuildDetail : ApiAction
         detail.DatabaseReport = await CreateDatabaseReportAsync(id);
         detail = Mapper.Map(discordGuild, detail);
         if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
-            detail.AdminChannel = Mapper.Map<Data.Models.API.Channels.Channel>(await discordGuild.GetChannelAsync(dbGuild.AdminChannelId.ToUlong()));
+            detail.AdminChannel = await _dataResolve.GetChannelAsync(discordGuild.Id, dbGuild.AdminChannelId.ToUlong());
 
         if (!string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
-            detail.EmoteSuggestionChannel = Mapper.Map<Data.Models.API.Channels.Channel>(await discordGuild.GetChannelAsync(dbGuild.EmoteSuggestionChannelId.ToUlong()));
+            detail.EmoteSuggestionChannel = await _dataResolve.GetChannelAsync(discordGuild.Id, dbGuild.EmoteSuggestionChannelId.ToUlong());
 
         if (!string.IsNullOrEmpty(dbGuild.BoosterRoleId))
-            detail.BoosterRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.BoosterRoleId.ToUlong()));
+            detail.BoosterRole = await _dataResolve.GetRoleAsync(dbGuild.BoosterRoleId.ToUlong());
 
         if (!string.IsNullOrEmpty(dbGuild.MuteRoleId))
-            detail.MutedRole = Mapper.Map<Role>(discordGuild.GetRole(dbGuild.MuteRoleId.ToUlong()));
+            detail.MutedRole = await _dataResolve.GetRoleAsync(dbGuild.MuteRoleId.ToUlong());
 
         if (!string.IsNullOrEmpty(dbGuild.VoteChannelId))
-            detail.VoteChannel = Mapper.Map<Data.Models.API.Channels.Channel>(await discordGuild.GetChannelAsync(dbGuild.VoteChannelId.ToUlong()));
+            detail.VoteChannel = await _dataResolve.GetChannelAsync(discordGuild.Id, dbGuild.VoteChannelId.ToUlong());
 
         if (!string.IsNullOrEmpty(dbGuild.BotRoomChannelId))
-            detail.BotRoomChannel = Mapper.Map<Data.Models.API.Channels.Channel>(await discordGuild.GetChannelAsync(dbGuild.BotRoomChannelId.ToUlong()));
+            detail.BotRoomChannel = await _dataResolve.GetChannelAsync(discordGuild.Id, dbGuild.BotRoomChannelId.ToUlong());
+
+        if (!string.IsNullOrEmpty(dbGuild.AssociationRoleId))
+            detail.AssociationRole = await _dataResolve.GetRoleAsync(dbGuild.AssociationRoleId.ToUlong());
 
         var guildUsers = await discordGuild.GetUsersAsync();
         detail.UserStatusReport = guildUsers

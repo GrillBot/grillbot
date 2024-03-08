@@ -7,10 +7,8 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models.Guilds;
@@ -102,34 +100,13 @@ public class GetGuildDetail : ApiAction
 
         var report = await repository.Guild.GetDatabaseReportDataAsync(guildId);
 
-        await using var cache = CacheBuilder.CreateRepository();
-        report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
+        await using (var cache = CacheBuilder.CreateRepository())
+            report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
 
         report.AuditLogs = await AuditLogServiceClient.GetItemsCountOfGuildAsync(guildId);
-        report.PointTransactions = await GetPointsTransactionsCountAsync(guildId);
+        report.PointTransactions = await PointsServiceClient.GetTransactionsCountForGuildActionAsync(guildId.ToString());
         report.UserMeasures = await UserMeasuresService.GetItemsCountOfGuildAsync(guildId.ToString());
 
         return report;
-    }
-
-    private async Task<int> GetPointsTransactionsCountAsync(ulong guildId)
-    {
-        var request = new AdminListRequest
-        {
-            GuildId = guildId.ToString(),
-            Pagination = new PaginatedParams
-            {
-                Page = 0,
-                PageSize = 1,
-                OnlyCount = true
-            }
-        };
-
-        var nonMerged = await PointsServiceClient.GetTransactionListAsync(request);
-
-        request.ShowMerged = true;
-        var merged = await PointsServiceClient.GetTransactionListAsync(request);
-
-        return Convert.ToInt32(nonMerged.Response!.TotalItemsCount + merged.Response!.TotalItemsCount);
     }
 }

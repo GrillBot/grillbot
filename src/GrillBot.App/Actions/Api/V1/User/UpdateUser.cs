@@ -8,7 +8,7 @@ using GrillBot.Database.Enums;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.Points;
 using GrillBot.Core.RabbitMQ.Publisher;
-using AuditLogService.Models.Events.Create;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 

@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using AuditLogService.Models.Events;
+using GrillBot.Core.Services.AuditLog.Models.Events;
 
 namespace GrillBot.App.Controllers;
 

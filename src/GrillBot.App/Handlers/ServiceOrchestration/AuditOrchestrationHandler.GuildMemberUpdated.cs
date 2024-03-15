@@ -1,6 +1,6 @@
-﻿using AuditLogService.Models.Events.Create;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

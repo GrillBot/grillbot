@@ -1,7 +1,7 @@
-﻿using AuditLogService.Models.Events.Create;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace GrillBot.App.Infrastructure.RequestProcessing;

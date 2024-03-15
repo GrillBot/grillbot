@@ -1,7 +1,6 @@
 ﻿using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RubbergodService;
-using GrillBot.Database.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;

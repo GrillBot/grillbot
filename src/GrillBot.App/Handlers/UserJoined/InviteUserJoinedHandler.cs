@@ -1,12 +1,10 @@
 ﻿using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models;
 using GrillBot.Core.Extensions;
-using AuditLogService.Models.Events.Create;
 using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Handlers.UserJoined;
 

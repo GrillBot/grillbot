@@ -1,5 +1,4 @@
-﻿using AuditLogService.Models.Events.Create;
-using Azure;
+﻿using Azure;
 using Azure.Storage.Blobs.Models;
 using GrillBot.App.Helpers;
 using GrillBot.Cache.Services.Managers.MessageCache;
@@ -8,6 +7,7 @@ using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 

@@ -1,9 +1,9 @@
 ﻿using System.IO.Compression;
-using AuditLogService.Models.Events;
 using GrillBot.App.Helpers;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
 using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.AuditLog.Models.Events;
 using GrillBot.Core.Services.AuditLog.Models.Response;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;

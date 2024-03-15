@@ -1,10 +1,10 @@
-﻿using AuditLogService.Models.Events.Create;
-using GrillBot.Common.Extensions;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Discord;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Data.Models.API.Emotes;
 using GrillBot.Database.Services.Repository;
 

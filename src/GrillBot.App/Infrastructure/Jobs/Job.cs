@@ -5,8 +5,8 @@ using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Core.Services.AuditLog.Enums;
 using Microsoft.Extensions.DependencyInjection;
-using AuditLogService.Models.Events.Create;
 using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Infrastructure.Jobs;
 

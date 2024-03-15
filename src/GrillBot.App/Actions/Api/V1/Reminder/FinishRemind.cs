@@ -1,11 +1,11 @@
-﻿using AuditLogService.Models.Events.Create;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Data.Models.API;
 using GrillBot.Database.Entity;
 using Microsoft.AspNetCore.Http;

@@ -1,6 +1,5 @@
 ﻿using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Common.Managers.Logging;
 
 namespace GrillBot.App.Handlers.Synchronization.Database;
 

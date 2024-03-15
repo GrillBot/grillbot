@@ -1,7 +1,7 @@
-﻿using AuditLogService.Models.Events.Create;
-using GrillBot.Common.Managers.Events.Contracts;
+﻿using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using System.Reflection;
 
 namespace GrillBot.App.Handlers.ChannelDestroyed;

@@ -1,7 +1,6 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Actions.Api.V1.PublicApiClients;
 

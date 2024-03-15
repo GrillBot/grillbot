@@ -8,7 +8,6 @@ using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.PointsService.Enums;
-using GrillBot.Database.Services.Repository;
 using GrillBot.App.Managers.DataResolve;
 
 namespace GrillBot.App.Actions.Commands.Points;

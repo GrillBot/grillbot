@@ -18,7 +18,6 @@ global using System.Globalization;
 global using System.Text;
 global using Humanizer;
 global using Humanizer.Localisation;
-global using System.Collections.Concurrent;
 global using GrillBot.App.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;

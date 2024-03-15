@@ -1,5 +1,4 @@
 ﻿using System.IO.Compression;
-using System.Xml.Linq;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Jobs;
 using Microsoft.Extensions.DependencyInjection;

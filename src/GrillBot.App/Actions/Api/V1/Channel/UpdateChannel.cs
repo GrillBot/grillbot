@@ -1,5 +1,4 @@
-﻿using AuditLogService.Models.Events.Create;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.App.Managers;
 using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
@@ -9,6 +8,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
 

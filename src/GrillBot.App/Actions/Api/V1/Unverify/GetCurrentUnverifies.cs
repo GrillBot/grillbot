@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.App.Managers;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;

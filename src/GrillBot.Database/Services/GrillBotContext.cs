@@ -95,6 +95,11 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.User).WithMany(o => o.Nicknames).HasForeignKey(o => new { o.GuildId, o.UserId });
         });
 
+        modelBuilder.Entity<EmoteStatisticItem>(builder =>
+        {
+            builder.HasKey(o => new { o.EmoteId, o.UserId, o.GuildId });
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 

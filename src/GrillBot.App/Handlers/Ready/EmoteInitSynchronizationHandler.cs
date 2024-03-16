@@ -15,7 +15,7 @@ public class EmoteInitSynchronizationHandler : IReadyEvent
 
     public async Task ProcessAsync()
     {
-        //return;
+        return;
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var statistics = await repository.Emote.GetAllStatisticsAsync();

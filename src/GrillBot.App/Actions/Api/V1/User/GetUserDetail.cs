@@ -14,6 +14,11 @@ using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Enums;
 using GrillBot.App.Managers.DataResolve;
+using GrillBot.Core.Services.Emote;
+using Discord;
+using GrillBot.Core.Services.AuditLog.Models.Response.Detail;
+using GrillBot.Core.Services.Emote.Models.Request;
+using Microsoft.Extensions.Azure;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -26,9 +31,10 @@ public class GetUserDetail : ApiAction
     private IPointsServiceClient PointsServiceClient { get; }
     private IUserMeasuresServiceClient UserMeasuresService { get; }
     private readonly DataResolveManager _dataResolveManager;
+    private readonly IEmoteServiceClient _emoteServiceClient;
 
     public GetUserDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
-        IPointsServiceClient pointsServiceClient, IUserMeasuresServiceClient userMeasuresService, DataResolveManager dataResolveManager) : base(apiContext)
+        IPointsServiceClient pointsServiceClient, IUserMeasuresServiceClient userMeasuresService, DataResolveManager dataResolveManager, IEmoteServiceClient emoteServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
@@ -37,6 +43,7 @@ public class GetUserDetail : ApiAction
         PointsServiceClient = pointsServiceClient;
         UserMeasuresService = userMeasuresService;
         _dataResolveManager = dataResolveManager;
+        _emoteServiceClient = emoteServiceClient;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -94,7 +101,10 @@ public class GetUserDetail : ApiAction
 
         result.CreatedInvites = result.CreatedInvites.OrderByDescending(o => o.CreatedAt).ToList();
         result.Channels = result.Channels.OrderByDescending(o => o.Count).ThenBy(o => o.Channel.Name).ToList();
-        result.Emotes = result.Emotes.OrderByDescending(o => o.UseCount).ThenByDescending(o => o.LastOccurence).ThenBy(o => o.Emote.Name).ToList();
+
+        await SetUserMeasuresAsync(result, guildUserEntity);
+        await SetPointsInfoAsync(result, guildUserEntity);
+        await SetEmotesAsync(result, guildUserEntity);
 
         await UpdateGuildDetailAsync(result, guildUserEntity);
         return result;
@@ -102,9 +112,6 @@ public class GetUserDetail : ApiAction
 
     private async Task UpdateGuildDetailAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
-        await SetUserMeasuresAsync(detail, entity);
-        detail.HavePointsTransaction = await PointsServiceClient.ExistsAnyTransactionAsync(entity.GuildId, entity.UserId);
-
         var guild = await DiscordClient.GetGuildAsync(detail.Guild.Id.ToUlong());
         if (guild is null) return;
 
@@ -155,7 +162,8 @@ public class GetUserDetail : ApiAction
         };
 
         var measuresResult = await UserMeasuresService.GetMeasuresListAsync(parameters);
-        measuresResult.ValidationErrors.AggregateAndThrow();
+        if (measuresResult.ValidationErrors is not null)
+            return; // TODO Log errors to AuditLogService
 
         foreach (var measure in measuresResult.Response!.Data)
         {
@@ -176,5 +184,43 @@ public class GetUserDetail : ApiAction
                 Reason = measure.Reason
             });
         }
+    }
+
+    private async Task SetPointsInfoAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
+    {
+        detail.HavePointsTransaction = await PointsServiceClient.ExistsAnyTransactionAsync(entity.GuildId, entity.UserId);
+    }
+
+    private async Task SetEmotesAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
+    {
+        var request = new EmoteStatisticsListRequest
+        {
+            GuildId = entity.GuildId,
+            Pagination =
+            {
+                Page = 0,
+                PageSize = int.MaxValue
+            },
+            Unsupported = false,
+            UserId = entity.UserId
+        };
+
+        var response = await _emoteServiceClient.GetEmoteStatisticsListAsync(request);
+        if (response.ValidationErrors is not null)
+            return; // TODO Log errors to the AuditLogService.
+
+        detail.Emotes = response.Response!.Data.ConvertAll(o => new ApiModels.Emotes.EmoteStatItem
+        {
+            Emote = new ApiModels.Emotes.EmoteItem
+            {
+                FullId = $"<{(o.EmoteIsAnimated ? "a" : "")}:{o.EmoteId}:{o.EmoteName}>",
+                Id = o.EmoteId,
+                ImageUrl = o.EmoteUrl,
+                Name = o.EmoteName
+            },
+            FirstOccurence = o.FirstOccurence,
+            LastOccurence = o.LastOccurence,
+            UseCount = o.UseCount
+        });
     }
 }

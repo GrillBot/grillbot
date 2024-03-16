@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Extensions;
+﻿using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 

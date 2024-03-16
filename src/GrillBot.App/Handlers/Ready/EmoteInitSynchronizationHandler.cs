@@ -7,30 +7,18 @@ namespace GrillBot.App.Handlers.Ready;
 public class EmoteInitSynchronizationHandler : IReadyEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IDiscordClient DiscordClient { get; }
 
-    public EmoteInitSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
+    public EmoteInitSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder)
     {
         DatabaseBuilder = databaseBuilder;
-        DiscordClient = discordClient;
     }
 
     public async Task ProcessAsync()
     {
-        var guilds = await DiscordClient.GetGuildsAsync();
-        var supportedEmotes = guilds.SelectMany(o => o.Emotes).Select(o => o.ToString()).ToHashSet();
-
+        //return;
         await using var repository = DatabaseBuilder.CreateRepository();
 
         var statistics = await repository.Emote.GetAllStatisticsAsync();
-        foreach (var statistic in statistics)
-        {
-            statistic.IsEmoteSupported = supportedEmotes.Contains(statistic.EmoteId);
-        }
-
-        await repository.CommitAsync();
-
-        return;
         const string CMD = "INSERT INTO public.\"EmoteUserStatItems\" (\"EmoteId\", \"EmoteName\", \"EmoteIsAnimated\", \"GuildId\", \"UserId\", \"UseCount\", \"FirstOccurence\", \"LastOccurence\") " +
             "VALUES (@emoteId, @emoteName, @emoteIsAnimated, @guildId, @userId, @useCount, @firstOccurence, @lastOccurence)";
 

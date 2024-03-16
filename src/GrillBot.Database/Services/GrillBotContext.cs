@@ -38,13 +38,6 @@ public class GrillBotContext : DbContext
             );
         });
 
-        modelBuilder.Entity<EmoteStatisticItem>(builder =>
-        {
-            builder.HasKey(o => new { o.EmoteId, o.UserId, o.GuildId });
-            builder.HasOne(o => o.User).WithMany(o => o.EmoteStatistics).HasForeignKey(o => new { o.GuildId, o.UserId });
-            builder.HasOne(o => o.Guild).WithMany(o => o.EmoteStatistics);
-        });
-
         modelBuilder.Entity<RemindMessage>(buider =>
         {
             buider.HasOne(o => o.FromUser).WithMany(o => o.OutgoingReminders);

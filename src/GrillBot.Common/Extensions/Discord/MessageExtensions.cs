@@ -36,17 +36,12 @@ public static class MessageExtensions
         return true;
     }
 
-    public static IEnumerable<Emote> GetEmotesFromMessage(this IMessage message, List<GuildEmote>? supportedEmotes = null)
+    public static IEnumerable<Emote> GetEmotesFromMessage(this IMessage message)
     {
-        var query = message.Tags
+        return message.Tags
             .Where(o => o.Type == TagType.Emoji) // Is emote
             .Select(o => o.Value) // Only emote property
             .OfType<Emote>() // Only emote type
             .Distinct(); // Without duplicates.
-
-        if (supportedEmotes != null)
-            query = query.Where(e => supportedEmotes.Exists(x => x.IsEqual(e))); // Only supported emotes.
-
-        return query;
     }
 }

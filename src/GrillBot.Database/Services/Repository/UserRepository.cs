@@ -87,8 +87,6 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
                 query = query.Include(o => o.Guilds).ThenInclude(o => o.CreatedInvites.Where(x => x.UsedUsers.Count > 0));
             if (includeOptions.HasFlag(UserIncludeOptions.Channels))
                 query = query.Include(o => o.Guilds).ThenInclude(o => o.Channels.Where(x => x.Count > 0)).ThenInclude(o => o.Channel);
-            if (includeOptions.HasFlag(UserIncludeOptions.EmoteStatistics))
-                query = query.Include(o => o.Guilds).ThenInclude(o => o.EmoteStatistics.Where(x => x.UseCount > 0));
             if (includeOptions.HasFlag(UserIncludeOptions.Unverify))
                 query = query.Include(o => o.Guilds).ThenInclude(o => o.Unverify!.UnverifyLog);
             if (includeOptions.HasFlag(UserIncludeOptions.Nicknames))

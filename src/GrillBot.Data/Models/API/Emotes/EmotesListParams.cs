@@ -1,11 +1,7 @@
-﻿using GrillBot.Database.Entity;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using NSwag.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using GrillBot.Core.Database;
 using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Models;
@@ -14,7 +10,7 @@ using GrillBot.Core.Models;
 
 namespace GrillBot.Data.Models.API.Emotes;
 
-public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IDictionaryObject
+public class EmotesListParams : IDictionaryObject
 {
     public string? GuildId { get; set; }
 
@@ -36,32 +32,6 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IDictionary
     public SortParameters Sort { get; set; } = new() { OrderBy = "UseCount" };
 
     public PaginatedParams Pagination { get; set; } = new();
-
-    public IQueryable<EmoteStatisticItem> SetIncludes(IQueryable<EmoteStatisticItem> query)
-    {
-        return query
-            .Include(o => o.User!.User)
-            .Include(o => o.Guild);
-    }
-
-    public IQueryable<EmoteStatisticItem> SetQuery(IQueryable<EmoteStatisticItem> query)
-    {
-        if (!string.IsNullOrEmpty(GuildId))
-            query = query.Where(o => o.GuildId == GuildId);
-
-        if (!string.IsNullOrEmpty(UserId))
-            query = query.Where(o => o.UserId == UserId);
-
-        if (FilterAnimated)
-            query = query.Where(o => !o.EmoteId.StartsWith("<a:"));
-
-        if (!string.IsNullOrEmpty(EmoteName))
-            query = query.Where(o => o.EmoteId.Contains($":{EmoteName}:"));
-
-        return query;
-    }
-
-    public IQueryable<EmoteStatisticItem> SetSort(IQueryable<EmoteStatisticItem> query) => query;
 
     public Dictionary<string, string?> ToDictionary()
     {

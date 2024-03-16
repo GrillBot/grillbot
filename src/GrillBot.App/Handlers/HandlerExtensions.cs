@@ -29,7 +29,6 @@ public static class HandlerExtensions
         services
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.InteractionFailedCommandHandler>()
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.UpdateUserLanguageHandler>()
-            .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.EmoteSupportCheckInteractionCommandHandler>()
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.AuditInteractionCommandHandler>();
 
         services
@@ -41,14 +40,12 @@ public static class HandlerExtensions
         services
             .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.ChannelMessageDeletedHandler>()
-            .AddScoped<IMessageDeletedEvent, MessageDeleted.EmoteMessageDeletedHandler>()
             .AddScoped<IMessageDeletedEvent, MessageDeleted.EmoteSuggestionsMessageDeletedHandler>();
 
         services
             .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelMessageReceivedHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.UnsucessCommandHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.AutoReplyHandler>()
-            .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteMessageReceivedHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteChainHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelPinMessageReceivedHandler>();
 
@@ -124,6 +121,7 @@ public static class HandlerExtensions
     {
         RegisterServiceOrchestration<ServiceOrchestration.PointsOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.AuditOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.EmoteOrchestrationHandler>(services);
     }
 
     private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class

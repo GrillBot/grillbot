@@ -50,7 +50,7 @@ public class UsersMappingProfile : AutoMapper.Profile
             .ForMember(dst => dst.AvatarUrl, opt => opt.MapFrom(src => src.GetUserAvatarUrl(128)));
 
         CreateMap<Database.Entity.GuildUser, GuildUserDetail>()
-            .ForMember(dst => dst.Emotes, opt => opt.MapFrom(src => src.EmoteStatistics))
+            .ForMember(dst => dst.Emotes, opt => opt.Ignore())
             .ForMember(dst => dst.Unverify, opt => opt.Ignore())
             .ForMember(dst => dst.NicknameHistory, opt => opt.MapFrom(src => src.Nicknames.Where(o => o.NicknameValue != src.Nickname).Select(o => o.NicknameValue).ToList()))
             .ForMember(dst => dst.UserMeasures, opt => opt.Ignore());

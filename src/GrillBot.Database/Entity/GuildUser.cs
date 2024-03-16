@@ -1,5 +1,4 @@
 ﻿using Discord;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -48,7 +47,6 @@ public class GuildUser
     public bool IsInGuild { get; set; }
 
     public ISet<GuildUserChannel> Channels { get; set; }
-    public ISet<EmoteStatisticItem> EmoteStatistics { get; set; }
     public ISet<Nickname> Nicknames { get; set; }
 
     [NotMapped]
@@ -59,7 +57,6 @@ public class GuildUser
     {
         CreatedInvites = new HashSet<Invite>();
         Channels = new HashSet<GuildUserChannel>();
-        EmoteStatistics = new HashSet<EmoteStatisticItem>();
         Nicknames = new HashSet<Nickname>();
     }
 

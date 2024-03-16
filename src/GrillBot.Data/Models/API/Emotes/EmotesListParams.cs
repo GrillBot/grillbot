@@ -10,6 +10,7 @@ using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Models;
 
 namespace GrillBot.Data.Models.API.Emotes;
 
@@ -32,7 +33,7 @@ public class EmotesListParams : IQueryableModel<EmoteStatisticItem>, IDictionary
     /// Available: UseCount, FirstOccurence, LastOccurence, EmoteId.
     /// Default: UseCount
     /// </summary>
-    public SortParams Sort { get; set; } = new() { OrderBy = "UseCount" };
+    public SortParameters Sort { get; set; } = new() { OrderBy = "UseCount" };
 
     public PaginatedParams Pagination { get; set; } = new();
 

@@ -4,7 +4,9 @@ using System.Linq;
 using GrillBot.Core.Database;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure;
+using GrillBot.Core.Models;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Validation;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Models;
 using Microsoft.EntityFrameworkCore;
@@ -13,15 +15,19 @@ namespace GrillBot.Data.Models.API.Emotes;
 
 public class EmoteStatsUserListParams : IQueryableModel<EmoteStatisticItem>, IDictionaryObject
 {
-    [Required]
-    [RegularExpression("<a?:([0-9a-zA-Z]+):[0-9]+>")]
+    [DiscordId]
+    [StringLength(32)]
+    public string GuildId { get; set; } = null!;
+
+    [EmoteId]
+    [StringLength(255)]
     public string EmoteId { get; set; } = null!;
 
     /// <summary>
     /// Available: UseCount, FirstOccurence, LastOccurence, Username
     /// Default: UseCount/Descending
     /// </summary>
-    public SortParams Sort { get; set; } = new()
+    public SortParameters Sort { get; set; } = new()
     {
         OrderBy = "UseCount",
         Descending = true
@@ -72,6 +78,7 @@ public class EmoteStatsUserListParams : IQueryableModel<EmoteStatisticItem>, IDi
     {
         var result = new Dictionary<string, string?>
         {
+            { nameof(GuildId), GuildId },
             { nameof(EmoteId), EmoteId }
         };
 

@@ -24,9 +24,9 @@ public class EmoteModule : InteractionsModuleBase
 
         var result = await command.Command.ProcessAsync(emote);
         if (!command.Command.IsOk)
-            await SetResponseAsync(command.Command.ErrorMessage!);
+            await SetResponseAsync(command.Command.ErrorMessage);
         else
-            await SetResponseAsync(embed: result!);
+            await SetResponseAsync(embed: result);
     }
 
     [SlashCommand("list", "List of emote stats")]

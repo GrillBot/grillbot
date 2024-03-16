@@ -1,34 +1,55 @@
-﻿using AutoMapper;
+﻿using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.Models;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.Emote;
+using GrillBot.Core.Services.Emote.Models.Request;
+using GrillBot.Core.Services.Emote.Models.Response;
 using GrillBot.Data.Models.API.Emotes;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
 
 public class GetUserStatisticsOfEmote : ApiAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
+    private readonly IEmoteServiceClient _emoteServiceClient;
+    private readonly DataResolveManager _dataResolve;
 
-    public GetUserStatisticsOfEmote(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper) : base(apiContext)
+    public GetUserStatisticsOfEmote(ApiRequestContext apiContext, IEmoteServiceClient emoteServiceClient, DataResolveManager dataResolve) : base(apiContext)
     {
-        DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
+        _emoteServiceClient = emoteServiceClient;
+        _dataResolve = dataResolve;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (EmoteStatsUserListParams)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var request = new EmoteUserUsageListRequest
+        {
+            EmoteId = parameters.EmoteId,
+            GuildId = parameters.GuildId,
+            Pagination = parameters.Pagination,
+            Sort = parameters.Sort
+        };
 
-        var statistics = await repository.Emote.GetUserStatisticsOfEmoteAsync(parameters, parameters.Pagination);
-        var result = await PaginatedResponse<EmoteStatsUserListItem>.CopyAndMapAsync(
-            statistics,
-            entity => Task.FromResult(Mapper.Map<EmoteStatsUserListItem>(entity))
-        );
-
+        var response = await _emoteServiceClient.GetUserEmoteUsageListAsync(request);
+        var result = await PaginatedResponse<EmoteStatsUserListItem>.CopyAndMapAsync(response, entity => MapItemAsync(entity, parameters.GuildId));
         return ApiResult.Ok(result);
+    }
+
+    private async Task<EmoteStatsUserListItem> MapItemAsync(EmoteUserUsageItem item, string guildId)
+    {
+        var guild = await _dataResolve.GetGuildAsync(guildId.ToUlong());
+        var user = await _dataResolve.GetUserAsync(item.UserId.ToUlong());
+
+        return new EmoteStatsUserListItem
+        {
+            FirstOccurence = item.FirstOccurence.WithKind(DateTimeKind.Utc).ToLocalTime(),
+            Guild = guild!,
+            LastOccurence = item.LastOccurence.WithKind(DateTimeKind.Utc).ToLocalTime(),
+            UseCount = item.UseCount,
+            User = user!
+        };
     }
 }

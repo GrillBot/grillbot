@@ -1,6 +1,4 @@
-﻿using Discord;
-
-namespace GrillBot.Data.Models.API.Emotes;
+﻿namespace GrillBot.Data.Models.API.Emotes;
 
 public class EmoteItem
 {

@@ -58,8 +58,9 @@ public class EmotesController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveStatisticsAsync(
         [Required(ErrorMessage = "Pro smazání je vyžadováno EmoteId.")] [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
-        string emoteId
-    ) => await ProcessAsync<RemoveStats>(emoteId);
+        string emoteId,
+        [DiscordId, StringLength(32)] string guildId
+    ) => await ProcessAsync<RemoveStats>(emoteId, guildId);
 
     /// <summary>
     /// Get a paginated list of users who use a specific emote.
@@ -82,7 +83,9 @@ public class EmotesController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(EmoteStatItem), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetStatOfEmoteAsync(
-        [Required(ErrorMessage = "Je vyžadování EmoteId.")] [EmoteId(ErrorMessage = "Zadaný vstup není EmoteId.")]
-        string emoteId
-    ) => await ProcessAsync<GetStatOfEmote>(emoteId);
+        [DiscordId, StringLength(32)] string guildId,
+        [Required(ErrorMessage = "Je vyžadování EmoteId.")] [EmoteId]
+        string emoteId,
+        bool isUnsupported
+    ) => await ProcessAsync<GetStatOfEmote>(guildId, emoteId, isUnsupported);
 }

@@ -39,8 +39,8 @@ public class GetAuditLogList : ApiAction
     {
         var request = (SearchRequest)Parameters[0]!;
 
-        request.CreatedFrom = FixDateTime(request.CreatedFrom);
-        request.CreatedTo = FixDateTime(request.CreatedTo);
+        request.CreatedFrom = Common.Extensions.DateTimeExtensions.ConvertKindToUtc(request.CreatedFrom, DateTimeKind.Local);
+        request.CreatedTo = Common.Extensions.DateTimeExtensions.ConvertKindToUtc(request.CreatedTo, DateTimeKind.Local);
 
         var response = await AuditLogServiceClient.SearchItemsAsync(request);
         if (response.ValidationErrors is not null)
@@ -55,16 +55,6 @@ public class GetAuditLogList : ApiAction
         var result = await PaginatedResponse<LogListItem>.CopyAndMapAsync(response.Response!, MapListItemAsync);
 
         return ApiResult.Ok(result);
-    }
-
-    private static DateTime? FixDateTime(DateTime? dateTime)
-    {
-        if (dateTime is null)
-            return null;
-        if (dateTime.Value.Kind == DateTimeKind.Utc)
-            return dateTime;
-
-        return dateTime.Value.WithKind(DateTimeKind.Local).ToUniversalTime();
     }
 
     private static AggregateException CreateValidationExceptions(ValidationProblemDetails validationProblemDetails)

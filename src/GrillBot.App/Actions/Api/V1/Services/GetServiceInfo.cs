@@ -4,6 +4,7 @@ using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Diagnostics.Models;
+using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;
@@ -50,6 +51,7 @@ public class GetServiceInfo : ApiAction
             "image-processing" => ServiceProvider.GetRequiredService<IImageProcessingClient>(),
             "audit-log" => ServiceProvider.GetRequiredService<IAuditLogServiceClient>(),
             "user-measures" => ServiceProvider.GetRequiredService<IUserMeasuresServiceClient>(),
+            "emote" => ServiceProvider.GetRequiredService<IEmoteServiceClient>(),
             _ => throw new NotSupportedException($"Unsupported service {id}")
         };
     }
@@ -66,6 +68,7 @@ public class GetServiceInfo : ApiAction
                 IImageProcessingClient imageProcessingClient => await imageProcessingClient.GetDiagAsync(),
                 IAuditLogServiceClient auditLogServiceClient => await auditLogServiceClient.GetDiagAsync(),
                 IUserMeasuresServiceClient userMeasuresService => await userMeasuresService.GetDiagAsync(),
+                IEmoteServiceClient emoteServiceClient => await emoteServiceClient.GetDiagAsync(),
                 _ => null
             };
         }

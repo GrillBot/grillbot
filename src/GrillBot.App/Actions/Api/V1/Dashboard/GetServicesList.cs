@@ -3,6 +3,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;
@@ -36,6 +37,7 @@ public class GetServicesList : ApiAction
         await AddServiceStatusAsync<IImageProcessingClient>(services, "image-processing");
         await AddServiceStatusAsync<IAuditLogServiceClient>(services, "audit-log");
         await AddServiceStatusAsync<IUserMeasuresServiceClient>(services, "user-measures");
+        await AddServiceStatusAsync<IEmoteServiceClient>(services, "emote");
 
         if (Errors.Count == 0)
             return ApiResult.Ok(services);

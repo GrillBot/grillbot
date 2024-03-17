@@ -61,8 +61,7 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.AutoReplyReadyHandler>()
             .AddScoped<IReadyEvent, Ready.InviteReadyHandler>()
             .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
-            .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>()
-            .AddScoped<IReadyEvent, Ready.EmoteInitSynchronizationHandler>();
+            .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
 
         services
             .AddScoped<IRoleDeletedEvent, RoleDeleted.GuildConfigurationRoleDeletedHandler>();

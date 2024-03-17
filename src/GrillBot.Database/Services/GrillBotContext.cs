@@ -95,11 +95,6 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.User).WithMany(o => o.Nicknames).HasForeignKey(o => new { o.GuildId, o.UserId });
         });
 
-        modelBuilder.Entity<EmoteStatisticItem>(builder =>
-        {
-            builder.HasKey(o => new { o.EmoteId, o.UserId, o.GuildId });
-        });
-
         base.OnModelCreating(modelBuilder);
     }
 
@@ -112,7 +107,6 @@ public class GrillBotContext : DbContext
     public DbSet<SearchItem> SearchItems => Set<SearchItem>();
     public DbSet<Unverify> Unverifies => Set<Unverify>();
     public DbSet<UnverifyLog> UnverifyLogs => Set<UnverifyLog>();
-    public DbSet<EmoteStatisticItem> Emotes => Set<EmoteStatisticItem>();
     public DbSet<RemindMessage> Reminders => Set<RemindMessage>();
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();

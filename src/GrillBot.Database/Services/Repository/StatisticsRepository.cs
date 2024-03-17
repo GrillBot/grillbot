@@ -27,7 +27,6 @@ public class StatisticsRepository : SubRepositoryBase<GrillBotContext>
                 { nameof(Context.SearchItems), await Context.SearchItems.CountAsync() },
                 { nameof(Context.Unverifies), await Context.Unverifies.CountAsync() },
                 { nameof(Context.UnverifyLogs), await Context.UnverifyLogs.CountAsync() },
-                { nameof(Context.Emotes), await Context.Emotes.CountAsync() },
                 { nameof(Context.Reminders), await Context.Reminders.CountAsync() },
                 { nameof(Context.SelfunverifyKeepables), await Context.SelfunverifyKeepables.CountAsync() },
                 { nameof(Context.AutoReplies), await Context.AutoReplies.CountAsync() },

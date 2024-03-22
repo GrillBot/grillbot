@@ -1,6 +1,5 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Managers.Points;
@@ -16,15 +15,13 @@ public class PointsValidationManager
         _databaseBuilder = databaseBuilder;
     }
 
-    public async Task<bool> CanIncrementPointsAsync(IMessage message, IUser? reactionUser = null)
+    public bool CanIncrementPoints(IMessage message, IUser? reactionUser = null)
     {
-        await using var repository = _databaseBuilder.CreateRepository();
-
         var user = reactionUser ?? message.Author;
-        if (!await IsValidForIncrementAsync(repository, user)) // IsBot, DisabledPoints
-            return false;
+        if (!user.IsUser())
+            return false; // IsBot
 
-        if (!await IsValidForIncrementAsync(repository, message.Channel)) // IsDeleted, DisabledPoints
+        if (message.Channel is not ITextChannel)
             return false;
 
         if (message.IsCommand(_discordClient.CurrentUser)) // CommandCheck
@@ -36,30 +33,12 @@ public class PointsValidationManager
         return true;
     }
 
-    private static async Task<bool> IsValidForIncrementAsync(GrillBotRepository repository, IUser user)
-    {
-        if (!user.IsUser())
-            return false;
-
-        var entity = await repository.User.FindUserAsync(user, true);
-        return entity?.HaveFlags(UserFlags.PointsDisabled) == false;
-    }
-
-    private static async Task<bool> IsValidForIncrementAsync(GrillBotRepository repository, IChannel channel)
-    {
-        if (channel is not ITextChannel textChannel)
-            return false;
-
-        var entity = await repository.Channel.FindChannelByIdAsync(textChannel.Id, textChannel.GuildId, true);
-        return entity?.HasFlag(ChannelFlag.PointsDeactivated) == false;
-    }
-
     public async Task<bool> IsUserAcceptableAsync(IUser user)
     {
         await using var repository = _databaseBuilder.CreateRepository();
 
         var userEntity = await repository.User.FindUserAsync(user, true);
-        return userEntity?.HaveFlags(UserFlags.NotUser) == false && !userEntity.HaveFlags(UserFlags.PointsDisabled);
+        return userEntity?.HaveFlags(UserFlags.NotUser) == false;
     }
 
     public static bool IsMissingData(ValidationProblemDetails? details)

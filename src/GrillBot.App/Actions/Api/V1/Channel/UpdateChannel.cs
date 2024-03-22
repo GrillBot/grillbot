@@ -9,6 +9,8 @@ using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using GrillBot.Core.Services.PointsService.Models.Channels;
+using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
 
@@ -56,7 +58,7 @@ public class UpdateChannel : ApiAction
 
         await WriteToAuditLogAsync(id, before, channel);
         await TryReloadAutoReplyAsync(before, channel);
-        await TrySyncPointsService(before, channel);
+        await SyncPointsServiceAsync(channel);
 
         return ApiResult.Ok();
     }
@@ -67,16 +69,22 @@ public class UpdateChannel : ApiAction
             await AutoReplyManager.InitAsync();
     }
 
-    private async Task TrySyncPointsService(Database.Entity.GuildChannel before, Database.Entity.GuildChannel after)
+    private async Task SyncPointsServiceAsync(Database.Entity.GuildChannel after)
     {
-        if (before.HasFlag(ChannelFlag.PointsDeactivated) == after.HasFlag(ChannelFlag.PointsDeactivated))
-            return;
-
         var guild = await DiscordClient.GetGuildAsync(after.GuildId.ToUlong());
-        var channel = await guild.GetChannelAsync(after.ChannelId.ToUlong());
+        if (guild is null) return;
 
-        if (channel is not null)
-            await _pointsManager.PushSynchronizationAsync(channel);
+        var channel = await guild.GetChannelAsync(after.ChannelId.ToUlong());
+        if (channel is null) return;
+
+        var syncItem = new ChannelSyncItem
+        {
+            Id = after.ChannelId,
+            IsDeleted = after.HasFlag(ChannelFlag.Deleted),
+            PointsDisabled = after.HasFlag(ChannelFlag.PointsDeactivated)
+        };
+
+        await _pointsManager.PushSynchronizationAsync(guild, Enumerable.Empty<UserSyncItem>(), new[] { syncItem });
     }
 
     private async Task WriteToAuditLogAsync(ulong channelId, Database.Entity.GuildChannel before, Database.Entity.GuildChannel after)

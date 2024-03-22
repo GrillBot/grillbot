@@ -3,7 +3,9 @@ using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Services.PointsService.Models;
+using GrillBot.Core.Services.PointsService.Models.Channels;
 using GrillBot.Core.Services.PointsService.Models.Events;
+using GrillBot.Core.Services.PointsService.Models.Users;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
@@ -22,26 +24,40 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
     // ChannelDestroyed
     public async Task ProcessAsync(IChannel channel)
     {
-        if (channel is not IThreadChannel && channel is IGuildChannel guildChannel)
-            await _pointsManager.PushSynchronizationAsync(guildChannel);
+        if (channel is IThreadChannel || channel is not IGuildChannel guildChannel)
+            return;
+
+        var syncItem = new ChannelSyncItem
+        {
+            Id = channel.Id.ToString(),
+            IsDeleted = true
+        };
+
+        await _pointsManager.PushSynchronizationAsync(guildChannel.Guild, Enumerable.Empty<UserSyncItem>(), new[] { syncItem });
     }
 
     // ThreadDeleted
     public async Task ProcessAsync(IThreadChannel? cachedThread, ulong threadId)
     {
-        if (cachedThread is not null)
-            await _pointsManager.PushSynchronizationAsync(cachedThread);
+        if (cachedThread is null)
+            return;
+
+        var syncItem = new ChannelSyncItem
+        {
+            IsDeleted = true,
+            Id = threadId.ToString()
+        };
+
+        await _pointsManager.PushSynchronizationAsync(cachedThread.Guild, Enumerable.Empty<UserSyncItem>(), new[] { syncItem });
     }
 
     // MessageReceived
     public async Task ProcessAsync(IMessage message)
     {
-        if (!await _pointsManager.CanIncrementPointsAsync(message))
+        if (!_pointsManager.CanIncrementPoints(message))
             return;
 
         var channel = (IGuildChannel)message.Channel;
-        await _pointsManager.PushSynchronizationAsync(channel.Guild, new[] { message.Author }, new[] { channel });
-
         var messageInfo = new MessageInfo
         {
             AuthorId = message.Author.Id.ToString(),
@@ -76,10 +92,8 @@ public class PointsOrchestrationHandler : IChannelDestroyedEvent, IThreadDeleted
         var message = cachedMessage.HasValue ? cachedMessage.Value : await MessageCache.GetAsync(cachedMessage.Id, textChannel);
         if (message is null) return;
 
-        if (!await _pointsManager.CanIncrementPointsAsync(message, reactionUser))
+        if (!_pointsManager.CanIncrementPoints(message, reactionUser))
             return;
-
-        await _pointsManager.PushSynchronizationAsync(textChannel.Guild, new[] { message.Author, reactionUser }, new[] { textChannel });
 
         var messageInfo = new MessageInfo
         {

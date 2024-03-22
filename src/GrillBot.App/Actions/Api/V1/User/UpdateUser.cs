@@ -9,6 +9,9 @@ using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.Points;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using GrillBot.Core.Services.PointsService.Models.Users;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Core.Services.PointsService.Models.Channels;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -46,21 +49,27 @@ public class UpdateUser : ApiAction
 
         await repository.CommitAsync();
         await WriteToAuditLogAsync(before, user);
-        await TrySyncPointsService(before, user);
+        await SyncPointsServiceAsync(id, parameters);
         return ApiResult.Ok();
     }
 
-    private async Task TrySyncPointsService(Database.Entity.User before, Database.Entity.User after)
+    private async Task SyncPointsServiceAsync(ulong userId, UpdateUserParams parameters)
     {
-        if (before.HaveFlags(UserFlags.PointsDisabled) == after.HaveFlags(UserFlags.PointsDisabled))
-            return;
-
         var guilds = await DiscordClient.GetGuildsAsync();
+
         foreach (var guild in guilds)
         {
-            var user = await guild.GetUserAsync(after.Id.ToUlong());
-            if (user is not null)
-                await _pointsManager.PushSynchronizationAsync(guild, user);
+            var user = await guild.GetUserAsync(userId);
+            if (user is null) continue;
+
+            var item = new UserSyncItem
+            {
+                Id = user.Id.ToString(),
+                IsUser = user.IsUser(),
+                PointsDisabled = parameters.PointsDisabled
+            };
+
+            await _pointsManager.PushSynchronizationAsync(guild, new[] { item }, Enumerable.Empty<ChannelSyncItem>());
         }
     }
 

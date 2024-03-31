@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.Database.Migrations
 {

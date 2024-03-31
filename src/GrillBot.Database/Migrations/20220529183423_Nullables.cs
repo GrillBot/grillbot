@@ -1,7 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using GrillBot.Database.Entity;
-using GrillBot.Database.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

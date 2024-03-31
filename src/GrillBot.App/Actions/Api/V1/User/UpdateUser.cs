@@ -2,9 +2,7 @@
 using GrillBot.Common.Models;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Exceptions;
-using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
-using GrillBot.Database.Enums;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.Points;
 using GrillBot.Core.RabbitMQ.Publisher;

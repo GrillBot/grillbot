@@ -1,5 +1,4 @@
 ﻿using GrillBot.Cache.Services.Managers.MessageCache;
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;

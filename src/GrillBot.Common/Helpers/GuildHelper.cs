@@ -1,5 +1,4 @@
 ﻿using Discord;
-using GrillBot.Common.Managers;
 using GrillBot.Common.Managers.Localization;
 
 namespace GrillBot.Common.Helpers;

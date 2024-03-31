@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Runtime.InteropServices;
-using Discord;
+﻿using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 using GrillBot.Common.Extensions.Discord;

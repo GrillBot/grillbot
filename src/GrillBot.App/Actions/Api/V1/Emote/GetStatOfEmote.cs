@@ -4,6 +4,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Emote.Models.Request;
+using GrillBot.Data.Extensions.Services;
 using GrillBot.Data.Models.API.Emotes;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
@@ -40,13 +41,7 @@ public class GetStatOfEmote : ApiAction
         var item = statistics.Response.Data[0];
         var result = new EmoteStatItem
         {
-            Emote = new EmoteItem
-            {
-                FullId = $"<{(item.EmoteIsAnimated ? "a" : "")}:{item.EmoteName}:{item.EmoteId}>",
-                Id = item.EmoteId,
-                ImageUrl = item.EmoteUrl,
-                Name = item.EmoteName
-            },
+            Emote = item.ToEmoteItem(),
             FirstOccurence = item.FirstOccurence.WithKind(DateTimeKind.Utc).ToLocalTime(),
             LastOccurence = item.LastOccurence.WithKind(DateTimeKind.Utc).ToLocalTime(),
             UseCount = item.UseCount,

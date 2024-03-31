@@ -15,10 +15,8 @@ using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Enums;
 using GrillBot.App.Managers.DataResolve;
 using GrillBot.Core.Services.Emote;
-using Discord;
-using GrillBot.Core.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Core.Services.Emote.Models.Request;
-using Microsoft.Extensions.Azure;
+using GrillBot.Data.Extensions.Services;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -211,13 +209,7 @@ public class GetUserDetail : ApiAction
 
         detail.Emotes = response.Response!.Data.ConvertAll(o => new ApiModels.Emotes.EmoteStatItem
         {
-            Emote = new ApiModels.Emotes.EmoteItem
-            {
-                FullId = $"<{(o.EmoteIsAnimated ? "a" : "")}:{o.EmoteId}:{o.EmoteName}>",
-                Id = o.EmoteId,
-                ImageUrl = o.EmoteUrl,
-                Name = o.EmoteName
-            },
+            Emote = o.ToEmoteItem(),
             FirstOccurence = o.FirstOccurence,
             LastOccurence = o.LastOccurence,
             UseCount = o.UseCount

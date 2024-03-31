@@ -1,4 +1,4 @@
-﻿ using GrillBot.App.Managers.DataResolve;
+﻿using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
@@ -7,6 +7,7 @@ using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Emote.Models.Request;
 using GrillBot.Core.Services.Emote.Models.Response;
+using GrillBot.Data.Extensions.Services;
 using GrillBot.Data.Models.API.Emotes;
 
 namespace GrillBot.App.Actions.Api.V1.Emote;
@@ -47,7 +48,8 @@ public class GetStatsOfEmotes : ApiAction
             Sort = parameters.Sort,
             Unsupported = unsupported,
             UseCountFrom = parameters.UseCount?.From,
-            UseCountTo = parameters.UseCount?.To
+            UseCountTo = parameters.UseCount?.To,
+            UserId = parameters.UserId
         };
 
         var data = await _emoteServiceClient.GetEmoteStatisticsListAsync(request);
@@ -62,13 +64,7 @@ public class GetStatsOfEmotes : ApiAction
 
         return new GuildEmoteStatItem
         {
-            Emote = new EmoteItem
-            {
-                FullId = $"<{(item.EmoteIsAnimated ? "a" : "")}:{item.EmoteName}:{item.EmoteId}>",
-                Id = item.EmoteId,
-                ImageUrl = item.EmoteUrl,
-                Name = item.EmoteName
-            },
+            Emote = item.ToEmoteItem(),
             FirstOccurence = item.FirstOccurence.WithKind(DateTimeKind.Utc).ToLocalTime(),
             Guild = guild!,
             LastOccurence = item.LastOccurence.WithKind(DateTimeKind.Utc).ToLocalTime(),

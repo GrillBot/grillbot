@@ -90,7 +90,7 @@ jobs:
           username: ${{ secrets.SSH_Username }}
           password: ${{ secrets.SSH_Password }}
           port: 22
-          script: echo '${{ secrets.SSH_PASSWORD }}' | sudo -S /scripts/update-grillbot-prod.sh bot
+          script: echo '${{ secrets.SSH_Password }}' | sudo -S /scripts/update-grillbot-prod.sh bot
   VerifyProductionDeployment:
     runs-on: ubuntu-latest
     environment: Production

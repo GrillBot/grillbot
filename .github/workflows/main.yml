@@ -17,12 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Markdown lint
-        uses: nosborn/github-action-markdown-cli@v1.1.1
+        uses: nosborn/github-action-markdown-cli@v3.3.0
         with:
           files: .
-          args: "README.md CONTRIBUTING.md SECURITY.md"
       - name: Check json content
         run: bash <(curl -s https://raw.githubusercontent.com/CICDToolbox/json-lint/master/pipeline.sh)
       - name: Setup python
@@ -31,13 +30,13 @@ jobs:
           python-version: 3.8
       - name: Crosscheck JSON content
         run: python3 CI/check-texts.py
-  Build:
+  BuildBot:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.0.x
           source-url: https://nuget.pkg.github.com/GrillBot/index.json
@@ -56,14 +55,14 @@ jobs:
         run: dotnet build -c Release -r linux-x64 --no-self-contained --no-restore src/GrillBot.App/
   CreateDockerImage:
     runs-on: ubuntu-latest
-    needs: [CheckStaticContent, Build]
+    needs: [CheckStaticContent, BuildBot]
     if: github.ref == 'refs/heads/master'
     permissions:
       contents: read
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
@@ -80,7 +79,7 @@ jobs:
             github_actions_token=${{ secrets.GITHUB_TOKEN }}
   Deployment_Production:
     runs-on: ubuntu-latest
-    environment: "Production"
+    environment: Production
     needs: CreateDockerImage
     if: github.ref == 'refs/heads/master'
     steps:
@@ -91,4 +90,17 @@ jobs:
           username: ${{ secrets.SSH_Username }}
           password: ${{ secrets.SSH_Password }}
           port: 22
-          script: echo '${{ secrets.SSH_Password }}' | sudo -S python3 /scripts/deploy/deploy.py prod/grillbot-app
+          script: echo '${{ secrets.SSH_PASSWORD }}' | sudo -S /scripts/update-grillbot-prod.sh bot
+  VerifyProductionDeployment:
+    runs-on: ubuntu-latest
+    environment: Production
+    needs: Deployment_Production
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Bot
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: https://health.grillbot.eu/bot
+          follow-redirect: true
+          max-attempts: 10
+          retry-delay: 5s

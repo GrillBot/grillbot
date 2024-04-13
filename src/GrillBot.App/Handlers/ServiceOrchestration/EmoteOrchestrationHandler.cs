@@ -54,19 +54,12 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
         if (message.Channel is not ITextChannel textChannel) return; // Ignore DMs
         if (message.Author is not IGuildUser guildUser) return; // Ignore non guild users.
 
-        var payloads = new List<EmoteEventPayload>();
         var guildId = textChannel.GuildId.ToString();
         var userId = guildUser.Id.ToString();
         var createdAt = DateTime.UtcNow;
-
-        foreach (var emote in message.GetEmotesFromMessage())
-        {
-            var emoteId = emote.ToString();
-            if (!await _emoteServiceClient.GetIsEmoteSupportedAsync(guildId, emoteId))
-                continue;
-
-            payloads.Add(new EmoteEventPayload(guildId, userId, emoteId, createdAt, true));
-        }
+        var payloads = message.GetEmotesFromMessage()
+            .Select(e => new EmoteEventPayload(guildId, userId, e.ToString(), createdAt, true))
+            .ToList();
 
         if (payloads.Count > 0)
             await _rabbitPublisher.PublishBatchAsync(payloads);
@@ -90,8 +83,7 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
         var userId = reactionGuildUser.Id.ToString();
         var emoteId = emote.ToString();
 
-        if (await _emoteServiceClient.GetIsEmoteSupportedAsync(guildId, emoteId))
-            await _rabbitPublisher.PublishAsync(new EmoteEventPayload(guildId, userId, emoteId, DateTime.UtcNow, true));
+        await _rabbitPublisher.PublishAsync(new EmoteEventPayload(guildId, userId, emoteId, DateTime.UtcNow, true));
     }
 
     // ReactionRemoved

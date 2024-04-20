@@ -31,9 +31,7 @@ public class GetUserMeasuresList : ApiAction
             parameters.CreatedTo = parameters.CreatedTo.Value.WithKind(DateTimeKind.Local).ToUniversalTime();
 
         var measures = await UserMeasuresService.GetMeasuresListAsync(parameters);
-        measures.ValidationErrors.AggregateAndThrow();
-
-        var result = await PaginatedResponse<UserMeasuresListItem>.CopyAndMapAsync(measures.Response!, MapAsync);
+        var result = await PaginatedResponse<UserMeasuresListItem>.CopyAndMapAsync(measures, MapAsync);
         return ApiResult.Ok(result);
     }
 

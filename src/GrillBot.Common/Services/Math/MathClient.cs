@@ -1,9 +1,9 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 using GrillBot.Common.Services.Math.Models;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.Services;
+using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Common.Extensions;
 
 namespace GrillBot.Common.Services.Math;
 
@@ -19,11 +19,10 @@ public class MathClient : RestServiceBase, IMathClient
     {
         try
         {
-            return await ProcessRequestAsync(
-                cancellationToken => HttpClient.PostAsJsonAsync("", request, cancellationToken),
-                ReadJsonAsync<MathJsResult>,
-                timeout: TimeSpan.FromSeconds(10)
-            );
+            return (await ProcessRequestAsync<MathJsResult>(
+                () => HttpMethod.Post.ToRequest("", request),
+                TimeSpan.FromSeconds(10)
+            ))!;
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
         {

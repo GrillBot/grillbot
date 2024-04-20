@@ -43,33 +43,15 @@ public class GetAuditLogList : ApiAction
         request.CreatedTo = Common.Extensions.DateTimeExtensions.ConvertKindToUtc(request.CreatedTo, DateTimeKind.Local);
 
         var response = await AuditLogServiceClient.SearchItemsAsync(request);
-        if (response.ValidationErrors is not null)
-            throw CreateValidationExceptions(response.ValidationErrors);
-
-        if (response.Response!.Data.Exists(o => o.Files.Count > 0))
+        if (response.Data.Exists(o => o.Files.Count > 0))
         {
             BlobManager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
             LegacyBlobManager = await BlobManagerFactoryHelper.CreateLegacyAsync();
         }
 
-        var result = await PaginatedResponse<LogListItem>.CopyAndMapAsync(response.Response!, MapListItemAsync);
+        var result = await PaginatedResponse<LogListItem>.CopyAndMapAsync(response, MapListItemAsync);
 
         return ApiResult.Ok(result);
-    }
-
-    private static AggregateException CreateValidationExceptions(ValidationProblemDetails validationProblemDetails)
-    {
-        var exceptions = new List<Exception>();
-        foreach (var error in validationProblemDetails.Errors)
-        {
-            exceptions.AddRange(
-                error.Value
-                    .Select(msg => new ValidationResult(msg, new[] { error.Key }))
-                    .Select(validationResult => new ValidationException(validationResult, null, null))
-            );
-        }
-
-        return new AggregateException(exceptions.ToArray());
     }
 
     private async Task<LogListItem> MapListItemAsync(SearchModels.LogListItem item)

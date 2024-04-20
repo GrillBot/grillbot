@@ -82,7 +82,7 @@ public abstract class Job : IJob
         };
 
         var payload = new CreateItemsPayload(new() { request });
-        return RabbitPublisher.PublishAsync(payload);
+        return RabbitPublisher.PublishAsync(payload, new());
     }
 
     private async Task<bool> CanRunAsync()

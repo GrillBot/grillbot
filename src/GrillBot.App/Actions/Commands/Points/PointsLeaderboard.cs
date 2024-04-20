@@ -49,10 +49,7 @@ public class PointsLeaderboard : CommandAction
         var columns = overAllTime ? LeaderboardColumnFlag.Total : LeaderboardColumnFlag.YearBack;
         var sortOptions = overAllTime ? LeaderboardSortOptions.ByTotalDescending : LeaderboardSortOptions.ByYearBackDescending;
 
-        var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guildId, skip, MaxItemsCount, columns, sortOptions);
-        leaderboard.ValidationErrors.AggregateAndThrow();
-
-        return leaderboard.Response!;
+        return await PointsServiceClient.GetLeaderboardAsync(guildId, skip, MaxItemsCount, columns, sortOptions);
     }
 
     public async Task<int> ComputePagesCountAsync()

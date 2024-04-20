@@ -17,7 +17,7 @@ public class FileDeleteEventHandler : BaseRabbitMQHandler<FileDeletePayload>
         _blobManagerFactory = blobManagerFactory;
     }
 
-    protected override async Task HandleInternalAsync(FileDeletePayload payload)
+    protected override async Task HandleInternalAsync(FileDeletePayload payload, Dictionary<string, string> headers)
     {
         var blobManager = await _blobManagerFactory.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
         var legacyManager = await _blobManagerFactory.CreateLegacyAsync();

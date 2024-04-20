@@ -38,12 +38,10 @@ public class GetPointsLeaderboard : ApiAction
         foreach (var guildId in mutualGuilds.Select(o => o.Id))
         {
             var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guildId.ToString(), 0, 0, leaderboardColumns, leaderboardSort);
-            leaderboard.ValidationErrors.AggregateAndThrow();
-
             var guildData = (await _dataResolveManager.GetGuildAsync(guildId))!;
             var nicknames = await repository.GuildUser.GetUserNicknamesAsync(guildId);
 
-            foreach (var item in leaderboard.Response!)
+            foreach (var item in leaderboard)
             {
                 var user = await _dataResolveManager.GetUserAsync(item.UserId.ToUlong());
                 if (user is null)

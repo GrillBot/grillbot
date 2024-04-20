@@ -8,6 +8,7 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.Guilds;
@@ -27,10 +28,12 @@ public class GetGuildDetail : ApiAction
     private IUserMeasuresServiceClient UserMeasuresService { get; }
 
     private readonly DataResolveManager _dataResolve;
+    private readonly IEmoteServiceClient _emoteService;
 
     public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, GrillBotCacheBuilder cacheBuilder,
         ITextsManager texts, IPointsServiceClient pointsServiceClient, IAuditLogServiceClient auditLogServiceClient, IUserMeasuresServiceClient userMeasuresService,
-        DataResolveManager dataResolve) : base(apiContext)
+        DataResolveManager dataResolve,
+        IEmoteServiceClient emoteService) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
@@ -41,6 +44,7 @@ public class GetGuildDetail : ApiAction
         AuditLogServiceClient = auditLogServiceClient;
         UserMeasuresService = userMeasuresService;
         _dataResolve = dataResolve;
+        _emoteService = emoteService;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -101,8 +105,9 @@ public class GetGuildDetail : ApiAction
             report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
 
         report.AuditLogs = await AuditLogServiceClient.GetItemsCountOfGuildAsync(guildId);
-        report.PointTransactions = await PointsServiceClient.GetTransactionsCountForGuildActionAsync(guildId.ToString());
+        report.PointTransactions = await PointsServiceClient.GetTransactionsCountForGuildAsync(guildId.ToString());
         report.UserMeasures = await UserMeasuresService.GetItemsCountOfGuildAsync(guildId.ToString());
+        report.EmoteStats = await _emoteService.GetStatisticsCountInGuildAsync(guildId.ToString());
 
         return report;
     }

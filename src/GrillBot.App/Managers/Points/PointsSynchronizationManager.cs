@@ -31,6 +31,6 @@ public class PointsSynchronizationManager
     public async Task PushAsync(IGuild guild, IEnumerable<UserSyncItem> users, IEnumerable<ChannelSyncItem> channels)
     {
         var payload = new PointsModels.Events.SynchronizationPayload(guild.Id.ToString(), channels.ToList(), users.ToList());
-        await _rabbitPublisher.PublishAsync(payload);
+        await _rabbitPublisher.PublishAsync(payload, new());
     }
 }

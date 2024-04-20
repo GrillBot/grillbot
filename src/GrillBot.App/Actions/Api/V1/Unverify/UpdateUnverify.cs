@@ -4,6 +4,7 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
@@ -49,7 +50,7 @@ public class UpdateUnverify : ApiAction
         var user = await repository.GuildUser.FindGuildUserAsync(toUser, includeAll: true);
         EnsureValidUser(user, parameters.EndAt);
         await UnverifyLogManager.LogUpdateAsync(DateTime.Now, parameters.EndAt, guild, fromUser, toUser, parameters.Reason);
-        await UnverifyRabbitMQ.SendModifyAsync(user!.Unverify!.SetOperationId, parameters.EndAt);
+        await UnverifyRabbitMQ.SendModifyAsync(user!.Unverify!.SetOperationId, parameters.EndAt.WithKind(DateTimeKind.Local).ToUniversalTime());
 
         user!.Unverify!.EndAt = parameters.EndAt;
         user.Unverify.StartAt = DateTime.Now;

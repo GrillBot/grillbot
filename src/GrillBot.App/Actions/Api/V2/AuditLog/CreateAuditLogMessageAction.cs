@@ -46,7 +46,7 @@ public class CreateAuditLogMessageAction : ApiAction
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
         return ApiResult.Ok();
     }
 }

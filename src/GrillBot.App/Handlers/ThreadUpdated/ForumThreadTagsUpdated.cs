@@ -32,7 +32,7 @@ public class ForumThreadTagsUpdated : IThreadUpdatedEvent
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { request }));
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { request }), new());
     }
 
     private static bool CanProcess(IThreadChannel? before, IThreadChannel after)

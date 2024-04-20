@@ -26,9 +26,7 @@ public class GetTransactionList : ApiAction
         var request = (AdminListRequest)Parameters[0]!;
 
         var transactions = await PointsServiceClient.GetTransactionListAsync(request);
-        transactions.ValidationErrors.AggregateAndThrow();
-
-        var result = await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions.Response!, async entity =>
+        var result = await PaginatedResponse<PointsTransaction>.CopyAndMapAsync(transactions, async entity =>
         {
             var guild = await _dataResolveManager.GetGuildAsync(entity.GuildId.ToUlong());
             var user = await _dataResolveManager.GetUserAsync(entity.UserId.ToUlong());

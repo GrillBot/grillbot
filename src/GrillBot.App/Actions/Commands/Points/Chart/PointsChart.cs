@@ -64,19 +64,13 @@ public class PointsChart : CommandAction
         request.UserId = user.Id.ToString();
 
         var data = await PointsServiceClient.GetChartDataAsync(request);
-        data.ValidationErrors.AggregateAndThrow();
-
-        UsersData!.Add(user.Id, data.Response!);
+        UsersData!.Add(user.Id, data);
     }
 
     private async Task PrepareGuildDataAsync(ChartsFilter filter)
     {
         var request = CreateParameters(filter);
-
-        var data = await PointsServiceClient.GetChartDataAsync(request);
-        data.ValidationErrors.AggregateAndThrow();
-
-        GuildData = data.Response;
+        GuildData = await PointsServiceClient.GetChartDataAsync(request);
     }
 
     private AdminListRequest CreateParameters(ChartsFilter filter)
@@ -98,15 +92,15 @@ public class PointsChart : CommandAction
         switch (type)
         {
             case ChartType.GuildChart:
-            {
-                var builder = ServiceProvider.GetRequiredService<GuildChartBuilder>().Init(GuildData!, Context.Guild);
-                return await builder.CreateRequestAsync(filter, Locale);
-            }
+                {
+                    var builder = ServiceProvider.GetRequiredService<GuildChartBuilder>().Init(GuildData!, Context.Guild);
+                    return await builder.CreateRequestAsync(filter, Locale);
+                }
             case ChartType.UserChart:
-            {
-                var builder = ServiceProvider.GetRequiredService<UserChartBuilder>().Init(UsersData!, Context.Guild);
-                return await builder.CreateRequestAsync(filter, Locale);
-            }
+                {
+                    var builder = ServiceProvider.GetRequiredService<UserChartBuilder>().Init(UsersData!, Context.Guild);
+                    return await builder.CreateRequestAsync(filter, Locale);
+                }
             default:
                 throw new NotSupportedException();
         }

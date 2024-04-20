@@ -4,9 +4,9 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;
 using GrillBot.Core.Exceptions;
-using Microsoft.AspNetCore.Mvc;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.Points;
+using GrillBot.Core.Services.Common;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -37,7 +37,6 @@ public class ServiceTransferPoints : ApiAction
         var amount = (int)Parameters[3]!;
 
         var (from, to) = await GetAndCheckUsersAsync(guildId, fromUserId, toUserId);
-
         await _pointsManager.PushSynchronizationAsync(Guild, from, to);
 
         var request = new TransferPointsRequest
@@ -50,17 +49,23 @@ public class ServiceTransferPoints : ApiAction
 
         while (true)
         {
-            var validationErrors = await PointsServiceClient.TransferPointsAsync(request);
-
-            if (PointsValidationManager.IsMissingData(validationErrors))
+            try
             {
-                await Task.Delay(1000);
-                continue;
+                await PointsServiceClient.TransferPointsAsync(request);
+            }
+            catch (ClientBadRequestException ex)
+            {
+                if (PointsValidationManager.IsMissingData(ex.ValidationErrors))
+                {
+                    await Task.Delay(1000);
+                    continue;
+                }
+
+                var exception = ConvertValidationErrorsToException(ex.ValidationErrors);
+                if (exception is not null)
+                    throw exception;
             }
 
-            var exception = ConvertValidationErrorsToException(validationErrors);
-            if (exception is not null)
-                throw exception;
             break;
         }
 
@@ -91,12 +96,9 @@ public class ServiceTransferPoints : ApiAction
             ?? throw new NotFoundException(Texts[$"Points/Service/Transfer/{(isSource ? "SourceUserNotFound" : "DestUserNotFound")}", ApiContext.Language]);
     }
 
-    private Exception? ConvertValidationErrorsToException(ValidationProblemDetails? details)
+    private Exception? ConvertValidationErrorsToException(Dictionary<string, string[]> validationErrors)
     {
-        if (details is null)
-            return null;
-
-        var error = details.Errors.First();
+        var error = validationErrors.First();
 
         if (string.Equals(error.Key, "amount", StringComparison.OrdinalIgnoreCase) && error.Value[0] == "NotEnoughPoints")
             return new ValidationException(Texts["Points/Service/Transfer/InsufficientAmount", ApiContext.Language]);

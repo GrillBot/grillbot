@@ -41,11 +41,9 @@ public class PointsValidationManager
         return userEntity?.HaveFlags(UserFlags.NotUser) == false;
     }
 
-    public static bool IsMissingData(ValidationProblemDetails? details)
+    public static bool IsMissingData(Dictionary<string, string[]> validationErrors)
     {
-        if (details is null) return false;
-
-        var errors = details.Errors.SelectMany(o => o.Value).Distinct().ToList();
+        var errors = validationErrors.SelectMany(o => o.Value).Distinct().ToList();
         return errors.Contains("UnknownChannel") || errors.Contains("UnknownUser");
     }
 }

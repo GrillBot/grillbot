@@ -55,6 +55,10 @@
             "message": {
                 "name": "zprava",
                 "description": "Text varování"
+            },
+            "notification": {
+                "name": "odeslat-uzivateli",
+                "description": "Odeslat upozornění uživateli do soukromých zpráv."
             }
         }
     },

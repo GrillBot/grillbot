@@ -3,7 +3,6 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
-using GrillBot.Core.Services.Diagnostics.Models;
 using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
@@ -60,38 +59,12 @@ public class GetServiceInfo : ApiAction
     {
         try
         {
-            info.DiagnosticInfo = client switch
-            {
-                IRubbergodServiceClient rubbergodServiceClient => await rubbergodServiceClient.GetDiagAsync(),
-                IGraphicsClient graphicsClient => await GetGraphicsServiceInfo(graphicsClient),
-                IPointsServiceClient pointsServiceClient => await pointsServiceClient.GetDiagAsync(),
-                IImageProcessingClient imageProcessingClient => await imageProcessingClient.GetDiagAsync(),
-                IAuditLogServiceClient auditLogServiceClient => await auditLogServiceClient.GetDiagAsync(),
-                IUserMeasuresServiceClient userMeasuresService => await userMeasuresService.GetDiagAsync(),
-                IEmoteServiceClient emoteServiceClient => await emoteServiceClient.GetDiagAsync(),
-                _ => null
-            };
+            info.DiagnosticInfo = await client.GetDiagnosticAsync();
         }
         catch (Exception ex)
         {
             await LoggingManager.ErrorAsync("API", "An error occured while loading diagnostics info.", ex);
             info.ApiErrorMessage = ex.Message;
         }
-    }
-
-    private static async Task<DiagnosticInfo> GetGraphicsServiceInfo(IGraphicsClient graphicsClient)
-    {
-        var stats = await graphicsClient.GetStatisticsAsync();
-        var metrics = await graphicsClient.GetMetricsAsync();
-
-        return new DiagnosticInfo
-        {
-            Endpoints = stats.Endpoints,
-            Uptime = metrics.Uptime,
-            MeasuredFrom = stats.MeasuredFrom,
-            RequestsCount = stats.RequestsCount,
-            UsedMemory = metrics.UsedMemory,
-            CpuTime = stats.CpuTime
-        };
     }
 }

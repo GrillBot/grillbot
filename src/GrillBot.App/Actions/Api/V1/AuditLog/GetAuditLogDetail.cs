@@ -24,7 +24,7 @@ public class GetAuditLogDetail : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var id = (Guid)Parameters[0]!;
-        var detail = await AuditLogServiceClient.DetailAsync(id);
+        var detail = await AuditLogServiceClient.GetDetailAsync(id);
         if (detail?.Data is not JsonElement jsonElement)
             return ApiResult.NotFound();
 

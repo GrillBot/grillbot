@@ -65,7 +65,7 @@ public class RefreshMetadata : ApiAction
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
         await InviteManager.UpdateMetadataAsync(guild, invites);
         return invites.Count;
     }

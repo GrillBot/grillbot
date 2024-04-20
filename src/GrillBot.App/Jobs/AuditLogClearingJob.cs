@@ -40,7 +40,7 @@ public class AuditLogClearingJob : ArchivationJobBase
         var formattedZipSize = zipSize.Bytes().ToString();
 
         var bulkDeletePayload = new BulkDeletePayload(archivationResult.Ids);
-        await RabbitPublisher.PublishAsync(bulkDeletePayload);
+        await RabbitPublisher.PublishAsync(bulkDeletePayload, new());
 
         context.Result = BuildReport(archivationResult, xmlSize, formattedZipSize);
     }

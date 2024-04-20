@@ -33,12 +33,10 @@ public class GetStatOfEmote : ApiAction
         };
 
         var statistics = await _emoteServiceClient.GetEmoteStatisticsListAsync(request);
-        statistics.ValidationErrors.AggregateAndThrow();
-
-        if (statistics.Response!.TotalItemsCount == 0)
+        if (statistics.TotalItemsCount == 0)
             throw new NotFoundException();
 
-        var item = statistics.Response.Data[0];
+        var item = statistics.Data[0];
         var result = new EmoteStatItem
         {
             Emote = item.ToEmoteItem(),

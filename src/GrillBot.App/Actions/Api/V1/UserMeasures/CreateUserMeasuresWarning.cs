@@ -21,13 +21,14 @@ public class CreateUserMeasuresWarning : ApiAction
         return ApiResult.Ok();
     }
 
-    public async Task ProcessAsync(IGuildUser user, string message)
+    public async Task ProcessAsync(IGuildUser user, string message, bool notification)
     {
         var parameters = new CreateUserMeasuresWarningParams
         {
             GuildId = user.GuildId.ToString(),
             Message = message,
-            UserId = user.Id.ToString()
+            UserId = user.Id.ToString(),
+            SendDmNotification = notification
         };
 
         await ProcessAsync(parameters);
@@ -36,8 +37,15 @@ public class CreateUserMeasuresWarning : ApiAction
     private async Task ProcessAsync(CreateUserMeasuresWarningParams parameters)
     {
         var moderatorId = ApiContext.GetUserId().ToString();
-        var payload = new MemberWarningPayload(DateTime.UtcNow, parameters.Message, parameters.GuildId, moderatorId, parameters.UserId);
+        var payload = new MemberWarningPayload(
+            DateTime.UtcNow,
+            parameters.Message,
+            parameters.GuildId,
+            moderatorId,
+            parameters.UserId,
+            parameters.SendDmNotification
+        );
 
-        await RabbitMQ.PublishAsync(payload);
+        await RabbitMQ.PublishAsync(payload, new());
     }
 }

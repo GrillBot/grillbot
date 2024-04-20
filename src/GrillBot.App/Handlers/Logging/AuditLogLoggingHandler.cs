@@ -58,7 +58,7 @@ public class AuditLogLoggingHandler : ILoggingHandler
         using var scope = ServiceProvider.CreateScope();
         var rabbitPublisher = scope.ServiceProvider.GetRequiredService<IRabbitMQPublisher>();
 
-        await rabbitPublisher.PublishAsync(payload);
+        await rabbitPublisher.PublishAsync(payload, new());
     }
 
     private static LogRequest CreateLogRequest(bool isWarning, string source, string message, Exception? exception, IUser? user)

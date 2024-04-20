@@ -54,7 +54,7 @@ public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
     }
 
     private static void ResetProperty(ulong expectedId, Database.Entity.Guild guild, string propertyName, List<string> log)

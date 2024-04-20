@@ -55,6 +55,10 @@
             "message": {
                 "name": "message",
                 "description": "Warning text"
+            },
+            "notification": {
+                "name": "notification",
+                "description": "Send a notification to the user in private messages."
             }
         }
     },

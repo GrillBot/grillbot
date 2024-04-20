@@ -103,6 +103,6 @@ public class UpdateChannel : ApiAction
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }));
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
     }
 }

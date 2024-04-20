@@ -63,14 +63,7 @@ public class PointsController : Core.Infrastructure.Actions.ControllerBase
     {
         ApiAction.Init(this, parameters);
 
-        var executor = new Func<IPointsServiceClient, Task<object>>(async (IPointsServiceClient client) =>
-        {
-            var result = await client.GetChartDataAsync(parameters);
-            result.ValidationErrors.AggregateAndThrow();
-
-            return result.Response!;
-        });
-
+        var executor = new Func<IPointsServiceClient, Task<object>>(async (IPointsServiceClient client) => await client.GetChartDataAsync(parameters));
         return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
     }
 

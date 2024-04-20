@@ -8,38 +8,34 @@ namespace GrillBot.Data.Models.API.UserMeasures;
 
 public class CreateUserMeasuresTimeoutParams : IDictionaryObject
 {
-    [Required]
+    public long TimeoutId { get; set; }
     public DateTime CreatedAtUtc { get; set; }
 
-    [Required]
     [StringLength(32)]
     [DiscordId]
     public string ModeratorId { get; set; } = null!;
 
-    [Required]
     [StringLength(32)]
     [DiscordId]
-    public string UserId { get; set; } = null!;
+    public string TargetUserId { get; set; } = null!;
 
-    [Required]
     [StringLength(32)]
     [DiscordId]
     public string GuildId { get; set; } = null!;
 
-    [Required]
-    public DateTime ValidTo { get; set; }
-
+    public DateTime ValidToUtc { get; set; }
     public string Reason { get; set; } = null!;
 
     public Dictionary<string, string?> ToDictionary()
     {
         return new Dictionary<string, string?>
         {
+            { nameof(TimeoutId), TimeoutId.ToString() },
             { nameof(CreatedAtUtc), CreatedAtUtc.ToString("o") },
             { nameof(ModeratorId), ModeratorId },
-            { nameof(UserId), UserId },
+            { nameof(TargetUserId), TargetUserId },
             { nameof(GuildId), GuildId },
-            { nameof(ValidTo), ValidTo.ToString("o") },
+            { nameof(ValidToUtc), ValidToUtc.ToString("o") },
             { nameof(Reason), Reason }
         };
     }

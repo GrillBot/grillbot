@@ -19,7 +19,7 @@ public class RabbitMQPublisherAction : ApiAction
         var queueName = ((IPayload)Parameters[0]!).QueueName;
         var payload = Parameters[0]!;
 
-        await Publisher.PublishAsync(queueName, payload);
+        await Publisher.PublishAsync(queueName, payload, new());
         return ApiResult.Ok();
     }
 }

@@ -10,7 +10,7 @@ public class GuildDatabaseReport
     public int UnverifyLogs { get; set; }
     public int AuditLogs { get; set; }
     public int CacheIndexes { get; set; }
-    public int EmoteStats { get; set; }
+    public long EmoteStats { get; set; }
     public int PointTransactions { get; set; }
     public int UserMeasures { get; set; }
 }

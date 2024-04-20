@@ -53,9 +53,7 @@ public class GetStatsOfEmotes : ApiAction
         };
 
         var data = await _emoteServiceClient.GetEmoteStatisticsListAsync(request);
-        data.ValidationErrors.AggregateAndThrow();
-
-        return await PaginatedResponse<GuildEmoteStatItem>.CopyAndMapAsync(data.Response!, MapItemAsync);
+        return await PaginatedResponse<GuildEmoteStatItem>.CopyAndMapAsync(data, MapItemAsync);
     }
 
     private async Task<GuildEmoteStatItem> MapItemAsync(EmoteStatisticsItem item)

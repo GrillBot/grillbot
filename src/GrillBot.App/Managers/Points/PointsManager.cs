@@ -37,7 +37,7 @@ public class PointsManager
     #region Push
 
     public Task PushPayloadAsync<TPayload>(TPayload payload) where TPayload : IPayload
-        => _rabbitPublisher.PublishAsync(payload);
+        => _rabbitPublisher.PublishAsync(payload, new());
 
     #endregion
 }

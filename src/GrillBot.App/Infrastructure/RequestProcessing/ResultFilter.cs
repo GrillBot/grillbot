@@ -40,6 +40,6 @@ public class ResultFilter : IAsyncResultFilter
         };
 
         var payload = new CreateItemsPayload(new() { logRequest });
-        return _rabbitPublisher.PublishAsync(payload);
+        return _rabbitPublisher.PublishAsync(payload, new());
     }
 }

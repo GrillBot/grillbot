@@ -160,10 +160,7 @@ public class GetUserDetail : ApiAction
         };
 
         var measuresResult = await UserMeasuresService.GetMeasuresListAsync(parameters);
-        if (measuresResult.ValidationErrors is not null)
-            return; // TODO Log errors to AuditLogService
-
-        foreach (var measure in measuresResult.Response!.Data)
+        foreach (var measure in measuresResult.Data)
         {
             var moderator = await _dataResolveManager.GetUserAsync(measure.ModeratorId.ToUlong());
 
@@ -204,10 +201,7 @@ public class GetUserDetail : ApiAction
         };
 
         var response = await _emoteServiceClient.GetEmoteStatisticsListAsync(request);
-        if (response.ValidationErrors is not null)
-            return; // TODO Log errors to the AuditLogService.
-
-        detail.Emotes = response.Response!.Data.ConvertAll(o => new ApiModels.Emotes.EmoteStatItem
+        detail.Emotes = response.Data.ConvertAll(o => new ApiModels.Emotes.EmoteStatItem
         {
             Emote = o.ToEmoteItem(),
             FirstOccurence = o.FirstOccurence,

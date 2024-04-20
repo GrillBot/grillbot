@@ -179,7 +179,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.Events.CancelScheduledEvent>()
             .AddScoped<Api.V2.AuditLog.CreateAuditLogMessageAction>()
             .AddScoped<Api.V2.User.GetRubbergodUserKarma>()
-            .AddScoped<Api.V2.User.GetGuildUserInfo>();
+            .AddScoped<Api.V2.User.GetGuildUserInfo>()
+            .AddScoped<Api.V2.User.CreateUserMeasuresTimeout>();
 
         return services;
     }

@@ -1,7 +1,6 @@
 ﻿using Discord.Net;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Cache.Services;
-using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Repository;
 using GrillBot.Core.Extensions;
 using Quartz;
@@ -25,7 +24,6 @@ public class CacheCleanerJob : CleanerJobBase
         await using var repository = CacheBuilder.CreateRepository();
 
         await ClearDataCacheAsync(repository, reportFields);
-        await ClearEmoteSuggestionsAsync(repository, reportFields);
         await ClearProfilePicturesAsync(repository, reportFields);
 
         context.Result = FormatReportFromFields(reportFields);
@@ -36,13 +34,6 @@ public class CacheCleanerJob : CleanerJobBase
         var cleared = await cacheRepository.DataCache.DeleteExpiredAsync();
         if (cleared > 0)
             report.Add($"DataCache: {cleared}");
-    }
-
-    private static async Task ClearEmoteSuggestionsAsync(GrillBotCacheRepository cacheRepository, ICollection<string> report)
-    {
-        var cleared = await cacheRepository.EmoteSuggestion.PurgeExpiredAsync(EmoteSuggestionManager.ValidHours);
-        if (cleared > 0)
-            report.Add($"EmoteSuggestions: {cleared}");
     }
 
     private async Task ClearProfilePicturesAsync(GrillBotCacheRepository cacheRepository, ICollection<string> report)

@@ -83,12 +83,6 @@ public class GrillBotContext : DbContext
 
         modelBuilder.Entity<SelfunverifyKeepable>(builder => builder.HasKey(o => new { o.GroupName, o.Name }));
 
-        modelBuilder.Entity<EmoteSuggestion>(builder =>
-        {
-            builder.HasOne(o => o.Guild).WithMany();
-            builder.HasOne(o => o.FromUser).WithMany().HasForeignKey(o => new { o.GuildId, o.FromUserId });
-        });
-
         modelBuilder.Entity<Nickname>(builder =>
         {
             builder.HasKey(o => new { o.GuildId, o.UserId, o.Id });
@@ -110,7 +104,6 @@ public class GrillBotContext : DbContext
     public DbSet<RemindMessage> Reminders => Set<RemindMessage>();
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
-    public DbSet<EmoteSuggestion> EmoteSuggestions => Set<EmoteSuggestion>();
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();
     public DbSet<Nickname> Nicknames => Set<Nickname>();
 }

@@ -42,11 +42,6 @@ public class UpdateGuild : ApiAction
         else
             dbGuild.MuteRoleId = parameters.MuteRoleId;
 
-        if (!string.IsNullOrEmpty(parameters.EmoteSuggestionChannelId) && await guild.GetTextChannelAsync(parameters.EmoteSuggestionChannelId.ToUlong()) == null)
-            ThrowValidationException("EmoteSuggestionChannelNotFound", parameters.EmoteSuggestionChannelId, nameof(parameters.EmoteSuggestionChannelId));
-        else
-            dbGuild.EmoteSuggestionChannelId = parameters.EmoteSuggestionChannelId;
-
         if (!string.IsNullOrEmpty(parameters.VoteChannelId) && await guild.GetTextChannelAsync(parameters.VoteChannelId.ToUlong()) == null)
             ThrowValidationException("VoteChannelNotFound", parameters.VoteChannelId, nameof(parameters.VoteChannelId));
         else
@@ -61,9 +56,6 @@ public class UpdateGuild : ApiAction
             ThrowValidationException("AssociationRoleNotFound", parameters.AssociationRoleId, nameof(parameters.AssociationRoleId));
         else
             dbGuild.AssociationRoleId = parameters.AssociationRoleId;
-
-        dbGuild.EmoteSuggestionsFrom = parameters.EmoteSuggestionsValidity?.From;
-        dbGuild.EmoteSuggestionsTo = parameters.EmoteSuggestionsValidity?.To;
 
         await repository.CommitAsync();
 

@@ -31,7 +31,6 @@ public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
 
         var log = new List<string>();
         ResetProperty(guildChannel.Id, guild, nameof(guild.AdminChannelId), log);
-        ResetProperty(guildChannel.Id, guild, nameof(guild.EmoteSuggestionChannelId), log);
         ResetProperty(guildChannel.Id, guild, nameof(guild.VoteChannelId), log);
         ResetProperty(guildChannel.Id, guild, nameof(guild.BotRoomChannelId), log);
 

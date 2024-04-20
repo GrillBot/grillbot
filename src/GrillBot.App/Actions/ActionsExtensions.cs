@@ -72,7 +72,6 @@ public static class ActionsExtensions
 
         // Emote
         services
-            .AddScoped<Api.V1.Emote.GetEmoteSuggestionsList>()
             .AddScoped<Api.V1.Emote.GetStatOfEmote>()
             .AddScoped<Api.V1.Emote.GetStatsOfEmotes>()
             .AddScoped<Api.V1.Emote.GetSupportedEmotes>()
@@ -201,13 +200,6 @@ public static class ActionsExtensions
         // Guild
         services
             .AddScoped<Commands.Guild.GuildInfo>();
-
-        // EmoteSuggestion
-        services
-            .AddScoped<Commands.EmoteSuggestion.FormSubmitted>()
-            .AddScoped<Commands.EmoteSuggestion.InitSuggestion>()
-            .AddScoped<Commands.EmoteSuggestion.ProcessToVote>()
-            .AddScoped<Commands.EmoteSuggestion.SetApprove>();
 
         // Images
         services

@@ -26,7 +26,6 @@ public sealed class GrillBotRepository : RepositoryBase<GrillBotContext>, IDispo
     public SelfUnverifyRepository SelfUnverify => GetOrCreateRepository<SelfUnverifyRepository>();
     public AutoReplyRepository AutoReply => GetOrCreateRepository<AutoReplyRepository>();
     public StatisticsRepository Statistics => GetOrCreateRepository<StatisticsRepository>();
-    public EmoteSuggestionRepository EmoteSuggestion => GetOrCreateRepository<EmoteSuggestionRepository>();
     public ApiClientRepository ApiClientRepository => GetOrCreateRepository<ApiClientRepository>();
     public NicknameRepository Nickname => GetOrCreateRepository<NicknameRepository>();
 

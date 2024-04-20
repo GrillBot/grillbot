@@ -404,26 +404,6 @@
             }
         }
     },
-    "suggestion": {
-        "name": "suggestion",
-        "description": "Submission of a proposal",
-        "emote": {
-            "name": "emote",
-            "description": "Submission of a proposal for an emote",
-            "emote": {
-                "name": "emote",
-                "description": "Option to design an emote based on an existing emote (from another server)."
-            },
-            "attachment": {
-                "name": "attachment",
-                "description": "Ability to design an emote based on an image."
-            }
-        }
-    },
-    "process_emote_suggestions": {
-        "name": "process_emote_suggestions",
-        "description": "Processing approved emote suggestions."
-    },
     "points": {
         "name": "points",
         "description": "Points",

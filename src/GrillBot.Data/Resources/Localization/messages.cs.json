@@ -212,7 +212,6 @@
         "UpdateGuild": {
             "AdminChannelNotFound": "Nepodařilo se dohledat administrátorský kanál",
             "MuteRoleNotFound": "Nepodařilo se dohledat roli, která reprezentuje umlčení uživatele při unverify.",
-            "EmoteSuggestionChannelNotFound": "Nepodařilo se dohledat kanál pro návrhy emotů.",
             "VoteChannelNotFound": "Nepodařilo se dohledat kanál pro veřejná hlasování.",
             "BotRoomChannelNotFound": "Nepodařilo se dohledat kanál pro boty.",
             "AssociationRoleNotFound": "Nepodařilo se dohledat roli spolku."
@@ -302,55 +301,6 @@
                 "NoItems": "V kanálu {0} zatím nikdo nic nehledá.",
                 "NoItemsWithQuery": "V kanálu {0} zatím nikdo nic nehledá. Zkus jiný vyhledávací podřetězec."
             }
-        }
-    },
-    "SuggestionModule": {
-        "SessionExpired": "Platnost formuláře vypršela. Podej prosím návrh znovu.",
-        "PrivateMessageSuggestionComplete": "Tvůj návrh na přidání emote byl úspěšně zpracován.",
-        "VoteChannelNotDefined": "Nelze spustit hlasování o nových emotech, protože není definován kanál pro hlasování.",
-        "VoteChannelNotFound": "Nelze spustit hlasování o nových emotech, protože nebyl nalezen kanál pro hlasování.",
-        "NoForVote": "Neexistuje žádný schválený/zamítnutý návrh ke zpracování.",
-        "NoApprovedForVote": "Není žádný schválený návrh ke zpracování.",
-        "SuggestEmote": {
-            "NoEmoteAndAttachment": "Nelze podat návrh na nový emote, když není dodán emote. Emote lze dodat ve formě jiného emote, nebo obrázku.",
-            "EmoteExistsInGuild": "Nelze podat návrh na emote, který je již na tomto serveru.",
-            "ModalTitle": "Podání návrhu na nový emote",
-            "ModalEmoteName": "Název emote",
-            "ModalEmoteDescription": "Popis emote",
-            "ModalEmoteDescriptionPlaceholder": "Něco k doplnění? Co emote vyjadřuje? Proč bychom ho tu měli mít?",
-            "UnsupportedImageFormat": "Nepodporovaný typ obrázku. Je možné nahrávat pouze přílohy s koncovkou PNG."
-        },
-        "SuggestionEmbed": {
-            "Title": "Nový návrh na emote.",
-            "EmoteNameTitle": "Název",
-            "EmoteDescriptionTitle": "Popis",
-            "VoteFinished": "Hlasování skončilo {0}",
-            "VoteRunning": "Hlasování běží, skončí {0}",
-            "VoteFinishedTitle": "Dokončeno hlasování o novém emote",
-            "CommunityApproved": "Komunitou schválen",
-            "Boolean": {
-                "True": "Ano",
-                "False": "Ne"
-            },
-            "ApproveForVote": {
-                "True": "Schválen k hlasování",
-                "False": "Zamítnut k hlasování"
-            }
-        },
-        "ProcessEmoteSuggestions": {
-            "Success": "Hlasování pro schválené emoty bylo spuštěno"
-        },
-        "ApprovalButtons": {
-            "Approve": "Schválit",
-            "Decline": "Zamítnout"
-        },
-        "EmoteSuggestionChannelNotSet": {
-            "IsFinish": "Není nastaven kanál pro návrhy ({0}).",
-            "IsNotFinish": "Tvůj návrh nelze nyní zpracovat, protože není určen kanál pro návrhy."
-        },
-        "EmoteSuggestionChannelNotFound": {
-            "IsFinish": "Nepodařilo se najít kanál pro návrhy ({0}).",
-            "NotFinish": "Tvůj návrh emote nelze nyní kvůli technickým důvodům zpracovat."
         }
     },
     "Unverify": {

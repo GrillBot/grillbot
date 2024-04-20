@@ -10,7 +10,6 @@ public static class ServiceExtensions
             .AddScoped<DownloadHelper>()
             .AddScoped<ChannelHelper>()
             .AddScoped<UnverifyHelper>()
-            .AddScoped<EmoteSuggestionHelper>()
             .AddSingleton<BlobManagerFactoryHelper>();
 
         return services;

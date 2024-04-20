@@ -11,7 +11,6 @@ public class GuildDatabaseReport
     public int AuditLogs { get; set; }
     public int CacheIndexes { get; set; }
     public int EmoteStats { get; set; }
-    public int EmoteSuggestions { get; set; }
     public int PointTransactions { get; set; }
     public int UserMeasures { get; set; }
 }

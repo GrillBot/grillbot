@@ -404,26 +404,6 @@
             }
         }
     },
-    "suggestion": {
-        "name": "suggestion",
-        "description": "Podání návrhu",
-        "emote": {
-            "name": "emote",
-            "description": "Podání návrhu na přidání nového emote.",
-            "emote": {
-                "name": "emote",
-                "description": "Možnost navrhnout emote na základě existujícího emote (z jiného serveru)."
-            },
-            "attachment": {
-                "name": "attachment",
-                "description": "Možnost navrhnout emote na základě obrázku."
-            }
-        }
-    },
-    "process_emote_suggestions": {
-        "name": "process_emote_suggestions",
-        "description": "Zpracování schválených návrhů na emoty."
-    },
     "points": {
         "name": "body",
         "description": "Body",

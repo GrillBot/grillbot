@@ -53,11 +53,6 @@ public class GuildDetail : Guild
     public Channel? AdminChannel { get; set; }
 
     /// <summary>
-    /// Channel for emote suggestions.
-    /// </summary>
-    public Channel? EmoteSuggestionChannel { get; set; }
-
-    /// <summary>
     /// Channel for public votes.
     /// </summary>
     public Channel? VoteChannel { get; set; }
@@ -88,9 +83,6 @@ public class GuildDetail : Guild
     /// Maximum upload limit.
     /// </summary>
     public int MaxUploadLimit { get; set; }
-
-    public DateTime? EmoteSuggestionsFrom { get; set; }
-    public DateTime? EmoteSuggestionsTo { get; set; }
 
     public Dictionary<UserStatus, int> UserStatusReport { get; set; } = new();
     public Dictionary<ClientType, int> ClientTypeReport { get; set; } = new();

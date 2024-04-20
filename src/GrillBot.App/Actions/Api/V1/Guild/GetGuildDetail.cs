@@ -62,9 +62,6 @@ public class GetGuildDetail : ApiAction
         if (!string.IsNullOrEmpty(dbGuild.AdminChannelId))
             detail.AdminChannel = await _dataResolve.GetChannelAsync(discordGuild.Id, dbGuild.AdminChannelId.ToUlong());
 
-        if (!string.IsNullOrEmpty(dbGuild.EmoteSuggestionChannelId))
-            detail.EmoteSuggestionChannel = await _dataResolve.GetChannelAsync(discordGuild.Id, dbGuild.EmoteSuggestionChannelId.ToUlong());
-
         if (!string.IsNullOrEmpty(dbGuild.BoosterRoleId))
             detail.BoosterRole = await _dataResolve.GetRoleAsync(dbGuild.BoosterRoleId.ToUlong());
 

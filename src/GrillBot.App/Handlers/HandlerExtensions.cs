@@ -39,8 +39,7 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IMessageDeletedEvent, MessageDeleted.AuditMessageDeletedHandler>()
-            .AddScoped<IMessageDeletedEvent, MessageDeleted.ChannelMessageDeletedHandler>()
-            .AddScoped<IMessageDeletedEvent, MessageDeleted.EmoteSuggestionsMessageDeletedHandler>();
+            .AddScoped<IMessageDeletedEvent, MessageDeleted.ChannelMessageDeletedHandler>();
 
         services
             .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelMessageReceivedHandler>()

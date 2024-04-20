@@ -30,8 +30,6 @@ public class GuildSynchronizationHandler : IReadyEvent
                 dbGuild.AdminChannelId = null;
             if (await CanResetChannelIdAsync(dbGuild.BotRoomChannelId, guild))
                 dbGuild.BotRoomChannelId = null;
-            if (await CanResetChannelIdAsync(dbGuild.EmoteSuggestionChannelId, guild))
-                dbGuild.EmoteSuggestionChannelId = null;
             if (await CanResetChannelIdAsync(dbGuild.VoteChannelId, guild))
                 dbGuild.VoteChannelId = null;
             if (CanResetRoleId(dbGuild.MuteRoleId, guild))

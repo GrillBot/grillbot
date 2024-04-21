@@ -173,9 +173,6 @@ public static class ActionsExtensions
         // V2
         services
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()
-            .AddScoped<Api.V2.Events.CreateScheduledEvent>()
-            .AddScoped<Api.V2.Events.UpdateScheduledEvent>()
-            .AddScoped<Api.V2.Events.CancelScheduledEvent>()
             .AddScoped<Api.V2.AuditLog.CreateAuditLogMessageAction>()
             .AddScoped<Api.V2.User.GetRubbergodUserKarma>()
             .AddScoped<Api.V2.User.GetGuildUserInfo>()

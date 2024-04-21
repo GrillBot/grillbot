@@ -551,18 +551,6 @@
             "False": "No"
         }
     },
-    "GuildScheduledEvents": {
-        "GuildNotFound": "Unable to find guild.",
-        "EventNotFound": "Unable to find event.",
-        "Required": {
-            "Name": "Name is required.",
-            "StartAt": "It is necessary to set start time of the event.",
-            "EndAt": "It is necessary to set end time of the event.",
-            "Location": "Event location is required."
-        },
-        "ForbiddenAccess": "This event wasn't created via bot.",
-        "CannotCancelEventEnded": "Cannot cancel cancelled event."
-    },
     "CooldownEnabled": "You're executing this command too often. Wait a moment. You can execute this command again after {0}",
     "ClickOnCommand": "Before sending slash command you need to click on autocomplete",
     "TypeConverters": {

@@ -551,18 +551,6 @@
             "False": "Ne"
         }
     },
-    "GuildScheduledEvents": {
-        "GuildNotFound": "Nepodařilo se najít server.",
-        "EventNotFound": "Nepodařilo se najít událost.",
-        "Required": {
-            "Name": "Název je povinný.",
-            "StartAt": "Je nutné zadat počátek události.",
-            "EndAt": "Je nutné zadat konec události.",
-            "Location": "Místo události je povinné."
-        },
-        "ForbiddenAccess": "Tato událost nebyla vytvořena prostřednictvím bota.",
-        "CannotCancelEventEnded": "Nelze zrušit již ukončenou událost."
-    },
     "CooldownEnabled": "Voláš tento příkaz často. Chvíli počkej. Příkaz můžeš znovu zavolat za {0}.",
     "ClickOnCommand": "Před odesláním lomítkového příkazu je nezbytné kliknout na automatický doplňovač",
     "TypeConverters": {

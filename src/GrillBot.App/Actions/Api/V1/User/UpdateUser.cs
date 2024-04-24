@@ -10,6 +10,7 @@ using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.Services.PointsService.Models.Channels;
+using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -78,6 +79,7 @@ public class UpdateUser : ApiAction
         {
             MemberUpdated = new MemberUpdatedRequest
             {
+                UserId = after.Id,
                 Flags = new DiffRequest<int?>
                 {
                     After = after.Flags,
@@ -88,7 +90,11 @@ public class UpdateUser : ApiAction
                     After = before.SelfUnverifyMinimalTime?.ToString("c"),
                     Before = after.SelfUnverifyMinimalTime?.ToString("c")
                 },
-                UserId = after.Id
+                PointsDeactivated = new DiffRequest<bool?>
+                {
+                    After = after.HaveFlags(UserFlags.PointsDisabled),
+                    Before = before.HaveFlags(UserFlags.PointsDisabled)
+                }
             }
         };
 

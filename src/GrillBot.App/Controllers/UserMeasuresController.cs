@@ -1,9 +1,12 @@
 ﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V1.UserMeasures;
 using GrillBot.App.Actions.Api.V2.User;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.Events;
+using GrillBot.Core.Services.UserMeasures.Models.Measures;
 using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -52,19 +55,41 @@ public class UserMeasuresController : Core.Infrastructure.Actions.ControllerBase
     }
 
     /// <summary>
-    /// Create new member timeout.
+    /// Create or update member timeout.
     /// </summary>
     /// <param name="parameters">Timeout parameters</param>
     /// <response code="200">Timeout has been successfully created.</response>
     /// <response code="400">Validation of parameters failed.</response>
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
-    [HttpPost("create/timeout")]
+    [HttpPost("timeout/create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUserMeasuresTimeoutAsync([FromBody] CreateUserMeasuresTimeoutParams parameters)
     {
         ApiAction.Init(this, parameters);
         return await ProcessAsync<CreateUserMeasuresTimeout>(parameters);
+    }
+
+    /// <summary>
+    /// Delete member timeout.
+    /// </summary>
+    /// <param name="timeoutId">Timeout ID from external system.</param>
+    /// <response code="200">Timeout has been successfully deleted.</response>
+    /// <response code="400">Validation of parameters failed.</response>
+    /// <response code="404">Timeout wasn't found.</response>
+    [ApiKeyAuth]
+    [ApiExplorerSettings(GroupName = "v2")]
+    [HttpDelete("timeout/{timeoutId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteUserMeasureTimeoutAsync(long timeoutId)
+    {
+        var executor = new Func<IUserMeasuresServiceClient, Task>(
+            (IUserMeasuresServiceClient client) => client.DeleteMeasureAsync(DeleteMeasuresRequest.FromExternalSystem(timeoutId, "Timeout"))
+        );
+
+        return await ProcessAsync<ServiceBridgeAction<IUserMeasuresServiceClient>>(executor);
     }
 }

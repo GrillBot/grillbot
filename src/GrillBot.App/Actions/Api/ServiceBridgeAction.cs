@@ -1,6 +1,9 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common;
+using GrillBot.Data.Models.API;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Actions.Api;
 
@@ -18,13 +21,34 @@ public class ServiceBridgeAction<TServiceClient> : ApiAction where TServiceClien
         var funcExecutor = Parameters.OfType<Func<TServiceClient, Task<object>>>().FirstOrDefault();
         var actionExecutor = Parameters.OfType<Func<TServiceClient, Task>>().FirstOrDefault();
 
-        if (funcExecutor is not null)
-            return ApiResult.Ok(await funcExecutor(Client));
-
-        if (actionExecutor is not null)
+        try
         {
-            await actionExecutor(Client);
-            return ApiResult.Ok();
+            if (funcExecutor is not null)
+                return ApiResult.Ok(await funcExecutor(Client));
+
+            if (actionExecutor is not null)
+            {
+                await actionExecutor(Client);
+                return ApiResult.Ok();
+            }
+        }
+        catch (ClientNotFoundException)
+        {
+            return ApiResult.NotFound();
+        }
+        catch (ClientNotAcceptableException)
+        {
+            return new ApiResult(StatusCodes.Status406NotAcceptable);
+        }
+        catch (ClientBadRequestException ex)
+        {
+            var problemDetails = new ValidationProblemDetails(ex.ValidationErrors);
+            return ApiResult.BadRequest(problemDetails);
+        }
+        catch (ClientException ex)
+        {
+            var statusCode = ex.StatusCode ?? HttpStatusCode.InternalServerError;
+            return new ApiResult((int)statusCode, new MessageResponse(ex.Message));
         }
 
         return ApiResult.BadRequest();

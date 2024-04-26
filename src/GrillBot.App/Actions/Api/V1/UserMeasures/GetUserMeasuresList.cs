@@ -7,6 +7,7 @@ using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Enums;
 using GrillBot.App.Managers.DataResolve;
+using GrillBot.Core.Services.UserMeasures.Models.Measures;
 
 namespace GrillBot.App.Actions.Api.V1.UserMeasures;
 

@@ -19,13 +19,14 @@ public class CreateUserMeasuresTimeout : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = GetParameter<CreateUserMeasuresTimeoutParams>(0);
+
         var payload = new TimeoutPayload(
-            parameters.CreatedAtUtc,
+            parameters.CreatedAtUtc.ToUniversalTime(),
             parameters.Reason,
             parameters.GuildId,
             parameters.ModeratorId,
             parameters.TargetUserId,
-            parameters.ValidToUtc,
+            parameters.ValidToUtc.ToUniversalTime(),
             parameters.TimeoutId
         );
 

@@ -41,6 +41,7 @@ public class GetUserMeasuresList : ApiAction
         var guild = await _dataResolveManager.GetGuildAsync(entity.GuildId.ToUlong());
         var moderator = await _dataResolveManager.GetUserAsync(entity.ModeratorId.ToUlong());
         var user = await _dataResolveManager.GetUserAsync(entity.UserId.ToUlong());
+        var validTo = entity.ValidTo.HasValue ? entity.ValidTo.Value.ToUniversalTime() : (DateTime?)null;
 
         return new UserMeasuresListItem
         {
@@ -56,7 +57,7 @@ public class GetUserMeasuresList : ApiAction
                 _ => 0
             },
             User = user!,
-            ValidTo = entity.ValidTo
+            ValidTo = validTo
         };
     }
 }

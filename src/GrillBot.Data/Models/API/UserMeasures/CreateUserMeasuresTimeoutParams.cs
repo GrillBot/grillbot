@@ -9,6 +9,8 @@ namespace GrillBot.Data.Models.API.UserMeasures;
 public class CreateUserMeasuresTimeoutParams : IDictionaryObject
 {
     public long TimeoutId { get; set; }
+
+    [RequireTimezone]
     public DateTime CreatedAtUtc { get; set; }
 
     [StringLength(32)]
@@ -23,7 +25,9 @@ public class CreateUserMeasuresTimeoutParams : IDictionaryObject
     [DiscordId]
     public string GuildId { get; set; } = null!;
 
+    [RequireTimezone]
     public DateTime ValidToUtc { get; set; }
+
     public string Reason { get; set; } = null!;
 
     public Dictionary<string, string?> ToDictionary()

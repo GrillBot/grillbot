@@ -5,7 +5,6 @@ using GrillBot.App.Actions.Api.V2.User;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.UserMeasures;
-using GrillBot.Core.Services.UserMeasures.Models.Events;
 using GrillBot.Core.Services.UserMeasures.Models.Measures;
 using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Models.API.UserMeasures;
@@ -63,7 +62,7 @@ public class UserMeasuresController : Core.Infrastructure.Actions.ControllerBase
     [ApiKeyAuth]
     [ApiExplorerSettings(GroupName = "v2")]
     [HttpPost("timeout/create")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUserMeasuresTimeoutAsync([FromBody] CreateUserMeasuresTimeoutParams parameters)
     {

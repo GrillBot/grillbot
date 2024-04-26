@@ -12,9 +12,7 @@ public static class HandlerExtensions
     {
         RegisterSynchronization(services);
         RegisterOrchestration(services);
-
-        services
-            .AddRabbitConsumerHandler<RabbitMQ.FileDeleteEventHandler>();
+        RegisterRabbit(services);
 
         services
             .AddSingleton<InteractionHandler>();
@@ -128,5 +126,12 @@ public static class HandlerExtensions
 
         foreach (var @interface in handlerType.GetInterfaces().Where(o => o.Name.EndsWith("Event")))
             services.AddScoped(@interface, handlerType);
+    }
+
+    private static void RegisterRabbit(IServiceCollection services)
+    {
+        services
+            .AddRabbitConsumerHandler<RabbitMQ.FileDeleteEventHandler>()
+            .AddRabbitConsumerHandler<RabbitMQ.SendMessageEventHandler>();
     }
 }

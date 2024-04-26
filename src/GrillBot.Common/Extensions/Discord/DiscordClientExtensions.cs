@@ -38,4 +38,16 @@ public static class DiscordClientExtensions
             .Select(g => g.GetRole(roleId))
             .FirstOrDefault(r => r is not null);
     }
+
+    public static async Task WaitOnConnectedState(this IDiscordClient discordClient)
+    {
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+
+        while (discordClient.ConnectionState != ConnectionState.Connected)
+        {
+            await Task.Delay(500, cancellation.Token);
+            if (cancellation.IsCancellationRequested)
+                throw new TaskCanceledException("Waiting on discord connection state expired.");
+        }
+    }
 }

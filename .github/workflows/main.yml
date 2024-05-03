@@ -93,7 +93,7 @@ jobs:
           script: echo '${{ secrets.SSH_Password }}' | sudo -S /scripts/update-grillbot-prod.sh bot
   VerifyProductionDeployment:
     runs-on: ubuntu-latest
-    environment: Production
+    environment: ProductionInternal
     needs: Deployment_Production
     if: github.ref == 'refs/heads/master'
     steps:

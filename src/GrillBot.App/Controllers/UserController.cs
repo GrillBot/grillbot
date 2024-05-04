@@ -123,12 +123,10 @@ public class UsersController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> StoreKarmaAsync([FromBody] List<KarmaItem> items)
+    public Task<IActionResult> StoreKarmaAsync([FromBody] List<RawKarmaItem> items)
     {
         ApiAction.Init(this, items.ToArray());
-
-        var executor = new Func<IRubbergodServiceClient, Task>(async (IRubbergodServiceClient client) => await client.StoreKarmaAsync(items));
-        return await ProcessAsync<ServiceBridgeAction<IRubbergodServiceClient>>(executor);
+        return ProcessAsync<StoreKarma>(items);
     }
 
     /// <summary>

@@ -20,7 +20,6 @@ public static class ActionsExtensions
         services.AddScoped<RabbitMQPublisherAction>();
 
         return services
-            .AddScoped<Api.ServiceBridgeAction<IRubbergodServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IPointsServiceClient>>();
     }
@@ -176,7 +175,8 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.AuditLog.CreateAuditLogMessageAction>()
             .AddScoped<Api.V2.User.GetRubbergodUserKarma>()
             .AddScoped<Api.V2.User.GetGuildUserInfo>()
-            .AddScoped<Api.V2.User.CreateUserMeasuresTimeout>();
+            .AddScoped<Api.V2.User.CreateUserMeasuresTimeout>()
+            .AddScoped<Api.V2.User.StoreKarma>();
 
         return services;
     }

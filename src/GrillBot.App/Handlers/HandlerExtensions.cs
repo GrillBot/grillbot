@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Handlers.Synchronization.Database;
-using GrillBot.App.Handlers.Synchronization.Services;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ;
 using Microsoft.Extensions.DependencyInjection;
@@ -103,14 +102,6 @@ public static class HandlerExtensions
             .AddScoped<IUserJoinedEvent, UserSynchronizationHandler>()
             .AddScoped<IGuildMemberUpdatedEvent, UserSynchronizationHandler>()
             .AddScoped<IUserUpdatedEvent, UserSynchronizationHandler>();
-
-        // Services
-
-        // RubbergodService
-        services
-            .AddScoped<IMessageUpdatedEvent, RubbergodServiceSynchronizationHandler>()
-            .AddScoped<IThreadDeletedEvent, RubbergodServiceSynchronizationHandler>()
-            .AddScoped<IChannelDestroyedEvent, RubbergodServiceSynchronizationHandler>();
     }
 
     private static void RegisterOrchestration(IServiceCollection services)
@@ -118,6 +109,7 @@ public static class HandlerExtensions
         RegisterServiceOrchestration<ServiceOrchestration.PointsOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.AuditOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.EmoteOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.RubbergodOrchestrationHandler>(services);
     }
 
     private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class

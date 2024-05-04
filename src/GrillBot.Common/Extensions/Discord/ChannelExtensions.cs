@@ -118,4 +118,7 @@ public static class ChannelExtensions
 
     public static string GetHyperlink(this IGuildChannel guildChannel)
         => GetHyperlink(guildChannel, guildChannel.Guild);
+
+    public static bool IsPinSupported(this IChannel channel)
+        => channel is not IVoiceChannel && channel is ITextChannel;
 }

@@ -1,6 +1,4 @@
 ﻿using GrillBot.Core.Infrastructure;
-using GrillBot.Core.RabbitMQ;
-using GrillBot.Core.Services.RubbergodService.Models.Events.Karma;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,7 +27,4 @@ public class RawKarmaItem : IDictionaryObject
             { nameof(Negative), Negative.ToString() }
         };
     }
-
-    public KarmaPayload ToPayload()
-        => new(MemberId, KarmaValue, Positive, Negative);
 }

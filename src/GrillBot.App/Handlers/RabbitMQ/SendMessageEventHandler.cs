@@ -1,6 +1,9 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.RabbitMQ.Consumer;
+using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.Services.AuditLog.Enums;
+using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.Services.GrillBot.Models.Events;
 using Microsoft.Extensions.Logging;
 
@@ -12,11 +15,13 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
 
     private readonly IDiscordClient _discordClient;
     private readonly ILogger<SendMessageEventHandler> _logger;
+    private readonly IRabbitMQPublisher _rabbitPublisher;
 
-    public SendMessageEventHandler(ILoggerFactory loggerFactory, IDiscordClient discordClient) : base(loggerFactory)
+    public SendMessageEventHandler(ILoggerFactory loggerFactory, IDiscordClient discordClient, IRabbitMQPublisher rabbitPublisher) : base(loggerFactory)
     {
         _discordClient = discordClient;
         _logger = loggerFactory.CreateLogger<SendMessageEventHandler>();
+        _rabbitPublisher = rabbitPublisher;
     }
 
     protected override async Task HandleInternalAsync(DiscordMessagePayload payload, Dictionary<string, string> headers)
@@ -30,14 +35,14 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
 
         if (channel is null)
         {
-            _logger.LogWarning("Unable to find channel with ID {ChannelId}", payload.ChannelId);
-            return; // TODO Send Error to AuditLog.
+            await LogWarningAsync(payload, $"Unable to find channel with ID {payload.ChannelId}");
+            return;
         }
 
         if (embed is null && string.IsNullOrEmpty(payload.Content) && payload.Attachments.Count == 0)
         {
-            _logger.LogWarning("Unable to send discord message without content.");
-            return; // TODO Send Error to AuditLog.
+            await LogWarningAsync(payload, "Unable to send discord message without content.");
+            return;
         }
 
         if (payload.Attachments.Count > 0)
@@ -98,5 +103,22 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
 
         var user = await _discordClient.GetUserAsync(payload.ChannelId.ToUlong());
         return user is null ? null : (IMessageChannel)await user.CreateDMChannelAsync();
+    }
+
+    private async Task LogWarningAsync(DiscordMessagePayload payload, string message)
+    {
+        var logRequest = new LogRequest(LogType.Warning, DateTime.UtcNow, payload.GuildId, _discordClient.CurrentUser.Id.ToString(), payload.ChannelId)
+        {
+            LogMessage = new LogMessageRequest
+            {
+                Message = $"{message}\n{System.Text.Json.JsonSerializer.Serialize(payload)}",
+                Severity = LogSeverity.Warning,
+                Source = $"RabbitMQ/{QueueName}/{GetType().Name}",
+                SourceAppName = "GrillBot"
+            }
+        };
+
+        _logger.LogWarning("{message}", message);
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
     }
 }

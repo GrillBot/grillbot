@@ -125,6 +125,7 @@ public static class HandlerExtensions
         services
             .AddRabbitConsumerHandler<RabbitMQ.FileDeleteEventHandler>()
             .AddRabbitConsumerHandler<RabbitMQ.SendMessageEventHandler>()
-            .AddRabbitConsumerHandler<RabbitMQ.ErrorNotificationEventHandler>();
+            .AddRabbitConsumerHandler<RabbitMQ.ErrorNotificationEventHandler>()
+            .AddRabbitConsumerHandler<RabbitMQ.RabbitHandlerErrorHandler>();
     }
 }

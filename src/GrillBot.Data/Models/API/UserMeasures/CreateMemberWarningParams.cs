@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GrillBot.Data.Models.API.UserMeasures;
 
-public class CreateUserMeasuresWarningParams : IDictionaryObject
+public class CreateMemberWarningParams : IDictionaryObject
 {
     [DiscordId]
     [StringLength(32)]

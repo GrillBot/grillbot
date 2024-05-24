@@ -1,7 +1,9 @@
 ﻿using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RubbergodService;
+using GrillBot.Core.Services.UserMeasures;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace GrillBot.App.Actions;
 
@@ -21,7 +23,8 @@ public static class ActionsExtensions
 
         return services
             .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IPointsServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<IPointsServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IUserMeasuresServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)
@@ -179,15 +182,7 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.User.StoreKarma>();
 
         // V3 API
-
-        // Auth
-        services
-            .AddScoped<Api.V3.Auth.OAuth2Action>()
-            .AddScoped<Api.V3.Auth.CreateJwtToken>();
-
-        // Lookup
-        services
-            .AddScoped<Api.V3.DataResolve.LookupAction>();
+        AddApiV3Actions(services);
 
         return services;
     }
@@ -261,5 +256,18 @@ public static class ActionsExtensions
             .AddScoped<Commands.GetChannelboard>();
 
         return services;
+    }
+
+    private static void AddApiV3Actions(this IServiceCollection services)
+    {
+        const string namespacePrefix = "GrillBot.App.Actions.Api.V3";
+
+        var apiActionType = typeof(ApiAction);
+        var actionTypes = apiActionType.Assembly
+            .GetTypes()
+            .Where(o => o.IsClass && !o.IsAbstract && apiActionType.IsAssignableFrom(o) && !string.IsNullOrEmpty(o.Namespace) && o.Namespace.StartsWith(namespacePrefix));
+
+        foreach (var action in actionTypes)
+            services.AddScoped(action);
     }
 }

@@ -47,7 +47,7 @@ public class UserMeasuresController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> CreateUserMeasuresWarningAsync([FromBody] CreateUserMeasuresWarningParams parameters)
+    public async Task<IActionResult> CreateUserMeasuresWarningAsync([FromBody] CreateMemberWarningParams parameters)
     {
         ApiAction.Init(this, parameters);
         return await ProcessAsync<CreateUserMeasuresWarning>(parameters);

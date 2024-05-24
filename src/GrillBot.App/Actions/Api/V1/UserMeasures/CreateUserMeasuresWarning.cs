@@ -17,13 +17,13 @@ public class CreateUserMeasuresWarning : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        await ProcessAsync((CreateUserMeasuresWarningParams)Parameters[0]!);
+        await ProcessAsync((CreateMemberWarningParams)Parameters[0]!);
         return ApiResult.Ok();
     }
 
     public async Task ProcessAsync(IGuildUser user, string message, bool notification)
     {
-        var parameters = new CreateUserMeasuresWarningParams
+        var parameters = new CreateMemberWarningParams
         {
             GuildId = user.GuildId.ToString(),
             Message = message,
@@ -34,7 +34,7 @@ public class CreateUserMeasuresWarning : ApiAction
         await ProcessAsync(parameters);
     }
 
-    private async Task ProcessAsync(CreateUserMeasuresWarningParams parameters)
+    private async Task ProcessAsync(CreateMemberWarningParams parameters)
     {
         var moderatorId = ApiContext.GetUserId().ToString();
         var payload = new MemberWarningPayload(

@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace GrillBot.App.Controllers;
 
 [JwtAuthorize]
-[Route("api/lookup")]
 [ApiExplorerSettings(GroupName = "v3")]
 public class LookupController : Core.Infrastructure.Actions.ControllerBase
 {

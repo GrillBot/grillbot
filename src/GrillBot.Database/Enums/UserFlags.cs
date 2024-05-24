@@ -16,7 +16,7 @@ public enum UserFlags
     BotAdmin = 1,
 
     /// <summary>
-    /// User have access to webadmin.
+    /// User have access to private webadmin. In API V3 have higher permissions.
     /// </summary>
     WebAdmin = 2,
 
@@ -48,5 +48,10 @@ public enum UserFlags
     /// <summary>
     /// Points counting is disabled for the user.
     /// </summary>
-    PointsDisabled = 128
+    PointsDisabled = 128,
+
+    /// <summary>
+    /// User have disabled web admin access.
+    /// </summary>
+    WebAdminDisabled = 512
 }

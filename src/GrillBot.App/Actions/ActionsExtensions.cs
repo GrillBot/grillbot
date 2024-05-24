@@ -178,6 +178,13 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.User.CreateUserMeasuresTimeout>()
             .AddScoped<Api.V2.User.StoreKarma>();
 
+        // V3 API
+
+        // Auth
+        services
+            .AddScoped<Api.V3.Auth.OAuth2Action>()
+            .AddScoped<Api.V3.Auth.CreateJwtToken>();
+
         return services;
     }
 

@@ -22,6 +22,14 @@ using GrillBot.Common.Services;
 using GrillBot.Core;
 using Microsoft.AspNetCore.HttpOverrides;
 using GrillBot.Core.RabbitMQ;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 namespace GrillBot.App;
 
 public class Startup
@@ -105,33 +113,50 @@ public class Startup
         services.AddHostedService<DiscordService>();
         services.AddThirdPartyServices(Configuration);
 
-        services.AddOpenApiDoc("v1", "WebAdmin API", "V1 API is only for web based administrations. If you're third party service, use API V2.", doc =>
-        {
-            doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+        services
+            .AddOpenApiDoc("v1", "WebAdmin API", "V1 API is only for web based administrations. If you're third party service, use API V2.", doc =>
             {
-                BearerFormat = "JWT",
-                Description = "JWT Authentication token",
-                Name = "JWT",
-                Scheme = JwtBearerDefaults.AuthenticationScheme,
-                Type = OpenApiSecuritySchemeType.Http,
-                In = OpenApiSecurityApiKeyLocation.Header
-            });
-
-            doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
-        }).AddOpenApiDoc("v2", "Third-party API",
-            "API for third party application with ApiKey authentication. Any implementation of new endpoints is based on requirements. New requirement or access request (to obtain API key) you " +
-            "can submit via issues on github or in #bot-development channel if you're in the VUT FIT discord guild.",
-            doc =>
-            {
-                doc.AddSecurity("ApiKey", new OpenApiSecurityScheme
+                doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
                 {
-                    Name = "ApiKey",
-                    Scheme = "ApiKey",
-                    Type = OpenApiSecuritySchemeType.ApiKey,
+                    BearerFormat = "JWT",
+                    Description = "JWT Authentication token",
+                    Name = "JWT",
+                    Scheme = JwtBearerDefaults.AuthenticationScheme,
+                    Type = OpenApiSecuritySchemeType.Http,
                     In = OpenApiSecurityApiKeyLocation.Header
                 });
 
-                doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
+                doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
+            })
+            .AddOpenApiDoc("v2", "Third-party API",
+                "API for third party application with ApiKey authentication. Any implementation of new endpoints is based on requirements. New requirement or access request (to obtain API key) you " +
+                "can submit via issues on github or in #bot-development channel if you're in the VUT FIT discord guild.",
+                doc =>
+                {
+                    doc.AddSecurity("ApiKey", new OpenApiSecurityScheme
+                    {
+                        Name = "ApiKey",
+                        Scheme = "ApiKey",
+                        Type = OpenApiSecuritySchemeType.ApiKey,
+                        In = OpenApiSecurityApiKeyLocation.Header
+                    });
+
+                    doc.OperationProcessors.Add(new ApiKeyAuthProcessor());
+                }
+            )
+            .AddOpenApiDoc("v3", "WebAdmin API", "Second generation of API for web based administrations. If you're third party service, use API V2.", doc =>
+            {
+                doc.AddSecurity(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+                {
+                    BearerFormat = "JWT",
+                    Description = "JWT Authentication token",
+                    Name = "JWT",
+                    Scheme = JwtBearerDefaults.AuthenticationScheme,
+                    Type = OpenApiSecuritySchemeType.Http,
+                    In = OpenApiSecurityApiKeyLocation.Header
+                });
+
+                doc.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(JwtBearerDefaults.AuthenticationScheme));
             });
 
         services.AddQuartz(q =>
@@ -149,8 +174,15 @@ public class Startup
 
         services.AddQuartzHostedService();
 
-        services.AddAuthorization()
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        services
+            .AddAuthorization()
+            .AddAuthentication(opt =>
+            {
+                opt.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie()
             .AddJwtBearer(o =>
             {
                 o.RequireHttpsMetadata = false;
@@ -166,6 +198,38 @@ public class Startup
                     ValidIssuer = $"GrillBot/{machineInfo}",
                     ValidAudience = $"GrillBot/{machineInfo}",
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["Auth:OAuth2:ClientId"]}_{Configuration["Auth:OAuth2:ClientSecret"]}"))
+                };
+            })
+            .AddOAuth("Discord", opt =>
+            {
+                opt.AuthorizationEndpoint = "https://discord.com/oauth2/authorize";
+                opt.TokenEndpoint = "https://discord.com/api/oauth2/token";
+                opt.UserInformationEndpoint = "https://discord.com/api/users/@me";
+                opt.AccessDeniedPath = "/AuthView/DiscordAuthFailed";
+                opt.ClientId = Configuration["Auth:OAuth2:ClientId"]!;
+                opt.ClientSecret = Configuration["Auth:OAuth2:ClientSecret"]!;
+                opt.CallbackPath = new PathString("/api/auth/oauth2callback");
+
+                opt.Scope.Add("identify");
+
+                opt.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+                opt.ClaimActions.MapJsonKey(ClaimTypes.Name, "username");
+                opt.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "global_name");
+
+                opt.Events = new OAuthEvents
+                {
+                    OnCreatingTicket = async context =>
+                    {
+                        using var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+
+                        using var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
+                        response.EnsureSuccessStatusCode();
+
+                        var userJson = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+                        context.RunClaimActions(userJson);
+                    }
                 };
             });
 

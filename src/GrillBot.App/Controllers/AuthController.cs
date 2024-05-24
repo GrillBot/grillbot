@@ -1,10 +1,12 @@
 ﻿using GrillBot.App.Actions.Api.V1.Auth;
+using GrillBot.App.Actions.Api.V3.Auth;
 using GrillBot.App.Infrastructure.OpenApi;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.OAuth2;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NSwag.Annotations;
 
 namespace GrillBot.App.Controllers;
 
@@ -69,4 +71,22 @@ public class AuthController : Core.Infrastructure.Actions.ControllerBase
     [OnlyDevelopment]
     public async Task<IActionResult> CreateLoginTokenFromIdAsync(ulong userId, [FromQuery] bool isPublic = false)
         => await ProcessAsync<CreateToken>(userId, isPublic);
+
+    /// <summary>
+    /// Run OAuth2 login process and redirect to web admin.
+    /// </summary>
+    [HttpGet("oauth2")]
+    [Authorize(AuthenticationSchemes = "Discord")]
+    [ApiExplorerSettings(GroupName = "v3")]
+    public Task<IActionResult> OAuth2Async()
+        => ProcessAsync<OAuth2Action>();
+
+    /// <summary>
+    /// Generate JWT token from cookie Discord authentication.
+    /// </summary>
+    [HttpGet("oauth2/jwt")]
+    [Authorize(AuthenticationSchemes = "Discord")]
+    [ApiExplorerSettings(GroupName = "v3")]
+    public Task<IActionResult> CreateJwtToken()
+        => ProcessAsync<CreateJwtToken>();
 }

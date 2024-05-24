@@ -185,6 +185,10 @@ public static class ActionsExtensions
             .AddScoped<Api.V3.Auth.OAuth2Action>()
             .AddScoped<Api.V3.Auth.CreateJwtToken>();
 
+        // Lookup
+        services
+            .AddScoped<Api.V3.DataResolve.LookupAction>();
+
         return services;
     }
 

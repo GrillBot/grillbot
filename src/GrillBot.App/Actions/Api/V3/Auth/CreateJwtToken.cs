@@ -65,7 +65,7 @@ public class CreateJwtToken : ApiAction
     private (string jwt, DateTimeOffset expiresAt) GenerateJwtToken(Database.Entity.User user, string userRole)
     {
         var expiresAt = ResolveTokenExpiration(userRole);
-        var instanceInfo = $"{_environment.ApplicationName}/{_environment.EnvironmentName}/{Environment.MachineName}/{Environment.UserName}";
+        var instanceInfo = $"{Environment.MachineName}/{Environment.UserName}";
         var issuer = $"GrillBot/{instanceInfo}";
 
         var tokenDescriptor = new SecurityTokenDescriptor

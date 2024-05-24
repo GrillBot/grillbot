@@ -35,7 +35,7 @@ public sealed class PeepoangryRenderer
         var image = await ImageProcessingClient.CreatePeepoangryImageAsync(request);
         var result = new TemporaryFile(request.AvatarInfo.Type);
 
-        await File.WriteAllBytesAsync(result.Path, image);
+        await result.WriteAllBytesAsync(image);
         return result;
     }
 }

@@ -44,7 +44,7 @@ public class GetPinsWithAttachments : ApiAction
             await AppendAttachmentsAsync(guild, channelId, archive);
             archive.Dispose();
 
-            var result = await File.ReadAllBytesAsync(archiveFile.Path);
+            var result = await archiveFile.ReadAllBytesAsync();
             var apiResult = new FileContentResult(result, "application/zip");
 
             return ApiResult.Ok(apiResult);

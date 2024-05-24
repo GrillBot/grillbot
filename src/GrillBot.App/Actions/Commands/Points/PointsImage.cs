@@ -61,7 +61,7 @@ public sealed class PointsImage : CommandAction
 
         var image = await ImageProcessingClient.CreatePointsImageAsync(request);
         var result = new TemporaryFile("png");
-        await File.WriteAllBytesAsync(result.Path, image);
+        await result.WriteAllBytesAsync(image);
 
         return result;
     }

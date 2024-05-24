@@ -32,8 +32,8 @@ public class PointsChart : CommandAction
         var resultFile = new TemporaryFile("png");
         var request = await CreateRequestAsync(filter, type);
         var image = await ImageProcessingClient.CreateChartImageAsync(request);
-        await File.WriteAllBytesAsync(resultFile.Path, image);
 
+        await resultFile.WriteAllBytesAsync(image);
         return resultFile;
     }
 

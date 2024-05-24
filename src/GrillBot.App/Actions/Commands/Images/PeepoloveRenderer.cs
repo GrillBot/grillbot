@@ -35,7 +35,7 @@ public sealed class PeepoloveRenderer
         var image = await ImageProcessingClient.CreatePeepoloveImageAsync(request);
         var result = new TemporaryFile(request.AvatarInfo.Type);
 
-        await File.WriteAllBytesAsync(result.Path, image);
+        await result.WriteAllBytesAsync(image);
         return result;
     }
 }

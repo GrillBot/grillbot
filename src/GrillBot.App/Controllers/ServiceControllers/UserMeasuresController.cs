@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Actions.Api.V3.Services.UserMeasures;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.UserMeasures;
+using GrillBot.Core.Services.UserMeasures.Models.Dashboard;
 using GrillBot.Core.Services.UserMeasures.Models.Measures;
 using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Models.API.UserMeasures;
@@ -34,4 +35,9 @@ public class UserMeasuresController : ServiceControllerBase<IUserMeasuresService
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> CreateMemberWarningAsync([FromBody] CreateMemberWarningParams parameters)
         => ExecuteAsync<CreateMemberWarningAction>(parameters);
+
+    [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(List<DashboardRow>), StatusCodes.Status200OK)]
+    public Task<IActionResult> GetDashboard()
+        => ExecuteAsync(async client => await client.GetDashboardDataAsync());
 }

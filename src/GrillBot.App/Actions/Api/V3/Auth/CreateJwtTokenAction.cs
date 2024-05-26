@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace GrillBot.App.Actions.Api.V3.Auth;
 
-public class CreateJwtToken : ApiAction
+public class CreateJwtTokenAction : ApiAction
 {
     private readonly ITextsManager _texts;
     private readonly GrillBotDatabaseBuilder _databaseBuilder;
@@ -20,7 +20,7 @@ public class CreateJwtToken : ApiAction
 
     private OAuth2LoginToken UserNotFound => new(_texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
 
-    public CreateJwtToken(ApiRequestContext apiContext, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder,
+    public CreateJwtTokenAction(ApiRequestContext apiContext, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder,
         IWebHostEnvironment environment, IConfiguration configuration) : base(apiContext)
     {
         _texts = texts;

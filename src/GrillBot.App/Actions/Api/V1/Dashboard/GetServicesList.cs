@@ -53,7 +53,7 @@ public class GetServicesList : ApiAction
         try
         {
             var client = ServiceProvider.GetRequiredService<TServiceClient>();
-            services.Add(new DashboardService(id, client.ServiceName, await client.IsHealthyAsync()));
+            services.Add(new DashboardService(id, client.ServiceName, await client.IsHealthyAsync(), 0));
         }
         catch (Exception ex)
         {

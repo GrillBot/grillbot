@@ -88,5 +88,5 @@ public class AuthController : Core.Infrastructure.Actions.ControllerBase
     [Authorize(AuthenticationSchemes = "Discord")]
     [ApiExplorerSettings(GroupName = "v3")]
     public Task<IActionResult> CreateJwtToken()
-        => ProcessAsync<CreateJwtToken>();
+        => ProcessAsync<CreateJwtTokenAction>();
 }

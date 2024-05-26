@@ -30,6 +30,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using GrillBot.App.Infrastructure.JsonConverters;
 namespace GrillBot.App;
 
 public class Startup
@@ -96,7 +97,7 @@ public class Startup
                 c.Filters.Add<ResultFilter>();
                 c.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
             })
-            .AddNewtonsoftJson();
+            .AddNewtonsoftJson(setup => setup.SerializerSettings.Converters.Add(new SystemTextJsonToNewtonsoftConverter()));
 
         var referencedAssemblies = currentAssembly
             .GetReferencedAssemblies()

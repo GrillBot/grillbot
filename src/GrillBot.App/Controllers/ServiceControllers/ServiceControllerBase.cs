@@ -35,4 +35,7 @@ public abstract class ServiceControllerBase<TService> : Core.Infrastructure.Acti
 
     protected Task<IActionResult> ExecuteAsync(Func<TService, Task> executor)
         => ProcessAsync<ServiceBridgeAction<TService>>(executor);
+
+    protected Task<IActionResult> ExecuteRabbitPayloadAsync(Func<object> createPayload)
+        => ProcessAsync<RabbitMQPublisherAction>(createPayload());
 }

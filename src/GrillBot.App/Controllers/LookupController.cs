@@ -47,4 +47,10 @@ public class LookupController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> ResolveGuildUserAsync(ulong guildId, ulong userId)
         => ProcessAsync<LookupAction>(DataResolveType.GuildUser, guildId, userId);
+
+    [HttpGet("sas")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public Task<IActionResult> ResolveSasLinkAsync([Required, FromQuery] string filename)
+        => ProcessAsync<LookupAction>(DataResolveType.FileSasLink, filename);
 }

@@ -7,5 +7,6 @@ public enum DataResolveType
     Role,
     User,
     GuildUser,
-    Emote
+    Emote,
+    FileSasLink
 }

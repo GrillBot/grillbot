@@ -35,7 +35,7 @@ public class AuditLogController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<IActionResult> RemoveItemAsync(Guid id)
-        => await ProcessAsync<RabbitMQPublisherAction>(new BulkDeletePayload(new() { id }));
+        => await ProcessAsync<RabbitMQPublisherAction>(new BulkDeletePayload(id));
 
     /// <summary>
     /// Get paginated list of audit logs.

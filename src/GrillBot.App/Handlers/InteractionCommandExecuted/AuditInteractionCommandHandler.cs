@@ -31,7 +31,7 @@ public class AuditInteractionCommandHandler : IInteractionCommandExecutedEvent
             InteractionCommand = CreateCommandRequest(commandInfo, context, result, duration)
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
     }
 
     private static bool Init(IResult result, IInteractionContext context, out int duration)

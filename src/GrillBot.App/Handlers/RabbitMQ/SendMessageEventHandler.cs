@@ -5,6 +5,7 @@ using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.Services.GrillBot.Models.Events;
+using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
@@ -30,7 +31,7 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
 
         var channel = await GetChannelAsync(payload);
         var embed = payload.Embed?.IsValidEmbed() == true ? payload.Embed.ToBuilder().Build() : null;
-        var allowedAttachments = payload.AllowedMentions?.ToAllowedMentions();
+        var allowedMentions = payload.AllowedMentions?.ToAllowedMentions();
         var flags = payload.Flags ?? MessageFlags.None;
 
         if (channel is null)
@@ -45,34 +46,43 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
             return;
         }
 
-        if (payload.Attachments.Count > 0)
+        IUserMessage? message = null;
+        try
         {
-            await SendMessageWithAttachmentsAsync(channel, payload.Content, allowedAttachments, payload.Attachments, embed, flags);
-            return;
-        }
+            if (payload.Attachments.Count > 0)
+            {
+                message = await SendMessageWithAttachmentsAsync(channel, payload.Content, allowedMentions, payload.Attachments, embed, flags);
+                return;
+            }
 
-        await channel.SendMessageAsync(
-            text: payload.Content,
-            isTTS: false,
-            embed: embed,
-            options: null,
-            allowedMentions: allowedAttachments,
-            messageReference: null,
-            components: null,
-            stickers: null,
-            embeds: null,
-            flags: flags
-        );
+            message = await channel.SendMessageAsync(
+                text: payload.Content,
+                isTTS: false,
+                embed: embed,
+                options: null,
+                allowedMentions: allowedMentions,
+                messageReference: null,
+                components: null,
+                stickers: null,
+                embeds: null,
+                flags: flags
+            );
+        }
+        finally
+        {
+            if (message is not null)
+                await PublishCreatedMessageAsync(payload, message);
+        }
     }
 
-    private static async Task SendMessageWithAttachmentsAsync(IMessageChannel channel, string? content, AllowedMentions? allowedMentions, List<DiscordMessageFile> attachments,
+    private static async Task<IUserMessage> SendMessageWithAttachmentsAsync(IMessageChannel channel, string? content, AllowedMentions? allowedMentions, List<DiscordMessageFile> attachments,
         Embed? embed, MessageFlags flags)
     {
         var fileAttachments = attachments.ConvertAll(o => o.ToFileAttachment());
 
         try
         {
-            await channel.SendFilesAsync(
+            return await channel.SendFilesAsync(
                 attachments: fileAttachments,
                 text: content,
                 isTTS: false,
@@ -109,16 +119,16 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
     {
         var logRequest = new LogRequest(LogType.Warning, DateTime.UtcNow, payload.GuildId, _discordClient.CurrentUser.Id.ToString(), payload.ChannelId)
         {
-            LogMessage = new LogMessageRequest
-            {
-                Message = $"{message}\n{System.Text.Json.JsonSerializer.Serialize(payload)}",
-                Severity = LogSeverity.Warning,
-                Source = $"RabbitMQ/{QueueName}/{GetType().Name}",
-                SourceAppName = "GrillBot"
-            }
+            LogMessage = new LogMessageRequest($"{message}\n{System.Text.Json.JsonSerializer.Serialize(payload)}", LogSeverity.Warning, "GrillBot", $"RabbitMQ/{QueueName}/{GetType().Name}")
         };
 
         _logger.LogWarning("{message}", message);
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+    }
+
+    private async Task PublishCreatedMessageAsync(DiscordMessagePayload payload, IUserMessage message)
+    {
+        var createdMessagePayload = new CreatedDiscordMessagePayload(payload.GuildId, payload.ChannelId, message.Id.ToString(), payload.ServiceId, payload.ServiceData);
+        await _rabbitPublisher.PublishAsync(createdMessagePayload);
     }
 }

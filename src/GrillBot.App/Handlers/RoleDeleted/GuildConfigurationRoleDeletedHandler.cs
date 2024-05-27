@@ -67,6 +67,6 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
     }
 }

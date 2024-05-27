@@ -76,7 +76,16 @@ public class ErrorNotificationEventHandler : BaseRabbitMQHandler<ErrorNotificati
         var attachment = await CreateWithoutAccidentAttachmentAsync(withoutAccidentImage);
         var embed = CreateMessageEmbed(payload, attachment?.Filename);
 
-        return new DiscordMessagePayload(guildId, channelId, null, attachment is null ? Enumerable.Empty<DiscordMessageFile>() : new[] { attachment }, null, null, embed);
+        return new DiscordMessagePayload(
+            guildId,
+            channelId,
+            null,
+            attachment is null ? Enumerable.Empty<DiscordMessageFile>() : new[] { attachment },
+            "GrillBot",
+            null,
+            null,
+            embed
+        );
     }
 
     private static async Task<DiscordMessageFile?> CreateWithoutAccidentAttachmentAsync(TemporaryFile? image)

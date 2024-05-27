@@ -53,7 +53,7 @@ public class AuditLogLoggingHandler : ILoggingHandler
 
         var isWarning = exception != null && LoggingHelper.IsWarning(source, exception);
         var logRequest = CreateLogRequest(isWarning, source, message, exception, user);
-        var payload = new CreateItemsPayload(new() { logRequest });
+        var payload = new CreateItemsPayload(logRequest);
 
         using var scope = ServiceProvider.CreateScope();
         var rabbitPublisher = scope.ServiceProvider.GetRequiredService<IRabbitMQPublisher>();

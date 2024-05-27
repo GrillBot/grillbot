@@ -50,8 +50,7 @@ public class AuditMessageDeletedHandler : IMessageDeletedEvent
             }
         };
 
-        var payload = new CreateItemsPayload(new() { request });
-        await _rabbitPublisher.PublishAsync(payload, new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(request), new());
     }
 
     private async Task<List<FileRequest>> GetAndStoreAttachmentsAsync(IMessage message)

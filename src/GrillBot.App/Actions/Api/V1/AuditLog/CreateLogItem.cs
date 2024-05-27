@@ -53,7 +53,7 @@ public class CreateLogItem : ApiAction
             logRequest.LogMessage.Severity = LogSeverity.Warning;
         }
 
-        await RabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
+        await RabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
         return ApiResult.Ok();
     }
 

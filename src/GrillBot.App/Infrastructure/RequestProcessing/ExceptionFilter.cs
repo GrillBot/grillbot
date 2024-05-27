@@ -120,7 +120,7 @@ public class ExceptionFilter : IAsyncExceptionFilter
             ApiRequest = ApiRequestContext.LogRequest
         };
 
-        var payload = new CreateItemsPayload(new() { logRequest });
+        var payload = new CreateItemsPayload(logRequest);
         return _rabbitPublisher.PublishAsync(payload, new());
     }
 }

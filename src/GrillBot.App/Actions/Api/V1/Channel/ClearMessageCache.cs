@@ -46,7 +46,7 @@ public class ClearMessageCache : ApiAction
             }
         };
 
-        await RabbitPublisher.PublishAsync(new CreateItemsPayload(new() { logRequest }), new());
+        await RabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
         return ApiResult.Ok();
     }
 }

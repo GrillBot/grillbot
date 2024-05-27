@@ -81,7 +81,7 @@ public abstract class Job : IJob
             JobExecution = logRequest
         };
 
-        var payload = new CreateItemsPayload(new() { request });
+        var payload = new CreateItemsPayload(request);
         return RabbitPublisher.PublishAsync(payload, new());
     }
 

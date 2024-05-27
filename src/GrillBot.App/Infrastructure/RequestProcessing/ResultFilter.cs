@@ -39,7 +39,6 @@ public class ResultFilter : IAsyncResultFilter
             ApiRequest = ApiRequestContext.LogRequest,
         };
 
-        var payload = new CreateItemsPayload(new() { logRequest });
-        return _rabbitPublisher.PublishAsync(payload, new());
+        return _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
     }
 }

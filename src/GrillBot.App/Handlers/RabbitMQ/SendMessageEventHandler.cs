@@ -1,10 +1,10 @@
 ﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Helpers;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.RabbitMQ.Consumer;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
-using GrillBot.Core.Services.GrillBot.Models.Events;
 using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
 using Microsoft.Extensions.Logging;
 
@@ -33,6 +33,8 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
         var embed = payload.Embed?.IsValidEmbed() == true ? payload.Embed.ToBuilder().Build() : null;
         var allowedMentions = payload.AllowedMentions?.ToAllowedMentions();
         var flags = payload.Flags ?? MessageFlags.None;
+        var components = payload.Components?.BuildComponents();
+        var wrappedComponents = components is null ? null : ComponentsHelper.CreateWrappedComponents(components.ToList().AsReadOnly());
 
         if (channel is null)
         {
@@ -51,7 +53,7 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
         {
             if (payload.Attachments.Count > 0)
             {
-                message = await SendMessageWithAttachmentsAsync(channel, payload.Content, allowedMentions, payload.Attachments, embed, flags);
+                message = await SendMessageWithAttachmentsAsync(channel, payload.Content, allowedMentions, payload.Attachments, embed, flags, wrappedComponents);
                 return;
             }
 
@@ -62,7 +64,7 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
                 options: null,
                 allowedMentions: allowedMentions,
                 messageReference: null,
-                components: null,
+                components: wrappedComponents,
                 stickers: null,
                 embeds: null,
                 flags: flags
@@ -76,7 +78,7 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
     }
 
     private static async Task<IUserMessage> SendMessageWithAttachmentsAsync(IMessageChannel channel, string? content, AllowedMentions? allowedMentions, List<DiscordMessageFile> attachments,
-        Embed? embed, MessageFlags flags)
+        Embed? embed, MessageFlags flags, MessageComponent? components)
     {
         var fileAttachments = attachments.ConvertAll(o => o.ToFileAttachment());
 
@@ -90,7 +92,7 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
                 options: null,
                 allowedMentions: allowedMentions,
                 messageReference: null,
-                components: null,
+                components: components,
                 stickers: null,
                 embeds: null,
                 flags: flags

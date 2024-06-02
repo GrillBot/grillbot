@@ -4,7 +4,6 @@ using GrillBot.Data.Models.API.UserMeasures;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.UserMeasures;
-using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Enums;
 using GrillBot.App.Managers.DataResolve;
 using GrillBot.Core.Services.UserMeasures.Models.Measures;

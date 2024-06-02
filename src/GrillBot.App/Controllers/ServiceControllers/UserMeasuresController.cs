@@ -3,7 +3,6 @@ using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.Dashboard;
 using GrillBot.Core.Services.UserMeasures.Models.Measures;
-using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

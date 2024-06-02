@@ -6,6 +6,7 @@ using GrillBot.Core.RabbitMQ.Consumer;
 using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.GrillBot.Models.Events;
 using GrillBot.Core.Services.GrillBot.Models.Events.Errors;
+using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;

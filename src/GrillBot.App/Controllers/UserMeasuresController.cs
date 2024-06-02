@@ -6,7 +6,6 @@ using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.Measures;
-using GrillBot.Core.Services.UserMeasures.Models.MeasuresList;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

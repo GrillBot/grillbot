@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Managers;
+﻿using Discord.Net;
+using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
@@ -8,6 +9,7 @@ using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
+using GrillBot.Data.Models;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
@@ -74,6 +76,10 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
                 embeds: null,
                 flags: flags
             );
+        }
+        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
+        {
+            message = new EmptyUserMessage(0);
         }
         finally
         {

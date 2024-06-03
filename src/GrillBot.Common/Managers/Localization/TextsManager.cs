@@ -69,9 +69,12 @@ public class TextsManager : ITextsManager
     public string this[string id, string locale]
         => Get(id, locale);
 
+    public string? GetIfExists(string id, string locale)
+        => Get(GetKey(id, locale)) ?? Get(GetKey(id, DefaultLocale));
+
     private string Get(string id, string locale)
     {
-        return Get(GetKey(id, locale)) ?? Get(GetKey(id, DefaultLocale))
+        return GetIfExists(id, locale)
             ?? throw new ArgumentException($"Localized text with id {id} for locale {locale} is missing and there is no default locale either.");
     }
 

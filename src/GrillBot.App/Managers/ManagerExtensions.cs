@@ -20,7 +20,8 @@ public static class ManagerExtensions
             .AddScoped<DataResolve.DataResolveManager>()
             .AddScoped<Points.PointsManager>()
             .AddScoped<Points.PointsSynchronizationManager>()
-            .AddScoped<Points.PointsValidationManager>();
+            .AddScoped<Points.PointsValidationManager>()
+            .AddScoped<LocalizedEmbedManager>();
 
         return services;
     }

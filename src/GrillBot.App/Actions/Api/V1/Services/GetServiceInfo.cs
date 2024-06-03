@@ -7,6 +7,7 @@ using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.Services;
@@ -51,6 +52,7 @@ public class GetServiceInfo : ApiAction
             "audit-log" => ServiceProvider.GetRequiredService<IAuditLogServiceClient>(),
             "user-measures" => ServiceProvider.GetRequiredService<IUserMeasuresServiceClient>(),
             "emote" => ServiceProvider.GetRequiredService<IEmoteServiceClient>(),
+            "remind" => ServiceProvider.GetRequiredService<IRemindServiceClient>(),
             _ => throw new NotSupportedException($"Unsupported service {id}")
         };
     }

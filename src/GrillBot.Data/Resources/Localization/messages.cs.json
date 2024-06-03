@@ -253,7 +253,8 @@
             "NotFound": "Požadované upozornění nebylo nalezeno.",
             "AlreadyCancelled": "Nelze zrušit již zrušené upozornění.",
             "AlreadyNotified": "Nelze zrušit již proběhlé upozornění.",
-            "InvalidOperator": "Upozornění může zrušit pouze ten, komu je určeno, nebo kdo jej založil."
+            "InvalidOperator": "Upozornění může zrušit pouze ten, komu je určeno, nebo kdo jej založil.",
+            "RemindInProgress": "Nelze zrušit připomenutí, jehož zpracování již bylo zahájeno."
         },
         "Suggestions": {
             "Incoming": "Příchozí #{0} ({1}) od uživatele {2}",

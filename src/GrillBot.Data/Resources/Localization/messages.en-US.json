@@ -253,7 +253,8 @@
             "NotFound": "The requested reminder was not found.",
             "AlreadyCancelled": "You cannot cancel an already canceled reminder.",
             "AlreadyNotified": "You cannot cancel a remind that has already been sent.",
-            "InvalidOperator": "A reminder can only be canceled by the person to whom it is addressed or who created it."
+            "InvalidOperator": "A reminder can only be canceled by the person to whom it is addressed or who created it.",
+            "RemindInProgress": "You cannot cancel a reminder that has already started processing."
         },
         "Suggestions": {
             "Incoming": "Incoming #{0} ({1}) from user {2}",

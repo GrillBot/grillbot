@@ -51,23 +51,6 @@ public class RemindRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<int> GetRemindersCountAsync(IQueryableModel<RemindMessage> model)
-    {
-        using (CreateCounter())
-        {
-            return await CreateQuery(model, true).CountAsync();
-        }
-    }
-
-    public async Task<PaginatedResponse<RemindMessage>> GetRemindListAsync(IQueryableModel<RemindMessage> model, PaginatedParams pagination)
-    {
-        using (CreateCounter())
-        {
-            var query = CreateQuery(model, true);
-            return await PaginatedResponse<RemindMessage>.CreateWithEntityAsync(query, pagination);
-        }
-    }
-
     public async Task<bool> ExistsCopyAsync(string? originalMessageId, IUser toUser)
     {
         using (CreateCounter())

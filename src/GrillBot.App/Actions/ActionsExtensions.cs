@@ -1,5 +1,6 @@
 ﻿using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
+using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Core.Services.UserMeasures;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,8 @@ public static class ActionsExtensions
         return services
             .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IPointsServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IUserMeasuresServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<IUserMeasuresServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IRemindServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)

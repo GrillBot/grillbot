@@ -38,12 +38,6 @@ public class GrillBotContext : DbContext
             );
         });
 
-        modelBuilder.Entity<RemindMessage>(buider =>
-        {
-            buider.HasOne(o => o.FromUser).WithMany(o => o.OutgoingReminders);
-            buider.HasOne(o => o.ToUser).WithMany(o => o.IncomingReminders);
-        });
-
         modelBuilder.Entity<GuildUserChannel>(builder =>
         {
             builder.HasKey(o => new { o.GuildId, o.ChannelId, o.UserId });
@@ -101,7 +95,6 @@ public class GrillBotContext : DbContext
     public DbSet<SearchItem> SearchItems => Set<SearchItem>();
     public DbSet<Unverify> Unverifies => Set<Unverify>();
     public DbSet<UnverifyLog> UnverifyLogs => Set<UnverifyLog>();
-    public DbSet<RemindMessage> Reminders => Set<RemindMessage>();
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();

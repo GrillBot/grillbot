@@ -45,16 +45,12 @@ public class User
     public string? GlobalAlias { get; set; }
 
     public ISet<GuildUser> Guilds { get; set; }
-    public ISet<RemindMessage> IncomingReminders { get; set; }
-    public ISet<RemindMessage> OutgoingReminders { get; set; }
     public ISet<GuildUserChannel> Channels { get; set; }
     public ISet<SearchItem> SearchItems { get; set; }
 
     public User()
     {
         Guilds = new HashSet<GuildUser>();
-        IncomingReminders = new HashSet<RemindMessage>();
-        OutgoingReminders = new HashSet<RemindMessage>();
         Channels = new HashSet<GuildUserChannel>();
         SearchItems = new HashSet<SearchItem>();
     }

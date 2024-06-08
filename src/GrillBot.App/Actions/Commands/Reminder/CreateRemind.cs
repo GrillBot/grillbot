@@ -1,74 +1,70 @@
-﻿using GrillBot.Common.Helpers;
+﻿using GrillBot.App.Managers;
+using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Database.Entity;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.RemindService;
+using GrillBot.Core.Services.RemindService.Models.Request;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
 public class CreateRemind : CommandAction
 {
-    private ITextsManager Texts { get; }
     private IConfiguration Configuration { get; }
     private FormatHelper FormatHelper { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public CreateRemind(ITextsManager texts, IConfiguration configuration, FormatHelper formatHelper, GrillBotDatabaseBuilder databaseBuilder)
+    private readonly IRemindServiceClient _remindServiceClient;
+    private readonly UserManager _userManager;
+    private readonly ITextsManager _texts;
+
+    public CreateRemind(ITextsManager texts, IConfiguration configuration, FormatHelper formatHelper, IRemindServiceClient remindServiceClient, UserManager userManager)
     {
-        Texts = texts;
         Configuration = configuration;
         FormatHelper = formatHelper;
-        DatabaseBuilder = databaseBuilder;
+        _remindServiceClient = remindServiceClient;
+        _userManager = userManager;
+        _texts = texts;
     }
 
     private int MinimalTimeMinutes => Configuration.GetValue<int>("Reminder:MinimalTimeMinutes");
     private string MinimalTime => FormatHelper.FormatNumber("RemindModule/Create/Validation/MinimalTime", Locale, MinimalTimeMinutes);
 
-    public async Task<long> ProcessAsync(IUser from, IUser to, DateTime at, string? message, ulong originalMessageId)
+    public async Task<long> ProcessAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
     {
-        ValidateInput(at, message);
-
-        var entity = new RemindMessage
+        var request = new CreateReminderRequest
         {
-            At = at,
-            Language = Locale,
-            Message = message!,
-            OriginalMessageId = originalMessageId.ToString(),
+            CommandMessageId = originalMessageId.ToString(),
             FromUserId = from.Id.ToString(),
+            Language = (await _userManager.GetUserLanguage(to)) ?? Locale,
+            Message = message,
+            NotifyAtUtc = at.WithKind(DateTimeKind.Local).ToUniversalTime(),
             ToUserId = to.Id.ToString()
         };
 
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        await repository.User.GetOrCreateUserAsync(from);
-        if (from.Id != to.Id)
-            await repository.User.GetOrCreateUserAsync(to);
-        await repository.AddAsync(entity);
-        await repository.CommitAsync();
-
-        return entity.Id;
+        try
+        {
+            var result = await _remindServiceClient.CreateReminderAsync(request);
+            return result.Id;
+        }
+        catch (ClientBadRequestException ex)
+        {
+            throw ProcessRemindServiceErrors(ex);
+        }
     }
 
-    private void ValidateInput(DateTime at, string? message)
+    private Exception ProcessRemindServiceErrors(ClientBadRequestException exception)
     {
-        ValidateTime(at);
-        ValidateMessage(message);
-    }
+        var firstError = exception.ValidationErrors.FirstOrDefault();
 
-    private void ValidateTime(DateTime at)
-    {
-        if (DateTime.Now > at)
-            throw new ValidationException(Texts["RemindModule/Create/Validation/MustInFuture", Locale]);
+        if (firstError.Key == "NotifyAtUtc")
+        {
+            var minimalTime = Array.Find(firstError.Value, e => e.EndsWith("MinimalTime"));
+            if (!string.IsNullOrEmpty(minimalTime))
+                throw new ValidationException(_texts[minimalTime, Locale].FormatWith(MinimalTime));
+        }
 
-        if ((at - DateTime.Now).TotalMinutes <= MinimalTimeMinutes)
-            throw new ValidationException(Texts["RemindModule/Create/Validation/MinimalTimeTemplate", Locale].FormatWith(MinimalTime));
-    }
-
-    private void ValidateMessage(string? message)
-    {
-        message = message?.Trim();
-        if (string.IsNullOrEmpty(message))
-            throw new ValidationException(Texts["RemindModule/Create/Validation/MessageRequired", Locale]);
-
-        if (message.Length >= EmbedFieldBuilder.MaxFieldValueLength)
-            throw new ValidationException(Texts["RemindModule/Create/Validation/MaxLengthExceeded", Locale]);
+        return string.IsNullOrEmpty(firstError.Key) || firstError.Value.Length == 0
+            ? exception
+            : new ValidationException(_texts[firstError.Value[0], Locale]);
     }
 }

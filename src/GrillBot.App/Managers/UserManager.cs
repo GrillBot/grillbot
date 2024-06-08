@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Models;
+﻿using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Database.Enums;
 
@@ -35,5 +36,13 @@ public class UserManager
 
         var entity = await repository.User.FindUserAsync(user, true);
         return entity?.HaveFlags(flags) == true;
+    }
+
+    public async Task<string?> GetUserLanguage(IUser user)
+    {
+        await using var repository = DatabaseBuilder.CreateRepository();
+        var userEntity = await repository.User.FindUserByIdAsync(user.Id, disableTracking: true);
+
+        return userEntity?.Language;
     }
 }

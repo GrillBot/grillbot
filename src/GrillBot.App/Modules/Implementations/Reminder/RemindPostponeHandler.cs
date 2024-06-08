@@ -1,4 +1,6 @@
 ﻿using GrillBot.App.Infrastructure;
+using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.RemindService;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;
@@ -23,22 +25,17 @@ public class RemindPostponeHandler : ComponentInteractionHandler
             return;
         }
 
-        var builder = ServiceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
-        await using var repository = builder.CreateRepository();
+        var remindServiceClient = ServiceProvider.GetRequiredService<IRemindServiceClient>();
+        try
+        {
+            await remindServiceClient.PostponeRemindAsync(message.Id.ToString(), Hours);
 
-        var remind = await repository.Remind.FindRemindByRemindMessageAsync(message.Id.ToString());
-        if (remind == null)
+            await context.Interaction.DeferAsync();
+            await message.DeleteAsync();
+        }
+        catch (ClientNotFoundException)
         {
             await context.Interaction.DeferAsync();
-            return;
         }
-
-        remind.RemindMessageId = null;
-        remind.At = DateTime.Now.AddHours(Hours);
-        remind.Postpone++;
-
-        await context.Interaction.DeferAsync();
-        await message.DeleteAsync();
-        await repository.CommitAsync();
     }
 }

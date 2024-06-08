@@ -1,45 +1,46 @@
-﻿using GrillBot.Common.Extensions;
+﻿using GrillBot.App.Managers.DataResolve;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Database.Entity;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.RemindService;
+using GrillBot.Core.Services.RemindService.Models.Response;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
 public class GetSuggestions : CommandAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private ITextsManager Texts { get; }
+    private readonly IRemindServiceClient _remindServiceClient;
+    private readonly DataResolveManager _dataResolve;
+    private readonly ITextsManager _texts;
 
-    public GetSuggestions(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts)
+    public GetSuggestions(ITextsManager texts, IRemindServiceClient remindServiceClient, DataResolveManager dataResolve)
     {
-        DatabaseBuilder = databaseBuilder;
-        Texts = texts;
+        _remindServiceClient = remindServiceClient;
+        _dataResolve = dataResolve;
+        _texts = texts;
     }
 
     public async Task<List<AutocompleteResult>> ProcessAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var suggestions = await _remindServiceClient.GetSuggestionsAsync(Context.User.Id.ToString());
+        var result = new List<AutocompleteResult>();
 
-        var suggestions = await repository.Remind.GetRemindSuggestionsAsync(Context.User);
-        var userId = Context.User.Id.ToString();
+        foreach (var item in suggestions.Take(25))
+        {
+            var row = await GetRowAsync(item);
+            result.Add(new AutocompleteResult(row, item.RemindId));
+        }
 
-        var incoming = suggestions
-            .Where(o => o.ToUserId == userId)
-            .Select(o => new AutocompleteResult(GetRow(true, o), o.Id));
-
-        var outgoing = suggestions
-            .Where(o => o.FromUserId == userId)
-            .Select(o => new AutocompleteResult(GetRow(false, o), o.Id));
-
-        return incoming.Concat(outgoing)
-            .DistinctBy(o => o.Value)
-            .OrderBy(o => o.Value)
-            .Take(25)
-            .ToList();
+        return result;
     }
 
-    private string GetRow(bool incoming, RemindMessage remind)
+    private async Task<string> GetRowAsync(ReminderSuggestionItem item)
     {
-        var textId = incoming ? "Incoming" : "Outgoing";
-        return Texts[$"RemindModule/Suggestions/{textId}", Locale].FormatWith(remind.Id, remind.At.ToCzechFormat(), remind.FromUser!.Username);
+        var textId = item.IsIncoming ? "Incoming" : "Outgoing";
+        var messageTemplate = _texts[$"RemindModule/Suggestions/{textId}", Locale];
+        var at = item.NotifyAtUtc.ToLocalTime().ToCzechFormat();
+        var fromUser = await _dataResolve.GetUserAsync(item.FromUserId.ToUlong());
+
+        return messageTemplate.FormatWith(item.RemindId, at, fromUser!.Username);
     }
 }

@@ -14,12 +14,3 @@ public class RemindMessage
     public bool Notified { get; set; }
     public string Language { get; set; } = null!;
 }
-
-public class RemindMappingProfile : AutoMapper.Profile
-{
-    public RemindMappingProfile()
-    {
-        CreateMap<Database.Entity.RemindMessage, RemindMessage>()
-            .ForMember(dst => dst.Notified, opt => opt.MapFrom(src => src.RemindMessageId != null));
-    }
-}

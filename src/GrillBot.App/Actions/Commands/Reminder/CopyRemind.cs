@@ -1,51 +1,72 @@
-﻿using GrillBot.App.Helpers;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Exceptions;
-using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.RemindService;
+using GrillBot.Core.Services.RemindService.Models.Request;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
 public class CopyRemind : CommandAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private ITextsManager Texts { get; }
-    private CreateRemind CreateRemind { get; }
+    private readonly IRemindServiceClient _remindService;
+    private readonly ITextsManager _texts;
 
-    public CopyRemind(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, CreateRemind createRemind)
+    public CopyRemind(ITextsManager texts, IRemindServiceClient remindService)
     {
-        DatabaseBuilder = databaseBuilder;
-        Texts = texts;
-        CreateRemind = createRemind;
+        _remindService = remindService;
+        _texts = texts;
     }
 
     public async Task ProcessAsync(long originalRemindId)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-        var original = await repository.Remind.FindRemindByIdAsync(originalRemindId);
-
-        if (original == null)
-            throw new NotFoundException(Texts["RemindModule/Copy/RemindNotFound", Locale]);
-
-        if (original.FromUserId == Context.User.Id.ToString() && original.ToUserId == Context.User.Id.ToString())
-            throw new ValidationException(Texts["RemindModule/Copy/SelfCopy", Locale]);
-
-        if (!string.IsNullOrEmpty(original.RemindMessageId))
+        var request = new CopyReminderRequest
         {
-            if (original.RemindMessageId == RemindHelper.NotSentRemind)
-                throw new ValidationException(Texts["RemindModule/Copy/WasCancelled", Locale]);
+            Language = Locale,
+            RemindId = originalRemindId,
+            ToUserId = Context.User.Id.ToString()
+        };
 
-            throw new ValidationException(Texts["RemindModule/Copy/WasSent", Locale]);
+        try
+        {
+            await _remindService.CopyReminderAsync(request);
+        }
+        catch (ClientBadRequestException ex)
+        {
+            ProcessRemindServiceErrors(ex);
+        }
+    }
+
+    private void ProcessRemindServiceErrors(ClientBadRequestException exception)
+    {
+        foreach (var (key, errors) in exception.ValidationErrors)
+        {
+            if (key == "RemindId")
+            {
+                var notFoundError = Array.Find(errors, e => e.EndsWith("NotFound"));
+                if (!string.IsNullOrEmpty(notFoundError))
+                    throw new NotFoundException(_texts[notFoundError, Locale]);
+            }
+
+            if (key != "Remind")
+                continue;
+
+            var selfCopy = Array.Find(errors, e => e.EndsWith("SelfCopy"));
+            if (!string.IsNullOrEmpty(selfCopy))
+                throw new ValidationException(_texts[selfCopy, Locale]);
+
+            var copyExists = Array.Find(errors, e => e.EndsWith("CopyExists"));
+            if (!string.IsNullOrEmpty(copyExists))
+                throw new ValidationException(_texts[copyExists, Locale]);
+
+            var wasCancelled = Array.Find(errors, e => e.EndsWith("WasCancelled"));
+            if (!string.IsNullOrEmpty(wasCancelled))
+                throw new ValidationException(_texts[wasCancelled, Locale]);
+
+            var wasSent = Array.Find(errors, e => e.EndsWith("WasSent"));
+            if (!string.IsNullOrEmpty(wasSent))
+                throw new ValidationException(_texts[wasSent, Locale]);
         }
 
-        if (await repository.Remind.ExistsCopyAsync(original.OriginalMessageId, Context.User))
-            throw new ValidationException(Texts["RemindModule/Copy/CopyExists", Locale]);
-
-        var fromUser = await Context.Client.FindUserAsync(original.FromUserId.ToUlong());
-        if (fromUser is null)
-            throw new NotFoundException(Texts["RemindModule/Copy/RemindNotFound", Locale]);
-
-        CreateRemind.Init(Context);
-        await CreateRemind.ProcessAsync(fromUser, Context.User, original.At, original.Message, original.OriginalMessageId!.ToUlong());
+        throw exception;
     }
 }

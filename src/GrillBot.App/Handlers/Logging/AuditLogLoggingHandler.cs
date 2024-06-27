@@ -49,6 +49,9 @@ public class AuditLogLoggingHandler : ILoggingHandler
                 exception = interactionException.InnerException;
                 user = interactionException.InteractionContext.User;
                 break;
+            case FrontendException frontendException:
+                user = frontendException.LoggedUser;
+                break;
         }
 
         var isWarning = exception != null && LoggingHelper.IsWarning(source, exception);
@@ -74,7 +77,7 @@ public class AuditLogLoggingHandler : ILoggingHandler
             {
                 Message = logMessage,
                 Severity = severity,
-                SourceAppName = "GrillBot",
+                SourceAppName = "GrillBot" + (exception is FrontendException ? ".Web" : ".App"),
                 Source = source
             }
         };

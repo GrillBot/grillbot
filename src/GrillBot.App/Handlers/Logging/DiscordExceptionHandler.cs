@@ -54,6 +54,9 @@ public class DiscordExceptionHandler : ILoggingHandler
             case JobException jobException:
                 SetJobExceptionInfo(payload, jobException, source, message);
                 break;
+            case FrontendException frontendException:
+                SetFrontendExceptionInfo(payload, frontendException, source, message);
+                break;
             default:
                 SetCommonExceptionInfo(payload, exception, source, message);
                 break;
@@ -120,6 +123,18 @@ public class DiscordExceptionHandler : ILoggingHandler
     private static void SetCommonExceptionInfo(ErrorNotificationPayload payload, Exception exception, string source, string? message)
     {
         payload.Title = "Došlo k neočekávané chybě.";
+
+        payload.Fields.Add(new("Zdroj", source, true));
+        payload.Fields.Add(new("Typ", exception.GetType().Name, true));
+
+        var exceptionMessage = CreateExceptionContentMessage(message, exception);
+        payload.Fields.Add(new("Obsah chyby", exceptionMessage, false));
+    }
+
+    private static void SetFrontendExceptionInfo(ErrorNotificationPayload payload, FrontendException exception, string source, string? message)
+    {
+        payload.Title = "Došlo k neočekávané chybě na webu.";
+        payload.UserId = exception.LoggedUser.Id;
 
         payload.Fields.Add(new("Zdroj", source, true));
         payload.Fields.Add(new("Typ", exception.GetType().Name, true));

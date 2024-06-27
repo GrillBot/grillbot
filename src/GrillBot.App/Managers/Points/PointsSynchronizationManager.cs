@@ -9,10 +9,31 @@ namespace GrillBot.App.Managers.Points;
 public class PointsSynchronizationManager
 {
     private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IDiscordClient _discordClient;
 
-    public PointsSynchronizationManager(IRabbitMQPublisher rabbitPublisher)
+    public PointsSynchronizationManager(IRabbitMQPublisher rabbitPublisher, IDiscordClient discordClient)
     {
         _rabbitPublisher = rabbitPublisher;
+        _discordClient = discordClient;
+    }
+
+    public async Task PushUsersAsync(IEnumerable<IUser> users)
+    {
+        var guilds = new Dictionary<IGuild, List<IUser>>();
+        foreach (var user in users)
+        {
+            var mutualGuilds = await _discordClient.FindMutualGuildsAsync(user.Id);
+
+            foreach (var guild in mutualGuilds)
+            {
+                if (!guilds.ContainsKey(guild))
+                    guilds.Add(guild, new List<IUser>());
+                guilds[guild].Add(user);
+            }
+        }
+
+        foreach (var guild in guilds)
+            await PushAsync(guild.Key, guild.Value, Enumerable.Empty<IGuildChannel>());
     }
 
     public Task PushAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels)

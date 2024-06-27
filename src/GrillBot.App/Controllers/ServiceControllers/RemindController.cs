@@ -17,11 +17,11 @@ public class RemindController : ServiceControllerBase<IRemindServiceClient>
     [ProducesResponseType(typeof(PaginatedResponse<RemindMessageItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetReminderListAsync(ReminderListRequest request)
-        => ExecuteAsync(async client => await client.GetReminderListAsync(request));
+        => ExecuteAsync(async client => await client.GetReminderListAsync(request), request);
 
     [HttpPut("cancel")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> CancelRemindAsync(CancelReminderRequest request)
-        => ExecuteAsync(async client => await client.CancelReminderAsync(request));
+        => ExecuteAsync(async client => await client.CancelReminderAsync(request), request);
 }

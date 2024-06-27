@@ -33,8 +33,13 @@ public abstract class ServiceControllerBase<TService> : Core.Infrastructure.Acti
         return ProcessAsync<TAction>(parameters);
     }
 
-    protected Task<IActionResult> ExecuteAsync(Func<TService, Task> executor)
-        => ProcessAsync<ServiceBridgeAction<TService>>(executor);
+    protected Task<IActionResult> ExecuteAsync(Func<TService, Task> executor, IDictionaryObject? parameters = null)
+    {
+        if (parameters is not null)
+            ApiAction.Init(this, parameters);
+
+        return ProcessAsync<ServiceBridgeAction<TService>>(executor);
+    }
 
     protected Task<IActionResult> ExecuteRabbitPayloadAsync(Func<object> createPayload)
         => ProcessAsync<RabbitMQPublisherAction>(createPayload());

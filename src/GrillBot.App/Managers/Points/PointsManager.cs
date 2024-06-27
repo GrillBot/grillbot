@@ -31,6 +31,7 @@ public class PointsManager
     public Task PushSynchronizationAsync(IGuild guild, params IUser[] users) => PushSynchronizationAsync(guild, users, Enumerable.Empty<IGuildChannel>());
     public Task PushSynchronizationAsync(IGuild guild, IEnumerable<IUser> users, IEnumerable<IGuildChannel> channels) => _synchronizationManager.PushAsync(guild, users, channels);
     public Task PushSynchronizationAsync(IGuild guild, IEnumerable<UserSyncItem> users, IEnumerable<ChannelSyncItem> channels) => _synchronizationManager.PushAsync(guild, users, channels);
+    public Task PushSynchronizationUsersAsync(IEnumerable<IUser> users) => _synchronizationManager.PushUsersAsync(users);
 
     #endregion
 

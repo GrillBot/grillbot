@@ -1,9 +1,12 @@
-﻿using GrillBot.Common.Managers.Localization;
+﻿using GrillBot.App.Managers.Points;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Enums;
+using GrillBot.Database.Migrations;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,16 +20,18 @@ public class CreateJwtTokenAction : ApiAction
     private readonly GrillBotDatabaseBuilder _databaseBuilder;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
+    private readonly IServiceProvider _serviceProvider;
 
     private OAuth2LoginToken UserNotFound => new(_texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
 
     public CreateJwtTokenAction(ApiRequestContext apiContext, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder,
-        IWebHostEnvironment environment, IConfiguration configuration) : base(apiContext)
+        IWebHostEnvironment environment, IConfiguration configuration, IServiceProvider serviceProvider) : base(apiContext)
     {
         _texts = texts;
         _databaseBuilder = databaseBuilder;
         _environment = environment;
         _configuration = configuration;
+        _serviceProvider = serviceProvider;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -50,6 +55,7 @@ public class CreateJwtTokenAction : ApiAction
         if (string.IsNullOrEmpty(userRole))
             return new OAuth2LoginToken(_texts["Auth/CreateToken/PublicAdminBlocked", ApiContext.Language].FormatWith(user.Username));
 
+        await SynchronizeUserToServicesAsync();
         var (jwt, expiresAt) = GenerateJwtToken(user, userRole);
         return new OAuth2LoginToken(jwt, expiresAt);
     }
@@ -103,5 +109,11 @@ public class CreateJwtTokenAction : ApiAction
             "Administrator" => now.AddDays(1),
             _ => now.AddHours(4)
         };
+    }
+
+    private async Task SynchronizeUserToServicesAsync()
+    {
+        await _serviceProvider.GetRequiredService<PointsManager>()
+            .PushSynchronizationUsersAsync(new[] { ApiContext.LoggedUser! });
     }
 }

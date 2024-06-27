@@ -43,11 +43,5 @@ public class GetServiceInfoAction : ApiAction
     }
 
     private static async Task<long> GetUptimeAsync(IClient? client)
-    {
-        if (client is null)
-            return -1;
-
-        var diagnostics = await client.GetDiagnosticAsync();
-        return diagnostics.Uptime;
-    }
+        => client is null ? -1 : await client.GetUptimeAsync();
 }

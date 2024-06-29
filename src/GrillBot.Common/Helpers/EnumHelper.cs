@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace GrillBot.Common.Helpers;
+﻿namespace GrillBot.Common.Helpers;
 
 public static class EnumHelper
 {

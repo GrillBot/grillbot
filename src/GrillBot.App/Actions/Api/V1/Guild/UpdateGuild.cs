@@ -59,7 +59,7 @@ public class UpdateGuild : ApiAction
 
         await repository.CommitAsync();
 
-        GetGuildDetail.Init(HttpContext, new object[] { id });
+        GetGuildDetail.Init(HttpContext, new object[] { id }, CurrentUser);
         return await GetGuildDetail.ProcessAsync();
     }
 

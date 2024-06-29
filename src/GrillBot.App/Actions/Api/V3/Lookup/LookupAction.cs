@@ -5,7 +5,6 @@ using GrillBot.Common.FileStorage;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Enums;
-using System.ComponentModel;
 
 namespace GrillBot.App.Actions.Api.V3.DataResolve;
 

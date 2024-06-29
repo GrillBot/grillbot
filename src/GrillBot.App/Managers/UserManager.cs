@@ -1,5 +1,4 @@
-﻿using GrillBot.Common.Managers.Localization;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Database.Enums;
 

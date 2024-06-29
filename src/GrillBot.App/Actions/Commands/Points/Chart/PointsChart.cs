@@ -1,5 +1,4 @@
 ﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Core.Extensions;
 using GrillBot.Core.IO;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.ImageProcessing.Models;

@@ -11,7 +11,6 @@ using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Request.Search;
 using GrillBot.Data.Models.API.AuditLog;
 using GrillBot.Data.Models.API.AuditLog.Preview;
-using Microsoft.AspNetCore.Mvc;
 using File = GrillBot.Data.Models.API.AuditLog.File;
 using SearchModels = GrillBot.Core.Services.AuditLog.Models.Response.Search;
 

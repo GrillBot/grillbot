@@ -9,10 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using GrillBot.App.Infrastructure.Auth;
-using GrillBot.Core.Services.RubbergodService;
-using GrillBot.Core.Services.RubbergodService.Models.Karma;
 using GrillBot.Core.Models.Pagination;
-using GrillBot.App.Actions.Api;
 
 namespace GrillBot.App.Controllers;
 

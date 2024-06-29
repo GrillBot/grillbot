@@ -1,6 +1,5 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Enums;
-using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Managers.Points;
 

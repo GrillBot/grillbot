@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Discord;
-using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Data.Models.API.System;
 

@@ -1,10 +1,8 @@
 ﻿using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RemindService;
-using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Core.Services.UserMeasures;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 
 namespace GrillBot.App.Actions;
 

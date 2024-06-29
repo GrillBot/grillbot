@@ -4,7 +4,6 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Enums;
-using GrillBot.Database.Migrations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

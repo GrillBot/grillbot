@@ -1,14 +1,6 @@
-﻿using GrillBot.App.Actions.Commands;
-using GrillBot.Common.Models;
+﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
-using GrillBot.Core.Services.Emote;
-using GrillBot.Core.Services.Graphics;
-using GrillBot.Core.Services.ImageProcessing;
-using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.RubbergodService;
-using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.System;
 
 namespace GrillBot.App.Actions.Api.V3.Dashboard;

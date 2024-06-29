@@ -1,5 +1,4 @@
 ﻿using GrillBot.Common.Services.KachnaOnline.Models;
-using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Extensions;
 
@@ -9,7 +8,7 @@ public class KachnaOnlineClient : RestServiceBase, IKachnaOnlineClient
 {
     public override string ServiceName => "KachnaOnline";
 
-    public KachnaOnlineClient(IHttpClientFactory httpClientFactory, ICounterManager counterManager) : base(counterManager, httpClientFactory)
+    public KachnaOnlineClient(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 

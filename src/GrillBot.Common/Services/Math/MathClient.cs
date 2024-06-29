@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
 using GrillBot.Common.Services.Math.Models;
-using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Extensions;
 
@@ -11,7 +10,7 @@ public class MathClient : RestServiceBase, IMathClient
 {
     public override string ServiceName => "MathJS";
 
-    public MathClient(ICounterManager counterManager, IHttpClientFactory httpClientFactory) : base(counterManager, httpClientFactory)
+    public MathClient(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 

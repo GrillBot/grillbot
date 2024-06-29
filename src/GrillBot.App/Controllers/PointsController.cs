@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V1.Points;
-using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Models;

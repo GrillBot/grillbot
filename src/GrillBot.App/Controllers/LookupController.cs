@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Controllers;
 
-[JwtAuthorize]
+[JwtAuthorize("Lookups")]
 [ApiExplorerSettings(GroupName = "v3")]
 public class LookupController : Core.Infrastructure.Actions.ControllerBase
 {

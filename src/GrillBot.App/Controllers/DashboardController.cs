@@ -88,21 +88,21 @@ public class DashboardController : Core.Infrastructure.Actions.ControllerBase
     public async Task<IActionResult> GetOperationStatsAsync()
         => await ProcessAsync<GetOperationStats>();
 
-    [JwtAuthorize]
+    [JwtAuthorize("Dashboard(Admin)")]
     [HttpGet("bot-common-info")]
     [ApiExplorerSettings(GroupName = "v3")]
     [ProducesResponseType(typeof(DashboardInfo), StatusCodes.Status200OK)]
     public Task<IActionResult> GetBotCommonInfoAsync()
         => ProcessAsync<GetBotCommonInfoAction>();
 
-    [JwtAuthorize]
+    [JwtAuthorize("Dashboard(Admin)")]
     [HttpGet("service-info/{serviceId}")]
     [ApiExplorerSettings(GroupName = "v3")]
     [ProducesResponseType(typeof(DashboardService), StatusCodes.Status200OK)]
     public Task<IActionResult> GetServiceInfoAsync(string serviceId)
         => ProcessAsync<GetServiceInfoAction>(serviceId);
 
-    [JwtAuthorize]
+    [JwtAuthorize("Dashboard(Admin)")]
     [HttpGet("top-heavy-operations")]
     [ApiExplorerSettings(GroupName = "v3")]
     [ProducesResponseType(typeof(List<CounterStats>), StatusCodes.Status200OK)]

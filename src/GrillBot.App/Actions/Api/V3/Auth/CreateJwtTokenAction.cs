@@ -87,7 +87,8 @@ public class CreateJwtTokenAction : ApiAction
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Role, userRole)
+                new Claim(ClaimTypes.Role, userRole),
+                new Claim("GrillBot:Permissions", string.Join(", ", CreatePermissions(userRole)))
             })
         };
 
@@ -114,5 +115,29 @@ public class CreateJwtTokenAction : ApiAction
     {
         await _serviceProvider.GetRequiredService<PointsManager>()
             .PushSynchronizationUsersAsync(new[] { ApiContext.LoggedUser! });
+    }
+
+    private static IEnumerable<string> CreatePermissions(string role)
+    {
+        if (role == "Administrator")
+        {
+            yield return "Dashboard(Admin)";
+            yield return "AuditLog(Admin)";
+            yield return "Emote(Admin)";
+            yield return "Points(Admin)";
+            yield return "Remind(Admin)";
+            yield return "UserMeasures(Admin)";
+        }
+        else
+        {
+            yield return "Remind(OnlyMyReminders)";
+            yield return "Remind(CancelMyReminders)";
+            yield return "UserMeasures(OnlyMyMeasures)";
+        }
+
+        yield return "FrontendLog";
+        yield return "Lookups";
+        yield return "Points(Leaderboard)";
+        yield return "Points(UserStatus)";
     }
 }

@@ -1,4 +1,5 @@
-﻿using GrillBot.Core.Models.Pagination;
+﻿using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RemindService.Models.Request;
 using GrillBot.Core.Services.RemindService.Models.Response;
@@ -14,6 +15,7 @@ public class RemindController : ServiceControllerBase<IRemindServiceClient>
     }
 
     [HttpPost("list")]
+    [JwtAuthorize("Remind(Admin)", "Remind(OnlyMyReminders)")]
     [ProducesResponseType(typeof(PaginatedResponse<RemindMessageItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetReminderListAsync(ReminderListRequest request)
@@ -21,6 +23,7 @@ public class RemindController : ServiceControllerBase<IRemindServiceClient>
 
     [HttpPut("cancel")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [JwtAuthorize("Remind(Admin)", "Remind(CancelMyReminders)")]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> CancelRemindAsync(CancelReminderRequest request)
         => ExecuteAsync(async client => await client.CancelReminderAsync(request), request);

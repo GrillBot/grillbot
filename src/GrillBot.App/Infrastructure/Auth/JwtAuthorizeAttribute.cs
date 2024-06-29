@@ -5,13 +5,11 @@ namespace GrillBot.App.Infrastructure.Auth;
 
 public class JwtAuthorizeAttribute : AuthorizeAttribute
 {
-    public JwtAuthorizeAttribute()
-    {
-        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme;
-    }
+    public string[] RequiredPermissions { get; }
 
-    public JwtAuthorizeAttribute(string policy) : base(policy)
+    public JwtAuthorizeAttribute(params string[] requiredPermissions) : base("")
     {
         AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme;
+        RequiredPermissions = requiredPermissions;
     }
 }

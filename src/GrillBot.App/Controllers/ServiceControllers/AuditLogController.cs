@@ -1,4 +1,5 @@
-﻿using GrillBot.Core.Models.Pagination;
+﻿using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Models.Events;
 using GrillBot.Core.Services.AuditLog.Models.Request.Search;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Controllers.ServiceControllers;
 
+[JwtAuthorize("AuditLog(Admin)")]
 public class AuditLogController : ServiceControllerBase<IAuditLogServiceClient>
 {
     public AuditLogController(IServiceProvider serviceProvider) : base(serviceProvider)

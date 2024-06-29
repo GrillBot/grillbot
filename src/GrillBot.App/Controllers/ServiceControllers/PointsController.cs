@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Helpers;
+﻿using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Common.Helpers;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.PointsService.Enums;
@@ -18,24 +19,28 @@ public class PointsController : ServiceControllerBase<IPointsServiceClient>
     }
 
     [HttpGet("{guildId}/leaderboard")]
+    [JwtAuthorize("Points(Admin)", "Points(Leaderboard)")]
     [ProducesResponseType(typeof(List<BoardItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetLeaderboardAsync([DiscordId, StringLength(32)] string guildId)
         => ExecuteAsync(async client => await client.GetLeaderboardAsync(guildId, 0, 0, EnumHelper.AggregateFlags<LeaderboardColumnFlag>(), LeaderboardSortOptions.ByTotalDescending));
 
     [HttpPost("list")]
+    [JwtAuthorize("Points(Admin)")]
     [ProducesResponseType(typeof(PaginatedResponse<TransactionItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetTransactionListAsync([FromBody] AdminListRequest request)
         => ExecuteAsync(async client => await client.GetTransactionListAsync(request), request);
 
     [HttpPost("list/chart")]
+    [JwtAuthorize("Points(Admin)")]
     [ProducesResponseType(typeof(List<PointsChartItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetChartDataAsync([FromBody] AdminListRequest request)
         => ExecuteAsync(async client => await client.GetChartDataAsync(request), request);
 
     [HttpGet("{guildId}/{userId}")]
+    [JwtAuthorize("Points(Admin)", "Points(UserStatus)")]
     [ProducesResponseType(typeof(PointsStatus), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetStatusOfPointsAsync(
@@ -44,18 +49,21 @@ public class PointsController : ServiceControllerBase<IPointsServiceClient>
     ) => ExecuteAsync(async client => await client.GetStatusOfPointsAsync(guildId, userId));
 
     [HttpPost("increment")]
+    [JwtAuthorize("Points(Admin)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> IncrementPointsAsync([FromBody] IncrementPointsRequest request)
         => ExecuteAsync(async client => await client.IncrementPointsAsync(request), request);
 
     [HttpPost("transfer")]
+    [JwtAuthorize("Points(Admin)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> TransferPointsAsync([FromBody] TransferPointsRequest request)
         => ExecuteAsync(async client => await client.TransferPointsAsync(request), request);
 
     [HttpDelete("{guildId}/{messageId}")]
+    [JwtAuthorize("Points(Admin)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> DeleteTransactionAsync(
@@ -65,6 +73,7 @@ public class PointsController : ServiceControllerBase<IPointsServiceClient>
     ) => ExecuteRabbitPayloadAsync(() => new DeleteTransactionsPayload(guildId, messageId, reactionId));
 
     [HttpPost("list/users")]
+    [JwtAuthorize("Points(Admin)")]
     [ProducesResponseType(typeof(PaginatedResponse<UserListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetUserListAsync([FromBody] UserListRequest request)

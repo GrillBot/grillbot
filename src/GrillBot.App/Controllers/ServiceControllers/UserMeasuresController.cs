@@ -1,4 +1,5 @@
 ﻿using GrillBot.App.Actions.Api.V3.Services.UserMeasures;
+using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.Dashboard;
@@ -16,12 +17,14 @@ public class UserMeasuresController : ServiceControllerBase<IUserMeasuresService
     }
 
     [HttpPost("measures-list")]
+    [JwtAuthorize("UserMeasures(Admin)", "UserMeasures(OnlyMyMeasures)")]
     [ProducesResponseType(typeof(PaginatedResponse<MeasuresItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetMeasuresListAsync([FromBody] MeasuresListParams parameters)
         => ExecuteAsync(async client => await client.GetMeasuresListAsync(parameters), parameters);
 
     [HttpDelete("{measureId}")]
+    [JwtAuthorize("UserMeasures(Admin)", "UserMeasures(OnlyMyMeasures)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -30,12 +33,14 @@ public class UserMeasuresController : ServiceControllerBase<IUserMeasuresService
         => ExecuteAsync(async client => await client.DeleteMeasureAsync(DeleteMeasuresRequest.FromInternalId(measureId)));
 
     [HttpPost("member-warning")]
+    [JwtAuthorize("UserMeasures(Admin)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> CreateMemberWarningAsync([FromBody] CreateMemberWarningParams parameters)
         => ExecuteAsync<CreateMemberWarningAction>(parameters);
 
     [HttpGet("dashboard")]
+    [JwtAuthorize("UserMeasures(Admin)")]
     [ProducesResponseType(typeof(List<DashboardRow>), StatusCodes.Status200OK)]
     public Task<IActionResult> GetDashboard()
         => ExecuteAsync(async client => await client.GetDashboardDataAsync());

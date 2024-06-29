@@ -1,4 +1,5 @@
-﻿using GrillBot.Core.Models.Pagination;
+﻿using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Emote.Models.Request;
 using GrillBot.Core.Services.Emote.Models.Response;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Controllers.ServiceControllers;
 
+[JwtAuthorize("Emote(Admin)")]
 public class EmoteController : ServiceControllerBase<IEmoteServiceClient>
 {
     public EmoteController(IServiceProvider serviceProvider) : base(serviceProvider)

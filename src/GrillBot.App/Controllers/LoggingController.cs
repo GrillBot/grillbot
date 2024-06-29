@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Controllers;
 
-[JwtAuthorize]
+[JwtAuthorize("FrontendLog")]
 [ApiExplorerSettings(GroupName = "v3")]
 public class LoggingController : Core.Infrastructure.Actions.ControllerBase
 {

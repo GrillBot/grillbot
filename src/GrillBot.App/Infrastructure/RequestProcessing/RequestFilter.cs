@@ -1,8 +1,11 @@
-﻿using GrillBot.App.Managers;
+﻿using GrillBot.App.Infrastructure.Auth;
+using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.AuditLog;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Auth;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -15,11 +18,15 @@ public class RequestFilter : IAsyncActionFilter
     private IDiscordClient DiscordClient { get; }
     private UserManager UserManager { get; }
 
-    public RequestFilter(ApiRequestContext apiRequestContext, IDiscordClient discordClient, UserManager userManager)
+    private readonly ICurrentUserProvider _currentUser;
+
+    public RequestFilter(ApiRequestContext apiRequestContext, IDiscordClient discordClient, UserManager userManager,
+        ICurrentUserProvider currentUser)
     {
         ApiRequestContext = apiRequestContext;
         DiscordClient = discordClient;
         UserManager = userManager;
+        _currentUser = currentUser;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -29,6 +36,12 @@ public class RequestFilter : IAsyncActionFilter
 
         if (ApiRequestContext.LoggedUser != null)
             await UserManager.SetHearthbeatAsync(true, ApiRequestContext);
+
+        if (!IsAuthorized(context))
+        {
+            context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
+            return;
+        }
 
         if (!context.ModelState.IsValid)
         {
@@ -93,5 +106,15 @@ public class RequestFilter : IAsyncActionFilter
             else
                 ApiRequestContext.LogRequest.AddHeaders(name, values);
         }
+    }
+
+    private bool IsAuthorized(ActionExecutingContext context)
+    {
+        var apiVersion = (context.ActionDescriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
+        if (apiVersion != "V3")
+            return true;
+
+        var requiredPermissions = context.ActionDescriptor.EndpointMetadata.OfType<JwtAuthorizeAttribute>().LastOrDefault()?.RequiredPermissions ?? Array.Empty<string>();
+        return requiredPermissions.Length > 0 && requiredPermissions.Intersect(_currentUser.Permissions.Select(p => p.Trim())).Any();
     }
 }

@@ -114,7 +114,11 @@ public class RequestFilter : IAsyncActionFilter
         if (apiVersion != "V3")
             return true;
 
-        var requiredPermissions = context.ActionDescriptor.EndpointMetadata.OfType<JwtAuthorizeAttribute>().LastOrDefault()?.RequiredPermissions ?? Array.Empty<string>();
+        var jwtAuthorizeAttribute = context.ActionDescriptor.EndpointMetadata.OfType<JwtAuthorizeAttribute>().LastOrDefault();
+        if (jwtAuthorizeAttribute is null)
+            return true;
+
+        var requiredPermissions = jwtAuthorizeAttribute.RequiredPermissions ?? Array.Empty<string>();
         return requiredPermissions.Length > 0 && requiredPermissions.Intersect(_currentUser.Permissions.Select(p => p.Trim())).Any();
     }
 }

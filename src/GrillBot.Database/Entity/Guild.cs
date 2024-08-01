@@ -41,7 +41,6 @@ public class Guild
     public ISet<GuildUser> Users { get; set; }
     public ISet<Invite> Invites { get; set; }
     public ISet<GuildChannel> Channels { get; set; }
-    public ISet<SearchItem> Searches { get; set; }
     public ISet<Unverify> Unverifies { get; set; }
     public ISet<UnverifyLog> UnverifyLogs { get; set; }
 
@@ -52,7 +51,6 @@ public class Guild
         Channels = new HashSet<GuildChannel>();
         Unverifies = new HashSet<Unverify>();
         UnverifyLogs = new HashSet<UnverifyLog>();
-        Searches = new HashSet<SearchItem>();
     }
 
     public static Guild FromDiscord(IGuild guild)

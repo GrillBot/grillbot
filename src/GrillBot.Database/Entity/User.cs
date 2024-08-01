@@ -46,13 +46,11 @@ public class User
 
     public ISet<GuildUser> Guilds { get; set; }
     public ISet<GuildUserChannel> Channels { get; set; }
-    public ISet<SearchItem> SearchItems { get; set; }
 
     public User()
     {
         Guilds = new HashSet<GuildUser>();
         Channels = new HashSet<GuildUserChannel>();
-        SearchItems = new HashSet<SearchItem>();
     }
 
     public bool HaveFlags(UserFlags flags)

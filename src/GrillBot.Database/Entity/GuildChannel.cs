@@ -36,7 +36,6 @@ public class GuildChannel
 
     public long Flags { get; set; }
 
-    public ISet<SearchItem> SearchItems { get; set; }
     public ISet<GuildUserChannel> Users { get; set; }
 
     public int UserPermissionsCount { get; set; }
@@ -46,7 +45,6 @@ public class GuildChannel
 
     public GuildChannel()
     {
-        SearchItems = new HashSet<SearchItem>();
         Users = new HashSet<GuildUserChannel>();
     }
 
@@ -108,7 +106,6 @@ public class GuildChannel
             Name = Name,
             ChannelId = ChannelId,
             ParentChannel = ParentChannel?.Clone(),
-            SearchItems = SearchItems,
             ParentChannelId = ParentChannelId,
             RolePermissionsCount = RolePermissionsCount,
             UserPermissionsCount = UserPermissionsCount,

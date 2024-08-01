@@ -162,4 +162,14 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
                 .ToListAsync();
         }
     }
+
+    public async Task<List<User>> GetAdministratorsAsync()
+    {
+        using (CreateCounter())
+        {
+            return await Context.Users.AsNoTracking()
+                .Where(o => (o.Flags & (int)UserFlags.BotAdmin) != 0)
+                .ToListAsync();
+        }
+    }
 }

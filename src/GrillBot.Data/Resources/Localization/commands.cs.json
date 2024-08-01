@@ -397,6 +397,10 @@
             "message": {
                 "name": "zprava",
                 "description": "Zpráva"
+            },
+            "valid-to": {
+                "name": "plati-do",
+                "description": "Volitelný datum a čas konce platnosti."
             }
         },
         "remove": {

@@ -1,46 +1,33 @@
-﻿using GrillBot.App.Managers;
+﻿using GrillBot.App.Managers.DataResolve;
 using GrillBot.Core.Extensions;
-using GrillBot.Data.Models.API.Searching;
-using GrillBot.Database.Enums;
+using GrillBot.Core.Services.SearchingService;
 
 namespace GrillBot.App.Actions.Commands.Searching;
 
 public class GetSuggestions : CommandAction
 {
-    private UserManager UserManager { get; }
-    private Api.V1.Searching.GetSearchingList ApiAction { get; }
+    private readonly ISearchingServiceClient _searchingService;
+    private readonly DataResolveManager _dataResolve;
 
-    public GetSuggestions(UserManager userManager, Api.V1.Searching.GetSearchingList apiAction)
+    public GetSuggestions(ISearchingServiceClient searchingService, DataResolveManager dataResolve)
     {
-        UserManager = userManager;
-        ApiAction = apiAction;
+        _searchingService = searchingService;
+        _dataResolve = dataResolve;
     }
 
     public async Task<List<AutocompleteResult>> ProcessAsync()
     {
-        ApiAction.UpdateContext(Locale, Context.User);
+        var guildId = Context.Guild.Id.ToString();
+        var channelId = Context.Channel.Id.ToString();
+        var suggestions = await _searchingService.GetSuggestionsAsync(guildId, channelId);
+        var result = new List<AutocompleteResult>();
 
-        var isAdmin = await IsAdminAsync();
-        var parameters = new GetSearchingListParams
+        foreach (var item in suggestions)
         {
-            Pagination = { Page = 0, PageSize = 25 },
-            Sort = { Descending = false, OrderBy = "Id" },
-            ChannelId = Context.Channel.Id.ToString(),
-            GuildId = Context.Guild.Id.ToString(),
-            UserId = isAdmin ? null : Context.User.Id.ToString()
-        };
+            var user = await _dataResolve.GetUserAsync(item.UserId.ToUlong());
+            result.Add(new($"#{item.Id} - {user!.Username} ({item.ShortenMessage})", item.Id));
+        }
 
-        var items = await ApiAction.ProcessAsync(parameters);
-        return items.Data.Select(o => new AutocompleteResult(
-            $"#{o.Id} - " + (isAdmin ? $"{o.User.Username} - " : "") + $"({o.Message.Cut(20)})",
-            o.Id
-        )).ToList();
-    }
-
-    private async Task<bool> IsAdminAsync()
-    {
-        var executingUser = await GetExecutingUserAsync();
-        return executingUser.GuildPermissions.Administrator || executingUser.GuildPermissions.ManageMessages ||
-               await UserManager.CheckFlagsAsync(executingUser, UserFlags.BotAdmin);
+        return result;
     }
 }

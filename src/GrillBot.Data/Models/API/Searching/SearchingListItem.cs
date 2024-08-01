@@ -31,12 +31,3 @@ public class SearchingListItem
     /// </summary>
     public string Message { get; set; } = null!;
 }
-
-public class SearchingMappingProfile : AutoMapper.Profile
-{
-    public SearchingMappingProfile()
-    {
-        CreateMap<Database.Entity.SearchItem, SearchingListItem>()
-            .ForMember(dst => dst.Message, opt => opt.MapFrom(src => src.MessageContent));
-    }
-}

@@ -9,6 +9,7 @@ using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RubbergodService;
+using GrillBot.Core.Services.SearchingService;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.System;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,7 @@ public class GetServicesList : ApiAction
         await AddServiceStatusAsync<IUserMeasuresServiceClient>(services, "user-measures");
         await AddServiceStatusAsync<IEmoteServiceClient>(services, "emote");
         await AddServiceStatusAsync<IRemindServiceClient>(services, "remind");
+        await AddServiceStatusAsync<ISearchingServiceClient>(services, "searching");
 
         if (Errors.Count == 0)
             return ApiResult.Ok(services);

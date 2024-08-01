@@ -1,46 +1,32 @@
-﻿using GrillBot.App.Managers;
-using GrillBot.Common.Managers.Localization;
-using GrillBot.Core.Extensions;
-using GrillBot.Database.Entity;
-using GrillBot.Database.Enums;
+﻿using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.SearchingService;
 
 namespace GrillBot.App.Actions.Commands.Searching;
 
 public class RemoveSearch : CommandAction
 {
-    private UserManager UserManager { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private ITextsManager Texts { get; }
+    private readonly ISearchingServiceClient _searchingService;
+    private readonly ITextsManager _texts;
 
     public string? ErrorMessage { get; private set; }
 
-    public RemoveSearch(UserManager userManager, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts)
+    public RemoveSearch(ITextsManager texts, ISearchingServiceClient searchingService)
     {
-        UserManager = userManager;
-        DatabaseBuilder = databaseBuilder;
-        Texts = texts;
+        _searchingService = searchingService;
+        _texts = texts;
     }
 
     public async Task ProcessAsync(long id)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
-
-        var search = await repository.Searching.FindSearchItemByIdAsync(id);
-        if (search == null || !await CheckPermissionsAsync(search)) return;
-
-        repository.Remove(search);
-        await repository.CommitAsync();
-    }
-
-    private async Task<bool> CheckPermissionsAsync(SearchItem search)
-    {
-        var executingUser = await GetExecutingUserAsync();
-        var haveGuildPerms = executingUser.GuildPermissions.Administrator || executingUser.GuildPermissions.ManageMessages;
-        var isAdmin = haveGuildPerms || await UserManager.CheckFlagsAsync(Context.User, UserFlags.BotAdmin);
-        var canRemove = isAdmin || executingUser.Id == search.UserId.ToUlong();
-
-        if (!canRemove)
-            ErrorMessage = Texts["SearchingModule/RemoveSearch/InsufficientPermissions", Locale];
-        return canRemove;
+        try
+        {
+            await _searchingService.RemoveSearchingAsync(id);
+        }
+        catch (ClientBadRequestException ex) when (ex.ValidationErrors.Count > 0)
+        {
+            var validationError = ex.ValidationErrors.Values.SelectMany(o => o).First();
+            ErrorMessage = _texts[validationError, Locale];
+        }
     }
 }

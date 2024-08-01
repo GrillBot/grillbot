@@ -397,6 +397,10 @@
             "message": {
                 "name": "message",
                 "description": "Message"
+            },
+            "valid-to": {
+                "name": "valid-to",
+                "description": "Optional expiration date and time."
             }
         },
         "remove": {

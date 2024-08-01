@@ -88,7 +88,6 @@ public class Startup
             .AddMemoryCache()
             .AddActions()
             .AddSingleton<BlobManagerFactory>()
-            .AddSingleton<FileStorageFactory>()
             .AddRabbitMQ()
             .AddControllers(c =>
             {

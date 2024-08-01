@@ -110,6 +110,7 @@ public static class HandlerExtensions
         RegisterServiceOrchestration<ServiceOrchestration.AuditOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.EmoteOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.RubbergodOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.SearchingOrchestrationHandler>(services);
     }
 
     private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class

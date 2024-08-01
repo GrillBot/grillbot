@@ -73,7 +73,7 @@ public class GetSearchingList : CommandAction
             return new List<EmbedFieldBuilder>();
 
         return list.Data
-            .ConvertAll(o => new EmbedFieldBuilder().WithName($"**{o.Id} - **{o.User.Username}**").WithValue(FixMessage(o.Message)));
+            .ConvertAll(o => new EmbedFieldBuilder().WithName($"**{o.Id}** - **{o.User.Username}**").WithValue(FixMessage(o.Message)));
     }
 
     private static string FixMessage(string message)

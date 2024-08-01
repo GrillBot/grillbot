@@ -11,6 +11,10 @@ using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.Services.PointsService.Models.Channels;
 using GrillBot.Database.Enums;
+using GrillBot.Core.Services.SearchingService.Models.Events;
+using GrillBot.Core.Extensions;
+using Microsoft.Extensions.Azure;
+using GrillBot.Core.Services.SearchingService.Models.Events.Users;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -49,6 +53,7 @@ public class UpdateUser : ApiAction
         await repository.CommitAsync();
         await WriteToAuditLogAsync(before, user);
         await SyncPointsServiceAsync(id, parameters);
+        await SyncSearchingServiceAsync(user);
         return ApiResult.Ok();
     }
 
@@ -99,5 +104,25 @@ public class UpdateUser : ApiAction
         };
 
         await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+    }
+
+    private async Task SyncSearchingServiceAsync(Database.Entity.User user)
+    {
+        var guilds = await DiscordClient.GetGuildsAsync();
+        var payload = new SynchronizationPayload();
+
+        foreach (var guild in guilds)
+        {
+            var guildUser = await guild.GetUserAsync(user.Id.ToUlong());
+            if (guildUser is null)
+                continue;
+
+            var isAdmin = user.HaveFlags(UserFlags.BotAdmin);
+            var permissions = guildUser.GuildPermissions.ToList().Aggregate((prev, curr) => prev | curr);
+            payload.Users.Add(new UserSynchronizationItem(guild.Id.ToString(), user.Id, isAdmin, permissions));
+        }
+
+        if (payload.Users.Count > 0)
+            await _rabbitPublisher.PublishAsync(payload);
     }
 }

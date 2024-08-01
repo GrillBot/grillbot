@@ -34,5 +34,4 @@ public partial class AuditOrchestrationHandler
             MemberUpdated = new MemberUpdatedRequest { UserId = after.Id.ToString() }
         });
     }
-
 }

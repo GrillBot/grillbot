@@ -1,8 +1,11 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Actions;
+using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.RabbitMQ;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure;
@@ -12,6 +15,11 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 {
     protected ITextsManager Texts { get; }
     protected IServiceProvider ServiceProvider { get; }
+
+    protected IGuild Guild => Context.Guild;
+    protected ISocketMessageChannel Channel => Context.Channel;
+    protected IUser User => Context.User;
+
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ICounterManager CounterManager { get; }
 
@@ -38,14 +46,17 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     /// Check whether Defer can be performed.
     /// </summary>
     /// <returns>
+    /// <para>
     /// canDefer(False) if:
     /// - Called command is component command.
     /// - Contains "secret" or "tajne" parameter.
     /// - Contains DeferConfigurationAttribute with SuppressAuto=true
-    ///
+    /// </para>
+    /// <para>
     /// ephemeral(True) if:
     /// - DeferConfigurationAttribute have RequireEphemeral=true
     /// - Channel was configured to execute command as ephemeral.
+    /// </para>
     /// </returns>
     private async Task<(bool canDefer, bool ephemeral)> CheckDeferAsync(ICommandInfo command)
     {
@@ -134,11 +145,49 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         return command;
     }
 
+    protected async Task<ScopedCommand<TCommand>> GetCommandAsync<TCommand>() where TCommand : CommandAction
+    {
+        var command = new ScopedCommand<TCommand>(ServiceProvider.CreateScope());
+
+        await InitializeCommandAsync(command);
+        command.Command.Init(Context);
+
+        return command;
+    }
+
     protected ScopedCommand<TAction> GetActionAsCommand<TAction>() where TAction : ApiAction
     {
         var command = new ScopedCommand<TAction>(ServiceProvider.CreateScope());
         command.Command.UpdateContext(Locale, Context.User);
 
         return command;
+    }
+
+    protected async Task<ScopedCommand<TAction>> GetActionAsCommandAsync<TAction>() where TAction : ApiAction
+    {
+        var command = new ScopedCommand<TAction>(ServiceProvider.CreateScope());
+
+        await InitializeCommandAsync(command);
+        command.Command.UpdateContext(Locale, Context.User);
+
+        return command;
+    }
+
+    private async Task InitializeCommandAsync<TCommand>(ScopedCommand<TCommand> command) where TCommand : notnull
+    {
+        var jwtToken = await command.Resolve<JwtTokenManager>()
+           .CreateTokenForUserAsync(Context.User, Locale, Context);
+
+        if (!string.IsNullOrEmpty(jwtToken.AccessToken))
+            command.Resolve<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
+    }
+
+    protected async Task SendViaRabbitAsync<TPayload>(TPayload payload) where TPayload : IPayload
+    {
+        using var publisher = await GetActionAsCommandAsync<RabbitMQPublisherAction>();
+        var currentUser = publisher.Resolve<ICurrentUserProvider>();
+
+        publisher.Command.Init(null!, new object[] { payload }, currentUser);
+        await publisher.Command.ProcessAsync();
     }
 }

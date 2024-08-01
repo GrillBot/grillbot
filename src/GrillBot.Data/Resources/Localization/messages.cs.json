@@ -294,7 +294,8 @@
         },
         "RemoveSearch": {
             "Success": "Hledání bylo úspěšně smazáno.",
-            "InsufficientPermissions": "Hledání nebylo vámi založené a ani nemáte vyšší oprávnění k mazání hledání."
+            "InsufficientPermissions": "Hledání nebylo vámi založené a ani nemáte vyšší oprávnění k mazání hledání.",
+            "UnknownExecutor": "Interní chyba. Nepodařilo se tě dohledat."
         },
         "List": {
             "Embed": {

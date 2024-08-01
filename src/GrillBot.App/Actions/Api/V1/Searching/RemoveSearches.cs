@@ -1,28 +1,25 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Services.SearchingService;
 
 namespace GrillBot.App.Actions.Api.V1.Searching;
 
 public class RemoveSearches : ApiAction
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private readonly ISearchingServiceClient _searchingService;
 
-    public RemoveSearches(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
+    public RemoveSearches(ApiRequestContext apiContext, ISearchingServiceClient searchingService) : base(apiContext)
     {
-        DatabaseBuilder = databaseBuilder;
+        _searchingService = searchingService;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
         var ids = (long[])Parameters[0]!;
-        await using var repository = DatabaseBuilder.CreateRepository();
 
-        var searches = await repository.Searching.FindSearchesByIdsAsync(ids);
-        if (searches.Count == 0)
-            return ApiResult.Ok();
+        var requests = ids.Select(_searchingService.RemoveSearchingAsync);
+        await Task.WhenAll(requests);
 
-        repository.RemoveCollection(searches);
-        await repository.CommitAsync();
         return ApiResult.Ok();
     }
 }

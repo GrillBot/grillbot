@@ -2,6 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
+using GrillBot.Core.Services.SearchingService.Models.Events;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -21,7 +22,7 @@ public class SearchingModule : InteractionsModuleBase
         string? query = null
     )
     {
-        using var command = GetCommand<Actions.Commands.Searching.GetSearchingList>();
+        using var command = await GetCommandAsync<Actions.Commands.Searching.GetSearchingList>();
         var (embed, paginationComponent) = await command.Command.ProcessAsync(0, query, channel);
 
         await SetResponseAsync(embed: embed, components: paginationComponent);
@@ -37,13 +38,11 @@ public class SearchingModule : InteractionsModuleBase
 
     [SlashCommand("create", "Create a new search.")]
     public async Task CreateSearchAsync(
-        [Summary("message", "Message")] [Discord.Interactions.MaxLength(EmbedFieldBuilder.MaxFieldValueLength - 3)]
-        string message
+        [Summary("message", "Message")][Discord.Interactions.MaxLength(EmbedFieldBuilder.MaxFieldValueLength - 3)] string message,
+        [Summary("validTo", "ValidTo")] DateTime? validTo = null
     )
     {
-        using var command = GetCommand<Actions.Commands.Searching.CreateSearch>();
-
-        await command.Command.ProcessAsync(message);
+        await SendViaRabbitAsync(new SearchItemPayload(User, Guild, Channel, message, validTo?.ToUniversalTime()));
         await SetResponseAsync(GetText(nameof(CreateSearchAsync), "Success"));
     }
 
@@ -53,7 +52,7 @@ public class SearchingModule : InteractionsModuleBase
         long ident
     )
     {
-        using var command = GetCommand<Actions.Commands.Searching.RemoveSearch>();
+        using var command = await GetCommandAsync<Actions.Commands.Searching.RemoveSearch>();
 
         await command.Command.ProcessAsync(ident);
         if (!string.IsNullOrEmpty(command.Command.ErrorMessage))

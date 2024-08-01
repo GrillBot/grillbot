@@ -1,23 +1,26 @@
-﻿using AutoMapper;
+﻿using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.SearchingService;
+using GrillBot.Core.Services.SearchingService.Models.Request;
 using GrillBot.Data.Models.API.Searching;
 
 namespace GrillBot.App.Actions.Api.V1.Searching;
 
 public class GetSearchingList : ApiAction
 {
-    private IDiscordClient DiscordClient { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
+    private readonly ISearchingServiceClient _searchingService;
+    private readonly DataResolveManager _dataResolve;
+    private readonly IDiscordClient _discordClient;
 
-    public GetSearchingList(ApiRequestContext apiContext, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper) : base(apiContext)
+    public GetSearchingList(ApiRequestContext apiContext, IDiscordClient discordClient, ISearchingServiceClient searchingService, DataResolveManager dataResolve) : base(apiContext)
     {
-        DiscordClient = discordClient;
-        DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
+        _discordClient = discordClient;
+        _searchingService = searchingService;
+        _dataResolve = dataResolve;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -33,26 +36,51 @@ public class GetSearchingList : ApiAction
         var mutualGuilds = await GetMutualGuildsAsync();
         CheckAndSetPublicAccess(parameters, mutualGuilds);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var request = new SearchingListRequest
+        {
+            ChannelId = parameters.ChannelId,
+            GuildId = parameters.GuildId,
+            HideInvalid = true,
+            MessageQuery = parameters.MessageQuery,
+            Pagination = parameters.Pagination,
+            ShowDeleted = false,
+            Sort = new()
+            {
+                Descending = parameters.Sort.Descending,
+                OrderBy = parameters.Sort.OrderBy
+            },
+            UserId = parameters.UserId
+        };
 
-        var data = await repository.Searching.FindSearchesAsync(parameters, mutualGuilds, parameters.Pagination);
-        return await PaginatedResponse<SearchingListItem>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<SearchingListItem>(entity)));
+        var response = await _searchingService.GetSearchingListAsync(request);
+        if (mutualGuilds is not null)
+            response.Data = response.Data.FindAll(o => mutualGuilds.Contains(o.GuildId));
+
+        return await PaginatedResponse<SearchingListItem>.CopyAndMapAsync(response, async entity => new SearchingListItem
+        {
+            Channel = (await _dataResolve.GetChannelAsync(entity.GuildId.ToUlong(), entity.ChannelId.ToUlong()))!,
+            Guild = (await _dataResolve.GetGuildAsync(entity.GuildId.ToUlong()))!,
+            Id = entity.Id,
+            Message = entity.Content,
+            User = (await _dataResolve.GetUserAsync(entity.UserId.ToUlong()))!
+        });
     }
 
-    private void CheckAndSetPublicAccess(GetSearchingListParams parameters, IEnumerable<string> mutualGuilds)
+    private void CheckAndSetPublicAccess(GetSearchingListParams parameters, IEnumerable<string>? mutualGuilds)
     {
         if (!ApiContext.IsPublic()) return;
 
         parameters.UserId = ApiContext.GetUserId().ToString();
-        if (!string.IsNullOrEmpty(parameters.GuildId) && mutualGuilds.All(o => o != parameters.GuildId))
+        if (!string.IsNullOrEmpty(parameters.GuildId) && mutualGuilds?.All(o => o != parameters.GuildId) == true)
             parameters.GuildId = null;
     }
 
-    private async Task<List<string>> GetMutualGuildsAsync()
+    private async Task<List<string>?> GetMutualGuildsAsync()
     {
         if (!ApiContext.IsPublic())
-            return new List<string>();
-        var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
+            return null;
+
+        var mutualGuilds = await _discordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
         return mutualGuilds.ConvertAll(o => o.Id.ToString());
     }
 }

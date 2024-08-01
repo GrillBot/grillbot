@@ -225,7 +225,6 @@ public static class ActionsExtensions
 
         // Searching
         services
-            .AddScoped<Commands.Searching.CreateSearch>()
             .AddScoped<Commands.Searching.GetSearchingList>()
             .AddScoped<Commands.Searching.GetSuggestions>()
             .AddScoped<Commands.Searching.RemoveSearch>();

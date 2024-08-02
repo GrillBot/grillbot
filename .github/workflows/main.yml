@@ -16,7 +16,7 @@ jobs:
   ShouldDeploy:
     runs-on: ubuntu-latest
     outputs:
-      Bot: ${{ steps.filter.output.Bot }}
+      Bot: ${{ steps.filter.outputs.Bot }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

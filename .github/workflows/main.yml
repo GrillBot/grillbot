@@ -13,6 +13,20 @@ env:
   DOTNET_NOLOGO: true
 
 jobs:
+  ShouldDeploy:
+    runs-on: ubuntu-latest
+    outputs:
+      Bot: ${{ steps.filter.output.Bot }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Paths filter
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            Bot:
+              - 'src/**'
   CheckStaticContent:
     runs-on: ubuntu-latest
     steps:
@@ -49,14 +63,12 @@ jobs:
           dotnet restore -r linux-x64 src/GrillBot.Database/
           dotnet restore -r linux-x64 src/GrillBot.Data/
           dotnet restore -r linux-x64 src/GrillBot.App/
-      - name: Build (DEBUG)
-        run: dotnet build -c Debug -r linux-x64 --no-self-contained --no-restore src/GrillBot.App/
       - name: Build (RELEASE)
         run: dotnet build -c Release -r linux-x64 --no-self-contained --no-restore src/GrillBot.App/
   CreateDockerImage:
     runs-on: ubuntu-latest
-    needs: [CheckStaticContent, BuildBot]
-    if: github.ref == 'refs/heads/master'
+    needs: [ShouldDeploy, CheckStaticContent, BuildBot]
+    if: needs.ShouldDeploy.outputs.Bot == 'true' && github.ref == 'refs/heads/master'
     permissions:
       contents: read
       packages: write

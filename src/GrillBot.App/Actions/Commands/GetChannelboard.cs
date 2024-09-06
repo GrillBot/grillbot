@@ -50,9 +50,9 @@ public class GetChannelboard : CommandAction
         var visibleChannels = await GetAvailableChannelsAsync();
 
         await using var repository = DatabaseBuilder.CreateRepository();
-        var statistics = await repository.Channel.GetAvailableStatsAsync(Context.Guild, visibleChannels.Select(o => o.Id.ToString()));
+        var statisticsCount = await repository.Channel.GetAvailableStatsCountAsync(Context.Guild, visibleChannels.Select(o => o.Id.ToString()));
 
-        return ComputePagesCount(statistics.Count);
+        return ComputePagesCount(statisticsCount);
     }
 
     private static int ComputePagesCount(int statisticsCount)

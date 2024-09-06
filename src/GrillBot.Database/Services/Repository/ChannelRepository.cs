@@ -229,6 +229,29 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
+    public async Task<int> GetAvailableStatsCountAsync(IGuild guild, IEnumerable<string> availableChannelIds, bool showInvisible = false)
+    {
+        using (CreateCounter())
+        {
+            var query = Context.UserChannels.AsNoTracking()
+                .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString() && availableChannelIds.Contains(o.ChannelId));
+
+            if (!showInvisible)
+                query = query.Where(o => (o.Channel.Flags & (long)ChannelFlag.StatsHidden) == 0);
+
+            var groupQuery = query.GroupBy(o => o.ChannelId)
+                .Select(o => new
+                {
+                    ChannelId = o.Key,
+                    Count = o.Sum(x => x.Count),
+                    LastMessageAt = o.Max(x => x.LastMessageAt),
+                    FirstMessageAt = o.Min(x => x.FirstMessageAt)
+                });
+
+            return await groupQuery.CountAsync();
+        }
+    }
+
     public async Task<bool> IsChannelEphemeralAsync(IGuild guild, IChannel channel)
     {
         using (CreateCounter())

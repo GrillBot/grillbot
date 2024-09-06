@@ -77,7 +77,7 @@ public class JwtTokenManager
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Role, userRole),
-                new Claim("GrillBot:Permissions", string.Join(", ", CreatePermissions(userRole, interaction)))
+                new Claim("GrillBot:Permissions", string.Join(",", CreatePermissions(userRole, interaction)))
             })
         };
 

@@ -75,10 +75,10 @@ public class RemindModule : InteractionsModuleBase
 
     [RequireSameUserAsAuthor]
     [ComponentInteraction("remind:*", ignoreGroupNames: true)]
-    public async Task HandleRemindListPaginationAsync(int page)
+    public Task HandleRemindListPaginationAsync(int page)
     {
         var handler = new RemindPaginationHandler(page, ServiceProvider);
-        await handler.ProcessAsync(Context);
+        return handler.ProcessAsync(Context);
     }
 
     [ComponentInteraction("remind_copy:*", ignoreGroupNames: true)]
@@ -108,14 +108,14 @@ public class RemindModule : InteractionsModuleBase
 
     [ComponentInteraction("remind_postpone:*", ignoreGroupNames: true)]
     [AllowDms]
-    public async Task HandleRemindPostponeAsync(int hours)
+    public Task HandleRemindPostponeAsync(int hours)
     {
         var handler = new RemindPostponeHandler(hours, ServiceProvider);
-        await handler.ProcessAsync(Context);
+        return handler.ProcessAsync(Context);
     }
 
     [ComponentInteraction("remove_remind", ignoreGroupNames: true)]
     [AllowDms]
-    public async Task RemoveRemindAsync()
-        => await new RemindRemoveHandler().ProcessAsync(Context);
+    public Task RemoveRemindAsync()
+        => new RemindRemoveHandler().ProcessAsync(Context);
 }

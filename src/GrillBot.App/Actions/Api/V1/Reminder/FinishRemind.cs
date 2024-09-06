@@ -50,6 +50,9 @@ public class FinishRemind : ApiAction
             };
 
             await _remindService.CancelReminderAsync(request);
+
+            IsGone = false;
+            IsAuthorized = true;
         }
         catch (ClientBadRequestException ex)
         {

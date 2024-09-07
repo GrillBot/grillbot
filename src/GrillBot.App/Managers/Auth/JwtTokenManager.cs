@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Data.Models.API.OAuth2;
+using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,11 +43,24 @@ public class JwtTokenManager
             return new OAuth2LoginToken(_texts["Auth/CreateToken/PublicAdminBlocked", language].FormatWith(user.Username));
 
         await SynchronizeUserToServicesAsync(user);
-        var (jwt, expiresAt) = GenerateJwtToken(userEntity, userRole, interaction);
-        return new OAuth2LoginToken(jwt, expiresAt);
+        return GenerateJwtToken(userEntity, userRole, interaction, null);
     }
 
-    private static string? ResolveRole(Database.Entity.User user, IInteractionContext? interaction)
+    public OAuth2LoginToken CreateTokenForApiClient(ApiClient client, string language)
+    {
+        var userEntity = new User
+        {
+            GlobalAlias = client.Name,
+            Language = language,
+            Id = client.Id,
+            Status = UserStatus.Online,
+            Username = client.Name
+        };
+
+        return GenerateJwtToken(userEntity, "ApiV2", null, client);
+    }
+
+    private static string? ResolveRole(User user, IInteractionContext? interaction)
     {
         if (interaction is not null)
             return user.HaveFlags(UserFlags.CommandsDisabled) ? null : "Command";
@@ -56,11 +70,10 @@ public class JwtTokenManager
         return user.HaveFlags(UserFlags.WebAdmin) ? "Administrator" : "User";
     }
 
-    private (string jwt, DateTimeOffset expiresAt) GenerateJwtToken(Database.Entity.User user, string userRole, IInteractionContext? interaction)
+    private OAuth2LoginToken GenerateJwtToken(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient)
     {
         var expiresAt = ResolveTokenExpiration(userRole);
-        var instanceInfo = $"{Environment.MachineName}/{Environment.UserName}";
-        var issuer = $"GrillBot/{instanceInfo}";
+        var issuer = $"GrillBot/{Environment.MachineName}/{Environment.UserName}";
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -72,18 +85,13 @@ public class JwtTokenManager
                 new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{_configuration["Auth:OAuth2:ClientId"]}_{_configuration["Auth:OAuth2:ClientSecret"]}")),
                 SecurityAlgorithms.HmacSha256Signature
             ),
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Role, userRole),
-                new Claim("GrillBot:Permissions", string.Join(",", CreatePermissions(userRole, interaction)))
-            })
+            Subject = new ClaimsIdentity(ResolveClaims(user, userRole, interaction, apiClient))
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        return (tokenHandler.WriteToken(token), expiresAt);
+
+        return new OAuth2LoginToken(tokenHandler.WriteToken(token), expiresAt);
     }
 
     private DateTimeOffset ResolveTokenExpiration(string userRole)
@@ -97,22 +105,36 @@ public class JwtTokenManager
         {
             "Administrator" => now.AddDays(1),
             "Command" => now.AddMinutes(20),
-            _ => now.AddHours(4)
+            "ApiV2" => now.AddMinutes(10),
+            "User" => now.AddHours(4),
+            _ => throw new NotSupportedException()
         };
     }
 
-    private async Task SynchronizeUserToServicesAsync(IUser user)
+    private static IEnumerable<Claim> ResolveClaims(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient)
     {
-        await _serviceProvider.GetRequiredService<PointsManager>()
-            .PushSynchronizationUsersAsync(new[] { user });
+        yield return new Claim(ClaimTypes.Name, user.Username);
+        yield return new Claim(ClaimTypes.NameIdentifier, user.Id);
+        yield return new Claim(ClaimTypes.Role, userRole);
+        yield return new Claim("GrillBot:Permissions", string.Join(",", CreatePermissions(userRole, interaction, apiClient)));
+
+        if (apiClient is not null)
+            yield return new Claim("GrillBot:ThirdPartyKey", apiClient.Id);
     }
 
-    private static IEnumerable<string> CreatePermissions(string role, IInteractionContext? interaction)
+    private static IEnumerable<string> CreatePermissions(string role, IInteractionContext? interaction, ApiClient? apiClient)
     {
         if (interaction is not null)
         {
             yield return interaction.Interaction.Data?.ToString() ?? "-";
             yield return $"GuildId:{interaction.Guild?.Id}";
+            yield break;
+        }
+
+        if (apiClient is not null)
+        {
+            foreach (var method in apiClient.AllowedMethods)
+                yield return method;
             yield break;
         }
 
@@ -136,5 +158,11 @@ public class JwtTokenManager
         yield return "Lookups";
         yield return "Points(Leaderboard)";
         yield return "Points(UserStatus)";
+    }
+
+    private async Task SynchronizeUserToServicesAsync(IUser user)
+    {
+        await _serviceProvider.GetRequiredService<PointsManager>()
+            .PushSynchronizationUsersAsync(new[] { user });
     }
 }

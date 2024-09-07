@@ -40,6 +40,8 @@ public class EmptyUserMessage : IUserMessage
     public IMessageInteraction Interaction => throw new NotImplementedException();
     public MessageRoleSubscriptionData RoleSubscriptionData => throw new NotImplementedException();
     public DateTimeOffset CreatedAt => throw new NotImplementedException();
+    public PurchaseNotification PurchaseNotification => throw new NotImplementedException();
+    public MessageCallData? CallData => throw new NotImplementedException();
     public ulong Id { get; }
 
     public EmptyUserMessage(ulong id)

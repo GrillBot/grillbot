@@ -1,5 +1,7 @@
 ﻿using System.Security.Claims;
+using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Models;
+using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 using Microsoft.AspNetCore.Mvc;
@@ -78,6 +80,11 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
     private static void SetIdentification(ActionContext context, ApiClient client)
     {
         var apiRequestContext = context.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
+
+        var jwtToken = context.HttpContext.RequestServices.GetRequiredService<JwtTokenManager>()
+            .CreateTokenForApiClient(client, apiRequestContext.Language);
+        if (!string.IsNullOrEmpty(jwtToken?.AccessToken))
+            context.HttpContext.RequestServices.GetRequiredService<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
 
         apiRequestContext.LogRequest.Identification = $"PublicApiV2({client.Name})";
         apiRequestContext.LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity(new[]

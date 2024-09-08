@@ -31,6 +31,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using GrillBot.App.Infrastructure.JsonConverters;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 namespace GrillBot.App;
 
 public class Startup
@@ -240,10 +242,19 @@ public class Startup
         services.Configure<ForwardedHeadersOptions>(opt => opt.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
     }
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)
     {
         app.InitDatabase<GrillBotContext>();
         app.InitCache();
+
+        if (environment.IsProduction())
+        {
+            app.Use((ctx, next) =>
+            {
+                ctx.Request.Scheme = "https";
+                return next();
+            });
+        }
 
         app.Use((context, next) =>
         {

@@ -77,6 +77,7 @@ public class AuthController : Core.Infrastructure.Actions.ControllerBase
     [HttpGet("oauth2")]
     [Authorize(AuthenticationSchemes = "Discord")]
     [ApiExplorerSettings(GroupName = "v3")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public Task<IActionResult> OAuth2Async()
         => ProcessAsync<OAuth2Action>();
 
@@ -86,6 +87,7 @@ public class AuthController : Core.Infrastructure.Actions.ControllerBase
     [HttpGet("oauth2/jwt")]
     [Authorize(AuthenticationSchemes = "Discord")]
     [ApiExplorerSettings(GroupName = "v3")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public Task<IActionResult> CreateJwtToken()
         => ProcessAsync<CreateJwtTokenAction>();
 }

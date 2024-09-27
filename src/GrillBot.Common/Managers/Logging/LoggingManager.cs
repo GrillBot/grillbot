@@ -7,23 +7,19 @@ namespace GrillBot.Common.Managers.Logging;
 
 public class LoggingManager
 {
-    private DiscordSocketClient DiscordClient { get; }
-    private InteractionService InteractionService { get; }
-    private IServiceProvider ServiceProvider { get; }
+    private readonly IServiceProvider _serviceProvider;
 
     public LoggingManager(DiscordSocketClient discordClient, InteractionService interactionService, IServiceProvider serviceProvider)
     {
-        DiscordClient = discordClient;
-        ServiceProvider = serviceProvider;
-        InteractionService = interactionService;
+        _serviceProvider = serviceProvider;
 
-        DiscordClient.Log += OnLogAsync;
-        InteractionService.Log += OnLogAsync;
+        interactionService.Log += OnLogAsync;
+        discordClient.Log += OnLogAsync;
     }
 
     private async Task OnLogAsync(LogMessage message)
     {
-        foreach (var handler in ServiceProvider.GetServices<ILoggingHandler>())
+        foreach (var handler in _serviceProvider.GetServices<ILoggingHandler>())
         {
             if (!await handler.CanHandleAsync(message.Severity, message.Source, message.Exception))
                 continue;

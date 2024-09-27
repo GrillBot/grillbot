@@ -268,7 +268,7 @@ public class Startup
         app.UseForwardedHeaders();
         var corsOrigins = Configuration.GetSection("CORS:Origins").AsEnumerable()
             .Select(o => o.Value).Where(o => !string.IsNullOrEmpty(o)).ToArray();
-        app.UseCors(policy => policy.WithMethods("GET", "POST", "PUT", "DELETE", "PATCH").AllowAnyHeader().WithOrigins(corsOrigins!));
+        app.UseCors(policy => policy.WithMethods("GET", "POST", "PUT", "DELETE", "PATCH").AllowAnyHeader().WithOrigins(corsOrigins!).AllowCredentials());
 
         app.UseResponseCaching();
         app.UseRouting();

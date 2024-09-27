@@ -103,6 +103,13 @@ public class DashboardController : Core.Infrastructure.Actions.ControllerBase
         => ProcessAsync<GetServiceInfoAction>(serviceId);
 
     [JwtAuthorize("Dashboard(Admin)")]
+    [HttpGet("service-info/{serviceId}/detail")]
+    [ApiExplorerSettings(GroupName = "v3")]
+    [ProducesResponseType(typeof(ServiceDetail), StatusCodes.Status200OK)]
+    public Task<IActionResult> GetServiceDetailAsync(string serviceId)
+        => ProcessAsync<GetServiceDetailAction>(serviceId);
+
+    [JwtAuthorize("Dashboard(Admin)")]
     [HttpGet("top-heavy-operations")]
     [ApiExplorerSettings(GroupName = "v3")]
     [ProducesResponseType(typeof(List<CounterStats>), StatusCodes.Status200OK)]

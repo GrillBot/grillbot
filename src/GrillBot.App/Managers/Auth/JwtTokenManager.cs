@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -116,6 +117,7 @@ public class JwtTokenManager
         yield return new Claim(ClaimTypes.Name, user.Username);
         yield return new Claim(ClaimTypes.NameIdentifier, user.Id);
         yield return new Claim(ClaimTypes.Role, userRole);
+        yield return new Claim(ClaimTypes.UserData, user.AvatarUrl ?? CDN.GetDefaultUserAvatarUrl(user.Id.ToUlong()));
         yield return new Claim("GrillBot:Permissions", string.Join(",", CreatePermissions(userRole, interaction, apiClient)));
 
         if (apiClient is not null)

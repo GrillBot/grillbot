@@ -49,13 +49,15 @@ public class JwtTokenManager
 
     public OAuth2LoginToken CreateTokenForApiClient(ApiClient client, string language)
     {
+        var userAvatarId = SnowflakeUtils.ToSnowflake(DateTimeOffset.UtcNow);
         var userEntity = new User
         {
             GlobalAlias = client.Name,
             Language = language,
             Id = client.Id,
             Status = UserStatus.Online,
-            Username = client.Name
+            Username = client.Name,
+            AvatarUrl = CDN.GetDefaultUserAvatarUrl(userAvatarId)
         };
 
         return GenerateJwtToken(userEntity, "ApiV2", null, client);
@@ -117,8 +119,10 @@ public class JwtTokenManager
         yield return new Claim(ClaimTypes.Name, user.Username);
         yield return new Claim(ClaimTypes.NameIdentifier, user.Id);
         yield return new Claim(ClaimTypes.Role, userRole);
-        yield return new Claim(ClaimTypes.UserData, user.AvatarUrl ?? CDN.GetDefaultUserAvatarUrl(user.Id.ToUlong()));
         yield return new Claim("GrillBot:Permissions", string.Join(",", CreatePermissions(userRole, interaction, apiClient)));
+
+        if (!string.IsNullOrEmpty(user.AvatarUrl))
+            yield return new Claim(ClaimTypes.UserData, user.AvatarUrl);
 
         if (apiClient is not null)
             yield return new Claim("GrillBot:ThirdPartyKey", apiClient.Id);

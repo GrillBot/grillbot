@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Actions.Api.V3.DataResolve;
+﻿using GrillBot.App.Actions.Api.V3.Lookup;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.API;
@@ -23,6 +23,11 @@ public class LookupController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> ResolveGuildAsync(ulong guildId)
         => ProcessAsync<LookupAction>(DataResolveType.Guild, guildId);
+
+    [HttpGet("guild/list")]
+    [ResponseCache(CacheProfileName = "LookupListCache")]
+    public Task<IActionResult> ResolveGuildListAsync()
+        => ProcessAsync<LookupListAction>(DataResolveType.Guild);
 
     [HttpGet("channel/{guildId}/{channelId}")]
     [ProducesResponseType(typeof(Channel), StatusCodes.Status200OK)]

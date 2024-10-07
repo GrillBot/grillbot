@@ -6,7 +6,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Enums;
 
-namespace GrillBot.App.Actions.Api.V3.DataResolve;
+namespace GrillBot.App.Actions.Api.V3.Lookup;
 
 public class LookupAction : ApiAction
 {
@@ -31,7 +31,7 @@ public class LookupAction : ApiAction
             DataResolveType.User => ResolveUserAsync(),
             DataResolveType.GuildUser => ResolveGuildUserAsync(),
             DataResolveType.FileSasLink => ResolveSasLinkAsync(),
-            _ => throw new NotSupportedException()
+            _ => Task.FromException<ApiResult>(new NotSupportedException())
         };
     }
 

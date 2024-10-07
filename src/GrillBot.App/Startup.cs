@@ -97,6 +97,12 @@ public class Startup
                 c.Filters.Add<RequestFilter>();
                 c.Filters.Add<ResultFilter>();
                 c.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+
+                c.CacheProfiles.Add("LookupListCache", new CacheProfile
+                {
+                    Duration = 5 * 60,
+                    Location = ResponseCacheLocation.Client
+                });
             })
             .AddNewtonsoftJson(setup => setup.SerializerSettings.Converters.Add(new SystemTextJsonToNewtonsoftConverter()));
 

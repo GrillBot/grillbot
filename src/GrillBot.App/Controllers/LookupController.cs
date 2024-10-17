@@ -25,6 +25,7 @@ public class LookupController : Core.Infrastructure.Actions.ControllerBase
         => ProcessAsync<LookupAction>(DataResolveType.Guild, guildId);
 
     [HttpGet("guild/list")]
+    [ProducesResponseType(typeof(List<Guild>), StatusCodes.Status200OK)]
     [ResponseCache(CacheProfileName = "LookupListCache")]
     public Task<IActionResult> ResolveGuildListAsync()
         => ProcessAsync<LookupListAction>(DataResolveType.Guild);
@@ -46,6 +47,12 @@ public class LookupController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> ResolveUserAsync(ulong userId)
         => ProcessAsync<LookupAction>(DataResolveType.User, userId);
+
+    [HttpGet("user/list")]
+    [ProducesResponseType(typeof(List<User>), StatusCodes.Status200OK)]
+    [ResponseCache(CacheProfileName = "LookupListCache")]
+    public Task<IActionResult> ResolveUserListAsync()
+        => ProcessAsync<LookupListAction>(DataResolveType.User);
 
     [HttpGet("user/{guildId}/{userId}")]
     [ProducesResponseType(typeof(GuildUser), StatusCodes.Status200OK)]

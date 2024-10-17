@@ -4,6 +4,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Enums;
 using GrillBot.Data.Models.API.Guilds;
+using GrillBot.Data.Models.API.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.App.Actions.Api.V3.Lookup;
@@ -28,6 +29,7 @@ public class LookupListAction : ApiAction
         return type switch
         {
             DataResolveType.Guild => ResolveGuildListAsync(),
+            DataResolveType.User => ResolveUserListAsync(),
             _ => Task.FromException<ApiResult>(new NotSupportedException())
         };
     }
@@ -36,9 +38,7 @@ public class LookupListAction : ApiAction
     {
         if (ApiContext.IsPublic())
         {
-            var loggedUserId = ApiContext.GetUserId();
-            var mutualGuilds = await _discordClient.FindMutualGuildsAsync(loggedUserId);
-
+            var mutualGuilds = await GetMutualGuildsAsync();
             return ApiResult.Ok(_mapper.Map<Guild>(mutualGuilds));
         }
 
@@ -47,5 +47,31 @@ public class LookupListAction : ApiAction
         var guilds = await mappedQuery.ToListAsync();
 
         return ApiResult.Ok(guilds);
+    }
+
+    private async Task<ApiResult> ResolveUserListAsync()
+    {
+        var query = _dbContext.Users
+            .OrderBy(o => o.GlobalAlias ?? o.Username)
+            .ThenBy(o => o.Username)
+            .ThenBy(o => o.Id)
+            .AsNoTracking();
+
+        if (ApiContext.IsPublic())
+        {
+            var mutualGuilds = (await GetMutualGuildsAsync()).Select(o => o.Id.ToString()).ToArray();
+            query = query.Where(o => o.Guilds.Any(g => mutualGuilds.Contains(g.GuildId)));
+        }
+
+        var mappedQuery = _mapper.ProjectTo<User>(query);
+        var users = await mappedQuery.ToListAsync();
+
+        return ApiResult.Ok(users);
+    }
+
+    private Task<List<IGuild>> GetMutualGuildsAsync()
+    {
+        var loggedUserId = ApiContext.GetUserId();
+        return _discordClient.FindMutualGuildsAsync(loggedUserId);
     }
 }

@@ -69,7 +69,7 @@ public class PointsController : ServiceControllerBase<IPointsServiceClient>
     public Task<IActionResult> DeleteTransactionAsync(
         [DiscordId, StringLength(32)] string guildId,
         [DiscordId, StringLength(32)] string messageId,
-        [DiscordId, StringLength(32), FromQuery] string? reactionId = null
+        [FromQuery] string? reactionId = null
     ) => ExecuteRabbitPayloadAsync(() => new DeleteTransactionsPayload(guildId, messageId, reactionId));
 
     [HttpPost("list/users")]

@@ -12,18 +12,18 @@ namespace GrillBot.App.Handlers.Logging;
 
 public class AuditLogLoggingHandler : ILoggingHandler
 {
-    private IConfiguration Configuration { get; }
-    private IServiceProvider ServiceProvider { get; }
+    private readonly IConfiguration _configuration;
+    private readonly IServiceProvider _serviceProvider;
 
     public AuditLogLoggingHandler(IConfiguration configuration, IServiceProvider serviceProvider)
     {
-        Configuration = configuration.GetSection("Discord:Logging");
-        ServiceProvider = serviceProvider;
+        _configuration = configuration.GetSection("Discord:Logging");
+        _serviceProvider = serviceProvider;
     }
 
     public Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception? exception = null)
     {
-        if (exception is null || !Configuration.GetValue<bool>("Enabled")) return Task.FromResult(false);
+        if (exception is null || !_configuration.GetValue<bool>("Enabled")) return Task.FromResult(false);
         return Task.FromResult(severity is LogSeverity.Critical or LogSeverity.Error or LogSeverity.Warning);
     }
 
@@ -58,7 +58,7 @@ public class AuditLogLoggingHandler : ILoggingHandler
         var logRequest = CreateLogRequest(isWarning, source, message, exception, user);
         var payload = new CreateItemsPayload(logRequest);
 
-        using var scope = ServiceProvider.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
         var rabbitPublisher = scope.ServiceProvider.GetRequiredService<IRabbitMQPublisher>();
 
         await rabbitPublisher.PublishAsync(payload, new());

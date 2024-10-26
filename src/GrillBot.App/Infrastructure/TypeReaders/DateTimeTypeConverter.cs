@@ -28,7 +28,11 @@ public class DateTimeTypeConverter : TypeConverterBase<DateTime>
 
         while (timeShift.Success)
         {
-            var timeValue = timeShift.Groups[1].Value.ToInt();
+            if (!int.TryParse(timeShift.Groups[1].Value, CultureInfo.InvariantCulture, out var timeValue))
+            {
+                timeShiftMatched = false;
+                break;
+            }
 
             switch (timeShift.Groups[2].Value)
             {

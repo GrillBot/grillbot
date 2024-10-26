@@ -17,17 +17,28 @@ public static class LoggingHelper
         var conditions = new Func<bool>[]
         {
             () => ex is GatewayReconnectException || ex.InnerException is GatewayReconnectException,
+
             () => ex.InnerException is null && ex.Message.StartsWith("Server missed last heartbeat", StringComparison.InvariantCultureIgnoreCase),
+
             () => ex is TaskCanceledException or HttpRequestException && ex.InnerException is IOException { InnerException: SocketException se } &&
                 new[] { SocketError.TimedOut, SocketError.ConnectionAborted }.Contains(se.SocketErrorCode),
+
             // 11 is magic constant represents error "Resource temporarily unavailable".
             () => ex is HttpRequestException && ex.InnerException is SocketException { ErrorCode: 11 },
+
             () => ex.InnerException is WebSocketException or WebSocketClosedException,
+
             () => ex is TaskCanceledException && ex.InnerException is null,
+
             () => ex is HttpException { HttpCode: HttpStatusCode.ServiceUnavailable },
+
             () => ex is TimeoutException && (ex.Message.Contains("defer") || ex.Message.Contains("Cannot respond to an interaction after 3 seconds!")),
+
             () => source == "RemoveUnverify" && ex is DbUpdateConcurrencyException,
-            () => ex is HttpException { DiscordCode: DiscordErrorCode.UnknownInteraction }
+
+            () => ex is HttpException { DiscordCode: DiscordErrorCode.UnknownInteraction },
+
+            () => ex is WebSocketException { WebSocketErrorCode: WebSocketError.Faulted }
         };
 
         return Array.Exists(conditions, o => o());

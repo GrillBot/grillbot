@@ -42,6 +42,7 @@ public class EmptyUserMessage : IUserMessage
     public DateTimeOffset CreatedAt => throw new NotImplementedException();
     public PurchaseNotification PurchaseNotification => throw new NotImplementedException();
     public MessageCallData? CallData => throw new NotImplementedException();
+    public IReadOnlyCollection<MessageSnapshot> ForwardedMessages => throw new NotImplementedException();
     public ulong Id { get; }
 
     public EmptyUserMessage(ulong id)

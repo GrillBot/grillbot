@@ -295,7 +295,8 @@
         "RemoveSearch": {
             "Success": "The search was successfully deleted.",
             "InsufficientPermissions": "You did not create this search and you also do not have elevated permissions to delete a search.",
-            "UnknownExecutor": "Internal error. Couldn't find you."
+            "UnknownExecutor": "Internal error. Couldn't find you.",
+            "NotFound": "Nothing matching your search was found."
         },
         "List": {
             "Embed": {

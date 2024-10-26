@@ -28,5 +28,9 @@ public class RemoveSearch : CommandAction
             var validationError = ex.ValidationErrors.Values.SelectMany(o => o).First();
             ErrorMessage = _texts[validationError, Locale];
         }
+        catch (ClientNotFoundException)
+        {
+            ErrorMessage = _texts["SearchingModule/RemoveSearch/NotFound", Locale];
+        }
     }
 }

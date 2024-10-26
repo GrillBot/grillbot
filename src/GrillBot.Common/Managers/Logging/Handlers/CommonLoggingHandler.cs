@@ -5,11 +5,11 @@ namespace GrillBot.Common.Managers.Logging.Handlers;
 
 public class CommonLoggerHandler : ILoggingHandler
 {
-    private ILoggerFactory Factory { get; }
+    private readonly ILoggerFactory _factory;
 
     public CommonLoggerHandler(ILoggerFactory factory)
     {
-        Factory = factory;
+        _factory = factory;
     }
 
     public Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception? exception = null)
@@ -40,5 +40,5 @@ public class CommonLoggerHandler : ILoggingHandler
         return Task.CompletedTask;
     }
 
-    private ILogger CreateLogger(string source) => Factory.CreateLogger(source);
+    private ILogger CreateLogger(string source) => _factory.CreateLogger(source);
 }

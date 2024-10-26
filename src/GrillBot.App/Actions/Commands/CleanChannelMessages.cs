@@ -11,8 +11,8 @@ public class CleanChannelMessages : CommandAction
 {
     private const long DiscordEpoch = 1420070400000L;
 
-    private ITextsManager Texts { get; }
-    private IMessageCacheManager MessageCache { get; }
+    private readonly ITextsManager _texts;
+    private readonly IMessageCacheManager _messageCache;
 
     private RequestOptions RequestOptions => new()
     {
@@ -23,14 +23,14 @@ public class CleanChannelMessages : CommandAction
 
     public CleanChannelMessages(ITextsManager texts, IMessageCacheManager messageCache)
     {
-        Texts = texts;
-        MessageCache = messageCache;
+        _texts = texts;
+        _messageCache = messageCache;
     }
 
     public async Task<string> ProcessAsync(string criterium, IGuildChannel? channel)
     {
         if (channel is not null && channel is not ITextChannel)
-            return Texts["ChannelModule/Clean/UnsupportedChannel", Locale];
+            return _texts["ChannelModule/Clean/UnsupportedChannel", Locale];
 
         var guildTextChannel = channel as ITextChannel ?? (ITextChannel)Context.Channel;
         var countOrIdValue = ParseValue(criterium);
@@ -38,7 +38,7 @@ public class CleanChannelMessages : CommandAction
         var count = countOrIdValue < DiscordEpoch ? Convert.ToInt32(countOrIdValue) : 0;
         var (totalCount, pinnedCount) = await ProcessMessagesAsync(messages, count);
 
-        return Texts["ChannelModule/Clean/ResultMessage", Locale].FormatWith(totalCount, pinnedCount);
+        return _texts["ChannelModule/Clean/ResultMessage", Locale].FormatWith(totalCount, pinnedCount);
     }
 
     private static ulong ParseValue(string countOrMessage)
@@ -59,11 +59,17 @@ public class CleanChannelMessages : CommandAction
 
     private async Task<(int total, int pinned)> ProcessMessagesAsync(IEnumerable<IMessage> messages, int count)
     {
-        var messagesQuery = messages.Where(o => o.Id != Context.Interaction.Id && o.Interaction?.Id != Context.Interaction.Id);
-        if (count > 0) messagesQuery = messagesQuery.OrderByDescending(o => o.CreatedAt).Take(count);
-        var messagesData = messagesQuery.ToList();
+        var messagesQuery = messages.Where(o =>
+            o.Id != Context.Interaction.Id &&
+            (o is not IUserMessage userMessage || userMessage.InteractionMetadata?.Id != Context.Interaction.Id)
+        );
 
+        if (count > 0)
+            messagesQuery = messagesQuery.OrderByDescending(o => o.CreatedAt).Take(count);
+
+        var messagesData = messagesQuery.ToList();
         var pinnedCount = messagesData.Count(o => o.IsPinned);
+
         foreach (var message in messagesData)
             await DeleteMessageAsync(message);
 
@@ -74,7 +80,7 @@ public class CleanChannelMessages : CommandAction
     {
         try
         {
-            await MessageCache.DeleteAsync(message.Id);
+            await _messageCache.DeleteAsync(message.Id);
             await message.DeleteAsync(RequestOptions);
         }
         catch (HttpException ex) when (IsExpectedApiError(ex))

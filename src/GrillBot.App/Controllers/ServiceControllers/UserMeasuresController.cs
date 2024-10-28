@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Controllers.ServiceControllers;
 
+[JwtAuthorize("UserMeasures(Admin)")]
 public class UserMeasuresController : ServiceControllerBase<IUserMeasuresServiceClient>
 {
     public UserMeasuresController(IServiceProvider serviceProvider) : base(serviceProvider)
@@ -17,30 +18,26 @@ public class UserMeasuresController : ServiceControllerBase<IUserMeasuresService
     }
 
     [HttpPost("measures-list")]
-    [JwtAuthorize("UserMeasures(Admin)", "UserMeasures(OnlyMyMeasures)")]
     [ProducesResponseType(typeof(PaginatedResponse<MeasuresItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetMeasuresListAsync([FromBody] MeasuresListParams parameters)
         => ExecuteAsync(async client => await client.GetMeasuresListAsync(parameters), parameters);
 
     [HttpDelete("{measureId}")]
-    [JwtAuthorize("UserMeasures(Admin)", "UserMeasures(OnlyMyMeasures)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    public Task<IActionResult> DeleteMeasureAsync([FromBody] Guid measureId)
+    public Task<IActionResult> DeleteMeasureAsync([FromRoute] Guid measureId)
         => ExecuteAsync(async client => await client.DeleteMeasureAsync(DeleteMeasuresRequest.FromInternalId(measureId)));
 
     [HttpPost("member-warning")]
-    [JwtAuthorize("UserMeasures(Admin)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> CreateMemberWarningAsync([FromBody] CreateMemberWarningParams parameters)
         => ExecuteAsync<CreateMemberWarningAction>(parameters);
 
     [HttpGet("dashboard")]
-    [JwtAuthorize("UserMeasures(Admin)")]
     [ProducesResponseType(typeof(List<DashboardRow>), StatusCodes.Status200OK)]
     public Task<IActionResult> GetDashboard()
         => ExecuteAsync(async client => await client.GetDashboardDataAsync());

@@ -165,10 +165,6 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.User.UpdateUser>()
             .AddScoped<Api.V1.User.Hearthbeat>();
 
-        services
-            .AddScoped<Api.V1.UserMeasures.CreateUserMeasuresWarning>()
-            .AddScoped<Api.V1.UserMeasures.GetUserMeasuresList>();
-
         // V2
         services
             .AddScoped<Api.V2.GetTodayBirthdayInfo>()
@@ -231,6 +227,10 @@ public static class ActionsExtensions
             .AddScoped<Commands.Unverify.SelfUnverifyKeepables>()
             .AddScoped<Commands.Unverify.SetUnverify>()
             .AddScoped<Commands.Unverify.UnverifyList>();
+
+        // UserMeasures
+        services
+            .AddScoped<Commands.UserMeasures.CreateUserMeasuresWarning>();
 
         services
             .AddScoped<Commands.Permissions.PermissionsCleaner>()

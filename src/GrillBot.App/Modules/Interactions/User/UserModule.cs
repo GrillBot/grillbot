@@ -56,7 +56,7 @@ public class UserModule : InteractionsModuleBase
         bool notification = true
     )
     {
-        using var command = GetActionAsCommand<Actions.Api.V1.UserMeasures.CreateUserMeasuresWarning>();
+        using var command = GetCommand<Actions.Commands.UserMeasures.CreateUserMeasuresWarning>();
         await command.Command.ProcessAsync(user, message, notification);
 
         await SetResponseAsync(GetText(nameof(CreateWarningAsync), "Success"));

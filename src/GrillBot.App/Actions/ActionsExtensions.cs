@@ -113,7 +113,6 @@ public static class ActionsExtensions
 
         // Reminder
         services
-            .AddScoped<Api.V1.Reminder.FinishRemind>()
             .AddScoped<Api.V1.Reminder.GetReminderList>();
 
         // Scheduled jobs
@@ -214,7 +213,8 @@ public static class ActionsExtensions
             .AddScoped<Commands.Reminder.CreateRemind>()
             .AddScoped<Commands.Reminder.CopyRemind>()
             .AddScoped<Commands.Reminder.GetSuggestions>()
-            .AddScoped<Commands.Reminder.GetReminderList>();
+            .AddScoped<Commands.Reminder.GetReminderList>()
+            .AddScoped<Commands.Reminder.FinishRemind>();
 
         // Searching
         services

@@ -32,11 +32,8 @@ public class GetReminderList : ApiAction
 
     public async Task<PaginatedResponse<RemindMessage>> ProcessAsync(GetReminderListParams parameters)
     {
-        CheckAndSetPublicAccess(parameters);
-
         var request = new ReminderListRequest
         {
-            CommandMessageId = parameters.OriginalMessageId,
             FromUserId = parameters.FromUserId,
             MessageContains = parameters.MessageContains,
             NotifyAtFromUtc = parameters.CreatedFrom.HasValue ? parameters.CreatedFrom.Value.WithKind(DateTimeKind.Local).ToUniversalTime() : null,
@@ -49,8 +46,11 @@ public class GetReminderList : ApiAction
                 Descending = parameters.Sort.Descending,
                 OrderBy = parameters.Sort.OrderBy
             },
-            ToUserId = parameters.ToUserId
+            ToUserId = ApiContext.GetUserId().ToString()
         };
+
+        if (request.Sort.OrderBy == "ToUser")
+            request.Sort.OrderBy = "Id";
 
         var data = await _remindService.GetReminderListAsync(request);
         return await PaginatedResponse<RemindMessage>.CopyAndMapAsync(data, MapItemFromServiceAsync);
@@ -72,16 +72,5 @@ public class GetReminderList : ApiAction
             Postpone = item.PostponeCount,
             ToUser = toUser!
         };
-    }
-
-    private void CheckAndSetPublicAccess(GetReminderListParams parameters)
-    {
-        if (!ApiContext.IsPublic()) return;
-
-        parameters.ToUserId = ApiContext.GetUserId().ToString();
-        parameters.OriginalMessageId = null;
-
-        if (parameters.Sort.OrderBy == "ToUser")
-            parameters.Sort.OrderBy = "Id";
     }
 }

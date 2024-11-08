@@ -55,7 +55,7 @@ public class RemindModule : InteractionsModuleBase
         bool notify = false
     )
     {
-        using var action = GetActionAsCommand<Actions.Api.V1.Reminder.FinishRemind>();
+        using var action = GetCommand<Actions.Commands.Reminder.FinishRemind>();
         await action.Command.ProcessAsync(id, notify, false);
 
         if (action.Command.IsGone || !action.Command.IsAuthorized)

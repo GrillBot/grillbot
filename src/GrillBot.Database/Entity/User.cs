@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.Extensions;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.Database.Entity;
 
@@ -68,10 +69,10 @@ public class User
 
     public void Update(IUser user)
     {
-        Username = user.Username.Cut(32, true)!;
+        Username = user.Username.Cut(32, true)!.RemoveInvalidUnicodeChars();
         Status = user.GetStatus();
         AvatarUrl = user.GetUserAvatarUrl();
-        GlobalAlias = user.GlobalName.Cut(32, true)!;
+        GlobalAlias = user.GlobalName.Cut(32, true)!.RemoveInvalidUnicodeChars();
 
         if (user.IsUser())
             Flags &= ~(int)UserFlags.NotUser;

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.Extensions;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.Database.Entity;
 
@@ -74,7 +75,7 @@ public class GuildUser
 
     public void Update(IGuildUser user)
     {
-        Nickname = user.IsUser() ? user.Nickname : user.Nickname?.Cut(32, true);
+        Nickname = (user.IsUser() ? user.Nickname : user.Nickname?.Cut(32, true))?.RemoveInvalidUnicodeChars();
         IsInGuild = true;
         User?.Update(user);
     }

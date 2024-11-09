@@ -1,4 +1,6 @@
-﻿namespace GrillBot.Common.Extensions;
+﻿using System.Text;
+
+namespace GrillBot.Common.Extensions;
 
 public static class StringExtensions
 {
@@ -6,5 +8,12 @@ public static class StringExtensions
         => string.IsNullOrEmpty(value) ? replacement : value;
 
     public static string RemoveInvalidUnicodeChars(this string value)
-        => value.Replace('\uD83C', '\0').Replace('\uDC73', '\0').Replace('\uD83E', '\0');
+    {
+        var sb = new StringBuilder();
+
+        foreach (var character in value.Where(ch => Rune.TryCreate(ch, out _)))
+            sb.Append(character);
+
+        return sb.ToString();
+    }
 }

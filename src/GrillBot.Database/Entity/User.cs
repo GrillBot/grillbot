@@ -72,7 +72,7 @@ public class User
         Username = user.Username.Cut(32, true)!.RemoveInvalidUnicodeChars();
         Status = user.GetStatus();
         AvatarUrl = user.GetUserAvatarUrl();
-        GlobalAlias = user.GlobalName.Cut(32, true)!.RemoveInvalidUnicodeChars();
+        GlobalAlias = user.GlobalName.Cut(32, true)?.RemoveInvalidUnicodeChars();
 
         if (user.IsUser())
             Flags &= ~(int)UserFlags.NotUser;

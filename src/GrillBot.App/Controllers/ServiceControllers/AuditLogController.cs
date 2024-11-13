@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.AuditLog.Models.Events;
 using GrillBot.Core.Services.AuditLog.Models.Request.Search;
 using GrillBot.Core.Services.AuditLog.Models.Response.Detail;
 using GrillBot.Core.Services.AuditLog.Models.Response.Info.Dashboard;
@@ -47,7 +46,7 @@ public class AuditLogController : ServiceControllerBase<IAuditLogServiceClient>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public Task<IActionResult> DeleteItemAsync(Guid id)
-        => ExecuteRabbitPayloadAsync(() => new BulkDeletePayload(new List<Guid> { id }));
+        => ExecuteAsync(async client => await client.DeleteItemAsync(id));
 
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Detail), StatusCodes.Status200OK)]

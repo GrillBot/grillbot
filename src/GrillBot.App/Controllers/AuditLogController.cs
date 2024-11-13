@@ -12,7 +12,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using GrillBot.Core.Services.AuditLog.Models.Events;
+using GrillBot.Core.Services.AuditLog;
+using GrillBot.App.Actions.Api;
 
 namespace GrillBot.App.Controllers;
 
@@ -35,7 +36,13 @@ public class AuditLogController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(MessageResponse), (int)HttpStatusCode.NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public async Task<IActionResult> RemoveItemAsync(Guid id)
-        => await ProcessAsync<RabbitMQPublisherAction>(new BulkDeletePayload(id));
+    {
+        var executor = new Func<IAuditLogServiceClient, Task>(
+            (IAuditLogServiceClient client) => client.DeleteItemAsync(id)
+        );
+
+        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+    }
 
     /// <summary>
     /// Get paginated list of audit logs.

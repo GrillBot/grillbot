@@ -28,6 +28,7 @@ public class CreateRemind : CommandAction
 
     private int MinimalTimeMinutes => Configuration.GetValue<int>("Reminder:MinimalTimeMinutes");
     private string MinimalTime => FormatHelper.FormatNumber("RemindModule/Create/Validation/MinimalTime", Locale, MinimalTimeMinutes);
+    private string MinimalTimeTemplate => _texts["RemindModule/Create/Validation/MinimalTimeTemplate", Locale];
 
     public async Task<long> ProcessAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
     {
@@ -60,7 +61,7 @@ public class CreateRemind : CommandAction
         {
             var minimalTime = Array.Find(firstError.Value, e => e.EndsWith("MinimalTime"));
             if (!string.IsNullOrEmpty(minimalTime))
-                throw new ValidationException(_texts[minimalTime, Locale].FormatWith(MinimalTime));
+                throw new ValidationException(MinimalTimeTemplate.FormatWith(MinimalTime));
         }
 
         return string.IsNullOrEmpty(firstError.Key) || firstError.Value.Length == 0

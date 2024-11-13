@@ -1,15 +1,17 @@
-﻿using AutoMapper;
+﻿using GrillBot.Data.Models.API.Channels;
+using GrillBot.Database.Entity;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace GrillBot.App.Managers.DataResolve;
 
-public class ChannelResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildChannel, Database.Entity.GuildChannel, Data.Models.API.Channels.Channel>
+public class ChannelResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildChannel, GuildChannel, Channel>
 {
-    public ChannelResolver(IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder)
-        : base(discordClient, mapper, databaseBuilder)
+    public ChannelResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMemoryCache memoryCache)
+        : base(discordClient, databaseBuilder, memoryCache)
     {
     }
 
-    public Task<Data.Models.API.Channels.Channel?> GetChannelAsync(ulong guildId, ulong channelId)
+    public Task<Channel?> GetChannelAsync(ulong guildId, ulong channelId)
     {
         return GetMappedEntityAsync(
             Tuple.Create(guildId, channelId),
@@ -20,5 +22,25 @@ public class ChannelResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildChann
             },
             repo => repo.Channel.FindChannelByIdAsync(channelId, guildId, true, includeDeleted: true)
         );
+    }
+
+    protected override Channel Map(IGuildChannel discordEntity)
+    {
+        return new Channel
+        {
+            Id = discordEntity.Id.ToString(),
+            Name = discordEntity.Name,
+            Type = discordEntity.GetChannelType()
+        };
+    }
+
+    protected override Channel Map(GuildChannel entity)
+    {
+        return new Channel
+        {
+            Type = entity.ChannelType,
+            Name = entity.Name,
+            Id = entity.ChannelId
+        };
     }
 }

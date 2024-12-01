@@ -30,6 +30,12 @@ public class DataResolveManager
         return await _channelResolver.GetChannelAsync(guildId, channelId);
     }
 
+    public async Task<ApiModels.Channels.Channel?> GetChannelAsync(ulong channelId)
+    {
+        _channelResolver ??= new ChannelResolver(_discordClient, _databaseBuilder, _memoryCache);
+        return await _channelResolver.GetChannelAsync(channelId);
+    }
+
     public async Task<ApiModels.Guilds.Guild?> GetGuildAsync(ulong guildId)
     {
         _guildResolver ??= new GuildResolver(_discordClient, _databaseBuilder, _memoryCache);

@@ -152,12 +152,14 @@ public class JwtTokenManager
             yield return "Points(Admin)";
             yield return "Remind(Admin)";
             yield return "UserMeasures(Admin)";
+            yield return "Searching(Admin)";
         }
         else
         {
             yield return "Remind(OnlyMyReminders)";
             yield return "Remind(CancelMyReminders)";
             yield return "UserMeasures(OnlyMyMeasures)";
+            yield return "Searching(OnlyMySearches)";
         }
 
         yield return "FrontendLog";

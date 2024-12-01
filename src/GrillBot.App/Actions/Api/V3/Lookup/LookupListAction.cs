@@ -3,6 +3,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Enums;
+using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Data.Models.API.Users;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,7 @@ public class LookupListAction : ApiAction
         {
             DataResolveType.Guild => ResolveGuildListAsync(),
             DataResolveType.User => ResolveUserListAsync(),
+            DataResolveType.Channel => ResolveChannelListAsync(),
             _ => Task.FromException<ApiResult>(new NotSupportedException())
         };
     }
@@ -73,5 +75,37 @@ public class LookupListAction : ApiAction
     {
         var loggedUserId = ApiContext.GetUserId();
         return _discordClient.FindMutualGuildsAsync(loggedUserId);
+    }
+
+    private async Task<ApiResult> ResolveChannelListAsync()
+    {
+        if (ApiContext.IsPublic())
+        {
+            var guilds = await GetMutualGuildsAsync();
+            var visibleChannels = new List<Channel>();
+            var userId = ApiContext.GetUserId();
+
+            foreach (var guild in guilds)
+            {
+                var user = await guild.GetUserAsync(userId);
+                visibleChannels.AddRange(
+                    (await guild.GetAvailableChannelsAsync(user))
+                        .Select(_mapper.Map<Channel>)
+                        .Where(ch => ch.Type != ChannelType.Category && ch.Type != ChannelType.DM)
+                );
+            }
+
+            return ApiResult.Ok(visibleChannels);
+        }
+
+        var baseQuery = _dbContext.Channels
+            .Where(ch => ch.ChannelType != ChannelType.Category && ch.ChannelType != ChannelType.DM)
+            .OrderBy(o => o.Name)
+            .AsNoTracking();
+
+        var query = _mapper.ProjectTo<Channel>(baseQuery);
+        var channels = await query.ToListAsync();
+
+        return ApiResult.Ok(channels);
     }
 }

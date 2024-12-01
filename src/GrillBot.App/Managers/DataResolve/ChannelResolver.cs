@@ -24,6 +24,20 @@ public class ChannelResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildChann
         );
     }
 
+    public async Task<Channel?> GetChannelAsync(ulong channelId)
+    {
+        var guilds = await _discordClient.GetGuildsAsync();
+
+        foreach (var guild in guilds)
+        {
+            var entity = await GetChannelAsync(guild.Id, channelId);
+            if (entity is not null)
+                return entity;
+        }
+
+        return null;
+    }
+
     protected override Channel Map(IGuildChannel discordEntity)
     {
         return new Channel

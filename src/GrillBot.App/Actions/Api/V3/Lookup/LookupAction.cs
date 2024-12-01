@@ -43,10 +43,8 @@ public class LookupAction : ApiAction
 
     private async Task<ApiResult> ResolveChannelAsync()
     {
-        var guildId = GetParameter<ulong>(1);
-        var channelId = GetParameter<ulong>(2);
-
-        return CreateResult(await _dataResolve.GetChannelAsync(guildId, channelId));
+        var channelId = GetParameter<ulong>(1);
+        return CreateResult(await _dataResolve.GetChannelAsync(channelId));
     }
 
     private async Task<ApiResult> ResolveRoleAsync()

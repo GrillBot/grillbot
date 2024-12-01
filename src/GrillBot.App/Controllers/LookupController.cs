@@ -30,11 +30,17 @@ public class LookupController : Core.Infrastructure.Actions.ControllerBase
     public Task<IActionResult> ResolveGuildListAsync()
         => ProcessAsync<LookupListAction>(DataResolveType.Guild);
 
-    [HttpGet("channel/{guildId}/{channelId}")]
+    [HttpGet("channel/{channelId}")]
     [ProducesResponseType(typeof(Channel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public Task<IActionResult> ResolveChannelAsync(ulong guildId, ulong channelId)
-        => ProcessAsync<LookupAction>(DataResolveType.Channel, guildId, channelId);
+    public Task<IActionResult> ResolveChannelAsync(ulong channelId)
+        => ProcessAsync<LookupAction>(DataResolveType.Channel, channelId);
+
+    [HttpGet("channel/list")]
+    [ProducesResponseType(typeof(List<Channel>), StatusCodes.Status200OK)]
+    [ResponseCache(CacheProfileName = "LookupListCache")]
+    public Task<IActionResult> ResolveChannelListAsync()
+        => ProcessAsync<LookupListAction>(DataResolveType.Channel);
 
     [HttpGet("role/{roleId}")]
     [ProducesResponseType(typeof(Role), StatusCodes.Status200OK)]

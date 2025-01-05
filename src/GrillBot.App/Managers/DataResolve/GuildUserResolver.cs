@@ -1,20 +1,20 @@
-﻿using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Enums;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace GrillBot.App.Managers.DataResolve;
 
-public class GuildUserResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildUser, Database.Entity.GuildUser, Data.Models.API.Users.GuildUser>
+public class GuildUserResolver : BaseDataResolver<IGuildUser, Database.Entity.GuildUser, Data.Models.API.Users.GuildUser>
 {
-    public GuildUserResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMemoryCache memoryCache)
-        : base(discordClient, databaseBuilder, memoryCache)
+    public GuildUserResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, DataCacheManager cache)
+        : base(discordClient, databaseBuilder, cache)
     {
     }
 
     public Task<Data.Models.API.Users.GuildUser?> GetGuildUserAsync(ulong guildId, ulong userId)
     {
         return GetMappedEntityAsync(
-            Tuple.Create(guildId, userId),
+            $"GuildUser({guildId}-{userId})",
             async () =>
             {
                 var guild = await _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);

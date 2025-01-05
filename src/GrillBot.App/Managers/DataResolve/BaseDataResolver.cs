@@ -1,58 +1,59 @@
-﻿using GrillBot.Database.Services.Repository;
-using Microsoft.Extensions.Caching.Memory;
+﻿using GrillBot.Cache.Services.Managers;
+using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Managers.DataResolve;
 
-public abstract class BaseDataResolver<TKey, TDiscordEntity, TDatabaseEntity, TMappedValue>
-    where TDiscordEntity : class where TKey : notnull where TDatabaseEntity : class
+public abstract class BaseDataResolver<TDiscordEntity, TDatabaseEntity, TMappedValue>
+    where TDiscordEntity : class where TDatabaseEntity : class
 {
     protected readonly IDiscordClient _discordClient;
     protected readonly GrillBotDatabaseBuilder _databaseBuilder;
-    private readonly IMemoryCache _memoryCache;
+    private readonly DataCacheManager _dataCache;
 
     protected BaseDataResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder,
-        IMemoryCache memoryCache)
+        DataCacheManager dataCache)
     {
         _discordClient = discordClient;
         _databaseBuilder = databaseBuilder;
-        _memoryCache = memoryCache;
+        _dataCache = dataCache;
     }
 
     protected abstract TMappedValue Map(TDiscordEntity discordEntity);
     protected abstract TMappedValue Map(TDatabaseEntity entity);
 
-    private TMappedValue MapAndStore(TKey key, TDiscordEntity entity)
+    private async Task<TMappedValue> MapAndStoreAsync(string key, TDiscordEntity entity)
     {
         var mapped = Map(entity);
-        _memoryCache.Set(key, mapped, DateTimeOffset.UtcNow.AddHours(1));
+        await _dataCache.SetValueAsync(key, mapped, TimeSpan.FromHours(1));
 
         return mapped;
     }
 
-    private TMappedValue MapAndStore(TKey key, TDatabaseEntity entity)
+    private async Task<TMappedValue> MapAndStoreAsync(string key, TDatabaseEntity entity)
     {
         var mapped = Map(entity);
-        _memoryCache.Set(key, mapped, DateTimeOffset.UtcNow.AddHours(1));
+        await _dataCache.SetValueAsync(key, mapped, TimeSpan.FromHours(1));
 
         return mapped;
     }
 
     protected async Task<TMappedValue?> GetMappedEntityAsync(
-        TKey key,
+        string key,
         Func<Task<TDiscordEntity?>> readDiscordEntity,
         Func<GrillBotRepository, Task<TDatabaseEntity?>> readDatabaseEntity
     )
     {
-        if (_memoryCache.TryGetValue<TMappedValue>(key, out var value))
+        var value = await _dataCache.GetValueAsync<TMappedValue>(key);
+        if (value is not null)
             return value;
 
         var discordEntity = await readDiscordEntity();
         if (discordEntity is not null)
-            return MapAndStore(key, discordEntity);
+            return await MapAndStoreAsync(key, discordEntity);
 
         await using var repository = _databaseBuilder.CreateRepository();
 
         var databaseEntity = await readDatabaseEntity(repository);
-        return databaseEntity is null ? default : MapAndStore(key, databaseEntity);
+        return databaseEntity is null ? default : await MapAndStoreAsync(key, databaseEntity);
     }
 }

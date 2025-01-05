@@ -1,18 +1,18 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using GrillBot.Cache.Services.Managers;
 
 namespace GrillBot.App.Managers.DataResolve;
 
-public class RoleResolver : BaseDataResolver<ulong, IRole, object, Data.Models.API.Role>
+public class RoleResolver : BaseDataResolver<IRole, object, Data.Models.API.Role>
 {
-    public RoleResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMemoryCache memoryCache)
-        : base(discordClient, databaseBuilder, memoryCache)
+    public RoleResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, DataCacheManager cache)
+        : base(discordClient, databaseBuilder, cache)
     {
     }
 
     public Task<Data.Models.API.Role?> GetRoleAsync(ulong roleId)
     {
         return GetMappedEntityAsync(
-            roleId,
+            $"Role({roleId})",
             async () => (await _discordClient.GetGuildsAsync(CacheMode.CacheOnly)).Select(o => o.GetRole(roleId)).FirstOrDefault(o => o is not null),
             _ => Task.FromResult<object?>(null)
         );

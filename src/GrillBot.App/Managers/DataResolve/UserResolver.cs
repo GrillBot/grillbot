@@ -1,20 +1,20 @@
-﻿using GrillBot.Common.Extensions.Discord;
+﻿using GrillBot.Cache.Services.Managers;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Database.Enums;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace GrillBot.App.Managers.DataResolve;
 
-public class UserResolver : BaseDataResolver<ulong, IUser, Database.Entity.User, Data.Models.API.Users.User>
+public class UserResolver : BaseDataResolver<IUser, Database.Entity.User, Data.Models.API.Users.User>
 {
-    public UserResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMemoryCache memoryCache)
-        : base(discordClient, databaseBuilder, memoryCache)
+    public UserResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, DataCacheManager cache)
+        : base(discordClient, databaseBuilder, cache)
     {
     }
 
     public Task<Data.Models.API.Users.User?> GetUserAsync(ulong userId)
     {
         return GetMappedEntityAsync(
-            userId,
+            $"User({userId})",
             () => _discordClient.GetUserAsync(userId, CacheMode.CacheOnly),
             repo => repo.User.FindUserByIdAsync(userId, disableTracking: true)
         );

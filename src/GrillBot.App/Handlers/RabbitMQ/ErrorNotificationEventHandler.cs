@@ -38,7 +38,7 @@ public class ErrorNotificationEventHandler : BaseRabbitMQHandler<ErrorNotificati
 
         try
         {
-            await _dataCache.SetValueAsync("LastErrorDate", DateTime.Now, DateTime.MaxValue);
+            await _dataCache.SetValueAsync("LastErrorDate", DateTime.Now, null);
 
             var message = await CreateMessage(payload, withoutAccidentImage);
             if (message is null)

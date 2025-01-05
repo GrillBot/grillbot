@@ -13,13 +13,12 @@ public class DataCacheManager
         _cache = cache;
     }
 
-    public async Task SetValueAsync<TValue>(string key, TValue value, DateTime validTo)
+    public async Task SetValueAsync<TValue>(string key, TValue value, TimeSpan? expiration)
     {
         await _semaphore.WaitAsync();
 
         try
         {
-            var expiration = validTo - DateTime.Now;
             await _cache.SetAsync(key, value, expiration);
         }
         finally

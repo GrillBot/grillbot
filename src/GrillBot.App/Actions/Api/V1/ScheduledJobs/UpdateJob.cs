@@ -36,7 +36,7 @@ public class UpdateJob : ApiAction
         else
             disabledJobs.Add(name);
 
-        await _dataCacheManager.SetValueAsync("DisabledJobs", disabledJobs, DateTime.MaxValue);
+        await _dataCacheManager.SetValueAsync("DisabledJobs", disabledJobs, null);
         return ApiResult.Ok();
     }
 

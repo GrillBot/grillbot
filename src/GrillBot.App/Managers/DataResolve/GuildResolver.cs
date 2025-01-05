@@ -1,18 +1,18 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using GrillBot.Cache.Services.Managers;
 
 namespace GrillBot.App.Managers.DataResolve;
 
-public class GuildResolver : BaseDataResolver<ulong, IGuild, Database.Entity.Guild, Data.Models.API.Guilds.Guild>
+public class GuildResolver : BaseDataResolver<IGuild, Database.Entity.Guild, Data.Models.API.Guilds.Guild>
 {
-    public GuildResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMemoryCache memoryCache)
-        : base(discordClient, databaseBuilder, memoryCache)
+    public GuildResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, DataCacheManager cache)
+        : base(discordClient, databaseBuilder, cache)
     {
     }
 
     public Task<Data.Models.API.Guilds.Guild?> GetGuildAsync(ulong guildId)
     {
         return GetMappedEntityAsync(
-            guildId,
+            $"Guild({guildId})",
             () => _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly),
             repo => repo.Guild.FindGuildByIdAsync(guildId, true)
         );

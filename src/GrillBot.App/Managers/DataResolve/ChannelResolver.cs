@@ -1,20 +1,20 @@
-﻿using GrillBot.Data.Models.API.Channels;
+﻿using GrillBot.Cache.Services.Managers;
+using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Entity;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace GrillBot.App.Managers.DataResolve;
 
-public class ChannelResolver : BaseDataResolver<Tuple<ulong, ulong>, IGuildChannel, GuildChannel, Channel>
+public class ChannelResolver : BaseDataResolver<IGuildChannel, GuildChannel, Channel>
 {
-    public ChannelResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IMemoryCache memoryCache)
-        : base(discordClient, databaseBuilder, memoryCache)
+    public ChannelResolver(IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, DataCacheManager cache)
+        : base(discordClient, databaseBuilder, cache)
     {
     }
 
     public Task<Channel?> GetChannelAsync(ulong guildId, ulong channelId)
     {
         return GetMappedEntityAsync(
-            Tuple.Create(guildId, channelId),
+            $"GuildChannel({guildId}-{channelId})",
             async () =>
             {
                 var guild = await _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);

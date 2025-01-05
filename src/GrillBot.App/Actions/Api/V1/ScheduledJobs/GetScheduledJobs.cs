@@ -12,13 +12,13 @@ namespace GrillBot.App.Actions.Api.V1.ScheduledJobs;
 public class GetScheduledJobs : ApiAction
 {
     private ISchedulerFactory SchedulerFactory { get; }
-    private DataCacheManager DataCacheManager { get; }
+    private readonly DataCacheManager _dataCacheManager;
     private IAuditLogServiceClient AuditLogServiceClient { get; }
 
     public GetScheduledJobs(ApiRequestContext apiContext, ISchedulerFactory schedulerFactory, DataCacheManager dataCacheManager, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
     {
         SchedulerFactory = schedulerFactory;
-        DataCacheManager = dataCacheManager;
+        _dataCacheManager = dataCacheManager;
         AuditLogServiceClient = auditLogServiceClient;
     }
 
@@ -63,7 +63,7 @@ public class GetScheduledJobs : ApiAction
 
     private async Task<List<string>> GetDisabledJobsAsync()
     {
-        var data = await DataCacheManager.GetValueAsync("DisabledJobs");
-        return string.IsNullOrEmpty(data) ? new List<string>() : JsonConvert.DeserializeObject<List<string>>(data)!;
+        var data = await _dataCacheManager.GetValueAsync<List<string>>("DisabledJobs");
+        return data ?? new();
     }
 }

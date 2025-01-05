@@ -91,10 +91,9 @@ public abstract class Job : IJob
     private async Task<bool> IsJobDisabledAsync()
     {
         var dataCacheManager = ServiceProvider.GetRequiredService<DataCacheManager>();
-        var data = await dataCacheManager.GetValueAsync("DisabledJobs");
-        if (string.IsNullOrEmpty(data)) data = "[]";
+        var disabledJobs = await dataCacheManager.GetValueAsync<List<string>>("DisabledJobs");
+        disabledJobs ??= new List<string>();
 
-        var disabledJobs = JsonConvert.DeserializeObject<List<string>>(data);
         return disabledJobs!.Contains(JobName);
     }
 }

@@ -1,60 +1,44 @@
-﻿using GrillBot.Cache.Entity;
+﻿using GrillBot.Core.Caching;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace GrillBot.Cache.Services.Managers;
 
 public class DataCacheManager
 {
-    private GrillBotCacheBuilder CacheBuilder { get; }
-    private static SemaphoreSlim Semaphore { get; }
+    private static readonly SemaphoreSlim _semaphore = new(1);
+    private readonly IDistributedCache _cache;
 
-    static DataCacheManager()
+    public DataCacheManager(IDistributedCache cache)
     {
-        Semaphore = new SemaphoreSlim(1);
+        _cache = cache;
     }
 
-    public DataCacheManager(GrillBotCacheBuilder cacheBuilder)
+    public async Task SetValueAsync<TValue>(string key, TValue value, DateTime validTo)
     {
-        CacheBuilder = cacheBuilder;
-    }
+        await _semaphore.WaitAsync();
 
-    public async Task SetValueAsync(string key, string value, DateTime validTo)
-    {
-        await Semaphore.WaitAsync();
         try
         {
-            await using var repository = CacheBuilder.CreateRepository();
-
-            var entity = await repository.DataCache.FindItemAsync(key, onlyValid: false);
-            if (entity == null)
-            {
-                entity = new DataCacheItem { Key = key };
-                await repository.AddAsync(entity);
-            }
-
-            entity.Value = value;
-            entity.ValidTo = validTo;
-
-            await repository.CommitAsync();
+            var expiration = validTo - DateTime.Now;
+            await _cache.SetAsync(key, value, expiration);
         }
         finally
         {
-            Semaphore.Release();
+            _semaphore.Release();
         }
     }
 
-    public async Task<string?> GetValueAsync(string key)
+    public async Task<TValue?> GetValueAsync<TValue>(string key)
     {
-        await Semaphore.WaitAsync();
+        await _semaphore.WaitAsync();
+
         try
         {
-            await using var repository = CacheBuilder.CreateRepository();
-
-            var entity = await repository.DataCache.FindItemAsync(key, true);
-            return entity?.Value;
+            return await _cache.GetAsync<TValue>(key);
         }
         finally
         {
-            Semaphore.Release();
+            _semaphore.Release();
         }
     }
 }

@@ -7,13 +7,13 @@ namespace GrillBot.App.Handlers.Logging;
 
 public class WithoutAccidentRenderer
 {
-    private DataCacheManager DataCacheManager { get; }
+    private readonly DataCacheManager _dataCacheManager;
     private ProfilePictureManager ProfilePictureManager { get; }
     private IImageProcessingClient ImageProcessingClient { get; }
 
     public WithoutAccidentRenderer(ProfilePictureManager profilePictureManager, DataCacheManager dataCacheManager, IImageProcessingClient imageProcessingClient)
     {
-        DataCacheManager = dataCacheManager;
+        _dataCacheManager = dataCacheManager;
         ProfilePictureManager = profilePictureManager;
         ImageProcessingClient = imageProcessingClient;
     }
@@ -44,11 +44,11 @@ public class WithoutAccidentRenderer
 
     private async Task<int> GetLastErrorDays()
     {
-        var lastErorDate = await DataCacheManager.GetValueAsync("LastErrorDate");
-        if (string.IsNullOrEmpty(lastErorDate)) return 0;
+        var lastErrorDate = await _dataCacheManager.GetValueAsync<DateTime>("LastErrorDate");
+        if (lastErrorDate == DateTime.MinValue) return 0;
 
-        var lastError = DateTime.Parse(lastErorDate);
-        var totalDays = (DateTime.Now - lastError).TotalDays;
+        var now = DateTime.Now;
+        var totalDays = (now - lastErrorDate).TotalDays;
         return Convert.ToInt32(Math.Round(totalDays));
     }
 }

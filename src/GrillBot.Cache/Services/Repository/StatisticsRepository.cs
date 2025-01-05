@@ -19,7 +19,6 @@ public class StatisticsRepository : SubRepositoryBase<GrillBotCacheContext>
                 { nameof(Context.MessageIndex), await Context.MessageIndex.CountAsync() },
                 { nameof(Context.ProfilePictures), await Context.ProfilePictures.CountAsync() },
                 { nameof(Context.InviteMetadata), await Context.InviteMetadata.CountAsync() },
-                { nameof(Context.DataCache), await Context.DataCache.CountAsync() }
             };
         }
     }

@@ -22,18 +22,9 @@ public class CacheCleanerJob : CleanerJobBase
         var reportFields = new List<string>();
 
         await using var repository = CacheBuilder.CreateRepository();
-
-        await ClearDataCacheAsync(repository, reportFields);
         await ClearProfilePicturesAsync(repository, reportFields);
 
         context.Result = FormatReportFromFields(reportFields);
-    }
-
-    private static async Task ClearDataCacheAsync(GrillBotCacheRepository cacheRepository, ICollection<string> report)
-    {
-        var cleared = await cacheRepository.DataCache.DeleteExpiredAsync();
-        if (cleared > 0)
-            report.Add($"DataCache: {cleared}");
     }
 
     private async Task ClearProfilePicturesAsync(GrillBotCacheRepository cacheRepository, ICollection<string> report)

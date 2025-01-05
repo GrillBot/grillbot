@@ -16,7 +16,6 @@ public sealed class GrillBotCacheRepository : RepositoryBase<GrillBotCacheContex
     public StatisticsRepository StatisticsRepository => GetOrCreateRepository<StatisticsRepository>();
     public ProfilePictureRepository ProfilePictureRepository => GetOrCreateRepository<ProfilePictureRepository>();
     public InviteMetadataRepository InviteMetadataRepository => GetOrCreateRepository<InviteMetadataRepository>();
-    public DataCacheRepository DataCache => GetOrCreateRepository<DataCacheRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : SubRepositoryBase<GrillBotCacheContext>
     {

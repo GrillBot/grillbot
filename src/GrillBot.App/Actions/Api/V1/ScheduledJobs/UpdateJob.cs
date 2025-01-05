@@ -10,13 +10,13 @@ namespace GrillBot.App.Actions.Api.V1.ScheduledJobs;
 
 public class UpdateJob : ApiAction
 {
-    private DataCacheManager DataCacheManager { get; }
+    private readonly DataCacheManager _dataCacheManager;
     private ISchedulerFactory SchedulerFactory { get; }
     private ITextsManager Texts { get; }
 
     public UpdateJob(ApiRequestContext apiContext, DataCacheManager dataCacheManager, ISchedulerFactory schedulerFactory, ITextsManager texts) : base(apiContext)
     {
-        DataCacheManager = dataCacheManager;
+        _dataCacheManager = dataCacheManager;
         SchedulerFactory = schedulerFactory;
         Texts = texts;
     }
@@ -28,18 +28,15 @@ public class UpdateJob : ApiAction
 
         await ValidateJobAsync(name);
 
-        var data = await DataCacheManager.GetValueAsync("DisabledJobs");
-        if (string.IsNullOrEmpty(data)) data = "[]";
+        var disabledJobs = await _dataCacheManager.GetValueAsync<List<string>>("DisabledJobs");
+        disabledJobs ??= new List<string>();
 
-        var disabledJobs = JsonConvert.DeserializeObject<List<string>>(data)!;
         if (enabled)
             disabledJobs.Remove(name);
         else
             disabledJobs.Add(name);
 
-        var newData = JsonConvert.SerializeObject(disabledJobs, Formatting.None);
-        if (data != newData)
-            await DataCacheManager.SetValueAsync("DisabledJobs", newData, DateTime.MaxValue);
+        await _dataCacheManager.SetValueAsync("DisabledJobs", disabledJobs, DateTime.MaxValue);
         return ApiResult.Ok();
     }
 

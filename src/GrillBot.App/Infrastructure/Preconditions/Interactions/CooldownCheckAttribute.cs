@@ -18,21 +18,26 @@ public class CooldownCheckAttribute : PreconditionAttribute
         MaxAllowedCount = maxAllowedCount;
     }
 
-    public override Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
+    public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
     {
         var cooldownManager = services.GetRequiredService<CooldownManager>();
 
         var id = PickId(context, Type);
-        if (cooldownManager.IsCooldown(id, Type, out var remains))
+        var remainingCooldown = await cooldownManager.GetRemainingCooldownAsync(id, Type);
+
+        if (remainingCooldown is not null)
         {
             var texts = services.GetRequiredService<ITextsManager>();
-            var remainsValue = remains!.Value.Humanize(culture: texts.GetCulture(context.Interaction.UserLocale), precision: int.MaxValue, minUnit: TimeUnit.Minute);
-            return Task.FromResult(PreconditionResult.FromError(texts["CooldownEnabled", context.Interaction.UserLocale].FormatWith(remainsValue)));
+            var culture = texts.GetCulture(context.Interaction.UserLocale);
+            var remainsValue = remainingCooldown.Value.Humanize(precision: int.MaxValue, culture: culture, minUnit: TimeUnit.Minute);
+            var result = texts["CooldownEnabled", context.Interaction.UserLocale].FormatWith(remainsValue);
+
+            return PreconditionResult.FromError(result);
         }
 
         var bannedUntil = DateTime.Now.AddSeconds(Seconds);
-        cooldownManager.SetCooldown(id, Type, MaxAllowedCount, bannedUntil);
-        return Task.FromResult(PreconditionResult.FromSuccess());
+        await cooldownManager.SetCooldownAsync(id, Type, MaxAllowedCount, bannedUntil);
+        return PreconditionResult.FromSuccess();
     }
 
     public static string PickId(IInteractionContext context, CooldownType type)

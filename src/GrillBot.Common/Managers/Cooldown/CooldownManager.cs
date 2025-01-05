@@ -1,54 +1,92 @@
-﻿namespace GrillBot.Common.Managers.Cooldown;
+﻿using GrillBot.Core.Caching;
+using Microsoft.Extensions.Caching.Distributed;
+
+namespace GrillBot.Common.Managers.Cooldown;
 
 public class CooldownManager
 {
-    private Dictionary<string, (int used, int max, DateTime? until)> ActiveCooldowns { get; } = new();
-    private readonly object _locker = new();
+    private readonly IDistributedCache _cache;
 
-    public void SetCooldown(string id, CooldownType type, int maxCount, DateTime until)
+    public CooldownManager(IDistributedCache cache)
     {
-        lock (_locker)
+        _cache = cache;
+    }
+
+    private readonly SemaphoreSlim _semaphore = new(1);
+
+    public async Task SetCooldownAsync(string id, CooldownType type, int maxCount, DateTime until)
+    {
+        await _semaphore.WaitAsync();
+
+        try
         {
             var key = CreateKey(id, type);
 
-            if (!ActiveCooldowns.ContainsKey(key))
-                ActiveCooldowns.Add(key, CreateItem(1, maxCount, until));
+            var activeCooldown = await _cache.GetAsync<CooldownItem>(key);
+            if (activeCooldown is null)
+                activeCooldown = CreateItem(1, maxCount, until);
             else
-                ActiveCooldowns[key] = CreateItem(ActiveCooldowns[key].used + 1, maxCount, until);
-        }
-    }
+                activeCooldown = CreateItem(activeCooldown.Used + 1, maxCount, until);
 
-    public bool IsCooldown(string id, CooldownType type, out TimeSpan? remains)
-    {
-        lock (_locker)
+            await _cache.SetAsync(key, activeCooldown, null);
+        }
+        finally
         {
-            remains = null;
-            if (!ActiveCooldowns.TryGetValue(CreateKey(id, type), out var data))
-                return false;
-            if (data.until == null || data.until.Value < DateTime.Now)
-                return false;
-
-            remains = data.until.Value - DateTime.Now;
-            return true;
+            _semaphore.Release();
         }
     }
 
-    public void DecreaseCooldown(string id, CooldownType type, DateTime until)
+    public async Task<TimeSpan?> GetRemainingCooldownAsync(string id, CooldownType type)
     {
-        lock (_locker)
+        await _semaphore.WaitAsync();
+
+        try
         {
             var key = CreateKey(id, type);
+            var item = await _cache.GetAsync<CooldownItem>(key);
 
-            if (!ActiveCooldowns.TryGetValue(key, out var data))
+            if (item is null || item.Until is null || item.Until.Value < DateTime.Now)
+                return null;
+
+            return item.Until - DateTime.Now;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task DecreaseCooldownAsync(string id, CooldownType type, DateTime until)
+    {
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            var key = CreateKey(id, type);
+            var item = await _cache.GetAsync<CooldownItem>(key);
+
+            if (item is null)
                 return;
 
-            ActiveCooldowns[key] = CreateItem(data.used - 1, data.max, until);
+            item = CreateItem(item.Used - 1, item.Max, until);
+            await _cache.SetAsync(key, item, null);
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 
     private static string CreateKey(string id, CooldownType type)
         => $"{type}-{id}";
 
-    private static (int used, int max, DateTime? until) CreateItem(int used, int max, DateTime until)
-        => used >= max ? (used, max, until) : (used, max, null);
+    private static CooldownItem CreateItem(int used, int max, DateTime until)
+    {
+        return new CooldownItem
+        {
+            Used = used,
+            Until = used >= max ? until : null,
+            Max = max
+        };
+    }
 }

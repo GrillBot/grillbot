@@ -8,23 +8,29 @@ namespace GrillBot.App.Handlers.InteractionCommandExecuted;
 
 public class InteractionFailedCommandHandler : IInteractionCommandExecutedEvent
 {
-    private CooldownManager CooldownManager { get; }
+    private readonly CooldownManager _cooldownManager;
 
     public InteractionFailedCommandHandler(CooldownManager cooldownManager)
     {
-        CooldownManager = cooldownManager;
+        _cooldownManager = cooldownManager;
     }
 
-    public Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
+    public async Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (result.IsSuccess || !TryGetAttribute(commandInfo, out var attribute))
-            return Task.CompletedTask;
+            return;
 
         var id = CooldownCheckAttribute.PickId(context, attribute.Type);
         var bannedUntil = DateTime.Now.AddSeconds(attribute.Seconds);
-        CooldownManager.DecreaseCooldown(id, attribute.Type, bannedUntil);
 
-        return Task.CompletedTask;
+        if (result.Error == InteractionCommandError.UnmetPrecondition)
+        {
+            var remainingCooldown = await _cooldownManager.GetRemainingCooldownAsync(id, attribute.Type);
+            if (remainingCooldown?.TotalSeconds >= 1)
+                return;
+        }
+
+        await _cooldownManager.DecreaseCooldownAsync(id, attribute.Type, bannedUntil);
     }
 
     private static bool TryGetAttribute(ICommandInfo commandInfo, [MaybeNullWhen(false)] out CooldownCheckAttribute attribute)

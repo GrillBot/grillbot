@@ -21,7 +21,8 @@ public static class GrillBotCacheExtensions
             .AddSingleton<ProfilePictureManager>()
             .AddSingleton<IMessageCacheManager, MessageCacheManager>()
             .AddSingleton<InviteManager>()
-            .AddScoped<DataCacheManager>();
+            .AddScoped<DataCacheManager>()
+            .AddRedisCaching(configuration);
     }
 
     public static void InitCache(this IApplicationBuilder app)

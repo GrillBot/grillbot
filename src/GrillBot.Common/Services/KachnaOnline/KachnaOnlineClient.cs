@@ -19,4 +19,20 @@ public class KachnaOnlineClient : RestServiceBase, IKachnaOnlineClient
             TimeSpan.FromSeconds(10)
         ))!;
     }
+
+    public async Task<DuckState?> GetNextStateAsync(Enums.DuckState stateType)
+    {
+        try 
+        {
+            return await ProcessRequestAsync<DuckState>(
+                () => HttpMethod.Get.ToRequest($"states/next?type={stateType}"),
+                TimeSpan.FromSeconds(10)
+            );
+        }
+        catch (ClientNotFoundException)
+        {
+            // 404 is a valid response here saying that no such state is planned
+            return null;
+        }
+    }
 }

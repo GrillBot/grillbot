@@ -6,6 +6,8 @@ using GrillBot.Common.Services.KachnaOnline.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 
+using DuckStateType = GrillBot.Common.Services.KachnaOnline.Enums.DuckState;
+
 namespace GrillBot.App.Actions.Commands;
 
 public class DuckInfo : CommandAction
@@ -30,9 +32,37 @@ public class DuckInfo : CommandAction
         try
         {
             var currentState = await Client.GetCurrentStateAsync();
-            ConvertDateTimesToUtc(currentState);
+            DuckState? nextBar = null, nextTearoom = null, nextAll = null;
 
-            return CreateEmbed(currentState);
+            // In "non-bar" states, we want to include information on the next planned bar/tearoom opening
+            // Sometimes, the next planned opening might be already included in the "FollowingState" property
+            // of the current state - in that case, we don't have to make a call for that
+            if (currentState.State is DuckStateType.Closed or DuckStateType.Private or DuckStateType.OpenAll)
+            {
+                if (currentState.FollowingState?.State is DuckStateType.OpenBar)
+                    nextBar = currentState.FollowingState;
+                else
+                    nextBar = await Client.GetNextStateAsync(DuckStateType.OpenBar);
+
+                if (currentState.FollowingState?.State is DuckStateType.OpenTearoom)
+                    nextTearoom = currentState.FollowingState;
+                else
+                    nextTearoom = await Client.GetNextStateAsync(DuckStateType.OpenTearoom);
+
+                if (currentState.FollowingState?.State is DuckStateType.OpenAll)
+                    nextAll = currentState.FollowingState;
+                // Only determine the next "OpenAll" state if we're not already in one
+                else if (currentState.State != DuckStateType.OpenAll)
+                    nextAll = await Client.GetNextStateAsync(DuckStateType.OpenAll);
+
+            }
+
+            ConvertDateTimesToUtc(currentState);
+            ConvertDateTimesToUtc(nextBar);
+            ConvertDateTimesToUtc(nextTearoom);
+            ConvertDateTimesToUtc(nextAll);
+
+            return CreateEmbed(currentState, nextBar, nextTearoom, nextAll);
         }
         catch (HttpRequestException ex)
         {
@@ -41,18 +71,18 @@ public class DuckInfo : CommandAction
         }
     }
 
-    private static void ConvertDateTimesToUtc(DuckState state)
+    private static void ConvertDateTimesToUtc(DuckState? state)
     {
+        if (state == null)
+            return;
+
         state.Start = state.Start.WithKind(DateTimeKind.Local).ToUniversalTime();
 
         if (state.PlannedEnd is not null)
             state.PlannedEnd = state.PlannedEnd.Value.WithKind(DateTimeKind.Local).ToUniversalTime();
-
-        if (state.FollowingState is not null)
-            ConvertDateTimesToUtc(state.FollowingState);
     }
 
-    private Embed CreateEmbed(DuckState currentState)
+    private Embed CreateEmbed(DuckState currentState, DuckState? nextBar, DuckState? nextTearoom, DuckState? nextAll)
     {
         var embed = new EmbedBuilder()
             .WithAuthor(GetText("DuckName"))
@@ -62,15 +92,16 @@ public class DuckInfo : CommandAction
         var titleBuilder = new StringBuilder();
         switch (currentState.State)
         {
-            case Common.Services.KachnaOnline.Enums.DuckState.Private or Common.Services.KachnaOnline.Enums.DuckState.Closed:
-                ProcessPrivateOrClosed(titleBuilder, currentState, embed);
+            case DuckStateType.Private or DuckStateType.Closed:
+                ProcessPrivateOrClosed(titleBuilder, currentState, nextBar, nextTearoom, nextAll, embed);
                 break;
-            case Common.Services.KachnaOnline.Enums.DuckState.OpenBar:
-                ProcessOpenBar(titleBuilder, currentState, embed);
+            case DuckStateType.OpenAll:
+                ProcessOpenForAll(titleBuilder, currentState, nextBar, nextTearoom, embed);
                 break;
-            case Common.Services.KachnaOnline.Enums.DuckState.OpenChillzone:
-                ProcessChillzone(titleBuilder, currentState, embed);
+            case DuckStateType.OpenBar or DuckStateType.OpenTearoom or DuckStateType.OpenEvent:
+                ProcessOpen(titleBuilder, currentState, embed);
                 break;
+
             default:
                 throw new ArgumentOutOfRangeException(nameof(currentState));
         }
@@ -78,51 +109,72 @@ public class DuckInfo : CommandAction
         return embed.WithTitle(titleBuilder.ToString()).Build();
     }
 
-    private void ProcessPrivateOrClosed(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
+    private void AddNextIfPresent(DuckState? state, string titleId, EmbedBuilder embedBuilder)
+    {
+        if (state == null)
+        {
+            embedBuilder.AddField(GetText(titleId), GetText("NotPlanned"));
+        }
+        else
+        {
+            var tag = TimestampTag.FromDateTime(state.Start);
+            embedBuilder.AddField(GetText(titleId), tag.ToString(TimestampTagStyles.ShortTime), true);
+        }
+    }
+
+    private void ProcessPrivateOrClosed(StringBuilder titleBuilder, DuckState state,
+        DuckState? nextBar, DuckState? nextTearoom, DuckState? nextAll, EmbedBuilder embedBuilder)
     {
         titleBuilder.AppendLine(GetText("Closed"));
 
-        if (state.FollowingState is { State: Common.Services.KachnaOnline.Enums.DuckState.OpenBar })
+        if (nextAll != null)
         {
-            FormatWithNextOpening(titleBuilder, state, embedBuilder);
-            return;
+            var tag = TimestampTag.FromDateTime(nextAll.Start);
+            titleBuilder.Append(GetText("NextAll").FormatWith(tag.ToString(TimestampTagStyles.Relative)));
         }
 
-        titleBuilder.Append(GetText("NextOpenNotPlanned"));
+        AddNextIfPresent(nextBar, "NextBar", embedBuilder);
+        AddNextIfPresent(nextTearoom, "NextTearoom", embedBuilder);
+
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 
-    private void FormatWithNextOpening(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
+    private void ProcessOpenForAll(StringBuilder titleBuilder, DuckState state,
+        DuckState? nextBar, DuckState? nextTearoom, EmbedBuilder embedBuilder)
     {
-        var tag = TimestampTag.FromDateTime(state.FollowingState!.Start);
+        var tag = TimestampTag.FromDateTime(state.PlannedEnd!.Value);
 
-        titleBuilder.Append(GetText("NextOpenAt").FormatWith(tag.ToString(TimestampTagStyles.Relative)));
+        titleBuilder.AppendLine(GetText("OpenAll").FormatWith(tag.ToString(TimestampTagStyles.ShortTime)));
+
+        AddNextIfPresent(nextBar, "NextBar", embedBuilder);
+        AddNextIfPresent(nextTearoom, "NextTearoom", embedBuilder);
+
+        embedBuilder.AddField(GetText("ForAllDescriptionTitle"), GetText("ForAllDescription"));
+
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 
-    private void ProcessOpenBar(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
+    private void ProcessOpen(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
     {
-        titleBuilder.Append(GetText("Opened"));
-
-        var openingAt = TimestampTag.FromDateTimeOffset(state.Start);
-        embedBuilder.AddField(GetText("Open"), openingAt.ToString(TimestampTagStyles.ShortTime), true);
+        titleBuilder.AppendLine(GetText(state.State switch
+        {
+            DuckStateType.OpenBar => "OpenBar",
+            DuckStateType.OpenTearoom => "OpenTearoom",
+            DuckStateType.OpenEvent => "OpenEvent",
+            _ => throw new ArgumentOutOfRangeException(nameof(state))
+        }));
 
         if (state.PlannedEnd.HasValue)
         {
-            var tag = TimestampTag.FromDateTime(state.PlannedEnd.Value);
+            var start = TimestampTag.FromDateTime(state.Start);
+            var end = TimestampTag.FromDateTime(state.PlannedEnd.Value);
 
-            titleBuilder.Append(GetText("TimeToClose").FormatWith(tag.ToString(TimestampTagStyles.Relative)));
-            embedBuilder.AddField(GetText("Closing"), tag.ToString(TimestampTagStyles.ShortTime), true);
+            titleBuilder.Append(GetText("TimeToClose").FormatWith(end.ToString(TimestampTagStyles.Relative)));
+
+            embedBuilder.AddField(GetText("Opening"), start.ToString(TimestampTagStyles.ShortTime), true);
+            embedBuilder.AddField(GetText("Closing"), end.ToString(TimestampTagStyles.ShortTime), true);
         }
 
-        AddNoteToEmbed(embedBuilder, state.Note);
-    }
-
-    private void ProcessChillzone(StringBuilder titleBuilder, DuckState state, EmbedBuilder embedBuilder)
-    {
-        var closingAt = TimestampTag.FromDateTime(state.PlannedEnd!.Value);
-
-        titleBuilder.Append(GetText("ChillzoneTo").FormatWith(closingAt.ToString(TimestampTagStyles.ShortTime)));
         AddNoteToEmbed(embedBuilder, state.Note);
     }
 

@@ -5,14 +5,11 @@ namespace GrillBot.Data.Extensions.Services;
 
 public static class EmoteStatisticsItemExtensions
 {
-    public static string CreateFullEmoteId(this EmoteStatisticsItem item)
-        => $"<{(item.EmoteIsAnimated ? "a" : "")}:{item.EmoteName}:{item.EmoteId}>";
-
     public static EmoteItem ToEmoteItem(this EmoteStatisticsItem item)
     {
         return new EmoteItem
         {
-            FullId = item.CreateFullEmoteId(),
+            FullId = $"<{(item.EmoteIsAnimated ? "a" : "")}:{item.EmoteName}:{item.EmoteId}>",
             Id = item.EmoteId,
             ImageUrl = item.EmoteUrl,
             Name = item.EmoteName

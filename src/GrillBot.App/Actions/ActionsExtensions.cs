@@ -1,4 +1,5 @@
 ﻿using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.SearchingService;
@@ -26,7 +27,8 @@ public static class ActionsExtensions
             .AddScoped<Api.ServiceBridgeAction<IPointsServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IUserMeasuresServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IRemindServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<ISearchingServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<ISearchingServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IEmoteServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)
@@ -76,12 +78,7 @@ public static class ActionsExtensions
 
         // Emote
         services
-            .AddScoped<Api.V1.Emote.GetStatOfEmote>()
-            .AddScoped<Api.V1.Emote.GetStatsOfEmotes>()
-            .AddScoped<Api.V1.Emote.GetSupportedEmotes>()
-            .AddScoped<Api.V1.Emote.GetUserStatisticsOfEmote>()
-            .AddScoped<Api.V1.Emote.MergeStats>()
-            .AddScoped<Api.V1.Emote.RemoveStats>();
+            .AddScoped<Api.V1.Emote.GetStatsOfEmotes>();
 
         // Guild
         services

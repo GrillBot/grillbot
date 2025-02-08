@@ -1,12 +1,10 @@
 ﻿using GrillBot.App.Actions.Api.V1.Channel.SimpleList;
-using GrillBot.App.Actions.Api.V1.Emote;
 using GrillBot.App.Actions.Api.V1.Guild;
 using GrillBot.App.Actions.Api.V1.PublicApiClients;
 using GrillBot.App.Actions.Api.V1.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GrillBot.Data.Models.API.Emotes;
 using Microsoft.AspNetCore.Http;
 
 namespace GrillBot.App.Controllers;
@@ -68,15 +66,6 @@ public class DataController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAvailableUsersAsync(bool? bots = null, ulong? guildId = null)
         => await ProcessAsync<GetAvailableUsers>(bots, guildId);
-
-    /// <summary>
-    /// Get currently supported emotes.
-    /// </summary>
-    [HttpGet("emotes")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    [ProducesResponseType(typeof(List<GuildEmoteItem>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetSupportedEmotesAsync()
-        => await ProcessAsync<GetSupportedEmotes>();
 
     /// <summary>
     /// Get list of methods available from public api.

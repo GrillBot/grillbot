@@ -17,11 +17,5 @@ public class EmotesMappingProfile : AutoMapper.Profile
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
             .ForMember(dst => dst.ImageUrl, opt => opt.MapFrom(src => src.Url))
             .ForMember(dst => dst.FullId, opt => opt.MapFrom(src => src.ToString()));
-
-        CreateMap<GuildEmote, GuildEmoteItem>()
-            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
-            .ForMember(dst => dst.ImageUrl, opt => opt.MapFrom(src => src.Url))
-            .ForMember(dst => dst.FullId, opt => opt.MapFrom(src => src.ToString()))
-            .ForMember(dst => dst.Guild, opt => opt.Ignore());
     }
 }

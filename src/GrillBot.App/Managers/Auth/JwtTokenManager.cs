@@ -166,6 +166,7 @@ public class JwtTokenManager
         yield return "Lookups";
         yield return "Points(Leaderboard)";
         yield return "Points(UserStatus)";
+        yield return "Filters";
     }
 
     private async Task SynchronizeUserToServicesAsync(IUser user)

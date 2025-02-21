@@ -16,8 +16,8 @@ public class FiltersController : Core.Infrastructure.Actions.ControllerBase
 
     [HttpPost]
     [ProducesResponseType(typeof(StoredFilterInfo), StatusCodes.Status200OK)]
-    public Task<IActionResult> StoreFilterAsync([FromBody] string filterData)
-        => ProcessAsync<StoreFilterAction>(filterData);
+    public Task<IActionResult> StoreFilterAsync([FromBody] StoredFilterInput input)
+        => ProcessAsync<StoreFilterAction>(input);
 
     [HttpGet("{filterId}")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]

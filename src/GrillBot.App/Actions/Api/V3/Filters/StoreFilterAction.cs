@@ -23,13 +23,13 @@ public class StoreFilterAction : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        var filterData = GetParameter<string>(0);
+        var input = GetParameter<StoredFilterInput>(0);
         var filterId = Guid.NewGuid();
         var filterKey = $"StoredFilter({filterId})";
         var expirationTime = _configuration.GetValue<TimeSpan>("ExpirationTime");
         var expiresAt = DateTime.UtcNow.Add(expirationTime);
 
-        await _distributedCache.SetAsync(filterKey, filterData, expirationTime);
+        await _distributedCache.SetAsync(filterKey, input.FilterData, expirationTime);
 
         var result = new StoredFilterInfo(filterId, expiresAt);
         return ApiResult.Ok(result);

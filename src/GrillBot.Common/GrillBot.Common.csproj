@@ -26,9 +26,9 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-		<PackageReference Include="NSwag.Annotations" Version="14.1.0" />
+		<PackageReference Include="NSwag.Annotations" Version="14.2.0" />
 		<PackageReference Include="Unicode.net" Version="2.0.0" />
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.22.2" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
 	</ItemGroup>
 
 </Project>

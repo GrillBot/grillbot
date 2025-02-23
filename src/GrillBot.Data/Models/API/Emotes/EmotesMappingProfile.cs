@@ -9,10 +9,6 @@ public class EmotesMappingProfile : AutoMapper.Profile
         CreateMap<Database.Models.Emotes.EmoteStatItem, EmoteStatItem>()
             .ForMember(dst => dst.Emote, opt => opt.MapFrom(src => Emote.Parse(src.EmoteId)));
 
-        CreateMap<Database.Models.Emotes.EmoteStatItem, GuildEmoteStatItem>()
-            .ForMember(dst => dst.Emote, opt => opt.MapFrom(src => Emote.Parse(src.EmoteId)))
-            .ForMember(dst => dst.Guild, opt => opt.Ignore());
-
         CreateMap<Emote, EmoteItem>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id.ToString()))
             .ForMember(dst => dst.ImageUrl, opt => opt.MapFrom(src => src.Url))

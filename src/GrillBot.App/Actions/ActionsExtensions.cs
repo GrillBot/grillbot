@@ -76,10 +76,6 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Dashboard.GetOperationStats>()
             .AddScoped<Api.V1.Dashboard.GetServicesList>();
 
-        // Emote
-        services
-            .AddScoped<Api.V1.Emote.GetStatsOfEmotes>();
-
         // Guild
         services
             .AddScoped<Api.V1.Guild.GetAvailableGuilds>()

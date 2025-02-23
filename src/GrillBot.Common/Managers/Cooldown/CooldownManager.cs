@@ -45,8 +45,14 @@ public class CooldownManager
             var key = CreateKey(id, type);
             var item = await _cache.GetAsync<CooldownItem>(key);
 
-            if (item is null || item.Until is null || item.Until.Value < DateTime.Now)
+            if (item is null)
                 return null;
+
+            if (item.Until is null || item.Until.Value < DateTime.Now)
+            {
+                await _cache.RemoveAsync(key);
+                return null;
+            }
 
             return item.Until - DateTime.Now;
         }

@@ -50,4 +50,20 @@ public static class DiscordClientExtensions
                 throw new TaskCanceledException("Waiting on discord connection state expired.");
         }
     }
+
+    public static async IAsyncEnumerable<IUser> GetAllUsersAsync(this IDiscordClient client)
+    {
+        var guilds = await client.GetGuildsAsync();
+        var processed = new HashSet<ulong>();
+
+        foreach (var guild in guilds)
+        {
+            var users = await guild.GetUsersAsync();
+            foreach (var user in users.Where(o => !processed.Contains(o.Id)))
+            {
+                processed.Add(user.Id);
+                yield return user;
+            }
+        }
+    }
 }

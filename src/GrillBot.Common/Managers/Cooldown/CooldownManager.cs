@@ -83,8 +83,29 @@ public class CooldownManager
         }
     }
 
+    public async Task<bool> RemoveCooldownIfExpired(string id, CooldownType type)
+    {
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            var key = CreateKey(id, type);
+            var item = await _cache.GetAsync<CooldownItem>(key);
+
+            if (item is null || item.Until is null || item.Until.Value >= DateTime.Now)
+                return false;
+
+            await _cache.RemoveAsync(key);
+            return true;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
     private static string CreateKey(string id, CooldownType type)
-        => $"{type}-{id}";
+        => $"Cooldown-{type}-{id}";
 
     private static CooldownItem CreateItem(int used, int max, DateTime until)
     {

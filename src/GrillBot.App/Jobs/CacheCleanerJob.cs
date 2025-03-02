@@ -2,6 +2,8 @@
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Cache.Services;
 using GrillBot.Cache.Services.Repository;
+using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Cooldown;
 using GrillBot.Core.Extensions;
 using Quartz;
 
@@ -12,14 +14,22 @@ public class CacheCleanerJob : CleanerJobBase
 {
     private GrillBotCacheBuilder CacheBuilder { get; }
 
-    public CacheCleanerJob(IServiceProvider serviceProvider, GrillBotCacheBuilder cacheBuilder) : base(serviceProvider)
+    private readonly CooldownManager _cooldownManager;
+
+    public CacheCleanerJob(IServiceProvider serviceProvider, GrillBotCacheBuilder cacheBuilder, CooldownManager cooldownManager) : base(serviceProvider)
     {
         CacheBuilder = cacheBuilder;
+        _cooldownManager = cooldownManager;
     }
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
+        if (!InitManager.Get())
+            return;
+
         var reportFields = new List<string>();
+
+        await ClearExpiredCooldownsAsync(reportFields);
 
         await using var repository = CacheBuilder.CreateRepository();
         await ClearProfilePicturesAsync(repository, reportFields);
@@ -29,8 +39,6 @@ public class CacheCleanerJob : CleanerJobBase
 
     private async Task ClearProfilePicturesAsync(GrillBotCacheRepository cacheRepository, ICollection<string> report)
     {
-        if (!InitManager.Get()) return;
-
         var cleared = 0;
         var processedUsers = new List<ulong>();
         var profilePictures = await cacheRepository.ProfilePictureRepository.GetAllProfilePicturesAsync();
@@ -78,5 +86,24 @@ public class CacheCleanerJob : CleanerJobBase
         if (cleared == 0) return;
         await cacheRepository.CommitAsync();
         report.Add($"ProfilePictures: (Cleared: {cleared}, Users: {processedUsers.Count}, TotalPictures: {profilePictures.Count})");
+    }
+
+    private async Task ClearExpiredCooldownsAsync(ICollection<string> report)
+    {
+        var cleared = 0;
+        var users = 0;
+
+        foreach (var type in Enum.GetValues<CooldownType>())
+        {
+            await foreach (var user in DiscordClient.GetAllUsersAsync())
+            {
+                if (await _cooldownManager.RemoveCooldownIfExpired(user.Id.ToString(), type))
+                    cleared++;
+                users++;
+            }
+        }
+
+        if (cleared > 0)
+            report.Add($"ExpiredCooldowns: (Cleared: {cleared}, Users: {users})");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using GrillBot.Core.Caching;
+using GrillBot.Core.Managers.Performance;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace GrillBot.Cache.Services.Managers;
@@ -7,10 +8,12 @@ public class DataCacheManager
 {
     private static readonly SemaphoreSlim _semaphore = new(1);
     private readonly IDistributedCache _cache;
+    private readonly ICounterManager _counterManager;
 
-    public DataCacheManager(IDistributedCache cache)
+    public DataCacheManager(IDistributedCache cache, ICounterManager counterManager)
     {
         _cache = cache;
+        _counterManager = counterManager;
     }
 
     public async Task SetValueAsync<TValue>(string key, TValue value, TimeSpan? expiration)
@@ -19,7 +22,8 @@ public class DataCacheManager
 
         try
         {
-            await _cache.SetAsync(key, value, expiration);
+            using (_counterManager.Create("DataCache"))
+                await _cache.SetAsync(key, value, expiration);
         }
         finally
         {
@@ -33,7 +37,8 @@ public class DataCacheManager
 
         try
         {
-            return await _cache.GetAsync<TValue>(key);
+            using (_counterManager.Create("DataCache"))
+                return await _cache.GetAsync<TValue>(key);
         }
         finally
         {

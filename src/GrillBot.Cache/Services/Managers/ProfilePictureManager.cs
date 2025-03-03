@@ -1,57 +1,55 @@
 ﻿using Discord;
-using GrillBot.Cache.Entity;
+using GrillBot.Cache.Models;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.Managers.Performance;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace GrillBot.Cache.Services.Managers;
 
 public class ProfilePictureManager
 {
-    private GrillBotCacheBuilder CacheBuilder { get; }
-    private ICounterManager Counter { get; }
+    private readonly ICounterManager _counter;
+    private readonly IDistributedCache _cache;
 
-    public ProfilePictureManager(GrillBotCacheBuilder cacheBuilder, ICounterManager counterManager)
+    private static readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions()
+        .SetAbsoluteExpiration(TimeSpan.FromDays(14.0D));
+
+    public ProfilePictureManager(ICounterManager counterManager, IDistributedCache cache)
     {
-        CacheBuilder = cacheBuilder;
-        Counter = counterManager;
+        _counter = counterManager;
+        _cache = cache;
     }
 
     public async Task<ProfilePicture> GetOrCreatePictureAsync(IUser user, ushort size = 128)
     {
-        await using var cache = CacheBuilder.CreateRepository();
-
         var avatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId;
-        var profilePictures = await cache.ProfilePictureRepository.GetProfilePicturesAsync(user.Id, avatarId);
-        var profilePicture = profilePictures.Find(o => o.Size == size);
+        var cacheKey = CreateCacheKey(user, avatarId, size);
+        var profilePicture = await _cache.GetAsync(cacheKey);
 
-        if (profilePicture != null)
-            return profilePicture;
+        if (profilePicture is not null)
+            return CreatePicture(user, avatarId, size, profilePicture);
 
-        return await CreatePictureAsync(user, size);
+        profilePicture = await DownloadAvatarAsync(user, size);
+        await _cache.SetAsync(cacheKey, profilePicture, _cacheOptions);
+
+        return CreatePicture(user, avatarId, size, profilePicture);
     }
 
-    private async Task<ProfilePicture> CreatePictureAsync(IUser user, ushort size = 128)
+    private static ProfilePicture CreatePicture(IUser user, string avatarId, ushort size, byte[] image)
     {
-        var avatarData = await DownloadAvatarAsync(user, size);
-        var entity = new ProfilePicture
+        return new ProfilePicture
         {
-            AvatarId = string.IsNullOrEmpty(user.AvatarId) ? user.Id.ToString() : user.AvatarId,
-            IsAnimated = user.AvatarId?.StartsWith("a_") ?? false,
+            AvatarId = avatarId,
+            Data = image,
+            IsAnimated = avatarId.StartsWith("a_"),
             Size = (short)size,
-            UserId = user.Id.ToString(),
-            Data = avatarData
+            UserId = user.Id
         };
-
-        await using var cache = CacheBuilder.CreateRepository();
-        await cache.AddAsync(entity);
-        await cache.CommitAsync();
-
-        return entity;
     }
 
     private async Task<byte[]> DownloadAvatarAsync(IUser user, ushort size = 128)
     {
-        using (Counter.Create("Discord.CDN"))
+        using (_counter.Create("Discord.CDN"))
         {
             var url = user.GetUserAvatarUrl(size);
 
@@ -59,4 +57,7 @@ public class ProfilePictureManager
             return await httpClient.GetByteArrayAsync(url);
         }
     }
+
+    private static string CreateCacheKey(IUser user, string avatarId, ushort size)
+        => $"ProfilePicture-{user.Id}-{avatarId}-{size}";
 }

@@ -3,6 +3,7 @@ using System;
 using GrillBot.Cache.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GrillBot.Cache.Migrations
 {
     [DbContext(typeof(GrillBotCacheContext))]
-    partial class GrillBotCacheContextModelSnapshot : ModelSnapshot
+    [Migration("20250303230715_ProfilePicturesMigrationToRedis")]
+    partial class ProfilePicturesMigrationToRedis
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -92,8 +92,8 @@ public class UpdateUser : ApiAction
                 },
                 SelfUnverifyMinimalTime = new DiffRequest<string?>
                 {
-                    After = before.SelfUnverifyMinimalTime?.ToString("c"),
-                    Before = after.SelfUnverifyMinimalTime?.ToString("c")
+                    After = after.SelfUnverifyMinimalTime?.ToString("c"),
+                    Before = before.SelfUnverifyMinimalTime?.ToString("c")
                 },
                 PointsDeactivated = new DiffRequest<bool?>
                 {

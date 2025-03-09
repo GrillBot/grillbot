@@ -5,6 +5,7 @@ using GrillBot.Common.FileStorage;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Enums;
+using GrillBot.Data.Models.API;
 
 namespace GrillBot.App.Actions.Api.V3.Lookup;
 
@@ -80,7 +81,10 @@ public class LookupAction : ApiAction
             var manager = await _blobManagerHelper.CreateAsync(container!);
 
             if (await manager.ExistsAsync(filename))
-                return CreateResult(manager.GenerateSasLink(filename, 1));
+            {
+                var link = manager.GenerateSasLink(filename, 1);
+                return CreateResult(string.IsNullOrEmpty(link) ? null : new MessageResponse(link));
+            }
         }
 
         return ApiResult.NotFound();

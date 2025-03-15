@@ -100,26 +100,10 @@ public class GetAuditLogList : ApiAction
                 return jsonElement.Deserialize<SearchModels.ChannelUpdatedPreview>(options);
             case LogType.EmoteDeleted:
                 return jsonElement.Deserialize<SearchModels.EmoteDeletedPreview>(options);
-            case LogType.OverwriteCreated or LogType.OverwriteDeleted:
+            case LogType.OverwriteCreated or LogType.OverwriteDeleted or LogType.OverwriteUpdated:
                 {
                     var preview = jsonElement.Deserialize<SearchModels.OverwritePreview>(options)!;
-                    var previewData = new OverwritePreview
-                    {
-                        Allow = preview.Allow,
-                        Deny = preview.Deny
-                    };
-
-                    if (preview.TargetType is PermissionTarget.Role)
-                        previewData.Role = await _dataResolveManager.GetRoleAsync(preview.TargetId.ToUlong());
-                    else if (preview.TargetType is PermissionTarget.User)
-                        previewData.User = await _dataResolveManager.GetUserAsync(preview.TargetId.ToUlong());
-
-                    return previewData;
-                }
-            case LogType.OverwriteUpdated:
-                {
-                    var preview = jsonElement.Deserialize<SearchModels.OverwriteUpdatedPreview>(options)!;
-                    var previewData = new OverwriteUpdatedPreview();
+                    var previewData = new OverwritePreview();
 
                     if (preview.TargetType is PermissionTarget.Role)
                         previewData.Role = await _dataResolveManager.GetRoleAsync(preview.TargetId.ToUlong());
@@ -185,8 +169,9 @@ public class GetAuditLogList : ApiAction
                     return new MessageDeletedPreview
                     {
                         User = (await _dataResolveManager.GetUserAsync(preview.AuthorId.ToUlong()))!,
-                        Content = preview.Content,
-                        Embeds = preview.Embeds,
+                        ContentLength = preview.ContentLength,
+                        EmbedCount = preview.EmbedCount,
+                        EmbedFieldsCount = preview.EmbedFieldsCount,
                         MessageCreatedAt = preview.MessageCreatedAt.ToLocalTime()
                     };
                 }

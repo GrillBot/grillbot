@@ -1,5 +1,4 @@
 ﻿using Discord;
-using GrillBot.Core.Extensions;
 
 namespace GrillBot.Common.Extensions;
 
@@ -19,14 +18,4 @@ public static class DateTimeExtensions
 
     public static string ToTimestampMention(this DateTime dateTime)
         => TimestampTag.FromDateTime(dateTime).ToString(TimestampTagStyles.ShortDateTime);
-
-    public static DateTime? ConvertKindToUtc(this DateTime? dateTime, DateTimeKind sourceKind)
-    {
-        if (dateTime is null)
-            return null;
-        if (dateTime.Value.Kind == DateTimeKind.Utc)
-            return dateTime;
-
-        return dateTime.Value.WithKind(sourceKind).ToUniversalTime();
-    }
 }

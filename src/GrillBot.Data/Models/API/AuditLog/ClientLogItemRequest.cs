@@ -28,7 +28,7 @@ public class ClientLogItemRequest : IDictionaryObject
             { nameof(IsInfo), IsInfo.ToString() },
             { nameof(IsError), IsError.ToString() },
             { nameof(IsWarning), IsWarning.ToString() },
-            { nameof(Content), Content },
+            { "Content.Length", Content.Length.ToString() },
             { nameof(AppName), AppName },
             { nameof(Source), Source }
         };

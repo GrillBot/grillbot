@@ -2,6 +2,7 @@
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using GrillBot.Core.Managers.Performance;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace GrillBot.Common.FileStorage;
 
@@ -19,7 +20,7 @@ public class BlobManager
     private CounterItem CreateCounter(string operation)
         => CounterManager.Create($"Azure.BlobStorage.{Client.Name}.{operation}");
 
-    public string? GenerateSasLink(string filename, int expirationHours, string resource = "b", BlobSasPermissions permissions = BlobSasPermissions.Read)
+    public string? GenerateSasLink(string filename, TimeSpan expiration, string resource = "b", BlobSasPermissions permissions = BlobSasPermissions.Read)
     {
         using (CreateCounter(nameof(GenerateSasLink)))
         {
@@ -32,7 +33,7 @@ public class BlobManager
                 BlobContainerName = blobClient.GetParentBlobContainerClient().Name,
                 BlobName = blobClient.Name,
                 Resource = resource,
-                ExpiresOn = DateTimeOffset.Now.AddHours(expirationHours)
+                ExpiresOn = DateTimeOffset.Now.Add(expiration)
             };
             builder.SetPermissions(permissions);
 

@@ -4,20 +4,13 @@ using GrillBot.Database.Services.Repository;
 
 namespace GrillBot.App.Handlers.GuildMemberUpdated;
 
-public class UserNicknameUpdatedHandler : IGuildMemberUpdatedEvent
+public class UserNicknameUpdatedHandler(GrillBotDatabaseBuilder _databaseBuilder) : IGuildMemberUpdatedEvent
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-
-    public UserNicknameUpdatedHandler(GrillBotDatabaseBuilder databaseBuilder)
-    {
-        DatabaseBuilder = databaseBuilder;
-    }
-
     public async Task ProcessAsync(IGuildUser? before, IGuildUser after)
     {
         if (!CanProcess(before, after)) return;
 
-        using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(after.Guild);
         await repository.User.GetOrCreateUserAsync(after);

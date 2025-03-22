@@ -10,7 +10,7 @@ public static class LoggingExtensions
         services.AddSingleton<LoggingManager>();
 
         foreach (var handler in FindHandlers())
-            services.AddSingleton(typeof(ILoggingHandler), handler);
+            services.AddScoped(typeof(ILoggingHandler), handler);
         return services;
     }
 

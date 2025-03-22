@@ -5,17 +5,11 @@ using GrillBot.Database.Entity;
 
 namespace GrillBot.App.Handlers.GuildMemberUpdated;
 
-public class ServerBoosterHandler : IGuildMemberUpdatedEvent
+public class ServerBoosterHandler(
+    GrillBotDatabaseBuilder _databaseBuilder,
+    IConfiguration _configuration
+) : IGuildMemberUpdatedEvent
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IConfiguration Configuration { get; }
-
-    public ServerBoosterHandler(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration)
-    {
-        DatabaseBuilder = databaseBuilder;
-        Configuration = configuration;
-    }
-
     public async Task ProcessAsync(IGuildUser? before, IGuildUser after)
     {
         if (!CanProcess(before, after)) return;
@@ -42,10 +36,10 @@ public class ServerBoosterHandler : IGuildMemberUpdatedEvent
         switch (boostBefore)
         {
             case false when boostAfter:
-                embed.WithTitle($"Uživatel je nyní Server Booster {Configuration["Discord:Emotes:Hypers"]}");
+                embed.WithTitle($"Uživatel je nyní Server Booster {_configuration["Discord:Emotes:Hypers"]}");
                 break;
             case true when !boostAfter:
-                embed.WithTitle($"Uživatel již není Server Booster {Configuration["Discord:Emotes:Sadge"]}");
+                embed.WithTitle($"Uživatel již není Server Booster {_configuration["Discord:Emotes:Sadge"]}");
                 break;
         }
 
@@ -53,11 +47,11 @@ public class ServerBoosterHandler : IGuildMemberUpdatedEvent
     }
 
     private static bool CanProcess(IGuildUser? before, IGuildUser after)
-        => before is not null && !before.RoleIds.SequenceEqual(after.RoleIds);
+        => before?.RoleIds.SequenceEqual(after.RoleIds) == false;
 
     private async Task<Guild?> FindGuildAsync(IGuild guild)
     {
-        using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
         return await repository.Guild.FindGuildAsync(guild, true);
     }
 

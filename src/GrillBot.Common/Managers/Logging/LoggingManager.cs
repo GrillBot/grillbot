@@ -19,7 +19,9 @@ public class LoggingManager
 
     private async Task OnLogAsync(LogMessage message)
     {
-        foreach (var handler in _serviceProvider.GetServices<ILoggingHandler>())
+        using var scope = _serviceProvider.CreateScope();
+
+        foreach (var handler in scope.ServiceProvider.GetServices<ILoggingHandler>())
         {
             if (!await handler.CanHandleAsync(message.Severity, message.Source, message.Exception))
                 continue;

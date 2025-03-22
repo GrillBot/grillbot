@@ -14,12 +14,11 @@ public abstract class Job : IJob
 {
     protected static readonly string Indent = new(' ', 5);
 
-    private IServiceProvider ServiceProvider { get; }
+    private readonly IServiceProvider _serviceProvider;
 
     protected IDiscordClient DiscordClient { get; }
-    protected InitManager InitManager { get; }
-    protected LoggingManager LoggingManager { get; }
-    protected IRabbitPublisher RabbitPublisher { get; }
+    protected InitManager InitManager => ResolveService<InitManager>();
+    protected LoggingManager LoggingManager => ResolveService<LoggingManager>();
 
     private string JobName => GetType().Name;
     private bool RequireInitialization => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
@@ -27,10 +26,7 @@ public abstract class Job : IJob
     protected Job(IServiceProvider serviceProvider)
     {
         DiscordClient = serviceProvider.GetRequiredService<IDiscordClient>();
-        InitManager = serviceProvider.GetRequiredService<InitManager>();
-        LoggingManager = serviceProvider.GetRequiredService<LoggingManager>();
-        ServiceProvider = serviceProvider;
-        RabbitPublisher = serviceProvider.GetRequiredService<IRabbitPublisher>();
+        _serviceProvider = serviceProvider;
     }
 
     protected abstract Task RunAsync(IJobExecutionContext context);
@@ -75,14 +71,15 @@ public abstract class Job : IJob
         if (string.IsNullOrEmpty(logRequest.Result))
             return Task.CompletedTask;
 
-        var userId = DiscordClient.CurrentUser.Id.ToString();
+        var discordClient = ResolveService<IDiscordClient>();
+        var userId = discordClient.CurrentUser.Id.ToString();
         var request = new LogRequest(LogType.JobCompleted, DateTime.UtcNow, null, userId)
         {
             JobExecution = logRequest
         };
 
         var payload = new CreateItemsMessage(request);
-        return RabbitPublisher.PublishAsync(payload);
+        return ResolveService<IRabbitPublisher>().PublishAsync(payload);
     }
 
     private async Task<bool> CanRunAsync()
@@ -90,10 +87,12 @@ public abstract class Job : IJob
 
     private async Task<bool> IsJobDisabledAsync()
     {
-        var dataCacheManager = ServiceProvider.GetRequiredService<DataCacheManager>();
+        var dataCacheManager = _serviceProvider.GetRequiredService<DataCacheManager>();
         var disabledJobs = await dataCacheManager.GetValueAsync<List<string>>("DisabledJobs");
-        disabledJobs ??= new List<string>();
 
-        return disabledJobs!.Contains(JobName);
+        return (disabledJobs ?? []).Contains(JobName);
     }
+
+    protected TService ResolveService<TService>() where TService : class
+        => _serviceProvider.GetRequiredService<TService>();
 }

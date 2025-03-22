@@ -2,6 +2,7 @@
 using GrillBot.App.Helpers;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Models.Events;
 using GrillBot.Core.Services.AuditLog.Models.Response;
@@ -12,20 +13,16 @@ using Quartz;
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
-public class AuditLogClearingJob : ArchivationJobBase
+public class AuditLogClearingJob(IServiceProvider serviceProvider) : ArchivationJobBase(serviceProvider)
 {
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
-
-    public AuditLogClearingJob(IServiceProvider serviceProvider, IAuditLogServiceClient auditLogServiceClient) : base(serviceProvider)
-    {
-        AuditLogServiceClient = auditLogServiceClient;
-    }
-
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        var archivationResult = await AuditLogServiceClient.CreateArchivationDataAsync();
+        var archivationResult = await CreateArchivationDataAsync();
         if (archivationResult is null)
+        {
+            context.Result = "Nothing to archivation";
             return;
+        }
 
         var jsonData = JObject.Parse(archivationResult.Content);
 
@@ -40,9 +37,22 @@ public class AuditLogClearingJob : ArchivationJobBase
         var formattedZipSize = zipSize.Bytes().ToString();
 
         var bulkDeletePayload = new BulkDeletePayload(archivationResult.Ids);
-        await RabbitPublisher.PublishAsync(bulkDeletePayload, new());
+        await ResolveService<IRabbitPublisher>().PublishAsync(bulkDeletePayload);
 
         context.Result = BuildReport(archivationResult, xmlSize, formattedZipSize);
+    }
+
+    private async Task<ArchivationResult?> CreateArchivationDataAsync()
+    {
+        try
+        {
+            var client = ResolveService<IAuditLogServiceClient>();
+            return await client.CreateArchivationDataAsync();
+        }
+        catch (Refit.ApiException ex) when (ex.StatusCode == HttpStatusCode.NoContent)
+        {
+            return null;
+        }
     }
 
     private static IEnumerable<JObject> TransformChannels(IEnumerable<GuildChannel?> channels)
@@ -131,7 +141,7 @@ public class AuditLogClearingJob : ArchivationJobBase
     {
         var guilds = new List<Guild>();
         foreach (var guildChunk in guildIds.Chunk(100))
-            guilds.AddRange(await repository.Guild.GetGuildsByIdsAsync(guildChunk.ToList()));
+            guilds.AddRange(await repository.Guild.GetGuildsByIdsAsync([.. guildChunk]));
         json["Guilds"] = new JArray(TransformGuilds(guilds));
     }
 
@@ -139,8 +149,7 @@ public class AuditLogClearingJob : ArchivationJobBase
     {
         var channels = new List<GuildChannel?>();
         foreach (var channelChunk in channelIds.Chunk(100))
-            channels.AddRange(await repository.Channel.GetChannelsByIdsAsync(channelChunk.ToList()));
-
+            channels.AddRange(await repository.Channel.GetChannelsByIdsAsync([.. channelChunk]));
         json["Channels"] = new JArray(TransformChannels(channels));
     }
 
@@ -148,7 +157,7 @@ public class AuditLogClearingJob : ArchivationJobBase
     {
         var users = new List<User?>();
         foreach (var userChunk in userIds.Chunk(100))
-            users.AddRange(await repository.User.GetUsersByIdsAsync(userChunk.ToList()));
+            users.AddRange(await repository.User.GetUsersByIdsAsync([.. userChunk]));
 
         json["Users"] = new JArray(TransformUsers(users));
     }

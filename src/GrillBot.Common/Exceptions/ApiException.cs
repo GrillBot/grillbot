@@ -1,9 +1,7 @@
-﻿using System.Runtime.Serialization;
-using Discord;
+﻿using Discord;
 
 namespace GrillBot.Common.Exceptions;
 
-[Serializable]
 public class ApiException : Exception
 {
     public IUser? LoggedUser { get; }
@@ -23,10 +21,6 @@ public class ApiException : Exception
         LoggedUser = loggedUser;
         Path = path;
         ControllerInfo = controllerInfo;
-    }
-
-    protected ApiException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
     }
 
     public ApiException(string? message, Exception? innerException) : base(message, innerException)

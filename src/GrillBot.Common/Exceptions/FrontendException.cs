@@ -1,9 +1,7 @@
 ﻿using Discord;
-using System.Runtime.Serialization;
 
 namespace GrillBot.Common.Exceptions;
 
-[Serializable]
 public class FrontendException : Exception
 {
     public IUser LoggedUser { get; } = null!;
@@ -18,10 +16,6 @@ public class FrontendException : Exception
     }
 
     public FrontendException(string? message, Exception? innerException) : base(message, innerException)
-    {
-    }
-
-    protected FrontendException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
     }
 

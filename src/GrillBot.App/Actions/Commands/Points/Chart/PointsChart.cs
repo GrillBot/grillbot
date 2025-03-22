@@ -28,14 +28,11 @@ public class PointsChart : CommandAction
     {
         await PrepareDataAsync(type, users, filter);
 
-        var resultFile = new TemporaryFile("png");
         var request = await CreateRequestAsync(filter, type);
         var image = await ImageProcessingClient.CreateChartImageAsync(request);
 
-        await using var ms = new MemoryStream();
-        await image.CopyToAsync(ms);
-
-        await resultFile.WriteAllBytesAsync(ms.ToArray());
+        var resultFile = new TemporaryFile("png");
+        await resultFile.WriteStreamAsync(image);
         return resultFile;
     }
 

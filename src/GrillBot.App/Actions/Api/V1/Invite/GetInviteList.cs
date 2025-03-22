@@ -21,7 +21,7 @@ public class GetInviteList : ApiAction
     {
         var parameters = (GetInviteListParams)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Invite.GetInviteListAsync(parameters, parameters.Pagination);
         var result = await PaginatedResponse<GuildInvite>.CopyAndMapAsync(data, entity => Task.FromResult(Mapper.Map<GuildInvite>(entity)));

@@ -32,7 +32,7 @@ public class UserInfo : CommandAction
     {
         GuildUsers = await Context.Guild.GetUsersAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         ExecutorEntity = (await repository.User.FindUserAsync(Context.User, true))!;
         var userEntity = (await repository.GuildUser.FindGuildUserAsync(user, true, true))!;
 

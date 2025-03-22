@@ -4,8 +4,9 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.Consumer;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
@@ -14,16 +15,14 @@ using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
 
-public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload>
+public class SendMessageEventHandler : RabbitMessageHandlerBase<DiscordMessagePayload>
 {
-    public override string QueueName => new DiscordMessagePayload().QueueName;
-
     private readonly IDiscordClient _discordClient;
     private readonly ILogger<SendMessageEventHandler> _logger;
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
     private readonly LocalizedEmbedManager _localizedEmbedManager;
 
-    public SendMessageEventHandler(ILoggerFactory loggerFactory, IDiscordClient discordClient, IRabbitMQPublisher rabbitPublisher,
+    public SendMessageEventHandler(ILoggerFactory loggerFactory, IDiscordClient discordClient, IRabbitPublisher rabbitPublisher,
         LocalizedEmbedManager localizedEmbedManager) : base(loggerFactory)
     {
         _discordClient = discordClient;
@@ -32,40 +31,40 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
         _localizedEmbedManager = localizedEmbedManager;
     }
 
-    protected override async Task HandleInternalAsync(DiscordMessagePayload payload, Dictionary<string, string> headers)
+    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(DiscordMessagePayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
     {
         await _discordClient.WaitOnConnectedState();
 
-        var channel = await GetChannelAsync(payload);
-        var embed = await CreateEmbedAsync(payload);
-        var allowedMentions = payload.AllowedMentions?.ToAllowedMentions();
-        var flags = payload.Flags ?? MessageFlags.None;
-        var components = payload.Components?.BuildComponents();
+        var channel = await GetChannelAsync(message);
+        var embed = await CreateEmbedAsync(message);
+        var allowedMentions = message.AllowedMentions?.ToAllowedMentions();
+        var flags = message.Flags ?? MessageFlags.None;
+        var components = message.Components?.BuildComponents();
         var wrappedComponents = components is null ? null : ComponentsHelper.CreateWrappedComponents(components.ToList().AsReadOnly());
 
         if (channel is null)
         {
-            await LogWarningAsync(payload, $"Unable to find channel with ID {payload.ChannelId}");
-            return;
+            await LogWarningAsync(message, $"Unable to find channel with ID {message.ChannelId}");
+            return RabbitConsumptionResult.Success;
         }
 
-        if (embed is null && string.IsNullOrEmpty(payload.Content) && payload.Attachments.Count == 0)
+        if (embed is null && string.IsNullOrEmpty(message.Content) && message.Attachments.Count == 0)
         {
-            await LogWarningAsync(payload, "Unable to send discord message without content.");
-            return;
+            await LogWarningAsync(message, "Unable to send discord message without content.");
+            return RabbitConsumptionResult.Success;
         }
 
-        IUserMessage? message = null;
+        IUserMessage? msg = null;
         try
         {
-            if (payload.Attachments.Count > 0)
+            if (message.Attachments.Count > 0)
             {
-                message = await SendMessageWithAttachmentsAsync(channel, payload.Content, allowedMentions, payload.Attachments, embed, flags, wrappedComponents);
-                return;
+                msg = await SendMessageWithAttachmentsAsync(channel, message.Content, allowedMentions, message.Attachments, embed, flags, wrappedComponents);
+                return RabbitConsumptionResult.Success;
             }
 
-            message = await channel.SendMessageAsync(
-                text: payload.Content,
+            msg = await channel.SendMessageAsync(
+                text: message.Content,
                 isTTS: false,
                 embed: embed,
                 options: null,
@@ -79,13 +78,15 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
         }
         catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
         {
-            message = new EmptyUserMessage(0);
+            msg = new EmptyUserMessage(0);
         }
         finally
         {
             if (message is not null)
-                await PublishCreatedMessageAsync(payload, message);
+                await PublishCreatedMessageAsync(message, msg!);
         }
+
+        return RabbitConsumptionResult.Success;
     }
 
     private static async Task<IUserMessage> SendMessageWithAttachmentsAsync(IMessageChannel channel, string? content, AllowedMentions? allowedMentions, List<DiscordMessageFile> attachments,
@@ -136,7 +137,7 @@ public class SendMessageEventHandler : BaseRabbitMQHandler<DiscordMessagePayload
         };
 
         _logger.LogWarning("{message}", message);
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
     }
 
     private async Task PublishCreatedMessageAsync(DiscordMessagePayload payload, IUserMessage message)

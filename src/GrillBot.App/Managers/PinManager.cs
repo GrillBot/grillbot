@@ -67,7 +67,7 @@ public class PinManager
         using (CounterManager.Create("Discord.API.Messages"))
             pinCount = (await channel.GetPinnedMessagesAsync()).Count;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await Lock.WaitAsync();
         try

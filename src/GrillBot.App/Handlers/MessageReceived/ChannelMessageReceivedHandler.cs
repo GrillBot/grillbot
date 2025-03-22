@@ -21,7 +21,7 @@ public class ChannelMessageReceivedHandler : IMessageReceivedEvent
     {
         if (!Init(message)) return;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(Channel!.Guild);
         await repository.User.GetOrCreateUserAsync(Author!);

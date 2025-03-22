@@ -40,7 +40,7 @@ public class GetCurrentUnverifies : ApiAction
 
     private async Task<List<(Data.Models.Unverify.UnverifyUserProfile profile, IGuild guild)>> GetAllUnverifiesAsync(ulong? userId = null)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var unverifies = await repository.Unverify.GetUnverifiesAsync(userId);
 
         var profiles = new List<(Data.Models.Unverify.UnverifyUserProfile profile, IGuild guild)>();

@@ -94,7 +94,7 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
 
     private async Task<string> GetLastUserLocaleAsync(IUser user)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var userEntity = await repository.User.FindUserAsync(user, true);
         return userEntity?.Language ?? TextsManager.DefaultLocale;
     }

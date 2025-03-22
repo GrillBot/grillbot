@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Exceptions;
-using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RemindService.Models.Request;
 

@@ -24,7 +24,7 @@ public class AutoReplyManager
 
         try
         {
-            await using var repository = DatabaseBuilder.CreateRepository();
+            using var repository = DatabaseBuilder.CreateRepository();
             var messages = await repository.AutoReply.GetAllAsync(true);
 
             Messages.Clear();

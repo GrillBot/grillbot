@@ -1,7 +1,7 @@
 ﻿using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
@@ -11,9 +11,9 @@ public class ClearMessageCache : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private IMessageCacheManager MessageCache { get; }
-    private IRabbitMQPublisher RabbitPublisher { get; }
+    private IRabbitPublisher RabbitPublisher { get; }
 
-    public ClearMessageCache(ApiRequestContext apiContext, IDiscordClient discordClient, IMessageCacheManager messageCache, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
+    public ClearMessageCache(ApiRequestContext apiContext, IDiscordClient discordClient, IMessageCacheManager messageCache, IRabbitPublisher rabbitPublisher) : base(apiContext)
     {
         DiscordClient = discordClient;
         MessageCache = messageCache;
@@ -40,13 +40,12 @@ public class ClearMessageCache : ApiAction
             LogMessage = new LogMessageRequest
             {
                 Message = $"Byla ručně smazána cache zpráv kanálu. Smazaných zpráv: {count}",
-                Severity = LogSeverity.Info,
                 Source = nameof(ClearMessageCache),
                 SourceAppName = "GrillBot"
             }
         };
 
-        await RabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await RabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
         return ApiResult.Ok();
     }
 }

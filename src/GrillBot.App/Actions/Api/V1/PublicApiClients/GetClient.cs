@@ -17,7 +17,7 @@ public class GetClient : ApiAction
     {
         var clientId = (string)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var client = await repository.ApiClientRepository.FindClientById(clientId)
             ?? throw new NotFoundException();

@@ -17,7 +17,7 @@ public class UserManager
     {
         var isPublic = context.IsPublic();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var user = await repository.User.FindUserAsync(context.LoggedUser!)
             ?? throw new NotFoundException();
 
@@ -31,7 +31,7 @@ public class UserManager
 
     public async Task<bool> CheckFlagsAsync(IUser user, UserFlags flags)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var entity = await repository.User.FindUserAsync(user, true);
         return entity?.HaveFlags(flags) == true;
@@ -39,7 +39,7 @@ public class UserManager
 
     public async Task<string?> GetUserLanguage(IUser user)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var userEntity = await repository.User.FindUserByIdAsync(user.Id, disableTracking: true);
 
         return userEntity?.Language;

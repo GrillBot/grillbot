@@ -45,7 +45,7 @@ public class UpdateUnverify : ApiAction
     {
         var (guild, fromUser, toUser) = await InitAsync(guildId, userId);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var user = await repository.GuildUser.FindGuildUserAsync(toUser, includeAll: true);
         EnsureValidUser(user, parameters.EndAt);

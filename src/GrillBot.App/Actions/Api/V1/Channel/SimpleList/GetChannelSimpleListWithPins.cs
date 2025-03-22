@@ -21,7 +21,7 @@ public class GetChannelSimpleListWithPins : SimpleListBase
         var guilds = await GetGuildsAsync();
         var availableChannels = await GetAvailableChannelsAsync(guilds, false);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var channelsWithPins = await repository.Channel.GetChannelsWithPinsAsync(guilds);
 
         var filteredChannels = availableChannels.FindAll(o =>

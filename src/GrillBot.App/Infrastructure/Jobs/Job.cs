@@ -5,8 +5,8 @@ using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Core.Services.AuditLog.Enums;
 using Microsoft.Extensions.DependencyInjection;
-using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 
 namespace GrillBot.App.Infrastructure.Jobs;
 
@@ -19,7 +19,7 @@ public abstract class Job : IJob
     protected IDiscordClient DiscordClient { get; }
     protected InitManager InitManager { get; }
     protected LoggingManager LoggingManager { get; }
-    protected IRabbitMQPublisher RabbitPublisher { get; }
+    protected IRabbitPublisher RabbitPublisher { get; }
 
     private string JobName => GetType().Name;
     private bool RequireInitialization => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
@@ -30,7 +30,7 @@ public abstract class Job : IJob
         InitManager = serviceProvider.GetRequiredService<InitManager>();
         LoggingManager = serviceProvider.GetRequiredService<LoggingManager>();
         ServiceProvider = serviceProvider;
-        RabbitPublisher = serviceProvider.GetRequiredService<IRabbitMQPublisher>();
+        RabbitPublisher = serviceProvider.GetRequiredService<IRabbitPublisher>();
     }
 
     protected abstract Task RunAsync(IJobExecutionContext context);
@@ -81,8 +81,8 @@ public abstract class Job : IJob
             JobExecution = logRequest
         };
 
-        var payload = new CreateItemsPayload(request);
-        return RabbitPublisher.PublishAsync(payload, new());
+        var payload = new CreateItemsMessage(request);
+        return RabbitPublisher.PublishAsync(payload);
     }
 
     private async Task<bool> CanRunAsync()

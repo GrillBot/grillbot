@@ -29,8 +29,8 @@ public class GetServiceDetailAction : ApiAction
 
         var detail = new ServiceDetail
         {
-            Name = client.ServiceName,
-            Url = client.Url
+            Name = serviceId,
+            Url = "TODO" // TODO
         };
 
         await SetDiagnosticsDataAsync(detail, client);
@@ -39,20 +39,20 @@ public class GetServiceDetailAction : ApiAction
         return ApiResult.Ok(detail);
     }
 
-    private IClient? GetClient(string serviceId)
+    private IServiceClient? GetClient(string serviceId)
     {
-        return typeof(IClient).Assembly.GetTypes()
-            .Where(o => o.IsInterface && o.GetInterface(nameof(IClient)) is not null)
+        return typeof(IServiceClient).Assembly.GetTypes()
+            .Where(o => o.IsInterface && o.GetInterface(nameof(IServiceClient)) is not null)
             .Select(_serviceProvider.GetService)
-            .OfType<IClient>()
-            .FirstOrDefault(o => o.ServiceName == serviceId);
+            .OfType<IServiceClient>()
+            .FirstOrDefault(o => true); // TODO
     }
 
-    private async Task SetDiagnosticsDataAsync(ServiceDetail detail, IClient client)
+    private async Task SetDiagnosticsDataAsync(ServiceDetail detail, IServiceClient client)
     {
         try
         {
-            var diagnostics = await client.GetDiagnosticAsync();
+            var diagnostics = await client.GetDiagnosticsAsync();
 
             detail.UsedMemory = diagnostics.UsedMemory;
             detail.Uptime = diagnostics.Uptime;
@@ -70,7 +70,7 @@ public class GetServiceDetailAction : ApiAction
         }
     }
 
-    private static async Task SetAdditionalDataAsync(ServiceDetail detail, IClient client)
+    private static async Task SetAdditionalDataAsync(ServiceDetail detail, IServiceClient client)
     {
         object? additionalInfo = null;
 

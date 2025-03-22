@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using GrillBot.Core.Database.Repository;
 using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Database.Services.Repository;
 
-public sealed class GrillBotRepository : RepositoryBase<GrillBotContext>, IDisposable, IAsyncDisposable
+public sealed class GrillBotRepository : RepositoryBase<GrillBotContext>
 {
     private List<SubRepositoryBase<GrillBotContext>> Repositories { get; set; } = new();
 
@@ -33,7 +32,7 @@ public sealed class GrillBotRepository : RepositoryBase<GrillBotContext>, IDispo
         if (repository != null)
             return repository;
 
-        repository = Activator.CreateInstance(typeof(TRepository), Context, CounterManager) as TRepository;
+        repository = Activator.CreateInstance(typeof(TRepository), DbContext, CounterManager) as TRepository;
         if (repository == null)
             throw new InvalidOperationException($"Error while creating repository {typeof(TRepository).Name}");
 
@@ -41,21 +40,9 @@ public sealed class GrillBotRepository : RepositoryBase<GrillBotContext>, IDispo
         return repository;
     }
 
-    public void Dispose()
-    {
-        Context.ChangeTracker.Clear();
-        Context.Dispose();
-
-        Repositories.Clear();
-        Repositories = null!;
-    }
-
-    public async ValueTask DisposeAsync()
+    protected override void DisposeInternal()
     {
         Repositories.Clear();
         Repositories = null!;
-
-        Context.ChangeTracker.Clear();
-        await Context.DisposeAsync();
     }
 }

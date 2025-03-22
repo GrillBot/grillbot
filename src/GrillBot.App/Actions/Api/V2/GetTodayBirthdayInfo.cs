@@ -25,7 +25,7 @@ public class GetTodayBirthdayInfo : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var todayBirthdayUsers = await repository.User.GetUsersWithTodayBirthday();
         var users = await TransformUsersAsync(todayBirthdayUsers);

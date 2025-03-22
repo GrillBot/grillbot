@@ -21,7 +21,7 @@ public class GetAvailableUsers : ApiAction
         var guildId = (ulong?)Parameters[1]!;
         var mutualGuilds = await GetMutualGuildsAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.User.GetFullListOfUsers(bots, mutualGuilds, guildId);
         var result = data

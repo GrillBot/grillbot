@@ -23,7 +23,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var data = await Context.UnverifyLogs.AsNoTracking()
+            var data = await DbContext.UnverifyLogs.AsNoTracking()
                 .Where(o => o.ToUserId == userId && o.GuildId == guildId && (o.Operation == UnverifyOperation.Unverify || o.Operation == UnverifyOperation.Selfunverify))
                 .GroupBy(o => o.Operation)
                 .Select(o => new { o.Key, Count = o.Count() })
@@ -51,7 +51,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Unverifies.AsNoTracking()
+            return await DbContext.Unverifies.AsNoTracking()
                 .Include(o => o.GuildUser!.User).Include(o => o.Guild)
                 .FirstOrDefaultAsync(o => o.EndAt <= DateTime.Now);
         }
@@ -61,7 +61,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.UnverifyLogs.AsNoTracking()
+            return await DbContext.UnverifyLogs.AsNoTracking()
                 .Include(o => o.Guild)
                 .Include(o => o.ToUser!.Unverify)
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -72,7 +72,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Unverifies
+            var query = DbContext.Unverifies
                 .Include(o => o.UnverifyLog)
                 .AsQueryable();
 
@@ -87,7 +87,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Unverifies.AsNoTracking()
+            return await DbContext.Unverifies.AsNoTracking()
                 .Include(o => o.UnverifyLog)
                 .Where(o => o.GuildId == guild.Id.ToString())
                 .OrderBy(o => o.StartAt)
@@ -101,7 +101,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Unverifies.AsNoTracking()
+            return await DbContext.Unverifies.AsNoTracking()
                 .CountAsync(o => o.GuildId == guild.Id.ToString());
         }
     }
@@ -110,7 +110,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Unverifies.AsQueryable();
+            var query = DbContext.Unverifies.AsQueryable();
             if (includeLogs)
                 query = query.Include(o => o.UnverifyLog);
             if (disableTracking)
@@ -125,7 +125,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.UnverifyLogs.AsNoTracking()
+            return await DbContext.UnverifyLogs.AsNoTracking()
                 .GroupBy(o => o.Operation)
                 .Select(o => new { Type = o.Key, Count = o.Count() })
                 .ToDictionaryAsync(o => o.Type, o => o.Count);
@@ -136,7 +136,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.UnverifyLogs.AsNoTracking()
+            return await DbContext.UnverifyLogs.AsNoTracking()
                 .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
                 .OrderBy(o => o.Key.Year).ThenBy(o => o.Key.Month)
                 .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })
@@ -146,7 +146,7 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
 
     private IQueryable<UnverifyLog> GetLogsForArchivationQuery(DateTime expirationMilestone)
     {
-        return Context.UnverifyLogs.AsQueryable()
+        return DbContext.UnverifyLogs.AsQueryable()
             .Include(o => o.Guild)
             .Include(o => o.FromUser!.User)
             .Include(o => o.ToUser!.User)

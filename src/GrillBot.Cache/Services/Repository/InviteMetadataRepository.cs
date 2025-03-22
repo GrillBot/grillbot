@@ -16,7 +16,7 @@ public class InviteMetadataRepository : SubRepositoryBase<GrillBotCacheContext>
     {
         using (CreateCounter())
         {
-            return await Context.InviteMetadata
+            return await DbContext.InviteMetadata
                 .Where(o => o.GuildId == guild.Id.ToString())
                 .ToListAsync();
         }
@@ -26,7 +26,7 @@ public class InviteMetadataRepository : SubRepositoryBase<GrillBotCacheContext>
     {
         using (CreateCounter())
         {
-            return await Context.InviteMetadata.CountAsync();
+            return await DbContext.InviteMetadata.CountAsync();
         }
     }
 
@@ -34,7 +34,7 @@ public class InviteMetadataRepository : SubRepositoryBase<GrillBotCacheContext>
     {
         using (CreateCounter())
         {
-            return await Context.InviteMetadata.AsNoTracking()
+            return await DbContext.InviteMetadata.AsNoTracking()
                 .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.Code == metadata.Code);
         }
     }
@@ -43,7 +43,7 @@ public class InviteMetadataRepository : SubRepositoryBase<GrillBotCacheContext>
     {
         using (CreateCounter())
         {
-            Context.Database.ExecuteSqlRaw("DELETE FROM public.\"InviteMetadata\"");
+            DbContext.InviteMetadata.ExecuteDelete();
         }
     }
 }

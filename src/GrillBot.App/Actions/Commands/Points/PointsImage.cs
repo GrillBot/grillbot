@@ -36,7 +36,7 @@ public sealed class PointsImage : CommandAction
         if (!guildUser.IsUser())
             throw new InvalidOperationException(Texts["Points/Image/IsBot", Locale]);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         if (!await repository.GuildUser.ExistsAsync(guildUser))
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
@@ -61,7 +61,10 @@ public sealed class PointsImage : CommandAction
 
         var image = await ImageProcessingClient.CreatePointsImageAsync(request);
         var result = new TemporaryFile("png");
-        await result.WriteAllBytesAsync(image);
+
+        await using var ms = new MemoryStream();
+        await image.CopyToAsync(ms);
+        await result.WriteAllBytesAsync(ms.ToArray());
 
         return result;
     }

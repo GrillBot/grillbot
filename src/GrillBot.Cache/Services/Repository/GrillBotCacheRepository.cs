@@ -1,16 +1,15 @@
 ﻿using GrillBot.Core.Database.Repository;
 using GrillBot.Core.Managers.Performance;
 
+#pragma warning disable S3604 // Member initializer values should not be redundant
 namespace GrillBot.Cache.Services.Repository;
 
-public sealed class GrillBotCacheRepository : RepositoryBase<GrillBotCacheContext>, IDisposable, IAsyncDisposable
+public class GrillBotCacheRepository(
+    GrillBotCacheContext context,
+    ICounterManager counterManager
+) : RepositoryBase<GrillBotCacheContext>(context, counterManager)
 {
-    private List<SubRepositoryBase<GrillBotCacheContext>> Repositories { get; }
-
-    public GrillBotCacheRepository(GrillBotCacheContext context, ICounterManager counterManager) : base(context, counterManager)
-    {
-        Repositories = new List<SubRepositoryBase<GrillBotCacheContext>>();
-    }
+    private readonly List<SubRepositoryBase<GrillBotCacheContext>> _repositories = [];
 
     public MessageIndexRepository MessageIndexRepository => GetOrCreateRepository<MessageIndexRepository>();
     public StatisticsRepository StatisticsRepository => GetOrCreateRepository<StatisticsRepository>();
@@ -18,26 +17,19 @@ public sealed class GrillBotCacheRepository : RepositoryBase<GrillBotCacheContex
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : SubRepositoryBase<GrillBotCacheContext>
     {
-        var repository = Repositories.OfType<TRepository>().FirstOrDefault();
+        var repository = _repositories.OfType<TRepository>().FirstOrDefault();
         if (repository != null) return repository;
 
-        repository = Activator.CreateInstance(typeof(TRepository), Context, CounterManager) as TRepository;
+        repository = Activator.CreateInstance(typeof(TRepository), DbContext, CounterManager) as TRepository;
         if (repository == null)
             throw new InvalidOperationException($"Error while creating repository {typeof(TRepository).Name}");
 
-        Repositories.Add(repository);
+        _repositories.Add(repository);
         return repository;
     }
 
-    public void Dispose()
+    protected override void DisposeInternal()
     {
-        Context.Dispose();
-        Repositories.Clear();
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        Repositories.Clear();
-        return Context.DisposeAsync();
+        _repositories.Clear();
     }
 }

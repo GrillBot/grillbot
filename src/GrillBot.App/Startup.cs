@@ -21,7 +21,6 @@ using GrillBot.Common.FileStorage;
 using GrillBot.Common.Services;
 using GrillBot.Core;
 using Microsoft.AspNetCore.HttpOverrides;
-using GrillBot.Core.RabbitMQ;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
@@ -33,6 +32,7 @@ using System.Text.Json;
 using GrillBot.App.Infrastructure.JsonConverters;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using GrillBot.Core.RabbitMQ.V2;
 namespace GrillBot.App;
 
 public class Startup
@@ -90,7 +90,7 @@ public class Startup
             .AddMemoryCache()
             .AddActions()
             .AddSingleton<BlobManagerFactory>()
-            .AddRabbitMQ()
+            .AddRabbitMQ(Configuration)
             .AddControllers(c =>
             {
                 c.Filters.Add<ExceptionFilter>();
@@ -264,9 +264,9 @@ public class Startup
 
         app.Use((context, next) =>
         {
-            context.Response.Headers.Add("X-Frame-Options", "SAMEORIGIN");
-            context.Response.Headers.Add("X-Xss-Protection", "1; mode=block");
-            context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+            context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
+            context.Response.Headers.Append("X-Xss-Protection", "1; mode=block");
+            context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
 
             return next();
         });

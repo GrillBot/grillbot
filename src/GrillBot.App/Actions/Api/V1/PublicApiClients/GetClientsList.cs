@@ -14,7 +14,7 @@ public class GetClientsList : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var result = await repository.ApiClientRepository.GetClientsAsync();
 
         return ApiResult.Ok(result);

@@ -3,8 +3,8 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 
 namespace GrillBot.App.Handlers.UserJoined;
 
@@ -14,9 +14,9 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
     private InviteManager InviteManager { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public InviteUserJoinedHandler(IDiscordClient discordClient, InviteManager inviteManager, GrillBotDatabaseBuilder databaseBuilder, IRabbitMQPublisher rabbitPublisher)
+    public InviteUserJoinedHandler(IDiscordClient discordClient, InviteManager inviteManager, GrillBotDatabaseBuilder databaseBuilder, IRabbitPublisher rabbitPublisher)
     {
         DiscordClient = discordClient;
         InviteManager = inviteManager;
@@ -60,7 +60,7 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
             return;
         }
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(guild);
         await repository.User.GetOrCreateUserAsync(user);
@@ -110,6 +110,6 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
     }
 }

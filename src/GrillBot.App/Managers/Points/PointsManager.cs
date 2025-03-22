@@ -1,5 +1,5 @@
-﻿using GrillBot.Core.RabbitMQ;
-using GrillBot.Core.RabbitMQ.Publisher;
+﻿using GrillBot.Core.RabbitMQ.V2.Messages;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.PointsService.Models.Channels;
 using GrillBot.Core.Services.PointsService.Models.Users;
 
@@ -10,9 +10,9 @@ public class PointsManager
     private readonly PointsSynchronizationManager _synchronizationManager;
     private readonly PointsValidationManager _validationManager;
 
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public PointsManager(PointsSynchronizationManager synchronizationManager, PointsValidationManager validationManager, IRabbitMQPublisher rabbitPublisher)
+    public PointsManager(PointsSynchronizationManager synchronizationManager, PointsValidationManager validationManager, IRabbitPublisher rabbitPublisher)
     {
         _synchronizationManager = synchronizationManager;
         _validationManager = validationManager;
@@ -37,8 +37,8 @@ public class PointsManager
 
     #region Push
 
-    public Task PushPayloadAsync<TPayload>(TPayload payload) where TPayload : IPayload
-        => _rabbitPublisher.PublishAsync(payload, new());
+    public Task PushPayloadAsync<TPayload>(TPayload payload) where TPayload : IRabbitMessage
+        => _rabbitPublisher.PublishAsync(payload);
 
     #endregion
 }

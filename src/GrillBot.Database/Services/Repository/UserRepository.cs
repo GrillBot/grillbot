@@ -24,7 +24,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Users.AsQueryable();
+            var query = DbContext.Users.AsQueryable();
             if (disableTracking)
                 query = query.AsNoTracking();
 
@@ -49,7 +49,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
                 return entity;
 
             entity = User.FromDiscord(user);
-            await Context.AddAsync(entity);
+            await DbContext.AddAsync(entity);
 
             return entity;
         }
@@ -59,7 +59,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Users
+            return await DbContext.Users
                 .Where(o => (o.Flags & (int)UserFlags.PublicAdminOnline) != 0 || (o.Flags & (int)UserFlags.WebAdminOnline) != 0)
                 .ToListAsync();
         }
@@ -78,7 +78,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Users.AsQueryable();
+            var query = DbContext.Users.AsQueryable();
             if (includeOptions.HasFlag(UserIncludeOptions.Guilds))
                 query = query.Include(o => o.Guilds).ThenInclude(o => o.Guild);
             if (includeOptions.HasFlag(UserIncludeOptions.UsedInvite))
@@ -104,7 +104,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
     {
         var today = DateTime.Now;
 
-        return Context.Users.AsNoTracking()
+        return DbContext.Users.AsNoTracking()
             .Where(o => o.Birthday != null && o.Birthday.Value.Month == today.Month && o.Birthday.Value.Day == today.Day)
             .OrderBy(o => o.Id);
     }
@@ -129,7 +129,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Users.AsNoTracking();
+            var query = DbContext.Users.AsNoTracking();
 
             switch (bots)
             {
@@ -157,7 +157,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
             if (!userIds.Any())
                 return new List<User>();
 
-            return await Context.Users.AsNoTracking()
+            return await DbContext.Users.AsNoTracking()
                 .Where(o => userIds.Contains(o.Id))
                 .ToListAsync();
         }
@@ -167,7 +167,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Users.AsNoTracking()
+            return await DbContext.Users.AsNoTracking()
                 .Where(o => (o.Flags & (int)UserFlags.BotAdmin) != 0)
                 .ToListAsync();
         }

@@ -51,7 +51,7 @@ public class GetGuildDetail : ApiAction
     {
         var id = (ulong)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var dbGuild = await repository.Guild.FindGuildByIdAsync(id, true)
             ?? throw new NotFoundException(Texts["GuildModule/GuildDetail/NotFound", ApiContext.Language]);
@@ -97,11 +97,11 @@ public class GetGuildDetail : ApiAction
 
     private async Task<GuildDatabaseReport> CreateDatabaseReportAsync(ulong guildId)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var report = await repository.Guild.GetDatabaseReportDataAsync(guildId);
 
-        await using (var cache = CacheBuilder.CreateRepository())
+        using (var cache = CacheBuilder.CreateRepository())
             report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
 
         report.AuditLogs = await AuditLogServiceClient.GetItemsCountOfGuildAsync(guildId);

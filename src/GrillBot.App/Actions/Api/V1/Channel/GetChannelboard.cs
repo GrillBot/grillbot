@@ -38,7 +38,7 @@ public class GetChannelboard : ApiAction
         var availableChannels = await guild.GetAvailableChannelsAsync(loggedGuildUser, true, false);
         if (availableChannels.Count == 0) return result;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var statistics = await repository.Channel.GetAvailableStatsAsync(guild, availableChannels.Select(o => o.Id.ToString()), true);
         if (statistics.Count == 0) return result;

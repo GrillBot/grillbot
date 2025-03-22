@@ -14,7 +14,7 @@ public class RequireUserPermsAttribute : PreconditionAttribute
         var databaseBuilder = services.GetRequiredService<GrillBotDatabaseBuilder>();
         var locale = context.Interaction.UserLocale;
 
-        await using var repository = databaseBuilder.CreateRepository();
+        using var repository = databaseBuilder.CreateRepository();
 
         try
         {

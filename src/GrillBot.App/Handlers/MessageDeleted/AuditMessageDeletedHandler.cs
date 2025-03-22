@@ -5,7 +5,7 @@ using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
@@ -17,9 +17,9 @@ public class AuditMessageDeletedHandler : IMessageDeletedEvent
     private DownloadHelper DownloadHelper { get; }
     private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
 
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, DownloadHelper downloadHelper, BlobManagerFactoryHelper blobManagerFactoryHelper, IRabbitMQPublisher rabbitPublisher)
+    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, DownloadHelper downloadHelper, BlobManagerFactoryHelper blobManagerFactoryHelper, IRabbitPublisher rabbitPublisher)
     {
         MessageCache = messageCache;
         DownloadHelper = downloadHelper;
@@ -50,7 +50,7 @@ public class AuditMessageDeletedHandler : IMessageDeletedEvent
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(request), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(request));
     }
 
     private async Task<List<FileRequest>> GetAndStoreAttachmentsAsync(IMessage message)

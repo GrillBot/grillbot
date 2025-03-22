@@ -5,7 +5,7 @@ namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public partial class AuditOrchestrationHandler
 {
-    private static void ProcessRemovedEmotes(IGuild before, IGuild after, CreateItemsPayload payload)
+    private static void ProcessRemovedEmotes(IGuild before, IGuild after, CreateItemsMessage payload)
     {
         var removedEmotes = before.Emotes.Where(e => !after.Emotes.Contains(e)).ToList();
         if (removedEmotes.Count == 0) return;
@@ -21,7 +21,7 @@ public partial class AuditOrchestrationHandler
         }
     }
 
-    private async Task ProcessGuildChangesAsync(IGuild before, IGuild after, CreateItemsPayload payload)
+    private async Task ProcessGuildChangesAsync(IGuild before, IGuild after, CreateItemsMessage payload)
     {
         if (!IsGuildChanged(before, after)) return;
 

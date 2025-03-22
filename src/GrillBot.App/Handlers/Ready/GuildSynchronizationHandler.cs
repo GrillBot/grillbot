@@ -18,7 +18,7 @@ public class GuildSynchronizationHandler : IReadyEvent
     {
         var guilds = await DiscordClient.GetGuildsAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         foreach (var guild in guilds)
         {

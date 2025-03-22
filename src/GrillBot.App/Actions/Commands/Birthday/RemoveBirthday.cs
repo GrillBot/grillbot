@@ -11,7 +11,7 @@ public class RemoveBirthday : CommandAction
 
     public async Task ProcessAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var dbUser = await repository.User.FindUserAsync(Context.User);
         if (dbUser == null) return;

@@ -17,7 +17,7 @@ public class NicknameRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var maxRecord = await Context.Nicknames.AsNoTracking()
+            var maxRecord = await DbContext.Nicknames.AsNoTracking()
                 .Where(o => o.GuildId == user.GuildId.ToString() && o.UserId == user.Id.ToString())
                 .OrderByDescending(o => o.Id)
                 .FirstOrDefaultAsync();
@@ -30,7 +30,7 @@ public class NicknameRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Nicknames.AsNoTracking()
+            return await DbContext.Nicknames.AsNoTracking()
                 .AnyAsync(o => o.GuildId == user.GuildId.ToString() && o.UserId == user.Id.ToString() && o.NicknameValue == user.Nickname);
         }
     }
@@ -39,7 +39,7 @@ public class NicknameRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Nicknames.AsNoTracking()
+            return await DbContext.Nicknames.AsNoTracking()
                 .AnyAsync(o => o.GuildId == user.GuildId.ToString() && o.UserId == user.Id.ToString());
         }
     }

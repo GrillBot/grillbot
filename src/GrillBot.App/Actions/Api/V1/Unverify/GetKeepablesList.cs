@@ -22,7 +22,7 @@ public class GetKeepablesList : ApiAction
 
     public async Task<Dictionary<string, List<string>>> ProcessAsync(string? group)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var items = await repository.SelfUnverify.GetKeepablesAsync(group);
         return items.GroupBy(o => o.GroupName.ToUpper())

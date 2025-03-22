@@ -1,4 +1,4 @@
-﻿using GrillBot.Core.RabbitMQ.Publisher;
+﻿using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.UserMeasures.Models.Events;
 
 namespace GrillBot.App.Actions.Commands.UserMeasures;

@@ -12,7 +12,7 @@ public class UserSynchronizationHandler : BaseSynchronizationHandler, IUserJoine
     // UserJoined
     public async Task ProcessAsync(IGuildUser user)
     {
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         await repository.User.GetOrCreateUserAsync(user);
         await repository.CommitAsync();
@@ -30,7 +30,7 @@ public class UserSynchronizationHandler : BaseSynchronizationHandler, IUserJoine
         if (before is null || (before.Nickname == after.Nickname && before.Username == after.Username && before.GetUserAvatarUrl() == after.GetUserAvatarUrl() && before.GlobalName == after.GlobalName))
             return;
 
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(after.Guild);
         await repository.CommitAsync();
@@ -48,7 +48,7 @@ public class UserSynchronizationHandler : BaseSynchronizationHandler, IUserJoine
         if (before.Username == after.Username && before.GetUserAvatarUrl() == after.GetUserAvatarUrl() && before.GlobalName == after.GlobalName)
             return;
 
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         await repository.User.GetOrCreateUserAsync(after);
         await repository.CommitAsync();

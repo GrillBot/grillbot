@@ -132,7 +132,7 @@ public class ChannelInfo : CommandAction
 
     private async Task SetStatisticsAndConfigurationAsync(EmbedBuilder builder, IGuildChannel channel, bool excludeThreads)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.GuildId, true, includeParent: true);
         if (channelData == null) return;

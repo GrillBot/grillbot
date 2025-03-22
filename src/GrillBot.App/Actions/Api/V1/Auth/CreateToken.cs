@@ -56,7 +56,7 @@ public class CreateToken : ApiAction
         if (user is null)
             return new OAuth2LoginToken(Texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var userEntity = await repository.User.FindUserAsync(user, true);
         if (userEntity is null)

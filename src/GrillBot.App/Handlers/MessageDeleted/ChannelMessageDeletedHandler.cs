@@ -25,7 +25,7 @@ public class ChannelMessageDeletedHandler : IMessageDeletedEvent
         message ??= await MessageCache.GetAsync(cachedMessage.Id, null, true);
         if (message == null || message.IsCommand(DiscordClient.CurrentUser)) return;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var statistics = await repository.Channel.FindUserChannelAsync(textChannel, message.Author);
         if (statistics == null || statistics.Count == 0) return;

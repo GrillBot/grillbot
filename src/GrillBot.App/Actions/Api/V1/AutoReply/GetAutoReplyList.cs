@@ -18,7 +18,7 @@ public class GetAutoReplyList : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var items = await repository.AutoReply.GetAllAsync(false);
         var result = Mapper.Map<List<AutoReplyItem>>(items);

@@ -9,7 +9,7 @@ namespace GrillBot.App.Controllers.ServiceControllers;
 
 [ApiExplorerSettings(GroupName = "v3")]
 [Route("api/service/[controller]")]
-public abstract class ServiceControllerBase<TService> : Core.Infrastructure.Actions.ControllerBase where TService : IClient
+public abstract class ServiceControllerBase<TService> : Core.Infrastructure.Actions.ControllerBase where TService : IServiceClient
 {
     protected ServiceControllerBase(IServiceProvider serviceProvider) : base(serviceProvider)
     {

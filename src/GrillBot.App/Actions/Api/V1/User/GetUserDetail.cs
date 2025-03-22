@@ -57,7 +57,7 @@ public class GetUserDetail : ApiAction
 
     public async Task<ApiModels.Users.UserDetail> ProcessAsync(ulong id)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var entity = await repository.User.FindUserByIdAsync(id, UserIncludeOptions.All, true)
             ?? throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);

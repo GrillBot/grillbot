@@ -17,7 +17,7 @@ public class KeepableExists : ApiAction
     {
         var parameters = (KeepableParams)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var result = await repository.SelfUnverify.KeepableExistsAsync(parameters.Group, parameters.Name);
         return ApiResult.Ok(result);

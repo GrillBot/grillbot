@@ -19,7 +19,7 @@ public class AutoReplyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.AutoReplies.AsNoTracking()
+            var query = DbContext.AutoReplies.AsNoTracking()
                 .OrderBy(o => o.Id).AsQueryable();
 
             if (onlyEnabled)
@@ -32,7 +32,7 @@ public class AutoReplyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.AutoReplies
+            return await DbContext.AutoReplies
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
     }

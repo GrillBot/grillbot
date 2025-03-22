@@ -11,7 +11,7 @@ public class AddBirthday : CommandAction
 
     public async Task ProcessAsync(DateTime birthday)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var dbUser = await repository.User.GetOrCreateUserAsync(Context.User);
         dbUser.Birthday = birthday.Date;

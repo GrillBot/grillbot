@@ -2,6 +2,7 @@
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Core;
+using GrillBot.Core.Redis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +23,7 @@ public static class GrillBotCacheExtensions
             .AddSingleton<IMessageCacheManager, MessageCacheManager>()
             .AddSingleton<InviteManager>()
             .AddScoped<DataCacheManager>()
-            .AddRedisCaching(configuration);
+            .AddRedis(configuration);
     }
 
     public static void InitCache(this IApplicationBuilder app)

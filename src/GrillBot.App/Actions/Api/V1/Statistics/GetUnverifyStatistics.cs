@@ -28,7 +28,7 @@ public class GetUnverifyStatistics : ApiAction
 
     private async Task<Dictionary<string, int>> ProcessByOperationAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var statistics = await repository.Unverify.GetStatisticsByTypeAsync();
 
         return Enum.GetValues<UnverifyOperation>()
@@ -39,7 +39,7 @@ public class GetUnverifyStatistics : ApiAction
 
     private async Task<Dictionary<string, int>> ProcessByDateAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         return await repository.Unverify.GetStatisticsByDateAsync();
     }
 }

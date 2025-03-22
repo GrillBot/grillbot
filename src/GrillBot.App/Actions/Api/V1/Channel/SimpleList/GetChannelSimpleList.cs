@@ -33,7 +33,7 @@ public class GetChannelSimpleList : SimpleListBase
             return CreateResult(mappedChannels);
 
         var guildIds = guilds.ConvertAll(o => o.Id.ToString());
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var databaseChannels = await repository.Channel.GetAllChannelsAsync(guildIds, noThreads, true);
         databaseChannels = databaseChannels.FindAll(o => mappedChannels.TrueForAll(x => x.Id != o.ChannelId));

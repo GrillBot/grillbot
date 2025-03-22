@@ -3,7 +3,7 @@ using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,12 +56,12 @@ public class AuditLogLoggingHandler : ILoggingHandler
 
         var isWarning = exception != null && LoggingHelper.IsWarning(source, exception);
         var logRequest = CreateLogRequest(isWarning, source, message, exception, user);
-        var payload = new CreateItemsPayload(logRequest);
+        var payload = new CreateItemsMessage(logRequest);
 
         using var scope = _serviceProvider.CreateScope();
-        var rabbitPublisher = scope.ServiceProvider.GetRequiredService<IRabbitMQPublisher>();
+        var rabbitPublisher = scope.ServiceProvider.GetRequiredService<IRabbitPublisher>();
 
-        await rabbitPublisher.PublishAsync(payload, new());
+        await rabbitPublisher.PublishAsync(payload);
     }
 
     private static LogRequest CreateLogRequest(bool isWarning, string source, string message, Exception? exception, IUser? user)

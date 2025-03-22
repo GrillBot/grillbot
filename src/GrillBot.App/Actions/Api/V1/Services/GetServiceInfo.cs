@@ -34,15 +34,15 @@ public class GetServiceInfo : ApiAction
 
         var info = new ServiceInfo
         {
-            Url = client.Url,
-            Name = client.ServiceName
+            Url = "TODO",
+            Name = id
         };
 
         await SetDiagnosticsInfo(info, client);
         return ApiResult.Ok(info);
     }
 
-    private IClient PickClient(string id)
+    private IServiceClient PickClient(string id)
     {
         return id switch
         {
@@ -59,11 +59,11 @@ public class GetServiceInfo : ApiAction
         };
     }
 
-    private async Task SetDiagnosticsInfo(ServiceInfo info, IClient client)
+    private async Task SetDiagnosticsInfo(ServiceInfo info, IServiceClient client)
     {
         try
         {
-            info.DiagnosticInfo = await client.GetDiagnosticAsync();
+            info.DiagnosticInfo = await client.GetDiagnosticsAsync();
         }
         catch (Exception ex)
         {

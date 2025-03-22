@@ -15,7 +15,7 @@ public class UpdateUserLanguageHandler : IInteractionCommandExecutedEvent
 
     public async Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var user = await repository.User.FindUserAsync(context.User);
         if (user == null) return;

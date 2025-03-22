@@ -1,4 +1,4 @@
-﻿using GrillBot.Core.Caching;
+﻿using GrillBot.Core.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace GrillBot.Common.Managers.Cooldown;

@@ -17,7 +17,7 @@ public class ChannelInitSynchronizationHandler : IReadyEvent
     {
         var guilds = await DiscordClient.GetGuildsAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var channels = await repository.Channel.GetAllChannelsAsync();
         foreach (var channel in channels)

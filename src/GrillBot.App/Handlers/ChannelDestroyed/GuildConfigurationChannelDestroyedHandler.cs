@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using System.Reflection;
@@ -10,9 +10,9 @@ public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public GuildConfigurationChannelDestroyedHandler(GrillBotDatabaseBuilder databaseBuilder, IRabbitMQPublisher rabbitPublisher)
+    public GuildConfigurationChannelDestroyedHandler(GrillBotDatabaseBuilder databaseBuilder, IRabbitPublisher rabbitPublisher)
     {
         DatabaseBuilder = databaseBuilder;
         _rabbitPublisher = rabbitPublisher;
@@ -23,7 +23,7 @@ public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
         if (channel is not IGuildChannel guildChannel)
             return;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var guild = await repository.Guild.FindGuildAsync(guildChannel.Guild);
         if (guild is null)
@@ -54,7 +54,7 @@ public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
     }
 
     private static void ResetProperty(ulong expectedId, Database.Entity.Guild guild, string propertyName, List<string> log)

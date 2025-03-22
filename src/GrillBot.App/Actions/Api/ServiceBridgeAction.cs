@@ -1,13 +1,14 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Data.Models.API;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Actions.Api;
 
-public class ServiceBridgeAction<TServiceClient> : ApiAction where TServiceClient : IClient
+public class ServiceBridgeAction<TServiceClient> : ApiAction where TServiceClient : IServiceClient
 {
     private TServiceClient Client { get; }
 

@@ -34,7 +34,7 @@ public class PointsValidationManager
 
     public async Task<bool> IsUserAcceptableAsync(IUser user)
     {
-        await using var repository = _databaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
 
         var userEntity = await repository.User.FindUserAsync(user, true);
         return userEntity?.HaveFlags(UserFlags.NotUser) == false;

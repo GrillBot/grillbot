@@ -1,5 +1,5 @@
 ﻿using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.UserMeasures.Models.Events;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Entity;
@@ -8,9 +8,9 @@ namespace GrillBot.App.Managers;
 
 public class UnverifyRabbitMQManager
 {
-    private IRabbitMQPublisher RabbitMQ { get; }
+    private IRabbitPublisher RabbitMQ { get; }
 
-    public UnverifyRabbitMQManager(IRabbitMQPublisher rabbitMQ)
+    public UnverifyRabbitMQManager(IRabbitPublisher rabbitMQ)
     {
         RabbitMQ = rabbitMQ;
     }

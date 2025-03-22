@@ -18,7 +18,7 @@ public class UnverifyLogArchivationJob : ArchivationJobBase
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var expirationMilestone = DateTime.Now.AddYears(-2);
         var minimalCount = Configuration.GetValue<int>("Unverify:MinimalCountToArchivation");

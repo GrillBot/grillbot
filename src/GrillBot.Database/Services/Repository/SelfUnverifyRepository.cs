@@ -18,7 +18,7 @@ public class SelfUnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.SelfunverifyKeepables.AsNoTracking()
+            var query = DbContext.SelfunverifyKeepables.AsNoTracking()
                 .Where(o => o.GroupName == group.ToLower());
 
             if (!string.IsNullOrEmpty(name))
@@ -32,7 +32,7 @@ public class SelfUnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.SelfunverifyKeepables
+            var query = DbContext.SelfunverifyKeepables
                 .OrderBy(o => o.GroupName).ThenBy(o => o.Name)
                 .AsQueryable();
 
@@ -47,7 +47,7 @@ public class SelfUnverifyRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.SelfunverifyKeepables
+            return await DbContext.SelfunverifyKeepables
                 .FirstOrDefaultAsync(o => o.GroupName == group.ToLower() && o.Name == name.ToLower());
         }
     }

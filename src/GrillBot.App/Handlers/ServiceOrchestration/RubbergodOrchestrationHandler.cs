@@ -2,7 +2,7 @@
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.RubbergodService.Models.Events.Pins;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
@@ -11,9 +11,9 @@ public class RubbergodOrchestrationHandler : IMessageUpdatedEvent, IThreadDelete
 {
     private readonly IMessageCacheManager _messageCache;
     private readonly ChannelHelper _channelHelper;
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public RubbergodOrchestrationHandler(IMessageCacheManager messageCache, ChannelHelper channelHelper, IRabbitMQPublisher rabbitPublisher)
+    public RubbergodOrchestrationHandler(IMessageCacheManager messageCache, ChannelHelper channelHelper, IRabbitPublisher rabbitPublisher)
     {
         _messageCache = messageCache;
         _channelHelper = channelHelper;
@@ -39,7 +39,7 @@ public class RubbergodOrchestrationHandler : IMessageUpdatedEvent, IThreadDelete
 
         payloads = payloads.DistinctBy(o => $"{o.GuildId}/{o.ChannelId}").ToList();
         if (payloads.Count > 0)
-            await _rabbitPublisher.PublishBatchAsync(payloads, new());
+            await _rabbitPublisher.PublishAsync(payloads);
     }
 
     // ThreadDeleted

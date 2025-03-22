@@ -13,7 +13,7 @@ public class UnverifyUserLeftHandler : IUserLeftEvent
 
     public async Task ProcessAsync(IGuild guild, IUser user)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var unverify = await repository.Unverify.FindUnverifyAsync(guild.Id, user.Id);
         if (unverify == null) return;

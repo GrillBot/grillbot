@@ -2,7 +2,7 @@
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Data.Models.API.AuditLog;
@@ -12,9 +12,9 @@ namespace GrillBot.App.Actions.Api.V1.AuditLog;
 public class CreateLogItem : ApiAction
 {
     private ITextsManager Texts { get; }
-    private IRabbitMQPublisher RabbitPublisher { get; }
+    private IRabbitPublisher RabbitPublisher { get; }
 
-    public CreateLogItem(ApiRequestContext apiContext, ITextsManager texts, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
+    public CreateLogItem(ApiRequestContext apiContext, ITextsManager texts, IRabbitPublisher rabbitPublisher) : base(apiContext)
     {
         Texts = texts;
         RabbitPublisher = rabbitPublisher;
@@ -53,7 +53,7 @@ public class CreateLogItem : ApiAction
             logRequest.LogMessage.Severity = LogSeverity.Warning;
         }
 
-        await RabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await RabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
         return ApiResult.Ok();
     }
 

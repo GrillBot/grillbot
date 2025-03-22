@@ -13,7 +13,7 @@ public class MessageIndexRepository : SubRepositoryBase<GrillBotCacheContext>
 
     private IQueryable<MessageIndex> GetBaseQuery(ulong authorId = default, ulong channelId = default, ulong guildId = default)
     {
-        var query = Context.MessageIndex.AsQueryable();
+        var query = DbContext.MessageIndex.AsQueryable();
 
         if (authorId != default) query = query.Where(o => o.AuthorId == authorId.ToString());
         if (channelId != default) query = query.Where(o => o.ChannelId == channelId.ToString());
@@ -51,7 +51,7 @@ public class MessageIndexRepository : SubRepositoryBase<GrillBotCacheContext>
     {
         using (CreateCounter())
         {
-            Context.Database.ExecuteSqlRaw("DELETE FROM public.\"MessageIndex\"");
+            DbContext.MessageIndex.ExecuteDelete();
         }
     }
 }

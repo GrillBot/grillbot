@@ -91,7 +91,7 @@ public class UnverifyLogManager
             ToUserId = toUser.Id.ToString()
         };
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(guild);
         await repository.User.GetOrCreateUserAsync(from);

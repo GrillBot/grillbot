@@ -26,7 +26,7 @@ public class GetAvailableGuilds : ApiAction
             Pagination = { Page = 0, PageSize = int.MaxValue }
         };
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Guild.GetGuildListAsync(filter, filter.Pagination);
         return ApiResult.Ok(data.Data.ToDictionary(o => o.Id, o => o.Name));

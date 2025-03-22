@@ -22,7 +22,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
 
     private IQueryable<GuildChannel> GetBaseQuery(bool includeDeleted, bool disableTracking, ChannelsIncludeUsersMode includeUsersMode)
     {
-        var query = Context.Channels
+        var query = DbContext.Channels
             .Include(o => o.Guild)
             .AsQueryable();
 
@@ -121,7 +121,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
             }
 
             entity = GuildChannel.FromDiscord(channel, channel.GetChannelType() ?? ChannelType.Text);
-            await Context.AddAsync(entity);
+            await DbContext.AddAsync(entity);
 
             return entity;
         }
@@ -131,7 +131,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.UserChannels.AsNoTracking()
+            var query = DbContext.UserChannels.AsNoTracking()
                 .Where(o =>
                     o.Count > 0 &&
                     o.GuildId == user.GuildId.ToString() &&
@@ -148,7 +148,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var baseQuery = Context.UserChannels.AsNoTracking()
+            var baseQuery = DbContext.UserChannels.AsNoTracking()
                 .Include(o => o.Channel)
                 .Where(o =>
                     o.GuildId == user.GuildId.ToString() &&
@@ -169,7 +169,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Channels
+            var query = DbContext.Channels
                 .Where(o =>
                     new[] { ChannelType.NewsThread, ChannelType.PrivateThread, ChannelType.PublicThread }.Contains(o.ChannelType) &&
                     o.ParentChannelId == parentChannelId.ToString()
@@ -195,7 +195,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.UserChannels.AsNoTracking()
+            var query = DbContext.UserChannels.AsNoTracking()
                 .Include(o => o.User!.User)
                 .OrderByDescending(o => o.Count)
                 .ThenByDescending(o => o.LastMessageAt)
@@ -210,7 +210,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.UserChannels.AsNoTracking()
+            var query = DbContext.UserChannels.AsNoTracking()
                 .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString() && availableChannelIds.Contains(o.ChannelId));
 
             if (!showInvisible)
@@ -233,7 +233,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.UserChannels.AsNoTracking()
+            var query = DbContext.UserChannels.AsNoTracking()
                 .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString() && availableChannelIds.Contains(o.ChannelId));
 
             if (!showInvisible)
@@ -256,7 +256,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Channels.AsNoTracking()
+            return await DbContext.Channels.AsNoTracking()
                 .Where(o => (o.Flags & (long)ChannelFlag.Deleted) == 0)
                 .AnyAsync(o => o.GuildId == guild.Id.ToString() && o.ChannelId == channel.Id.ToString() && (o.Flags & (long)ChannelFlag.EphemeralCommands) != 0);
         }
@@ -266,7 +266,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.UserChannels
+            return await DbContext.UserChannels
                 .FirstOrDefaultAsync(o => o.GuildId == channel.GuildId.ToString() && o.ChannelId == channel.Id.ToString() && o.UserId == user.Id.ToString());
         }
     }
@@ -287,7 +287,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
                 Count = 0
             };
 
-            await Context.AddAsync(userChannel);
+            await DbContext.AddAsync(userChannel);
             return userChannel;
         }
     }
@@ -296,7 +296,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.UserChannels.AsNoTracking()
+            var query = DbContext.UserChannels.AsNoTracking()
                 .Include(o => o.Channel.ParentChannel)
                 .Where(o =>
                     o.GuildId == channel.GuildId.ToString() &&
@@ -317,7 +317,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
         {
             var guildIds = guilds.ConvertAll(o => o.Id.ToString());
 
-            return await Context.Channels.AsNoTracking()
+            return await DbContext.Channels.AsNoTracking()
                 .Where(o => (o.Flags & (long)ChannelFlag.Deleted) == 0 && o.PinCount > 0 && guildIds.Contains(o.GuildId))
                 .ToListAsync();
         }
@@ -327,7 +327,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Channels.AsNoTracking()
+            return await DbContext.Channels.AsNoTracking()
                 .Where(o => channelIds.Contains(o.ChannelId))
                 .ToListAsync();
         }

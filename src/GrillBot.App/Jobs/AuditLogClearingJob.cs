@@ -29,7 +29,7 @@ public class AuditLogClearingJob : ArchivationJobBase
 
         var jsonData = JObject.Parse(archivationResult.Content);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await ProcessGuildsAsync(repository, archivationResult.GuildIds, jsonData);
         await ProcessChannelsAsync(repository, archivationResult.ChannelIds, jsonData);

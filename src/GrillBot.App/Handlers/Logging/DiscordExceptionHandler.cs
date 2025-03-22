@@ -5,16 +5,16 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.GrillBot.Models.Events.Errors;
 
 namespace GrillBot.App.Handlers.Logging;
 
 public class DiscordExceptionHandler : ILoggingHandler
 {
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public DiscordExceptionHandler(IRabbitMQPublisher rabbitPublisher)
+    public DiscordExceptionHandler(IRabbitPublisher rabbitPublisher)
     {
         _rabbitPublisher = rabbitPublisher;
     }

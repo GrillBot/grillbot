@@ -20,7 +20,7 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
         if (string.IsNullOrEmpty(apiKey)) return;
 
         var databaseFactory = context.HttpContext.RequestServices.GetRequiredService<GrillBotDatabaseBuilder>();
-        await using var repository = databaseFactory.CreateRepository();
+        using var repository = databaseFactory.CreateRepository();
 
         var apiClient = await repository.ApiClientRepository.FindClientById(apiKey);
         if (apiClient is null || apiClient.AllowedMethods.Count == 0 || apiClient.Disabled)

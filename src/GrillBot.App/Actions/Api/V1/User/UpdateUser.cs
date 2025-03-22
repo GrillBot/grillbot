@@ -5,7 +5,6 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.Points;
-using GrillBot.Core.RabbitMQ.Publisher;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Common.Extensions.Discord;
@@ -13,8 +12,8 @@ using GrillBot.Core.Services.PointsService.Models.Channels;
 using GrillBot.Database.Enums;
 using GrillBot.Core.Services.SearchingService.Models.Events;
 using GrillBot.Core.Extensions;
-using Microsoft.Extensions.Azure;
 using GrillBot.Core.Services.SearchingService.Models.Events.Users;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -25,10 +24,10 @@ public class UpdateUser : ApiAction
     private IDiscordClient DiscordClient { get; }
 
     private readonly PointsManager _pointsManager;
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
     public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IDiscordClient discordClient, PointsManager pointsManager,
-        IRabbitMQPublisher rabbitPublisher) : base(apiContext)
+        IRabbitPublisher rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
@@ -42,7 +41,7 @@ public class UpdateUser : ApiAction
         var id = (ulong)Parameters[0]!;
         var parameters = (UpdateUserParams)Parameters[1]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var user = await repository.User.FindUserByIdAsync(id)
             ?? throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
 
@@ -103,7 +102,7 @@ public class UpdateUser : ApiAction
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
     }
 
     private async Task SyncSearchingServiceAsync(Database.Entity.User user)

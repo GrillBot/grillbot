@@ -27,7 +27,7 @@ public class MessageSynchronizationHandler : BaseSynchronizationHandler, IMessag
         if (oldMessage is null || oldMessage.IsPinned == after.IsPinned)
             return;
 
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         var dbChannel = await repository.Channel.FindChannelByIdAsync(textChannel.Id, textChannel.GuildId);
         if (dbChannel is null)

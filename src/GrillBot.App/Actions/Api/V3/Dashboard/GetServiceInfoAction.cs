@@ -18,22 +18,22 @@ public class GetServiceInfoAction : ApiAction
     {
         var serviceId = GetParameter<string>(0);
         var client = GetClient(serviceId);
-        var isAvailable = client is not null && await client.IsHealthyAsync();
+        var isAvailable = client is not null; /* && await client.IsHealthyAsync()*/ // TODO
         var uptime = await GetUptimeAsync(client);
-        var result = new DashboardService(serviceId, client?.ServiceName ?? serviceId, isAvailable, uptime);
+        var result = new DashboardService(serviceId, serviceId, isAvailable, uptime);
 
         return ApiResult.Ok(result);
     }
 
-    private IClient? GetClient(string serviceId)
+    private IServiceClient?  GetClient(string serviceId)
     {
-        return typeof(IClient).Assembly.GetTypes()
-            .Where(o => o.IsInterface && o.GetInterface(nameof(IClient)) is not null)
+        return typeof(IServiceClient).Assembly.GetTypes()
+            .Where(o => o.IsInterface && o.GetInterface(nameof(IServiceClient)) is not null)
             .Select(_serviceProvider.GetService)
-            .OfType<IClient>()
-            .FirstOrDefault(c => c.ServiceName == serviceId);
+            .OfType<IServiceClient>()
+            .FirstOrDefault(c => true); // TODO
     }
 
-    private static async Task<long> GetUptimeAsync(IClient? client)
+    private static async Task<long> GetUptimeAsync(IServiceClient? client)
         => client is null ? -1 : await client.GetUptimeAsync();
 }

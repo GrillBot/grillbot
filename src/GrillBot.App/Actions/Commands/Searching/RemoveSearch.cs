@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Managers.Localization;
-using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.SearchingService;
 
 namespace GrillBot.App.Actions.Commands.Searching;

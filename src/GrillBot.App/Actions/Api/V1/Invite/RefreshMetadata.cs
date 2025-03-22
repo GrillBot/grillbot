@@ -2,7 +2,7 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
@@ -13,9 +13,9 @@ public class RefreshMetadata : ApiAction
     private IDiscordClient DiscordClient { get; }
     private InviteManager InviteManager { get; }
 
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public RefreshMetadata(ApiRequestContext apiContext, IDiscordClient discordClient, InviteManager inviteManager, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
+    public RefreshMetadata(ApiRequestContext apiContext, IDiscordClient discordClient, InviteManager inviteManager, IRabbitPublisher rabbitPublisher) : base(apiContext)
     {
         DiscordClient = discordClient;
         InviteManager = inviteManager;
@@ -59,13 +59,12 @@ public class RefreshMetadata : ApiAction
             LogMessage = new LogMessageRequest
             {
                 Message = $"Invites for guild \"{guild.Name}\" was {(isReload ? "reloaded" : "loaded")}. Loaded invites: {invites.Count}",
-                Severity = LogSeverity.Info,
                 Source = $"Invite.{nameof(RefreshMetadata)}",
                 SourceAppName = "GrillBot"
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
         await InviteManager.UpdateMetadataAsync(guild, invites);
         return invites.Count;
     }

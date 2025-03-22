@@ -28,7 +28,7 @@ public class GetGuildUserInfo : ApiAction
         var guildId = (string)Parameters[0]!;
         var userId = (string)Parameters[1]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var guildUser = await repository.GuildUser.FindGuildUserByIdAsync(guildId.ToUlong(), userId.ToUlong(), true);
         if (guildUser is null)

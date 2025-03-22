@@ -29,7 +29,7 @@ public class GetUserList : ApiAction
         FixStatus(parameters);
         ValidateParameters(parameters);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.User.GetUsersListAsync(parameters, parameters.Pagination);
         var result = await PaginatedResponse<UserListItem>.CopyAndMapAsync(data, MapItemAsync);

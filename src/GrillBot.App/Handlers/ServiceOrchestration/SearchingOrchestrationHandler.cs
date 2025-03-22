@@ -1,7 +1,7 @@
 ﻿using Discord.Interactions;
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.SearchingService.Models.Events;
 using GrillBot.Core.Services.SearchingService.Models.Events.Users;
 using GrillBot.Database.Enums;
@@ -30,7 +30,7 @@ public class SearchingOrchestrationHandler : IReadyEvent, IGuildMemberUpdatedEve
         var guilds = await _discordClient.GetGuildsAsync();
         var payload = new SynchronizationPayload();
 
-        await using var repository = _databaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
         var administrators = (await repository.User.GetAdministratorsAsync()).Select(o => o.Id).ToHashSet();
 
         foreach (var guild in guilds)

@@ -24,7 +24,7 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
                 return entity;
 
             entity = GuildUser.FromDiscord(user.Guild, user);
-            await Context.AddAsync(entity);
+            await DbContext.AddAsync(entity);
 
             return entity;
         }
@@ -44,7 +44,7 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.GuildUsers
+            var query = DbContext.GuildUsers
                 .Include(o => o.Guild).Include(o => o.User)
                 .AsQueryable();
 
@@ -66,7 +66,7 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.GuildUsers.AsNoTracking()
+            return await DbContext.GuildUsers.AsNoTracking()
                 .AnyAsync(o => o.UserId == user.Id.ToString() && o.GuildId == user.GuildId.ToString());
         }
     }
@@ -75,7 +75,7 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.GuildUsers
+            return await DbContext.GuildUsers
                 .Include(o => o.User)
                 .ToListAsync();
         }
@@ -85,7 +85,7 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.GuildUsers
+            return await DbContext.GuildUsers
                 .Where(o => o.GuildId == guildId.ToString() && o.UsedInviteCode == code)
                 .ToListAsync();
         }
@@ -95,7 +95,7 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.GuildUsers.AsNoTracking()
+            return await DbContext.GuildUsers.AsNoTracking()
                 .Where(o => o.GuildId == guildId.ToString() && !string.IsNullOrEmpty(o.Nickname))
                 .Select(o => new { o.UserId, o.Nickname })
                 .ToDictionaryAsync(o => o.UserId, o => o.Nickname!);

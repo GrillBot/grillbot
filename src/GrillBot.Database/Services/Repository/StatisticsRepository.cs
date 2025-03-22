@@ -18,18 +18,18 @@ public class StatisticsRepository : SubRepositoryBase<GrillBotContext>
         {
             return new Dictionary<string, int>
             {
-                { nameof(Context.Users), await Context.Users.CountAsync() },
-                { nameof(Context.Guilds), await Context.Guilds.CountAsync() },
-                { nameof(Context.GuildUsers), await Context.GuildUsers.CountAsync() },
-                { nameof(Context.Channels), await Context.Channels.CountAsync() },
-                { nameof(Context.UserChannels), await Context.UserChannels.CountAsync() },
-                { nameof(Context.Invites), await Context.Invites.CountAsync() },
-                { nameof(Context.Unverifies), await Context.Unverifies.CountAsync() },
-                { nameof(Context.UnverifyLogs), await Context.UnverifyLogs.CountAsync() },
-                { nameof(Context.SelfunverifyKeepables), await Context.SelfunverifyKeepables.CountAsync() },
-                { nameof(Context.AutoReplies), await Context.AutoReplies.CountAsync() },
-                { nameof(Context.ApiClients), await Context.ApiClients.CountAsync() },
-                { nameof(Context.Nicknames), await Context.Nicknames.CountAsync() }
+                { nameof(DbContext.Users), await DbContext.Users.CountAsync() },
+                { nameof(DbContext.Guilds), await DbContext.Guilds.CountAsync() },
+                { nameof(DbContext.GuildUsers), await DbContext.GuildUsers.CountAsync() },
+                { nameof(DbContext.Channels), await DbContext.Channels.CountAsync() },
+                { nameof(DbContext.UserChannels), await DbContext.UserChannels.CountAsync() },
+                { nameof(DbContext.Invites), await DbContext.Invites.CountAsync() },
+                { nameof(DbContext.Unverifies), await DbContext.Unverifies.CountAsync() },
+                { nameof(DbContext.UnverifyLogs), await DbContext.UnverifyLogs.CountAsync() },
+                { nameof(DbContext.SelfunverifyKeepables), await DbContext.SelfunverifyKeepables.CountAsync() },
+                { nameof(DbContext.AutoReplies), await DbContext.AutoReplies.CountAsync() },
+                { nameof(DbContext.ApiClients), await DbContext.ApiClients.CountAsync() },
+                { nameof(DbContext.Nicknames), await DbContext.Nicknames.CountAsync() }
             };
         }
     }

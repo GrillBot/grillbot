@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.UserMeasures.Models.Events;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Http;
@@ -9,9 +9,9 @@ namespace GrillBot.App.Actions.Api.V2.User;
 
 public class CreateUserMeasuresTimeout : ApiAction
 {
-    private readonly IRabbitMQPublisher _publisher;
+    private readonly IRabbitPublisher _publisher;
 
-    public CreateUserMeasuresTimeout(ApiRequestContext apiContext, IRabbitMQPublisher publisher) : base(apiContext)
+    public CreateUserMeasuresTimeout(ApiRequestContext apiContext, IRabbitPublisher publisher) : base(apiContext)
     {
         _publisher = publisher;
     }
@@ -30,7 +30,7 @@ public class CreateUserMeasuresTimeout : ApiAction
             parameters.TimeoutId
         );
 
-        await _publisher.PublishAsync(payload, new());
+        await _publisher.PublishAsync(payload);
         return new ApiResult(StatusCodes.Status201Created);
     }
 }

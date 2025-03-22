@@ -20,7 +20,7 @@ public class DeleteClient : ApiAction
     {
         var id = (string)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var apiClient = await repository.ApiClientRepository.FindClientById(id)
             ?? throw new NotFoundException(Texts["PublicApiClients/NotFound", ApiContext.Language]);

@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Models;
-using GrillBot.Core.Caching;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Redis.Extensions;
 using GrillBot.Data.Models.API.Filters;
 using Microsoft.Extensions.Caching.Distributed;
 

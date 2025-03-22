@@ -28,7 +28,7 @@ public class UnverifyList : CommandAction
 
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var unverify = await repository.Unverify.FindUnverifyPageAsync(Context.Guild, page);
         if (unverify == null)
@@ -49,7 +49,7 @@ public class UnverifyList : CommandAction
 
     public async Task<int> ComputeCountOfUnverifies()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         return await repository.Unverify.GetUnverifyCountsAsync(Context.Guild);
     }
 

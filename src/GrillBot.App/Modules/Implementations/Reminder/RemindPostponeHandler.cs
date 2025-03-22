@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Infrastructure;
-using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.RemindService;
 using Microsoft.Extensions.DependencyInjection;
 

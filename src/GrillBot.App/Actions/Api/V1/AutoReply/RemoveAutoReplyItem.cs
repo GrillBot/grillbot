@@ -23,7 +23,7 @@ public class RemoveAutoReplyItem : ApiAction
     {
         var id = (long)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var entity = await repository.AutoReply.FindReplyByIdAsync(id)
             ?? throw new NotFoundException(Texts["AutoReply/NotFound", ApiContext.Language]);

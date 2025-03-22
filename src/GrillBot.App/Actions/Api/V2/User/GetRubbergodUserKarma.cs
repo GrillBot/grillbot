@@ -31,7 +31,7 @@ public class GetRubbergodUserKarma : ApiAction
 
     private async Task<Dictionary<string, Database.Entity.User>> ReadUsersAsync(List<string> userIds)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var users = await repository.User.GetUsersByIdsAsync(userIds);
 
         return users.ToDictionary(o => o.Id, o => o);

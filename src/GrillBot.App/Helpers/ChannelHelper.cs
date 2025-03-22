@@ -29,7 +29,7 @@ public class ChannelHelper
                 return null;
         }
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var channelEntity = await repository.Channel.FindChannelByIdAsync(channelId, null, true, includeDeleted: true);
         if (channelEntity == null)

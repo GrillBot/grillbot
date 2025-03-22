@@ -21,7 +21,7 @@ public class DeleteInvite : ApiAction
         var guildId = (ulong)Parameters[0]!;
         var code = (string)Parameters[1]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var invite = await repository.Invite.FindInviteByCodeAsync(guildId, code)
             ?? throw new NotFoundException(Texts["Invite/NotFound", ApiContext.Language].FormatWith(code));

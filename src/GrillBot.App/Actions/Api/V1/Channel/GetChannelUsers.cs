@@ -22,7 +22,7 @@ public class GetChannelUsers : ApiAction
         var channelId = (ulong)Parameters[0]!;
         var pagination = (PaginatedParams)Parameters[1]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Channel.GetUserChannelListAsync(channelId, pagination);
         var result = await PaginatedResponse<ChannelUserStatItem>

@@ -29,7 +29,7 @@ public class CreateAutoReplyItem : ApiAction
             Template = parameters.Template
         };
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        var repository = DatabaseBuilder.CreateRepository();
 
         await repository.AddAsync(entity);
         await repository.CommitAsync();

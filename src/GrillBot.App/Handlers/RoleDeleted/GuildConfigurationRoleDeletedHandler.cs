@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
@@ -9,9 +9,9 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public GuildConfigurationRoleDeletedHandler(GrillBotDatabaseBuilder databaseBuilder, IRabbitMQPublisher rabbitPublisher)
+    public GuildConfigurationRoleDeletedHandler(GrillBotDatabaseBuilder databaseBuilder, IRabbitPublisher rabbitPublisher)
     {
         DatabaseBuilder = databaseBuilder;
         _rabbitPublisher = rabbitPublisher;
@@ -19,7 +19,7 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
 
     public async Task ProcessAsync(IRole role)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var guild = await repository.Guild.FindGuildAsync(role.Guild);
         if (guild is null)
@@ -61,12 +61,11 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
             LogMessage = new LogMessageRequest
             {
                 Message = string.Join(Environment.NewLine, log),
-                Severity = LogSeverity.Info,
                 Source = $"Events.RoleDeleted.{nameof(GuildConfigurationRoleDeletedHandler)}",
                 SourceAppName = "GrillBot"
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
     }
 }

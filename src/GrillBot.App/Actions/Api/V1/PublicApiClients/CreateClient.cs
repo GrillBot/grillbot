@@ -26,7 +26,7 @@ public class CreateClient : ApiAction
             Disabled = parameters.Disabled
         };
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.AddAsync(entity);
         await repository.CommitAsync();

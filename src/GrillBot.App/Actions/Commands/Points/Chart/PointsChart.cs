@@ -32,7 +32,10 @@ public class PointsChart : CommandAction
         var request = await CreateRequestAsync(filter, type);
         var image = await ImageProcessingClient.CreateChartImageAsync(request);
 
-        await resultFile.WriteAllBytesAsync(image);
+        await using var ms = new MemoryStream();
+        await image.CopyToAsync(ms);
+
+        await resultFile.WriteAllBytesAsync(ms.ToArray());
         return resultFile;
     }
 

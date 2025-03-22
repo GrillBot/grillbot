@@ -38,7 +38,7 @@ public class InviteManager
 
         try
         {
-            await using var cache = CacheBuilder.CreateRepository();
+            using var cache = CacheBuilder.CreateRepository();
 
             var guildInvites = await cache.InviteMetadataRepository.GetInvitesOfGuildAsync(guild);
             cache.RemoveCollection(guildInvites);
@@ -60,7 +60,7 @@ public class InviteManager
 
         try
         {
-            await using var cache = CacheBuilder.CreateRepository();
+            using var cache = CacheBuilder.CreateRepository();
             return await cache.InviteMetadataRepository.GetCountAsync();
         }
         finally
@@ -78,7 +78,7 @@ public class InviteManager
             var entity = ConvertMetadata(metadata);
             if (entity == null) return;
 
-            await using var cache = CacheBuilder.CreateRepository();
+            using var cache = CacheBuilder.CreateRepository();
             if (await cache.InviteMetadataRepository.InviteExistsAsync(metadata.Guild, metadata))
                 return;
 
@@ -114,7 +114,7 @@ public class InviteManager
 
         try
         {
-            await using var cache = CacheBuilder.CreateRepository();
+            using var cache = CacheBuilder.CreateRepository();
             return await cache.InviteMetadataRepository.GetInvitesOfGuildAsync(guild);
         }
         finally

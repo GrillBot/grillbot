@@ -18,7 +18,7 @@ public class InviteRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.Invites
+            return await DbContext.Invites
                 .FirstOrDefaultAsync(o => o.GuildId == guildId.ToString() && o.Code == code);
         }
     }

@@ -27,7 +27,7 @@ public class GetChannelList : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (GetChannelListParams)Parameters[0]!;
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var channels = await repository.Channel.GetChannelListAsync(parameters, parameters.Pagination);
         var result = await PaginatedResponse<GuildChannelListItem>.CopyAndMapAsync(channels, MapAsync);

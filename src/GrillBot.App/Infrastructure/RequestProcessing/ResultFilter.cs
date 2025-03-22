@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Models;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -10,9 +10,9 @@ public class ResultFilter : IAsyncResultFilter
 {
     private ApiRequestContext ApiRequestContext { get; }
 
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public ResultFilter(ApiRequestContext apiRequestContext, IRabbitMQPublisher rabbitPublisher)
+    public ResultFilter(ApiRequestContext apiRequestContext, IRabbitPublisher rabbitPublisher)
     {
         ApiRequestContext = apiRequestContext;
         _rabbitPublisher = rabbitPublisher;
@@ -39,6 +39,6 @@ public class ResultFilter : IAsyncResultFilter
             ApiRequest = ApiRequestContext.LogRequest,
         };
 
-        return _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
     }
 }

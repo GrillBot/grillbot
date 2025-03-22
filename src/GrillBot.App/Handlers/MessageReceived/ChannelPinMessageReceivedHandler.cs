@@ -18,7 +18,7 @@ public class ChannelPinMessageReceivedHandler : IMessageReceivedEvent
 
         var pins = await channel.GetPinnedMessagesAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(channel.Guild);
 

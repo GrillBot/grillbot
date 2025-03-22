@@ -26,7 +26,7 @@ public class BirthdayCronJob : Job
 
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         if (!await repository.User.HaveSomeoneBirthdayTodayAsync())
             return;
 

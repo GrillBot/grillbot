@@ -29,7 +29,7 @@ public class UpdateGuild : ApiAction
         var guild = await DiscordClient.GetGuildAsync(id)
             ?? throw new NotFoundException(Texts["GuildModule/GuildDetail/NotFound", ApiContext.Language]);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var dbGuild = await repository.Guild.GetOrCreateGuildAsync(guild);
         if (!string.IsNullOrEmpty(parameters.AdminChannelId) && await guild.GetTextChannelAsync(parameters.AdminChannelId.ToUlong()) == null)

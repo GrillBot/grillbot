@@ -17,7 +17,7 @@ public class UserNicknameUpdatedHandler : IGuildMemberUpdatedEvent
     {
         if (!CanProcess(before, after)) return;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(after.Guild);
         await repository.User.GetOrCreateUserAsync(after);

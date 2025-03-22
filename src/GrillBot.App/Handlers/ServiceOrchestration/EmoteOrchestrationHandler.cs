@@ -2,18 +2,18 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.Emote.Models.Events;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedEvent, IReactionAddedEvent, IReactionRemovedEvent, IReadyEvent, IGuildAvailableEvent, IGuildUpdatedEvent
 {
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
     private readonly IMessageCacheManager _messageCache;
     private readonly IDiscordClient _discordClient;
 
-    public EmoteOrchestrationHandler(IRabbitMQPublisher rabbitPublisher, IMessageCacheManager messageCache, IDiscordClient discordClient)
+    public EmoteOrchestrationHandler(IRabbitPublisher rabbitPublisher, IMessageCacheManager messageCache, IDiscordClient discordClient)
     {
         _rabbitPublisher = rabbitPublisher;
         _messageCache = messageCache;
@@ -39,7 +39,7 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
         var createdAt = DateTime.UtcNow;
         var payloads = emotes.ConvertAll(e => new EmoteEventPayload(guildId, userId, e.ToString(), createdAt, false));
 
-        await _rabbitPublisher.PublishBatchAsync(payloads, new());
+        await _rabbitPublisher.PublishAsync(payloads);
     }
 
     // MessageReceived
@@ -59,7 +59,7 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
             .ToList();
 
         if (payloads.Count > 0)
-            await _rabbitPublisher.PublishBatchAsync(payloads, new());
+            await _rabbitPublisher.PublishAsync(payloads);
     }
 
     // ReactionAdded
@@ -117,14 +117,14 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
         }
 
         if (payloads.Count > 0)
-            await _rabbitPublisher.PublishBatchAsync(payloads, new());
+            await _rabbitPublisher.PublishAsync(payloads);
     }
 
     // GuildAvailable
     public async Task ProcessAsync(IGuild guild)
     {
         var emotes = guild.Emotes.ToList();
-        await _rabbitPublisher.PublishAsync(new SynchronizeEmotesPayload(guild.Id.ToString(), emotes), new());
+        await _rabbitPublisher.PublishAsync(new SynchronizeEmotesPayload(guild.Id.ToString(), emotes));
     }
 
     // GuildUpdated
@@ -133,6 +133,6 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
         if (before.Emotes.Select(o => o.ToString()).IsSequenceEqual(after.Emotes.Select(o => o.ToString()))) return;
 
         var emotesAfter = after.Emotes.ToList();
-        await _rabbitPublisher.PublishAsync(new SynchronizeEmotesPayload(after.Id.ToString(), emotesAfter), new());
+        await _rabbitPublisher.PublishAsync(new SynchronizeEmotesPayload(after.Id.ToString(), emotesAfter));
     }
 }

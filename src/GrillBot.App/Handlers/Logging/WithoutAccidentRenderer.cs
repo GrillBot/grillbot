@@ -37,7 +37,11 @@ public class WithoutAccidentRenderer
 
         var image = await ImageProcessingClient.CreateWithoutAccidentImageAsync(request);
         var tmpFile = new TemporaryFile("png");
-        await tmpFile.WriteAllBytesAsync(image);
+
+        await using var ms = new MemoryStream();
+        await image.CopyToAsync(ms);
+
+        await tmpFile.WriteAllBytesAsync(ms.ToArray());
 
         return tmpFile;
     }

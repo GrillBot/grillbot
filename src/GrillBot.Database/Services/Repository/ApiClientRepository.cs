@@ -18,7 +18,7 @@ public class ApiClientRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.ApiClients
+            return await DbContext.ApiClients
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
     }
@@ -27,7 +27,7 @@ public class ApiClientRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            return await Context.ApiClients
+            return await DbContext.ApiClients
                 .OrderBy(o => o.Name)
                 .ToListAsync();
         }

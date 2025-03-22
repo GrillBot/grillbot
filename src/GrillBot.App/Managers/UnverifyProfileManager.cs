@@ -150,7 +150,7 @@ public class UnverifyProfileManager
 
     private async Task<Dictionary<string, List<string>>> GetKeepablesAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var keepables = await repository.SelfUnverify.GetKeepablesAsync();
         return keepables.GroupBy(o => o.GroupName.ToUpper())

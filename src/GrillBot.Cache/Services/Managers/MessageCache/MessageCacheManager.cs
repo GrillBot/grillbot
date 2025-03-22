@@ -99,7 +99,7 @@ public class MessageCacheManager : IMessageCacheManager
         await ReaderLock.WaitAsync();
         try
         {
-            await using var cache = CacheBuilder.CreateRepository();
+            using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id);
             foreach (var messageId in messages.Select(o => o.MessageId.ToUlong()))
@@ -124,7 +124,7 @@ public class MessageCacheManager : IMessageCacheManager
         await ReaderLock.WaitAsync();
         try
         {
-            await using var cache = CacheBuilder.CreateRepository();
+            using var cache = CacheBuilder.CreateRepository();
 
             var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: thread.Value.Id, guildId: thread.Value.Guild.Id);
             foreach (var messageId in messages.Select(o => o.MessageId.ToUlong()))
@@ -240,7 +240,7 @@ public class MessageCacheManager : IMessageCacheManager
             GuildId = ((IGuildChannel)o.Channel).GuildId.ToString()
         });
 
-        await using var cache = CacheBuilder.CreateRepository();
+        using var cache = CacheBuilder.CreateRepository();
 
         await cache.AddCollectionAsync(entities);
         await cache.CommitAsync();
@@ -248,7 +248,7 @@ public class MessageCacheManager : IMessageCacheManager
 
     private async Task RemoveIndexAsync(IMessage message)
     {
-        await using var cache = CacheBuilder.CreateRepository();
+        using var cache = CacheBuilder.CreateRepository();
 
         var msgIndex = await cache.MessageIndexRepository.FindMessageByIdAsync(message.Id);
         if (msgIndex is not null)
@@ -260,7 +260,7 @@ public class MessageCacheManager : IMessageCacheManager
 
     public async Task<int> GetCachedMessagesCount(IChannel channel)
     {
-        await using var cache = CacheBuilder.CreateRepository();
+        using var cache = CacheBuilder.CreateRepository();
 
         return await cache.MessageIndexRepository.GetMessagesCountAsync(channelId: channel.Id);
     }
@@ -305,7 +305,7 @@ public class MessageCacheManager : IMessageCacheManager
         await ReaderLock.WaitAsync();
         try
         {
-            await using var cache = CacheBuilder.CreateRepository();
+            using var cache = CacheBuilder.CreateRepository();
             var messages = (await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id))
                 .ConvertAll(o => o.MessageId.ToUlong());
 

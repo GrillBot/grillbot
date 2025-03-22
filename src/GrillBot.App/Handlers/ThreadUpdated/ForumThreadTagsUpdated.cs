@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
@@ -7,9 +7,9 @@ namespace GrillBot.App.Handlers.ThreadUpdated;
 
 public class ForumThreadTagsUpdated : IThreadUpdatedEvent
 {
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public ForumThreadTagsUpdated(IRabbitMQPublisher rabbitPublisher)
+    public ForumThreadTagsUpdated(IRabbitPublisher rabbitPublisher)
     {
         _rabbitPublisher = rabbitPublisher;
     }
@@ -32,7 +32,7 @@ public class ForumThreadTagsUpdated : IThreadUpdatedEvent
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(request), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(request));
     }
 
     private static bool CanProcess(IThreadChannel? before, IThreadChannel after)

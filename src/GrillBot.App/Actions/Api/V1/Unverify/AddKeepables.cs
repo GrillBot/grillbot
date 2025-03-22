@@ -21,7 +21,7 @@ public class AddKeepables : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (List<KeepableParams>)Parameters[0]!;
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         await ValidateParameters(parameters, repository);
 
         var entities = parameters.ConvertAll(o => new SelfunverifyKeepable

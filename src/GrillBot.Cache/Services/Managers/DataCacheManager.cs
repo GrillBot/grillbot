@@ -1,5 +1,5 @@
-﻿using GrillBot.Core.Caching;
-using GrillBot.Core.Managers.Performance;
+﻿using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace GrillBot.Cache.Services.Managers;

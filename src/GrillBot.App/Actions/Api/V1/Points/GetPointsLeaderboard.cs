@@ -29,7 +29,7 @@ public class GetPointsLeaderboard : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var result = new List<UserPointsItem>();
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         const LeaderboardColumnFlag leaderboardColumns = LeaderboardColumnFlag.YearBack | LeaderboardColumnFlag.MonthBack | LeaderboardColumnFlag.Today | LeaderboardColumnFlag.Total;
         const LeaderboardSortOptions leaderboardSort = LeaderboardSortOptions.ByTotalDescending;

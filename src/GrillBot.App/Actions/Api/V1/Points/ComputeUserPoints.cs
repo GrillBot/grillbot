@@ -66,7 +66,7 @@ public class ComputeUserPoints : ApiAction
         if (ApiContext.IsPublic())
             return ids;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var user = await repository.User.FindUserByIdAsync(userId, UserIncludeOptions.Guilds, true);
         if (user != null)

@@ -6,7 +6,7 @@ namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public partial class AuditOrchestrationHandler
 {
-    private async Task ProcessRoleChangesAsync(IGuildUser? before, IGuildUser after, CreateItemsPayload payload)
+    private async Task ProcessRoleChangesAsync(IGuildUser? before, IGuildUser after, CreateItemsMessage payload)
     {
         if (before is null || !_auditLogManager.CanProcessNextMemberRoleEvent(after.Id)) return;
         if (before.RoleIds.IsSequenceEqual(after.RoleIds, o => o)) return;
@@ -24,7 +24,7 @@ public partial class AuditOrchestrationHandler
             payload.Items.Add(new LogRequest(type, entry.CreatedAt.UtcDateTime, guildId, entry.User.Id.ToString(), null, entry.Id.ToString()));
     }
 
-    private static void ProcessUserChanges(IGuildUser? before, IGuildUser after, CreateItemsPayload payload)
+    private static void ProcessUserChanges(IGuildUser? before, IGuildUser after, CreateItemsMessage payload)
     {
         if (before is null) return;
         if (before.IsDeafened == after.IsDeafened && before.IsMuted == after.IsMuted && before.Nickname == after.Nickname) return;

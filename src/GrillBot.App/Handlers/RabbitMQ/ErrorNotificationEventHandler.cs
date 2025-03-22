@@ -1,26 +1,25 @@
 ﻿using GrillBot.App.Handlers.Logging;
 using GrillBot.Cache.Services.Managers;
 using GrillBot.Common.Extensions.Discord;
+using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.IO;
-using GrillBot.Core.RabbitMQ.Consumer;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.GrillBot.Models.Events.Errors;
 using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
 
-public class ErrorNotificationEventHandler : BaseRabbitMQHandler<ErrorNotificationPayload>
+public class ErrorNotificationEventHandler : RabbitMessageHandlerBase<ErrorNotificationPayload>
 {
-    public override string QueueName => new ErrorNotificationPayload().QueueName;
-
     private readonly DataCacheManager _dataCache;
     private readonly IDiscordClient _discordClient;
     private readonly WithoutAccidentRenderer _renderer;
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
     private readonly IConfiguration _configuration;
 
-    public ErrorNotificationEventHandler(ILoggerFactory loggerFactory, DataCacheManager dataCache, IDiscordClient discordClient, IRabbitMQPublisher rabbitPublisher,
+    public ErrorNotificationEventHandler(ILoggerFactory loggerFactory, DataCacheManager dataCache, IDiscordClient discordClient, IRabbitPublisher rabbitPublisher,
         WithoutAccidentRenderer renderer, IConfiguration configuration) : base(loggerFactory)
     {
         _dataCache = dataCache;
@@ -30,26 +29,28 @@ public class ErrorNotificationEventHandler : BaseRabbitMQHandler<ErrorNotificati
         _configuration = configuration;
     }
 
-    protected override async Task HandleInternalAsync(ErrorNotificationPayload payload, Dictionary<string, string> headers)
+    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(ErrorNotificationPayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
     {
         await _discordClient.WaitOnConnectedState();
 
-        var withoutAccidentImage = await CreateWithoutAccidentImageAsync(payload.UserId);
+        var withoutAccidentImage = await CreateWithoutAccidentImageAsync(message.UserId);
 
         try
         {
             await _dataCache.SetValueAsync("LastErrorDate", DateTime.Now, null);
 
-            var message = await CreateMessage(payload, withoutAccidentImage);
-            if (message is null)
-                return;
+            var msg = await CreateMessage(message, withoutAccidentImage);
+            if (msg is null)
+                return RabbitConsumptionResult.Success;
 
-            await _rabbitPublisher.PublishAsync(message, new());
+            await _rabbitPublisher.PublishAsync(msg);
         }
         finally
         {
             withoutAccidentImage?.Dispose();
         }
+
+        return RabbitConsumptionResult.Success;
     }
 
     private async Task<TemporaryFile?> CreateWithoutAccidentImageAsync(ulong? userId)

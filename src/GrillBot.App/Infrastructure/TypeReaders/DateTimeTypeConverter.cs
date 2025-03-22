@@ -1,6 +1,5 @@
 ﻿using Discord.Interactions;
 using GrillBot.Common.Helpers;
-using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Infrastructure.TypeReaders;
 

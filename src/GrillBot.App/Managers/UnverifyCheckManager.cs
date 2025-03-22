@@ -38,7 +38,7 @@ public class UnverifyCheckManager
         if (guild.OwnerId == user.Id)
             throw new ValidationException(Texts["Unverify/Validation/GuildOwner", locale].FormatWith(user.GetDisplayName()));
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var dbUser = await repository.GuildUser.GetOrCreateGuildUserAsync(user, true);
 
         if (!selfunverify)

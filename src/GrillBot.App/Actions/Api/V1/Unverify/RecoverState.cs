@@ -30,7 +30,7 @@ public class RecoverState : ApiAction
     {
         var logId = (long)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var logItem = await repository.Unverify.FindUnverifyLogByIdAsync(logId);
 
         if (logItem == null || (logItem.Operation != UnverifyOperation.Selfunverify && logItem.Operation != UnverifyOperation.Unverify))

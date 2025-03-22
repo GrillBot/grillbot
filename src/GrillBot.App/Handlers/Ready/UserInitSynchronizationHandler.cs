@@ -25,7 +25,7 @@ public class UserInitSynchronizationHandler : IReadyEvent
     {
         var guilds = await DiscordClient.GetGuildsAsync();
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         var users = await repository.GuildUser.GetAllUsersAsync();
 
         foreach (var guild in guilds)
@@ -50,7 +50,7 @@ public class UserInitSynchronizationHandler : IReadyEvent
     private async Task ProcessBotAdminAsync()
     {
         var appInfo = await DiscordClient.GetApplicationInfoAsync();
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var botOwner = await repository.User.GetOrCreateUserAsync(appInfo.Owner);
         botOwner.Flags |= (int)UserFlags.BotAdmin;

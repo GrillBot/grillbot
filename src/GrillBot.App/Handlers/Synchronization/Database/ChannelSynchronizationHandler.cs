@@ -13,7 +13,7 @@ public class ChannelSynchronizationHandler : BaseSynchronizationHandler, IChanne
         if (channel is IThreadChannel || channel is not IGuildChannel guildChannel)
             return;
 
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(guildChannel.Guild);
         await repository.CommitAsync();
@@ -27,7 +27,7 @@ public class ChannelSynchronizationHandler : BaseSynchronizationHandler, IChanne
         if (channel is IThreadChannel || channel is not IGuildChannel guildChannel)
             return;
 
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(guildChannel.Guild);
         await repository.CommitAsync();
@@ -53,7 +53,7 @@ public class ChannelSynchronizationHandler : BaseSynchronizationHandler, IChanne
         if (after is IThreadChannel || after is not IGuildChannel guildChannel)
             return;
 
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(guildChannel.Guild);
         await repository.CommitAsync();

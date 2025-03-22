@@ -52,15 +52,18 @@ public class GetServicesList : ApiAction
         return ApiResult.Ok(services);
     }
 
-    private async Task AddServiceStatusAsync<TServiceClient>(ICollection<DashboardService> services, string id) where TServiceClient : IClient
+    private async Task AddServiceStatusAsync<TServiceClient>(ICollection<DashboardService> services, string id) where TServiceClient : IServiceClient
     {
         try
         {
             var client = ServiceProvider.GetRequiredService<TServiceClient>();
-            services.Add(new DashboardService(id, client.ServiceName, await client.IsHealthyAsync(), 0));
+            await client.IsHealthyAsync();
+
+            services.Add(new DashboardService(id, id, true, 0));
         }
         catch (Exception ex)
         {
+            services.Add(new DashboardService(id, id, false, 0));
             Errors.Add(ex);
         }
     }

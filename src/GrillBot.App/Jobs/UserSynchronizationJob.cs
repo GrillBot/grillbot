@@ -19,7 +19,7 @@ public class UserSynchronizationJob : CleanerJobBase
     {
         var reportFields = new List<string>();
 
-        await using var repository = DbFactory.CreateRepository();
+        using var repository = DbFactory.CreateRepository();
 
         await ProcessOnlineUsersAsync(repository, reportFields);
 

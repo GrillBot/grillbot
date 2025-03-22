@@ -100,7 +100,7 @@ public class SetUnverify : CommandAction
         await profile.RemoveRolesAsync();
         await profile.RemoveChannelsAsync(Context.Guild);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(Context.Guild);
         await repository.User.GetOrCreateUserAsync(ExecutingUser!);

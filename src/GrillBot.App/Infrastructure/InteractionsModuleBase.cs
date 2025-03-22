@@ -5,7 +5,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ;
+using GrillBot.Core.RabbitMQ.V2.Messages;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure;
@@ -68,7 +68,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         if (configuration.SuppressAuto) return (false, false);
         if (configuration.RequireEphemeral) return (true, true);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         IsEphemeralChannel = await repository.Channel.IsChannelEphemeralAsync(Context.Guild, Context.Channel);
         return (true, IsEphemeralChannel);
     }
@@ -182,7 +182,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             command.Resolve<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
     }
 
-    protected async Task SendViaRabbitAsync<TPayload>(TPayload payload) where TPayload : IPayload
+    protected async Task SendViaRabbitAsync<TPayload>(TPayload payload) where TPayload : IRabbitMessage
     {
         using var publisher = await GetActionAsCommandAsync<RabbitMQPublisherAction>();
         var currentUser = publisher.Resolve<ICurrentUserProvider>();

@@ -1,5 +1,5 @@
 ﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.PointsService.Models.Channels;
 using GrillBot.Core.Services.PointsService.Models.Users;
 using PointsModels = GrillBot.Core.Services.PointsService.Models;
@@ -8,10 +8,10 @@ namespace GrillBot.App.Managers.Points;
 
 public class PointsSynchronizationManager
 {
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
     private readonly IDiscordClient _discordClient;
 
-    public PointsSynchronizationManager(IRabbitMQPublisher rabbitPublisher, IDiscordClient discordClient)
+    public PointsSynchronizationManager(IRabbitPublisher rabbitPublisher, IDiscordClient discordClient)
     {
         _rabbitPublisher = rabbitPublisher;
         _discordClient = discordClient;

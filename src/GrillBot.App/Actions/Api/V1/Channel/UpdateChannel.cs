@@ -6,7 +6,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.Services.PointsService.Models.Channels;
@@ -25,10 +25,10 @@ public class UpdateChannel : ApiAction
     private IDiscordClient DiscordClient { get; }
 
     private readonly PointsManager _pointsManager;
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
     public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, AutoReplyManager autoReplyManager, ChannelHelper channelHelper,
-        IDiscordClient discordClient, PointsManager pointsManager, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
+        IDiscordClient discordClient, PointsManager pointsManager, IRabbitPublisher rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
@@ -44,7 +44,7 @@ public class UpdateChannel : ApiAction
         var id = (ulong)Parameters[0]!;
         var parameters = (UpdateChannelParams)Parameters[1]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var channel = await repository.Channel.FindChannelByIdAsync(id)
             ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
@@ -103,6 +103,6 @@ public class UpdateChannel : ApiAction
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsPayload(logRequest), new());
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
     }
 }

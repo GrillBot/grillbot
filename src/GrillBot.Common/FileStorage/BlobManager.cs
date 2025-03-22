@@ -2,7 +2,6 @@
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using GrillBot.Core.Managers.Performance;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace GrillBot.Common.FileStorage;
 

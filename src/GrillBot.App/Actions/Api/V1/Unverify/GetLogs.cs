@@ -30,7 +30,7 @@ public class GetLogs : ApiAction
         var mutualGuilds = await GetMutualGuildsAsync();
         UpdatePublicAccess(parameters, mutualGuilds);
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Unverify.GetLogsAsync(parameters, parameters.Pagination, mutualGuilds);
         var result = await PaginatedResponse<UnverifyLogItem>.CopyAndMapAsync(data, MapItemAsync);

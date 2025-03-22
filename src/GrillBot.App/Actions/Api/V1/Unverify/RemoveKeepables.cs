@@ -20,7 +20,7 @@ public class RemoveKeepables : ApiAction
         var group = (string)Parameters[0]!;
         var name = (string?)Parameters[1];
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         if (string.IsNullOrEmpty(name))
         {

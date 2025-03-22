@@ -57,7 +57,7 @@ public class ServerBoosterHandler : IGuildMemberUpdatedEvent
 
     private async Task<Guild?> FindGuildAsync(IGuild guild)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
         return await repository.Guild.FindGuildAsync(guild, true);
     }
 

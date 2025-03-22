@@ -24,7 +24,7 @@ public class GetGuildList : ApiAction
     {
         var parameters = (GetGuildListParams)Parameters[0]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var data = await repository.Guild.GetGuildListAsync(parameters, parameters.Pagination);
         var result = await PaginatedResponse<Data.Models.API.Guilds.Guild>

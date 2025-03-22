@@ -1,29 +1,31 @@
-﻿using GrillBot.Core.RabbitMQ.Consumer;
-using GrillBot.Core.RabbitMQ.Publisher;
+﻿using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
 using GrillBot.Core.Services.RemindService.Models.Events;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
 
-public class CreatedDiscordMessageEventHandler : BaseRabbitMQHandler<CreatedDiscordMessagePayload>
+public class CreatedDiscordMessageEventHandler : RabbitMessageHandlerBase<CreatedDiscordMessagePayload>
 {
-    public override string QueueName => new CreatedDiscordMessagePayload().QueueName;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    private readonly IRabbitMQPublisher _rabbitPublisher;
-
-    public CreatedDiscordMessageEventHandler(ILoggerFactory loggerFactory, IRabbitMQPublisher rabbitPublisher) : base(loggerFactory)
+    public CreatedDiscordMessageEventHandler(ILoggerFactory loggerFactory, IRabbitPublisher rabbitPublisher) : base(loggerFactory)
     {
         _rabbitPublisher = rabbitPublisher;
     }
 
-    protected override Task HandleInternalAsync(CreatedDiscordMessagePayload payload, Dictionary<string, string> headers)
+    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(CreatedDiscordMessagePayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
     {
-        return payload.ServiceId switch
+        switch (message.ServiceId)
         {
-            "Remind" => ProcessRemindServiceMessageAsync(payload),
-            _ => Task.CompletedTask,
-        };
+            case "Remind":
+                await ProcessRemindServiceMessageAsync(message);
+                break;
+        }
+
+        return RabbitConsumptionResult.Success;
     }
 
     private async Task ProcessRemindServiceMessageAsync(CreatedDiscordMessagePayload payload)

@@ -11,7 +11,7 @@ public class HaveBirthday : CommandAction
 
     public async Task<bool> ProcessAsync()
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var dbUser = await repository.User.FindUserAsync(Context.User);
         return dbUser?.Birthday != null;

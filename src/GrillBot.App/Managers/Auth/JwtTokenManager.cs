@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
@@ -33,7 +32,7 @@ public class JwtTokenManager
 
     public async Task<OAuth2LoginToken> CreateTokenForUserAsync(IUser user, string language, IInteractionContext? interaction = null)
     {
-        await using var repository = _databaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
 
         var userEntity = await repository.User.FindUserAsync(user, true);
         if (userEntity is null)

@@ -51,7 +51,7 @@ public abstract class BaseDataResolver<TDiscordEntity, TDatabaseEntity, TMappedV
         if (discordEntity is not null)
             return await MapAndStoreAsync(key, discordEntity);
 
-        await using var repository = _databaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
 
         var databaseEntity = await readDatabaseEntity(repository);
         return databaseEntity is null ? default : await MapAndStoreAsync(key, databaseEntity);

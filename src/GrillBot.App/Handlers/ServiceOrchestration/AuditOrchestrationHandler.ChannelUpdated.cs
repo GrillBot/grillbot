@@ -6,7 +6,7 @@ namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public partial class AuditOrchestrationHandler
 {
-    private static void ProcessChannelChanges(IChannel before, IChannel after, CreateItemsPayload payload)
+    private static void ProcessChannelChanges(IChannel before, IChannel after, CreateItemsMessage payload)
     {
         if (before is not IGuildChannel beforeGuildChannel) return;
         if (after is not IGuildChannel afterGuildChannel) return;
@@ -33,7 +33,7 @@ public partial class AuditOrchestrationHandler
         });
     }
 
-    private async Task ProcessOverwriteChangesAsync(IChannel after, CreateItemsPayload payload)
+    private async Task ProcessOverwriteChangesAsync(IChannel after, CreateItemsMessage payload)
     {
         if (after is not IGuildChannel guildChannel) return;
         if (!_auditLogManager.CanProcessNextOverwriteEvent(after.Id)) return;

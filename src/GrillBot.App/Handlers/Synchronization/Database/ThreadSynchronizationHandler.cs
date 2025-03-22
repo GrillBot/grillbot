@@ -12,7 +12,7 @@ public class ThreadSynchronizationHandler : BaseSynchronizationHandler, IThreadD
     {
         if (cachedThread is null) return;
 
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(cachedThread.Guild);
         await repository.CommitAsync();
@@ -29,7 +29,7 @@ public class ThreadSynchronizationHandler : BaseSynchronizationHandler, IThreadD
         if (before is null || (before.Name == after.Name && before.IsArchived == after.IsArchived))
             return;
 
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(after.Guild);
         await repository.CommitAsync();

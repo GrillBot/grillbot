@@ -13,7 +13,7 @@ public class GuildSynchronizationHandler : BaseSynchronizationHandler, IGuildAva
     // GuildAvailable
     public async Task ProcessAsync(IGuild guild)
     {
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
         await repository.Guild.GetOrCreateGuildAsync(guild);
 
         await repository.CommitAsync();
@@ -22,7 +22,7 @@ public class GuildSynchronizationHandler : BaseSynchronizationHandler, IGuildAva
     // GuildUpdated
     public async Task ProcessAsync(IGuild before, IGuild after)
     {
-        await using var repository = CreateRepository();
+        using var repository = CreateRepository();
         await ProcessCommonGuildChangesAsync(before, after, repository);
 
         await repository.CommitAsync();

@@ -26,7 +26,7 @@ public class EmoteStatsReactionAddedHandler : IReactionAddedEvent
         if ((reaction.User.IsSpecified ? reaction.User.Value : await textChannel.Guild.GetUserAsync(reaction.UserId)) is not IGuildUser reactionUser)
             return;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         await repository.Guild.GetOrCreateGuildAsync(textChannel.Guild);
         await repository.User.GetOrCreateUserAsync(author);

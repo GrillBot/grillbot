@@ -27,7 +27,7 @@ public class EmoteStatsReactionRemovedHandler : IReactionRemovedEvent
         if ((reaction.User.IsSpecified ? reaction.User.Value : await textChannel.Guild.GetUserAsync(reaction.UserId)) is not IGuildUser reactionUser)
             return;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var reactionUserEntity = await repository.GuildUser.FindGuildUserAsync(reactionUser);
         var authorUserEntity = await repository.GuildUser.FindGuildUserAsync(author);

@@ -27,7 +27,7 @@ public class GuildRepository : SubRepositoryBase<GrillBotContext>
                 return entity;
 
             entity = Guild.FromDiscord(guild);
-            await Context.AddAsync(entity);
+            await DbContext.AddAsync(entity);
 
             return entity;
         }
@@ -37,7 +37,7 @@ public class GuildRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Guilds.AsQueryable();
+            var query = DbContext.Guilds.AsQueryable();
             if (disableTracking)
                 query = query.AsNoTracking();
 
@@ -55,7 +55,7 @@ public class GuildRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Guilds.AsQueryable();
+            var query = DbContext.Guilds.AsQueryable();
             if (disableTracking)
                 query = query.AsNoTracking();
 
@@ -76,7 +76,7 @@ public class GuildRepository : SubRepositoryBase<GrillBotContext>
     {
         using (CreateCounter())
         {
-            var query = Context.Guilds.AsNoTracking()
+            var query = DbContext.Guilds.AsNoTracking()
                 .Where(o => o.Id == guildId.ToString())
                 .Select(g => new GuildDatabaseReport
                 {
@@ -99,7 +99,7 @@ public class GuildRepository : SubRepositoryBase<GrillBotContext>
             if (guildIds.Count == 0)
                 return new List<Guild>();
 
-            return await Context.Guilds.AsNoTracking()
+            return await DbContext.Guilds.AsNoTracking()
                 .Where(o => guildIds.Contains(o.Id))
                 .ToListAsync();
         }

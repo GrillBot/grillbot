@@ -24,9 +24,9 @@ public partial class AuditOrchestrationHandler
         return entries.Select(e => (e, (TData)e.Data)).ToList();
     }
 
-    private Task PushPayloadAsync(CreateItemsPayload payload)
-        => payload.Items.Count > 0 ? _rabbitPublisher.PublishAsync(payload, new()) : Task.CompletedTask;
+    private Task PushPayloadAsync(CreateItemsMessage payload)
+        => payload.Items.Count > 0 ? _rabbitPublisher.PublishAsync(payload) : Task.CompletedTask;
 
     private Task PushPayloadAsync(params LogRequest[] requests)
-        => PushPayloadAsync(new CreateItemsPayload(requests.ToList()));
+        => PushPayloadAsync(new CreateItemsMessage(requests.ToList()));
 }

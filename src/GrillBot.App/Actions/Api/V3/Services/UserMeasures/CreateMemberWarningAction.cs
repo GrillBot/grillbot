@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.Publisher;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.UserMeasures.Models.Events;
 using GrillBot.Data.Models.API.UserMeasures;
 
@@ -8,9 +8,9 @@ namespace GrillBot.App.Actions.Api.V3.Services.UserMeasures;
 
 public class CreateMemberWarningAction : ApiAction
 {
-    private readonly IRabbitMQPublisher _rabbitPublisher;
+    private readonly IRabbitPublisher _rabbitPublisher;
 
-    public CreateMemberWarningAction(ApiRequestContext apiContext, IRabbitMQPublisher rabbitPublisher) : base(apiContext)
+    public CreateMemberWarningAction(ApiRequestContext apiContext, IRabbitPublisher rabbitPublisher) : base(apiContext)
     {
         _rabbitPublisher = rabbitPublisher;
     }

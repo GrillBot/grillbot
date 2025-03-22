@@ -100,7 +100,7 @@ public class RemoveUnverify : ApiAction
 
     private async Task ForceRemoveAsync(ulong guildId, ulong userId)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var unverify = await repository.Unverify.FindUnverifyAsync(guildId, userId);
         if (unverify != null)
@@ -112,7 +112,7 @@ public class RemoveUnverify : ApiAction
 
     private async Task<string> ProcessAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser)
     {
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var unverify = await repository.Unverify.FindUnverifyAsync(guild.Id, toUser.Id, includeLogs: true);
         if (unverify == null)

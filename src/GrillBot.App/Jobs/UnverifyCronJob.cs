@@ -21,7 +21,7 @@ public class UnverifyCronJob : Job
     protected override async Task RunAsync(IJobExecutionContext context)
     {
         var processed = new List<string>();
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var unverify = await repository.Unverify.GetFirstPendingUnverifyAsync();
         while (unverify != null)

@@ -22,7 +22,7 @@ public class UpdateClient : ApiAction
         var id = (string)Parameters[0]!;
         var parameters = (ApiClientParams)Parameters[1]!;
 
-        await using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = DatabaseBuilder.CreateRepository();
 
         var apiClient = await repository.ApiClientRepository.FindClientById(id)
             ?? throw new NotFoundException(Texts["PublicApiClients/NotFound", ApiContext.Language]);

@@ -1,20 +1,13 @@
 ﻿using System.IO.Compression;
 using GrillBot.App.Helpers;
 using GrillBot.App.Infrastructure.Jobs;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Jobs.Abstractions;
 
-public abstract class ArchivationJobBase : Job
+public abstract class ArchivationJobBase(IServiceProvider serviceProvider) : Job(serviceProvider)
 {
-    protected BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
-    protected GrillBotDatabaseBuilder DatabaseBuilder { get; }
-
-    protected ArchivationJobBase(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        BlobManagerFactoryHelper = serviceProvider.GetRequiredService<BlobManagerFactoryHelper>();
-        DatabaseBuilder = serviceProvider.GetRequiredService<GrillBotDatabaseBuilder>();
-    }
+    protected BlobManagerFactoryHelper BlobManagerFactoryHelper => ResolveService<BlobManagerFactoryHelper>();
+    protected GrillBotDatabaseBuilder DatabaseBuilder => ResolveService<GrillBotDatabaseBuilder>();
 
     protected static JArray TransformGuilds(IEnumerable<Database.Entity.Guild?> guilds)
     {

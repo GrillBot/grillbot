@@ -6,20 +6,16 @@ using Quartz;
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
-public class UserSynchronizationJob : CleanerJobBase
+public class UserSynchronizationJob(
+    GrillBotDatabaseBuilder _dbFactory,
+    IServiceProvider serviceProvider
+) : CleanerJobBase(serviceProvider)
 {
-    private GrillBotDatabaseBuilder DbFactory { get; }
-
-    public UserSynchronizationJob(GrillBotDatabaseBuilder dbFactory, IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        DbFactory = dbFactory;
-    }
-
     protected override async Task RunAsync(IJobExecutionContext context)
     {
         var reportFields = new List<string>();
 
-        using var repository = DbFactory.CreateRepository();
+        using var repository = _dbFactory.CreateRepository();
 
         await ProcessOnlineUsersAsync(repository, reportFields);
 

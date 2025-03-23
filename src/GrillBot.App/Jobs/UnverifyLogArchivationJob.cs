@@ -7,21 +7,17 @@ using Quartz;
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
-public class UnverifyLogArchivationJob : ArchivationJobBase
+public class UnverifyLogArchivationJob(
+    IServiceProvider serviceProvider,
+    IConfiguration _configuration
+) : ArchivationJobBase(serviceProvider)
 {
-    private IConfiguration Configuration { get; }
-
-    public UnverifyLogArchivationJob(IServiceProvider serviceProvider, IConfiguration configuration) : base(serviceProvider)
-    {
-        Configuration = configuration;
-    }
-
     protected override async Task RunAsync(IJobExecutionContext context)
     {
         using var repository = DatabaseBuilder.CreateRepository();
 
         var expirationMilestone = DateTime.Now.AddYears(-2);
-        var minimalCount = Configuration.GetValue<int>("Unverify:MinimalCountToArchivation");
+        var minimalCount = _configuration.GetValue<int>("Unverify:MinimalCountToArchivation");
         var countToArchivation = await repository.Unverify.GetCountForArchivationAsync(expirationMilestone);
 
         if (countToArchivation <= minimalCount)

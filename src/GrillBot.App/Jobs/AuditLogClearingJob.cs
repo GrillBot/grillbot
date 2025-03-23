@@ -13,7 +13,10 @@ using Quartz;
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
-public class AuditLogClearingJob(IServiceProvider serviceProvider) : ArchivationJobBase(serviceProvider)
+public class AuditLogClearingJob(
+    IServiceProvider serviceProvider,
+    IAuditLogServiceClient _auditLogClient
+) : ArchivationJobBase(serviceProvider)
 {
     protected override async Task RunAsync(IJobExecutionContext context)
     {
@@ -46,8 +49,7 @@ public class AuditLogClearingJob(IServiceProvider serviceProvider) : Archivation
     {
         try
         {
-            var client = ResolveService<IAuditLogServiceClient>();
-            return await client.CreateArchivationDataAsync();
+            return await _auditLogClient.CreateArchivationDataAsync();
         }
         catch (Refit.ApiException ex) when (ex.StatusCode == HttpStatusCode.NoContent)
         {

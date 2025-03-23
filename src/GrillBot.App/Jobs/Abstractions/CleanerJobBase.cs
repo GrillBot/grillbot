@@ -2,12 +2,8 @@
 
 namespace GrillBot.App.Jobs.Abstractions;
 
-public abstract class CleanerJobBase : Job
+public abstract class CleanerJobBase(IServiceProvider serviceProvider) : Job(serviceProvider)
 {
-    protected CleanerJobBase(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     protected string? FormatReportFromFields(List<string> reportFields)
     {
         if (reportFields.Count == 0)

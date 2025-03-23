@@ -7,30 +7,21 @@ namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 [DisallowUninitialized]
-public class BirthdayCronJob : Job
+public class BirthdayCronJob(
+    IConfiguration _configuration,
+    IDiscordClient _discordClient,
+    GetTodayBirthdayInfo _apiAction,
+    GrillBotDatabaseBuilder _databaseBuilder,
+    IServiceProvider serviceProvider
+) : Job(serviceProvider)
 {
-    private IConfiguration Configuration { get; }
-    private GetTodayBirthdayInfo GetTodayBirthdayInfo { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private new IDiscordClient DiscordClient { get; }
-
-    public BirthdayCronJob(IConfiguration configuration, IDiscordClient discordClient, GetTodayBirthdayInfo getTodayBirthdayInfo, GrillBotDatabaseBuilder databaseBuilder,
-        IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        Configuration = configuration;
-        GetTodayBirthdayInfo = getTodayBirthdayInfo;
-        GetTodayBirthdayInfo.UpdateContext("cs", discordClient.CurrentUser);
-        DatabaseBuilder = databaseBuilder;
-        DiscordClient = discordClient;
-    }
-
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
         if (!await repository.User.HaveSomeoneBirthdayTodayAsync())
             return;
 
-        var birthdayNotificationSection = Configuration.GetSection("Birthday:Notifications");
+        var birthdayNotificationSection = _configuration.GetSection("Birthday:Notifications");
         var guild = await DiscordClient.GetGuildAsync(birthdayNotificationSection.GetValue<ulong>("GuildId"));
         if (guild == null)
         {
@@ -45,7 +36,8 @@ public class BirthdayCronJob : Job
             return;
         }
 
-        var result = await GetTodayBirthdayInfo.ProcessAsync();
+        _apiAction.UpdateContext("cs", _discordClient.CurrentUser);
+        var result = await _apiAction.ProcessAsync();
         var message = ((MessageResponse)result.Data!).Message;
 
         context.Result = message;

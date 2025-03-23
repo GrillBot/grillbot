@@ -6,11 +6,13 @@ namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 [DisallowUninitialized]
-public class MessageCacheJob(IServiceProvider serviceProvider) : Job(serviceProvider)
+public class MessageCacheJob(
+    IServiceProvider serviceProvider,
+    IMessageCacheManager _manager
+) : Job(serviceProvider)
 {
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        var manager = ResolveService<IMessageCacheManager>();
-        context.Result = await manager.ProcessScheduledTaskAsync();
+        context.Result = await _manager.ProcessScheduledTaskAsync();
     }
 }

@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Jobs.Abstractions;
+﻿using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Cooldown;
 using Quartz;
@@ -6,20 +7,14 @@ using Quartz;
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
-public class CacheCleanerJob : CleanerJobBase
+[DisallowUninitialized]
+public class CacheCleanerJob(
+    IServiceProvider serviceProvider,
+    CooldownManager _cooldownManager
+) : CleanerJobBase(serviceProvider)
 {
-    private readonly CooldownManager _cooldownManager;
-
-    public CacheCleanerJob(IServiceProvider serviceProvider, CooldownManager cooldownManager) : base(serviceProvider)
-    {
-        _cooldownManager = cooldownManager;
-    }
-
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        if (!InitManager.Get())
-            return;
-
         var reportFields = new List<string>();
         await ClearExpiredCooldownsAsync(reportFields);
 

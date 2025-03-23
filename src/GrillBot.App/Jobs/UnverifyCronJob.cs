@@ -7,26 +7,21 @@ namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 [DisallowUninitialized]
-public class UnverifyCronJob : Job
+public class UnverifyCronJob(
+    IServiceProvider serviceProvider,
+    RemoveUnverify _removeUnverify,
+    GrillBotDatabaseBuilder _databaseBuilder
+) : Job(serviceProvider)
 {
-    private RemoveUnverify RemoveUnverify { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-
-    public UnverifyCronJob(IServiceProvider serviceProvider, RemoveUnverify removeUnverify, GrillBotDatabaseBuilder databaseBuilder) : base(serviceProvider)
-    {
-        RemoveUnverify = removeUnverify;
-        DatabaseBuilder = databaseBuilder;
-    }
-
     protected override async Task RunAsync(IJobExecutionContext context)
     {
         var processed = new List<string>();
-        using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
 
         var unverify = await repository.Unverify.GetFirstPendingUnverifyAsync();
         while (unverify != null)
         {
-            await RemoveUnverify.ProcessAutoRemoveAsync(unverify.GuildId.ToUlong(), unverify.UserId.ToUlong());
+            await _removeUnverify.ProcessAutoRemoveAsync(unverify.GuildId.ToUlong(), unverify.UserId.ToUlong());
             processed.Add($"{unverify.Guild!.Name} - {unverify.GuildUser!.DisplayName} (Roles:{unverify.Roles.Count}, Channels:{unverify.Channels.Count})");
             unverify = await repository.Unverify.GetFirstPendingUnverifyAsync();
         }

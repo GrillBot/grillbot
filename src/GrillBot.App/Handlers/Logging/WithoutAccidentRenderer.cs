@@ -5,22 +5,15 @@ using GrillBot.Core.IO;
 
 namespace GrillBot.App.Handlers.Logging;
 
-public class WithoutAccidentRenderer
+public class WithoutAccidentRenderer(
+    ProfilePictureManager _profilePictureManager,
+    DataCacheManager _dataCacheManager,
+    IImageProcessingClient _imageProcessingClient
+)
 {
-    private readonly DataCacheManager _dataCacheManager;
-    private ProfilePictureManager ProfilePictureManager { get; }
-    private IImageProcessingClient ImageProcessingClient { get; }
-
-    public WithoutAccidentRenderer(ProfilePictureManager profilePictureManager, DataCacheManager dataCacheManager, IImageProcessingClient imageProcessingClient)
-    {
-        _dataCacheManager = dataCacheManager;
-        ProfilePictureManager = profilePictureManager;
-        ImageProcessingClient = imageProcessingClient;
-    }
-
     public async Task<TemporaryFile> RenderAsync(IUser user)
     {
-        var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, size: 512);
+        var profilePicture = await _profilePictureManager.GetOrCreatePictureAsync(user, size: 512);
         var days = await GetLastErrorDays();
 
         var request = new WithoutAccidentImageRequest
@@ -35,7 +28,7 @@ public class WithoutAccidentRenderer
             UserId = user.Id.ToString()
         };
 
-        var image = await ImageProcessingClient.CreateWithoutAccidentImageAsync(request);
+        var image = await _imageProcessingClient.CreateWithoutAccidentImageAsync(request);
         var tmpFile = new TemporaryFile("png");
 
         await tmpFile.WriteStreamAsync(image);

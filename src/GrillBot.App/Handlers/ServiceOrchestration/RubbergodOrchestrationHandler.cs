@@ -47,7 +47,7 @@ public class RubbergodOrchestrationHandler : IMessageUpdatedEvent, IThreadDelete
     {
         var guild = await _channelHelper.GetGuildFromChannelAsync(cachedThread, threadId);
         if (guild is not null)
-            await _rabbitPublisher.PublishAsync(new ClearPinCachePayload(guild.Id.ToString(), threadId.ToString()), new());
+            await _rabbitPublisher.PublishAsync(new ClearPinCachePayload(guild.Id.ToString(), threadId.ToString()));
     }
 
     // ChannelDestroyed
@@ -57,7 +57,7 @@ public class RubbergodOrchestrationHandler : IMessageUpdatedEvent, IThreadDelete
             return;
 
         var textChannel = (ITextChannel)channel;
-        await _rabbitPublisher.PublishAsync(new ClearPinCachePayload(textChannel.GuildId.ToString(), textChannel.Id.ToString()), new());
+        await _rabbitPublisher.PublishAsync(new ClearPinCachePayload(textChannel.GuildId.ToString(), textChannel.Id.ToString()));
     }
 
     private static void ProcessPinContentModified(List<ClearPinCachePayload> payloads, IMessage before, IMessage after, IGuildChannel guildChannel)

@@ -10,15 +10,8 @@ using GrillBot.Core.Services.GrillBot.Models.Events.Errors;
 
 namespace GrillBot.App.Handlers.Logging;
 
-public class DiscordExceptionHandler : ILoggingHandler
+public class DiscordExceptionHandler(IRabbitPublisher _rabbitPublisher) : ILoggingHandler
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
-
-    public DiscordExceptionHandler(IRabbitPublisher rabbitPublisher)
-    {
-        _rabbitPublisher = rabbitPublisher;
-    }
-
     public Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception? exception = null)
     {
         if (exception is null) return Task.FromResult(false);
@@ -33,10 +26,10 @@ public class DiscordExceptionHandler : ILoggingHandler
     public Task WarningAsync(string source, string message, Exception? exception = null)
         => ErrorAsync(source, message, exception!);
 
-    public async Task ErrorAsync(string source, string message, Exception exception)
+    public Task ErrorAsync(string source, string message, Exception exception)
     {
         var notification = CreateErrorNotification(source, message, exception);
-        await _rabbitPublisher.PublishAsync(notification, new());
+        return _rabbitPublisher.PublishAsync(notification);
     }
 
     private static ErrorNotificationPayload CreateErrorNotification(string source, string message, Exception exception)

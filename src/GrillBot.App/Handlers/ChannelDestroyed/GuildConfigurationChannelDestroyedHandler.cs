@@ -6,24 +6,17 @@ using System.Reflection;
 
 namespace GrillBot.App.Handlers.ChannelDestroyed;
 
-public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
+public class GuildConfigurationChannelDestroyedHandler(
+    GrillBotDatabaseBuilder _databaseBuilder,
+    IRabbitPublisher _rabbitPublisher
+) : IChannelDestroyedEvent
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-
-    private readonly IRabbitPublisher _rabbitPublisher;
-
-    public GuildConfigurationChannelDestroyedHandler(GrillBotDatabaseBuilder databaseBuilder, IRabbitPublisher rabbitPublisher)
-    {
-        DatabaseBuilder = databaseBuilder;
-        _rabbitPublisher = rabbitPublisher;
-    }
-
     public async Task ProcessAsync(IChannel channel)
     {
         if (channel is not IGuildChannel guildChannel)
             return;
 
-        using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
 
         var guild = await repository.Guild.FindGuildAsync(guildChannel.Guild);
         if (guild is null)
@@ -41,7 +34,7 @@ public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
         await repository.CommitAsync();
     }
 
-    private async Task WriteToAuditLogAsync(IGuild guild, List<string> log)
+    private Task WriteToAuditLogAsync(IGuild guild, List<string> log)
     {
         var logRequest = new LogRequest(LogType.Info, DateTime.UtcNow, guild.Id.ToString())
         {
@@ -54,7 +47,7 @@ public class GuildConfigurationChannelDestroyedHandler : IChannelDestroyedEvent
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
+        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
     }
 
     private static void ResetProperty(ulong expectedId, Database.Entity.Guild guild, string propertyName, List<string> log)

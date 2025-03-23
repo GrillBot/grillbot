@@ -10,20 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Handlers.Logging;
 
-public class AuditLogLoggingHandler : ILoggingHandler
+public class AuditLogLoggingHandler(
+    IConfiguration _configuration,
+    IServiceProvider _serviceProvider
+) : ILoggingHandler
 {
-    private readonly IConfiguration _configuration;
-    private readonly IServiceProvider _serviceProvider;
-
-    public AuditLogLoggingHandler(IConfiguration configuration, IServiceProvider serviceProvider)
-    {
-        _configuration = configuration.GetSection("Discord:Logging");
-        _serviceProvider = serviceProvider;
-    }
-
     public Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception? exception = null)
     {
-        if (exception is null || !_configuration.GetValue<bool>("Enabled")) return Task.FromResult(false);
+        if (exception is null || !_configuration.GetValue<bool>("Discord:Logging:Enabled")) return Task.FromResult(false);
         return Task.FromResult(severity is LogSeverity.Critical or LogSeverity.Error or LogSeverity.Warning);
     }
 
@@ -76,7 +70,6 @@ public class AuditLogLoggingHandler : ILoggingHandler
             LogMessage = new LogMessageRequest
             {
                 Message = logMessage,
-                Severity = severity,
                 SourceAppName = "GrillBot" + (exception is FrontendException ? ".Web" : ".App"),
                 Source = source
             }

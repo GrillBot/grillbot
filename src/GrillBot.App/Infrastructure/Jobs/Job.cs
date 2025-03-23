@@ -10,24 +10,16 @@ using GrillBot.Core.RabbitMQ.V2.Publisher;
 
 namespace GrillBot.App.Infrastructure.Jobs;
 
-public abstract class Job : IJob
+public abstract class Job(IServiceProvider serviceProvider) : IJob
 {
     protected static readonly string Indent = new(' ', 5);
 
-    private readonly IServiceProvider _serviceProvider;
-
-    protected IDiscordClient DiscordClient { get; }
+    protected IDiscordClient DiscordClient => ResolveService<IDiscordClient>();
     protected InitManager InitManager => ResolveService<InitManager>();
     protected LoggingManager LoggingManager => ResolveService<LoggingManager>();
 
     private string JobName => GetType().Name;
     private bool RequireInitialization => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
-
-    protected Job(IServiceProvider serviceProvider)
-    {
-        DiscordClient = serviceProvider.GetRequiredService<IDiscordClient>();
-        _serviceProvider = serviceProvider;
-    }
 
     protected abstract Task RunAsync(IJobExecutionContext context);
 
@@ -87,12 +79,12 @@ public abstract class Job : IJob
 
     private async Task<bool> IsJobDisabledAsync()
     {
-        var dataCacheManager = _serviceProvider.GetRequiredService<DataCacheManager>();
+        var dataCacheManager = serviceProvider.GetRequiredService<DataCacheManager>();
         var disabledJobs = await dataCacheManager.GetValueAsync<List<string>>("DisabledJobs");
 
         return (disabledJobs ?? []).Contains(JobName);
     }
 
     protected TService ResolveService<TService>() where TService : class
-        => _serviceProvider.GetRequiredService<TService>();
+        => serviceProvider.GetRequiredService<TService>();
 }

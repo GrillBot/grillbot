@@ -3,15 +3,8 @@ using GrillBot.Common.Managers.Events.Contracts;
 
 namespace GrillBot.App.Handlers.InviteCreated;
 
-public class InviteToCacheHandler : IInviteCreatedEvent
+public class InviteToCacheHandler(InviteManager _inviteManager) : IInviteCreatedEvent
 {
-    private InviteManager InviteManager { get; }
-
-    public InviteToCacheHandler(InviteManager inviteManager)
-    {
-        InviteManager = inviteManager;
-    }
-
     public Task ProcessAsync(IInviteMetadata invite)
-        => InviteManager.AddInviteAsync(invite);
+        => _inviteManager.AddInviteAsync(invite);
 }

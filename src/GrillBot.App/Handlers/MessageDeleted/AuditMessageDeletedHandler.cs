@@ -11,28 +11,19 @@ using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
-public class AuditMessageDeletedHandler : IMessageDeletedEvent
+public class AuditMessageDeletedHandler(
+    IMessageCacheManager _messageCache,
+    DownloadHelper _downloadHelper,
+    BlobManagerFactoryHelper _blobManagerFactoryHelper,
+    IRabbitPublisher _rabbitPublisher
+) : IMessageDeletedEvent
 {
-    private IMessageCacheManager MessageCache { get; }
-    private DownloadHelper DownloadHelper { get; }
-    private BlobManagerFactoryHelper BlobManagerFactoryHelper { get; }
-
-    private readonly IRabbitPublisher _rabbitPublisher;
-
-    public AuditMessageDeletedHandler(IMessageCacheManager messageCache, DownloadHelper downloadHelper, BlobManagerFactoryHelper blobManagerFactoryHelper, IRabbitPublisher rabbitPublisher)
-    {
-        MessageCache = messageCache;
-        DownloadHelper = downloadHelper;
-        BlobManagerFactoryHelper = blobManagerFactoryHelper;
-        _rabbitPublisher = rabbitPublisher;
-    }
-
     public async Task ProcessAsync(Cacheable<IMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel)
     {
         if (!cachedChannel.HasValue || cachedChannel.Value is not ITextChannel textChannel) return;
 
         var message = cachedMessage.HasValue ? cachedMessage.Value : null;
-        message ??= await MessageCache.GetAsync(cachedMessage.Id, null, true) as IUserMessage;
+        message ??= await _messageCache.GetAsync(cachedMessage.Id, null, true) as IUserMessage;
         if (message == null) return;
 
         var guildId = textChannel.Guild.Id.ToString();
@@ -59,11 +50,11 @@ public class AuditMessageDeletedHandler : IMessageDeletedEvent
         if (message.Attachments.Count == 0)
             return files;
 
-        var manager = await BlobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
+        var manager = await _blobManagerFactoryHelper.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
 
         foreach (var attachment in message.Attachments)
         {
-            var content = await DownloadHelper.DownloadAsync(attachment);
+            var content = await _downloadHelper.DownloadAsync(attachment);
             if (content is null) continue;
 
             var extension = Path.GetExtension(attachment.Filename);

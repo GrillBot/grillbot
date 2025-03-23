@@ -16,7 +16,7 @@ public class UnverifyRabbitMQManager
     }
 
     public Task SendModifyAsync(long logSetId, DateTime newEndUtc)
-        => RabbitMQ.PublishAsync(new UnverifyModifyPayload(logSetId, newEndUtc), new());
+        => RabbitMQ.PublishAsync(new UnverifyModifyPayload(logSetId, newEndUtc));
 
     public async Task SendUnverifyAsync(UnverifyUserProfile profile, UnverifyLog unverifyLog)
     {
@@ -30,6 +30,6 @@ public class UnverifyRabbitMQManager
             unverifyLog.Id
         );
 
-        await RabbitMQ.PublishAsync(payload, new());
+        await RabbitMQ.PublishAsync(payload);
     }
 }

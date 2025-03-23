@@ -80,7 +80,7 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
         var userId = reactionGuildUser.Id.ToString();
         var emoteId = emote.ToString();
 
-        await _rabbitPublisher.PublishAsync(new EmoteEventPayload(guildId, userId, emoteId, DateTime.UtcNow, true), new());
+        await _rabbitPublisher.PublishAsync(new EmoteEventPayload(guildId, userId, emoteId, DateTime.UtcNow, true));
     }
 
     // ReactionRemoved
@@ -101,7 +101,7 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
         var userId = reactionGuildUser.Id.ToString();
         var emoteId = emote.ToString();
 
-        await _rabbitPublisher.PublishAsync(new EmoteEventPayload(guildId, userId, emoteId, DateTime.UtcNow, false), new());
+        await _rabbitPublisher.PublishAsync(new EmoteEventPayload(guildId, userId, emoteId, DateTime.UtcNow, false));
     }
 
     // Ready

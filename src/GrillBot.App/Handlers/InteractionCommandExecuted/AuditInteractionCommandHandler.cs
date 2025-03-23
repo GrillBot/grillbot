@@ -9,15 +9,8 @@ using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Handlers.InteractionCommandExecuted;
 
-public class AuditInteractionCommandHandler : IInteractionCommandExecutedEvent
+public class AuditInteractionCommandHandler(IRabbitPublisher _rabbitPublisher) : IInteractionCommandExecutedEvent
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
-
-    public AuditInteractionCommandHandler(IRabbitPublisher rabbitPublisher)
-    {
-        _rabbitPublisher = rabbitPublisher;
-    }
-
     public async Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (!Init(result, context, out var duration)) return;
@@ -72,10 +65,10 @@ public class AuditInteractionCommandHandler : IInteractionCommandExecutedEvent
                     request.IsValidToken = messageCommand.IsValidToken;
 
                     var message = messageCommand.Data.Message;
-                    request.Parameters = new List<InteractionCommandParameterRequest>
-                    {
+                    request.Parameters =
+                    [
                         CreateParameterRequest("Message", messageCommand.Data.Name, $"Message({message.Author.Username}, {message.CreatedAt.LocalDateTime.ToCzechFormat()}, {message.Content})")
-                    };
+                    ];
                     break;
                 }
             case SocketUserCommand userCommand:
@@ -83,36 +76,35 @@ public class AuditInteractionCommandHandler : IInteractionCommandExecutedEvent
                     request.IsValidToken = userCommand.IsValidToken;
 
                     var user = userCommand.Data.Member;
-                    request.Parameters = new List<InteractionCommandParameterRequest>
-                    {
+                    request.Parameters =
+                    [
                         CreateParameterRequest("User", userCommand.Data.Name, $"User({user.Username}, {user.Id})")
-                    };
+                    ];
                     break;
                 }
             case SocketMessageComponent messageComponent:
                 request.IsValidToken = messageComponent.IsValidToken;
 
-                request.Parameters = new List<InteractionCommandParameterRequest>
-                {
+                request.Parameters =
+                [
                     CreateParameterRequest("String", "CustomId", messageComponent.Data.CustomId),
                     CreateParameterRequest("String", "Type", messageComponent.Data.Type.ToString())
-                };
+                ];
                 break;
             case SocketModal modal:
                 request.IsValidToken = modal.IsValidToken;
 
-                request.Parameters = new List<InteractionCommandParameterRequest>
-                {
-                    CreateParameterRequest("String", "ModalCustomId", modal.Data.CustomId)
-                };
-
-                request.Parameters.AddRange(modal.Data.Components.SelectMany((component, index) => new[]
-                {
-                    CreateParameterRequest("String", $"ModalComponent({index}).CustomId", component.CustomId),
-                    CreateParameterRequest("String", $"ModalComponent({index}).Type", component.Type.ToString()),
-                    component.Values.Count > 0 ? CreateParameterRequest("String", $"ModalComponent({index}).Values", string.Join(", ", component.Values)) : null,
-                    !string.IsNullOrEmpty(component.Value) ? CreateParameterRequest("String", $"ModalComponent({index}).Value", component.Value) : null
-                }).Where(o => o is not null).Select(o => o!));
+                request.Parameters =
+                [
+                    CreateParameterRequest("String", "ModalCustomId", modal.Data.CustomId),
+                    .. modal.Data.Components.SelectMany((component, index) => new[]
+                    {
+                        CreateParameterRequest("String", $"ModalComponent({index}).CustomId", component.CustomId),
+                        CreateParameterRequest("String", $"ModalComponent({index}).Type", component.Type.ToString()),
+                        component.Values.Count > 0 ? CreateParameterRequest("String", $"ModalComponent({index}).Values", string.Join(", ", component.Values)) : null,
+                        !string.IsNullOrEmpty(component.Value) ? CreateParameterRequest("String", $"ModalComponent({index}).Value", component.Value) : null
+                    }).Where(o => o is not null).Select(o => o!),
+                ];
                 break;
         }
 

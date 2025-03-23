@@ -6,15 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace GrillBot.App.Handlers.InteractionCommandExecuted;
 
-public class InteractionFailedCommandHandler : IInteractionCommandExecutedEvent
+public class InteractionFailedCommandHandler(CooldownManager _cooldownManager) : IInteractionCommandExecutedEvent
 {
-    private readonly CooldownManager _cooldownManager;
-
-    public InteractionFailedCommandHandler(CooldownManager cooldownManager)
-    {
-        _cooldownManager = cooldownManager;
-    }
-
     public async Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (result.IsSuccess || !TryGetAttribute(commandInfo, out var attribute))

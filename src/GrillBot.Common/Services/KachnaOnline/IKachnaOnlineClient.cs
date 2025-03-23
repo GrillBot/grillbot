@@ -9,8 +9,8 @@ namespace GrillBot.Common.Services.KachnaOnline;
 public interface IKachnaOnlineClient : IServiceClient
 {
     [Get("/states/current")]
-    Task<DuckState> GetCurrentStateAsync();
+    Task<DuckState> GetCurrentStateAsync(CancellationToken cancellationToken = default);
 
     [Get("/states/next")]
-    Task<DuckState?> GetNextStateAsync(Enums.DuckState type);
+    Task<DuckState?> GetNextStateAsync(Enums.DuckState type, CancellationToken cancellationToken = default);
 }

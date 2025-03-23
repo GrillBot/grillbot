@@ -6,12 +6,8 @@ using GrillBot.Core.Exceptions;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-public class DuckModule : InteractionsModuleBase
+public class DuckModule(IServiceProvider serviceProvider) : InteractionsModuleBase(serviceProvider)
 {
-    public DuckModule(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     [SlashCommand("duck", "Finds the current state of the duck club.")]
     public async Task GetDuckInfoAsync()
     {

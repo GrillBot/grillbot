@@ -3,23 +3,19 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Services.Math;
 using GrillBot.Common.Services.Math.Models;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Commands;
 
-public class SolveExpression : CommandAction
+public class SolveExpression(
+    IServiceClientExecutor<IMathClient> _client,
+    ITextsManager _texts
+) : CommandAction
 {
-    private IMathClient MathClient { get; }
-    private ITextsManager Texts { get; }
-
-    public SolveExpression(IMathClient mathClient, ITextsManager texts)
-    {
-        MathClient = mathClient;
-        Texts = texts;
-    }
-
     public async Task<Embed> ProcessAsync(string expression)
     {
-        var result = await MathClient.SolveExpressionAsync(new MathJsRequest { Expression = expression });
+        var result = await SolveExpressionAsync(expression);
 
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)
@@ -48,5 +44,22 @@ public class SolveExpression : CommandAction
     }
 
     private string GetText(string id)
-        => Texts[$"MathModule/SolveExpression/{id}", Locale];
+        => _texts[$"MathModule/SolveExpression/{id}", Locale];
+
+    private async Task<MathJsResult> SolveExpressionAsync(string expression)
+    {
+        try
+        {
+            var request = new MathJsRequest { Expression = expression };
+            return await _client.ExecuteRequestAsync((c, cancellationToken) => c.SolveExpressionAsync(request, cancellationToken));
+        }
+        catch (ClientBadRequestException ex) when (!string.IsNullOrEmpty(ex.RawData))
+        {
+            return JsonConvert.DeserializeObject<MathJsResult>(ex.RawData)!;
+        }
+        catch (Exception ex) when (ex is TaskCanceledException or TimeoutException)
+        {
+            return new MathJsResult { IsTimeout = true };
+        }
+    }
 }

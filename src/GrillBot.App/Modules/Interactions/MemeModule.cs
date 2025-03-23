@@ -10,22 +10,17 @@ using GrillBot.Core.Managers.Random;
 namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
-public class MemeModule : InteractionsModuleBase
+public class MemeModule(
+    IRandomManager _random,
+    IConfiguration _configuration,
+    IServiceProvider serviceProvider
+) : InteractionsModuleBase(serviceProvider)
 {
-    private IRandomManager Random { get; }
-    private IConfiguration Configuration { get; }
-
-    public MemeModule(IRandomManager random, IConfiguration configuration, IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        Random = random;
-        Configuration = configuration;
-    }
-
     [SlashCommand("kasparek", "He asks your mom what kind of **** you have.")]
     [CooldownCheck(CooldownType.User, 60 * 60, 1)]
     public Task GetRandomLengthAsync()
     {
-        var value = Random.GetNext("Points", 0, 50);
+        var value = _random.GetNext("Points", 0, 50);
         return SetResponseAsync($"{value}cm");
     }
 
@@ -35,7 +30,7 @@ public class MemeModule : InteractionsModuleBase
         int? @base = null
     )
     {
-        var emote = Configuration.GetValue<string>("Discord:Emotes:FeelsWowMan");
+        var emote = _configuration.GetValue<string>("Discord:Emotes:FeelsWowMan");
         var msg = GetText(nameof(HiAsync), "Template").FormatWith(Context.User.GetDisplayName(), emote);
 
         return SetResponseAsync(@base == null ? msg : string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));

@@ -9,5 +9,5 @@ namespace GrillBot.Common.Services.Math;
 public interface IMathClient : IServiceClient
 {
     [Post("/")]
-    Task<MathJsResult> SolveExpressionAsync(MathJsRequest request);
+    Task<MathJsResult> SolveExpressionAsync(MathJsRequest request, CancellationToken cancellationToken = default);
 }

@@ -5,33 +5,25 @@ using GrillBot.Common.Services.KachnaOnline;
 using GrillBot.Common.Services.KachnaOnline.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
-
+using GrillBot.Core.Services.Common.Executor;
 using DuckStateType = GrillBot.Common.Services.KachnaOnline.Enums.DuckState;
 
 namespace GrillBot.App.Actions.Commands;
 
-public class DuckInfo : CommandAction
+public class DuckInfo(
+    IServiceClientExecutor<IKachnaOnlineClient> _client,
+    ITextsManager _texts,
+    IConfiguration _configuration,
+    LoggingManager _loggingManager
+) : CommandAction
 {
-    private IKachnaOnlineClient Client { get; }
-    private ITextsManager Texts { get; }
-    private IConfiguration Configuration { get; }
-    private LoggingManager LoggingManager { get; }
-
-    private string InfoChannel => Configuration.GetRequiredSection("Services:KachnaOnline:InfoChannel").Get<string>()!;
-
-    public DuckInfo(IKachnaOnlineClient client, ITextsManager texts, IConfiguration configuration, LoggingManager loggingManager)
-    {
-        Client = client;
-        Texts = texts;
-        Configuration = configuration;
-        LoggingManager = loggingManager;
-    }
+    private string InfoChannel => _configuration.GetRequiredSection("Services:KachnaOnline:InfoChannel").Get<string>()!;
 
     public async Task<Embed> ProcessAsync()
     {
         try
         {
-            var currentState = await Client.GetCurrentStateAsync();
+            var currentState = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetCurrentStateAsync(cancellationToken));
             DuckState? nextBar = null, nextTearoom = null, nextAll = null;
 
             // In "non-bar" states, we want to include information on the next planned bar/tearoom opening
@@ -42,18 +34,18 @@ public class DuckInfo : CommandAction
                 if (currentState.FollowingState?.State is DuckStateType.OpenBar)
                     nextBar = currentState.FollowingState;
                 else
-                    nextBar = await Client.GetNextStateAsync(DuckStateType.OpenBar);
+                    nextBar = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetNextStateAsync(DuckStateType.OpenBar, cancellationToken));
 
                 if (currentState.FollowingState?.State is DuckStateType.OpenTearoom)
                     nextTearoom = currentState.FollowingState;
                 else
-                    nextTearoom = await Client.GetNextStateAsync(DuckStateType.OpenTearoom);
+                    nextTearoom = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetNextStateAsync(DuckStateType.OpenTearoom, cancellationToken));
 
                 if (currentState.FollowingState?.State is DuckStateType.OpenAll)
                     nextAll = currentState.FollowingState;
                 // Only determine the next "OpenAll" state if we're not already in one
                 else if (currentState.State != DuckStateType.OpenAll)
-                    nextAll = await Client.GetNextStateAsync(DuckStateType.OpenAll);
+                    nextAll = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetNextStateAsync(DuckStateType.OpenAll, cancellationToken));
 
             }
 
@@ -66,7 +58,7 @@ public class DuckInfo : CommandAction
         }
         catch (HttpRequestException ex)
         {
-            await LoggingManager.ErrorAsync("DuckInfo", "An error occured while executing request on KachnaOnline.", ex);
+            await _loggingManager.ErrorAsync("DuckInfo", "An error occured while executing request on KachnaOnline.", ex);
             throw new GrillBotException(GetText("CannotGetState").FormatWith(InfoChannel));
         }
     }
@@ -188,5 +180,5 @@ public class DuckInfo : CommandAction
     }
 
     private string GetText(string id)
-        => Texts[$"DuckModule/GetDuckInfo/{id}", Locale];
+        => _texts[$"DuckModule/GetDuckInfo/{id}", Locale];
 }

@@ -104,7 +104,6 @@ public class InviteUserJoinedHandler : IUserJoinedEvent
             LogMessage = new LogMessageRequest
             {
                 Message = $"User {user.GetFullName()} ({user.Id}) used unknown invite.",
-                Severity = LogSeverity.Warning,
                 Source = nameof(InviteUserJoinedHandler),
                 SourceAppName = "GrillBot"
             }

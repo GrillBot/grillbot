@@ -9,17 +9,12 @@ using GrillBot.Data.Models.API.AuditLog;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 
-public class CreateLogItem : ApiAction
+public class CreateLogItem(
+    ApiRequestContext apiContext,
+    ITextsManager _texts,
+    IRabbitPublisher _rabbitPublisher
+) : ApiAction(apiContext)
 {
-    private ITextsManager Texts { get; }
-    private IRabbitPublisher RabbitPublisher { get; }
-
-    public CreateLogItem(ApiRequestContext apiContext, ITextsManager texts, IRabbitPublisher rabbitPublisher) : base(apiContext)
-    {
-        Texts = texts;
-        RabbitPublisher = rabbitPublisher;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
         var request = (ClientLogItemRequest)Parameters[0]!;
@@ -38,22 +33,13 @@ public class CreateLogItem : ApiAction
         };
 
         if (request.IsInfo)
-        {
             logRequest.Type = LogType.Info;
-            logRequest.LogMessage.Severity = LogSeverity.Info;
-        }
         else if (request.IsError)
-        {
             logRequest.Type = LogType.Error;
-            logRequest.LogMessage.Severity = LogSeverity.Error;
-        }
         else if (request.IsWarning)
-        {
             logRequest.Type = LogType.Warning;
-            logRequest.LogMessage.Severity = LogSeverity.Warning;
-        }
 
-        await RabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
+        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
         return ApiResult.Ok();
     }
 
@@ -64,9 +50,9 @@ public class CreateLogItem : ApiAction
 
         string? errorMessage = null;
         if (!Array.Exists(flags, o => o))
-            errorMessage = Texts["AuditLog/CreateLogItem/Required", ApiContext.Language];
+            errorMessage = _texts["AuditLog/CreateLogItem/Required", ApiContext.Language];
         else if (flags.Count(o => o) > 1)
-            errorMessage = Texts["AuditLog/CreateLogItem/MultipleTypes", ApiContext.Language];
+            errorMessage = _texts["AuditLog/CreateLogItem/MultipleTypes", ApiContext.Language];
 
         if (!string.IsNullOrEmpty(errorMessage))
             throw new ValidationException(errorMessage).ToBadRequestValidation(request, names);

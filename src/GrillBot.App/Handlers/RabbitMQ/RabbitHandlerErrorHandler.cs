@@ -58,7 +58,6 @@ public class RabbitHandlerErrorHandler : RabbitMessageHandlerBase<RabbitErrorMes
             LogMessage = new LogMessageRequest
             {
                 Message = BuildErrorMessage(payload),
-                Severity = LogSeverity.Error,
                 Source = $"RabbitHandler/{payload.TopicName}/{payload.QueueName}/{payload.HandlerType}",
                 SourceAppName = payload.AssemblyName
             }

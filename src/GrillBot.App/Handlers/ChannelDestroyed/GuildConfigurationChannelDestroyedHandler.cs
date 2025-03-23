@@ -41,7 +41,6 @@ public class GuildConfigurationChannelDestroyedHandler(
             LogMessage = new LogMessageRequest
             {
                 Message = string.Join(Environment.NewLine, log),
-                Severity = LogSeverity.Info,
                 Source = $"Events.ChannelDestroyed.{nameof(GuildConfigurationChannelDestroyedHandler)}",
                 SourceAppName = "GrillBot"
             }

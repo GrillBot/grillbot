@@ -133,7 +133,12 @@ public class SendMessageEventHandler : RabbitMessageHandlerBase<DiscordMessagePa
     {
         var logRequest = new LogRequest(LogType.Warning, DateTime.UtcNow, payload.GuildId, _discordClient.CurrentUser.Id.ToString(), payload.ChannelId)
         {
-            LogMessage = new LogMessageRequest($"{message}\n{System.Text.Json.JsonSerializer.Serialize(payload)}", LogSeverity.Warning, "GrillBot", $"RabbitMQ/{QueueName}/{GetType().Name}")
+            LogMessage = new LogMessageRequest
+            {
+                Message = $"{message}\n{System.Text.Json.JsonSerializer.Serialize(payload)}",
+                SourceAppName = "GrillBot",
+                Source = $"RabbitMQ/{QueueName}/{GetType().Name}"
+            }
         };
 
         _logger.LogWarning("{message}", message);

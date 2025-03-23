@@ -3,6 +3,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Graphics;
 using GrillBot.Core.Services.ImageProcessing;
@@ -52,18 +53,17 @@ public class GetServicesList : ApiAction
         return ApiResult.Ok(services);
     }
 
-    private async Task AddServiceStatusAsync<TServiceClient>(ICollection<DashboardService> services, string id) where TServiceClient : IServiceClient
+    private async Task AddServiceStatusAsync<TServiceClient>(List<DashboardService> services, string id) where TServiceClient : IServiceClient
     {
         try
         {
-            var client = ServiceProvider.GetRequiredService<TServiceClient>();
-            await client.IsHealthyAsync();
+            var client = ServiceProvider.GetRequiredService<IServiceClientExecutor<TServiceClient>>();
+            await client.ExecuteRequestAsync((c, cancellationToken) => c.IsHealthyAsync(cancellationToken));
 
-            services.Add(new DashboardService(id, id, true, 0));
+            services.Add(new DashboardService(id, true, 0));
         }
         catch (Exception ex)
         {
-            services.Add(new DashboardService(id, id, false, 0));
             Errors.Add(ex);
         }
     }

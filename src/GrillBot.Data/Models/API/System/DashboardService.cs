@@ -11,10 +11,10 @@ public class DashboardService
     {
     }
 
-    public DashboardService(string id, string name, bool isAvailable, long uptime)
+    public DashboardService(string id, bool isAvailable, long uptime)
     {
         Id = id;
-        Name = name;
+        Name = id;
         IsAvailable = isAvailable;
         Uptime = uptime;
     }

@@ -1,26 +1,26 @@
-﻿using GrillBot.Common.Managers.Logging;
+﻿using GrillBot.Common.Extensions.Services;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Data.Models.API.System;
+using Microsoft.Extensions.DependencyInjection;
+using Refit;
 using System.Reflection;
 
 namespace GrillBot.App.Actions.Api.V3.Dashboard;
 
-public class GetServiceDetailAction : ApiAction
+public class GetServiceDetailAction(
+    ApiRequestContext apiContext,
+    IServiceProvider _serviceProvider,
+    LoggingManager _logging,
+    IConfiguration _configuration
+) : ApiAction(apiContext)
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly LoggingManager _logging;
-
-    public GetServiceDetailAction(ApiRequestContext apiContext, IServiceProvider serviceProvider, LoggingManager logging) : base(apiContext)
-    {
-        _serviceProvider = serviceProvider;
-        _logging = logging;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
         var serviceId = GetParameter<string>(0);
@@ -30,7 +30,7 @@ public class GetServiceDetailAction : ApiAction
         var detail = new ServiceDetail
         {
             Name = serviceId,
-            Url = "TODO" // TODO
+            Url = client.GetServiceUrl() ?? "http://localhost"
         };
 
         await SetDiagnosticsDataAsync(detail, client);
@@ -45,7 +45,15 @@ public class GetServiceDetailAction : ApiAction
             .Where(o => o.IsInterface && o.GetInterface(nameof(IServiceClient)) is not null)
             .Select(_serviceProvider.GetService)
             .OfType<IServiceClient>()
-            .FirstOrDefault(o => true); // TODO
+            .FirstOrDefault(client =>
+            {
+                return client.GetType().GetInterfaces()
+                    .Where(@interface => @interface.Name != nameof(IServiceClient))
+                    .Select(@interface => typeof(SettingsFor<>).MakeGenericType(@interface))
+                    .Select(@interface => (_serviceProvider.GetService(@interface) as ISettingsFor)?.Settings)
+                    .Select(settings => settings?.HttpRequestMessageOptions?.TryGetValue("ServiceName", out var name) == true ? name?.ToString() : null)
+                    .Any(name => !string.IsNullOrEmpty(name) && name == serviceId);
+            });
     }
 
     private async Task SetDiagnosticsDataAsync(ServiceDetail detail, IServiceClient client)
@@ -70,14 +78,20 @@ public class GetServiceDetailAction : ApiAction
         }
     }
 
-    private static async Task SetAdditionalDataAsync(ServiceDetail detail, IServiceClient client)
+    private async Task SetAdditionalDataAsync(ServiceDetail detail, IServiceClient client)
     {
         object? additionalInfo = null;
 
         if (client is IAuditLogServiceClient auditLog)
-            additionalInfo = await auditLog.GetStatusInfoAsync();
-        else if (client is IPointsServiceClient points)
-            additionalInfo = await points.GetStatusInfoAsync();
+        {
+            var executor = new ServiceClientExecutor<IAuditLogServiceClient>(_configuration, auditLog);
+            additionalInfo = await executor.ExecuteRequestAsync((c, cancellationToken) => c.GetStatusInfoAsync(cancellationToken));
+        }
+        else if (client is IPointsServiceClient pointsClient)
+        {
+            var executor = new ServiceClientExecutor<IPointsServiceClient>(_configuration, pointsClient);
+            additionalInfo = await executor.ExecuteRequestAsync((c, cancellationToken) => c.GetStatusInfoAsync(cancellationToken));
+        }
 
         if (additionalInfo is null)
             return;

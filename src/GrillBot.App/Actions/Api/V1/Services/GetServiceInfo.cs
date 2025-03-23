@@ -1,4 +1,5 @@
-﻿using GrillBot.Common.Managers.Logging;
+﻿using GrillBot.Common.Extensions.Services;
+using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
@@ -16,17 +17,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Api.V1.Services;
 
-public class GetServiceInfo : ApiAction
+public class GetServiceInfo(
+    ApiRequestContext apiContext,
+    LoggingManager _loggingManager,
+    IServiceProvider _serviceProvider
+) : ApiAction(apiContext)
 {
-    private LoggingManager LoggingManager { get; }
-    private IServiceProvider ServiceProvider { get; }
-
-    public GetServiceInfo(ApiRequestContext apiContext, LoggingManager loggingManager, IServiceProvider serviceProvider) : base(apiContext)
-    {
-        LoggingManager = loggingManager;
-        ServiceProvider = serviceProvider;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
         var id = (string)Parameters[0]!;
@@ -34,7 +30,7 @@ public class GetServiceInfo : ApiAction
 
         var info = new ServiceInfo
         {
-            Url = "TODO",
+            Url = client.GetServiceUrl() ?? "about:blank",
             Name = id
         };
 
@@ -46,15 +42,15 @@ public class GetServiceInfo : ApiAction
     {
         return id switch
         {
-            "rubbergod" => ServiceProvider.GetRequiredService<IRubbergodServiceClient>(),
-            "graphics" => ServiceProvider.GetRequiredService<IGraphicsClient>(),
-            "points" => ServiceProvider.GetRequiredService<IPointsServiceClient>(),
-            "image-processing" => ServiceProvider.GetRequiredService<IImageProcessingClient>(),
-            "audit-log" => ServiceProvider.GetRequiredService<IAuditLogServiceClient>(),
-            "user-measures" => ServiceProvider.GetRequiredService<IUserMeasuresServiceClient>(),
-            "emote" => ServiceProvider.GetRequiredService<IEmoteServiceClient>(),
-            "remind" => ServiceProvider.GetRequiredService<IRemindServiceClient>(),
-            "searching" => ServiceProvider.GetRequiredService<ISearchingServiceClient>(),
+            "rubbergod" => _serviceProvider.GetRequiredService<IRubbergodServiceClient>(),
+            "graphics" => _serviceProvider.GetRequiredService<IGraphicsClient>(),
+            "points" => _serviceProvider.GetRequiredService<IPointsServiceClient>(),
+            "image-processing" => _serviceProvider.GetRequiredService<IImageProcessingClient>(),
+            "audit-log" => _serviceProvider.GetRequiredService<IAuditLogServiceClient>(),
+            "user-measures" => _serviceProvider.GetRequiredService<IUserMeasuresServiceClient>(),
+            "emote" => _serviceProvider.GetRequiredService<IEmoteServiceClient>(),
+            "remind" => _serviceProvider.GetRequiredService<IRemindServiceClient>(),
+            "searching" => _serviceProvider.GetRequiredService<ISearchingServiceClient>(),
             _ => throw new NotSupportedException($"Unsupported service {id}")
         };
     }
@@ -67,7 +63,7 @@ public class GetServiceInfo : ApiAction
         }
         catch (Exception ex)
         {
-            await LoggingManager.ErrorAsync("API", "An error occured while loading diagnostics info.", ex);
+            await _loggingManager.ErrorAsync("API", "An error occured while loading diagnostics info.", ex);
             info.ApiErrorMessage = ex.Message;
         }
     }

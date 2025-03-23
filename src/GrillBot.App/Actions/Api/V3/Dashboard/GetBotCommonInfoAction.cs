@@ -9,22 +9,14 @@ using System.Diagnostics;
 
 namespace GrillBot.App.Actions.Api.V3.Dashboard;
 
-public class GetBotCommonInfoAction : ApiAction
+public class GetBotCommonInfoAction(
+    ApiRequestContext apiContext,
+    IDiscordClient _discordClient,
+    InitManager _initManager,
+    IWebHostEnvironment _webHost,
+    IConfiguration _configuration
+) : ApiAction(apiContext)
 {
-    private readonly IDiscordClient _discordClient;
-    private readonly InitManager _initManager;
-    private readonly IWebHostEnvironment _webHost;
-    private readonly IConfiguration _configuration;
-
-    public GetBotCommonInfoAction(ApiRequestContext apiContext, IDiscordClient discordClient, InitManager initManager, IWebHostEnvironment webHost,
-        IConfiguration configuration) : base(apiContext)
-    {
-        _discordClient = discordClient;
-        _initManager = initManager;
-        _webHost = webHost;
-        _configuration = configuration;
-    }
-
     public override Task<ApiResult> ProcessAsync()
     {
         var currentProcess = Process.GetCurrentProcess();
@@ -48,13 +40,13 @@ public class GetBotCommonInfoAction : ApiAction
 
     private List<string> GetServicesList()
     {
-        return _configuration
+        return [.. _configuration
             .GetRequiredSection("Services")
             .AsEnumerable()
             .Where(o => o.Key.Contains(':') && o.Value is null)
             .Select(o => o.Key.Replace("Services:", "").Trim())
             .Where(o => !_configuration.GetValue<bool>($"Services:{o}:IsThirdParty"))
-            .OrderBy(o => o)
-            .ToList();
+            .Order()
+        ];
     }
 }

@@ -1,21 +1,16 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.RemindService;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;
 
-public class RemindPostponeHandler : ComponentInteractionHandler
+public class RemindPostponeHandler(
+    int _hours,
+    IServiceProvider _serviceProvider
+) : ComponentInteractionHandler
 {
-    private int Hours { get; }
-    private IServiceProvider ServiceProvider { get; }
-
-    public RemindPostponeHandler(int hours, IServiceProvider serviceProvider)
-    {
-        Hours = hours;
-        ServiceProvider = serviceProvider;
-    }
-
     public override async Task ProcessAsync(IInteractionContext context)
     {
         if (!context.Interaction.IsDMInteraction) return;
@@ -25,11 +20,10 @@ public class RemindPostponeHandler : ComponentInteractionHandler
             return;
         }
 
-        var remindServiceClient = ServiceProvider.GetRequiredService<IRemindServiceClient>();
+        var remindServiceClient = _serviceProvider.GetRequiredService<IServiceClientExecutor<IRemindServiceClient>>();
         try
         {
-            await remindServiceClient.PostponeRemindAsync(message.Id.ToString(), Hours);
-
+            await remindServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.PostponeRemindAsync(message.Id.ToString(), _hours, cancellationToken));
             await context.Interaction.DeferAsync();
             await message.DeleteAsync();
         }

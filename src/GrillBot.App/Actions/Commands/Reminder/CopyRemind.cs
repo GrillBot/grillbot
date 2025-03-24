@@ -1,22 +1,17 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RemindService.Models.Request;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
-public class CopyRemind : CommandAction
+public class CopyRemind(
+    ITextsManager _texts,
+    IServiceClientExecutor<IRemindServiceClient> _remindService
+) : CommandAction
 {
-    private readonly IRemindServiceClient _remindService;
-    private readonly ITextsManager _texts;
-
-    public CopyRemind(ITextsManager texts, IRemindServiceClient remindService)
-    {
-        _remindService = remindService;
-        _texts = texts;
-    }
-
     public async Task ProcessAsync(long originalRemindId)
     {
         var request = new CopyReminderRequest
@@ -28,7 +23,7 @@ public class CopyRemind : CommandAction
 
         try
         {
-            await _remindService.CopyReminderAsync(request);
+            await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.CopyReminderAsync(request, cancellationToken));
         }
         catch (ClientBadRequestException ex)
         {

@@ -8,23 +8,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Controllers.ServiceControllers;
 
-public class RemindController : ServiceControllerBase<IRemindServiceClient>
+public class RemindController(IServiceProvider serviceProvider) : ServiceControllerBase<IRemindServiceClient>(serviceProvider)
 {
-    public RemindController(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     [HttpPost("list")]
     [JwtAuthorize("Remind(Admin)", "Remind(OnlyMyReminders)")]
     [ProducesResponseType(typeof(PaginatedResponse<RemindMessageItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetReminderListAsync(ReminderListRequest request)
-        => ExecuteAsync(async client => await client.GetReminderListAsync(request), request);
+        => ExecuteAsync(async (client, cancellationToken) => await client.GetReminderListAsync(request, cancellationToken), request);
 
     [HttpPut("cancel")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [JwtAuthorize("Remind(Admin)", "Remind(CancelMyReminders)")]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> CancelRemindAsync(CancelReminderRequest request)
-        => ExecuteAsync(async client => await client.CancelReminderAsync(request), request);
+        => ExecuteAsync(async (client, cancellationToken) => await client.CancelReminderAsync(request, cancellationToken), request);
 }

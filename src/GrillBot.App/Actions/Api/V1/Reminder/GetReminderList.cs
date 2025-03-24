@@ -4,6 +4,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RemindService.Models.Request;
 using GrillBot.Core.Services.RemindService.Models.Response;
@@ -11,17 +12,12 @@ using GrillBot.Data.Models.API.Reminder;
 
 namespace GrillBot.App.Actions.Api.V1.Reminder;
 
-public class GetReminderList : ApiAction
+public class GetReminderList(
+    ApiRequestContext apiContext,
+    IServiceClientExecutor<IRemindServiceClient> _remindService,
+    DataResolveManager _dataResolve
+) : ApiAction(apiContext)
 {
-    private readonly IRemindServiceClient _remindService;
-    private readonly DataResolveManager _dataResolve;
-
-    public GetReminderList(ApiRequestContext apiContext, IRemindServiceClient remindService, DataResolveManager dataResolve) : base(apiContext)
-    {
-        _remindService = remindService;
-        _dataResolve = dataResolve;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (GetReminderListParams)Parameters[0]!;
@@ -52,7 +48,7 @@ public class GetReminderList : ApiAction
         if (request.Sort.OrderBy == "ToUser")
             request.Sort.OrderBy = "Id";
 
-        var data = await _remindService.GetReminderListAsync(request);
+        var data = await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.GetReminderListAsync(request, cancellationToken));
         return await PaginatedResponse<RemindMessage>.CopyAndMapAsync(data, MapItemFromServiceAsync);
     }
 

@@ -8,23 +8,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Controllers.ServiceControllers;
 
-public class SearchingController : ServiceControllerBase<ISearchingServiceClient>
+public class SearchingController(IServiceProvider serviceProvider) : ServiceControllerBase<ISearchingServiceClient>(serviceProvider)
 {
-    public SearchingController(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     [HttpPost("list")]
     [JwtAuthorize("Searching(Admin)", "Searching(OnlyMySearches)")]
     [ProducesResponseType(typeof(PaginatedResponse<SearchListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetSearchingListAsync(SearchingListRequest request)
-        => ExecuteAsync(async client => await client.GetSearchingListAsync(request));
+        => ExecuteAsync(async (client, cancellationToken) => await client.GetSearchingListAsync(request, cancellationToken));
 
     [HttpDelete("{id}")]
     [JwtAuthorize("Searching(Admin)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> RemoveSearchingAsync(long id)
-        => ExecuteAsync(async client => await client.RemoveSearchingAsync(id));
+        => ExecuteAsync(async (client, cancellationToken) => await client.RemoveSearchingAsync(id, cancellationToken));
 }

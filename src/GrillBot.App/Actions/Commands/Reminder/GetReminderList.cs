@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Infrastructure.Embeds;
-using GrillBot.App.Managers.DataResolve;
 using GrillBot.App.Modules.Implementations.Reminder;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
@@ -7,33 +6,26 @@ using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RemindService.Models.Request;
 using GrillBot.Core.Services.RemindService.Models.Response;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
-public class GetReminderList : CommandAction
+public class GetReminderList(
+    ITextsManager _texts,
+    IServiceClientExecutor<IRemindServiceClient> _remindService
+) : CommandAction
 {
-    private readonly IRemindServiceClient _remindService;
-    private readonly DataResolveManager _dataResolve;
-    private readonly ITextsManager _texts;
-
     private string ForUser
         => Context.User.GetDisplayName();
-
-    public GetReminderList(ITextsManager texts, IRemindServiceClient remindClient, DataResolveManager dataResolve)
-    {
-        _texts = texts;
-        _remindService = remindClient;
-        _dataResolve = dataResolve;
-    }
 
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page)
     {
         var embed = CreateEmptyEmbed(page);
         var request = CreateRequest();
-        var list = await _remindService.GetReminderListAsync(request);
+        var list = await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.GetReminderListAsync(request, cancellationToken));
         var fields = await CreateFieldsAsync(list);
         SetPage(embed, fields, page, out var pagesCount);
 
@@ -44,7 +36,7 @@ public class GetReminderList : CommandAction
     public async Task<int> ComputePagesCountAsync()
     {
         var request = CreateRequest();
-        var list = await _remindService.GetReminderListAsync(request);
+        var list = await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.GetReminderListAsync(request, cancellationToken));
         var fields = await CreateFieldsAsync(list);
         var embed = CreateEmptyEmbed(0);
 

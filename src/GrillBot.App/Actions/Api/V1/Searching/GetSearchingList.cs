@@ -4,25 +4,20 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.SearchingService;
 using GrillBot.Core.Services.SearchingService.Models.Request;
 using GrillBot.Data.Models.API.Searching;
 
 namespace GrillBot.App.Actions.Api.V1.Searching;
 
-public class GetSearchingList : ApiAction
+public class GetSearchingList(
+    ApiRequestContext apiContext,
+    IDiscordClient _discordClient,
+    IServiceClientExecutor<ISearchingServiceClient> _searchingService,
+    DataResolveManager _dataResolve
+) : ApiAction(apiContext)
 {
-    private readonly ISearchingServiceClient _searchingService;
-    private readonly DataResolveManager _dataResolve;
-    private readonly IDiscordClient _discordClient;
-
-    public GetSearchingList(ApiRequestContext apiContext, IDiscordClient discordClient, ISearchingServiceClient searchingService, DataResolveManager dataResolve) : base(apiContext)
-    {
-        _discordClient = discordClient;
-        _searchingService = searchingService;
-        _dataResolve = dataResolve;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (GetSearchingListParams)Parameters[0]!;
@@ -52,7 +47,7 @@ public class GetSearchingList : ApiAction
             UserId = parameters.UserId
         };
 
-        var response = await _searchingService.GetSearchingListAsync(request);
+        var response = await _searchingService.ExecuteRequestAsync((c, cancellationToken) => c.GetSearchingListAsync(request, cancellationToken));
         if (mutualGuilds is not null)
             response.Data = response.Data.FindAll(o => mutualGuilds.Contains(o.GuildId));
 

@@ -2,27 +2,21 @@
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RemindService.Models.Response;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
-public class GetSuggestions : CommandAction
+public class GetSuggestions(
+    ITextsManager _texts,
+    IServiceClientExecutor<IRemindServiceClient> _remindServiceClient,
+    DataResolveManager _dataResolve
+) : CommandAction
 {
-    private readonly IRemindServiceClient _remindServiceClient;
-    private readonly DataResolveManager _dataResolve;
-    private readonly ITextsManager _texts;
-
-    public GetSuggestions(ITextsManager texts, IRemindServiceClient remindServiceClient, DataResolveManager dataResolve)
-    {
-        _remindServiceClient = remindServiceClient;
-        _dataResolve = dataResolve;
-        _texts = texts;
-    }
-
     public async Task<List<AutocompleteResult>> ProcessAsync()
     {
-        var suggestions = await _remindServiceClient.GetSuggestionsAsync(Context.User.Id.ToString());
+        var suggestions = await _remindServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetSuggestionsAsync(Context.User.Id.ToString(), cancellationToken));
         var result = new List<AutocompleteResult>();
 
         foreach (var item in suggestions.Take(25))

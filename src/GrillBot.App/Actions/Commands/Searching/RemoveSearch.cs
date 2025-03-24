@@ -1,27 +1,22 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.SearchingService;
 
 namespace GrillBot.App.Actions.Commands.Searching;
 
-public class RemoveSearch : CommandAction
+public class RemoveSearch(
+    ITextsManager _texts,
+    IServiceClientExecutor<ISearchingServiceClient> _searchingService
+) : CommandAction
 {
-    private readonly ISearchingServiceClient _searchingService;
-    private readonly ITextsManager _texts;
-
     public string? ErrorMessage { get; private set; }
-
-    public RemoveSearch(ITextsManager texts, ISearchingServiceClient searchingService)
-    {
-        _searchingService = searchingService;
-        _texts = texts;
-    }
 
     public async Task ProcessAsync(long id)
     {
         try
         {
-            await _searchingService.RemoveSearchingAsync(id);
+            await _searchingService.ExecuteRequestAsync((c, cancellationToken) => c.RemoveSearchingAsync(id, cancellationToken));
         }
         catch (ClientBadRequestException ex) when (ex.ValidationErrors.Count > 0)
         {

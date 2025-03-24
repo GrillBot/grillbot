@@ -1,25 +1,20 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RemindService.Models.Request;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
-public class FinishRemind : CommandAction
+public class FinishRemind(
+    IServiceClientExecutor<IRemindServiceClient> _remindService,
+    ITextsManager _texts
+) : CommandAction
 {
-    private readonly IRemindServiceClient _remindService;
-    private readonly ITextsManager _texts;
-
     public bool IsGone { get; private set; }
     public bool IsAuthorized { get; private set; }
     public string? ErrorMessage { get; private set; }
-
-    public FinishRemind(IRemindServiceClient remindService, ITextsManager texts)
-    {
-        _remindService = remindService;
-        _texts = texts;
-    }
 
     public async Task ProcessAsync(long id, bool notify, bool isService)
     {
@@ -33,7 +28,7 @@ public class FinishRemind : CommandAction
                 RemindId = id
             };
 
-            await _remindService.CancelReminderAsync(request);
+            await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.CancelReminderAsync(request, cancellationToken));
 
             IsGone = false;
             IsAuthorized = true;

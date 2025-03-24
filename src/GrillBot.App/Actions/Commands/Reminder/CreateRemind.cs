@@ -3,6 +3,7 @@ using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.RemindService.Models.Request;
 
@@ -13,11 +14,11 @@ public class CreateRemind : CommandAction
     private IConfiguration Configuration { get; }
     private FormatHelper FormatHelper { get; }
 
-    private readonly IRemindServiceClient _remindServiceClient;
+    private readonly IServiceClientExecutor<IRemindServiceClient> _remindServiceClient;
     private readonly UserManager _userManager;
     private readonly ITextsManager _texts;
 
-    public CreateRemind(ITextsManager texts, IConfiguration configuration, FormatHelper formatHelper, IRemindServiceClient remindServiceClient, UserManager userManager)
+    public CreateRemind(ITextsManager texts, IConfiguration configuration, FormatHelper formatHelper, IServiceClientExecutor<IRemindServiceClient> remindServiceClient, UserManager userManager)
     {
         Configuration = configuration;
         FormatHelper = formatHelper;
@@ -44,7 +45,7 @@ public class CreateRemind : CommandAction
 
         try
         {
-            var result = await _remindServiceClient.CreateReminderAsync(request);
+            var result = await _remindServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.CreateReminderAsync(request, cancellationToken));
             return result.Id;
         }
         catch (ClientBadRequestException ex)

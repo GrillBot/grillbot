@@ -1,5 +1,6 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.IO;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.ImageProcessing.Models;
 using GrillBot.Core.Services.PointsService;
@@ -11,17 +12,17 @@ namespace GrillBot.App.Actions.Commands.Points.Chart;
 public class PointsChart : CommandAction
 {
     private IServiceProvider ServiceProvider { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
-    private IImageProcessingClient ImageProcessingClient { get; }
+    private readonly IServiceClientExecutor<IImageProcessingClient> _imageProcessingClient;
+    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
 
     private Dictionary<ulong, List<PointsChartItem>>? UsersData { get; set; }
     private List<PointsChartItem>? GuildData { get; set; }
 
-    public PointsChart(IServiceProvider serviceProvider, IPointsServiceClient pointsServiceClient, IImageProcessingClient imageProcessingClient)
+    public PointsChart(IServiceProvider serviceProvider, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, IServiceClientExecutor<IImageProcessingClient> imageProcessingClient)
     {
         ServiceProvider = serviceProvider;
-        PointsServiceClient = pointsServiceClient;
-        ImageProcessingClient = imageProcessingClient;
+        _pointsServiceClient = pointsServiceClient;
+        _imageProcessingClient = imageProcessingClient;
     }
 
     public async Task<TemporaryFile> ProcessAsync(ChartType type, IEnumerable<IUser>? users, ChartsFilter filter)
@@ -29,7 +30,7 @@ public class PointsChart : CommandAction
         await PrepareDataAsync(type, users, filter);
 
         var request = await CreateRequestAsync(filter, type);
-        var image = await ImageProcessingClient.CreateChartImageAsync(request);
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreateChartImageAsync(request, cancellationToken));
 
         var resultFile = new TemporaryFile("png");
         await resultFile.WriteStreamAsync(image);
@@ -44,7 +45,7 @@ public class PointsChart : CommandAction
                 await PrepareGuildDataAsync(filter);
                 break;
             case ChartType.UserChart:
-                UsersData = new Dictionary<ulong, List<PointsChartItem>>();
+                UsersData = [];
                 if (users != null)
                 {
                     foreach (var user in users.Where(o => o.IsUser()).DistinctBy(o => o.Id))
@@ -62,14 +63,14 @@ public class PointsChart : CommandAction
         var request = CreateParameters(filter);
         request.UserId = user.Id.ToString();
 
-        var data = await PointsServiceClient.GetChartDataAsync(request);
+        var data = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetChartDataAsync(request, cancellationToken));
         UsersData!.Add(user.Id, data);
     }
 
     private async Task PrepareGuildDataAsync(ChartsFilter filter)
     {
         var request = CreateParameters(filter);
-        GuildData = await PointsServiceClient.GetChartDataAsync(request);
+        GuildData = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetChartDataAsync(request, cancellationToken));
     }
 
     private AdminListRequest CreateParameters(ChartsFilter filter)

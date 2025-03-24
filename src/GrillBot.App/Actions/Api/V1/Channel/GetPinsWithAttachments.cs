@@ -7,6 +7,7 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.IO;
 using GrillBot.Core.Infrastructure.Actions;
 using Microsoft.AspNetCore.Mvc;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 
@@ -14,15 +15,16 @@ public class GetPinsWithAttachments : ApiAction
 {
     private ChannelHelper ChannelHelper { get; }
     private ITextsManager Texts { get; }
-    private IRubbergodServiceClient RubbergodService { get; }
     private DownloadHelper DownloadHelper { get; }
 
-    public GetPinsWithAttachments(ApiRequestContext apiContext, ChannelHelper channelHelper, ITextsManager texts, IRubbergodServiceClient rubbergodService, DownloadHelper downloadHelper) :
-        base(apiContext)
+    private readonly IServiceClientExecutor<IRubbergodServiceClient> _rubbergodServiceClient;
+
+    public GetPinsWithAttachments(ApiRequestContext apiContext, ChannelHelper channelHelper, ITextsManager texts,
+        IServiceClientExecutor<IRubbergodServiceClient> rubbergodService, DownloadHelper downloadHelper) : base(apiContext)
     {
         ChannelHelper = channelHelper;
         Texts = texts;
-        RubbergodService = rubbergodService;
+        _rubbergodServiceClient = rubbergodService;
         DownloadHelper = downloadHelper;
     }
 
@@ -33,7 +35,7 @@ public class GetPinsWithAttachments : ApiAction
         var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId)
             ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
-        var markdownContent = await RubbergodService.GetPinsAsync(guild.Id, channelId, true);
+        var markdownContent = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetPinsAsync(guild.Id, channelId, true, cancellationToken));
 
         TemporaryFile? archiveFile = null;
 
@@ -57,7 +59,8 @@ public class GetPinsWithAttachments : ApiAction
 
     private async Task AppendAttachmentsAsync(IGuild guild, ulong channelId, ZipArchive archive)
     {
-        var rawData = Encoding.UTF8.GetString(await RubbergodService.GetPinsAsync(guild.Id, channelId, false));
+        var bytes = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetPinsAsync(guild.Id, channelId, false, cancellationToken));
+        var rawData = Encoding.UTF8.GetString(bytes);
         var json = JObject.Parse(rawData);
 
         foreach (var pin in (JArray)json["pins"]!)

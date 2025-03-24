@@ -4,6 +4,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog.Models.Response.Info.Dashboard;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.Dashboard;
 
@@ -12,20 +13,21 @@ namespace GrillBot.App.Actions.Api.V1.Dashboard;
 public class GetUserMeasuresDashboard : ApiAction
 {
     private ITextsManager Texts { get; }
-    private IUserMeasuresServiceClient UserMeasuresService { get; }
 
     private readonly DataResolveManager _dataResolveManager;
+    private readonly IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService;
 
-    public GetUserMeasuresDashboard(ApiRequestContext apiContext, ITextsManager texts, IUserMeasuresServiceClient userMeasuresService, DataResolveManager dataResolveManager) : base(apiContext)
+    public GetUserMeasuresDashboard(ApiRequestContext apiContext, ITextsManager texts, IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService,
+        DataResolveManager dataResolveManager) : base(apiContext)
     {
         Texts = texts;
-        UserMeasuresService = userMeasuresService;
+        _userMeasuresService = userMeasuresService;
         _dataResolveManager = dataResolveManager;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        var data = await UserMeasuresService.GetDashboardDataAsync();
+        var data = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetDashboardDataAsync(cancellationToken));
         var result = await MapAsync(data).ToListAsync();
 
         return ApiResult.Ok(result);

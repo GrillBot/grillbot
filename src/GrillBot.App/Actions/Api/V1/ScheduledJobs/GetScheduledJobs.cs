@@ -3,6 +3,7 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.AuditLog.Models.Response.Info;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Jobs;
 using Quartz;
 using Quartz.Impl.Matchers;
@@ -13,18 +14,19 @@ public class GetScheduledJobs : ApiAction
 {
     private ISchedulerFactory SchedulerFactory { get; }
     private readonly DataCacheManager _dataCacheManager;
-    private IAuditLogServiceClient AuditLogServiceClient { get; }
+    private readonly IServiceClientExecutor<IAuditLogServiceClient> _auditLogServiceClient;
 
-    public GetScheduledJobs(ApiRequestContext apiContext, ISchedulerFactory schedulerFactory, DataCacheManager dataCacheManager, IAuditLogServiceClient auditLogServiceClient) : base(apiContext)
+    public GetScheduledJobs(ApiRequestContext apiContext, ISchedulerFactory schedulerFactory, DataCacheManager dataCacheManager,
+        IServiceClientExecutor<IAuditLogServiceClient> auditLogServiceClient) : base(apiContext)
     {
         SchedulerFactory = schedulerFactory;
         _dataCacheManager = dataCacheManager;
-        AuditLogServiceClient = auditLogServiceClient;
+        _auditLogServiceClient = auditLogServiceClient;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        var jobInfos = await AuditLogServiceClient.GetJobsInfoAsync();
+        var jobInfos = await _auditLogServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetJobsInfoAsync(cancellationToken));
         var scheduler = await SchedulerFactory.GetScheduler();
         var result = new List<ScheduledJob>();
         var jobKeys = await scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup());

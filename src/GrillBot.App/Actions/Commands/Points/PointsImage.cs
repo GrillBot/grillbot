@@ -6,6 +6,7 @@ using GrillBot.Core.Services.ImageProcessing.Models;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.IO;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Commands.Points;
 
@@ -14,17 +15,17 @@ public sealed class PointsImage : CommandAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private ProfilePictureManager ProfilePictureManager { get; }
     private ITextsManager Texts { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
-    private IImageProcessingClient ImageProcessingClient { get; }
+    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
+    private readonly IServiceClientExecutor<IImageProcessingClient> _imageProcessingClient;
 
-    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager, ITextsManager texts, IPointsServiceClient pointsServiceClient,
-        IImageProcessingClient imageProcessingClient)
+    public PointsImage(GrillBotDatabaseBuilder databaseBuilder, ProfilePictureManager profilePictureManager, ITextsManager texts, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient,
+         IServiceClientExecutor<IImageProcessingClient> imageProcessingClient)
     {
         ProfilePictureManager = profilePictureManager;
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
-        PointsServiceClient = pointsServiceClient;
-        ImageProcessingClient = imageProcessingClient;
+        _pointsServiceClient = pointsServiceClient;
+        _imageProcessingClient = imageProcessingClient;
     }
 
     public async Task<TemporaryFile> ProcessAsync(IGuild guild, IUser user)
@@ -41,7 +42,7 @@ public sealed class PointsImage : CommandAction
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
-        var status = await PointsServiceClient.GetImagePointsStatusAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString());
+        var status = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetImagePointsStatusAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString(), cancellationToken));
         if (status is null)
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
@@ -59,7 +60,7 @@ public sealed class PointsImage : CommandAction
             UserId = user.Id.ToString()
         };
 
-        var image = await ImageProcessingClient.CreatePointsImageAsync(request);
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreatePointsImageAsync(request, cancellationToken));
         var result = new TemporaryFile("png");
 
         await result.WriteStreamAsync(image);

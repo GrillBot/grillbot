@@ -10,83 +10,92 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V3.Dashboard;
 using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Controllers;
 
 [Route("api/dashboard")]
 [ApiExplorerSettings(GroupName = "v1")]
 
-public class DashboardController : Core.Infrastructure.Actions.ControllerBase
+public class DashboardController(IServiceProvider serviceProvider) : Core.Infrastructure.Actions.ControllerBase(serviceProvider)
 {
-    public DashboardController(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     [HttpGet("api/{apiGroup}")]
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetApiDashboardAsync(string apiGroup)
+    public Task<IActionResult> GetApiDashboardAsync(string apiGroup)
     {
-        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetApiDashboardAsync(apiGroup));
-        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(
+            async (client, cancellationToken) => await client.GetApiDashboardAsync(apiGroup, cancellationToken)
+        );
+
+        return ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
     [HttpGet("interactions")]
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetInteractionsDashboardAsync()
+    public Task<IActionResult> GetInteractionsDashboardAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetInteractionsDashboardAsync());
-        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(
+            async (client, cancellationToken) => await client.GetInteractionsDashboardAsync(cancellationToken)
+        );
+
+        return ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
     [HttpGet("jobs")]
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetJobsDashboardAsync()
+    public Task<IActionResult> GetJobsDashboardAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetJobsDashboardAsync());
-        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(
+            async (client, cancellationToken) => await client.GetJobsDashboardAsync(cancellationToken)
+        );
+
+        return ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
     [HttpGet("todayAvgTimes")]
     [ProducesResponseType(typeof(TodayAvgTimes), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetTodayAvgTimesAsync()
+    public Task<IActionResult> GetTodayAvgTimesAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetTodayAvgTimes());
-        return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
+        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(
+            async (client, cancellationToken) => await client.GetTodayAvgTimes(cancellationToken)
+        );
+
+        return ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
     [HttpGet("userMeasures")]
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetNonCompliantUserMeasuresDashboardAsync()
-        => await ProcessAsync<GetUserMeasuresDashboard>();
+    public Task<IActionResult> GetNonCompliantUserMeasuresDashboardAsync()
+        => ProcessAsync<GetUserMeasuresDashboard>();
 
     [HttpGet("common")]
     [ProducesResponseType(typeof(DashboardInfo), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetCommonInfoAsync()
-        => await ProcessAsync<GetCommonInfo>();
+    public Task<IActionResult> GetCommonInfoAsync()
+        => ProcessAsync<GetCommonInfo>();
 
     [HttpGet("services")]
     [ProducesResponseType(typeof(List<DashboardService>), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetServicesListAsync()
-        => await ProcessAsync<GetServicesList>();
+    public Task<IActionResult> GetServicesListAsync()
+        => ProcessAsync<GetServicesList>();
 
     [HttpGet("operations/active")]
     [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetActiveOperationsAsync()
-        => await ProcessAsync<GetActiveOperations>();
+    public Task<IActionResult> GetActiveOperationsAsync()
+        => ProcessAsync<GetActiveOperations>();
 
     [HttpGet("operations")]
     [ProducesResponseType(typeof(List<CounterStats>), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public async Task<IActionResult> GetOperationStatsAsync()
-        => await ProcessAsync<GetOperationStats>();
+    public Task<IActionResult> GetOperationStatsAsync()
+        => ProcessAsync<GetOperationStats>();
 
     [JwtAuthorize("Dashboard(Admin)")]
     [HttpGet("bot-common-info")]

@@ -14,11 +14,8 @@ namespace GrillBot.App.Controllers;
 [Route("api/service")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class ServiceController : Core.Infrastructure.Actions.ControllerBase
+public class ServiceController(IServiceProvider serviceProvider) : Core.Infrastructure.Actions.ControllerBase(serviceProvider)
 {
-    public ServiceController(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
 
     /// <summary>
     /// Get info about service.
@@ -37,7 +34,7 @@ public class ServiceController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(StatusInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAuditLogStatusInfoAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, Task<object>>(async (IAuditLogServiceClient client) => await client.GetStatusInfoAsync());
+        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(async (client, cancellationToken) => await client.GetStatusInfoAsync(cancellationToken));
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -49,7 +46,7 @@ public class ServiceController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(typeof(Core.Services.PointsService.Models.StatusInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPointsServiceSatusInfoAsync()
     {
-        var executor = new Func<IPointsServiceClient, Task<object>>(async (IPointsServiceClient client) => await client.GetStatusInfoAsync());
+        var executor = new Func<IPointsServiceClient, CancellationToken, Task<object>>(async (client, cancellationToken) => await client.GetStatusInfoAsync(cancellationToken));
         return await ProcessAsync<ServiceBridgeAction<IPointsServiceClient>>(executor);
     }
 }

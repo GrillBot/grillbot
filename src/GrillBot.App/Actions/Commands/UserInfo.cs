@@ -6,6 +6,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Commands;
 
@@ -14,18 +15,19 @@ public class UserInfo : CommandAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IConfiguration Configuration { get; }
     private ITextsManager Texts { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
 
     private bool OverLimit { get; set; }
     private Database.Entity.User ExecutorEntity { get; set; } = null!;
     private IEnumerable<IGuildUser> GuildUsers { get; set; } = new List<IGuildUser>();
 
-    public UserInfo(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts, IPointsServiceClient pointsServiceClient)
+    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
+
+    public UserInfo(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient)
     {
         DatabaseBuilder = databaseBuilder;
         Configuration = configuration;
         Texts = texts;
-        PointsServiceClient = pointsServiceClient;
+        _pointsServiceClient = pointsServiceClient;
     }
 
     public async Task<Embed> ProcessAsync(IGuildUser user)
@@ -163,7 +165,7 @@ public class UserInfo : CommandAction
     {
         if (OverLimit) return;
 
-        var pointsStatus = await PointsServiceClient.GetStatusOfPointsAsync(Context.Guild.Id.ToString(), user.Id.ToString());
+        var pointsStatus = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetStatusOfPointsAsync(Context.Guild.Id.ToString(), user.Id.ToString(), cancellationToken));
         if (pointsStatus.YearBack > 0)
             AddField(builder, "Points", pointsStatus.YearBack.ToString(), true);
     }

@@ -47,8 +47,8 @@ public class UserMeasuresController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteUserMeasureTimeoutAsync(long timeoutId)
     {
-        var executor = new Func<IUserMeasuresServiceClient, Task>(
-            (IUserMeasuresServiceClient client) => client.DeleteMeasureAsync(DeleteMeasuresRequest.FromExternalSystem(timeoutId, "Timeout"))
+        var executor = new Func<IUserMeasuresServiceClient, CancellationToken, Task>(
+            (client, cancellationToken) => client.DeleteMeasureAsync(DeleteMeasuresRequest.FromExternalSystem(timeoutId, "Timeout"), cancellationToken)
         );
 
         return await ProcessAsync<ServiceBridgeAction<IUserMeasuresServiceClient>>(executor);

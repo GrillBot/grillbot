@@ -6,6 +6,7 @@ using GrillBot.Data.Models.API.Users;
 using GrillBot.Core.Services.PointsService.Enums;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.DataResolve;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -13,16 +14,16 @@ public class GetPointsLeaderboard : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
 
     private readonly DataResolveManager _dataResolveManager;
+    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
 
-    public GetPointsLeaderboard(ApiRequestContext apiContext, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder, IPointsServiceClient pointsServiceClient,
-        DataResolveManager dataResolveManager) : base(apiContext)
+    public GetPointsLeaderboard(ApiRequestContext apiContext, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder,
+        IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, DataResolveManager dataResolveManager) : base(apiContext)
     {
         DiscordClient = discordClient;
         DatabaseBuilder = databaseBuilder;
-        PointsServiceClient = pointsServiceClient;
+        _pointsServiceClient = pointsServiceClient;
         _dataResolveManager = dataResolveManager;
     }
 
@@ -37,7 +38,7 @@ public class GetPointsLeaderboard : ApiAction
         var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
         foreach (var guildId in mutualGuilds.Select(o => o.Id))
         {
-            var leaderboard = await PointsServiceClient.GetLeaderboardAsync(guildId.ToString(), 0, 0, leaderboardColumns, leaderboardSort);
+            var leaderboard = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetLeaderboardAsync(guildId.ToString(), 0, 0, leaderboardColumns, leaderboardSort, cancellationToken));
             var guildData = (await _dataResolveManager.GetGuildAsync(guildId))!;
             var nicknames = await repository.GuildUser.GetUserNicknamesAsync(guildId);
 
@@ -60,9 +61,7 @@ public class GetPointsLeaderboard : ApiAction
             }
         }
 
-        result = result
-            .OrderByDescending(o => o.PointsYearBack)
-            .ToList();
+        result = [.. result.OrderByDescending(o => o.PointsYearBack)];
         return ApiResult.Ok(result);
     }
 }

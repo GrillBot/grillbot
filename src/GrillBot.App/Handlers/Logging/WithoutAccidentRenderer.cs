@@ -2,13 +2,14 @@
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.ImageProcessing.Models;
 using GrillBot.Core.IO;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Handlers.Logging;
 
 public class WithoutAccidentRenderer(
     ProfilePictureManager _profilePictureManager,
     DataCacheManager _dataCacheManager,
-    IImageProcessingClient _imageProcessingClient
+    IServiceClientExecutor<IImageProcessingClient> _imageProcessingClient
 )
 {
     public async Task<TemporaryFile> RenderAsync(IUser user)
@@ -28,7 +29,7 @@ public class WithoutAccidentRenderer(
             UserId = user.Id.ToString()
         };
 
-        var image = await _imageProcessingClient.CreateWithoutAccidentImageAsync(request);
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreateWithoutAccidentImageAsync(request, cancellationToken));
         var tmpFile = new TemporaryFile("png");
 
         await tmpFile.WriteStreamAsync(image);

@@ -4,6 +4,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.Emote;
 
 namespace GrillBot.App.Actions.Commands.Emotes;
@@ -19,10 +20,10 @@ public class EmoteInfo : CommandAction
     public string? ErrorMessage { get; private set; }
     public bool IsOk => string.IsNullOrEmpty(ErrorMessage);
 
-    private readonly IEmoteServiceClient _emoteServiceClient;
+    private readonly IServiceClientExecutor<IEmoteServiceClient> _emoteServiceClient;
     private readonly DataResolveManager _dataResolve;
 
-    public EmoteInfo(ITextsManager texts, FormatHelper formatHelper, IEmoteServiceClient emoteServiceClient, DataResolveManager dataResolve)
+    public EmoteInfo(ITextsManager texts, FormatHelper formatHelper, IServiceClientExecutor<IEmoteServiceClient> emoteServiceClient, DataResolveManager dataResolve)
     {
         Texts = texts;
         FormatHelper = formatHelper;
@@ -36,7 +37,7 @@ public class EmoteInfo : CommandAction
             return null;
 
         var guildId = Context.Guild.Id.ToString();
-        var emoteInfo = await _emoteServiceClient.GetEmoteInfoAsync(guildId, emote!.ToString());
+        var emoteInfo = await _emoteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetEmoteInfoAsync(guildId, emote!.ToString(), cancellationToken));
 
         return await CreateEmbedAsync(emoteInfo);
     }

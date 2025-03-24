@@ -2,34 +2,31 @@
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Actions.Api;
 
-public class ServiceBridgeAction<TServiceClient> : ApiAction where TServiceClient : IServiceClient
+public class ServiceBridgeAction<TServiceClient>(
+    ApiRequestContext apiContext,
+    IServiceClientExecutor<TServiceClient> _client
+) : ApiAction(apiContext) where TServiceClient : IServiceClient
 {
-    private TServiceClient Client { get; }
-
-    public ServiceBridgeAction(ApiRequestContext apiContext, TServiceClient client) : base(apiContext)
-    {
-        Client = client;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
-        var funcExecutor = Parameters.OfType<Func<TServiceClient, Task<object>>>().FirstOrDefault();
-        var actionExecutor = Parameters.OfType<Func<TServiceClient, Task>>().FirstOrDefault();
+        var funcExecutor = Parameters.OfType<Func<TServiceClient, CancellationToken, Task<object>>>().FirstOrDefault();
+        var actionExecutor = Parameters.OfType<Func<TServiceClient, CancellationToken, Task>>().FirstOrDefault();
 
         try
         {
             if (funcExecutor is not null)
-                return ApiResult.Ok(await funcExecutor(Client));
+                return ApiResult.Ok(await _client.ExecuteRequestAsync((c, cancellationToken) => funcExecutor(c, cancellationToken)));
 
             if (actionExecutor is not null)
             {
-                await actionExecutor(Client);
+                await _client.ExecuteRequestAsync((c, cancellationToken) => actionExecutor(c, cancellationToken));
                 return ApiResult.Ok();
             }
         }

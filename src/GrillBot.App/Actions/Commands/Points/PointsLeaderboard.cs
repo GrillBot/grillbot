@@ -9,6 +9,7 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.PointsService.Enums;
 using GrillBot.App.Managers.DataResolve;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Commands.Points;
 
@@ -18,15 +19,15 @@ public class PointsLeaderboard : CommandAction
 
     private ITextsManager Texts { get; }
     private FormatHelper FormatHelper { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
     private readonly DataResolveManager _dataResolveManager;
+    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
 
-    public PointsLeaderboard(ITextsManager texts, FormatHelper formatHelper, IPointsServiceClient pointsServiceClient,
+    public PointsLeaderboard(ITextsManager texts, FormatHelper formatHelper, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient,
         DataResolveManager dataResolveManager)
     {
         Texts = texts;
         FormatHelper = formatHelper;
-        PointsServiceClient = pointsServiceClient;
+        _pointsServiceClient = pointsServiceClient;
         _dataResolveManager = dataResolveManager;
     }
 
@@ -49,12 +50,12 @@ public class PointsLeaderboard : CommandAction
         var columns = overAllTime ? LeaderboardColumnFlag.Total : LeaderboardColumnFlag.YearBack;
         var sortOptions = overAllTime ? LeaderboardSortOptions.ByTotalDescending : LeaderboardSortOptions.ByYearBackDescending;
 
-        return await PointsServiceClient.GetLeaderboardAsync(guildId, skip, MaxItemsCount, columns, sortOptions);
+        return await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetLeaderboardAsync(guildId, skip, MaxItemsCount, columns, sortOptions, cancellationToken));
     }
 
     public async Task<int> ComputePagesCountAsync()
     {
-        var totalItemsCount = await PointsServiceClient.GetLeaderboardCountAsync(Context.Guild.Id.ToString());
+        var totalItemsCount = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetLeaderboardCountAsync(Context.Guild.Id.ToString(), cancellationToken));
         return ComputePagesCount(totalItemsCount);
     }
 

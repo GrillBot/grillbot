@@ -11,17 +11,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace GrillBot.App.Controllers.ServiceControllers;
 
 [JwtAuthorize("UserMeasures(Admin)")]
-public class UserMeasuresController : ServiceControllerBase<IUserMeasuresServiceClient>
+public class UserMeasuresController(IServiceProvider serviceProvider) : ServiceControllerBase<IUserMeasuresServiceClient>(serviceProvider)
 {
-    public UserMeasuresController(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     [HttpPost("measures-list")]
     [ProducesResponseType(typeof(PaginatedResponse<MeasuresItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetMeasuresListAsync([FromBody] MeasuresListParams parameters)
-        => ExecuteAsync(async client => await client.GetMeasuresListAsync(parameters), parameters);
+        => ExecuteAsync(async (client, cancellationToken) => await client.GetMeasuresListAsync(parameters, cancellationToken), parameters);
 
     [HttpDelete("{measureId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -29,7 +25,7 @@ public class UserMeasuresController : ServiceControllerBase<IUserMeasuresService
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     public Task<IActionResult> DeleteMeasureAsync([FromRoute] Guid measureId)
-        => ExecuteAsync(async client => await client.DeleteMeasureAsync(DeleteMeasuresRequest.FromInternalId(measureId)));
+        => ExecuteAsync(async (client, cancellationToken) => await client.DeleteMeasureAsync(DeleteMeasuresRequest.FromInternalId(measureId), cancellationToken));
 
     [HttpPost("member-warning")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -40,5 +36,5 @@ public class UserMeasuresController : ServiceControllerBase<IUserMeasuresService
     [HttpGet("dashboard")]
     [ProducesResponseType(typeof(List<DashboardRow>), StatusCodes.Status200OK)]
     public Task<IActionResult> GetDashboard()
-        => ExecuteAsync(async client => await client.GetDashboardDataAsync());
+        => ExecuteAsync(async (client, cancellationToken) => await client.GetDashboardDataAsync(cancellationToken));
 }

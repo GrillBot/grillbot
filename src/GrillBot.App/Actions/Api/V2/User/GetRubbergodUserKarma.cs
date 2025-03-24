@@ -5,24 +5,26 @@ using GrillBot.Core.Models.Pagination;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Api.V2.User;
 
 public class GetRubbergodUserKarma : ApiAction
 {
-    private IRubbergodServiceClient RubbergodServiceClient { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    public GetRubbergodUserKarma(ApiRequestContext apiContext, IRubbergodServiceClient rubbergodServiceClient, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
+    private readonly IServiceClientExecutor<IRubbergodServiceClient> _rubbergodServiceClient;
+
+    public GetRubbergodUserKarma(ApiRequestContext apiContext, IServiceClientExecutor<IRubbergodServiceClient> rubbergodServiceClient, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
     {
-        RubbergodServiceClient = rubbergodServiceClient;
+        _rubbergodServiceClient = rubbergodServiceClient;
         DatabaseBuilder = databaseBuilder;
     }
 
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (KarmaListParams)Parameters[0]!;
-        var page = await RubbergodServiceClient.GetKarmaPageAsync(parameters.Pagination);
+        var page = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetKarmaPageAsync(parameters.Pagination, cancellationToken));
         var users = await ReadUsersAsync(page.Data.ConvertAll(o => o.UserId));
         var result = await PaginatedResponse<KarmaListItem>.CopyAndMapAsync(page, entity => Task.FromResult(Map(entity, users)));
 

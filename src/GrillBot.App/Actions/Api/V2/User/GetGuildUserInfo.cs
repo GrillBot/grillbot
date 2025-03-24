@@ -2,6 +2,7 @@
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
@@ -12,13 +13,14 @@ namespace GrillBot.App.Actions.Api.V2.User;
 public class GetGuildUserInfo : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IUserMeasuresServiceClient UserMeasuresService { get; }
     private IMapper Mapper { get; }
 
-    public GetGuildUserInfo(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IUserMeasuresServiceClient userMeasuresService,
+    private readonly IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService;
+
+    public GetGuildUserInfo(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService,
         IMapper mapper) : base(apiContext)
     {
-        UserMeasuresService = userMeasuresService;
+        _userMeasuresService = userMeasuresService;
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
     }
@@ -45,7 +47,7 @@ public class GetGuildUserInfo : ApiAction
             SelfUnverifyCount = await ComputeSelfUnverifyCountAsync(repository, guildId, userId)
         };
 
-        var userMeasuresInfo = await UserMeasuresService.GetUserInfoAsync(guildId, userId);
+        var userMeasuresInfo = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetUserInfoAsync(guildId, userId, cancellationToken));
         result.WarningCount = userMeasuresInfo.WarningCount;
         result.UnverifyCount = userMeasuresInfo.UnverifyCount;
 

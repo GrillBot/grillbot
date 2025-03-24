@@ -7,6 +7,7 @@ using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums.Internal;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.DataResolve;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 
@@ -14,16 +15,16 @@ public class ComputeUserPoints : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IDiscordClient DiscordClient { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
 
     private readonly DataResolveManager _dataResolveManager;
+    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
 
-    public ComputeUserPoints(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient, IPointsServiceClient pointsServiceClient,
-        DataResolveManager dataResolveManager) : base(apiContext)
+    public ComputeUserPoints(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient,
+        IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, DataResolveManager dataResolveManager) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         DiscordClient = discordClient;
-        PointsServiceClient = pointsServiceClient;
+        _pointsServiceClient = pointsServiceClient;
         _dataResolveManager = dataResolveManager;
     }
 
@@ -35,7 +36,7 @@ public class ComputeUserPoints : ApiAction
         var result = new List<UserPointsItem>();
         foreach (var guildId in await GetGuildIdsAsync(userId.Value))
         {
-            var status = await PointsServiceClient.GetStatusOfPointsAsync(guildId.ToString(), userId.Value.ToString());
+            var status = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetStatusOfPointsAsync(guildId.ToString(), userId.Value.ToString(), cancellationToken));
             result.Add(await TransformStatusAsync(guildId, userId.Value, status));
         }
 

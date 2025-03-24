@@ -6,6 +6,7 @@ using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Emote.Models.Request;
 using GrillBot.Core.Services.Emote.Models.Response;
@@ -13,21 +14,15 @@ using GrillBot.Data.Enums;
 
 namespace GrillBot.App.Actions.Commands.Emotes;
 
-public class GetEmotesList : CommandAction
+public class GetEmotesList(
+    ITextsManager _texts,
+    IServiceClientExecutor<IEmoteServiceClient> _client
+) : CommandAction
 {
-    private readonly IEmoteServiceClient _client;
-    private readonly ITextsManager _texts;
-
-    public GetEmotesList(ITextsManager texts, IEmoteServiceClient client)
-    {
-        _client = client;
-        _texts = texts;
-    }
-
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page, string sort, SortType sortType, IUser? ofUser, bool filterAnimated)
     {
         var parameters = CreateParameters(page, sort, sortType, ofUser, filterAnimated, false);
-        var statistics = await _client.GetEmoteStatisticsListAsync(parameters);
+        var statistics = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetEmoteStatisticsListAsync(parameters, cancellationToken));
         var embed = CreateEmbed(statistics, sort, sortType, filterAnimated, ofUser);
         var pagesCount = ComputePagesCount(statistics.TotalItemsCount);
         var paginationComponent = ComponentsHelper.CreatePaginationComponents(page, pagesCount, "emote");
@@ -38,7 +33,7 @@ public class GetEmotesList : CommandAction
     public async Task<int> ComputePagesCountAsync(string sort, SortType sortType, IUser? ofUser, bool filterAnimated)
     {
         var parameters = CreateParameters(0, sort, sortType, ofUser, filterAnimated, true);
-        var statistics = await _client.GetEmoteStatisticsListAsync(parameters);
+        var statistics = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetEmoteStatisticsListAsync(parameters, cancellationToken));
         return ComputePagesCount(statistics.TotalItemsCount);
     }
 

@@ -17,6 +17,7 @@ using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Emote.Models.Request;
 using GrillBot.Data.Extensions.Services;
 using GrillBot.Core.Services.UserMeasures.Models.Measures;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -26,20 +27,21 @@ public class GetUserDetail : ApiAction
     private IMapper Mapper { get; }
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
-    private IPointsServiceClient PointsServiceClient { get; }
-    private IUserMeasuresServiceClient UserMeasuresService { get; }
     private readonly DataResolveManager _dataResolveManager;
-    private readonly IEmoteServiceClient _emoteServiceClient;
+    private readonly IServiceClientExecutor<IEmoteServiceClient> _emoteServiceClient;
+    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
+    private readonly IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService;
 
     public GetUserDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
-        IPointsServiceClient pointsServiceClient, IUserMeasuresServiceClient userMeasuresService, DataResolveManager dataResolveManager, IEmoteServiceClient emoteServiceClient) : base(apiContext)
+        IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService, DataResolveManager dataResolveManager,
+        IServiceClientExecutor<IEmoteServiceClient> emoteServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = discordClient;
         Texts = texts;
-        PointsServiceClient = pointsServiceClient;
-        UserMeasuresService = userMeasuresService;
+        _pointsServiceClient = pointsServiceClient;
+        _userMeasuresService = userMeasuresService;
         _dataResolveManager = dataResolveManager;
         _emoteServiceClient = emoteServiceClient;
     }
@@ -159,7 +161,7 @@ public class GetUserDetail : ApiAction
             }
         };
 
-        var measuresResult = await UserMeasuresService.GetMeasuresListAsync(parameters);
+        var measuresResult = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetMeasuresListAsync(parameters, cancellationToken));
         foreach (var measure in measuresResult.Data)
         {
             var moderator = await _dataResolveManager.GetUserAsync(measure.ModeratorId.ToUlong());
@@ -183,7 +185,7 @@ public class GetUserDetail : ApiAction
 
     private async Task SetPointsInfoAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
-        detail.HavePointsTransaction = await PointsServiceClient.ExistsAnyTransactionAsync(entity.GuildId, entity.UserId);
+        detail.HavePointsTransaction = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.ExistsAnyTransactionAsync(entity.GuildId, entity.UserId, cancellationToken));
     }
 
     private async Task SetEmotesAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
@@ -200,7 +202,7 @@ public class GetUserDetail : ApiAction
             UserId = entity.UserId
         };
 
-        var response = await _emoteServiceClient.GetEmoteStatisticsListAsync(request);
+        var response = await _emoteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetEmoteStatisticsListAsync(request, cancellationToken));
         detail.Emotes = response.Data.ConvertAll(o => new ApiModels.Emotes.EmoteStatItem
         {
             Emote = o.ToEmoteItem(),

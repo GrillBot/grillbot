@@ -2,6 +2,7 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.RubbergodService;
 using GrillBot.Core.Services.RubbergodService.Models.Help;
 
@@ -13,16 +14,17 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
     private InteractionService InteractionService { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private Helpers.ChannelHelper ChannelHelper { get; }
-    private IRubbergodServiceClient RubbergodServiceClient { get; }
+
+    private readonly IServiceClientExecutor<IRubbergodServiceClient> _rubbergodServiceClient;
 
     public UnsucessCommandHandler(ITextsManager texts, InteractionService interactionService, GrillBotDatabaseBuilder databaseBuilder, Helpers.ChannelHelper channelHelper,
-        IRubbergodServiceClient rubbergodServiceClient)
+        IServiceClientExecutor<IRubbergodServiceClient> rubbergodServiceClient)
     {
         Texts = texts;
         InteractionService = interactionService;
         DatabaseBuilder = databaseBuilder;
         ChannelHelper = channelHelper;
-        RubbergodServiceClient = rubbergodServiceClient;
+        _rubbergodServiceClient = rubbergodServiceClient;
     }
 
     public async Task ProcessAsync(IMessage message)
@@ -57,7 +59,7 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
 
     private async Task<string?> FindRubbergodCommandAsync(IReadOnlyCollection<string> parts)
     {
-        var rubbergodCommands = await RubbergodServiceClient.GetSlashCommandsAsync();
+        var rubbergodCommands = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetSlashCommandsAsync(cancellationToken));
         var cmdMentions = GetRubbergodCommandMentions(rubbergodCommands);
         return TryMatchMention(cmdMentions, parts);
     }

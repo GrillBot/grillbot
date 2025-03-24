@@ -9,13 +9,11 @@ namespace GrillBot.App.Controllers.ServiceControllers;
 
 [ApiExplorerSettings(GroupName = "v3")]
 [Route("api/service/[controller]")]
-public abstract class ServiceControllerBase<TService> : Core.Infrastructure.Actions.ControllerBase where TService : IServiceClient
+public abstract class ServiceControllerBase<TService>(
+    IServiceProvider serviceProvider
+) : Core.Infrastructure.Actions.ControllerBase(serviceProvider) where TService : IServiceClient
 {
-    protected ServiceControllerBase(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
-    protected Task<IActionResult> ExecuteAsync(Func<TService, Task<object>> executor, IDictionaryObject? parameters = null)
+    protected Task<IActionResult> ExecuteAsync(Func<TService, CancellationToken, Task<object>> executor, IDictionaryObject? parameters = null)
     {
         if (parameters is not null)
             ApiAction.Init(this, parameters);
@@ -31,7 +29,7 @@ public abstract class ServiceControllerBase<TService> : Core.Infrastructure.Acti
         return ProcessAsync<TAction>(parameters);
     }
 
-    protected Task<IActionResult> ExecuteAsync(Func<TService, Task> executor, IDictionaryObject? parameters = null)
+    protected Task<IActionResult> ExecuteAsync(Func<TService, CancellationToken, Task> executor, IDictionaryObject? parameters = null)
     {
         if (parameters is not null)
             ApiAction.Init(this, parameters);

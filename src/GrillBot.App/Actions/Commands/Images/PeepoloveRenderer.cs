@@ -2,18 +2,19 @@
 using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.ImageProcessing.Models;
 using GrillBot.Core.IO;
+using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Commands.Images;
 
 public sealed class PeepoloveRenderer
 {
     private ProfilePictureManager ProfilePictureManager { get; }
-    private IImageProcessingClient ImageProcessingClient { get; }
+    private readonly IServiceClientExecutor<IImageProcessingClient> _imageProcessingClient;
 
-    public PeepoloveRenderer(ProfilePictureManager profilePictureManager, IImageProcessingClient imageProcessingClient)
+    public PeepoloveRenderer(ProfilePictureManager profilePictureManager, IServiceClientExecutor<IImageProcessingClient> imageProcessingClient)
     {
         ProfilePictureManager = profilePictureManager;
-        ImageProcessingClient = imageProcessingClient;
+        _imageProcessingClient = imageProcessingClient;
     }
 
     public async Task<TemporaryFile> RenderAsync(IUser user, IGuild guild)
@@ -32,7 +33,7 @@ public sealed class PeepoloveRenderer
             GuildUploadLimit = (long)guild.MaxUploadLimit
         };
 
-        var image = await ImageProcessingClient.CreatePeepoloveImageAsync(request);
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreatePeepoloveImageAsync(request, cancellationToken));
         var result = new TemporaryFile(request.AvatarInfo.Type);
 
         await result.WriteStreamAsync(image);

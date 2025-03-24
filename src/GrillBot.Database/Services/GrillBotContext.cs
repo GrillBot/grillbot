@@ -1,6 +1,8 @@
-﻿using GrillBot.Database.Entity;
+﻿using GrillBot.Core.Database.ValueConverters;
+using GrillBot.Database.Entity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 
 namespace GrillBot.Database.Services;
 
@@ -59,6 +61,8 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.GuildUser).WithOne(o => o.Unverify).HasForeignKey<Unverify>(o => new { o.GuildId, o.UserId });
             builder.HasOne(o => o.UnverifyLog).WithOne(o => o.Unverify);
             builder.HasOne(o => o.Guild).WithMany(o => o.Unverifies);
+            builder.Property(o => o.Roles).HasConversion(new JsonValueConverter<List<string>>());
+            builder.Property(o => o.Channels).HasConversion(new JsonValueConverter<List<GuildChannelOverride>>());
         });
 
         modelBuilder.Entity<UnverifyLog>(builder =>
@@ -75,6 +79,8 @@ public class GrillBotContext : DbContext
             builder.HasKey(o => new { o.GuildId, o.UserId, o.Id });
             builder.HasOne(o => o.User).WithMany(o => o.Nicknames).HasForeignKey(o => new { o.GuildId, o.UserId });
         });
+
+        modelBuilder.Entity<ApiClient>(builder => builder.Property(o => o.AllowedMethods).HasConversion(new JsonValueConverter<List<string>>()));
 
         base.OnModelCreating(modelBuilder);
     }

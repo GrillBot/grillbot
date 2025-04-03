@@ -81,7 +81,6 @@ public class GuildRepository : SubRepositoryBase<GrillBotContext>
                 .Select(g => new GuildDatabaseReport
                 {
                     Channels = g.Channels.Count,
-                    Invites = g.Invites.Count,
                     Unverifies = g.Unverifies.Count,
                     UnverifyLogs = g.UnverifyLogs.Count,
                     Users = g.Users.Count

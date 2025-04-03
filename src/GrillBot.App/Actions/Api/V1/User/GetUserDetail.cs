@@ -18,6 +18,8 @@ using GrillBot.Core.Services.Emote.Models.Request;
 using GrillBot.Data.Extensions.Services;
 using GrillBot.Core.Services.UserMeasures.Models.Measures;
 using GrillBot.Core.Services.Common.Executor;
+using GrillBot.Core.Services.InviteService;
+using GrillBot.Core.Services.InviteService.Models.Request;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -31,10 +33,11 @@ public class GetUserDetail : ApiAction
     private readonly IServiceClientExecutor<IEmoteServiceClient> _emoteServiceClient;
     private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
     private readonly IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService;
+    private readonly IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient;
 
     public GetUserDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
         IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService, DataResolveManager dataResolveManager,
-        IServiceClientExecutor<IEmoteServiceClient> emoteServiceClient) : base(apiContext)
+        IServiceClientExecutor<IEmoteServiceClient> emoteServiceClient, IServiceClientExecutor<IInviteServiceClient> inviteServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
@@ -44,6 +47,7 @@ public class GetUserDetail : ApiAction
         _userMeasuresService = userMeasuresService;
         _dataResolveManager = dataResolveManager;
         _emoteServiceClient = emoteServiceClient;
+        _inviteServiceClient = inviteServiceClient;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -99,9 +103,10 @@ public class GetUserDetail : ApiAction
     {
         var result = Mapper.Map<ApiModels.Users.GuildUserDetail>(guildUserEntity);
 
-        result.CreatedInvites = result.CreatedInvites.OrderByDescending(o => o.CreatedAt).ToList();
         result.Channels = result.Channels.OrderByDescending(o => o.Count).ThenBy(o => o.Channel.Name).ToList();
 
+        await SetCreatedInvitesAsync(result, guildUserEntity);
+        await SetUsedInviteAsync(result, guildUserEntity);
         await SetUserMeasuresAsync(result, guildUserEntity);
         await SetPointsInfoAsync(result, guildUserEntity);
         await SetEmotesAsync(result, guildUserEntity);
@@ -210,5 +215,69 @@ public class GetUserDetail : ApiAction
             LastOccurence = o.LastOccurence,
             UseCount = o.UseCount
         });
+    }
+
+    private async Task SetCreatedInvitesAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
+    {
+        var request = new InviteListRequest
+        {
+            CreatorId = entity.UserId,
+            GuildId = entity.GuildId,
+            Pagination =
+            {
+                Page = 0,
+                PageSize = int.MaxValue
+            },
+            Sort =
+            {
+                Descending = true,
+                OrderBy = "created"
+            }
+        };
+
+        var invites = await _inviteServiceClient.ExecuteRequestAsync((client, cancellationToken) => client.GetUsedInvitesAsync(request, cancellationToken));
+
+        detail.CreatedInvites = invites.Data.ConvertAll(o => new ApiModels.Invites.InviteBase
+        {
+            Code = o.Code,
+            CreatedAt = o.CreatedAt?.ToLocalTime()
+        });
+    }
+
+    private async Task SetUsedInviteAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
+    {
+        var request = new UserInviteUseListRequest
+        {
+            UserId = entity.UserId,
+            Pagination =             {
+                Page = 0,
+                PageSize = int.MaxValue
+            },
+            Sort = { Descending = true }
+        };
+
+        var invites = await _inviteServiceClient.ExecuteRequestAsync((client, cancellationToken) => client.GetUserInviteUsesAsync(request, cancellationToken));
+        var invite = invites.Data.FirstOrDefault(o => o.GuildId == entity.GuildId);
+
+        if (invite is null)
+            return;
+
+        var inviteInfoRequest = new InviteListRequest
+        {
+            GuildId = entity.GuildId,
+            Code = invite.Code,
+            Pagination = { PageSize = 1 }
+        };
+
+        var inviteInfo = await _inviteServiceClient.ExecuteRequestAsync((client, cancellationToken) => client.GetUsedInvitesAsync(inviteInfoRequest, cancellationToken));
+        var creator = string.IsNullOrEmpty(inviteInfo.Data[0].CreatorId) ? null : await _dataResolveManager.GetUserAsync(inviteInfo.Data[0].CreatorId.ToUlong());
+
+        detail.UsedInvite = invite is null ? null : new ApiModels.Invites.Invite
+        {
+            Code = invite.Code,
+            CreatedAt = inviteInfo.Data[0].CreatedAt?.ToLocalTime(),
+            Creator = creator,
+            UsedUsersCount = inviteInfo.Data[0].Uses,
+        };
     }
 }

@@ -13,7 +13,6 @@ public class GrillBotCacheRepository(
 
     public MessageIndexRepository MessageIndexRepository => GetOrCreateRepository<MessageIndexRepository>();
     public StatisticsRepository StatisticsRepository => GetOrCreateRepository<StatisticsRepository>();
-    public InviteMetadataRepository InviteMetadataRepository => GetOrCreateRepository<InviteMetadataRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : SubRepositoryBase<GrillBotCacheContext>
     {

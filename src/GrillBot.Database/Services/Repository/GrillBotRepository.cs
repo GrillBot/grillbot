@@ -19,7 +19,6 @@ public sealed class GrillBotRepository : RepositoryBase<GrillBotContext>
     public UnverifyRepository Unverify => GetOrCreateRepository<UnverifyRepository>();
     public GuildRepository Guild => GetOrCreateRepository<GuildRepository>();
     public GuildUserRepository GuildUser => GetOrCreateRepository<GuildUserRepository>();
-    public InviteRepository Invite => GetOrCreateRepository<InviteRepository>();
     public SelfUnverifyRepository SelfUnverify => GetOrCreateRepository<SelfUnverifyRepository>();
     public AutoReplyRepository AutoReply => GetOrCreateRepository<AutoReplyRepository>();
     public StatisticsRepository Statistics => GetOrCreateRepository<StatisticsRepository>();

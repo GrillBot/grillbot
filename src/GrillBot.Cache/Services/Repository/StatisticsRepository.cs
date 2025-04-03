@@ -16,8 +16,7 @@ public class StatisticsRepository : SubRepositoryBase<GrillBotCacheContext>
         {
             return new Dictionary<string, int>
             {
-                { nameof(DbContext.MessageIndex), await DbContext.MessageIndex.CountAsync() },
-                { nameof(DbContext.InviteMetadata), await DbContext.InviteMetadata.CountAsync() },
+                { nameof(DbContext.MessageIndex), await DbContext.MessageIndex.CountAsync() }
             };
         }
     }

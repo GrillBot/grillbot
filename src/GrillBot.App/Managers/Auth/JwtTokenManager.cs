@@ -152,6 +152,7 @@ public class JwtTokenManager
             yield return "Remind(Admin)";
             yield return "UserMeasures(Admin)";
             yield return "Searching(Admin)";
+            yield return "Invite(Admin)";
         }
         else
         {

@@ -51,7 +51,6 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
             if (includeAll)
             {
                 query = query
-                    .Include(o => o.UsedInvite!.Creator!.User)
                     .Include(o => o.Unverify!.UnverifyLog);
             }
 
@@ -77,16 +76,6 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
         {
             return await DbContext.GuildUsers
                 .Include(o => o.User)
-                .ToListAsync();
-        }
-    }
-
-    public async Task<List<GuildUser>> FindUsersWithInviteCode(ulong guildId, string code)
-    {
-        using (CreateCounter())
-        {
-            return await DbContext.GuildUsers
-                .Where(o => o.GuildId == guildId.ToString() && o.UsedInviteCode == code)
                 .ToListAsync();
         }
     }

@@ -53,13 +53,10 @@ public class InviteController : Core.Infrastructure.Actions.ControllerBase
         => await ProcessAsync<GetMetadataCount>();
 
     /// <summary>
-    /// Delete invite.
+    /// Delete invite. (This endpoint is no longer supported.)
     /// </summary>
-    /// <response code="200">Success</response>
-    /// <response code="404">Unable to find invite.</response>
     [HttpDelete("{guildId}/{code}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteInviteAsync(ulong guildId, string code)
-        => await ProcessAsync<DeleteInvite>(guildId, code);
+    [ProducesResponseType(StatusCodes.Status410Gone)]
+    public IActionResult DeleteInvite(ulong guildId, string code)
+        => StatusCode(StatusCodes.Status410Gone, new MessageResponse("This endpoint is no longer supported."));
 }

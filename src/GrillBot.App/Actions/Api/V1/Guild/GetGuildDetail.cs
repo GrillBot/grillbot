@@ -108,6 +108,7 @@ public class GetGuildDetail : ApiAction
         report.PointTransactions = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetTransactionsCountForGuildAsync(guildId.ToString(), cancellationToken));
         report.UserMeasures = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetItemsCountOfGuildAsync(guildId.ToString(), cancellationToken));
         report.EmoteStats = await _emoteService.ExecuteRequestAsync((c, cancellationToken) => c.GetStatisticsCountInGuildAsync(guildId.ToString(), cancellationToken));
+        // TODO Invite counts in the service
 
         return report;
     }

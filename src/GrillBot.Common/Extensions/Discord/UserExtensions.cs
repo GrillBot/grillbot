@@ -68,7 +68,4 @@ public static class UserExtensions
             _ => status
         };
     }
-
-    public static bool CanManageInvites(this IGuildUser user)
-        => user.GuildPermissions.CreateInstantInvite && user.GuildPermissions.ManageGuild;
 }

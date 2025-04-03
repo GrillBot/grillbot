@@ -7,6 +7,8 @@ using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
 using GrillBot.Core.Services.Common.Executor;
+using GrillBot.Core.Services.InviteService;
+using GrillBot.Core.Services.InviteService.Models.Request;
 
 namespace GrillBot.App.Actions.Commands;
 
@@ -21,13 +23,16 @@ public class UserInfo : CommandAction
     private IEnumerable<IGuildUser> GuildUsers { get; set; } = new List<IGuildUser>();
 
     private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
+    private readonly IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient;
 
-    public UserInfo(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient)
+    public UserInfo(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient,
+        IServiceClientExecutor<IInviteServiceClient> inviteServiceClient)
     {
         DatabaseBuilder = databaseBuilder;
         Configuration = configuration;
         Texts = texts;
         _pointsServiceClient = pointsServiceClient;
+        _inviteServiceClient = inviteServiceClient;
     }
 
     public async Task<Embed> ProcessAsync(IGuildUser user)
@@ -157,7 +162,7 @@ public class UserInfo : CommandAction
 
         await SetMessageInfoAsync(builder, user, repository);
         await SetUnverifyInfoAsync(builder, user, repository);
-        SetInviteInfo(builder, userEntity);
+        await SetUserInviteAsync(builder, userEntity);
         await SetChannelInfoAsync(builder, user, repository);
     }
 
@@ -198,15 +203,64 @@ public class UserInfo : CommandAction
         }
     }
 
-    private void SetInviteInfo(EmbedBuilder builder, Database.Entity.GuildUser entity)
+    private async Task SetUserInviteAsync(EmbedBuilder builder, Database.Entity.GuildUser entity)
     {
-        if (entity.UsedInvite == null) return;
+        if (OverLimit)
+            return;
 
-        var invite = entity.UsedInvite;
-        var inviteRow = invite.Code == Context.Guild.VanityURLCode
-            ? Texts["User/InfoEmbed/UsedVanityInviteRow", Locale].FormatWith(invite.Code, Texts["User/InfoEmbed/VanityInvite", Locale])
-            : Texts["User/InfoEmbed/UsedInviteRow", Locale].FormatWith(invite.Code, invite.Creator!.DisplayName, invite.CreatedAt!.Value.ToCzechFormat());
-        AddField(builder, "UsedInvite", inviteRow, false);
+        var request = new UserInviteUseListRequest
+        {
+            UserId = entity.UserId,
+            Pagination =
+            {
+                Page = 0,
+                PageSize = int.MaxValue
+            },
+            Sort =
+            {
+                Descending = true
+            }
+        };
+
+        var invites = await _inviteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetUserInviteUsesAsync(request, cancellationToken));
+        var invite = invites.Data.FirstOrDefault(o => o.GuildId == entity.GuildId);
+
+        if (invite is null)
+            return;
+
+        if (invite.Code == Context.Guild.VanityURLCode)
+        {
+            AddField(
+                builder,
+                "UsedInvite",
+                Texts["User/InfoEmbed/UsedVanityInviteRow", Locale].FormatWith(invite.Code, Texts["User/InfoEmbed/VanityInvite", Locale]),
+                false
+            );
+        }
+        else
+        {
+            var inviteInfoRequest = new InviteListRequest
+            {
+                Code = invite.Code,
+                GuildId = Context.Guild.Id.ToString(),
+                Pagination =
+                {
+                    Page = 0,
+                    PageSize = 1
+                }
+            };
+
+            var inviteInfo = await _inviteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetUsedInvitesAsync(inviteInfoRequest, cancellationToken));
+            var creator = await Context.Guild.GetUserAsync(inviteInfo.Data[0].CreatorId.ToUlong());
+            var createdAt = inviteInfo.Data[0].CreatedAt!.Value.ToLocalTime().ToCzechFormat();
+
+            AddField(
+                builder,
+                "UsedInvite",
+                Texts["User/InfoEmbed/UsedInviteRow", Locale].FormatWith(invite.Code, creator.GetFullName(), createdAt),
+                false
+            );
+        }
     }
 
     private async Task SetChannelInfoAsync(EmbedBuilder builder, IGuildUser user, GrillBotRepository repository)

@@ -29,9 +29,6 @@ public static class HandlerExtensions
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.AuditInteractionCommandHandler>();
 
         services
-            .AddScoped<IInviteCreatedEvent, InviteCreated.InviteToCacheHandler>();
-
-        services
             .AddScoped<Logging.WithoutAccidentRenderer>();
 
         services
@@ -55,7 +52,6 @@ public static class HandlerExtensions
             .AddScoped<IReadyEvent, Ready.GuildSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.CommandsRegistrationHandler>()
             .AddScoped<IReadyEvent, Ready.AutoReplyReadyHandler>()
-            .AddScoped<IReadyEvent, Ready.InviteReadyHandler>()
             .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
 
@@ -64,9 +60,6 @@ public static class HandlerExtensions
 
         services
             .AddScoped<IThreadUpdatedEvent, ThreadUpdated.ForumThreadTagsUpdated>();
-
-        services
-            .AddScoped<IUserJoinedEvent, UserJoined.InviteUserJoinedHandler>();
 
         services
             .AddScoped<IUserLeftEvent, UserLeft.UnverifyUserLeftHandler>();
@@ -111,6 +104,7 @@ public static class HandlerExtensions
         RegisterServiceOrchestration<ServiceOrchestration.EmoteOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.RubbergodOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.SearchingOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.InviteOrchestrationHandler>(services);
     }
 
     private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class

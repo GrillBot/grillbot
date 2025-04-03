@@ -84,7 +84,6 @@ public static class ActionsExtensions
 
         // Invite
         services
-            .AddScoped<Api.V1.Invite.DeleteInvite>()
             .AddScoped<Api.V1.Invite.GetInviteList>()
             .AddScoped<Api.V1.Invite.GetMetadataCount>()
             .AddScoped<Api.V1.Invite.RefreshMetadata>();

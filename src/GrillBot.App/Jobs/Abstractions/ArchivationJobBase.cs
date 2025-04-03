@@ -41,9 +41,6 @@ public abstract class ArchivationJobBase(IServiceProvider serviceProvider) : Job
             user["GuildId"] = u.GuildId;
             user["FullName"] = u.DisplayName ?? "";
 
-            if (!string.IsNullOrEmpty(u.UsedInviteCode))
-                user["UsedInviteCode"] = u.UsedInviteCode;
-
             return user;
         });
 

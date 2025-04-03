@@ -80,9 +80,6 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
         if (HaveBirthday)
             query = query.Where(o => o.Birthday != null);
 
-        if (!string.IsNullOrEmpty(UsedInviteCode))
-            query = query.Where(o => o.Guilds.Any(x => !string.IsNullOrEmpty(x.UsedInviteCode) && EF.Functions.ILike(x.UsedInviteCode, $"{UsedInviteCode.ToLower()}%")));
-
         if (Status != null)
             query = query.Where(o => o.Status == Status);
 
@@ -106,7 +103,6 @@ public class GetUserListParams : IQueryableModel<Database.Entity.User>, IDiction
             { nameof(GuildId), GuildId },
             { nameof(Flags), (Flags ?? 0).ToString() },
             { nameof(HaveBirthday), HaveBirthday.ToString() },
-            { nameof(UsedInviteCode), UsedInviteCode },
             { nameof(HideLeftUsers), HideLeftUsers.ToString() }
         };
 

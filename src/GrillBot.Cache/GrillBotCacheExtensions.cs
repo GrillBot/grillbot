@@ -21,7 +21,6 @@ public static class GrillBotCacheExtensions
             .AddSingleton<GrillBotCacheBuilder>()
             .AddSingleton<ProfilePictureManager>()
             .AddSingleton<IMessageCacheManager, MessageCacheManager>()
-            .AddSingleton<InviteManager>()
             .AddScoped<DataCacheManager>()
             .AddRedis(configuration);
     }
@@ -33,6 +32,5 @@ public static class GrillBotCacheExtensions
         var builder = app.ApplicationServices.GetRequiredService<GrillBotCacheBuilder>();
         using var repository = builder.CreateRepository();
         repository.MessageIndexRepository.DeleteAllIndexes();
-        repository.InviteMetadataRepository.DeleteAllInvites();
     }
 }

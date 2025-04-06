@@ -10,6 +10,7 @@ using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.Emote;
+using GrillBot.Core.Services.InviteService;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.Guilds;
@@ -30,10 +31,12 @@ public class GetGuildDetail : ApiAction
     private readonly IServiceClientExecutor<IAuditLogServiceClient> _auditLogServiceClient;
     private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
     private readonly IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService;
+    private readonly IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient;
 
     public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, GrillBotCacheBuilder cacheBuilder,
         ITextsManager texts, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, IServiceClientExecutor<IAuditLogServiceClient> auditLogServiceClient,
-        IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService, DataResolveManager dataResolve, IServiceClientExecutor<IEmoteServiceClient> emoteService) : base(apiContext)
+        IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService, DataResolveManager dataResolve, IServiceClientExecutor<IEmoteServiceClient> emoteService,
+        IServiceClientExecutor<IInviteServiceClient> inviteServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
@@ -45,6 +48,7 @@ public class GetGuildDetail : ApiAction
         _userMeasuresService = userMeasuresService;
         _dataResolve = dataResolve;
         _emoteService = emoteService;
+        _inviteServiceClient = inviteServiceClient;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -108,7 +112,7 @@ public class GetGuildDetail : ApiAction
         report.PointTransactions = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetTransactionsCountForGuildAsync(guildId.ToString(), cancellationToken));
         report.UserMeasures = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetItemsCountOfGuildAsync(guildId.ToString(), cancellationToken));
         report.EmoteStats = await _emoteService.ExecuteRequestAsync((c, cancellationToken) => c.GetStatisticsCountInGuildAsync(guildId.ToString(), cancellationToken));
-        // TODO Invite counts in the service
+        report.Invites = await _inviteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetInvitesCountOfGuildAsync(guildId, cancellationToken));
 
         return report;
     }

@@ -20,16 +20,6 @@ public class GrillBotContext : DbContext
             builder.HasKey(o => new { o.GuildId, o.UserId });
             builder.HasOne(o => o.User).WithMany(o => o.Guilds);
             builder.HasOne(o => o.Guild).WithMany(o => o.Users);
-            builder.HasOne(o => o.UsedInvite).WithMany(o => o.UsedUsers);
-        });
-
-        modelBuilder.Entity<Invite>(builder =>
-        {
-            builder.HasOne(o => o.Creator)
-                .WithMany(o => o.CreatedInvites)
-                .HasForeignKey(o => new { o.GuildId, o.CreatorId });
-
-            builder.HasOne(o => o.Guild).WithMany(o => o.Invites);
         });
 
         modelBuilder.Entity<User>(builder =>
@@ -90,7 +80,6 @@ public class GrillBotContext : DbContext
     public DbSet<GuildUser> GuildUsers => Set<GuildUser>();
     public DbSet<GuildChannel> Channels => Set<GuildChannel>();
     public DbSet<GuildUserChannel> UserChannels => Set<GuildUserChannel>();
-    public DbSet<Invite> Invites => Set<Invite>();
     public DbSet<Unverify> Unverifies => Set<Unverify>();
     public DbSet<UnverifyLog> UnverifyLogs => Set<UnverifyLog>();
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();

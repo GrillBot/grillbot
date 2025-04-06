@@ -26,19 +26,12 @@ public class GuildUser
     [ForeignKey(nameof(GuildId))]
     public Guild? Guild { get; set; }
 
-    [StringLength(20)]
-    public string? UsedInviteCode { get; set; }
-
-    [ForeignKey(nameof(UsedInviteCode))]
-    public Invite? UsedInvite { get; set; }
-
     [Required]
     public long GivenReactions { get; set; } = 0;
 
     [Required]
     public long ObtainedReactions { get; set; } = 0;
 
-    public ISet<Invite> CreatedInvites { get; set; }
     public Unverify? Unverify { get; set; }
 
     [StringLength(32)]
@@ -56,7 +49,6 @@ public class GuildUser
 
     public GuildUser()
     {
-        CreatedInvites = new HashSet<Invite>();
         Channels = new HashSet<GuildUserChannel>();
         Nicknames = new HashSet<Nickname>();
     }

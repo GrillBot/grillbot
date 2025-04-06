@@ -39,7 +39,6 @@ public class Guild
     public string? AssociationRoleId { get; set; }
 
     public ISet<GuildUser> Users { get; set; }
-    public ISet<Invite> Invites { get; set; }
     public ISet<GuildChannel> Channels { get; set; }
     public ISet<Unverify> Unverifies { get; set; }
     public ISet<UnverifyLog> UnverifyLogs { get; set; }
@@ -47,7 +46,6 @@ public class Guild
     public Guild()
     {
         Users = new HashSet<GuildUser>();
-        Invites = new HashSet<Invite>();
         Channels = new HashSet<GuildChannel>();
         Unverifies = new HashSet<Unverify>();
         UnverifyLogs = new HashSet<UnverifyLog>();

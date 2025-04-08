@@ -1,5 +1,6 @@
 ﻿using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Emote;
+using GrillBot.Core.Services.InviteService;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.SearchingService;
@@ -28,7 +29,8 @@ public static class ActionsExtensions
             .AddScoped<Api.ServiceBridgeAction<IUserMeasuresServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IRemindServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<ISearchingServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IEmoteServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<IEmoteServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IInviteServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)
@@ -81,12 +83,6 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Guild.GetGuildList>()
             .AddScoped<Api.V1.Guild.GetRoles>()
             .AddScoped<Api.V1.Guild.UpdateGuild>();
-
-        // Invite
-        services
-            .AddScoped<Api.V1.Invite.GetInviteList>()
-            .AddScoped<Api.V1.Invite.GetMetadataCount>()
-            .AddScoped<Api.V1.Invite.RefreshMetadata>();
 
         // Points
         services

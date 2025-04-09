@@ -9,6 +9,7 @@ using GrillBot.Database.Services.Repository;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.InviteService;
 using GrillBot.Core.Services.InviteService.Models.Request;
+using GrillBot.App.Managers.DataResolve;
 
 namespace GrillBot.App.Actions.Commands;
 
@@ -24,15 +25,17 @@ public class UserInfo : CommandAction
 
     private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
     private readonly IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient;
+    private readonly DataResolveManager _dataResolve;
 
     public UserInfo(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient,
-        IServiceClientExecutor<IInviteServiceClient> inviteServiceClient)
+        IServiceClientExecutor<IInviteServiceClient> inviteServiceClient, DataResolveManager dataResolve)
     {
         DatabaseBuilder = databaseBuilder;
         Configuration = configuration;
         Texts = texts;
         _pointsServiceClient = pointsServiceClient;
         _inviteServiceClient = inviteServiceClient;
+        _dataResolve = dataResolve;
     }
 
     public async Task<Embed> ProcessAsync(IGuildUser user)
@@ -251,13 +254,15 @@ public class UserInfo : CommandAction
             };
 
             var inviteInfo = await _inviteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetUsedInvitesAsync(inviteInfoRequest, cancellationToken));
-            var creator = await Context.Guild.GetUserAsync(inviteInfo.Data[0].CreatorId.ToUlong());
             var createdAt = inviteInfo.Data[0].CreatedAt!.Value.ToLocalTime().ToCzechFormat();
+            var creatorId = inviteInfo.Data[0].CreatorId.ToUlong();
+            var creator = await _dataResolve.GetUserAsync(creatorId);
+            var creatorName = (string.IsNullOrEmpty(creator?.GlobalAlias) ? creator?.Username : creator?.GlobalAlias) ?? $"Unknown user ({creatorId})";
 
             AddField(
                 builder,
                 "UsedInvite",
-                Texts["User/InfoEmbed/UsedInviteRow", Locale].FormatWith(invite.Code, creator.GetFullName(), createdAt),
+                Texts["User/InfoEmbed/UsedInviteRow", Locale].FormatWith(invite.Code, creatorName, createdAt),
                 false
             );
         }

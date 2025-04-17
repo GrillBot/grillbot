@@ -23,7 +23,7 @@ public class DuckInfo(
     {
         try
         {
-            var currentState = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetCurrentStateAsync(cancellationToken));
+            var currentState = await _client.ExecuteRequestAsync((c, ctx) => c.GetCurrentStateAsync(ctx.CancellationToken));
             DuckState? nextBar = null, nextTearoom = null, nextAll = null;
 
             // In "non-bar" states, we want to include information on the next planned bar/tearoom opening
@@ -34,18 +34,18 @@ public class DuckInfo(
                 if (currentState.FollowingState?.State is DuckStateType.OpenBar)
                     nextBar = currentState.FollowingState;
                 else
-                    nextBar = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetNextStateAsync(DuckStateType.OpenBar, cancellationToken));
+                    nextBar = await _client.ExecuteRequestAsync((c, ctx) => c.GetNextStateAsync(DuckStateType.OpenBar, ctx.CancellationToken));
 
                 if (currentState.FollowingState?.State is DuckStateType.OpenTearoom)
                     nextTearoom = currentState.FollowingState;
                 else
-                    nextTearoom = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetNextStateAsync(DuckStateType.OpenTearoom, cancellationToken));
+                    nextTearoom = await _client.ExecuteRequestAsync((c, ctx) => c.GetNextStateAsync(DuckStateType.OpenTearoom, ctx.CancellationToken));
 
                 if (currentState.FollowingState?.State is DuckStateType.OpenAll)
                     nextAll = currentState.FollowingState;
                 // Only determine the next "OpenAll" state if we're not already in one
                 else if (currentState.State != DuckStateType.OpenAll)
-                    nextAll = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetNextStateAsync(DuckStateType.OpenAll, cancellationToken));
+                    nextAll = await _client.ExecuteRequestAsync((c, ctx) => c.GetNextStateAsync(DuckStateType.OpenAll, ctx.CancellationToken));
 
             }
 

@@ -33,7 +33,7 @@ public sealed class PeepoloveRenderer
             GuildUploadLimit = (long)guild.MaxUploadLimit
         };
 
-        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreatePeepoloveImageAsync(request, cancellationToken));
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, ctx) => c.CreatePeepoloveImageAsync(request, ctx.CancellationToken));
         var result = new TemporaryFile(request.AvatarInfo.Type);
 
         await result.WriteStreamAsync(image);

@@ -16,7 +16,7 @@ public class GetSuggestions(
 {
     public async Task<List<AutocompleteResult>> ProcessAsync()
     {
-        var suggestions = await _remindServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetSuggestionsAsync(Context.User.Id.ToString(), cancellationToken));
+        var suggestions = await _remindServiceClient.ExecuteRequestAsync((c, ctx) => c.GetSuggestionsAsync(Context.User.Id.ToString(), ctx.CancellationToken));
         var result = new List<AutocompleteResult>();
 
         foreach (var item in suggestions.Take(25))

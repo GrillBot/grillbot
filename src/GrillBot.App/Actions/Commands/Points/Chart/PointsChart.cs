@@ -30,7 +30,7 @@ public class PointsChart : CommandAction
         await PrepareDataAsync(type, users, filter);
 
         var request = await CreateRequestAsync(filter, type);
-        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreateChartImageAsync(request, cancellationToken));
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, ctx) => c.CreateChartImageAsync(request, ctx.CancellationToken));
 
         var resultFile = new TemporaryFile("png");
         await resultFile.WriteStreamAsync(image);
@@ -63,14 +63,14 @@ public class PointsChart : CommandAction
         var request = CreateParameters(filter);
         request.UserId = user.Id.ToString();
 
-        var data = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetChartDataAsync(request, cancellationToken));
+        var data = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetChartDataAsync(request, ctx.CancellationToken));
         UsersData!.Add(user.Id, data);
     }
 
     private async Task PrepareGuildDataAsync(ChartsFilter filter)
     {
         var request = CreateParameters(filter);
-        GuildData = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetChartDataAsync(request, cancellationToken));
+        GuildData = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetChartDataAsync(request, ctx.CancellationToken));
     }
 
     private AdminListRequest CreateParameters(ChartsFilter filter)

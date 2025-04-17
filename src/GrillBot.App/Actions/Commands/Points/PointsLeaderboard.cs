@@ -50,12 +50,12 @@ public class PointsLeaderboard : CommandAction
         var columns = overAllTime ? LeaderboardColumnFlag.Total : LeaderboardColumnFlag.YearBack;
         var sortOptions = overAllTime ? LeaderboardSortOptions.ByTotalDescending : LeaderboardSortOptions.ByYearBackDescending;
 
-        return await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetLeaderboardAsync(guildId, skip, MaxItemsCount, columns, sortOptions, cancellationToken));
+        return await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetLeaderboardAsync(guildId, skip, MaxItemsCount, columns, sortOptions, ctx.CancellationToken));
     }
 
     public async Task<int> ComputePagesCountAsync()
     {
-        var totalItemsCount = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetLeaderboardCountAsync(Context.Guild.Id.ToString(), cancellationToken));
+        var totalItemsCount = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetLeaderboardCountAsync(Context.Guild.Id.ToString(), ctx.CancellationToken));
         return ComputePagesCount(totalItemsCount);
     }
 

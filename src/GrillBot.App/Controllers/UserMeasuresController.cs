@@ -2,6 +2,7 @@
 using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V2.User;
 using GrillBot.App.Infrastructure.Auth;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Core.Services.UserMeasures.Models.Measures;
 using GrillBot.Data.Models.API.UserMeasures;
@@ -47,8 +48,8 @@ public class UserMeasuresController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteUserMeasureTimeoutAsync(long timeoutId)
     {
-        var executor = new Func<IUserMeasuresServiceClient, CancellationToken, Task>(
-            (client, cancellationToken) => client.DeleteMeasureAsync(DeleteMeasuresRequest.FromExternalSystem(timeoutId, "Timeout"), cancellationToken)
+        var executor = new Func<IUserMeasuresServiceClient, ServiceExecutorContext, Task>(
+            (client, ctx) => client.DeleteMeasureAsync(DeleteMeasuresRequest.FromExternalSystem(timeoutId, "Timeout"), ctx.CancellationToken)
         );
 
         return await ProcessAsync<ServiceBridgeAction<IUserMeasuresServiceClient>>(executor);

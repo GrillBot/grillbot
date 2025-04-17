@@ -14,7 +14,7 @@ public class GetSuggestions(
     {
         var guildId = Context.Guild.Id.ToString();
         var channelId = Context.Channel.Id.ToString();
-        var suggestions = await _searchingService.ExecuteRequestAsync((c, cancellationToken) => c.GetSuggestionsAsync(guildId, channelId, cancellationToken));
+        var suggestions = await _searchingService.ExecuteRequestAsync((c, ctx) => c.GetSuggestionsAsync(guildId, channelId, ctx.AuthorizationToken, ctx.CancellationToken));
         var result = new List<AutocompleteResult>();
 
         foreach (var item in suggestions)

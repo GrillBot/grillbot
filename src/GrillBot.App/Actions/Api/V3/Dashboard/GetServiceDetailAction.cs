@@ -3,6 +3,7 @@ using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Executor;
@@ -18,7 +19,8 @@ public class GetServiceDetailAction(
     ApiRequestContext apiContext,
     IServiceProvider _serviceProvider,
     LoggingManager _logging,
-    IConfiguration _configuration
+    IConfiguration _configuration,
+    ICurrentUserProvider _currentUser
 ) : ApiAction(apiContext)
 {
     public override async Task<ApiResult> ProcessAsync()
@@ -84,13 +86,13 @@ public class GetServiceDetailAction(
 
         if (client is IAuditLogServiceClient auditLog)
         {
-            var executor = new ServiceClientExecutor<IAuditLogServiceClient>(_configuration, auditLog);
-            additionalInfo = await executor.ExecuteRequestAsync((c, cancellationToken) => c.GetStatusInfoAsync(cancellationToken));
+            var executor = new ServiceClientExecutor<IAuditLogServiceClient>(_configuration, auditLog, _currentUser);
+            additionalInfo = await executor.ExecuteRequestAsync((c, ctx) => c.GetStatusInfoAsync(ctx.CancellationToken));
         }
         else if (client is IPointsServiceClient pointsClient)
         {
-            var executor = new ServiceClientExecutor<IPointsServiceClient>(_configuration, pointsClient);
-            additionalInfo = await executor.ExecuteRequestAsync((c, cancellationToken) => c.GetStatusInfoAsync(cancellationToken));
+            var executor = new ServiceClientExecutor<IPointsServiceClient>(_configuration, pointsClient, _currentUser);
+            additionalInfo = await executor.ExecuteRequestAsync((c, ctx) => c.GetStatusInfoAsync(ctx.CancellationToken));
         }
 
         if (additionalInfo is null)

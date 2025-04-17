@@ -25,7 +25,7 @@ public class GetReminderList(
     {
         var embed = CreateEmptyEmbed(page);
         var request = CreateRequest();
-        var list = await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.GetReminderListAsync(request, cancellationToken));
+        var list = await _remindService.ExecuteRequestAsync((c, ctx) => c.GetReminderListAsync(request, ctx.CancellationToken));
         var fields = await CreateFieldsAsync(list);
         SetPage(embed, fields, page, out var pagesCount);
 
@@ -36,7 +36,7 @@ public class GetReminderList(
     public async Task<int> ComputePagesCountAsync()
     {
         var request = CreateRequest();
-        var list = await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.GetReminderListAsync(request, cancellationToken));
+        var list = await _remindService.ExecuteRequestAsync((c, ctx) => c.GetReminderListAsync(request, ctx.CancellationToken));
         var fields = await CreateFieldsAsync(list);
         var embed = CreateEmptyEmbed(0);
 

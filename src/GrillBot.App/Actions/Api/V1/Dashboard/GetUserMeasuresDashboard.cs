@@ -27,7 +27,7 @@ public class GetUserMeasuresDashboard : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        var data = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetDashboardDataAsync(cancellationToken));
+        var data = await _userMeasuresService.ExecuteRequestAsync((c, ctx) => c.GetDashboardDataAsync(ctx.CancellationToken));
         var result = await MapAsync(data).ToListAsync();
 
         return ApiResult.Ok(result);

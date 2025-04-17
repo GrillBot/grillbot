@@ -108,11 +108,11 @@ public class GetGuildDetail : ApiAction
         using (var cache = CacheBuilder.CreateRepository())
             report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
 
-        report.AuditLogs = await _auditLogServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetItemsCountOfGuildAsync(guildId, cancellationToken));
-        report.PointTransactions = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetTransactionsCountForGuildAsync(guildId.ToString(), cancellationToken));
-        report.UserMeasures = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetItemsCountOfGuildAsync(guildId.ToString(), cancellationToken));
-        report.EmoteStats = await _emoteService.ExecuteRequestAsync((c, cancellationToken) => c.GetStatisticsCountInGuildAsync(guildId.ToString(), cancellationToken));
-        report.Invites = await _inviteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetInvitesCountOfGuildAsync(guildId, cancellationToken));
+        report.AuditLogs = await _auditLogServiceClient.ExecuteRequestAsync((c, ctx) => c.GetItemsCountOfGuildAsync(guildId, ctx.CancellationToken));
+        report.PointTransactions = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetTransactionsCountForGuildAsync(guildId.ToString(), ctx.CancellationToken));
+        report.UserMeasures = await _userMeasuresService.ExecuteRequestAsync((c, ctx) => c.GetItemsCountOfGuildAsync(guildId.ToString(), ctx.CancellationToken));
+        report.EmoteStats = await _emoteService.ExecuteRequestAsync((c, ctx) => c.GetStatisticsCountInGuildAsync(guildId.ToString(), ctx.CancellationToken));
+        report.Invites = await _inviteServiceClient.ExecuteRequestAsync((c, ctx) => c.GetInvitesCountOfGuildAsync(guildId, ctx.CancellationToken));
 
         return report;
     }

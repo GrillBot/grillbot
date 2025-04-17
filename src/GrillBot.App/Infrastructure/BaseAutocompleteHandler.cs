@@ -9,7 +9,7 @@ namespace GrillBot.App.Infrastructure;
 
 public abstract class BaseAutocompleteHandler : AutocompleteHandler
 {
-    protected async Task<ScopedCommand<TCommand>> CreateCommandAsync<TCommand>(IInteractionContext context, IServiceProvider serviceProvider) where TCommand : notnull
+    protected static async Task<ScopedCommand<TCommand>> CreateCommandAsync<TCommand>(IInteractionContext context, IServiceProvider serviceProvider) where TCommand : notnull
     {
         var command = new ScopedCommand<TCommand>(serviceProvider.CreateScope());
 

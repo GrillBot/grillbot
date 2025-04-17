@@ -15,12 +15,12 @@ public class RemindController(IServiceProvider serviceProvider) : ServiceControl
     [ProducesResponseType(typeof(PaginatedResponse<RemindMessageItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetReminderListAsync(ReminderListRequest request)
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetReminderListAsync(request, cancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.GetReminderListAsync(request, ctx.CancellationToken), request);
 
     [HttpPut("cancel")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [JwtAuthorize("Remind(Admin)", "Remind(CancelMyReminders)")]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> CancelRemindAsync(CancelReminderRequest request)
-        => ExecuteAsync(async (client, cancellationToken) => await client.CancelReminderAsync(request, cancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.CancelReminderAsync(request, ctx.CancellationToken), request);
 }

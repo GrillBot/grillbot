@@ -38,7 +38,7 @@ public class GetPointsLeaderboard : ApiAction
         var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
         foreach (var guildId in mutualGuilds.Select(o => o.Id))
         {
-            var leaderboard = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetLeaderboardAsync(guildId.ToString(), 0, 0, leaderboardColumns, leaderboardSort, cancellationToken));
+            var leaderboard = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetLeaderboardAsync(guildId.ToString(), 0, 0, leaderboardColumns, leaderboardSort, ctx.CancellationToken));
             var guildData = (await _dataResolveManager.GetGuildAsync(guildId))!;
             var nicknames = await repository.GuildUser.GetUserNicknamesAsync(guildId);
 

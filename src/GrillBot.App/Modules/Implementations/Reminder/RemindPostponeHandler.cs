@@ -23,7 +23,7 @@ public class RemindPostponeHandler(
         var remindServiceClient = _serviceProvider.GetRequiredService<IServiceClientExecutor<IRemindServiceClient>>();
         try
         {
-            await remindServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.PostponeRemindAsync(message.Id.ToString(), _hours, cancellationToken));
+            await remindServiceClient.ExecuteRequestAsync((c, ctx) => c.PostponeRemindAsync(message.Id.ToString(), _hours, ctx.CancellationToken));
             await context.Interaction.DeferAsync();
             await message.DeleteAsync();
         }

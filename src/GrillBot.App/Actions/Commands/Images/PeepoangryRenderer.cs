@@ -33,7 +33,7 @@ public sealed class PeepoangryRenderer
             GuildUploadLimit = (long)guild.MaxUploadLimit
         };
 
-        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreatePeepoangryImageAsync(request, cancellationToken));
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, ctx) => c.CreatePeepoangryImageAsync(request, ctx.CancellationToken));
         var result = new TemporaryFile(request.AvatarInfo.Type);
 
         await result.WriteStreamAsync(image);

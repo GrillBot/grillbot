@@ -51,7 +51,7 @@ public class SolveExpression(
         try
         {
             var request = new MathJsRequest { Expression = expression };
-            return await _client.ExecuteRequestAsync((c, cancellationToken) => c.SolveExpressionAsync(request, cancellationToken));
+            return await _client.ExecuteRequestAsync((c, ctx) => c.SolveExpressionAsync(request, ctx.CancellationToken));
         }
         catch (ClientBadRequestException ex) when (!string.IsNullOrEmpty(ex.RawData))
         {

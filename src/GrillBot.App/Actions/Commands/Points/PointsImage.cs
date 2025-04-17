@@ -42,7 +42,7 @@ public sealed class PointsImage : CommandAction
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
-        var status = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetImagePointsStatusAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString(), cancellationToken));
+        var status = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetImagePointsStatusAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString(), ctx.CancellationToken));
         if (status is null)
             throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
 
@@ -60,7 +60,7 @@ public sealed class PointsImage : CommandAction
             UserId = user.Id.ToString()
         };
 
-        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreatePointsImageAsync(request, cancellationToken));
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, ctx) => c.CreatePointsImageAsync(request, ctx.CancellationToken));
         var result = new TemporaryFile("png");
 
         await result.WriteStreamAsync(image);

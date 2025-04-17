@@ -16,37 +16,37 @@ public class AuditLogController(IServiceProvider serviceProvider) : ServiceContr
     [HttpGet("dashboard/api")]
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     public Task<IActionResult> GetApiDashboardAsync(string apiGroup)
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetApiDashboardAsync(apiGroup, cancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.GetApiDashboardAsync(apiGroup, ctx.CancellationToken));
 
     [HttpGet("dashboard/interactions")]
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     public Task<IActionResult> GetInteractionsDashboardAsync()
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetInteractionsDashboardAsync(cancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.GetInteractionsDashboardAsync(ctx.CancellationToken));
 
     [HttpGet("dashboard/jobs")]
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     public Task<IActionResult> GetJobDashboardAsync()
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetJobsDashboardAsync(cancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.GetJobsDashboardAsync(ctx.CancellationToken));
 
     [HttpGet("dashboard/today-avg-times")]
     [ProducesResponseType(typeof(TodayAvgTimes), StatusCodes.Status200OK)]
     public Task<IActionResult> GetTodayAvgTimesAsync()
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetTodayAvgTimes(cancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.GetTodayAvgTimes(ctx.CancellationToken));
 
     [HttpPost("search")]
     [ProducesResponseType(typeof(PaginatedResponse<LogListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> SearchItemsAsync(SearchRequest request)
-        => ExecuteAsync(async (client, cancellationToken) => await client.SearchItemsAsync(request, cancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.SearchItemsAsync(request, ctx.CancellationToken), request);
 
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public Task<IActionResult> DeleteItemAsync(Guid id)
-        => ExecuteAsync(async (client, cancellationToken) => await client.DeleteItemAsync(id, cancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.DeleteItemAsync(id, ctx.CancellationToken));
 
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Detail), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> GetDetailAsync(Guid id)
-        => ExecuteAsync(async (client, cancellationToken) => (await client.GetDetailAsync(id, cancellationToken))!);
+        => ExecuteAsync(async (client, ctx) => (await client.GetDetailAsync(id, ctx.CancellationToken))!);
 }

@@ -47,7 +47,7 @@ public class GetGuildUserInfo : ApiAction
             SelfUnverifyCount = await ComputeSelfUnverifyCountAsync(repository, guildId, userId)
         };
 
-        var userMeasuresInfo = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetUserInfoAsync(guildId, userId, cancellationToken));
+        var userMeasuresInfo = await _userMeasuresService.ExecuteRequestAsync((c, ctx) => c.GetUserInfoAsync(guildId, userId, ctx.CancellationToken));
         result.WarningCount = userMeasuresInfo.WarningCount;
         result.UnverifyCount = userMeasuresInfo.UnverifyCount;
 

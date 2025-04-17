@@ -16,17 +16,17 @@ public class ServiceBridgeAction<TServiceClient>(
 {
     public override async Task<ApiResult> ProcessAsync()
     {
-        var funcExecutor = Parameters.OfType<Func<TServiceClient, CancellationToken, Task<object>>>().FirstOrDefault();
-        var actionExecutor = Parameters.OfType<Func<TServiceClient, CancellationToken, Task>>().FirstOrDefault();
+        var funcExecutor = Parameters.OfType<Func<TServiceClient, ServiceExecutorContext, Task<object>>>().FirstOrDefault();
+        var actionExecutor = Parameters.OfType<Func<TServiceClient, ServiceExecutorContext, Task>>().FirstOrDefault();
 
         try
         {
             if (funcExecutor is not null)
-                return ApiResult.Ok(await _client.ExecuteRequestAsync((c, cancellationToken) => funcExecutor(c, cancellationToken)));
+                return ApiResult.Ok(await _client.ExecuteRequestAsync((c, ctx) => funcExecutor(c, ctx)));
 
             if (actionExecutor is not null)
             {
-                await _client.ExecuteRequestAsync((c, cancellationToken) => actionExecutor(c, cancellationToken));
+                await _client.ExecuteRequestAsync((c, ctx) => actionExecutor(c, ctx));
                 return ApiResult.Ok();
             }
         }

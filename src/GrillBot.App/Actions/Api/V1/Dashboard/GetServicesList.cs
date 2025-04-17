@@ -58,7 +58,7 @@ public class GetServicesList : ApiAction
         try
         {
             var client = ServiceProvider.GetRequiredService<IServiceClientExecutor<TServiceClient>>();
-            await client.ExecuteRequestAsync((c, cancellationToken) => c.IsHealthyAsync(cancellationToken));
+            await client.ExecuteRequestAsync((c, ctx) => c.IsHealthyAsync(ctx.CancellationToken));
 
             services.Add(new DashboardService(id, true, 0));
         }

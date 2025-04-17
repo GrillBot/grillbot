@@ -13,7 +13,7 @@ public class RemoveSearches(
     public override async Task<ApiResult> ProcessAsync()
     {
         foreach (var id in GetParameter<long[]>(0))
-            await _searchingService.ExecuteRequestAsync((c, cancellationToken) => c.RemoveSearchingAsync(id, cancellationToken));
+            await _searchingService.ExecuteRequestAsync((c, ctx) => c.RemoveSearchingAsync(id, ctx.AuthorizationToken, ctx.CancellationToken));
 
         return ApiResult.Ok();
     }

@@ -28,7 +28,7 @@ public class FinishRemind(
                 RemindId = id
             };
 
-            await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.CancelReminderAsync(request, cancellationToken));
+            await _remindService.ExecuteRequestAsync((c, ctx) => c.CancelReminderAsync(request, ctx.CancellationToken));
 
             IsGone = false;
             IsAuthorized = true;

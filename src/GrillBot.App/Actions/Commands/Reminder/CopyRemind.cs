@@ -23,7 +23,7 @@ public class CopyRemind(
 
         try
         {
-            await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.CopyReminderAsync(request, cancellationToken));
+            await _remindService.ExecuteRequestAsync((c, ctx) => c.CopyReminderAsync(request, ctx.CancellationToken));
         }
         catch (ClientBadRequestException ex)
         {

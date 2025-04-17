@@ -37,7 +37,7 @@ public class EmoteInfo : CommandAction
             return null;
 
         var guildId = Context.Guild.Id.ToString();
-        var emoteInfo = await _emoteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetEmoteInfoAsync(guildId, emote!.ToString(), cancellationToken));
+        var emoteInfo = await _emoteServiceClient.ExecuteRequestAsync((c, ctx) => c.GetEmoteInfoAsync(guildId, emote!.ToString(), ctx.CancellationToken));
 
         return await CreateEmbedAsync(emoteInfo);
     }

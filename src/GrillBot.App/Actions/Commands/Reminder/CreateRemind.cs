@@ -45,7 +45,7 @@ public class CreateRemind : CommandAction
 
         try
         {
-            var result = await _remindServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.CreateReminderAsync(request, cancellationToken));
+            var result = await _remindServiceClient.ExecuteRequestAsync((c, ctx) => c.CreateReminderAsync(request, ctx.CancellationToken));
             return result.Id;
         }
         catch (ClientBadRequestException ex)

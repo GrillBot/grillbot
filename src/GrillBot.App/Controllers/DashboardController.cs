@@ -24,8 +24,8 @@ public class DashboardController(IServiceProvider serviceProvider) : Core.Infras
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public Task<IActionResult> GetApiDashboardAsync(string apiGroup)
     {
-        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(
-            async (client, cancellationToken) => await client.GetApiDashboardAsync(apiGroup, cancellationToken)
+        var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(
+            async (client, ctx) => await client.GetApiDashboardAsync(apiGroup, ctx.CancellationToken)
         );
 
         return ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
@@ -36,8 +36,8 @@ public class DashboardController(IServiceProvider serviceProvider) : Core.Infras
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public Task<IActionResult> GetInteractionsDashboardAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(
-            async (client, cancellationToken) => await client.GetInteractionsDashboardAsync(cancellationToken)
+        var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(
+            async (client, ctx) => await client.GetInteractionsDashboardAsync(ctx.CancellationToken)
         );
 
         return ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
@@ -48,8 +48,8 @@ public class DashboardController(IServiceProvider serviceProvider) : Core.Infras
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public Task<IActionResult> GetJobsDashboardAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(
-            async (client, cancellationToken) => await client.GetJobsDashboardAsync(cancellationToken)
+        var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(
+            async (client, ctx) => await client.GetJobsDashboardAsync(ctx.CancellationToken)
         );
 
         return ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
@@ -60,8 +60,8 @@ public class DashboardController(IServiceProvider serviceProvider) : Core.Infras
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public Task<IActionResult> GetTodayAvgTimesAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(
-            async (client, cancellationToken) => await client.GetTodayAvgTimes(cancellationToken)
+        var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(
+            async (client, ctx) => await client.GetTodayAvgTimes(ctx.CancellationToken)
         );
 
         return ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);

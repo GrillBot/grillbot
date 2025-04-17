@@ -22,7 +22,7 @@ public class GetEmotesList(
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page, string sort, SortType sortType, IUser? ofUser, bool filterAnimated)
     {
         var parameters = CreateParameters(page, sort, sortType, ofUser, filterAnimated, false);
-        var statistics = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetEmoteStatisticsListAsync(parameters, cancellationToken));
+        var statistics = await _client.ExecuteRequestAsync((c, ctx) => c.GetEmoteStatisticsListAsync(parameters, ctx.CancellationToken));
         var embed = CreateEmbed(statistics, sort, sortType, filterAnimated, ofUser);
         var pagesCount = ComputePagesCount(statistics.TotalItemsCount);
         var paginationComponent = ComponentsHelper.CreatePaginationComponents(page, pagesCount, "emote");
@@ -33,7 +33,7 @@ public class GetEmotesList(
     public async Task<int> ComputePagesCountAsync(string sort, SortType sortType, IUser? ofUser, bool filterAnimated)
     {
         var parameters = CreateParameters(0, sort, sortType, ofUser, filterAnimated, true);
-        var statistics = await _client.ExecuteRequestAsync((c, cancellationToken) => c.GetEmoteStatisticsListAsync(parameters, cancellationToken));
+        var statistics = await _client.ExecuteRequestAsync((c, ctx) => c.GetEmoteStatisticsListAsync(parameters, ctx.CancellationToken));
         return ComputePagesCount(statistics.TotalItemsCount);
     }
 

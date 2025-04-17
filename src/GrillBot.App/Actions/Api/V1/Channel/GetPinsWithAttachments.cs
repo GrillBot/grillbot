@@ -35,7 +35,7 @@ public class GetPinsWithAttachments : ApiAction
         var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId)
             ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
-        var markdownContent = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetPinsAsync(guild.Id, channelId, true, cancellationToken));
+        var markdownContent = await _rubbergodServiceClient.ExecuteRequestAsync((c, ctx) => c.GetPinsAsync(guild.Id, channelId, true, ctx.CancellationToken));
 
         TemporaryFile? archiveFile = null;
 
@@ -59,7 +59,7 @@ public class GetPinsWithAttachments : ApiAction
 
     private async Task AppendAttachmentsAsync(IGuild guild, ulong channelId, ZipArchive archive)
     {
-        var bytes = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetPinsAsync(guild.Id, channelId, false, cancellationToken));
+        var bytes = await _rubbergodServiceClient.ExecuteRequestAsync((c, ctx) => c.GetPinsAsync(guild.Id, channelId, false, ctx.CancellationToken));
         var rawData = Encoding.UTF8.GetString(bytes);
         var json = JObject.Parse(rawData);
 

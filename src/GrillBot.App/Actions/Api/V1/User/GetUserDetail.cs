@@ -166,7 +166,7 @@ public class GetUserDetail : ApiAction
             }
         };
 
-        var measuresResult = await _userMeasuresService.ExecuteRequestAsync((c, cancellationToken) => c.GetMeasuresListAsync(parameters, cancellationToken));
+        var measuresResult = await _userMeasuresService.ExecuteRequestAsync((c, ctx) => c.GetMeasuresListAsync(parameters, ctx.CancellationToken));
         foreach (var measure in measuresResult.Data)
         {
             var moderator = await _dataResolveManager.GetUserAsync(measure.ModeratorId.ToUlong());
@@ -190,7 +190,7 @@ public class GetUserDetail : ApiAction
 
     private async Task SetPointsInfoAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
-        detail.HavePointsTransaction = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.ExistsAnyTransactionAsync(entity.GuildId, entity.UserId, cancellationToken));
+        detail.HavePointsTransaction = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.ExistsAnyTransactionAsync(entity.GuildId, entity.UserId, ctx.CancellationToken));
     }
 
     private async Task SetEmotesAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
@@ -207,7 +207,7 @@ public class GetUserDetail : ApiAction
             UserId = entity.UserId
         };
 
-        var response = await _emoteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetEmoteStatisticsListAsync(request, cancellationToken));
+        var response = await _emoteServiceClient.ExecuteRequestAsync((c, ctx) => c.GetEmoteStatisticsListAsync(request, ctx.CancellationToken));
         detail.Emotes = response.Data.ConvertAll(o => new ApiModels.Emotes.EmoteStatItem
         {
             Emote = o.ToEmoteItem(),
@@ -235,7 +235,7 @@ public class GetUserDetail : ApiAction
             }
         };
 
-        var invites = await _inviteServiceClient.ExecuteRequestAsync((client, cancellationToken) => client.GetUsedInvitesAsync(request, cancellationToken));
+        var invites = await _inviteServiceClient.ExecuteRequestAsync((client, ctx) => client.GetUsedInvitesAsync(request, ctx.CancellationToken));
 
         detail.CreatedInvites = invites.Data.ConvertAll(o => new ApiModels.Invites.InviteBase
         {
@@ -249,14 +249,14 @@ public class GetUserDetail : ApiAction
         var request = new UserInviteUseListRequest
         {
             UserId = entity.UserId,
-            Pagination =             {
+            Pagination = {
                 Page = 0,
                 PageSize = int.MaxValue
             },
             Sort = { Descending = true }
         };
 
-        var invites = await _inviteServiceClient.ExecuteRequestAsync((client, cancellationToken) => client.GetUserInviteUsesAsync(request, cancellationToken));
+        var invites = await _inviteServiceClient.ExecuteRequestAsync((client, ctx) => client.GetUserInviteUsesAsync(request, ctx.CancellationToken));
         var invite = invites.Data.FirstOrDefault(o => o.GuildId == entity.GuildId);
 
         if (invite is null)
@@ -269,7 +269,7 @@ public class GetUserDetail : ApiAction
             Pagination = { PageSize = 1 }
         };
 
-        var inviteInfo = await _inviteServiceClient.ExecuteRequestAsync((client, cancellationToken) => client.GetUsedInvitesAsync(inviteInfoRequest, cancellationToken));
+        var inviteInfo = await _inviteServiceClient.ExecuteRequestAsync((client, ctx) => client.GetUsedInvitesAsync(inviteInfoRequest, ctx.CancellationToken));
         var creator = string.IsNullOrEmpty(inviteInfo.Data[0].CreatorId) ? null : await _dataResolveManager.GetUserAsync(inviteInfo.Data[0].CreatorId.ToUlong());
 
         detail.UsedInvite = invite is null ? null : new ApiModels.Invites.Invite

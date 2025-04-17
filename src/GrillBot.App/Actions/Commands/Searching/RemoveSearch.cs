@@ -16,7 +16,7 @@ public class RemoveSearch(
     {
         try
         {
-            await _searchingService.ExecuteRequestAsync((c, cancellationToken) => c.RemoveSearchingAsync(id, cancellationToken));
+            await _searchingService.ExecuteRequestAsync((c, ctx) => c.RemoveSearchingAsync(id, ctx.AuthorizationToken, ctx.CancellationToken));
         }
         catch (ClientBadRequestException ex) when (ex.ValidationErrors.Count > 0)
         {

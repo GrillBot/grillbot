@@ -173,7 +173,7 @@ public class UserInfo : CommandAction
     {
         if (OverLimit) return;
 
-        var pointsStatus = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetStatusOfPointsAsync(Context.Guild.Id.ToString(), user.Id.ToString(), cancellationToken));
+        var pointsStatus = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetStatusOfPointsAsync(Context.Guild.Id.ToString(), user.Id.ToString(), ctx.CancellationToken));
         if (pointsStatus.YearBack > 0)
             AddField(builder, "Points", pointsStatus.YearBack.ToString(), true);
     }
@@ -225,7 +225,7 @@ public class UserInfo : CommandAction
             }
         };
 
-        var invites = await _inviteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetUserInviteUsesAsync(request, cancellationToken));
+        var invites = await _inviteServiceClient.ExecuteRequestAsync((c, ctx) => c.GetUserInviteUsesAsync(request, ctx.CancellationToken));
         var invite = invites.Data.FirstOrDefault(o => o.GuildId == entity.GuildId);
 
         if (invite is null)
@@ -253,7 +253,7 @@ public class UserInfo : CommandAction
                 }
             };
 
-            var inviteInfo = await _inviteServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetUsedInvitesAsync(inviteInfoRequest, cancellationToken));
+            var inviteInfo = await _inviteServiceClient.ExecuteRequestAsync((c, ctx) => c.GetUsedInvitesAsync(inviteInfoRequest, ctx.CancellationToken));
             var createdAt = inviteInfo.Data[0].CreatedAt!.Value.ToLocalTime().ToCzechFormat();
             var creatorId = inviteInfo.Data[0].CreatorId.ToUlong();
             var creator = await _dataResolve.GetUserAsync(creatorId);

@@ -47,7 +47,7 @@ public class GetSearchingList(
             UserId = parameters.UserId
         };
 
-        var response = await _searchingService.ExecuteRequestAsync((c, cancellationToken) => c.GetSearchingListAsync(request, cancellationToken));
+        var response = await _searchingService.ExecuteRequestAsync((c, ctx) => c.GetSearchingListAsync(request, ctx.CancellationToken));
         if (mutualGuilds is not null)
             response.Data = response.Data.FindAll(o => mutualGuilds.Contains(o.GuildId));
 

@@ -59,7 +59,7 @@ public class UnsucessCommandHandler : IMessageReceivedEvent
 
     private async Task<string?> FindRubbergodCommandAsync(IReadOnlyCollection<string> parts)
     {
-        var rubbergodCommands = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetSlashCommandsAsync(cancellationToken));
+        var rubbergodCommands = await _rubbergodServiceClient.ExecuteRequestAsync((c, ctx) => c.GetSlashCommandsAsync(ctx.CancellationToken));
         var cmdMentions = GetRubbergodCommandMentions(rubbergodCommands);
         return TryMatchMention(cmdMentions, parts);
     }

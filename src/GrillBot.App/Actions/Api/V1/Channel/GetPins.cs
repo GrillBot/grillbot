@@ -31,7 +31,7 @@ public class GetPins : ApiAction
         var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId)
             ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
-        var content = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetPinsAsync(guild.Id, channelId, markdown, cancellationToken));
+        var content = await _rubbergodServiceClient.ExecuteRequestAsync((c, ctx) => c.GetPinsAsync(guild.Id, channelId, markdown, ctx.CancellationToken));
         var apiResult = new ContentResult
         {
             Content = Encoding.UTF8.GetString(content),

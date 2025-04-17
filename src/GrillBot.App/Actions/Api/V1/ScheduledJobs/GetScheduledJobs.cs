@@ -26,7 +26,7 @@ public class GetScheduledJobs : ApiAction
 
     public override async Task<ApiResult> ProcessAsync()
     {
-        var jobInfos = await _auditLogServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetJobsInfoAsync(cancellationToken));
+        var jobInfos = await _auditLogServiceClient.ExecuteRequestAsync((c, ctx) => c.GetJobsInfoAsync(ctx.CancellationToken));
         var scheduler = await SchedulerFactory.GetScheduler();
         var result = new List<ScheduledJob>();
         var jobKeys = await scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup());

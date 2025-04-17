@@ -15,12 +15,12 @@ public class SearchingController(IServiceProvider serviceProvider) : ServiceCont
     [ProducesResponseType(typeof(PaginatedResponse<SearchListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetSearchingListAsync(SearchingListRequest request)
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetSearchingListAsync(request, cancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.GetSearchingListAsync(request, ctx.CancellationToken));
 
     [HttpDelete("{id}")]
     [JwtAuthorize("Searching(Admin)")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> RemoveSearchingAsync(long id)
-        => ExecuteAsync(async (client, cancellationToken) => await client.RemoveSearchingAsync(id, cancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.RemoveSearchingAsync(id, ctx.AuthorizationToken, ctx.CancellationToken));
 }

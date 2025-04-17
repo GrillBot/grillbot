@@ -17,25 +17,25 @@ public class InviteController(IServiceProvider serviceProvider) : ServiceControl
     [ProducesResponseType<PaginatedResponse<Invite>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetCachedInvitesAsync([FromBody] InviteListRequest request)
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetCachedInvitesAsync(request, cancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.GetCachedInvitesAsync(request, ctx.CancellationToken), request);
 
     [HttpPost("used-invites/list")]
     [ProducesResponseType<PaginatedResponse<Invite>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetUsedInvitesAsync([FromBody] InviteListRequest request)
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetUsedInvitesAsync(request, cancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.GetUsedInvitesAsync(request, ctx.CancellationToken), request);
 
     [HttpPost("invite-uses/list")]
     [ProducesResponseType<PaginatedResponse<InviteUse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetInviteUsesAsync([FromBody] InviteUseListRequest request)
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetInviteUsesAsync(request, cancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.GetInviteUsesAsync(request, ctx.CancellationToken), request);
 
     [HttpPost("user-invite-uses/list")]
     [ProducesResponseType<PaginatedResponse<UserInviteUse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetUserInviteUsesAsync([FromBody] UserInviteUseListRequest request)
-        => ExecuteAsync(async (client, cancellationToken) => await client.GetUserInviteUsesAsync(request, cancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.GetUserInviteUsesAsync(request, ctx.CancellationToken), request);
 
     [HttpPost("synchronize/{guildId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]

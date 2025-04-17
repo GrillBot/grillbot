@@ -16,7 +16,7 @@ public class GetApiUserStatistics(
     public override async Task<ApiResult> ProcessAsync()
     {
         var criteria = (string)Parameters[0]!;
-        var statistics = await _auditLogServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetUserApiStatisticsAsync(criteria, cancellationToken));
+        var statistics = await _auditLogServiceClient.ExecuteRequestAsync((c, ctx) => c.GetUserApiStatisticsAsync(criteria, ctx.CancellationToken));
         var result = new List<UserActionCountItem>();
 
         foreach (var item in statistics)

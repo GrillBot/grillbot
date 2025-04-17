@@ -24,7 +24,7 @@ public class GetRubbergodUserKarma : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (KarmaListParams)Parameters[0]!;
-        var page = await _rubbergodServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetKarmaPageAsync(parameters.Pagination, cancellationToken));
+        var page = await _rubbergodServiceClient.ExecuteRequestAsync((c, ctx) => c.GetKarmaPageAsync(parameters.Pagination, ctx.CancellationToken));
         var users = await ReadUsersAsync(page.Data.ConvertAll(o => o.UserId));
         var result = await PaginatedResponse<KarmaListItem>.CopyAndMapAsync(page, entity => Task.FromResult(Map(entity, users)));
 

@@ -48,7 +48,7 @@ public class GetReminderList(
         if (request.Sort.OrderBy == "ToUser")
             request.Sort.OrderBy = "Id";
 
-        var data = await _remindService.ExecuteRequestAsync((c, cancellationToken) => c.GetReminderListAsync(request, cancellationToken));
+        var data = await _remindService.ExecuteRequestAsync((c, ctx) => c.GetReminderListAsync(request, ctx.CancellationToken));
         return await PaginatedResponse<RemindMessage>.CopyAndMapAsync(data, MapItemFromServiceAsync);
     }
 

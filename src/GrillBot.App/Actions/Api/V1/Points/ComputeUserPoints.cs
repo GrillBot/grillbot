@@ -36,7 +36,7 @@ public class ComputeUserPoints : ApiAction
         var result = new List<UserPointsItem>();
         foreach (var guildId in await GetGuildIdsAsync(userId.Value))
         {
-            var status = await _pointsServiceClient.ExecuteRequestAsync((c, cancellationToken) => c.GetStatusOfPointsAsync(guildId.ToString(), userId.Value.ToString(), cancellationToken));
+            var status = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetStatusOfPointsAsync(guildId.ToString(), userId.Value.ToString(), ctx.CancellationToken));
             result.Add(await TransformStatusAsync(guildId, userId.Value, status));
         }
 

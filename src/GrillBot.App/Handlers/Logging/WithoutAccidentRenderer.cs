@@ -29,7 +29,7 @@ public class WithoutAccidentRenderer(
             UserId = user.Id.ToString()
         };
 
-        var image = await _imageProcessingClient.ExecuteRequestAsync((c, cancellationToken) => c.CreateWithoutAccidentImageAsync(request, cancellationToken));
+        var image = await _imageProcessingClient.ExecuteRequestAsync((c, ctx) => c.CreateWithoutAccidentImageAsync(request, ctx.CancellationToken));
         var tmpFile = new TemporaryFile("png");
 
         await tmpFile.WriteStreamAsync(image);

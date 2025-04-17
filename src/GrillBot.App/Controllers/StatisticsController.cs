@@ -1,6 +1,7 @@
 ﻿using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V1.Statistics;
 using GrillBot.Core.Services.AuditLog;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Statistics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -34,7 +35,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     [ProducesResponseType(typeof(AuditLog.AuditLogStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAuditLogStatisticsAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(async (client, cancellationToken) => await client.GetAuditLogStatisticsAsync(cancellationToken));
+        var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetAuditLogStatisticsAsync(ctx.CancellationToken));
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -46,7 +47,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     [ProducesResponseType(typeof(AuditLog.InteractionStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInteractionsStatusAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(async (client, cancellationToken) => await client.GetInteractionStatisticsAsync(cancellationToken));
+        var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetInteractionStatisticsAsync(ctx.CancellationToken));
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -76,7 +77,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     [ProducesResponseType(typeof(AuditLog.ApiStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetApiStatisticsAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(async (client, cancellationToken) => await client.GetApiStatisticsAsync(cancellationToken));
+        var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetApiStatisticsAsync(ctx.CancellationToken));
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 
@@ -96,7 +97,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     [ProducesResponseType(typeof(AuditLog.AvgExecutionTimes), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAvgTimesAsync()
     {
-        var executor = new Func<IAuditLogServiceClient, CancellationToken, Task<object>>(async (client, cancellationToken) => await client.GetAvgTimesAsync(cancellationToken));
+        var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetAvgTimesAsync(ctx.CancellationToken));
         return await ProcessAsync<ServiceBridgeAction<IAuditLogServiceClient>>(executor);
     }
 

@@ -3,6 +3,7 @@ using GrillBot.App.Actions.Api;
 using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common;
+using GrillBot.Core.Services.Common.Executor;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GrillBot.App.Controllers.ServiceControllers;
@@ -13,7 +14,7 @@ public abstract class ServiceControllerBase<TService>(
     IServiceProvider serviceProvider
 ) : Core.Infrastructure.Actions.ControllerBase(serviceProvider) where TService : IServiceClient
 {
-    protected Task<IActionResult> ExecuteAsync(Func<TService, CancellationToken, Task<object>> executor, IDictionaryObject? parameters = null)
+    protected Task<IActionResult> ExecuteAsync(Func<TService, ServiceExecutorContext, Task<object>> executor, IDictionaryObject? parameters = null)
     {
         if (parameters is not null)
             ApiAction.Init(this, parameters);
@@ -29,7 +30,7 @@ public abstract class ServiceControllerBase<TService>(
         return ProcessAsync<TAction>(parameters);
     }
 
-    protected Task<IActionResult> ExecuteAsync(Func<TService, CancellationToken, Task> executor, IDictionaryObject? parameters = null)
+    protected Task<IActionResult> ExecuteAsync(Func<TService, ServiceExecutorContext, Task> executor, IDictionaryObject? parameters = null)
     {
         if (parameters is not null)
             ApiAction.Init(this, parameters);

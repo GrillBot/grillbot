@@ -23,6 +23,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Logs;
 
 namespace GrillBot.App;
 
@@ -41,6 +44,20 @@ public static class Program
                 .Enrich.FromLogContext()
                 .WriteTo.Console(theme: AnsiConsoleTheme.Code, outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
             )
+            .ConfigureLogging(builder =>
+            {
+                builder.AddOpenTelemetry(opt =>
+                {
+                    opt.IncludeFormattedMessage = true;
+                    opt.IncludeScopes = true;
+
+                    var resourceBuilder = ResourceBuilder.CreateDefault();
+                    resourceBuilder.AddService("GrillBot");
+                    opt.SetResourceBuilder(resourceBuilder);
+
+                    opt.AddOtlpExporter();
+                });
+            })
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<Startup>();

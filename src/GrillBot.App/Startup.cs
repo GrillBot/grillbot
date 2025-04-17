@@ -33,6 +33,12 @@ using GrillBot.App.Infrastructure.JsonConverters;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using GrillBot.Core.RabbitMQ.V2;
+using Microsoft.AspNetCore.HttpLogging;
+using OpenTelemetry.Instrumentation.AspNetCore;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+using GrillBot.Core.Metrics;
 namespace GrillBot.App;
 
 public class Startup
@@ -246,6 +252,26 @@ public class Startup
             .AddNpgSql(connectionString!);
 
         services.Configure<ForwardedHeadersOptions>(opt => opt.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
+
+        services.AddHttpLogging(c => c.LoggingFields = HttpLoggingFields.All);
+        services.Configure<AspNetCoreTraceInstrumentationOptions>(opt => opt.Filter = ctx => ctx.Request.Path != "/metrics");
+
+        services.AddOpenTelemetry()
+            .ConfigureResource(b => b.AddService("GrillBot"))
+            .WithTracing(b => b
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddSource("*")
+                .AddQuartzInstrumentation()
+                .AddOtlpExporter()
+            )
+            .WithMetrics(b => b
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddProcessInstrumentation()
+                .AddPrometheusExporter()
+            );
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)
@@ -271,6 +297,7 @@ public class Startup
             return next();
         });
 
+        app.UseTelemetry();
         app.UseForwardedHeaders();
         var corsOrigins = Configuration.GetSection("CORS:Origins").AsEnumerable()
             .Select(o => o.Value).Where(o => !string.IsNullOrEmpty(o)).ToArray();

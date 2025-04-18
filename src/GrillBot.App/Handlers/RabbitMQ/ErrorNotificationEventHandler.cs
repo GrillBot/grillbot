@@ -11,24 +11,15 @@ using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
 
-public class ErrorNotificationEventHandler : RabbitMessageHandlerBase<ErrorNotificationPayload>
+public class ErrorNotificationEventHandler(
+    ILoggerFactory loggerFactory,
+    DataCacheManager _dataCache,
+    IDiscordClient _discordClient,
+    IRabbitPublisher _rabbitPublisher,
+    WithoutAccidentRenderer _renderer,
+    IConfiguration _configuration
+) : RabbitMessageHandlerBase<ErrorNotificationPayload>(loggerFactory)
 {
-    private readonly DataCacheManager _dataCache;
-    private readonly IDiscordClient _discordClient;
-    private readonly WithoutAccidentRenderer _renderer;
-    private readonly IRabbitPublisher _rabbitPublisher;
-    private readonly IConfiguration _configuration;
-
-    public ErrorNotificationEventHandler(ILoggerFactory loggerFactory, DataCacheManager dataCache, IDiscordClient discordClient, IRabbitPublisher rabbitPublisher,
-        WithoutAccidentRenderer renderer, IConfiguration configuration) : base(loggerFactory)
-    {
-        _dataCache = dataCache;
-        _discordClient = discordClient;
-        _rabbitPublisher = rabbitPublisher;
-        _renderer = renderer;
-        _configuration = configuration;
-    }
-
     protected override async Task<RabbitConsumptionResult> HandleInternalAsync(ErrorNotificationPayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
     {
         await _discordClient.WaitOnConnectedState();
@@ -37,7 +28,7 @@ public class ErrorNotificationEventHandler : RabbitMessageHandlerBase<ErrorNotif
 
         try
         {
-            await _dataCache.SetValueAsync("LastErrorDate", DateTime.Now, null);
+            await _dataCache.SetValueAsync("GrillBot_LastErrorDate", DateTime.Now, TimeSpan.FromDays(365));
 
             var msg = await CreateMessage(message, withoutAccidentImage);
             if (msg is null)
@@ -81,7 +72,7 @@ public class ErrorNotificationEventHandler : RabbitMessageHandlerBase<ErrorNotif
             guildId,
             channelId,
             null,
-            attachment is null ? Enumerable.Empty<DiscordMessageFile>() : new[] { attachment },
+            attachment is null ? [] : [attachment],
             "GrillBot",
             null,
             null,

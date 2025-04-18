@@ -3,6 +3,7 @@ using GrillBot.Core.Services.ImageProcessing;
 using GrillBot.Core.Services.ImageProcessing.Models;
 using GrillBot.Core.IO;
 using GrillBot.Core.Services.Common.Executor;
+using System.Diagnostics;
 
 namespace GrillBot.App.Handlers.Logging;
 
@@ -38,8 +39,9 @@ public class WithoutAccidentRenderer(
 
     private async Task<int> GetLastErrorDays()
     {
-        var lastErrorDate = await _dataCacheManager.GetValueAsync<DateTime>("LastErrorDate");
-        if (lastErrorDate == DateTime.MinValue) return 0;
+        var lastErrorDate = await _dataCacheManager.GetValueAsync<DateTime>("GrillBot_LastErrorDate");
+        if (lastErrorDate == DateTime.MinValue)
+            lastErrorDate = Process.GetCurrentProcess().StartTime;
 
         var now = DateTime.Now;
         var totalDays = (now - lastErrorDate).TotalDays;

@@ -11,8 +11,8 @@ namespace GrillBot.Cache.Services.Managers.MessageCache;
 
 public class MessageCacheManager : IMessageCacheManager
 {
-    private SemaphoreSlim ReaderLock { get; }
-    private SemaphoreSlim WriterLock { get; }
+    private readonly SemaphoreSlim _readerLock = new(1);
+    private readonly SemaphoreSlim _writerLock = new(1);
 
     private readonly Dictionary<ulong, IMessage> _messages = [];
     private readonly HashSet<ulong> _deletedMessages = [];
@@ -34,9 +34,6 @@ public class MessageCacheManager : IMessageCacheManager
         _counterManager = counterManager;
         _cache = cache;
 
-        ReaderLock = new SemaphoreSlim(1);
-        WriterLock = new SemaphoreSlim(1);
-
         _discordClient.MessageReceived += OnMessageReceivedAsync;
         _discordClient.MessageDeleted += OnMessageDeletedAsync;
         _discordClient.ChannelDestroyed += OnChannelDeletedAsync;
@@ -48,7 +45,7 @@ public class MessageCacheManager : IMessageCacheManager
     {
         if (message.Channel is IDMChannel || !_initManager.Get()) return;
 
-        await ReaderLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             if (_loadedChannels.Contains(message.Channel.Id))
@@ -56,11 +53,11 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
+            _readerLock.Release();
         }
 
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             await DownloadMessagesAsync(message.Channel, DiscordConfig.MaxMessagesPerBatch);
@@ -68,8 +65,8 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
@@ -77,8 +74,8 @@ public class MessageCacheManager : IMessageCacheManager
     {
         if (!channel.HasValue || channel.Value is IDMChannel || !_initManager.Get()) return;
 
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             _deletedMessages.Add(msg.Id);
@@ -86,8 +83,8 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
@@ -95,8 +92,8 @@ public class MessageCacheManager : IMessageCacheManager
     {
         if (channel is IDMChannel || !_initManager.Get()) return;
 
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             using var cache = _cacheBuilder.CreateRepository();
@@ -110,8 +107,8 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
@@ -119,8 +116,8 @@ public class MessageCacheManager : IMessageCacheManager
     {
         if (!thread.HasValue || !_initManager.Get()) return;
 
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             using var cache = _cacheBuilder.CreateRepository();
@@ -134,8 +131,8 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
@@ -143,16 +140,16 @@ public class MessageCacheManager : IMessageCacheManager
     {
         if (channel is IDMChannel || !_initManager.Get()) return;
 
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             _messagesForUpdate.Add(after.Id);
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
@@ -265,7 +262,7 @@ public class MessageCacheManager : IMessageCacheManager
 
     public async Task<IMessage?> GetAsync(ulong messageId, IMessageChannel? channel, bool includeRemoved = false, bool forceReload = false)
     {
-        await ReaderLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             if (!includeRemoved && _deletedMessages.Contains(messageId))
@@ -275,13 +272,13 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
+            _readerLock.Release();
         }
 
         if (channel is null) return null;
 
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             var message = await DownloadMessageFromChannelAsync(channel, messageId);
@@ -292,15 +289,15 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
     public async Task<int> ClearAllMessagesFromChannelAsync(IChannel channel)
     {
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             using var cache = _cacheBuilder.CreateRepository();
@@ -317,15 +314,15 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
     public async Task DeleteAsync(ulong messageId)
     {
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             _deletedMessages.Add(messageId);
@@ -333,8 +330,8 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
@@ -349,8 +346,8 @@ public class MessageCacheManager : IMessageCacheManager
 
     private async Task ProcessDeletedMessagesAsync(List<string> report)
     {
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             foreach (var id in _deletedMessages)
@@ -365,15 +362,15 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 
     private async Task ProcessUpdatedMessagesAsync(List<string> report)
     {
-        await WriterLock.WaitAsync();
-        await ReaderLock.WaitAsync();
+        await _writerLock.WaitAsync();
+        await _readerLock.WaitAsync();
         try
         {
             foreach (var id in _messagesForUpdate)
@@ -395,8 +392,8 @@ public class MessageCacheManager : IMessageCacheManager
         }
         finally
         {
-            ReaderLock.Release();
-            WriterLock.Release();
+            _readerLock.Release();
+            _writerLock.Release();
         }
     }
 }

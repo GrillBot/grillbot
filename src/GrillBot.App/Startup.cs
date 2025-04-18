@@ -277,7 +277,6 @@ public class Startup
     public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)
     {
         app.InitDatabase<GrillBotContext>();
-        app.InitCache();
 
         if (environment.IsProduction())
         {

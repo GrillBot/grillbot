@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GrillBot.App.Managers.DataResolve;
-using GrillBot.Cache.Services;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -23,7 +22,6 @@ public class GetGuildDetail : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private IMapper Mapper { get; }
     private IDiscordClient DiscordClient { get; }
-    private GrillBotCacheBuilder CacheBuilder { get; }
     private ITextsManager Texts { get; }
 
     private readonly DataResolveManager _dataResolve;
@@ -33,15 +31,14 @@ public class GetGuildDetail : ApiAction
     private readonly IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService;
     private readonly IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient;
 
-    public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, GrillBotCacheBuilder cacheBuilder,
-        ITextsManager texts, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, IServiceClientExecutor<IAuditLogServiceClient> auditLogServiceClient,
+    public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
+        IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, IServiceClientExecutor<IAuditLogServiceClient> auditLogServiceClient,
         IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService, DataResolveManager dataResolve, IServiceClientExecutor<IEmoteServiceClient> emoteService,
         IServiceClientExecutor<IInviteServiceClient> inviteServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Mapper = mapper;
         DiscordClient = discordClient;
-        CacheBuilder = cacheBuilder;
         Texts = texts;
         _pointsServiceClient = pointsServiceClient;
         _auditLogServiceClient = auditLogServiceClient;
@@ -104,9 +101,6 @@ public class GetGuildDetail : ApiAction
         using var repository = DatabaseBuilder.CreateRepository();
 
         var report = await repository.Guild.GetDatabaseReportDataAsync(guildId);
-
-        using (var cache = CacheBuilder.CreateRepository())
-            report.CacheIndexes = await cache.MessageIndexRepository.GetMessagesCountAsync(guildId: guildId);
 
         report.AuditLogs = await _auditLogServiceClient.ExecuteRequestAsync((c, ctx) => c.GetItemsCountOfGuildAsync(guildId, ctx.CancellationToken));
         report.PointTransactions = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetTransactionsCountForGuildAsync(guildId.ToString(), ctx.CancellationToken));

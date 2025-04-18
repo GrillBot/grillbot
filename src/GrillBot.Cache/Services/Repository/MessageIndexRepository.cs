@@ -22,28 +22,11 @@ public class MessageIndexRepository : SubRepositoryBase<GrillBotCacheContext>
         return query;
     }
 
-    public async Task<List<MessageIndex>> GetMessagesAsync(ulong authorId = default, ulong channelId = default, ulong guildId = default)
-    {
-        using (CreateCounter())
-        {
-            return await GetBaseQuery(authorId, channelId, guildId).ToListAsync();
-        }
-    }
-
     public async Task<int> GetMessagesCountAsync(ulong authorId = default, ulong channelId = default, ulong guildId = default)
     {
         using (CreateCounter())
         {
             return await GetBaseQuery(authorId, channelId, guildId).CountAsync();
-        }
-    }
-
-    public async Task<MessageIndex?> FindMessageByIdAsync(ulong messageId)
-    {
-        using (CreateCounter())
-        {
-            return await GetBaseQuery()
-                .FirstOrDefaultAsync(o => o.MessageId == messageId.ToString());
         }
     }
 

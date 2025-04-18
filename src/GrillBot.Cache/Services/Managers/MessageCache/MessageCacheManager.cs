@@ -5,7 +5,10 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Managers.Performance;
+using GrillBot.Core.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace GrillBot.Cache.Services.Managers.MessageCache;
 
@@ -20,25 +23,20 @@ public class MessageCacheManager : IMessageCacheManager
     private readonly HashSet<ulong> _messagesForUpdate = [];
 
     private readonly InitManager _initManager;
-    private readonly DiscordSocketClient _discordClient;
-    private readonly GrillBotCacheBuilder _cacheBuilder;
     private readonly ICounterManager _counterManager;
-    private readonly IDistributedCache _cache;
+    private readonly IServiceProvider _serviceProvider;
 
-    public MessageCacheManager(DiscordSocketClient discordClient, InitManager initManager, GrillBotCacheBuilder cacheBuilder, ICounterManager counterManager,
-        IDistributedCache cache)
+    public MessageCacheManager(DiscordSocketClient discordClient, InitManager initManager, ICounterManager counterManager, IServiceProvider serviceProvider)
     {
-        _discordClient = discordClient;
         _initManager = initManager;
-        _cacheBuilder = cacheBuilder;
         _counterManager = counterManager;
-        _cache = cache;
+        _serviceProvider = serviceProvider;
 
-        _discordClient.MessageReceived += OnMessageReceivedAsync;
-        _discordClient.MessageDeleted += OnMessageDeletedAsync;
-        _discordClient.ChannelDestroyed += OnChannelDeletedAsync;
-        _discordClient.ThreadDeleted += OnThreadDeletedAsync;
-        _discordClient.MessageUpdated += OnMessageUpdatedAsync;
+        discordClient.MessageReceived += OnMessageReceivedAsync;
+        discordClient.MessageDeleted += OnMessageDeletedAsync;
+        discordClient.ChannelDestroyed += OnChannelDeletedAsync;
+        discordClient.ThreadDeleted += OnThreadDeletedAsync;
+        discordClient.MessageUpdated += OnMessageUpdatedAsync;
     }
 
     private async Task OnMessageReceivedAsync(SocketMessage message)
@@ -92,15 +90,19 @@ public class MessageCacheManager : IMessageCacheManager
     {
         if (channel is IDMChannel || !_initManager.Get()) return;
 
+        var pattern = CreateCacheKeyPattern(channel);
+
         await _writerLock.WaitAsync();
         await _readerLock.WaitAsync();
         try
         {
-            using var cache = _cacheBuilder.CreateRepository();
+            using var scope = _serviceProvider.CreateScope();
+            var server = scope.ServiceProvider.GetRequiredService<IServer>();
 
-            var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id);
-            foreach (var messageId in messages.Select(o => o.MessageId.ToUlong()))
+            await foreach (var key in server.KeysAsync(pattern: pattern, pageSize: int.MaxValue))
             {
+                var messageId = key.ToString().Replace(pattern.Replace("*", ""), "").ToUlong();
+
                 _deletedMessages.Add(messageId);
                 _messagesForUpdate.Remove(messageId);
             }
@@ -116,15 +118,19 @@ public class MessageCacheManager : IMessageCacheManager
     {
         if (!thread.HasValue || !_initManager.Get()) return;
 
+        var pattern = CreateCacheKeyPattern(thread.Value);
+
         await _writerLock.WaitAsync();
         await _readerLock.WaitAsync();
         try
         {
-            using var cache = _cacheBuilder.CreateRepository();
+            using var scope = _serviceProvider.CreateScope();
+            var server = scope.ServiceProvider.GetRequiredService<IServer>();
 
-            var messages = await cache.MessageIndexRepository.GetMessagesAsync(channelId: thread.Value.Id, guildId: thread.Value.Guild.Id);
-            foreach (var messageId in messages.Select(o => o.MessageId.ToUlong()))
+            await foreach (var key in server.KeysAsync(pattern: pattern, pageSize: int.MaxValue))
             {
+                var messageId = key.ToString().Replace(pattern.Replace("*", ""), "").ToUlong();
+
                 _deletedMessages.Add(messageId);
                 _messagesForUpdate.Remove(messageId);
             }
@@ -188,8 +194,8 @@ public class MessageCacheManager : IMessageCacheManager
             try
             {
                 return range is not null
-                    ? [.. (await channel.GetMessagesAsync(range.Value.messageId, range.Value.direction, limit).FlattenAsync())]
-                    : [.. (await channel.GetMessagesAsync(limit).FlattenAsync())];
+                    ? [.. await channel.GetMessagesAsync(range.Value.messageId, range.Value.direction, limit).FlattenAsync()]
+                    : [.. await channel.GetMessagesAsync(limit).FlattenAsync()];
             }
             catch (HttpException ex) when (IsApiExpectedError(ex))
             {
@@ -227,37 +233,50 @@ public class MessageCacheManager : IMessageCacheManager
 
     private async Task CreateIndexesAsync(List<IMessage> newMessages)
     {
-        var entities = newMessages.ConvertAll(o => new Entity.MessageIndex
-        {
-            MessageId = o.Id.ToString(),
-            AuthorId = o.Author.Id.ToString(),
-            ChannelId = o.Channel.Id.ToString(),
-            GuildId = ((IGuildChannel)o.Channel).GuildId.ToString()
-        });
+        var cacheKeys = newMessages.ConvertAll(CreateCacheKey);
 
-        using var cache = _cacheBuilder.CreateRepository();
+        using var scope = _serviceProvider.CreateScope();
 
-        await cache.AddCollectionAsync(entities);
-        await cache.CommitAsync();
+        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
+        foreach (var key in cacheKeys)
+            await cache.SetAsync(key, 0, TimeSpan.FromDays(6 * 31));
     }
 
     private async Task RemoveIndexAsync(IMessage message)
     {
-        using var cache = _cacheBuilder.CreateRepository();
+        var cacheKey = CreateCacheKey(message);
 
-        var msgIndex = await cache.MessageIndexRepository.FindMessageByIdAsync(message.Id);
-        if (msgIndex is not null)
-        {
-            cache.Remove(msgIndex);
-            await cache.CommitAsync();
-        }
+        using var scope = _serviceProvider.CreateScope();
+
+        var database = scope.ServiceProvider.GetRequiredService<IDatabase>();
+        await database.KeyDeleteAsync(cacheKey);
     }
 
     public async Task<int> GetCachedMessagesCount(IChannel channel)
     {
-        using var cache = _cacheBuilder.CreateRepository();
+        var count = 0;
+        var pattern = CreateCacheKeyPattern(channel);
 
-        return await cache.MessageIndexRepository.GetMessagesCountAsync(channelId: channel.Id);
+        using var scope = _serviceProvider.CreateScope();
+        var server = scope.ServiceProvider.GetRequiredService<IServer>();
+
+        await _readerLock.WaitAsync();
+        try
+        {
+            await foreach (var key in server.KeysAsync(pattern: pattern, pageSize: int.MaxValue))
+            {
+                var messageId = key.ToString().Replace(pattern.Replace("*", ""), "").ToUlong();
+
+                if (_messages.ContainsKey(messageId))
+                    count++;
+            }
+
+            return count;
+        }
+        finally
+        {
+            _readerLock.Release();
+        }
     }
 
     public async Task<IMessage?> GetAsync(ulong messageId, IMessageChannel? channel, bool includeRemoved = false, bool forceReload = false)
@@ -296,21 +315,27 @@ public class MessageCacheManager : IMessageCacheManager
 
     public async Task<int> ClearAllMessagesFromChannelAsync(IChannel channel)
     {
+        var pattern = CreateCacheKeyPattern(channel);
+
         await _writerLock.WaitAsync();
         await _readerLock.WaitAsync();
         try
         {
-            using var cache = _cacheBuilder.CreateRepository();
-            var messages = (await cache.MessageIndexRepository.GetMessagesAsync(channelId: channel.Id))
-                .ConvertAll(o => o.MessageId.ToUlong());
+            using var scope = _serviceProvider.CreateScope();
+            var server = scope.ServiceProvider.GetRequiredService<IServer>();
+            var count = 0;
 
-            foreach (var msgId in messages)
+            await foreach (var key in server.KeysAsync(pattern: pattern, pageSize: int.MaxValue))
             {
-                _deletedMessages.Add(msgId);
-                _messagesForUpdate.Remove(msgId);
+                var messageId = key.ToString().Replace(pattern.Replace("*", ""), "").ToUlong();
+
+                _deletedMessages.Add(messageId);
+                _messagesForUpdate.Remove(messageId);
+
+                count++;
             }
 
-            return messages.Count;
+            return count;
         }
         finally
         {
@@ -352,7 +377,8 @@ public class MessageCacheManager : IMessageCacheManager
         {
             foreach (var id in _deletedMessages)
             {
-                if (!_messages.Remove(id, out var msg)) continue;
+                if (!_messages.Remove(id, out var msg))
+                    continue;
 
                 await RemoveIndexAsync(msg);
                 report.Add($"Removed {id} (Author: {msg.Author.GetFullName()}, Channel: {msg.Channel.Name}, CreatedAt: {msg.CreatedAt.LocalDateTime})");
@@ -396,4 +422,7 @@ public class MessageCacheManager : IMessageCacheManager
             _writerLock.Release();
         }
     }
+
+    private static string CreateCacheKey(IMessage message) => $"GrillBot_MessageIndex_{message.Channel.Id}_{message.Id}";
+    private static string CreateCacheKeyPattern(IChannel channel) => $"GrillBot_MessageIndex_{channel.Id}_*";
 }

@@ -59,7 +59,7 @@ public class Startup
             GatewayIntents = GatewayIntents.All,
             LogLevel = LogSeverity.Verbose,
             MessageCacheSize = 5000,
-            AlwaysDownloadDefaultStickers = true,
+            AlwaysDownloadDefaultStickers = false,
             AlwaysDownloadUsers = true,
             AlwaysResolveStickers = true,
             DefaultRetryMode = RetryMode.RetryRatelimit,

@@ -59,6 +59,8 @@ public class MessageCacheManager : IMessageCacheManager
         try
         {
             await DownloadMessagesAsync(message.Channel, DiscordConfig.MaxMessagesPerBatch);
+            await ClearDeadRecordsInCacheAsync(message.Channel);
+
             _loadedChannels.Add(message.Channel.Id);
         }
         finally
@@ -425,4 +427,21 @@ public class MessageCacheManager : IMessageCacheManager
 
     private static string CreateCacheKey(IMessage message) => $"GrillBot_MessageIndex_{message.Channel.Id}_{message.Id}";
     private static string CreateCacheKeyPattern(IChannel channel) => $"GrillBot_MessageIndex_{channel.Id}_*";
+
+    private async Task ClearDeadRecordsInCacheAsync(IChannel channel)
+    {
+        var pattern = CreateCacheKeyPattern(channel);
+
+        using var scope = _serviceProvider.CreateScope();
+        var server = scope.ServiceProvider.GetRequiredService<IServer>();
+        var database = scope.ServiceProvider.GetRequiredService<IDatabase>();
+
+        await foreach (var key in server.KeysAsync(pattern: pattern, pageSize: int.MaxValue))
+        {
+            var messageId = key.ToString().Replace(pattern.Replace("*", ""), "").ToUlong();
+
+            if (!_messages.ContainsKey(messageId))
+                await database.KeyDeleteAsync(key);
+        }
+    }
 }
